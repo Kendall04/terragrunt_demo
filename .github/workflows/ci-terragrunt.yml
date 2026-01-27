@@ -1,0 +1,204 @@
+name: CI - Terragrunt
+
+on:
+  pull_request:
+    branches: [develop, main]
+    paths:
+      - "terraform/**"
+      - ".github/workflows/*-terragrunt"
+
+  push:
+    branches:
+      - feature/**
+    paths:
+      - "terraform/**"
+      - ".github/workflows/*-terragrunt"
+
+permissions:
+  contents: read
+  id-token: write
+  pull-requests: write
+
+jobs:
+  terragrunt-ci:
+    name: Terragrunt Lint • Security Scan • Init • Plan
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: us-east-1
+
+    environment:
+      name: ${{ (github.event_name == 'pull_request' && github.base_ref == 'main') && 'prod' || 'dev' }}
+
+    steps:
+      # ----------------------------------------------------
+      # 1) Checkout repository
+      # ----------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ----------------------------------------------------
+      # 2) AWS OIDC Login (TF CI role - backend read-only)
+      #    This role can read Terraform state (S3 + DynamoDB)
+      #    but cannot modify infrastructure.
+      # ----------------------------------------------------
+      - name: AWS Login via OIDC
+        uses: ./.github/actions/aws-oidc
+        with:
+          role_arn: ${{ secrets.AWS_ROLE_TG_CI }}
+          aws_region: ${{ env.AWS_REGION }}
+          role_session_name: "terragrunt-ci"
+
+      # ----------------------------------------------------
+      # 3) Resolve environment (TG_ENV) based on branch / PR
+      #    Example:
+      #      - develop -> dev
+      #      - main    -> prod
+      # ----------------------------------------------------
+      - name: Resolve environment (TG_ENV)
+        id: env
+        uses: ./.github/actions/resolve-env
+
+      # ----------------------------------------------------
+      # 4) Resolve Terraform backend config
+      #    Exports TF_STATE_BUCKET, TF_STATE_TABLE and ACCOUNT_ID
+      #    Using TG_ENV + AWS_REGION + current AWS account
+      # ----------------------------------------------------
+      - name: Resolve Terraform backend
+        id: backend
+        uses: ./.github/actions/resolve-backend
+
+      # Optional: log resolved values for debugging / reviewers
+      - name: Show resolved backend
+        run: |
+          echo "TG_ENV           : ${TG_ENV}"
+          echo "AWS_REGION       : ${AWS_REGION}"
+          echo "TF_STATE_BUCKET  : ${TF_STATE_BUCKET}"
+          echo "TF_STATE_TABLE   : ${TF_STATE_TABLE}"
+          echo "ACCOUNT_ID       : ${ACCOUNT_ID}"
+
+      # ----------------------------------------------------
+      # 5) Install Terraform (required by Terragrunt)
+      # ----------------------------------------------------
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.13.4
+
+      # ----------------------------------------------------
+      # 6) Install Terragrunt CLI
+      # ----------------------------------------------------
+      - name: Install Terragrunt
+        run: |
+          TG_VERSION="0.93.3"
+          curl -L "https://github.com/gruntwork-io/terragrunt/releases/download/v${TG_VERSION}/terragrunt_linux_amd64" -o terragrunt
+          chmod +x terragrunt
+          sudo mv terragrunt /usr/local/bin/terragrunt
+
+      # ----------------------------------------------------
+      # 7) Setup TFLint (Terraform linter)
+      # ----------------------------------------------------
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+
+      - name: Run TFLint
+        run: |
+          tflint --version
+          tflint --recursive
+
+      # ----------------------------------------------------
+      # 8) Install tfsec (Terraform security scanner)
+      # ----------------------------------------------------
+      - name: Install tfsec
+        run: |
+          curl -L "https://github.com/aquasecurity/tfsec/releases/latest/download/tfsec-linux-amd64" -o tfsec
+          chmod +x tfsec
+          sudo mv tfsec /usr/local/bin
+
+      - name: Run tfsec
+        run: |
+          tfsec --no-color . --minimum-severity=MEDIUM
+
+      # ----------------------------------------------------
+      # 9) Terraform fmt (style check for modules)
+      # ----------------------------------------------------
+      - name: Terraform fmt (modules only)
+        run: terraform fmt -check -recursive terraform/
+
+      # ----------------------------------------------------
+      # 10) Terragrunt init (run-all) for resolved environment
+      #     Uses -reconfigure to ensure backend matches TG_ENV
+      # ----------------------------------------------------
+      - name: Terragrunt Init
+        working-directory: terraform/live/${{ env.TG_ENV }}
+        run: |
+          terragrunt run --all init --non-interactive -- -reconfigure
+
+      # ----------------------------------------------------
+      # 11) Terragrunt plan (run-all) read-only
+      #     - No state lock (lock=false) because this is CI
+      #     - No interactive input
+      #     - No ANSI color (better for logs)
+      #     The plan output is also pushed into the Job Summary
+      #     so reviewers can read it directly in the PR.
+      # ----------------------------------------------------
+      - name: Terragrunt Plan
+        working-directory: terraform/live/${{ env.TG_ENV }}
+        run: |
+          terragrunt run --all plan -- -lock=false -input=false \
+            | tee terragrunt-plan-${{ env.TG_ENV }}.log
+
+          {
+            echo "## Terragrunt plan - env: ${{ env.TG_ENV }}"
+            echo
+            echo '```'
+            cat terragrunt-plan-${{ env.TG_ENV }}.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # ----------------------------------------------------
+      # 12) Infracost Setup
+      # ----------------------------------------------------
+      - name: Setup Infracost
+        uses: infracost/actions/setup@v3
+
+      # ----------------------------------------------------
+      # 13) Generate Infracost JSON (Terragrunt version)
+      # ----------------------------------------------------
+      - name: Generate Infracost JSON
+        working-directory: terraform/live/${{ env.TG_ENV }}
+        env:
+          INFRACOST_API_KEY: ${{ secrets.INFRACOST_API_KEY }}
+        run: |
+          infracost breakdown --path . \
+                              --format json \
+                              --out-file /tmp/infracost.json
+
+      # ----------------------------------------------------
+      # 14) Post Infracost comment on PR
+      # ----------------------------------------------------
+      - name: Find Current Pull Request
+        uses: jwalton/gh-find-current-pr@v1
+        id: findPr
+        with:
+          state: open
+
+      - name: Post Infracost comment
+        if: github.event_name == 'pull_request' || steps.findPr.outputs.number != ''
+        env:
+          INFRACOST_API_KEY: ${{ secrets.INFRACOST_API_KEY }}
+        run: |
+          PR_NUMBER=${{ steps.findPr.outputs.number || github.event.pull_request.number }}
+
+          infracost comment github --path /tmp/infracost.json \
+                                   --repo $GITHUB_REPOSITORY \
+                                   --github-token ${{ github.token }} \
+                                   --pull-request $PR_NUMBER \
+                                   --behavior update
+
+      # Optional: also upload the raw plan log as an artifact
+      - name: Upload Terragrunt plan log
+        uses: actions/upload-artifact@v4
+        with:
+          name: terragrunt-plan-${{ env.TG_ENV }}
+          path: terraform/live/${{ env.TG_ENV }}/terragrunt-plan-${{ env.TG_ENV }}.log

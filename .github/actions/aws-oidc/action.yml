@@ -1,0 +1,36 @@
+name: AWS OIDC Login
+description: "Assume an AWS IAM role via GitHub OIDC and configure AWS credentials for this job."
+
+inputs:
+  role_arn:
+    description: "ARN of the IAM Role to assume via OIDC (TF CI, TF CD, App CD, etc.)"
+    required: true
+
+  aws_region:
+    description: "AWS region to be used by this job"
+    required: true
+    default: "us-east-1"
+
+  role_session_name:
+    description: "STS session name (visible in CloudTrail logs)"
+    required: false
+    default: "github-actions"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Configure AWS credentials via OIDC
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        # IAM Role ARN to assume using GitHub OIDC
+        role-to-assume: ${{ inputs.role_arn }}
+
+        # AWS region for the session
+        aws-region: ${{ inputs.aws_region }}
+
+        # STS session name (helps with auditability in CloudTrail)
+        role-session-name: ${{ inputs.role_session_name }}
+
+        # Optional:
+        # Masks the AWS account ID in logs for extra security
+        # mask-aws-account-id: true

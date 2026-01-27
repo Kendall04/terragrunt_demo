@@ -1,0 +1,62 @@
+##############################
+# .NET / Visual Studio
+##############################
+bin/
+obj/
+*.user
+*.suo
+*.vs/
+*.dbmdl
+*.nupkg
+*.snupkg
+
+##############################
+# Terraform
+##############################
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.*
+crash.log
+override.tf
+override.tf.json
+*.tfvars
+*.tfvars.json
+*.backup
+
+##############################
+# Terragrunt
+##############################
+.terragrunt-cache/
+
+##############################
+# Docker
+##############################
+*.tar
+*.img
+
+##############################
+# Logs
+##############################
+*.log
+logs/
+nohup.out
+
+##############################
+# System files
+##############################
+.DS_Store
+Thumbs.db
+
+##############################
+# Shell scripts temp
+##############################
+*.swp
+*.swo
+
+##############################
+# Windows garbage
+##############################
+*.exe
+*.dll
+*.pdb

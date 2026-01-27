@@ -1,0 +1,127 @@
+name: "ECS Blue/Green ALB Switch"
+description: "Flip ALB default and candidate rule between blue and green ECS services"
+
+inputs:
+  cluster:
+    required: true
+    description: "ECS cluster name or ARN"
+  blue-service:
+    required: true
+    description: "ECS service name for BLUE"
+  green-service:
+    required: true
+    description: "ECS service name for GREEN"
+  listener-arn:
+    required: true
+    description: "ALB listener ARN for production traffic"
+  candidate-rule-arn:
+    required: true
+    description: "ALB listener rule ARN for candidate path"
+  tg-blue-arn:
+    required: true
+    description: "Target group ARN for BLUE"
+  tg-green-arn:
+    required: true
+    description: "Target group ARN for GREEN"
+  desired-count:
+    required: true
+    default: "1"
+    description: "Desired task count for the new active service"
+  drain-delay-minutes:
+    required: true
+    default: "15"
+    description: "Delay (in minutes) before scaling down the old active service"
+  event-rule-name:
+    required: true
+    description: "EventBridge rule name used to schedule scale-down"
+  lambda-arn:
+    required: true
+    description: "Lambda ARN that scales an ECS service down to zero"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Detect blue/green state
+      id: detect
+      uses: ./.github/actions/ecs-detect-blue-green
+      with:
+        listener-arn: ${{ inputs.listener-arn }}
+        candidate-rule-arn: ${{ inputs.candidate-rule-arn }}
+        tg-blue-arn: ${{ inputs.tg-blue-arn }}
+        tg-green-arn: ${{ inputs.tg-green-arn }}
+        blue-service: ${{ inputs.blue-service }}
+        green-service: ${{ inputs.green-service }}
+
+    - name: Ensure next (inactive) service is running and healthy
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        TARGET_SERVICE="${{ steps.detect.outputs.inactive_service }}"
+        DESIRED="${{ inputs.desired-count }}"
+
+        echo "Scaling up target service (next color): $TARGET_SERVICE to desiredCount=$DESIRED"
+
+        aws ecs update-service \
+          --cluster "${{ inputs.cluster }}" \
+          --service "$TARGET_SERVICE" \
+          --desired-count "$DESIRED" >/dev/null
+
+        echo "Waiting for target service to become stable..."
+        aws ecs wait services-stable \
+          --cluster "${{ inputs.cluster }}" \
+          --services "$TARGET_SERVICE"
+
+        echo "Target service is stable. Ready to switch ALB listener."
+
+    - name: Swap default action and candidate rule
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        NEW_DEFAULT_TG="${{ steps.detect.outputs.inactive_tg }}"
+        NEW_CANDIDATE_TG="${{ steps.detect.outputs.active_tg }}"
+
+        echo "Switching ALB default action to:"
+        echo "  New default TG:   $NEW_DEFAULT_TG"
+        echo "  New candidate TG: $NEW_CANDIDATE_TG"
+
+        aws elbv2 modify-listener \
+          --listener-arn "${{ inputs.listener-arn }}" \
+          --default-actions "Type=forward,TargetGroupArn=$NEW_DEFAULT_TG" >/dev/null
+
+        aws elbv2 modify-rule \
+          --rule-arn "${{ inputs.candidate-rule-arn }}" \
+          --actions "Type=forward,TargetGroupArn=$NEW_CANDIDATE_TG" >/dev/null
+
+        echo "Listener default action and candidate rule have been swapped."
+
+    - name: Schedule delayed scale-down for the old active service
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        OLD_ACTIVE_SERVICE="${{ steps.detect.outputs.active_service }}"
+        DELAY_MINUTES="${{ inputs.drain-delay-minutes }}"
+        RULE_NAME="${{ inputs.event-rule-name }}"
+        LAMBDA_ARN="${{ inputs.lambda-arn }}"
+
+        echo "Scheduling delayed scale-down for old active service:"
+        echo "  Service: $OLD_ACTIVE_SERVICE"
+        echo "  Delay:   $DELAY_MINUTES minutes"
+        echo "  Rule:    $RULE_NAME"
+
+        aws events put-rule \
+          --name "$RULE_NAME" \
+          --schedule-expression "rate(${DELAY_MINUTES} minutes)" >/dev/null
+
+        TARGETS=$(jq -n \
+          --arg arn "$LAMBDA_ARN" \
+          --arg svc "$OLD_ACTIVE_SERVICE" \
+          '[{Id:"scale-down", Arn:$arn, Input:( "{\"serviceName\":\"" + $svc + "\"}" )}]')
+
+        aws events put-targets \
+          --rule "$RULE_NAME" \
+          --targets "$TARGETS" >/dev/null
+
+        echo "EventBridge rule and targets configured."

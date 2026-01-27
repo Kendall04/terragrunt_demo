@@ -1,0 +1,48 @@
+name: Resolve Environment
+description: "Resolve TG_ENV (dev/stage/prod) based on branch or pull request base branch."
+
+outputs:
+  tg_env:
+    description: "Resolved environment name (dev/stage/prod)"
+    value: ${{ steps.resolve_env.outputs.tg_env }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: resolve_env
+      shell: bash
+      run: |
+        # Debug context (useful when troubleshooting pipeline behavior)
+        echo "GITHUB_EVENT_NAME=${GITHUB_EVENT_NAME}"
+        echo "GITHUB_REF=${GITHUB_REF}"
+        echo "GITHUB_BASE_REF=${GITHUB_BASE_REF}"
+
+        if [[ "${GITHUB_EVENT_NAME}" == "pull_request" ]]; then
+          # For pull requests: the base branch determines the target environment
+          if [[ "${GITHUB_BASE_REF}" == "main" ]]; then
+            TG_ENV="prod"
+          elif [[ "${GITHUB_BASE_REF}" == "develop" ]]; then
+            TG_ENV="dev"
+          else
+            TG_ENV="dev"
+          fi
+        else
+          # For direct pushes: use the branch name
+          BRANCH="${GITHUB_REF#refs/heads/}"
+
+          if [[ "${BRANCH}" == "main" ]]; then
+            TG_ENV="prod"
+          elif [[ "${BRANCH}" == "develop" ]]; then
+            TG_ENV="dev"
+          else
+            TG_ENV="dev"
+          fi
+        fi
+
+        echo "Resolved TG_ENV=${TG_ENV}"
+
+        # Expose output for: steps.resolve_env.outputs.tg_env
+        echo "tg_env=${TG_ENV}" >> "$GITHUB_OUTPUT"
+
+        # Export as global environment variable for subsequent steps
+        echo "TG_ENV=${TG_ENV}" >> "$GITHUB_ENV"
