@@ -1,0 +1,99 @@
+name: CD - Terragrunt
+
+on:
+  workflow_call:
+    inputs:
+      aws_region:
+        required: false
+        type: string
+        default: us-east-1
+      deploy_env:
+        required: true
+        type: string
+    secrets:
+      AWS_ROLE_TG_CD:
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: cd-terragrunt-${{ inputs.deploy_env }}
+  cancel-in-progress: false
+
+jobs:
+  terragrunt-cd:
+    name: Terragrunt Lint • Security • Init • Apply
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.deploy_env }}
+    env:
+      AWS_REGION: ${{ inputs.aws_region }}
+      TG_ENV: ${{ inputs.deploy_env }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: AWS Login via OIDC
+        uses: ./.github/actions/aws-oidc
+        with:
+          role_arn: ${{ secrets.AWS_ROLE_TG_CD }}
+          aws_region: ${{ env.AWS_REGION }}
+          role_session_name: "terragrunt-cd"
+
+      - name: Resolve Terraform backend
+        id: backend
+        uses: ./.github/actions/resolve-backend
+
+      - name: Show resolved backend
+        run: |
+          echo "TG_ENV           : ${TG_ENV}"
+          echo "AWS_REGION       : ${AWS_REGION}"
+          echo "TF_STATE_BUCKET  : ${TF_STATE_BUCKET}"
+          echo "TF_STATE_TABLE   : ${TF_STATE_TABLE}"
+          echo "ACCOUNT_ID       : ${ACCOUNT_ID}"
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.13.4
+
+      - name: Install Terragrunt
+        run: |
+          TG_VERSION="0.93.3"
+          curl -L "https://github.com/gruntwork-io/terragrunt/releases/download/v${TG_VERSION}/terragrunt_linux_amd64" -o terragrunt
+          chmod +x terragrunt
+          sudo mv terragrunt /usr/local/bin/terragrunt
+
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+
+      - name: Run TFLint
+        run: |
+          tflint --version
+          tflint --recursive
+
+      - name: Install tfsec
+        run: |
+          curl -L "https://github.com/aquasecurity/tfsec/releases/latest/download/tfsec-linux-amd64" -o tfsec
+          chmod +x tfsec
+          sudo mv tfsec /usr/local/bin
+
+      - name: Run tfsec
+        run: |
+          tfsec --no-color . --minimum-severity=MEDIUM
+
+      - name: Terraform fmt (modules only)
+        run: terraform fmt -check -recursive terraform/
+
+      - name: Terragrunt Init
+        working-directory: terraform/live/${{ env.TG_ENV }}
+        run: |
+          terragrunt run --all init --non-interactive -- -reconfigure
+
+      - name: Terragrunt Apply
+        working-directory: terraform/live/${{ env.TG_ENV }}
+        run: |
+          terragrunt run --non-interactive --all apply -- -input=false -auto-approve

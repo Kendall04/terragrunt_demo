@@ -1,0 +1,113 @@
+name: "ECS Detect Blue/Green State"
+description: "Detect active/inactive color and services from ALB listener and target groups"
+
+inputs:
+  listener-arn:
+    required: true
+    description: "ALB listener ARN (production traffic)"
+  candidate-rule-arn:
+    required: true
+    description: "ALB candidate rule ARN"
+  tg-blue-arn:
+    required: true
+    description: "Target group ARN for BLUE"
+  tg-green-arn:
+    required: true
+    description: "Target group ARN for GREEN"
+  blue-service:
+    required: true
+    description: "ECS service name for BLUE"
+  green-service:
+    required: true
+    description: "ECS service name for GREEN"
+
+outputs:
+  active_color:
+    description: "Current active color (blue|green)"
+    value: ${{ steps.detect.outputs.active_color }}
+  inactive_color:
+    description: "Current inactive color (blue|green)"
+    value: ${{ steps.detect.outputs.inactive_color }}
+  active_service:
+    description: "Service currently receiving production traffic"
+    value: ${{ steps.detect.outputs.active_service }}
+  inactive_service:
+    description: "Service not receiving production traffic"
+    value: ${{ steps.detect.outputs.inactive_service }}
+  active_tg:
+    description: "Target group ARN for active color"
+    value: ${{ steps.detect.outputs.active_tg }}
+  inactive_tg:
+    description: "Target group ARN for inactive color"
+    value: ${{ steps.detect.outputs.inactive_tg }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Detect blue/green state
+      id: detect
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        LISTENER_ARN="${{ inputs.listener-arn }}"
+        CANDIDATE_RULE_ARN="${{ inputs.candidate-rule-arn }}"
+
+        BLUE_TG="${{ inputs.tg-blue-arn }}"
+        GREEN_TG="${{ inputs.tg-green-arn }}"
+        BLUE_SVC="${{ inputs.blue-service }}"
+        GREEN_SVC="${{ inputs.green-service }}"
+
+        # Read current ALB default target group (production)
+        DEFAULT_TG=$(aws elbv2 describe-listeners \
+          --listener-arns "$LISTENER_ARN" \
+          | jq -r '.Listeners[0].DefaultActions[0].TargetGroupArn')
+
+        # Read candidate rule target group (inactive path)
+        CANDIDATE_TG=$(aws elbv2 describe-rules \
+          --rule-arns "$CANDIDATE_RULE_ARN" \
+          | jq -r '.Rules[0].Actions[0].TargetGroupArn')
+
+        if [[ "$DEFAULT_TG" == "$BLUE_TG" ]]; then
+          ACTIVE_COLOR="blue"
+          ACTIVE_TG="$BLUE_TG"
+          ACTIVE_SERVICE="$BLUE_SVC"
+          INACTIVE_COLOR="green"
+          INACTIVE_TG="$GREEN_TG"
+          INACTIVE_SERVICE="$GREEN_SVC"
+        elif [[ "$DEFAULT_TG" == "$GREEN_TG" ]]; then
+          ACTIVE_COLOR="green"
+          ACTIVE_TG="$GREEN_TG"
+          ACTIVE_SERVICE="$GREEN_SVC"
+          INACTIVE_COLOR="blue"
+          INACTIVE_TG="$BLUE_TG"
+          INACTIVE_SERVICE="$BLUE_SVC"
+        else
+          echo "Default TG does not match expected blue/green ARNs."
+          echo "Default: $DEFAULT_TG"
+          echo "Blue:    $BLUE_TG"
+          echo "Green:   $GREEN_TG"
+          exit 1
+        fi
+
+        # Safety: candidate must point to inactive target group
+        if [[ "$CANDIDATE_TG" != "$INACTIVE_TG" ]]; then
+          echo "Candidate rule is not pointing to the inactive target group."
+          echo "Candidate: $CANDIDATE_TG"
+          echo "Expected:  $INACTIVE_TG"
+          exit 1
+        fi
+
+        echo "Active color:   $ACTIVE_COLOR"
+        echo "Inactive color: $INACTIVE_COLOR"
+        echo "Active service:   $ACTIVE_SERVICE"
+        echo "Inactive service: $INACTIVE_SERVICE"
+
+        {
+          echo "active_color=$ACTIVE_COLOR"
+          echo "inactive_color=$INACTIVE_COLOR"
+          echo "active_service=$ACTIVE_SERVICE"
+          echo "inactive_service=$INACTIVE_SERVICE"
+          echo "active_tg=$ACTIVE_TG"
+          echo "inactive_tg=$INACTIVE_TG"
+        } >> "$GITHUB_OUTPUT"

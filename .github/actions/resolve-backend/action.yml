@@ -1,0 +1,66 @@
+name: Resolve Terraform Backend
+description: "Compute TF_STATE_BUCKET and TF_STATE_TABLE for the current TG_ENV and AWS account."
+
+inputs:
+  tg_env:
+    description: "Environment name (dev/stage/prod). If empty, uses TG_ENV env var or 'dev'."
+    required: false
+    default: ""
+  aws_region:
+    description: "AWS region. If empty, uses AWS_REGION env var or 'us-east-1'."
+    required: false
+    default: ""
+
+outputs:
+  tf_state_bucket:
+    description: "Resolved S3 bucket name for Terraform remote state"
+    value: ${{ steps.backend.outputs.tf_state_bucket }}
+  tf_state_table:
+    description: "Resolved DynamoDB table name for Terraform state locking"
+    value: ${{ steps.backend.outputs.tf_state_table }}
+  account_id:
+    description: "AWS Account ID used for the backend"
+    value: ${{ steps.backend.outputs.account_id }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: backend
+      shell: bash
+      run: |
+        # Resolve env name
+        ENV_INPUT="${{ inputs.tg_env }}"
+        if [ -z "${ENV_INPUT}" ]; then
+          ENV_INPUT="${TG_ENV:-dev}"
+        fi
+
+        # Resolve region
+        REGION_INPUT="${{ inputs.aws_region }}"
+        if [ -z "${REGION_INPUT}" ]; then
+          REGION_INPUT="${AWS_REGION:-us-east-1}"
+        fi
+
+        echo "Using ENV=${ENV_INPUT}"
+        echo "Using AWS_REGION=${REGION_INPUT}"
+
+        ACCOUNT_ID=$(aws sts get-caller-identity \
+          --query Account \
+          --output text \
+          --region "${REGION_INPUT}")
+
+        STATE_BUCKET="tfstate-demo-${ENV_INPUT}-${ACCOUNT_ID}"
+        LOCK_TABLE="tfstate-locks-${ACCOUNT_ID}"
+
+        echo "Resolved ACCOUNT_ID=${ACCOUNT_ID}"
+        echo "Resolved TF_STATE_BUCKET=${STATE_BUCKET}"
+        echo "Resolved TF_STATE_TABLE=${LOCK_TABLE}"
+
+        # Export as environment variables for subsequent steps
+        echo "TF_STATE_BUCKET=${STATE_BUCKET}" >> "$GITHUB_ENV"
+        echo "TF_STATE_TABLE=${LOCK_TABLE}" >> "$GITHUB_ENV"
+        echo "ACCOUNT_ID=${ACCOUNT_ID}" >> "$GITHUB_ENV"
+
+        # Export as outputs
+        echo "tf_state_bucket=${STATE_BUCKET}" >> "$GITHUB_OUTPUT"
+        echo "tf_state_table=${LOCK_TABLE}" >> "$GITHUB_OUTPUT"
+        echo "account_id=${ACCOUNT_ID}" >> "$GITHUB_OUTPUT"
