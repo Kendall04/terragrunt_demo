@@ -1,0 +1,114 @@
+name: CI - .NET + Docker Build
+
+on:
+  pull_request:
+    branches: [develop, main]
+    paths:
+      - "demo-api/**"
+      - ".github/workflows/*-dotnet"
+      - ".github/workflows/*-app"
+  push:
+    branches:
+      - "feature/**"
+    paths:
+      - "demo-api/**"
+      - ".github/workflows/*-dotnet"
+      - ".github/workflows/*-app"
+
+permissions:
+  contents: read
+
+jobs:
+  dotnet-ci:
+    if: |
+      github.event_name == 'push' ||
+      github.event_name == 'pull_request'
+
+    name: .NET Restore • Build • Test • Docker Validate
+    runs-on: ubuntu-latest
+
+    environment:
+      name: ${{ (github.event_name == 'pull_request' && github.base_ref == 'main') && 'prod' || 'dev' }}
+
+    steps:
+      # ----------------------------------------
+      # 1) Checkout repo
+      # ----------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ----------------------------------------
+      # 2) Setup .NET SDK
+      # ----------------------------------------
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      # ----------------------------------------
+      # 3) Cache NuGet packages
+      # ----------------------------------------
+      - name: Cache NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      # ----------------------------------------
+      # 4) Restore
+      # ----------------------------------------
+      - name: Restore dependencies
+        run: dotnet restore ./demo-api/terragrunt-demo.sln
+
+      # ----------------------------------------
+      # 5) Build
+      # ----------------------------------------
+      - name: Build
+        run: dotnet build ./demo-api/terragrunt-demo.sln --configuration Release --no-restore
+
+      # ----------------------------------------
+      # 6) Run tests (optional)
+      # ----------------------------------------
+      - name: Run tests
+        run: dotnet test ./demo-api/terragrunt-demo.sln --no-build --verbosity normal || true
+
+      # ----------------------------------------
+      # 7) Setup Docker Buildx
+      # ----------------------------------------
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # ----------------------------------------
+      # 8) Cache Docker layers
+      # ----------------------------------------
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ hashFiles('demo-api/**/*.csproj') }}-${{ hashFiles('demo-api/Dockerfile') }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      # ----------------------------------------
+      # 9) Docker Build (with cache)
+      # ----------------------------------------
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./demo-api
+          file: ./demo-api/Dockerfile
+          tags: demo-api-ci:latest
+          load: true
+          push: false
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+      # ----------------------------------------
+      # 10) Move updated Docker cache
+      # ----------------------------------------
+      - name: Move Docker cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache

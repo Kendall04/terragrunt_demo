@@ -1,0 +1,83 @@
+name: CD - Orchestrator
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "terraform/**"
+      - "demo-api/**"
+      - ".github/workflows/**"
+      - ".github/actions/**"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: cd-orchestrator-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: us-east-1
+  DEPLOY_ENV: ${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}
+
+jobs:
+  detect-changes:
+    name: Detect changes (terraform / demo-api)
+    runs-on: ubuntu-latest
+    outputs:
+      infra: ${{ steps.filter.outputs.infra }}
+      app: ${{ steps.filter.outputs.app }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Paths filter
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          list-files: shell
+          base: ${{ github.event.before }}
+          ref: ${{ github.sha }}
+          filters: |
+            infra:
+              - 'terraform/**'
+              - '.github/workflows/cd-terragrunt.yml'
+            app:
+              - 'demo-api/**'
+              - '.github/workflows/cd-demo-api.yml'
+              - '.github/actions/**'
+
+      - name: Show detected changes
+        run: |
+          echo "ref        : ${{ github.ref }}"
+          echo "DEPLOY_ENV : ${{ env.DEPLOY_ENV }}"
+          echo "infra      : ${{ steps.filter.outputs.infra }}"
+          echo "app        : ${{ steps.filter.outputs.app }}"
+
+  terragrunt:
+    name: Run Terragrunt CD
+    needs: detect-changes
+    if: needs.detect-changes.outputs.infra == 'true'
+    uses: ./.github/workflows/cd-terragrunt.yml
+    with:
+      aws_region: us-east-1
+      deploy_env: ${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}
+    secrets:
+      AWS_ROLE_TG_CD: ${{ secrets.AWS_ROLE_TG_CD }}
+
+  demo-api:
+    name: Run Demo API CD
+    needs: [detect-changes, terragrunt]
+    if: >-
+      ${{ always()
+          && needs.detect-changes.outputs.app == 'true'
+          && (needs.terragrunt.result == 'success' || needs.terragrunt.result == 'skipped') }}
+    uses: ./.github/workflows/cd-demo-api.yml
+    with:
+      aws_region: us-east-1
+      deploy_env: ${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}
+    secrets:
+      AWS_ROLE_APP_CD: ${{ secrets.AWS_ROLE_APP_CD }}
