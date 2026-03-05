@@ -3,13 +3,15 @@
 ########################################
 
 resource "random_password" "sql_sa_pwd" {
-  length  = 24
-  special = true
+  length           = 24
+  special          = true
+  override_special = "!#$%&()*+,-./:<=>?@[]^_{|}~"
 }
 
 resource "random_password" "sql_app_pwd" {
-  length  = 24
-  special = true
+  length           = 24
+  special          = true
+  override_special = "!#$%&()*+,-./:<=>?@[]^_{|}~"
 }
 
 

@@ -10,7 +10,6 @@ locals {
 # =====================================================
 # Dependency: read networking outputs from "global"
 # - private_subnet_ids: where the EC2 DB will live (no public IP)
-# - vpc_id: used for SG or future networking
 # - db_instance_sg_id: SG created for the DB instance in global
 # =====================================================
 dependency "global" {
@@ -18,7 +17,6 @@ dependency "global" {
 
   mock_outputs = {
     private_subnet_ids = ["subnet-aaa", "subnet-bbb"]
-    vpc_id             = "vpc-000000"
     db_instance_sg_id  = "sg-000000"
   }
 
@@ -55,7 +53,6 @@ inputs = {
   
   # From global
   private_subnet_ids = dependency.global.outputs.private_subnet_ids
-  vpc_id             = dependency.global.outputs.vpc_id
   db_instance_sg_id  = dependency.global.outputs.db_instance_sg_id
 
   alerts_topic_arn = dependency.shared.outputs.alerts_topic_arn

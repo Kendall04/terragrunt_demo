@@ -5,14 +5,18 @@ on:
     branches: [develop, main]
     paths:
       - "terraform/**"
-      - ".github/workflows/*-terragrunt"
+      - ".github/workflows/ci-terragrunt.yml"
+      - ".github/workflows/cd-terragrunt.yml"
+      - ".github/actions/**"
 
   push:
     branches:
       - feature/**
     paths:
       - "terraform/**"
-      - ".github/workflows/*-terragrunt"
+      - ".github/workflows/ci-terragrunt.yml"
+      - ".github/workflows/cd-terragrunt.yml"
+      - ".github/actions/**"
 
 permissions:
   contents: read

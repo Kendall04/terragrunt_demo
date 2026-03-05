@@ -39,6 +39,9 @@ APP_PASS=$(aws secretsmanager get-secret-value \
     --query SecretString \
     --output text)
 
+# SQL literals escape single quotes as ''
+APP_PASS_SQL_ESCAPED=$(printf "%s" "$APP_PASS" | sed "s/'/''/g")
+
 # -----------------------------------------------------
 # 2) Configure Microsoft repositories securely (keyrings)
 # -----------------------------------------------------
@@ -95,7 +98,7 @@ sqlcmd -S localhost -C -U SA -P "$SA_PASS" -b -Q \
 # ----------------------------------------------------
 sqlcmd -S localhost -C -U SA -P "$SA_PASS" -b -d "$APP_DB" -Q \
   "IF NOT EXISTS (SELECT * FROM sys.sql_logins WHERE name = N'$APP_USER') \
-    CREATE LOGIN [$APP_USER] WITH PASSWORD = N'$APP_PASS', CHECK_POLICY = OFF;"
+    CREATE LOGIN [$APP_USER] WITH PASSWORD = N'$APP_PASS_SQL_ESCAPED', CHECK_POLICY = OFF;"
 
 sqlcmd -S localhost -C -U SA -P "$SA_PASS" -b -d "$APP_DB" -Q \
   "IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = N'$APP_USER') \
