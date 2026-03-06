@@ -10,9 +10,6 @@ on:
       deploy_env:
         required: true
         type: string
-    secrets:
-      AWS_ROLE_TG_CD:
-        required: true
 
 permissions:
   contents: read
@@ -36,10 +33,30 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Resolve Terragrunt CD role ARN
+        id: resolve-role
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROLE_ARN="${{ secrets.AWS_ROLE_TG_CD }}"
+
+          if [ -z "${ROLE_ARN}" ]; then
+            echo "Missing AWS_ROLE_TG_CD secret for environment '${{ inputs.deploy_env }}'."
+            echo "Define it in GitHub Environment secrets (dev/prod) or as repository secret."
+            exit 1
+          fi
+
+          if ! [[ "${ROLE_ARN}" =~ ^arn:aws:iam::[0-9]{12}:role/.+ ]]; then
+            echo "AWS_ROLE_TG_CD does not look like a valid IAM role ARN: ${ROLE_ARN}"
+            exit 1
+          fi
+
+          echo "role_arn=${ROLE_ARN}" >> "$GITHUB_OUTPUT"
+
       - name: AWS Login via OIDC
         uses: ./.github/actions/aws-oidc
         with:
-          role_arn: ${{ secrets.AWS_ROLE_TG_CD }}
+          role_arn: ${{ steps.resolve-role.outputs.role_arn }}
           aws_region: ${{ env.AWS_REGION }}
           role_session_name: "terragrunt-cd"
 

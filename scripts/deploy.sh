@@ -55,6 +55,22 @@ else
   fi
 fi
 
+echo "[STEP 0.1.1] Hardening S3 bucket settings (versioning, encryption, public access block)..."
+aws s3api put-public-access-block \
+  --bucket "${STATE_BUCKET}" \
+  --public-access-block-configuration BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true \
+  --profile "${AWS_PROFILE}"
+
+aws s3api put-bucket-versioning \
+  --bucket "${STATE_BUCKET}" \
+  --versioning-configuration Status=Enabled \
+  --profile "${AWS_PROFILE}"
+
+aws s3api put-bucket-encryption \
+  --bucket "${STATE_BUCKET}" \
+  --server-side-encryption-configuration '{"Rules":[{"ApplyServerSideEncryptionByDefault":{"SSEAlgorithm":"AES256"}}]}' \
+  --profile "${AWS_PROFILE}"
+
 echo "[STEP 0.2] Checking DynamoDB table: ${LOCK_TABLE}"
 if aws dynamodb describe-table \
   --table-name "${LOCK_TABLE}" \
@@ -144,7 +160,7 @@ API_URL=$(terragrunt output -raw api_endpoint || echo "")
 # Global: ALB listener + candidate rule + TGs
 cd "${ROOT_DIR}/terraform/live/${ENV}/global"
 ALB_LISTENER_ARN=$(terragrunt output -raw alb_listener_arn || echo "")
-ALB_CANDIDATE_RULE_ARN=$(terragrunt output -raw alb_cantidate_rule_arn || echo "")
+ALB_CANDIDATE_RULE_ARN=$(terragrunt output -raw alb_candidate_rule_arn || terragrunt output -raw alb_cantidate_rule_arn || echo "")
 DEMO_BLUE_TG_ARN=$(terragrunt output -raw demo_blue_tg_arn || echo "")
 DEMO_GREEN_TG_ARN=$(terragrunt output -raw demo_green_tg_arn || echo "")
 

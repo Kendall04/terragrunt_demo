@@ -7,6 +7,9 @@ namespace terragrunt_demo.Features.Texts.Queries
 {
     public class GetAllTextsQueryHandler : IRequestHandler<GetAllTextsQuery, IReadOnlyList<DemoTextDto>>
     {
+        private const int MaxPageSize = 100;
+        private const int MaxConcurrentDecrypts = 10;
+
         private readonly IDemoTextRepository _repository;
         private readonly IEncryptionService _encryption;
 
@@ -18,23 +21,42 @@ namespace terragrunt_demo.Features.Texts.Queries
 
         public async Task<IReadOnlyList<DemoTextDto>> Handle(GetAllTextsQuery request, CancellationToken cancellationToken)
         {
-            var entities = await _repository.GetAllAsync(cancellationToken);
-
-            var result = new List<DemoTextDto>(entities.Count);
-
-            foreach (var entity in entities)
+            var safePageNumber = request.PageNumber < 1 ? 1 : request.PageNumber;
+            var safePageSize = request.PageSize switch
             {
-                var decryptedText = await _encryption.DecryptAsync(
-                    entity.Text,
-                    cancellationToken);
+                < 1 => 1,
+                > MaxPageSize => MaxPageSize,
+                _ => request.PageSize
+            };
 
-                result.Add(new DemoTextDto(
-                    entity.Id,
-                    decryptedText,
-                    entity.CreatedAt));
+            var entities = await _repository.GetPageAsync(
+                safePageNumber,
+                safePageSize,
+                cancellationToken);
+
+            if (entities.Count == 0)
+            {
+                return Array.Empty<DemoTextDto>();
             }
 
-            return result;
+            var maxParallelism = Math.Min(MaxConcurrentDecrypts, entities.Count);
+            using var decryptThrottle = new SemaphoreSlim(maxParallelism, maxParallelism);
+
+            var decryptTasks = entities.Select(async entity =>
+            {
+                await decryptThrottle.WaitAsync(cancellationToken);
+                try
+                {
+                    var decryptedText = await _encryption.DecryptAsync(entity.Text, cancellationToken);
+                    return new DemoTextDto(entity.Id, decryptedText, entity.CreatedAt);
+                }
+                finally
+                {
+                    decryptThrottle.Release();
+                }
+            });
+
+            return await Task.WhenAll(decryptTasks);
         }
     }
 }

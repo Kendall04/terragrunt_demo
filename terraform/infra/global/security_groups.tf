@@ -11,8 +11,8 @@ resource "aws_security_group" "alb_demo" {
 }
 
 # ─────────────────────────────────────────────────────────────
-# Security Group for the API Gateway VPC Link ENIs.
-# Controls traffic entering the VPC through the VPC Link connection.
+# Security Group for the API Gateway VPC Link ENIs. 
+# Controls traffic entering the VPC through the VPC Link connection. 
 # ─────────────────────────────────────────────────────────────
 resource "aws_security_group" "vpc_link" {
   name                   = "${local.name}-vpc-link-sg"

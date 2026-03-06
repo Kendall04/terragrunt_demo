@@ -65,8 +65,7 @@ jobs:
     with:
       aws_region: us-east-1
       deploy_env: ${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}
-    secrets:
-      AWS_ROLE_TG_CD: ${{ secrets.AWS_ROLE_TG_CD }}
+    secrets: inherit
 
   demo-api:
     name: Run Demo API CD
@@ -79,5 +78,4 @@ jobs:
     with:
       aws_region: us-east-1
       deploy_env: ${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}
-    secrets:
-      AWS_ROLE_APP_CD: ${{ secrets.AWS_ROLE_APP_CD }}
+    secrets: inherit

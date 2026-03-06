@@ -49,6 +49,7 @@ data "aws_iam_policy_document" "github_ecs_blue_green" {
     sid    = "ELBv2ReadOnly"
     effect = "Allow"
     actions = [
+      "elasticloadbalancing:DescribeLoadBalancers",
       "elasticloadbalancing:DescribeTargetGroups",
       "elasticloadbalancing:DescribeTargetHealth",
       "elasticloadbalancing:DescribeListeners",

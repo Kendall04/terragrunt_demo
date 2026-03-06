@@ -44,4 +44,6 @@ inputs = {
   alb_listener_arn   = dependency.global.outputs.alb_listener_arn
   private_subnet_ids = dependency.global.outputs.private_subnet_ids
   vpc_link_sg_id     = dependency.global.outputs.vpc_link_sg_id
+  # CORS is disabled by default. Add explicit trusted origins when needed.
+  cors_allowed_origins = []
 }
