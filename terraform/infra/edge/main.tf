@@ -6,8 +6,9 @@ module "apigateway" {
   tags = local.tags
 
   # Integration: HTTP API -> VPC Link -> Internal ALB listener
-  vpc_link_id      = module.vpclink.vpc_link_id
-  alb_listener_arn = var.alb_listener_arn
+  vpc_link_id          = module.vpclink.vpc_link_id
+  alb_listener_arn     = var.alb_listener_arn
+  cors_allowed_origins = var.cors_allowed_origins
 }
 
 module "vpclink" {

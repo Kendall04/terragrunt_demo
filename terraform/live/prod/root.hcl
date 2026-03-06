@@ -15,7 +15,7 @@ locals {
   tf_state_table  = get_env("TF_STATE_TABLE", "tfstate-locks")
 
   github_owner = "Kendall04"
-  github_repo  = "terragrunt_demo_lab" 
+  github_repo  = "terragrunt_demo" 
 
   project_name = "demo"
 

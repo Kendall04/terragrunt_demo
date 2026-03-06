@@ -8,9 +8,15 @@ output "alb_listener_arn" {
   description = "ARN of the ALB listener used for API Gateway integrations."
 }
 
+output "alb_candidate_rule_arn" {
+  value       = module.alb.alb_candidate_rule_arn
+  description = "ARN of the ALB listener rule used as candidate in blue/green deploys."
+}
+
+# Backward compatible alias with legacy typo.
 output "alb_cantidate_rule_arn" {
-  value       = module.alb.alb_cantidate_rule_arn
-  description = "ARN of the ALB listener rule used as dummy."
+  value       = module.alb.alb_candidate_rule_arn
+  description = "DEPRECATED: use alb_candidate_rule_arn."
 }
 
 output "demo_blue_tg_arn" {
