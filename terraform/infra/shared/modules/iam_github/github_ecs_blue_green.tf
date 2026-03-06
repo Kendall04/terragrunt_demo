@@ -3,42 +3,73 @@
 # Used by both "app CD" and "rollback" roles
 # ===========================================
 data "aws_iam_policy_document" "github_ecs_blue_green" {
-  # ECS control: register task definitions and update services
+  # ECS read-only APIs used by deployment and rollback scripts.
   #tfsec:ignore:aws-iam-no-policy-wildcards
   statement {
-    sid    = "ECSControl"
+    sid    = "ECSReadOnly"
     effect = "Allow"
     actions = [
-      "ecs:RegisterTaskDefinition",
-      "ecs:DescribeTaskDefinition",
-      "ecs:DescribeTaskDefinitions",
-      "ecs:UpdateService",
       "ecs:DescribeServices",
-      "ecs:ListServices",
-      "ecs:ListClusters",
-      "ecs:DescribeClusters",
+      "ecs:DescribeTaskDefinition",
       "ecs:DescribeTasks",
       "ecs:ListTasks",
-      "ecs:DescribeTaskSets",
-      "ecs:UpdateServicePrimaryTaskSet"
+      "ecs:ListServices",
+      "ecs:ListClusters",
+      "ecs:DescribeClusters"
     ]
     resources = ["*"]
   }
 
-  # ALB / NLB v2: needed for blue/green listener + rule switching
+  # ECS mutable actions scoped to this demo platform.
+  statement {
+    sid    = "ECSWriteScoped"
+    effect = "Allow"
+    actions = [
+      "ecs:UpdateService"
+    ]
+    resources = [
+      "arn:aws:ecs:${local.aws_region}:${local.account_id}:service/demo-*-platform-main-cluster/demo-*-app-api-*-svc",
+    ]
+  }
+
+  # RegisterTaskDefinition is required by deployments and uses wildcard scope.
   #tfsec:ignore:aws-iam-no-policy-wildcards
   statement {
-    sid    = "ELBv2BlueGreen"
+    sid    = "ECSRegisterTaskDefinition"
+    effect = "Allow"
+    actions = [
+      "ecs:RegisterTaskDefinition",
+    ]
+    resources = ["*"]
+  }
+
+  # ELBv2 read-only calls.
+  #tfsec:ignore:aws-iam-no-policy-wildcards
+  statement {
+    sid    = "ELBv2ReadOnly"
     effect = "Allow"
     actions = [
       "elasticloadbalancing:DescribeTargetGroups",
       "elasticloadbalancing:DescribeTargetHealth",
       "elasticloadbalancing:DescribeListeners",
-      "elasticloadbalancing:DescribeRules",
+      "elasticloadbalancing:DescribeRules"
+    ]
+    resources = ["*"]
+  }
+
+  # ELBv2 mutable calls scoped to demo ALBs/listeners/rules.
+  statement {
+    sid    = "ELBv2WriteScoped"
+    effect = "Allow"
+    actions = [
       "elasticloadbalancing:ModifyListener",
       "elasticloadbalancing:ModifyRule"
     ]
-    resources = ["*"]
+    resources = [
+      "arn:aws:elasticloadbalancing:${local.aws_region}:${local.account_id}:listener/app/demo-*-internal-alb/*/*",
+      "arn:aws:elasticloadbalancing:${local.aws_region}:${local.account_id}:listener-rule/app/demo-*-internal-alb/*/*/*",
+      "arn:aws:elasticloadbalancing:${local.aws_region}:${local.account_id}:rule/app/demo-*-internal-alb/*/*/*",
+    ]
   }
 
   # Pass only the ECS task/execution roles used by the services
@@ -61,20 +92,31 @@ data "aws_iam_policy_document" "github_ecs_blue_green" {
   }
 
   # Optional: ECR read-only (validate images, digests, etc.)
-  #tfsec:ignore:aws-iam-no-policy-wildcards
   statement {
     sid    = "ECRReadOnly"
     effect = "Allow"
     actions = [
       "ecr:DescribeImages",
       "ecr:DescribeRepositories",
-      "ecr:GetAuthorizationToken",
       "ecr:BatchGetImage"
+    ]
+    resources = [
+      "arn:aws:ecr:${local.aws_region}:${local.account_id}:repository/demo-*-shared-demo-ms",
+    ]
+  }
+
+  # ECR auth token must stay wildcard.
+  #tfsec:ignore:aws-iam-no-policy-wildcards
+  statement {
+    sid    = "ECRAuthToken"
+    effect = "Allow"
+    actions = [
+      "ecr:GetAuthorizationToken",
     ]
     resources = ["*"]
   }
 
-  # ECR write
+  # ECR write on demo repositories only.
   #tfsec:ignore:aws-iam-no-policy-wildcards
   statement {
     sid    = "ECRWriteDemoRepos"
@@ -90,24 +132,49 @@ data "aws_iam_policy_document" "github_ecs_blue_green" {
       "ecr:ListImages",
     ]
 
-    resources = ["*"]
+    resources = [
+      "arn:aws:ecr:${local.aws_region}:${local.account_id}:repository/demo-*-shared-demo-ms",
+    ]
   }
 
-  # Optional: CloudWatch Logs read-only (debugging, health checks)
+  # Optional: CloudWatch Logs group listing (requires wildcard scope).
   #tfsec:ignore:aws-iam-no-policy-wildcards
   statement {
-    sid    = "CloudWatchLogsRead"
+    sid    = "CloudWatchLogGroupsRead"
     effect = "Allow"
     actions = [
       "logs:DescribeLogGroups",
-      "logs:DescribeLogStreams",
-      "logs:GetLogEvents",
     ]
     resources = ["*"]
   }
 
+  # Optional: CloudWatch Logs read-only (debugging, health checks)
+  statement {
+    sid    = "CloudWatchLogsStreamsRead"
+    effect = "Allow"
+    actions = [
+      "logs:DescribeLogStreams",
+      "logs:GetLogEvents",
+    ]
+    resources = [
+      "arn:aws:logs:${local.aws_region}:${local.account_id}:log-group:/aws/ecs/demo-*",
+      "arn:aws:logs:${local.aws_region}:${local.account_id}:log-group:/aws/ecs/demo-*:log-stream:*",
+    ]
+  }
+
+  # Read scale-down lambda ARN during deploy discovery.
+  statement {
+    sid    = "LambdaReadScaleDown"
+    effect = "Allow"
+    actions = [
+      "lambda:GetFunction",
+    ]
+    resources = [
+      "arn:aws:lambda:${local.aws_region}:${local.account_id}:function:demo-*-scale-down-old-color-lambda",
+    ]
+  }
+
   # EventBridge: schedule delayed scale-down Lambda
-  #tfsec:ignore:aws-iam-no-policy-wildcards
   statement {
     sid    = "EventBridgeScaleDown"
     effect = "Allow"
@@ -115,7 +182,9 @@ data "aws_iam_policy_document" "github_ecs_blue_green" {
       "events:PutRule",
       "events:PutTargets",
     ]
-    resources = ["*"]
+    resources = [
+      "arn:aws:events:${local.aws_region}:${local.account_id}:rule/demo-*-scale-down-old-color-rule",
+    ]
   }
 
 }

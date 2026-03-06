@@ -1,6 +1,6 @@
 # ─────────────────────────────────────────────────────────────
 # EventBridge Rule for NAT Auto-Healing
-# - Triggers whenever an EC2 instance transitions to the "running" state.
+# - Triggers when NAT ASGs report a successful instance launch.
 # - Used to coordinate self-healing actions for NAT instances:
 #     1. Assign the correct Elastic IP.
 #     2. Update private route tables.
@@ -11,11 +11,16 @@
 
 resource "aws_cloudwatch_event_rule" "ec2_running" {
   name        = "${var.name}-on-ec2-running"
-  description = "Dispara Lambdas para NAT cuando EC2 entra en running (ASG NAT)"
+  description = "Trigger NAT healing lambdas when NAT ASGs launch a new instance"
   event_pattern = jsonencode({
-    "source" : ["aws.ec2"],
-    "detail-type" : ["EC2 Instance State-change Notification"],
-    "detail" : { "state" : ["running"] }
+    "source" : ["aws.autoscaling"],
+    "detail-type" : ["EC2 Instance Launch Successful"],
+    "detail" : {
+      "AutoScalingGroupName" : [
+        "${var.name}-asg-nat-a",
+        "${var.name}-asg-nat-b"
+      ]
+    }
   })
   tags = var.tags
 }

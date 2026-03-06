@@ -2,7 +2,7 @@
 # Local environment settings (used across all child modules)
 ###############################################################
 locals {
-  # Global environment name (dev/prod) – overridable via env var 
+  # Global environment name (dev/prod) – overridable via env var
   env = get_env("TG_ENV", "prod")
 
   # Default AWS region – overridable via env var
