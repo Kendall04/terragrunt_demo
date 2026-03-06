@@ -2,7 +2,7 @@
 # Local environment settings (used across all child modules)
 ###############################################################
 locals {
-  # Global environment name (dev/prod) – overridable via env var
+  # Global environment name (dev/prod) – overridable via env var 
   env = get_env("TG_ENV", "prod")
 
   # Default AWS region – overridable via env var
@@ -15,7 +15,7 @@ locals {
   tf_state_table  = get_env("TF_STATE_TABLE", "tfstate-locks")
 
   github_owner = "Kendall04"
-  github_repo  = "terragrunt_demo" 
+  github_repo  = "terragrunt_demo_lab" 
 
   project_name = "demo"
 

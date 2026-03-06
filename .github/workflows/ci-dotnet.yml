@@ -5,15 +5,17 @@ on:
     branches: [develop, main]
     paths:
       - "demo-api/**"
-      - ".github/workflows/*-dotnet"
-      - ".github/workflows/*-app"
+      - ".github/workflows/ci-dotnet.yml"
+      - ".github/workflows/cd-demo-api.yml"
+      - ".github/actions/**"
   push:
     branches:
       - "feature/**"
     paths:
       - "demo-api/**"
-      - ".github/workflows/*-dotnet"
-      - ".github/workflows/*-app"
+      - ".github/workflows/ci-dotnet.yml"
+      - ".github/workflows/cd-demo-api.yml"
+      - ".github/actions/**"
 
 permissions:
   contents: read
@@ -69,19 +71,38 @@ jobs:
         run: dotnet build ./demo-api/terragrunt-demo.sln --configuration Release --no-restore
 
       # ----------------------------------------
-      # 6) Run tests (optional)
+      # 6) Validate test projects exist
       # ----------------------------------------
-      - name: Run tests
-        run: dotnet test ./demo-api/terragrunt-demo.sln --no-build --verbosity normal || true
+      - name: Validate test projects
+        shell: bash
+        run: |
+          set -euo pipefail
+          TEST_PROJECT_COUNT=$(find ./demo-api -name "*.Tests.csproj" -o -name "*Tests.csproj" | wc -l)
+          if [ "${TEST_PROJECT_COUNT}" -eq 0 ]; then
+            echo "No test projects found under demo-api/"
+            exit 1
+          fi
 
       # ----------------------------------------
-      # 7) Setup Docker Buildx
+      # 7) Run tests
+      # ----------------------------------------
+      - name: Run tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r project; do
+            echo "Running tests in ${project}"
+            dotnet test "${project}" --configuration Release --verbosity normal
+          done < <(find ./demo-api -name "*.Tests.csproj" -o -name "*Tests.csproj")
+
+      # ----------------------------------------
+      # 8) Setup Docker Buildx
       # ----------------------------------------
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
       # ----------------------------------------
-      # 8) Cache Docker layers
+      # 9) Cache Docker layers
       # ----------------------------------------
       - name: Cache Docker layers
         uses: actions/cache@v4
@@ -92,7 +113,7 @@ jobs:
             ${{ runner.os }}-buildx-
 
       # ----------------------------------------
-      # 9) Docker Build (with cache)
+      # 10) Docker Build (with cache)
       # ----------------------------------------
       - name: Build Docker image
         uses: docker/build-push-action@v5
@@ -106,7 +127,7 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
 
       # ----------------------------------------
-      # 10) Move updated Docker cache
+      # 11) Move updated Docker cache
       # ----------------------------------------
       - name: Move Docker cache
         run: |

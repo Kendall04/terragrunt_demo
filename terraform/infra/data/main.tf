@@ -204,6 +204,11 @@ resource "aws_cloudwatch_metric_alarm" "cpu_high" {
 # Secrets Manager
 # - Stores the connection string dynamically based on EC2 private IP
 # ------------------------------------------------------------
+locals {
+  # SQL connection strings escape double quotes by doubling them.
+  app_password_for_connection_string = replace(random_password.sql_app_pwd.result, "\"", "\"\"")
+}
+
 resource "aws_secretsmanager_secret" "db_conn" {
   name        = "demo/${var.env}/db/conn-string"
   description = "Connection string for demo SQL server"
@@ -213,5 +218,5 @@ resource "aws_secretsmanager_secret" "db_conn" {
 
 resource "aws_secretsmanager_secret_version" "db_conn_v1" {
   secret_id     = aws_secretsmanager_secret.db_conn.id
-  secret_string = "Server=${aws_instance.db.private_ip},1433;Database=${var.app_db};User Id=${var.app_user};Password=${random_password.sql_app_pwd.result};Encrypt=True;TrustServerCertificate=True;"
+  secret_string = "Server=${aws_instance.db.private_ip},1433;Database=${var.app_db};User Id=${var.app_user};Password=\"${local.app_password_for_connection_string}\";Encrypt=True;TrustServerCertificate=True;"
 }

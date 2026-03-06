@@ -22,21 +22,14 @@ namespace terragrunt_demo.Controllers
             public string Text { get; set; } = string.Empty;
         }
 
-        // GET /health 
-        [HttpGet("/health")]
-        public IActionResult Health()
-        {
-            return Ok(new { status = "ok blue 777" });
-        }
-
-        // POST /text
+        // POST /text 
         [HttpPost]
         public async Task<ActionResult<DemoTextDto>> InsertText(
             [FromBody] InsertTextRequest request,
             CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(request.Text))
-                return BadRequest("Text cannot be empty.");
+                return BadRequest("Text cannot be empty 2.");
 
             var command = new InsertTextCommand(request.Text);
             var result = await _mediator.Send(command, cancellationToken);
