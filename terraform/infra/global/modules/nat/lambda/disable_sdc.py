@@ -9,21 +9,36 @@ ec2 = boto3.client('ec2')
 ASG_PREFIX = os.environ.get('ASG_PREFIX', '').strip()
 
 
+def _extract_instance_id(detail):
+    return detail.get('instance-id') or detail.get('EC2InstanceId')
+
+
+def _extract_asg_name(detail):
+    return detail.get('AutoScalingGroupName')
+
+
 def lambda_handler(event, context):
     detail = event.get('detail', {})
-    instance_id = detail.get('instance-id')
+    instance_id = _extract_instance_id(detail)
     state = detail.get('state')
 
-    # Only react when the instance actually entered "running"
-    if not instance_id or state != 'running':
+    # Legacy EC2 events include state; keep compatibility.
+    if state and state != 'running':
         print(f"Ignoring event: instance_id={instance_id}, state={state}")
         return
 
-    # Try to read the ASG tag (it may not appear immediately)
-    asg_name = get_asg_tag(instance_id)
+    if not instance_id:
+        print(f"Ignoring event without instance ID: {event}")
+        return
+
+    asg_name = _extract_asg_name(detail)
+
+    # For EC2 state-change events, try to read ASG tag (it may not appear immediately)
     if not asg_name:
-        time.sleep(5)  # small retry delay
         asg_name = get_asg_tag(instance_id)
+        if not asg_name:
+            time.sleep(5)
+            asg_name = get_asg_tag(instance_id)
 
     print(f"Instance {instance_id} belongs to ASG={asg_name}")
 
@@ -38,7 +53,7 @@ def lambda_handler(event, context):
                   f"(asg={asg_name}, expected prefix={ASG_PREFIX})")
             return
 
-    # Disable Source/Destination Check → required for NAT instances
+    # Disable Source/Destination Check -> required for NAT instances
     ec2.modify_instance_attribute(
         InstanceId=instance_id,
         SourceDestCheck={'Value': False}

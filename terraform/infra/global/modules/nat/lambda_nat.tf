@@ -70,6 +70,7 @@ module "lambda_assign_eip" {
     SUBNET_B_ID         = var.subnet_b_id
     EIP_A_ALLOCATION_ID = aws_eip.nat_a.allocation_id
     EIP_B_ALLOCATION_ID = aws_eip.nat_b.allocation_id
+    ASG_PREFIX          = "${var.name}-asg-nat-"
   }
 
   # Log group with retention is pre-created above
@@ -99,6 +100,7 @@ module "lambda_change_rt" {
     ROUTE_TABLE_B_ID = var.route_table_b_id
     SUBNET_A_ID      = var.subnet_a_id
     SUBNET_B_ID      = var.subnet_b_id
+    ASG_PREFIX       = "${var.name}-asg-nat-"
   }
 }
 

@@ -65,37 +65,48 @@ jobs:
 
           echo "Using TG_ENV=${TG_ENV}"
 
-          if [ "${TG_ENV}" = "dev" ]; then
-            echo "ECR_REPOSITORY=demo-dev-shared-demo-ms" >> "$GITHUB_ENV"
-            echo "ECS_CLUSTER=demo-dev-platform-main-cluster" >> "$GITHUB_ENV"
-            echo "ECS_SERVICE_BLUE=demo-dev-app-api-blue-svc" >> "$GITHUB_ENV"
-            echo "ECS_SERVICE_GREEN=demo-dev-app-api-green-svc" >> "$GITHUB_ENV"
+          ECR_REPOSITORY="demo-${TG_ENV}-shared-demo-ms"
+          ECS_CLUSTER="demo-${TG_ENV}-platform-main-cluster"
+          ECS_SERVICE_BLUE="demo-${TG_ENV}-app-api-blue-svc"
+          ECS_SERVICE_GREEN="demo-${TG_ENV}-app-api-green-svc"
+          SCALE_DOWN_RULE_NAME="demo-${TG_ENV}-scale-down-old-color-rule"
+          SCALE_DOWN_LAMBDA_NAME="demo-${TG_ENV}-scale-down-old-color-lambda"
 
-            echo "ALB_LISTENER_ARN=${{ vars.ALB_LISTENER_DEV }}" >> "$GITHUB_ENV"
-            echo "ALB_CANDIDATE_RULE_ARN=${{ vars.ALB_CANDIDATE_RULE_DEV }}" >> "$GITHUB_ENV"
-            echo "TG_BLUE_ARN=${{ vars.TG_BLUE_DEV }}" >> "$GITHUB_ENV"
-            echo "TG_GREEN_ARN=${{ vars.TG_GREEN_DEV }}" >> "$GITHUB_ENV"
+          # Validate repository exists (prevents silent typos in naming conventions).
+          aws ecr describe-repositories --repository-names "${ECR_REPOSITORY}" >/dev/null
 
-            echo "SCALE_DOWN_RULE_NAME=${{ vars.SCALE_DOWN_RULE_NAME_DEV }}" >> "$GITHUB_ENV"
-            echo "SCALE_DOWN_LAMBDA_ARN=${{ vars.SCALE_DOWN_LAMBDA_DEV }}" >> "$GITHUB_ENV"
+          ALB_NAME="demo-${TG_ENV}-internal-alb"
+          ALB_ARN=$(aws elbv2 describe-load-balancers --names "${ALB_NAME}" | jq -r '.LoadBalancers[0].LoadBalancerArn')
+          ALB_LISTENER_ARN=$(aws elbv2 describe-listeners --load-balancer-arn "${ALB_ARN}" | jq -r '.Listeners[] | select(.Port == 8080) | .ListenerArn' | head -n1)
 
-          elif [ "${TG_ENV}" = "prod" ]; then
-            echo "ECR_REPOSITORY=demo-prod-shared-demo-ms" >> "$GITHUB_ENV"
-            echo "ECS_CLUSTER=demo-prod-platform-main-cluster" >> "$GITHUB_ENV"
-            echo "ECS_SERVICE_BLUE=demo-prod-app-api-blue-svc" >> "$GITHUB_ENV"
-            echo "ECS_SERVICE_GREEN=demo-prod-app-api-green-svc" >> "$GITHUB_ENV"
+          TG_BLUE_ARN=$(aws elbv2 describe-target-groups --names "demo-${TG_ENV}-blue-tg" | jq -r '.TargetGroups[0].TargetGroupArn')
+          TG_GREEN_ARN=$(aws elbv2 describe-target-groups --names "demo-${TG_ENV}-green-tg" | jq -r '.TargetGroups[0].TargetGroupArn')
 
-            echo "ALB_LISTENER_ARN=${{ vars.ALB_LISTENER_PROD }}" >> "$GITHUB_ENV"
-            echo "ALB_CANDIDATE_RULE_ARN=${{ vars.ALB_CANDIDATE_RULE_PROD }}" >> "$GITHUB_ENV"
-            echo "TG_BLUE_ARN=${{ vars.TG_BLUE_PROD }}" >> "$GITHUB_ENV"
-            echo "TG_GREEN_ARN=${{ vars.TG_GREEN_PROD }}" >> "$GITHUB_ENV"
+          ALB_CANDIDATE_RULE_ARN=$(aws elbv2 describe-rules --listener-arn "${ALB_LISTENER_ARN}" \
+            | jq -r '.Rules[] | select(any(.Conditions[]?; .Field == "path-pattern" and ((.PathPatternConfig.Values // .Values // []) | index("/__candidate_dummy__")))) | .RuleArn' \
+            | head -n1)
 
-            echo "SCALE_DOWN_RULE_NAME=${{ vars.SCALE_DOWN_RULE_NAME_PROD }}" >> "$GITHUB_ENV"
-            echo "SCALE_DOWN_LAMBDA_ARN=${{ vars.SCALE_DOWN_LAMBDA_PROD }}" >> "$GITHUB_ENV"
-          else
-            echo "Unknown TG_ENV=${TG_ENV}"
-            exit 1
-          fi
+          SCALE_DOWN_LAMBDA_ARN=$(aws lambda get-function --function-name "${SCALE_DOWN_LAMBDA_NAME}" | jq -r '.Configuration.FunctionArn')
+
+          for required in ALB_LISTENER_ARN ALB_CANDIDATE_RULE_ARN TG_BLUE_ARN TG_GREEN_ARN SCALE_DOWN_LAMBDA_ARN; do
+            if [ -z "${!required:-}" ] || [ "${!required}" = "null" ]; then
+              echo "Failed to resolve required deployment resource: ${required}"
+              exit 1
+            fi
+          done
+
+          {
+            echo "ECR_REPOSITORY=${ECR_REPOSITORY}"
+            echo "ECS_CLUSTER=${ECS_CLUSTER}"
+            echo "ECS_SERVICE_BLUE=${ECS_SERVICE_BLUE}"
+            echo "ECS_SERVICE_GREEN=${ECS_SERVICE_GREEN}"
+            echo "ALB_LISTENER_ARN=${ALB_LISTENER_ARN}"
+            echo "ALB_CANDIDATE_RULE_ARN=${ALB_CANDIDATE_RULE_ARN}"
+            echo "TG_BLUE_ARN=${TG_BLUE_ARN}"
+            echo "TG_GREEN_ARN=${TG_GREEN_ARN}"
+            echo "SCALE_DOWN_RULE_NAME=${SCALE_DOWN_RULE_NAME}"
+            echo "SCALE_DOWN_LAMBDA_ARN=${SCALE_DOWN_LAMBDA_ARN}"
+          } >> "$GITHUB_ENV"
 
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v2

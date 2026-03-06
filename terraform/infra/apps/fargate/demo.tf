@@ -64,7 +64,6 @@ module "demo_api_blue" {
   task_memory   = "512"
 
   task_policy_arns = [
-    "arn:aws:iam::aws:policy/SecretsManagerReadWrite",
     aws_iam_policy.task_use_kms.arn
   ]
 
@@ -122,7 +121,6 @@ module "demo_api_green" {
   task_memory   = "512"
 
   task_policy_arns = [
-    "arn:aws:iam::aws:policy/SecretsManagerReadWrite",
     aws_iam_policy.task_use_kms.arn
   ]
 
