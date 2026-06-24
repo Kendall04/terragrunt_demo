@@ -6,7 +6,10 @@ namespace terragrunt_demo.Repositories
     public interface IDemoTextRepository
     {
         Task AddAsync(DemoText entity, CancellationToken cancellationToken = default);
-        Task<IReadOnlyList<DemoText>> GetAllAsync(CancellationToken cancellationToken = default);
+        Task<IReadOnlyList<DemoText>> GetPageAsync(
+            int pageNumber,
+            int pageSize,
+            CancellationToken cancellationToken = default);
     }
 
     public class DemoTextRepository : IDemoTextRepository
@@ -24,11 +27,20 @@ namespace terragrunt_demo.Repositories
             await _dbContext.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task<IReadOnlyList<DemoText>> GetAllAsync(CancellationToken cancellationToken = default)
+        public async Task<IReadOnlyList<DemoText>> GetPageAsync(
+            int pageNumber,
+            int pageSize,
+            CancellationToken cancellationToken = default)
         {
+            var safePageNumber = pageNumber < 1 ? 1 : pageNumber;
+            var safePageSize = pageSize < 1 ? 1 : pageSize;
+            var skip = (safePageNumber - 1) * safePageSize;
+
             return await _dbContext
                 .DemoTexts
                 .OrderByDescending(x => x.CreatedAt)
+                .Skip(skip)
+                .Take(safePageSize)
                 .ToListAsync(cancellationToken);
         }
     }

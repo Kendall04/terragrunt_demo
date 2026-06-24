@@ -48,6 +48,9 @@ resource "aws_autoscaling_group" "nat_a" {
     aws_cloudwatch_event_target.t_assign_eip,
     aws_cloudwatch_event_target.t_change_rt,
     aws_cloudwatch_event_target.t_disable_sdc,
+    aws_lambda_permission.allow_events_assign_eip,
+    aws_lambda_permission.allow_events_change_rt,
+    aws_lambda_permission.allow_events_disable_sdc,
   ]
 }
 
@@ -93,5 +96,8 @@ resource "aws_autoscaling_group" "nat_b" {
     aws_cloudwatch_event_target.t_assign_eip,
     aws_cloudwatch_event_target.t_change_rt,
     aws_cloudwatch_event_target.t_disable_sdc,
+    aws_lambda_permission.allow_events_assign_eip,
+    aws_lambda_permission.allow_events_change_rt,
+    aws_lambda_permission.allow_events_disable_sdc,
   ]
 }

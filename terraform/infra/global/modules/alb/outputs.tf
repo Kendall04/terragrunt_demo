@@ -13,9 +13,15 @@ output "alb_listener_arn" {
   description = "ARN of the ALB HTTP listener."
 }
 
+output "alb_candidate_rule_arn" {
+  value       = aws_lb_listener_rule.candidate_rule.arn
+  description = "ARN of the ALB listener rule used as candidate in blue/green deploys."
+}
+
+# Backward compatible alias with legacy typo.
 output "alb_cantidate_rule_arn" {
   value       = aws_lb_listener_rule.candidate_rule.arn
-  description = "ARN of the ALB listener rule used as dummy."
+  description = "DEPRECATED: use alb_candidate_rule_arn."
 }
 
 output "demo_port" {

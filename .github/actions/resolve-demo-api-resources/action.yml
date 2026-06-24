@@ -1,0 +1,233 @@
+name: "Resolve Demo API deploy resources"
+description: "Resolve Demo API blue/green resource names and environment-scoped ARNs."
+
+inputs:
+  deploy_env:
+    description: "Deployment environment: dev or prod."
+    required: true
+  require_db_secret:
+    description: "Whether DB_SECRET_ARN is required and exported."
+    required: false
+    default: "false"
+  alb_listener_dev:
+    description: "Dev ALB listener ARN."
+    required: false
+    default: ""
+  alb_listener_prod:
+    description: "Prod ALB listener ARN."
+    required: false
+    default: ""
+  alb_candidate_rule_dev:
+    description: "Dev ALB candidate listener rule ARN."
+    required: false
+    default: ""
+  alb_candidate_rule_prod:
+    description: "Prod ALB candidate listener rule ARN."
+    required: false
+    default: ""
+  tg_blue_dev:
+    description: "Dev blue target group ARN."
+    required: false
+    default: ""
+  tg_blue_prod:
+    description: "Prod blue target group ARN."
+    required: false
+    default: ""
+  tg_green_dev:
+    description: "Dev green target group ARN."
+    required: false
+    default: ""
+  tg_green_prod:
+    description: "Prod green target group ARN."
+    required: false
+    default: ""
+  scale_down_lambda_dev:
+    description: "Dev scale-down Lambda ARN."
+    required: false
+    default: ""
+  scale_down_lambda_prod:
+    description: "Prod scale-down Lambda ARN."
+    required: false
+    default: ""
+  db_secret_arn_dev:
+    description: "Dev DB connection Secrets Manager ARN."
+    required: false
+    default: ""
+  db_secret_arn_prod:
+    description: "Prod DB connection Secrets Manager ARN."
+    required: false
+    default: ""
+  smoke_test_url_dev:
+    description: "Optional dev public smoke-test base URL."
+    required: false
+    default: ""
+  smoke_test_url_prod:
+    description: "Optional prod public smoke-test base URL."
+    required: false
+    default: ""
+
+outputs:
+  ecr_repository:
+    description: "ECR repository name."
+    value: ${{ steps.resolve.outputs.ecr_repository }}
+  ecs_cluster:
+    description: "ECS cluster name."
+    value: ${{ steps.resolve.outputs.ecs_cluster }}
+  ecs_service_blue:
+    description: "Blue ECS service name."
+    value: ${{ steps.resolve.outputs.ecs_service_blue }}
+  ecs_service_green:
+    description: "Green ECS service name."
+    value: ${{ steps.resolve.outputs.ecs_service_green }}
+  alb_listener_arn:
+    description: "ALB listener ARN."
+    value: ${{ steps.resolve.outputs.alb_listener_arn }}
+  alb_candidate_rule_arn:
+    description: "ALB candidate listener rule ARN."
+    value: ${{ steps.resolve.outputs.alb_candidate_rule_arn }}
+  tg_blue_arn:
+    description: "Blue target group ARN."
+    value: ${{ steps.resolve.outputs.tg_blue_arn }}
+  tg_green_arn:
+    description: "Green target group ARN."
+    value: ${{ steps.resolve.outputs.tg_green_arn }}
+  scale_down_rule_name:
+    description: "EventBridge scale-down rule name."
+    value: ${{ steps.resolve.outputs.scale_down_rule_name }}
+  scale_down_lambda_arn:
+    description: "Scale-down Lambda ARN."
+    value: ${{ steps.resolve.outputs.scale_down_lambda_arn }}
+  db_secret_arn:
+    description: "DB connection Secrets Manager ARN."
+    value: ${{ steps.resolve.outputs.db_secret_arn }}
+  smoke_test_url:
+    description: "Optional public smoke-test base URL."
+    value: ${{ steps.resolve.outputs.smoke_test_url }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: resolve
+      shell: bash
+      env:
+        DEPLOY_ENV: ${{ inputs.deploy_env }}
+        REQUIRE_DB_SECRET: ${{ inputs.require_db_secret }}
+        ALB_LISTENER_DEV: ${{ inputs.alb_listener_dev }}
+        ALB_LISTENER_PROD: ${{ inputs.alb_listener_prod }}
+        ALB_CANDIDATE_RULE_DEV: ${{ inputs.alb_candidate_rule_dev }}
+        ALB_CANDIDATE_RULE_PROD: ${{ inputs.alb_candidate_rule_prod }}
+        TG_BLUE_DEV: ${{ inputs.tg_blue_dev }}
+        TG_BLUE_PROD: ${{ inputs.tg_blue_prod }}
+        TG_GREEN_DEV: ${{ inputs.tg_green_dev }}
+        TG_GREEN_PROD: ${{ inputs.tg_green_prod }}
+        SCALE_DOWN_LAMBDA_DEV: ${{ inputs.scale_down_lambda_dev }}
+        SCALE_DOWN_LAMBDA_PROD: ${{ inputs.scale_down_lambda_prod }}
+        DB_SECRET_ARN_DEV: ${{ inputs.db_secret_arn_dev }}
+        DB_SECRET_ARN_PROD: ${{ inputs.db_secret_arn_prod }}
+        SMOKE_TEST_URL_DEV: ${{ inputs.smoke_test_url_dev }}
+        SMOKE_TEST_URL_PROD: ${{ inputs.smoke_test_url_prod }}
+      run: |
+        set -euo pipefail
+
+        case "$DEPLOY_ENV" in
+          dev)
+            ALB_LISTENER_ARN="$ALB_LISTENER_DEV"
+            ALB_CANDIDATE_RULE_ARN="$ALB_CANDIDATE_RULE_DEV"
+            TG_BLUE_ARN="$TG_BLUE_DEV"
+            TG_GREEN_ARN="$TG_GREEN_DEV"
+            SCALE_DOWN_LAMBDA_ARN="$SCALE_DOWN_LAMBDA_DEV"
+            DB_SECRET_ARN="$DB_SECRET_ARN_DEV"
+            SMOKE_TEST_URL="$SMOKE_TEST_URL_DEV"
+            ;;
+          prod)
+            ALB_LISTENER_ARN="$ALB_LISTENER_PROD"
+            ALB_CANDIDATE_RULE_ARN="$ALB_CANDIDATE_RULE_PROD"
+            TG_BLUE_ARN="$TG_BLUE_PROD"
+            TG_GREEN_ARN="$TG_GREEN_PROD"
+            SCALE_DOWN_LAMBDA_ARN="$SCALE_DOWN_LAMBDA_PROD"
+            DB_SECRET_ARN="$DB_SECRET_ARN_PROD"
+            SMOKE_TEST_URL="$SMOKE_TEST_URL_PROD"
+            ;;
+          *)
+            echo "::error::Unsupported deploy_env=$DEPLOY_ENV"
+            exit 1
+            ;;
+        esac
+
+        ECR_REPOSITORY="demo-${DEPLOY_ENV}-shared-demo-ms"
+        ECS_CLUSTER="demo-${DEPLOY_ENV}-platform-main-cluster"
+        ECS_SERVICE_BLUE="demo-${DEPLOY_ENV}-app-api-blue-svc"
+        ECS_SERVICE_GREEN="demo-${DEPLOY_ENV}-app-api-green-svc"
+        SCALE_DOWN_RULE_NAME="demo-${DEPLOY_ENV}-scale-down-old-color-rule"
+
+        required_vars=(
+          ALB_LISTENER_ARN
+          ALB_CANDIDATE_RULE_ARN
+          TG_BLUE_ARN
+          TG_GREEN_ARN
+          SCALE_DOWN_LAMBDA_ARN
+        )
+
+        if [ "$REQUIRE_DB_SECRET" = "true" ]; then
+          required_vars+=(DB_SECRET_ARN)
+        elif [ "$REQUIRE_DB_SECRET" != "false" ]; then
+          echo "::error::require_db_secret must be true or false."
+          exit 1
+        fi
+
+        for var_name in "${required_vars[@]}"; do
+          if [ -z "${!var_name:-}" ]; then
+            echo "::error::Required deploy resource ${var_name} is empty for deploy_env=${DEPLOY_ENV}."
+            exit 1
+          fi
+        done
+
+        if [ -n "$DB_SECRET_ARN" ] && ! [[ "$DB_SECRET_ARN" =~ ^arn:aws:secretsmanager:[A-Za-z0-9-]+:[0-9]{12}:secret:.+ ]]; then
+          echo "::error::DB_SECRET_ARN must be a full Secrets Manager ARN."
+          exit 1
+        fi
+
+        for value in \
+          "$ALB_LISTENER_ARN" \
+          "$ALB_CANDIDATE_RULE_ARN" \
+          "$TG_BLUE_ARN" \
+          "$TG_GREEN_ARN" \
+          "$SCALE_DOWN_LAMBDA_ARN" \
+          "$DB_SECRET_ARN" \
+          "$SMOKE_TEST_URL"; do
+          if [ -n "$value" ]; then
+            echo "::add-mask::$value"
+          fi
+        done
+
+        {
+          echo "ECR_REPOSITORY=$ECR_REPOSITORY"
+          echo "ECS_CLUSTER=$ECS_CLUSTER"
+          echo "ECS_SERVICE_BLUE=$ECS_SERVICE_BLUE"
+          echo "ECS_SERVICE_GREEN=$ECS_SERVICE_GREEN"
+          echo "ALB_LISTENER_ARN=$ALB_LISTENER_ARN"
+          echo "ALB_CANDIDATE_RULE_ARN=$ALB_CANDIDATE_RULE_ARN"
+          echo "TG_BLUE_ARN=$TG_BLUE_ARN"
+          echo "TG_GREEN_ARN=$TG_GREEN_ARN"
+          echo "SCALE_DOWN_RULE_NAME=$SCALE_DOWN_RULE_NAME"
+          echo "SCALE_DOWN_LAMBDA_ARN=$SCALE_DOWN_LAMBDA_ARN"
+          echo "DB_SECRET_ARN=$DB_SECRET_ARN"
+          echo "SMOKE_TEST_URL=$SMOKE_TEST_URL"
+        } >> "$GITHUB_ENV"
+
+        {
+          echo "ecr_repository=$ECR_REPOSITORY"
+          echo "ecs_cluster=$ECS_CLUSTER"
+          echo "ecs_service_blue=$ECS_SERVICE_BLUE"
+          echo "ecs_service_green=$ECS_SERVICE_GREEN"
+          echo "alb_listener_arn=$ALB_LISTENER_ARN"
+          echo "alb_candidate_rule_arn=$ALB_CANDIDATE_RULE_ARN"
+          echo "tg_blue_arn=$TG_BLUE_ARN"
+          echo "tg_green_arn=$TG_GREEN_ARN"
+          echo "scale_down_rule_name=$SCALE_DOWN_RULE_NAME"
+          echo "scale_down_lambda_arn=$SCALE_DOWN_LAMBDA_ARN"
+          echo "db_secret_arn=$DB_SECRET_ARN"
+          echo "smoke_test_url=$SMOKE_TEST_URL"
+        } >> "$GITHUB_OUTPUT"
+
+        echo "Resolved Demo API deploy resources for deploy_env=${DEPLOY_ENV}."

@@ -1,0 +1,161 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Kendall04/terragrunt_demo/ci/schemas/deployment-record.schema.json",
+  "title": "Demo API deployment record",
+  "description": "Environment deployment metadata. This records where a release manifest was deployed.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "app",
+    "environment",
+    "releaseManifestUri",
+    "gitSha",
+    "imageDigest",
+    "imageUri",
+    "deployedAt",
+    "githubRunId",
+    "deployment",
+    "status"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "app": {
+      "const": "demo-api"
+    },
+    "environment": {
+      "enum": [
+        "dev",
+        "prod"
+      ]
+    },
+    "releaseManifestUri": {
+      "type": "string",
+      "pattern": "^s3://[^/]+/.+"
+    },
+    "gitSha": {
+      "type": "string",
+      "pattern": "^[A-Fa-f0-9]{7,40}$"
+    },
+    "imageDigest": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "imageUri": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*/[A-Za-z0-9][A-Za-z0-9._/-]*@sha256:[a-f0-9]{64}$"
+    },
+    "deployedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "githubRunId": {
+      "type": "string",
+      "pattern": "^[0-9]+$"
+    },
+    "deployment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "strategy",
+        "previousColor",
+        "newColor",
+        "activeService",
+        "inactiveService",
+        "taskDefinitionArn",
+        "listenerArn",
+        "targetGroupArn"
+      ],
+      "properties": {
+        "strategy": {
+          "const": "blue-green"
+        },
+        "previousColor": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "blue",
+            "green",
+            null
+          ]
+        },
+        "newColor": {
+          "enum": [
+            "blue",
+            "green"
+          ]
+        },
+        "activeService": {
+          "type": "string",
+          "minLength": 1
+        },
+        "inactiveService": {
+          "type": "string",
+          "minLength": 1
+        },
+        "taskDefinitionArn": {
+          "type": "string",
+          "pattern": "^arn:aws:ecs:[A-Za-z0-9-]+:[0-9]{12}:task-definition/.+:[0-9]+$"
+        },
+        "listenerArn": {
+          "type": "string",
+          "pattern": "^arn:aws:elasticloadbalancing:[A-Za-z0-9-]+:[0-9]{12}:listener/.+"
+        },
+        "targetGroupArn": {
+          "type": "string",
+          "pattern": "^arn:aws:elasticloadbalancing:[A-Za-z0-9-]+:[0-9]{12}:targetgroup/.+"
+        }
+      }
+    },
+    "rollback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "isRollback",
+        "reason",
+        "selectorType",
+        "selectedManifestUri",
+        "previousCurrentManifestUri",
+        "requestedBy"
+      ],
+      "properties": {
+        "isRollback": {
+          "const": true
+        },
+        "reason": {
+          "type": "string"
+        },
+        "selectorType": {
+          "enum": [
+            "manifest_uri",
+            "git_sha_run_id",
+            "digest",
+            "previous_environment_history"
+          ]
+        },
+        "selectedManifestUri": {
+          "type": "string",
+          "pattern": "^s3://[^/]+/.+"
+        },
+        "previousCurrentManifestUri": {
+          "type": "string",
+          "pattern": "^s3://[^/]+/.+"
+        },
+        "requestedBy": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "status": {
+      "enum": [
+        "success",
+        "failed"
+      ]
+    }
+  }
+}

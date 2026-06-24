@@ -20,6 +20,6 @@ terraform {
 # Inputs sent to the platform module
 # ============================================
 inputs = {
-  env         = local.parent.locals.env
+  env     = local.parent.locals.env
   project = local.parent.locals.project_name
 }

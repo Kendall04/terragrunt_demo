@@ -38,14 +38,16 @@
   - [8.1 Application failures](#81-application-failures)
   - [8.2 Infrastructure failures](#82-infrastructure-failures)
   - [8.3 Data layer failure (known risk)](#83-data-layer-failure-known-risk)
-- [9. Future Improvements](#9-future-improvements)
-  - [9.1 High-priority improvements](#91-high-priority-improvements)
-  - [9.2 Data layer modernization](#92-data-layer-modernization)
-  - [9.3 Scaling improvements for high-traffic workloads](#93-scaling-improvements-for-high-traffic-workloads)
+- [9. What I Would Change for Real Production](#9-what-i-would-change-for-real-production)
+  - [9.1 Reliability and data protection](#91-reliability-and-data-protection)
+  - [9.2 Delivery safety](#92-delivery-safety)
+  - [9.3 Security and secrets lifecycle](#93-security-and-secrets-lifecycle)
+  - [9.4 Observability and operations](#94-observability-and-operations)
+  - [9.5 Cost and scaling posture](#95-cost-and-scaling-posture)
 
 ## 1. Executive Summary
 
-This case study describes the design and implementation of **terragrunt_demo**, a production-grade AWS platform built to deploy and operate containerized services using **Terraform, Terragrunt and GitHub Actions**.
+This case study describes the design and implementation of **terragrunt_demo**, a production-inspired AWS platform demo built to deploy and operate containerized services using **Terraform, Terragrunt and GitHub Actions**.
 
 The system demonstrates how a real-world organization can safely manage **infrastructure-as-code**, **continuous delivery** and **zero-downtime deployments** using a modular, environment-aware architecture that cleanly separates **development** and **production**.
 
@@ -55,7 +57,7 @@ All infrastructure is managed through **Terraform and Terragrunt**, enabling rep
 
 The CI/CD pipeline is implemented with **GitHub Actions**, providing a Git-driven workflow where every change to the system — from infrastructure to application versions — is validated, planned and applied in a controlled, auditable and repeatable manner.
 
-Although implemented as a demo, **terragrunt_demo is intentionally designed to mirror a real production platform**.  
+Although implemented as a demo, **terragrunt_demo is intentionally designed to mirror many constraints of a real production platform**.
 Its modular architecture allows components to be replaced, extended or scaled independently, making it suitable as a foundation for microservices, multi-environment SaaS platforms or enterprise workloads.
 
 ## 2. Problem Statement
@@ -96,7 +98,7 @@ This meant the platform was already complex enough that **manual operations were
 
 The goal of **terragrunt_demo** is to solve this exact class of problem.
 
-Instead of starting from a blank slate, it models a realistic production platform and answers a critical question:
+Instead of starting from a blank slate, it models a realistic platform foundation and answers a critical question:
 
 > How can a team operate a real AWS-based system with  
 > **zero-downtime deployments**,  
@@ -106,34 +108,30 @@ Instead of starting from a blank slate, it models a realistic production platfor
 > without relying on manual AWS console actions?
 
 The demo intentionally focuses on the **platform and deployment architecture** rather than business logic.  
-It provides a production-grade foundation that can be used for MVPs, SaaS backends or microservice platforms, while keeping costs low and complexity under control.
+It provides a production-inspired foundation that can be used for MVPs, SaaS backends or microservice platforms, while keeping costs low and complexity under control.
 
 ## 3. Requirements
 
 This section captures the functional and non-functional requirements that guided the design of **terragrunt_demo**.  
-While the project is presented as a demo, these requirements intentionally mirror what a real production platform needs in order to be maintainable, auditable and safe to operate.
+While the project is presented as a demo, these requirements intentionally mirror many of the controls a real production platform needs in order to be maintainable, auditable and safe to operate.
 
 ### 3.1 Functional Requirements
 
 - **Deploy a .NET 8 microservice on ECS Fargate**
-
   - Build container image
   - Push image to ECR
   - Register a new Task Definition revision
   - Update ECS Service to the new revision
 
 - **Support blue/green deployments via ALB listener rule switching**
-
   - Maintain two target groups (blue/green)
   - Route production traffic by switching the ALB listener rule to the active target group
   - Keep the previous color alive long enough to allow instant rollback
 
 - **Enable fast rollback**
-
   - Rollback must be possible in seconds by switching ALB listener rules back to the previous target group (as long as the previous color is still running)
 
 - **Deploy and operate supporting AWS infrastructure for an MVP-grade system**
-
   - VPC, subnets and route tables
   - Internal ALB with listeners and rules
   - ECS cluster + services + task definitions
@@ -145,7 +143,6 @@ While the project is presented as a demo, these requirements intentionally mirro
   - CloudWatch alarms and notifications (SNS/email)
 
 - **Use serverless automation for platform operations**
-
   - NAT auto-healing Lambdas:
     - Assign Elastic IP
     - Update route tables
@@ -160,30 +157,24 @@ While the project is presented as a demo, these requirements intentionally mirro
 ### 3.2 Non-Functional Requirements
 
 - **No long-lived AWS credentials in CI/CD**
-
   - GitHub Actions must authenticate to AWS via **OIDC** and assume environment-scoped roles
 
 - **Reproducible environments**
-
   - The full platform must be created from scratch using **Terraform + Terragrunt**
   - Infrastructure must be consistent across environments through standardized modules and conventions
 
 - **Least privilege IAM**
-
   - IAM roles must be separated and scoped per environment and purpose (no “one big role”)
 
 - **Blast-radius control through modular design**
-
   - Infrastructure must be decomposed into clear Terraform/Terragrunt modules (networking, compute, security, etc.)
   - Naming and structure must enable safe iteration and future expansion (e.g., adding new services)
 
 - **Auditability (GitOps workflow)**
-
   - All changes must be performed through Git history, pull requests and CI/CD logs
   - Direct console-driven changes are considered anti-goals
 
 - **Automatic recovery for critical connectivity components**
-
   - NAT instances must self-heal using EventBridge-driven automation (to preserve outbound access for private workloads)
 
 - **Deployment performance**
@@ -202,7 +193,7 @@ To keep the demo focused and cost-optimized, the following are intentionally exc
 
 ## 4. High-Level Architecture
 
-The platform is designed as a **layered, production-grade AWS architecture** that separates networking, traffic management, compute and supporting services while remaining cost-optimized and fully automated.
+The platform is designed as a **layered AWS architecture using production-grade patterns** that separates networking, traffic management, compute and supporting services while remaining cost-optimized and fully automated.
 
 The diagram below shows the full topology used by **terragrunt_demo**.
 
@@ -213,13 +204,11 @@ The diagram below shows the full topology used by **terragrunt_demo**.
 At a high level, the system is composed of five major layers:
 
 1. **Edge and Access Layer**
-
    - Public **API Gateway** exposes the API to the internet
    - API Gateway connects privately to the VPC using **VPC Link** and **Private Integration**
    - No ECS services are directly exposed to the public internet
 
 2. **Traffic Management Layer**
-
    - An **internal Application Load Balancer (ALB)** receives all application traffic
    - ALB listener rules control which color (blue or green) receives production traffic
    - Two **target groups** exist at all times:
@@ -227,7 +216,6 @@ At a high level, the system is composed of five major layers:
      - One inactive (ready for the next deployment)
 
 3. **Compute Layer**
-
    - The application runs as **ECS Fargate services**
    - Two services are maintained in parallel:
      - `blue`
@@ -235,7 +223,6 @@ At a high level, the system is composed of five major layers:
    - Each service registers in its corresponding ALB target group
 
 4. **Networking and Egress Layer**
-
    - Workloads run in **private subnets**
    - Outbound internet access is provided by **two NAT instances** (one per AZ)
    - Each NAT instance has:
@@ -317,6 +304,14 @@ OIDC eliminates long-lived credentials and enables:
 - Full auditability via AWS CloudTrail
 
 Each pipeline has its own IAM role (e.g., infra CI, infra CD, app deploy, rollback), preventing unnecessary privilege sharing.
+
+The GitHub OIDC provider is treated as an account-level singleton: one selected
+root creates it, while other roots adopt it by ARN or URL lookup. Trust policies
+avoid repo-wide subjects and use role-specific subjects for CI, Terragrunt CD,
+app deploy and rollback. CD roles rely on GitHub environment subjects, so
+production protection rules are part of the security boundary. The `prod`
+environment should require reviewers and restrict deployments to the main
+branch; production AWS role secrets should be environment-scoped.
 
 **Alternatives considered**
 
@@ -601,7 +596,7 @@ The diagram below summarizes the CD orchestration: a single workflow detects cha
 **Trigger**
 
 - Runs on both:
-  - Pushes to feature branches
+  - Pushes to working branches other than `main` or `develop`
   - Pull requests targeting `main` or `develop`
 
 **Flow**
@@ -611,12 +606,13 @@ The diagram below summarizes the CD orchestration: a single workflow detects cha
    - `terraform fmt`
    - `tflint`
    - `tfsec`
-3. Run `terragrunt validate` and `terragrunt plan`
-4. Publish the plan output as a GitHub Actions **artifact**
+3. Run remote `terragrunt validate` and `terragrunt plan` only for PRs or explicit manual infra CI runs
+4. Publish a safe per-unit plan summary and a short-lived full text plan artifact
 
 **Notes**
 
 - At current scale, the plan runs for the full repo.
+- Full plan logs can expose infrastructure metadata, so artifact access should stay limited to trusted repository users.
 - If the platform grows, the pipeline can be optimized to run per layer/root.
 
 ---
@@ -644,7 +640,7 @@ The diagram below summarizes the CD orchestration: a single workflow detects cha
 
 **Trigger**
 
-- Runs on feature branches and PRs
+- Runs on working branches and PRs
 
 **Flow**
 
@@ -741,8 +737,14 @@ The security model is designed around least exposure, GitOps controls and enviro
 
 ### 7.3 Practical notes
 
-- Terragrunt CD currently uses broad permissions (AdministratorAccess) for demo velocity and scope.
-- In a production implementation, this would be replaced by environment- and layer-scoped policies (network/data/apps) to enforce strict least privilege.
+- Terragrunt CD no longer uses the AWS-managed full administrator policy.
+- CD permissions are bounded to the AWS service families used by the lab, with backend state access scoped to the configured state bucket and lock table.
+- GitHub CI/CD IAM roles are excluded from workload IAM mutation. Terragrunt CD is explicitly denied from changing its own trust policy, inline policy, attached policies or the other GitHub OIDC roles.
+- Policy attachment is constrained with `iam:PolicyARN`; broad AWS-managed administrator or power-user policies are not attachable by the CD role.
+- The GitHub OIDC provider is a bootstrap concern: create the singleton provider with an operator/bootstrap role first, then let the pipeline manage only the scoped `token.actions.githubusercontent.com` provider resource.
+- GitHub CI/CD roles deny Secrets Manager value access, SSM parameter reads and `kms:Decrypt`; ECS task/runtime roles remain separate so application secret injection still works.
+- Some lifecycle APIs still require `Resource = "*"` because AWS does not support complete resource-level scoping for the create/update/list flows used by Terraform.
+- A stricter production implementation would split CD into environment- and layer-scoped roles for network, data, platform and apps.
 
 ## 8. Failure Modes and Recovery
 
@@ -786,45 +788,51 @@ This introduces a known risk:
 
 In production, this layer should move to managed, highly available storage (e.g., RDS Multi-AZ) and include backup/restore and disaster recovery procedures.
 
-## 9. Future Improvements
+## 9. What I Would Change for Real Production
 
-The demo is intentionally scoped, but the platform is designed to evolve into a production-grade system with enterprise reliability.
+The demo is intentionally scoped and cost-aware. It demonstrates production-grade
+patterns, but a real production workload would need stronger reliability,
+security, observability, and operating procedures before carrying critical
+traffic.
 
-### 9.1 High-priority improvements
+### 9.1 Reliability and data protection
 
-- **Canary deployments**
+- Replace the single-AZ EC2 database with **RDS Multi-AZ** or Aurora.
+- Define backup retention, point-in-time recovery targets, and restore test cadence.
+- Add disaster recovery runbooks and periodic recovery drills.
+- Introduce safe schema migration practices:
+  - expand/contract migrations,
+  - backward-compatible application changes,
+  - validation before destructive changes.
 
-  - Replace full traffic switches with progressive rollout
-  - Add automated smoke tests before shifting more traffic
-  - Add optional human approval gates for production rollouts
+### 9.2 Delivery safety
 
-- **Improved observability**
-  - Structured application logging
-  - Centralized log pipeline
-  - Distributed tracing (e.g., OpenTelemetry)
-  - Dashboards and SLO-driven alerting
+- Replace immediate full blue/green switches with canary or weighted target group shifts.
+- Add automated smoke tests and synthetic checks before increasing traffic.
+- Add optional human approval gates for high-risk production rollouts.
+- Keep manifest rollback as the preferred rollback path, but test it regularly.
+- Add release readiness checks for migrations, config changes, and dependency risk.
 
-### 9.2 Data layer modernization
+### 9.3 Security and secrets lifecycle
 
-- Replace EC2 database with **RDS Multi-AZ** (or Aurora) to enable:
+- Add WAF rules at the edge and define an API abuse/throttling model.
+- Formalize secret rotation for database credentials and application secrets.
+- Add break-glass access procedures, review cadence, and incident response steps.
+- Keep CI/CD roles split by purpose and tighten resource scoping as the platform grows.
+- Review state, artifacts, and logs for accidental sensitive metadata exposure.
 
-  - Automatic failover
-  - Backups and point-in-time recovery
-  - Reduced operational burden
+### 9.4 Observability and operations
 
-- Introduce a migration strategy:
-  - Run safe/expand migrations before rollout
-  - Avoid destructive schema changes during deployment
-  - Use canary traffic + validation before full cutover
+- Add OpenTelemetry tracing for request-level visibility across API Gateway, ALB, ECS, and database calls.
+- Standardize structured application logs and central log queries.
+- Build dashboards around latency, error rate, saturation, deployment health, and rollback events.
+- Define SLOs and alert policies before increasing production traffic.
+- Add runbooks for common alarms: ECS unhealthy targets, NAT egress failure, deployment health gate failure, and DB connectivity issues.
 
-### 9.3 Scaling improvements for high-traffic workloads
+### 9.5 Cost and scaling posture
 
-- Evaluate NAT scaling options:
-
-  - NAT Gateway for managed scale
-  - VPC endpoints for AWS service traffic reduction
-  - Egress architecture adjustments based on workload patterns
-
-- Improve deployment architecture for multiple microservices:
-  - Convert repeated pipeline logic into reusable GitHub composite actions
-  - Use matrix strategies to deploy multiple services cleanly
+- Reevaluate NAT instances versus NAT Gateway once traffic volume and availability requirements are known.
+- Add VPC endpoints for AWS service traffic where they reduce cost and egress dependency.
+- Add load testing to validate ALB, ECS task sizing, NAT throughput, and database capacity.
+- Add budgets and cost alerts for always-on environments.
+- Convert repeated single-service pipeline logic into reusable actions or matrices before adding many services.

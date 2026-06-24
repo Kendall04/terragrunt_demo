@@ -48,18 +48,6 @@ resource "aws_iam_policy" "scale_down_lambda" {
           "events:DeleteRule"
         ],
         Resource = "arn:aws:events:${var.aws_region}:${local.account_id}:rule/${local.scale_down_rule_name}"
-      },
-      {
-        Sid      = "AllowDecryptLambdaEnvVarsViaLambdaService",
-        Effect   = "Allow",
-        Action   = ["kms:Decrypt", "kms:DescribeKey", "kms:GenerateDataKey"],
-        Resource = "arn:aws:kms:${var.aws_region}:${local.account_id}:key/220e5d76-bf3b-4a9e-8a72-118160578b1d",
-        Condition = {
-          StringEquals = {
-            "kms:ViaService"    = "lambda.${var.aws_region}.amazonaws.com",
-            "kms:CallerAccount" = tostring(local.account_id)
-          }
-        }
       }
     ]
   })

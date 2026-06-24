@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1.0",
+  "app": "demo-api",
+  "environment": "dev",
+  "releaseManifestUri": "s3://demo-release-artifacts-123456789012/releases/demo-api/by-digest/sha256-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.json",
+  "gitSha": "0123456789abcdef0123456789abcdef01234567",
+  "imageDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "imageUri": "123456789012.dkr.ecr.us-east-1.amazonaws.com/demo-shared-demo-ms@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "deployedAt": "2026-06-24T12:15:00Z",
+  "githubRunId": "1234567890",
+  "deployment": {
+    "strategy": "blue-green",
+    "previousColor": "blue",
+    "newColor": "green",
+    "activeService": "demo-dev-demo-api-green",
+    "inactiveService": "demo-dev-demo-api-blue",
+    "taskDefinitionArn": "arn:aws:ecs:us-east-1:123456789012:task-definition/demo-dev-demo-api:42",
+    "listenerArn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:listener/app/demo-dev-internal/1111111111111111/2222222222222222",
+    "targetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/demo-dev-green/3333333333333333"
+  },
+  "status": "success"
+}

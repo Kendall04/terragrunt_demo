@@ -41,6 +41,16 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Mask resource identifiers
+      shell: bash
+      run: |
+        set -euo pipefail
+        echo "::add-mask::${{ inputs.listener-arn }}"
+        echo "::add-mask::${{ inputs.candidate-rule-arn }}"
+        echo "::add-mask::${{ inputs.tg-blue-arn }}"
+        echo "::add-mask::${{ inputs.tg-green-arn }}"
+        echo "::add-mask::${{ inputs.lambda-arn }}"
+
     - name: Detect blue/green state
       id: detect
       uses: ./.github/actions/ecs-detect-blue-green
@@ -52,15 +62,41 @@ runs:
         blue-service: ${{ inputs.blue-service }}
         green-service: ${{ inputs.green-service }}
 
+    - name: Report blue/green service capacity
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        SERVICES_JSON=$(aws ecs describe-services \
+          --cluster "${{ inputs.cluster }}" \
+          --services "${{ inputs.blue-service }}" "${{ inputs.green-service }}")
+
+        FAILURES=$(jq -r '.failures | length' <<<"$SERVICES_JSON")
+        if [ "$FAILURES" != "0" ]; then
+          echo "::error::Unable to describe one or more blue/green ECS services."
+          jq -r '.failures[] | "::error::" + (.arn // .reason) + " " + (.reason // "")' <<<"$SERVICES_JSON"
+          exit 1
+        fi
+
+        BLUE_DESIRED=$(jq -r --arg svc "${{ inputs.blue-service }}" '.services[] | select(.serviceName == $svc) | .desiredCount' <<<"$SERVICES_JSON")
+        GREEN_DESIRED=$(jq -r --arg svc "${{ inputs.green-service }}" '.services[] | select(.serviceName == $svc) | .desiredCount' <<<"$SERVICES_JSON")
+
+        if [ "${BLUE_DESIRED}" = "0" ] && [ "${GREEN_DESIRED}" = "0" ]; then
+          echo "::warning::Both blue and green ECS services have desiredCount=0. Continuing; the deployment will start the next color with desiredCount=${{ inputs.desired-count }}."
+        fi
+
     - name: Ensure next (inactive) service is running and healthy
       shell: bash
       run: |
         set -euo pipefail
 
         TARGET_SERVICE="${{ steps.detect.outputs.inactive_service }}"
+        TARGET_TG="${{ steps.detect.outputs.inactive_tg }}"
         DESIRED="${{ inputs.desired-count }}"
+        HEALTH_TIMEOUT_SECONDS=300
+        HEALTH_POLL_INTERVAL_SECONDS=10
 
-        echo "Scaling up target service (next color): $TARGET_SERVICE to desiredCount=$DESIRED"
+        echo "Scaling up next ${DESIRED}-task color: ${{ steps.detect.outputs.inactive_color }}"
 
         aws ecs update-service \
           --cluster "${{ inputs.cluster }}" \
@@ -72,7 +108,31 @@ runs:
           --cluster "${{ inputs.cluster }}" \
           --services "$TARGET_SERVICE"
 
-        echo "Target service is stable. Ready to switch ALB listener."
+        start="$(date +%s)"
+        while true; do
+          HEALTHY_COUNT=$(aws elbv2 describe-target-health \
+            --target-group-arn "$TARGET_TG" \
+            --query "length(TargetHealthDescriptions[?TargetHealth.State==\`healthy\`])" \
+            --output text)
+
+          if [[ "$HEALTHY_COUNT" =~ ^[0-9]+$ ]] && [ "$HEALTHY_COUNT" -ge "$DESIRED" ]; then
+            echo "Next color has $HEALTHY_COUNT healthy ALB target(s). Ready to switch ALB listener."
+            break
+          fi
+
+          now="$(date +%s)"
+          elapsed=$((now - start))
+          if [ "$elapsed" -ge "$HEALTH_TIMEOUT_SECONDS" ]; then
+            aws elbv2 describe-target-health \
+              --target-group-arn "$TARGET_TG" \
+              --query 'TargetHealthDescriptions[].{Id:Target.Id,Port:Target.Port,State:TargetHealth.State,Reason:TargetHealth.Reason}' \
+              --output json >&2 || true
+            echo "::error::Expected at least ${DESIRED} healthy ALB target(s) before rollback switch."
+            exit 1
+          fi
+
+          sleep "$HEALTH_POLL_INTERVAL_SECONDS"
+        done
 
     - name: Swap default action and candidate rule
       shell: bash
@@ -82,9 +142,7 @@ runs:
         NEW_DEFAULT_TG="${{ steps.detect.outputs.inactive_tg }}"
         NEW_CANDIDATE_TG="${{ steps.detect.outputs.active_tg }}"
 
-        echo "Switching ALB default action to:"
-        echo "  New default TG:   $NEW_DEFAULT_TG"
-        echo "  New candidate TG: $NEW_CANDIDATE_TG"
+        echo "Switching ALB default action to inactive color: ${{ steps.detect.outputs.inactive_color }}"
 
         aws elbv2 modify-listener \
           --listener-arn "${{ inputs.listener-arn }}" \
@@ -105,15 +163,17 @@ runs:
         DELAY_MINUTES="${{ inputs.drain-delay-minutes }}"
         RULE_NAME="${{ inputs.event-rule-name }}"
         LAMBDA_ARN="${{ inputs.lambda-arn }}"
+        SCHEDULE_UNIT="minutes"
 
-        echo "Scheduling delayed scale-down for old active service:"
-        echo "  Service: $OLD_ACTIVE_SERVICE"
-        echo "  Delay:   $DELAY_MINUTES minutes"
-        echo "  Rule:    $RULE_NAME"
+        if [ "$DELAY_MINUTES" = "1" ]; then
+          SCHEDULE_UNIT="minute"
+        fi
+
+        echo "Scheduling delayed scale-down for old active color after ${DELAY_MINUTES} minutes."
 
         aws events put-rule \
           --name "$RULE_NAME" \
-          --schedule-expression "rate(${DELAY_MINUTES} minutes)" >/dev/null
+          --schedule-expression "rate(${DELAY_MINUTES} ${SCHEDULE_UNIT})" >/dev/null
 
         TARGETS=$(jq -n \
           --arg arn "$LAMBDA_ARN" \

@@ -1,0 +1,237 @@
+name: CI - Terragrunt Remote Plan
+
+on:
+  workflow_call:
+    inputs:
+      target_env:
+        description: "Environment to plan."
+        required: false
+        type: string
+        default: dev
+      aws_region:
+        description: "AWS region"
+        required: false
+        type: string
+        default: us-east-1
+      pr_number:
+        description: "Pull request number for optional Infracost comment."
+        required: false
+        type: string
+        default: ""
+    secrets:
+      AWS_ROLE_TG_CI:
+        required: false
+      INFRACOST_API_KEY:
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  remote-plan:
+    name: Terragrunt Remote Plan
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.target_env }}
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+    env:
+      TG_ENV: ${{ inputs.target_env }}
+      AWS_REGION: ${{ inputs.aws_region }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Validate remote plan inputs
+        shell: bash
+        env:
+          AWS_ROLE_TG_CI: ${{ secrets.AWS_ROLE_TG_CI }}
+        run: |
+          set -euo pipefail
+
+          case "$TG_ENV" in
+            dev|prod) ;;
+            *)
+              echo "::error::target_env must be dev or prod."
+              exit 1
+              ;;
+          esac
+
+          if [ -z "$AWS_ROLE_TG_CI" ]; then
+            echo "::error::Remote Terragrunt plan requires AWS_ROLE_TG_CI in the selected GitHub environment or repository secrets."
+            exit 1
+          fi
+
+      - name: AWS Login via OIDC
+        uses: ./.github/actions/aws-oidc
+        with:
+          role_arn: ${{ secrets.AWS_ROLE_TG_CI }}
+          aws_region: ${{ env.AWS_REGION }}
+          role_session_name: "terragrunt-ci"
+
+      - name: Resolve Terraform backend
+        id: backend
+        uses: ./.github/actions/resolve-backend
+        with:
+          tg_env: ${{ env.TG_ENV }}
+          aws_region: ${{ env.AWS_REGION }}
+
+      - name: Show resolved environment
+        run: |
+          {
+            echo "TG_ENV           : ${TG_ENV}"
+            echo "AWS_REGION       : ${AWS_REGION}"
+            echo "Backend          : resolved (masked)"
+          }
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.13.4
+
+      - name: Install Terragrunt
+        run: |
+          set -euo pipefail
+          TG_VERSION="0.93.3"
+          curl -L "https://github.com/gruntwork-io/terragrunt/releases/download/v${TG_VERSION}/terragrunt_linux_amd64" -o terragrunt
+          chmod +x terragrunt
+          sudo mv terragrunt /usr/local/bin/terragrunt
+
+      - name: Terragrunt Init
+        working-directory: terraform/live/${{ env.TG_ENV }}
+        run: terragrunt run --all init --non-interactive -- -reconfigure
+
+      - name: Terragrunt Validate
+        working-directory: terraform/live/${{ env.TG_ENV }}
+        run: terragrunt run --all validate --non-interactive
+
+      - name: Terragrunt Plan
+        id: terragrunt_plan
+        working-directory: terraform/live/${{ env.TG_ENV }}
+        run: |
+          plan_log="${RUNNER_TEMP}/terragrunt-plan-${TG_ENV}.log"
+          plan_summary="${RUNNER_TEMP}/terragrunt-plan-${TG_ENV}-summary.log"
+          : > "$plan_log"
+
+          set +e
+          terragrunt run --all plan -- -lock=false -input=false -no-color > "$plan_log" 2>&1
+          plan_exit=$?
+          set -e
+
+          awk '
+            /STDOUT \[[^]]+\] terraform: No changes\./ {
+              unit = $0
+              sub(/^.*STDOUT \[/, "", unit)
+              sub(/\].*$/, "", unit)
+              print "[" unit "] No changes."
+              next
+            }
+            /STDOUT \[[^]]+\] terraform: Plan: [0-9]+ to add, [0-9]+ to change, [0-9]+ to destroy\./ {
+              unit = $0
+              sub(/^.*STDOUT \[/, "", unit)
+              sub(/\].*$/, "", unit)
+              msg = $0
+              sub(/^.*terraform: /, "", msg)
+              print "[" unit "] " msg
+              next
+            }
+            /Run Summary/ || /^[[:space:]]*(Succeeded|Failed|Errored)[[:space:]]+[0-9]+/ {
+              print
+            }
+          ' "$plan_log" > "$plan_summary" || true
+
+          {
+            echo "## Terragrunt plan - env: ${TG_ENV}"
+            echo
+            echo "Target directory: \`terraform/live/${TG_ENV}\`"
+            echo
+            if [ "$plan_exit" -eq 0 ]; then
+              echo "Plan completed successfully."
+            else
+              echo "Plan failed. Full output is not printed to logs because it may contain infrastructure metadata."
+            fi
+            echo
+            echo "### Safe plan summary"
+            echo
+            if [ -s "$plan_summary" ]; then
+              echo '```text'
+              cat "$plan_summary"
+              echo '```'
+            else
+              echo "No Terraform plan summary lines were found in the Terragrunt output."
+            fi
+            echo
+            echo "Full plan output is captured for artifact upload only; it is not printed to logs or PR comments."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          exit "$plan_exit"
+
+      - name: Upload Terragrunt plan artifact
+        id: upload_plan
+        if: ${{ always() && steps.terragrunt_plan.outcome != 'skipped' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: terragrunt-plan-${{ env.TG_ENV }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/terragrunt-plan-${{ env.TG_ENV }}.log
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 9
+
+      - name: Add plan artifact link to summary
+        if: ${{ always() && steps.upload_plan.outcome == 'success' }}
+        shell: bash
+        run: |
+          {
+            echo "## Full Terragrunt plan"
+            echo
+            echo "Target directory: \`terraform/live/${TG_ENV}\`"
+            echo
+            echo "Artifact: [download full plan](${{ steps.upload_plan.outputs.artifact-url }})"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Check Infracost configuration
+        id: infracost-config
+        shell: bash
+        env:
+          INFRACOST_API_KEY: ${{ secrets.INFRACOST_API_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [ -n "$INFRACOST_API_KEY" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::INFRACOST_API_KEY is not configured; skipping Infracost."
+          fi
+
+      - name: Setup Infracost
+        if: ${{ steps.infracost-config.outputs.enabled == 'true' }}
+        uses: infracost/actions/setup@v3
+
+      - name: Generate Infracost JSON
+        if: ${{ steps.infracost-config.outputs.enabled == 'true' }}
+        working-directory: terraform/live/${{ env.TG_ENV }}
+        env:
+          INFRACOST_API_KEY: ${{ secrets.INFRACOST_API_KEY }}
+        run: |
+          infracost breakdown --path . \
+                              --format json \
+                              --out-file /tmp/infracost.json
+
+      - name: Post Infracost comment
+        if: ${{ steps.infracost-config.outputs.enabled == 'true' && inputs.pr_number != '' }}
+        env:
+          INFRACOST_API_KEY: ${{ secrets.INFRACOST_API_KEY }}
+          GITHUB_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+        run: |
+          set -euo pipefail
+
+          infracost comment github --path /tmp/infracost.json \
+                                   --repo "$GITHUB_REPOSITORY" \
+                                   --github-token "$GITHUB_TOKEN" \
+                                   --pull-request "$PR_NUMBER" \
+                                   --behavior update

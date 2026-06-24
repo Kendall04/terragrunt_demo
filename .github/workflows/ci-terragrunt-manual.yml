@@ -1,0 +1,54 @@
+name: CI - Terragrunt Manual
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_env:
+        description: "Environment target for static checks or remote Terragrunt plan"
+        required: true
+        type: choice
+        default: dev
+        options:
+          - dev
+          - prod
+      run_remote_plan:
+        description: "Run AWS-backed Terragrunt init/validate/plan"
+        required: true
+        type: boolean
+        default: false
+      aws_region:
+        description: "AWS region"
+        required: false
+        type: string
+        default: us-east-1
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-terragrunt-manual-${{ inputs.target_env }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  manual-static:
+    name: Manual Static Checks
+    permissions:
+      contents: read
+    uses: ./.github/workflows/ci-terragrunt.yml
+    with:
+      target_env: ${{ inputs.target_env }}
+      aws_region: ${{ inputs.aws_region }}
+
+  manual-remote-plan:
+    name: Manual Remote Plan
+    needs: manual-static
+    if: ${{ inputs.run_remote_plan == true }}
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+    uses: ./.github/workflows/ci-terragrunt-plan.yml
+    with:
+      target_env: ${{ inputs.target_env }}
+      aws_region: ${{ inputs.aws_region }}
+    secrets: inherit
