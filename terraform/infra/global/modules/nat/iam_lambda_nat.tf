@@ -41,6 +41,7 @@ resource "aws_iam_policy" "lambda_nat" {
       {
         Effect : "Allow",
         Action : [
+          "autoscaling:DescribeAutoScalingGroups",
           "ec2:DescribeInstances",
           "ec2:DescribeRouteTables",
           "ec2:DescribeNetworkInterfaces"

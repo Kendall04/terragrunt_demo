@@ -2,7 +2,8 @@
 # GitHub OIDC Provider
 # ===========================================
 data "tls_certificate" "github_actions" {
-  url = "https://token.actions.githubusercontent.com/.well-known/openid-configuration"
+  count = var.create_github_oidc_provider ? 1 : 0
+  url   = "https://token.actions.githubusercontent.com/.well-known/openid-configuration"
 }
 
 resource "aws_iam_openid_connect_provider" "github" {
@@ -15,19 +16,19 @@ resource "aws_iam_openid_connect_provider" "github" {
   ]
 
   thumbprint_list = [
-    data.tls_certificate.github_actions.certificates[0].sha1_fingerprint,
+    data.tls_certificate.github_actions[0].certificates[0].sha1_fingerprint,
   ]
 }
 
 data "aws_iam_openid_connect_provider" "github" {
-  count = var.create_github_oidc_provider ? 0 : 1
+  count = var.create_github_oidc_provider || var.github_oidc_provider_arn != null ? 0 : 1
   url   = "https://token.actions.githubusercontent.com"
 }
 
 # ------------------------------------------------------------
-# Trust Policy (GitHub OIDC -> IAM Role)
+# Trust Policy (GitHub OIDC -> CI IAM Role)
 # ------------------------------------------------------------
-data "aws_iam_policy_document" "github_oidc_trust" {
+data "aws_iam_policy_document" "github_oidc_trust_ci" {
   statement {
     effect = "Allow"
 
@@ -47,7 +48,7 @@ data "aws_iam_policy_document" "github_oidc_trust" {
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_owner}/${var.github_repo}:*"]
+      values   = local.github_ci_subjects
     }
   }
 }
@@ -57,7 +58,7 @@ data "aws_iam_policy_document" "github_oidc_trust" {
 # ============================================================
 resource "aws_iam_role" "github_terragrunt_ci" {
   name               = "${var.name}-terragrunt-ci"
-  assume_role_policy = data.aws_iam_policy_document.github_oidc_trust.json
+  assume_role_policy = data.aws_iam_policy_document.github_oidc_trust_ci.json
 }
 
 # ============================================================
@@ -70,33 +71,32 @@ resource "aws_iam_role_policy_attachment" "ci_readonly_access" {
 }
 
 # ============================================================
-# Extra policy: allow reading specific Secrets Manager secrets
-# (solo GetSecretValue/DescribeSecret)
+# Explicitly deny reading or mutating secret values in CI.
+#
+# The CI role can plan infrastructure, but secret values are bootstrapped
+# outside Terraform and must not be readable by PR validation.
 # ============================================================
-data "aws_iam_policy_document" "ci_secrets_read" {
+data "aws_iam_policy_document" "ci_deny_secret_values" {
   statement {
-    effect = "Allow"
+    effect = "Deny"
 
     actions = [
+      "kms:Decrypt",
       "secretsmanager:GetSecretValue",
-      "secretsmanager:DescribeSecret",
+      "secretsmanager:PutSecretValue",
+      "secretsmanager:UpdateSecret",
+      "secretsmanager:UpdateSecretVersionStage",
+      "ssm:GetParameter",
+      "ssm:GetParameters",
+      "ssm:GetParametersByPath",
     ]
 
-    resources = [
-      # Conn string 
-      "arn:aws:secretsmanager:${local.aws_region}:${local.account_id}:secret:${var.project}/${var.env}/db/*",
-
-      # SA password
-      "arn:aws:secretsmanager:${local.aws_region}:${local.account_id}:secret:sql-sa-password-${var.project}-${var.env}-*",
-
-      # App password
-      "arn:aws:secretsmanager:${local.aws_region}:${local.account_id}:secret:sql-app-password-${var.project}-${var.env}-*",
-    ]
+    resources = ["*"]
   }
 }
 
-resource "aws_iam_role_policy" "ci_secrets_read" {
-  name   = "${var.name}ci-secrets-read"
+resource "aws_iam_role_policy" "ci_deny_secret_values" {
+  name   = "${var.name}-ci-deny-secret-values"
   role   = aws_iam_role.github_terragrunt_ci.id
-  policy = data.aws_iam_policy_document.ci_secrets_read.json
+  policy = data.aws_iam_policy_document.ci_deny_secret_values.json
 }

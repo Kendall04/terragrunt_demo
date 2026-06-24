@@ -3,7 +3,7 @@ description: "Compute TF_STATE_BUCKET and TF_STATE_TABLE for the current TG_ENV 
 
 inputs:
   tg_env:
-    description: "Environment name (dev/stage/prod). If empty, uses TG_ENV env var or 'dev'."
+    description: "Environment name (dev/prod). If empty, uses TG_ENV env var or 'dev'."
     required: false
     default: ""
   aws_region:
@@ -40,7 +40,15 @@ runs:
           REGION_INPUT="${AWS_REGION:-us-east-1}"
         fi
 
-        echo "Using ENV=${ENV_INPUT}"
+        case "${ENV_INPUT}" in
+          dev|prod) ;;
+          *)
+            echo "Unsupported TG_ENV=${ENV_INPUT}"
+            exit 1
+            ;;
+        esac
+
+        echo "Using environment=${ENV_INPUT}"
         echo "Using AWS_REGION=${REGION_INPUT}"
 
         ACCOUNT_ID=$(aws sts get-caller-identity \
@@ -51,9 +59,10 @@ runs:
         STATE_BUCKET="tfstate-demo-${ENV_INPUT}-${ACCOUNT_ID}"
         LOCK_TABLE="tfstate-locks-${ACCOUNT_ID}"
 
-        echo "Resolved ACCOUNT_ID=${ACCOUNT_ID}"
-        echo "Resolved TF_STATE_BUCKET=${STATE_BUCKET}"
-        echo "Resolved TF_STATE_TABLE=${LOCK_TABLE}"
+        echo "::add-mask::${ACCOUNT_ID}"
+        echo "::add-mask::${STATE_BUCKET}"
+        echo "::add-mask::${LOCK_TABLE}"
+        echo "Resolved Terraform backend for environment=${ENV_INPUT}; values are masked."
 
         # Export as environment variables for subsequent steps
         echo "TF_STATE_BUCKET=${STATE_BUCKET}" >> "$GITHUB_ENV"

@@ -76,3 +76,18 @@ variable "alerts_topic_arn" {
   type        = string
   description = "SNS topic ARN for alarm notifications"
 }
+
+variable "sql_sa_secret_arn" {
+  type        = string
+  description = "ARN of the SQL Server SA password secret created by the secrets layer."
+}
+
+variable "sql_app_secret_arn" {
+  type        = string
+  description = "ARN of the SQL Server application user password secret created by the secrets layer."
+}
+
+variable "secret_kms_key_arn" {
+  type        = string
+  description = "KMS key ARN used to encrypt Secrets Manager secrets."
+}

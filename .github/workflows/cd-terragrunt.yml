@@ -1,59 +1,143 @@
-name: CD - Terragrunt
+name: CD - Terragrunt Layer
 
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
-      aws_region:
+      environment:
+        description: "Environment to plan or apply"
+        required: true
+        type: choice
+        options:
+          - dev
+          - prod
+      layer:
+        description: "Terragrunt layer to plan or apply"
+        required: true
+        type: choice
+        options:
+          - shared
+          - secrets
+          - global
+          - data
+          - platform
+          - edge
+          - apps/fargate
+      action:
+        description: "Terragrunt action"
+        required: true
+        type: choice
+        options:
+          - plan
+          - apply
+      confirm_prod:
+        description: "Required exact value 'prod' for prod apply"
         required: false
         type: string
-        default: us-east-1
-      deploy_env:
-        required: true
-        type: string
-    secrets:
-      AWS_ROLE_TG_CD:
-        required: true
+        default: ""
 
 permissions:
   contents: read
   id-token: write
 
 concurrency:
-  group: cd-terragrunt-${{ inputs.deploy_env }}
+  group: cd-terragrunt-${{ inputs.environment }}-${{ inputs.layer }}
   cancel-in-progress: false
 
 jobs:
-  terragrunt-cd:
-    name: Terragrunt Lint • Security • Init • Apply
+  terragrunt-layer:
+    name: Terragrunt ${{ inputs.action }} • ${{ inputs.environment }} • ${{ inputs.layer }}
+    if: ${{ !contains(fromJson('["data","apps/fargate"]'), inputs.layer) }}
     runs-on: ubuntu-latest
     environment:
-      name: ${{ inputs.deploy_env }}
+      name: ${{ inputs.environment }}
     env:
-      AWS_REGION: ${{ inputs.aws_region }}
-      TG_ENV: ${{ inputs.deploy_env }}
+      AWS_REGION: us-east-1
+      TG_ENV: ${{ inputs.environment }}
+      TG_LAYER: ${{ inputs.layer }}
+      TG_ACTION: ${{ inputs.action }}
+      CONFIRM_PROD_INPUT: ${{ inputs.confirm_prod }}
+      LAYER_DIR: terraform/live/${{ inputs.environment }}/${{ inputs.layer }}
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+
+      - name: Validate dispatch inputs
+        shell: bash
+        env:
+          AWS_ROLE_TG_CD: ${{ secrets.AWS_ROLE_TG_CD }}
+        run: |
+          set -euo pipefail
+
+          case "${TG_ENV}" in
+            dev|prod) ;;
+            *)
+              echo "::error::Unsupported environment: ${TG_ENV}"
+              exit 1
+              ;;
+          esac
+
+          case "${TG_LAYER}" in
+            shared|secrets|global|data|platform|edge|apps/fargate) ;;
+            apps-fargate|apps)
+              echo "::error::Use the explicit layer value apps/fargate."
+              exit 1
+              ;;
+            *)
+              echo "::error::Unsupported layer: ${TG_LAYER}"
+              exit 1
+              ;;
+          esac
+
+          case "${TG_ACTION}" in
+            plan|apply) ;;
+            *)
+              echo "::error::Unsupported action: ${TG_ACTION}"
+              exit 1
+              ;;
+          esac
+
+          if [ "${TG_ENV}" = "prod" ] && [ "${TG_ACTION}" = "apply" ] && [ "${CONFIRM_PROD_INPUT}" != "prod" ]; then
+            echo "::error::prod apply requires confirm_prod=prod and the prod GitHub environment approval."
+            exit 1
+          fi
+
+          if [ ! -d "${LAYER_DIR}" ] || [ ! -f "${LAYER_DIR}/terragrunt.hcl" ]; then
+            echo "::error::Terragrunt layer path is missing or invalid: ${LAYER_DIR}"
+            exit 1
+          fi
+
+          if [ -z "${AWS_ROLE_TG_CD:-}" ]; then
+            echo "::error::Missing Terragrunt CD role. Configure AWS_ROLE_TG_CD in the ${TG_ENV} GitHub environment. High-risk layers must use AWS_ROLE_TG_CD_HIGH_RISK through dev-infra-approval."
+            exit 1
+          fi
+
+          echo "::add-mask::${AWS_ROLE_TG_CD}"
+          echo "Validated Terragrunt target: ${TG_ENV}/${TG_LAYER} (${TG_ACTION})."
 
       - name: AWS Login via OIDC
         uses: ./.github/actions/aws-oidc
         with:
           role_arn: ${{ secrets.AWS_ROLE_TG_CD }}
           aws_region: ${{ env.AWS_REGION }}
-          role_session_name: "terragrunt-cd"
+          role_session_name: "terragrunt-cd-${{ inputs.action }}"
 
       - name: Resolve Terraform backend
         id: backend
         uses: ./.github/actions/resolve-backend
+        with:
+          tg_env: ${{ env.TG_ENV }}
+          aws_region: ${{ env.AWS_REGION }}
 
-      - name: Show resolved backend
+      - name: Show resolved target
+        shell: bash
         run: |
-          echo "TG_ENV           : ${TG_ENV}"
-          echo "AWS_REGION       : ${AWS_REGION}"
-          echo "TF_STATE_BUCKET  : ${TF_STATE_BUCKET}"
-          echo "TF_STATE_TABLE   : ${TF_STATE_TABLE}"
-          echo "ACCOUNT_ID       : ${ACCOUNT_ID}"
+          set -euo pipefail
+          echo "TG_ENV     : ${TG_ENV}"
+          echo "TG_LAYER   : ${TG_LAYER}"
+          echo "TG_ACTION  : ${TG_ACTION}"
+          echo "AWS_REGION : ${AWS_REGION}"
+          echo "Backend    : resolved (masked)"
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -61,39 +145,173 @@ jobs:
           terraform_version: 1.13.4
 
       - name: Install Terragrunt
+        shell: bash
         run: |
+          set -euo pipefail
           TG_VERSION="0.93.3"
           curl -L "https://github.com/gruntwork-io/terragrunt/releases/download/v${TG_VERSION}/terragrunt_linux_amd64" -o terragrunt
           chmod +x terragrunt
           sudo mv terragrunt /usr/local/bin/terragrunt
 
-      - name: Setup TFLint
-        uses: terraform-linters/setup-tflint@v4
-
-      - name: Run TFLint
-        run: |
-          tflint --version
-          tflint --recursive
-
-      - name: Install tfsec
-        run: |
-          curl -L "https://github.com/aquasecurity/tfsec/releases/latest/download/tfsec-linux-amd64" -o tfsec
-          chmod +x tfsec
-          sudo mv tfsec /usr/local/bin
-
-      - name: Run tfsec
-        run: |
-          tfsec --no-color . --minimum-severity=MEDIUM
-
-      - name: Terraform fmt (modules only)
+      - name: Terraform fmt
         run: terraform fmt -check -recursive terraform/
 
-      - name: Terragrunt Init
-        working-directory: terraform/live/${{ env.TG_ENV }}
-        run: |
-          terragrunt run --all init --non-interactive -- -reconfigure
+      - name: Terragrunt HCL fmt
+        run: terragrunt hcl format --check --working-dir terraform/live
 
-      - name: Terragrunt Apply
-        working-directory: terraform/live/${{ env.TG_ENV }}
+      - name: Terragrunt init
+        working-directory: ${{ env.LAYER_DIR }}
+        run: terragrunt init --non-interactive -- -reconfigure
+
+      - name: Terragrunt validate
+        working-directory: ${{ env.LAYER_DIR }}
+        run: terragrunt validate --non-interactive
+
+      - name: Terragrunt plan
+        if: inputs.action == 'plan'
+        working-directory: ${{ env.LAYER_DIR }}
+        run: terragrunt plan --non-interactive -- -input=false -no-color
+
+      - name: Terragrunt apply
+        if: inputs.action == 'apply'
+        working-directory: ${{ env.LAYER_DIR }}
+        run: terragrunt apply --non-interactive -- -input=false -auto-approve
+
+  terragrunt-layer-high-risk:
+    name: High-Risk Terragrunt ${{ inputs.action }} • dev • ${{ inputs.layer }}
+    if: ${{ inputs.environment == 'dev' && contains(fromJson('["data","apps/fargate"]'), inputs.layer) }}
+    runs-on: ubuntu-latest
+    environment:
+      name: dev-infra-approval
+    env:
+      AWS_REGION: us-east-1
+      TG_ENV: dev
+      TG_LAYER: ${{ inputs.layer }}
+      TG_ACTION: ${{ inputs.action }}
+      CONFIRM_PROD_INPUT: ${{ inputs.confirm_prod }}
+      LAYER_DIR: terraform/live/dev/${{ inputs.layer }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Validate high-risk dispatch inputs
+        shell: bash
+        env:
+          AWS_ROLE_TG_CD_HIGH_RISK: ${{ secrets.AWS_ROLE_TG_CD_HIGH_RISK }}
+          DEV_INFRA_APPROVAL_GATE_CONFIGURED: ${{ vars.DEV_INFRA_APPROVAL_GATE_CONFIGURED }}
         run: |
-          terragrunt run --non-interactive --all apply -- -input=false -auto-approve
+          set -euo pipefail
+
+          case "${TG_LAYER}" in
+            data|apps/fargate) ;;
+            *)
+              echo "::error::Unsupported high-risk layer: ${TG_LAYER}"
+              exit 1
+              ;;
+          esac
+
+          case "${TG_ACTION}" in
+            plan|apply) ;;
+            *)
+              echo "::error::Unsupported action: ${TG_ACTION}"
+              exit 1
+              ;;
+          esac
+
+          if [ "${DEV_INFRA_APPROVAL_GATE_CONFIGURED:-}" != "true" ]; then
+            echo "::error::Configure the dev-infra-approval GitHub Environment with required reviewers, then set environment variable DEV_INFRA_APPROVAL_GATE_CONFIGURED=true."
+            exit 1
+          fi
+
+          if [ -z "${AWS_ROLE_TG_CD_HIGH_RISK:-}" ]; then
+            echo "::error::Missing high-risk Terragrunt CD role. Configure AWS_ROLE_TG_CD_HIGH_RISK in the dev-infra-approval GitHub environment. The normal AWS_ROLE_TG_CD role is intentionally not accepted here."
+            exit 1
+          fi
+
+          if [ ! -d "${LAYER_DIR}" ] || [ ! -f "${LAYER_DIR}/terragrunt.hcl" ]; then
+            echo "::error::Terragrunt layer path is missing or invalid: ${LAYER_DIR}"
+            exit 1
+          fi
+
+          echo "::add-mask::${AWS_ROLE_TG_CD_HIGH_RISK}"
+          echo "Validated high-risk Terragrunt target: ${TG_ENV}/${TG_LAYER} (${TG_ACTION})."
+
+      - name: AWS Login via OIDC
+        uses: ./.github/actions/aws-oidc
+        with:
+          role_arn: ${{ secrets.AWS_ROLE_TG_CD_HIGH_RISK }}
+          aws_region: ${{ env.AWS_REGION }}
+          role_session_name: "terragrunt-cd-high-risk-${{ inputs.action }}"
+
+      - name: Resolve Terraform backend
+        id: backend
+        uses: ./.github/actions/resolve-backend
+        with:
+          tg_env: ${{ env.TG_ENV }}
+          aws_region: ${{ env.AWS_REGION }}
+
+      - name: Show resolved target
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "TG_ENV     : ${TG_ENV}"
+          echo "TG_LAYER   : ${TG_LAYER}"
+          echo "TG_ACTION  : ${TG_ACTION}"
+          echo "AWS_REGION : ${AWS_REGION}"
+          echo "Backend    : resolved (masked)"
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.13.4
+
+      - name: Install Terragrunt
+        shell: bash
+        run: |
+          set -euo pipefail
+          TG_VERSION="0.93.3"
+          curl -L "https://github.com/gruntwork-io/terragrunt/releases/download/v${TG_VERSION}/terragrunt_linux_amd64" -o terragrunt
+          chmod +x terragrunt
+          sudo mv terragrunt /usr/local/bin/terragrunt
+
+      - name: Terraform fmt
+        run: terraform fmt -check -recursive terraform/
+
+      - name: Terragrunt HCL fmt
+        run: terragrunt hcl format --check --working-dir terraform/live
+
+      - name: Terragrunt init
+        working-directory: ${{ env.LAYER_DIR }}
+        run: terragrunt init --non-interactive -- -reconfigure
+
+      - name: Terragrunt validate
+        working-directory: ${{ env.LAYER_DIR }}
+        run: terragrunt validate --non-interactive
+
+      - name: Terragrunt plan
+        if: inputs.action == 'plan'
+        working-directory: ${{ env.LAYER_DIR }}
+        run: terragrunt plan --non-interactive -- -input=false -no-color
+
+      - name: Terragrunt apply
+        if: inputs.action == 'apply'
+        working-directory: ${{ env.LAYER_DIR }}
+        run: terragrunt apply --non-interactive -- -input=false -auto-approve
+
+  terragrunt-layer-high-risk-unsupported:
+    name: Unsupported High-Risk Terragrunt • ${{ inputs.environment }} • ${{ inputs.layer }}
+    if: ${{ inputs.environment != 'dev' && contains(fromJson('["data","apps/fargate"]'), inputs.layer) }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      TG_ENV: ${{ inputs.environment }}
+      TG_LAYER: ${{ inputs.layer }}
+    steps:
+      - name: Block unsupported high-risk target
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "::error::Manual high-risk Terragrunt layers are only wired for dev through the dev-infra-approval environment and AWS_ROLE_TG_CD_HIGH_RISK. Configure a dedicated ${TG_ENV} high-risk role/environment before enabling ${TG_ENV}/${TG_LAYER}."
+          exit 1

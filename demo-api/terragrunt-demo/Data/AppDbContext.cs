@@ -24,7 +24,7 @@ namespace terragrunt_demo.Data
 
                 entity.Property(x => x.Text)
                     .IsRequired()
-                    .HasMaxLength(1000);
+                    .HasColumnType("nvarchar(max)");
 
                 entity.Property(x => x.CreatedAt)
                     .HasDefaultValueSql("GETUTCDATE()");

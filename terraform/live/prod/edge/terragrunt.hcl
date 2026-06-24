@@ -22,7 +22,8 @@ dependency "global" {
   }
 
   # When state exists, merge real outputs with mock values
-  mock_outputs_merge_with_state = true
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+  mock_outputs_merge_with_state           = true
 }
 
 # =====================================================
@@ -37,11 +38,13 @@ terraform {
 # Inputs for the edge module
 # =====================================================
 inputs = {
-  env         = local.parent.locals.env
+  env     = local.parent.locals.env
   project = local.parent.locals.project_name
 
   # From global: ALB listener used by API Gateway VPC Link
   alb_listener_arn   = dependency.global.outputs.alb_listener_arn
   private_subnet_ids = dependency.global.outputs.private_subnet_ids
   vpc_link_sg_id     = dependency.global.outputs.vpc_link_sg_id
+  # CORS is disabled by default. Add explicit trusted origins when needed.
+  cors_allowed_origins = []
 }

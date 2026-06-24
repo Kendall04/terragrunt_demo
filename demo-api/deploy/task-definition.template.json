@@ -1,0 +1,60 @@
+{
+  "family": "",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "",
+  "taskRoleArn": "",
+  "runtimePlatform": {
+    "cpuArchitecture": "X86_64",
+    "operatingSystemFamily": "LINUX"
+  },
+  "containerDefinitions": [
+    {
+      "name": "",
+      "image": "",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8080,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "AWS_REGION",
+          "value": ""
+        },
+        {
+          "name": "APP_ENV",
+          "value": ""
+        },
+        {
+          "name": "DEPLOYMENT",
+          "value": ""
+        },
+        {
+          "name": "KMS_KEY_ID",
+          "value": ""
+        }
+      ],
+      "secrets": [
+        {
+          "name": "DB_CONN_STRING",
+          "valueFrom": ""
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "",
+          "awslogs-region": "",
+          "awslogs-stream-prefix": ""
+        }
+      }
+    }
+  ]
+}

@@ -20,7 +20,8 @@ dependency "global" {
     demo_green_tg_arn  = "arn:aws:elasticloadbalancing:region:acct:targetgroup/fake"
   }
 
-  mock_outputs_merge_with_state = true
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+  mock_outputs_merge_with_state           = true
 }
 
 # ---------- PLATFORM ----------
@@ -30,10 +31,11 @@ dependency "platform" {
 
   mock_outputs = {
     cluster_arn  = "arn:aws:ecs:region:acct:cluster/fake"
-    cluster_name  = "fake-platform-main-cluster"
+    cluster_name = "fake-platform-main-cluster"
   }
 
-  mock_outputs_merge_with_state = true
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+  mock_outputs_merge_with_state           = true
 }
 
 # ---------- SHARED ----------
@@ -42,24 +44,30 @@ dependency "shared" {
   config_path = "../../shared"
 
   mock_outputs = {
-    kms_key_arn  = "arn:aws:kms:region:acct:key/fake"
-    kms_key_id  = "fake_kms_key_id"
-    alerts_topic_arn  = "arn:aws::region:acct:/fake"
+    kms_key_arn      = "arn:aws:kms:region:acct:key/fake"
+    kms_key_id       = "fake_kms_key_id"
+    alerts_topic_arn = "arn:aws::region:acct:/fake"
   }
 
-  mock_outputs_merge_with_state = true
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+  mock_outputs_merge_with_state           = true
 }
 
-# ---------- DATA ----------
-# DB connection string secret created by the data layer
-dependency "data_root" {
-  config_path = "../../data"
+dependencies {
+  paths = ["../../data"]
+}
+
+# ---------- SECRETS ----------
+# DB connection string secret created by the secrets layer
+dependency "secrets" {
+  config_path = "../../secrets"
 
   mock_outputs = {
     db_secret_arn = "arn:aws:secretsmanager:region:acct:secret:fake-db"
   }
 
-  mock_outputs_merge_with_state = true
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+  mock_outputs_merge_with_state           = true
 }
 
 # =====================================================
@@ -73,9 +81,9 @@ terraform {
 # Inputs for the Fargate demo app
 # =====================================================
 inputs = {
-  env         = local.parent.locals.env
-  aws_region  = local.parent.locals.aws_region
-  project = local.parent.locals.project_name
+  env        = local.parent.locals.env
+  aws_region = local.parent.locals.aws_region
+  project    = local.parent.locals.project_name
 
   # --- GLOBAL ---
   private_subnet_ids = dependency.global.outputs.private_subnet_ids
@@ -86,13 +94,13 @@ inputs = {
 
   # --- PLATFORM ---
   cluster_arn  = dependency.platform.outputs.cluster_arn
-  cluster_name  = dependency.platform.outputs.cluster_name
+  cluster_name = dependency.platform.outputs.cluster_name
 
   # --- SHARED ---
-  kms_key_arn  = dependency.shared.outputs.kms_key_arn
-  kms_key_id  = dependency.shared.outputs.kms_key_id
+  kms_key_arn      = dependency.shared.outputs.kms_key_arn
+  kms_key_id       = dependency.shared.outputs.kms_key_id
   alerts_topic_arn = dependency.shared.outputs.alerts_topic_arn
 
-  # --- DATA ---
-  db_secret_arn = dependency.data_root.outputs.db_secret_arn
+  # --- SECRETS ---
+  db_secret_arn = dependency.secrets.outputs.db_secret_arn
 }

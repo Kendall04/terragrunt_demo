@@ -1,0 +1,493 @@
+name: Rollback Manifest - Demo API
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to roll back"
+        required: true
+        type: choice
+        default: dev
+        options:
+          - dev
+          - prod
+      selector_type:
+        description: "How to select the release manifest"
+        required: true
+        type: choice
+        default: previous_environment_history
+        options:
+          - manifest_uri
+          - git_sha_run_id
+          - digest
+          - previous_environment_history
+      manifest_uri:
+        description: "Existing release manifest URI"
+        required: false
+        type: string
+        default: ""
+      git_sha:
+        description: "Release git SHA selector. Must be paired with run_id."
+        required: false
+        type: string
+        default: ""
+      run_id:
+        description: "Release build GitHub run ID selector. Must be paired with git_sha."
+        required: false
+        type: string
+        default: ""
+      digest:
+        description: "Image digest selector, e.g. sha256:<64 lowercase hex>"
+        required: false
+        type: string
+        default: ""
+      history_index:
+        description: "For previous_environment_history: 1 means the deployment before current."
+        required: false
+        type: string
+        default: "1"
+      aws_region:
+        description: "AWS region"
+        required: false
+        type: string
+        default: us-east-1
+      reason:
+        description: "Rollback reason"
+        required: false
+        type: string
+        default: ""
+      confirm_prod:
+        description: "For prod rollback, type prod."
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: rollback-manifest-demo-api-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  rollback-manifest:
+    name: Roll Back ${{ inputs.environment }} From Manifest
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment }}
+    env:
+      AWS_REGION: ${{ inputs.aws_region }}
+      TG_ENV: ${{ inputs.environment }}
+      SELECTOR_TYPE: ${{ inputs.selector_type }}
+      INPUT_MANIFEST_URI: ${{ inputs.manifest_uri }}
+      INPUT_GIT_SHA: ${{ inputs.git_sha }}
+      INPUT_RUN_ID: ${{ inputs.run_id }}
+      INPUT_DIGEST: ${{ inputs.digest }}
+      HISTORY_INDEX: ${{ inputs.history_index }}
+      ROLLBACK_REASON: ${{ inputs.reason }}
+      CONFIRM_PROD: ${{ inputs.confirm_prod }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Validate rollback inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          case "$TG_ENV" in
+            dev|prod) ;;
+            *)
+              echo "::error::environment must be dev or prod."
+              exit 1
+              ;;
+          esac
+
+          if [ "$TG_ENV" = "prod" ] && [ "$CONFIRM_PROD" != "prod" ]; then
+            echo "::error::Prod rollback requires confirm_prod=prod."
+            exit 1
+          fi
+
+          case "$SELECTOR_TYPE" in
+            manifest_uri|git_sha_run_id|digest|previous_environment_history) ;;
+            *)
+              echo "::error::Unsupported selector_type=${SELECTOR_TYPE}."
+              exit 1
+              ;;
+          esac
+
+          if ! [[ "$HISTORY_INDEX" =~ ^[0-9]+$ ]] || [ "$HISTORY_INDEX" -lt 1 ]; then
+            echo "::error::history_index must be a positive integer."
+            exit 1
+          fi
+
+          case "$SELECTOR_TYPE" in
+            manifest_uri)
+              if ! [[ "$INPUT_MANIFEST_URI" =~ ^s3://[^/]+/.+ ]]; then
+                echo "::error::manifest_uri selector requires manifest_uri as an s3:// URI."
+                exit 1
+              fi
+              if [ -n "$INPUT_GIT_SHA" ] || [ -n "$INPUT_RUN_ID" ] || [ -n "$INPUT_DIGEST" ]; then
+                echo "::error::manifest_uri selector cannot be combined with git_sha, run_id, or digest."
+                exit 1
+              fi
+              ;;
+            git_sha_run_id)
+              if [ -z "$INPUT_GIT_SHA" ] || [ -z "$INPUT_RUN_ID" ]; then
+                echo "::error::git_sha_run_id selector requires git_sha and run_id."
+                exit 1
+              fi
+              if ! [[ "$INPUT_GIT_SHA" =~ ^[A-Fa-f0-9]{7,40}$ ]] || ! [[ "$INPUT_RUN_ID" =~ ^[0-9]+$ ]]; then
+                echo "::error::git_sha/run_id selector values are invalid."
+                exit 1
+              fi
+              if [ -n "$INPUT_MANIFEST_URI" ] || [ -n "$INPUT_DIGEST" ]; then
+                echo "::error::git_sha_run_id selector cannot be combined with manifest_uri or digest."
+                exit 1
+              fi
+              ;;
+            digest)
+              scripts/validate-image-digest.sh --digest "$INPUT_DIGEST"
+              if [ -n "$INPUT_MANIFEST_URI" ] || [ -n "$INPUT_GIT_SHA" ] || [ -n "$INPUT_RUN_ID" ]; then
+                echo "::error::digest selector cannot be combined with manifest_uri, git_sha, or run_id."
+                exit 1
+              fi
+              ;;
+            previous_environment_history)
+              if [ -n "$INPUT_MANIFEST_URI" ] || [ -n "$INPUT_GIT_SHA" ] || [ -n "$INPUT_RUN_ID" ] || [ -n "$INPUT_DIGEST" ]; then
+                echo "::error::previous_environment_history selector cannot be combined with manifest_uri, git_sha, run_id, or digest."
+                exit 1
+              fi
+              ;;
+          esac
+
+      - name: Resolve rollback role
+        id: aws-role
+        shell: bash
+        env:
+          AWS_ROLE_DEV_DEPLOY: ${{ secrets.AWS_ROLE_DEV_DEPLOY }}
+          AWS_ROLE_PROD_PROMOTE: ${{ secrets.AWS_ROLE_PROD_PROMOTE }}
+        run: |
+          set -euo pipefail
+
+          case "$TG_ENV" in
+            dev)
+              if [ -z "$AWS_ROLE_DEV_DEPLOY" ]; then
+                echo "::error::Missing AWS rollback authority for dev. Configure AWS_ROLE_DEV_DEPLOY in the dev GitHub environment. rollback-manifest does not fall back to AWS_ROLE_APP_CD."
+                exit 1
+              fi
+              role_arn="$AWS_ROLE_DEV_DEPLOY"
+              source="AWS_ROLE_DEV_DEPLOY"
+              ;;
+            prod)
+              if [ -z "$AWS_ROLE_PROD_PROMOTE" ]; then
+                echo "::error::Missing AWS rollback authority for prod. Configure AWS_ROLE_PROD_PROMOTE in the prod GitHub environment. rollback-manifest does not fall back to AWS_ROLE_APP_CD."
+                exit 1
+              fi
+              role_arn="$AWS_ROLE_PROD_PROMOTE"
+              source="AWS_ROLE_PROD_PROMOTE"
+              ;;
+          esac
+
+          echo "::add-mask::$role_arn"
+          echo "role_arn=$role_arn" >> "$GITHUB_OUTPUT"
+          echo "role_source=$source" >> "$GITHUB_OUTPUT"
+
+      - name: AWS Login via OIDC
+        uses: ./.github/actions/aws-oidc
+        with:
+          role_arn: ${{ steps.aws-role.outputs.role_arn }}
+          aws_region: ${{ env.AWS_REGION }}
+          role_session_name: "rollback-manifest"
+
+      - name: Resolve Terraform backend
+        id: backend
+        uses: ./.github/actions/resolve-backend
+        with:
+          tg_env: ${{ env.TG_ENV }}
+          aws_region: ${{ env.AWS_REGION }}
+
+      - name: Resolve release artifacts bucket
+        shell: bash
+        env:
+          RELEASE_ARTIFACTS_BUCKET_OVERRIDE: ${{ vars.RELEASE_ARTIFACTS_BUCKET }}
+        run: |
+          set -euo pipefail
+
+          if [ -n "$RELEASE_ARTIFACTS_BUCKET_OVERRIDE" ]; then
+            bucket="$RELEASE_ARTIFACTS_BUCKET_OVERRIDE"
+          else
+            bucket="demo-release-artifacts-${ACCOUNT_ID}"
+          fi
+
+          if ! [[ "$bucket" =~ ^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$ ]]; then
+            echo "::error::Release artifacts bucket name is invalid."
+            exit 1
+          fi
+
+          echo "::add-mask::$bucket"
+          echo "RELEASE_ARTIFACTS_BUCKET=$bucket" >> "$GITHUB_ENV"
+
+      - name: Read current deployment pointer
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          current_dir=".rollback/current"
+          current_record="${current_dir}/current.json"
+          mkdir -p "$current_dir"
+
+          if ! aws s3 cp "s3://${RELEASE_ARTIFACTS_BUCKET}/environments/${TG_ENV}/current.json" "$current_record" --no-progress >/dev/null; then
+            echo "::error::Could not read environments/${TG_ENV}/current.json. Rollback requires an existing current deployment record."
+            exit 1
+          fi
+
+          scripts/validate-deployment-record.sh "$current_record"
+
+          {
+            echo "PREVIOUS_CURRENT_MANIFEST_URI=$(jq -er '.releaseManifestUri' "$current_record")"
+            echo "PREVIOUS_CURRENT_IMAGE_DIGEST=$(jq -er '.imageDigest' "$current_record")"
+            echo "PREVIOUS_CURRENT_GIT_SHA=$(jq -er '.gitSha' "$current_record")"
+          } >> "$GITHUB_ENV"
+
+      - name: Resolve selected release manifest
+        id: manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          manifest_dir=".rollback/manifest"
+          manifest_path="${manifest_dir}/release-manifest.json"
+          resolution_path="${manifest_dir}/release-manifest-resolution.json"
+          history_selection_path="${manifest_dir}/history-selection.json"
+          mkdir -p "$manifest_dir"
+
+          args=(
+            --app demo-api
+            --output "$manifest_path"
+            --resolution-output "$resolution_path"
+          )
+
+          if [ "$SELECTOR_TYPE" = "manifest_uri" ]; then
+            args+=(--manifest-uri "$INPUT_MANIFEST_URI")
+          elif [ "$SELECTOR_TYPE" = "git_sha_run_id" ]; then
+            args+=(--bucket "$RELEASE_ARTIFACTS_BUCKET" --git-sha "$INPUT_GIT_SHA" --run-id "$INPUT_RUN_ID")
+          elif [ "$SELECTOR_TYPE" = "digest" ]; then
+            args+=(--bucket "$RELEASE_ARTIFACTS_BUCKET" --digest "$INPUT_DIGEST")
+          else
+            scripts/list-deployment-history-s3.sh \
+              --bucket "$RELEASE_ARTIFACTS_BUCKET" \
+              --environment "$TG_ENV" \
+              --history-index "$HISTORY_INDEX" \
+              --output "$history_selection_path"
+            selected_manifest_uri="$(jq -er '.selectedReleaseManifestUri' "$history_selection_path")"
+            args+=(--manifest-uri "$selected_manifest_uri")
+          fi
+
+          scripts/read-release-manifest-s3.sh "${args[@]}"
+
+          manifest_app="$(jq -er '.app' "$manifest_path")"
+          manifest_git_sha="$(jq -er '.gitSha' "$manifest_path")"
+          image_digest="$(jq -er '.image.digest' "$manifest_path")"
+          image_uri="$(jq -er '.image.uri' "$manifest_path")"
+          image_tag="$(jq -er '.image.tag' "$manifest_path")"
+          resolved_manifest_uri="$(jq -er '.manifestUri' "$resolution_path")"
+
+          scripts/validate-image-digest.sh \
+            --digest "$image_digest" \
+            --image-uri "$image_uri"
+
+          if [ "$image_digest" = "$PREVIOUS_CURRENT_IMAGE_DIGEST" ]; then
+            echo "::error::Selected manifest image digest is already current for ${TG_ENV}; refusing no-op rollback."
+            exit 1
+          fi
+
+          echo "::add-mask::$image_uri"
+
+          {
+            echo "IMAGE_URI=$image_uri"
+            echo "IMAGE_DIGEST=$image_digest"
+            echo "IMAGE_TAG=$image_tag"
+            echo "RELEASE_MANIFEST_PATH=$manifest_path"
+            echo "RELEASE_MANIFEST_URI=$resolved_manifest_uri"
+            echo "RELEASE_GIT_SHA=$manifest_git_sha"
+            echo "RELEASE_APP=$manifest_app"
+          } >> "$GITHUB_ENV"
+
+          {
+            echo "manifest_uri=$resolved_manifest_uri"
+            echo "image_digest=$image_digest"
+            echo "image_uri=$image_uri"
+            echo "git_sha=$manifest_git_sha"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Resolve deploy resources
+        id: deploy-env
+        uses: ./.github/actions/resolve-demo-api-resources
+        with:
+          deploy_env: ${{ inputs.environment }}
+          require_db_secret: "true"
+          alb_listener_dev: ${{ vars.ALB_LISTENER_DEV }}
+          alb_listener_prod: ${{ vars.ALB_LISTENER_PROD }}
+          alb_candidate_rule_dev: ${{ vars.ALB_CANDIDATE_RULE_DEV }}
+          alb_candidate_rule_prod: ${{ vars.ALB_CANDIDATE_RULE_PROD }}
+          tg_blue_dev: ${{ vars.TG_BLUE_DEV }}
+          tg_blue_prod: ${{ vars.TG_BLUE_PROD }}
+          tg_green_dev: ${{ vars.TG_GREEN_DEV }}
+          tg_green_prod: ${{ vars.TG_GREEN_PROD }}
+          scale_down_lambda_dev: ${{ vars.SCALE_DOWN_LAMBDA_DEV }}
+          scale_down_lambda_prod: ${{ vars.SCALE_DOWN_LAMBDA_PROD }}
+          db_secret_arn_dev: ${{ vars.DB_SECRET_ARN_DEV }}
+          db_secret_arn_prod: ${{ vars.DB_SECRET_ARN_PROD }}
+          smoke_test_url_dev: ${{ vars.SMOKE_TEST_URL_DEV }}
+          smoke_test_url_prod: ${{ vars.SMOKE_TEST_URL_PROD }}
+
+      - name: Preflight deploy resources
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if ! scripts/check-deploy-resources.sh \
+            --environment "$TG_ENV" \
+            --region "$AWS_REGION" \
+            --account-id "$ACCOUNT_ID" \
+            --cluster "$ECS_CLUSTER" \
+            --blue-service "$ECS_SERVICE_BLUE" \
+            --green-service "$ECS_SERVICE_GREEN" \
+            --listener-arn "$ALB_LISTENER_ARN" \
+            --candidate-rule-arn "$ALB_CANDIDATE_RULE_ARN" \
+            --tg-blue-arn "$TG_BLUE_ARN" \
+            --tg-green-arn "$TG_GREEN_ARN" \
+            --scale-down-rule-name "$SCALE_DOWN_RULE_NAME" \
+            --scale-down-lambda-arn "$SCALE_DOWN_LAMBDA_ARN" \
+            --db-secret-arn "$DB_SECRET_ARN" \
+            --require-db-secret true; then
+            {
+              echo "## Rollback readiness failed"
+              echo
+              echo "The ${TG_ENV} deployment resources are missing or inaccessible."
+              echo "Bootstrap the required Terragrunt layers before rolling back by manifest."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+      - name: ECS Blue/Green deploy selected manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          scripts/ecs-blue-green-deploy.sh \
+            --env "$TG_ENV" \
+            --region "$AWS_REGION" \
+            --account-id "$ACCOUNT_ID" \
+            --image-uri "$IMAGE_URI" \
+            --cluster "$ECS_CLUSTER" \
+            --blue-service "$ECS_SERVICE_BLUE" \
+            --green-service "$ECS_SERVICE_GREEN" \
+            --listener-arn "$ALB_LISTENER_ARN" \
+            --candidate-rule-arn "$ALB_CANDIDATE_RULE_ARN" \
+            --tg-blue-arn "$TG_BLUE_ARN" \
+            --tg-green-arn "$TG_GREEN_ARN" \
+            --scale-down-rule-name "$SCALE_DOWN_RULE_NAME" \
+            --scale-down-lambda-arn "$SCALE_DOWN_LAMBDA_ARN" \
+            --db-secret-id "$DB_SECRET_ARN" \
+            --desired-count "1" \
+            --drain-delay-minutes "5" \
+            --output-env "$GITHUB_ENV"
+
+      - name: Smoke test public readiness endpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ -z "${SMOKE_TEST_URL:-}" ]; then
+            echo "SMOKE_TEST_URL_${TG_ENV^^} is not configured; the ALB target health gate already ran before traffic switch."
+            exit 0
+          fi
+
+          api_url="${SMOKE_TEST_URL%/}"
+          echo "::add-mask::$api_url"
+
+          curl -fsS \
+            --retry 6 \
+            --retry-delay 10 \
+            --retry-all-errors \
+            "${api_url}/ready" >/dev/null
+
+          echo "Smoke test passed."
+
+      - name: Write rollback deployment record to S3
+        id: deployment_record
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          record_dir=".rollback/deployment"
+          record_path="${record_dir}/deployment-record.json"
+          s3_output="${record_dir}/deployment-record-s3.json"
+          mkdir -p "$record_dir"
+
+          scripts/render-deployment-record.sh \
+            --environment "$TG_ENV" \
+            --release-manifest-uri "$RELEASE_MANIFEST_URI" \
+            --git-sha "$RELEASE_GIT_SHA" \
+            --image-digest "$IMAGE_DIGEST" \
+            --image-uri "$IMAGE_URI" \
+            --github-run-id "$GITHUB_RUN_ID" \
+            --previous-color "$INACTIVE_COLOR" \
+            --new-color "$ACTIVE_COLOR" \
+            --active-service "$ACTIVE_SERVICE" \
+            --inactive-service "$INACTIVE_SERVICE" \
+            --task-definition-arn "$TASK_DEFINITION_ARN" \
+            --listener-arn "$ALB_LISTENER_ARN" \
+            --target-group-arn "$ACTIVE_TG_ARN" \
+            --rollback-is-rollback true \
+            --rollback-reason "$ROLLBACK_REASON" \
+            --rollback-selector-type "$SELECTOR_TYPE" \
+            --rollback-selected-manifest-uri "$RELEASE_MANIFEST_URI" \
+            --rollback-previous-current-manifest-uri "$PREVIOUS_CURRENT_MANIFEST_URI" \
+            --rollback-requested-by "$GITHUB_ACTOR" \
+            --output "$record_path"
+
+          scripts/write-deployment-record-s3.sh \
+            --deployment-record "$record_path" \
+            --bucket "$RELEASE_ARTIFACTS_BUCKET" \
+            --environment "$TG_ENV" \
+            --git-sha "$RELEASE_GIT_SHA" \
+            --run-id "$GITHUB_RUN_ID" \
+            --output "$s3_output"
+
+          deployment_record_uri="$(jq -er '.deploymentRecordUri' "$s3_output")"
+          current_uri="$(jq -er '.currentUri' "$s3_output")"
+
+          {
+            echo "deployment_record_uri=$deployment_record_uri"
+            echo "current_uri=$current_uri"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Write rollback summary
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          {
+            echo "## Demo API manifest rollback"
+            echo
+            echo "| Field | Value |"
+            echo "| --- | --- |"
+            echo "| App | ${RELEASE_APP} |"
+            echo "| Environment | ${TG_ENV} |"
+            echo "| Selector | ${SELECTOR_TYPE} |"
+            echo "| Previous current manifest | ${PREVIOUS_CURRENT_MANIFEST_URI} |"
+            echo "| Rolled back to manifest | ${RELEASE_MANIFEST_URI} |"
+            echo "| Release git SHA | ${RELEASE_GIT_SHA} |"
+            echo "| Image tag | ${IMAGE_TAG} |"
+            echo "| Image digest | ${IMAGE_DIGEST} |"
+            echo "| Digest image URI | ${IMAGE_URI} |"
+            echo "| Deployment record | ${{ steps.deployment_record.outputs.deployment_record_uri }} |"
+            echo "| Current pointer | ${{ steps.deployment_record.outputs.current_uri }} |"
+            echo "| AWS role | ${{ steps.aws-role.outputs.role_source }} |"
+            echo "| Requested by | ${GITHUB_ACTOR} |"
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -27,7 +27,7 @@ data "aws_ami" "ubuntu_2204" {
 # ------------------------------------------------------------
 # IAM Role for SSM-enabled EC2 instance
 # - Grants SSM access + SecretsManager read (SA and APP secrets)
-# - EC2 uses this role via instance profile 
+# - EC2 uses this role via instance profile
 # ------------------------------------------------------------
 data "aws_iam_policy" "ssm_core" {
   arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
@@ -63,9 +63,14 @@ resource "aws_iam_role_policy" "secrets_access" {
         Effect = "Allow"
         Action = ["secretsmanager:GetSecretValue"]
         Resource = [
-          aws_secretsmanager_secret.sql_sa.arn,
-          aws_secretsmanager_secret.sql_app.arn
+          var.sql_sa_secret_arn,
+          var.sql_app_secret_arn
         ]
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["kms:Decrypt"]
+        Resource = var.secret_kms_key_arn
       }
     ]
   })
@@ -105,8 +110,8 @@ resource "aws_instance" "db" {
     AWS_REGION     = var.aws_region
     APP_DB         = var.app_db
     APP_USER       = var.app_user
-    SA_SECRET_ARN  = aws_secretsmanager_secret.sql_sa.arn
-    APP_SECRET_ARN = aws_secretsmanager_secret.sql_app.arn
+    SA_SECRET_ARN  = var.sql_sa_secret_arn
+    APP_SECRET_ARN = var.sql_app_secret_arn
   })
 
   root_block_device {
@@ -123,8 +128,7 @@ resource "aws_instance" "db" {
   })
 
   lifecycle {
-    prevent_destroy = true
-    ignore_changes  = [ami]
+    ignore_changes = [ami]
   }
 }
 
@@ -197,21 +201,4 @@ resource "aws_cloudwatch_metric_alarm" "cpu_high" {
   ok_actions    = [var.alerts_topic_arn]
 
   tags = local.tags
-}
-
-
-# ------------------------------------------------------------
-# Secrets Manager
-# - Stores the connection string dynamically based on EC2 private IP
-# ------------------------------------------------------------
-resource "aws_secretsmanager_secret" "db_conn" {
-  name        = "demo/${var.env}/db/conn-string"
-  description = "Connection string for demo SQL server"
-  kms_key_id  = null # default AWS-managed key
-  tags        = local.tags
-}
-
-resource "aws_secretsmanager_secret_version" "db_conn_v1" {
-  secret_id     = aws_secretsmanager_secret.db_conn.id
-  secret_string = "Server=${aws_instance.db.private_ip},1433;Database=${var.app_db};User Id=${var.app_user};Password=${random_password.sql_app_pwd.result};Encrypt=True;TrustServerCertificate=True;"
 }

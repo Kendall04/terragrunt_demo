@@ -1,0 +1,200 @@
+name: CI - Repo Hygiene
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  repo-hygiene:
+    name: Actionlint • Shellcheck • Format
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: stable
+
+      - name: Install actionlint
+        run: go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+
+      - name: Actionlint
+        run: |
+          "$(go env GOPATH)/bin/actionlint"
+
+      - name: Bash syntax
+        run: bash -n scripts/*.sh
+
+      - name: Install ShellCheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+
+      - name: Shellcheck
+        run: shellcheck scripts/*.sh
+
+      - name: Render Demo API task definition
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          taskdef_file="$(mktemp)"
+          scripts/render-demo-api-taskdef.sh \
+            --env dev \
+            --region us-east-1 \
+            --account-id 123456789012 \
+            --color blue \
+            --image-uri 123456789012.dkr.ecr.us-east-1.amazonaws.com/demo-dev-shared-demo-ms@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa \
+            --db-secret-id arn:aws:secretsmanager:us-east-1:123456789012:secret:demo/dev/app/db-connection-string-AbCdEf \
+            --output "$taskdef_file"
+
+          jq -e '
+            .family == "demo-dev-app-api-blue"
+            and .executionRoleArn == "arn:aws:iam::123456789012:role/demo-dev-app-api-blue-exec-role"
+            and .taskRoleArn == "arn:aws:iam::123456789012:role/demo-dev-app-api-blue-task-role"
+            and .containerDefinitions[0].name == "demo-dev-app-api-blue"
+            and .containerDefinitions[0].image == "123456789012.dkr.ecr.us-east-1.amazonaws.com/demo-dev-shared-demo-ms@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            and .containerDefinitions[0].secrets[0].valueFrom == "arn:aws:secretsmanager:us-east-1:123456789012:secret:demo/dev/app/db-connection-string-AbCdEf"
+          ' "$taskdef_file" >/dev/null
+
+          if command -v aws >/dev/null 2>&1; then
+            aws ecs register-task-definition \
+              --region us-east-1 \
+              --generate-cli-skeleton output \
+              --cli-input-json "file://$taskdef_file" >/dev/null
+          fi
+
+          rm -f "$taskdef_file"
+
+      - name: Validate release manifest contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          jq empty ci/schemas/release-manifest.schema.json
+          jq empty ci/schemas/deployment-record.schema.json
+
+          digest="sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+          image_uri="123456789012.dkr.ecr.us-east-1.amazonaws.com/demo-shared-demo-ms@${digest}"
+
+          manifest_file="$(mktemp)"
+          deployment_record_file="$(mktemp)"
+          rollback_record_file="$(mktemp)"
+          publish_output_file="$(mktemp)"
+          deployment_s3_output_file="$(mktemp)"
+
+          scripts/render-release-manifest.sh \
+            --repository Kendall04/terragrunt_demo \
+            --git-sha bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb \
+            --source-branch develop \
+            --github-run-id 123456789 \
+            --github-run-attempt 1 \
+            --image-registry 123456789012.dkr.ecr.us-east-1.amazonaws.com \
+            --image-repository demo-shared-demo-ms \
+            --image-tag bbbbbbbbbbbb-123456789-1 \
+            --image-digest "$digest" \
+            --output "$manifest_file"
+
+          scripts/validate-release-manifest.sh "$manifest_file"
+          scripts/validate-image-digest.sh --digest "$digest" --image-uri "$image_uri"
+
+          scripts/publish-release-manifest-s3.sh \
+            --manifest "$manifest_file" \
+            --bucket demo-release-artifacts-123456789012 \
+            --app demo-api \
+            --source-branch develop \
+            --output "$publish_output_file" \
+            --dry-run
+
+          jq -e '
+            .byDigestUri == "s3://demo-release-artifacts-123456789012/releases/demo-api/by-digest/sha256-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.json"
+            and .byCommitUri == "s3://demo-release-artifacts-123456789012/releases/demo-api/by-commit/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/123456789.json"
+            and .candidateUri == "s3://demo-release-artifacts-123456789012/releases/demo-api/candidates/develop/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.json"
+          ' "$publish_output_file" >/dev/null
+
+          if scripts/validate-image-digest.sh \
+            --image-uri 123456789012.dkr.ecr.us-east-1.amazonaws.com/demo-shared-demo-ms:latest; then
+            echo "::error::Tag-only image URI validation unexpectedly passed."
+            exit 1
+          fi
+
+          scripts/render-deployment-record.sh \
+            --environment dev \
+            --release-manifest-uri "s3://demo-release-artifacts-123456789012/releases/demo-api/by-digest/sha256-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.json" \
+            --git-sha bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb \
+            --image-digest "$digest" \
+            --image-uri "$image_uri" \
+            --github-run-id 123456789 \
+            --previous-color blue \
+            --new-color green \
+            --active-service demo-dev-app-api-green-svc \
+            --inactive-service demo-dev-app-api-blue-svc \
+            --task-definition-arn arn:aws:ecs:us-east-1:123456789012:task-definition/demo-dev-app-api-green:42 \
+            --listener-arn arn:aws:elasticloadbalancing:us-east-1:123456789012:listener/app/demo-dev-internal-alb/aaaaaaaaaaaaaaaa/bbbbbbbbbbbbbbbb \
+            --target-group-arn arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/demo-dev-green-tg/cccccccccccccccc \
+            --output "$deployment_record_file"
+
+          scripts/validate-deployment-record.sh "$deployment_record_file"
+
+          scripts/render-deployment-record.sh \
+            --environment dev \
+            --release-manifest-uri "s3://demo-release-artifacts-123456789012/releases/demo-api/by-digest/sha256-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.json" \
+            --git-sha bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb \
+            --image-digest "$digest" \
+            --image-uri "$image_uri" \
+            --github-run-id 123456790 \
+            --previous-color green \
+            --new-color blue \
+            --active-service demo-dev-app-api-blue-svc \
+            --inactive-service demo-dev-app-api-green-svc \
+            --task-definition-arn arn:aws:ecs:us-east-1:123456789012:task-definition/demo-dev-app-api-blue:43 \
+            --listener-arn arn:aws:elasticloadbalancing:us-east-1:123456789012:listener/app/demo-dev-internal-alb/aaaaaaaaaaaaaaaa/bbbbbbbbbbbbbbbb \
+            --target-group-arn arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/demo-dev-blue-tg/dddddddddddddddd \
+            --rollback-is-rollback true \
+            --rollback-reason "repo hygiene rollback contract check" \
+            --rollback-selector-type digest \
+            --rollback-selected-manifest-uri "s3://demo-release-artifacts-123456789012/releases/demo-api/by-digest/sha256-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.json" \
+            --rollback-previous-current-manifest-uri "s3://demo-release-artifacts-123456789012/releases/demo-api/by-digest/sha256-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.json" \
+            --rollback-requested-by repo-hygiene \
+            --output "$rollback_record_file"
+
+          scripts/validate-deployment-record.sh "$rollback_record_file"
+
+          scripts/write-deployment-record-s3.sh \
+            --deployment-record "$deployment_record_file" \
+            --bucket demo-release-artifacts-123456789012 \
+            --environment dev \
+            --git-sha bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb \
+            --run-id 123456789 \
+            --output "$deployment_s3_output_file" \
+            --dry-run
+
+          jq -e '
+            .deploymentRecordUri == "s3://demo-release-artifacts-123456789012/deployments/dev/123456789.json"
+            and .currentUri == "s3://demo-release-artifacts-123456789012/environments/dev/current.json"
+          ' "$deployment_s3_output_file" >/dev/null
+
+          rm -f "$manifest_file" "$deployment_record_file" "$rollback_record_file" "$publish_output_file" "$deployment_s3_output_file"
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.13.4
+
+      - name: Install Terragrunt
+        run: |
+          TG_VERSION="0.93.3"
+          curl -L "https://github.com/gruntwork-io/terragrunt/releases/download/v${TG_VERSION}/terragrunt_linux_amd64" -o terragrunt
+          chmod +x terragrunt
+          sudo mv terragrunt /usr/local/bin/terragrunt
+
+      - name: Terraform fmt
+        run: terraform fmt -check -recursive
+
+      - name: Terragrunt HCL fmt
+        run: terragrunt hcl format --check --working-dir terraform/live

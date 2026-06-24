@@ -36,7 +36,7 @@ resource "aws_security_group" "nat_instance" {
 
 # ─────────────────────────────────────────────────────────────
 # Security Group for the Fargate demo service.
-# Controls traffic between the Fargate tasks and the database instance. 
+# Controls traffic between the Fargate tasks and the database instance.
 # ─────────────────────────────────────────────────────────────
 resource "aws_security_group" "fargate_demo" {
   name                   = "${local.name}-fargate-sg"

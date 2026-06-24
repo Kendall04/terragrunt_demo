@@ -6,13 +6,22 @@ resource "aws_apigatewayv2_api" "http" {
   protocol_type              = "HTTP"
   route_selection_expression = "$request.method $request.path"
 
-  # Standard permissive CORS (suitable for demos)
-  cors_configuration {
-    allow_credentials = false
-    allow_headers     = ["*"]
-    allow_methods     = ["*"]
-    allow_origins     = ["*"]
-    max_age           = 3600
+  # Explicit CORS allowlist. Disabled by default unless origins are provided.
+  dynamic "cors_configuration" {
+    for_each = length(var.cors_allowed_origins) > 0 ? [1] : []
+    content {
+      allow_credentials = false
+      allow_headers = [
+        "authorization",
+        "content-type",
+        "x-amz-date",
+        "x-amz-security-token",
+        "x-api-key",
+      ]
+      allow_methods = ["GET", "POST", "OPTIONS"]
+      allow_origins = var.cors_allowed_origins
+      max_age       = 3600
+    }
   }
 
   tags = var.tags
