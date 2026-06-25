@@ -41,7 +41,22 @@ output "ecr_repository_urls" {
 
 output "ecr_repository_url" {
   description = "Full repository URL for a single ECR repository (used by the demo image)."
-  value       = values(module.ecr.repository_urls)[0]
+  value       = module.ecr.repository_urls["${local.name}-demo-ms"]
+}
+
+output "shared_artifact_ecr_repository_name" {
+  description = "Environment-neutral ECR repository name for promoted Demo API artifacts."
+  value       = local.shared_artifact_ecr_repository_name
+}
+
+output "shared_artifact_ecr_repository_arn" {
+  description = "Deterministic ARN of the environment-neutral ECR artifact repository."
+  value       = "arn:aws:ecr:${var.aws_region}:${data.aws_caller_identity.current.account_id}:repository/${local.shared_artifact_ecr_repository_name}"
+}
+
+output "shared_artifact_ecr_repository_url" {
+  description = "Deterministic URL of the environment-neutral ECR artifact repository."
+  value       = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/${local.shared_artifact_ecr_repository_name}"
 }
 
 
@@ -61,6 +76,11 @@ output "github_role_terragrunt_cd_arn" {
   value       = module.iam_github.github_role_terragrunt_cd_arn
 }
 
+output "github_role_terragrunt_cd_high_risk_arn" {
+  description = "IAM role ARN for high-risk Terragrunt CD apply after approval"
+  value       = module.iam_github.github_role_terragrunt_cd_high_risk_arn
+}
+
 output "github_role_app_cd_arn" {
   description = "IAM role ARN for ECS App CD (blue/green deploy)"
   value       = module.iam_github.github_role_app_cd_arn
@@ -71,8 +91,33 @@ output "github_role_app_rollback_arn" {
   value       = module.iam_github.github_role_app_rollback_arn
 }
 
+output "github_role_release_build_arn" {
+  description = "IAM role ARN for Demo API release-build"
+  value       = module.iam_github.github_role_release_build_arn
+}
+
+output "github_role_dev_deploy_arn" {
+  description = "IAM role ARN for Demo API dev deploy"
+  value       = module.iam_github.github_role_dev_deploy_arn
+}
+
+output "github_role_prod_promote_arn" {
+  description = "IAM role ARN for Demo API prod promotion"
+  value       = module.iam_github.github_role_prod_promote_arn
+}
+
 
 output "alerts_topic_arn" {
   value       = aws_sns_topic.alerts.arn
   description = "SNS topic ARN for CloudWatch alarm notifications"
+}
+
+output "release_artifacts_bucket_name" {
+  description = "Account-level S3 bucket used for durable release manifests and deployment records."
+  value       = local.release_artifacts_bucket_name
+}
+
+output "release_artifacts_bucket_arn" {
+  description = "ARN of the account-level release artifacts bucket."
+  value       = "arn:aws:s3:::${local.release_artifacts_bucket_name}"
 }

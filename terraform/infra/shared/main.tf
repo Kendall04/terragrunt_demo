@@ -26,9 +26,12 @@ module "kms" {
 module "ecr" {
   source = "./modules/ecr"
 
-  repo_names = [
-    "${local.name}-demo-ms",
-  ]
+  repo_names = concat(
+    [
+      "${local.name}-demo-ms",
+    ],
+    var.create_shared_artifact_ecr_repository ? [local.shared_artifact_ecr_repository_name] : [],
+  )
 
   scan_on_push   = true
   immutable_tags = true
@@ -59,6 +62,13 @@ module "iam_github" {
   github_repo  = var.github_repo
 
   create_github_oidc_provider = var.create_github_oidc_provider
+  github_oidc_provider_arn    = var.github_oidc_provider_arn
+
+  tf_state_bucket_name     = var.tf_state_bucket_name
+  tf_state_lock_table_name = var.tf_state_lock_table_name
+
+  release_artifacts_bucket_name       = local.release_artifacts_bucket_name
+  shared_artifact_ecr_repository_name = local.shared_artifact_ecr_repository_name
 }
 
 

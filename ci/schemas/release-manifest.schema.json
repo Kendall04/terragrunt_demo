@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Kendall04/terragrunt_demo/ci/schemas/release-manifest.schema.json",
+  "title": "Demo API release manifest",
+  "description": "Immutable build artifact metadata. This records what was built, not where it was deployed.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "app",
+    "repository",
+    "gitSha",
+    "sourceBranch",
+    "githubRunId",
+    "githubRunAttempt",
+    "createdAt",
+    "image",
+    "quality"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "app": {
+      "const": "demo-api"
+    },
+    "repository": {
+      "type": "string",
+      "minLength": 1
+    },
+    "gitSha": {
+      "type": "string",
+      "pattern": "^[A-Fa-f0-9]{7,40}$"
+    },
+    "sourceBranch": {
+      "type": "string",
+      "minLength": 1
+    },
+    "githubRunId": {
+      "type": "string",
+      "pattern": "^[0-9]+$"
+    },
+    "githubRunAttempt": {
+      "type": "string",
+      "pattern": "^[0-9]+$"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "image": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "registry",
+        "repository",
+        "tag",
+        "digest",
+        "uri"
+      ],
+      "properties": {
+        "registry": {
+          "type": "string",
+          "minLength": 1
+        },
+        "repository": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tag": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.-]+$"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "uri": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*/[A-Za-z0-9][A-Za-z0-9._/-]*@sha256:[a-f0-9]{64}$"
+        }
+      }
+    },
+    "quality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dotnetTests",
+        "dockerBuild",
+        "scanStatus"
+      ],
+      "properties": {
+        "dotnetTests": {
+          "enum": [
+            "passed",
+            "failed",
+            "skipped"
+          ]
+        },
+        "dockerBuild": {
+          "enum": [
+            "passed",
+            "failed",
+            "skipped"
+          ]
+        },
+        "scanStatus": {
+          "enum": [
+            "passed",
+            "failed",
+            "skipped",
+            "unknown"
+          ]
+        }
+      }
+    }
+  }
+}

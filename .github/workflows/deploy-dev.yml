@@ -1,0 +1,395 @@
+name: Deploy Dev - Demo API From Manifest
+
+on:
+  workflow_call:
+    inputs:
+      aws_region:
+        required: false
+        type: string
+        default: us-east-1
+      deploy_env:
+        required: true
+        type: string
+      release_manifest_s3_uri:
+        required: false
+        type: string
+        default: ""
+      release_artifact_name:
+        required: false
+        type: string
+        default: ""
+      expected_git_sha:
+        required: false
+        type: string
+        default: ""
+      expected_image_digest:
+        required: false
+        type: string
+        default: ""
+      expected_image_uri:
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  actions: read
+  contents: read
+  id-token: write
+
+jobs:
+  deploy-dev:
+    name: Deploy Dev From S3 Manifest
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.deploy_env }}
+    env:
+      AWS_REGION: ${{ inputs.aws_region }}
+      TG_ENV: ${{ inputs.deploy_env }}
+      RELEASE_MANIFEST_S3_URI: ${{ inputs.release_manifest_s3_uri }}
+      RELEASE_ARTIFACT_NAME: ${{ inputs.release_artifact_name }}
+      EXPECTED_GIT_SHA: ${{ inputs.expected_git_sha }}
+      EXPECTED_IMAGE_DIGEST: ${{ inputs.expected_image_digest }}
+      EXPECTED_IMAGE_URI: ${{ inputs.expected_image_uri }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Validate dev deploy target
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ "$TG_ENV" != "dev" ]; then
+            echo "::error::deploy-dev only supports dev. Use promote-prod for prod manifest promotion."
+            exit 1
+          fi
+
+          if [ -n "$RELEASE_MANIFEST_S3_URI" ] && ! [[ "$RELEASE_MANIFEST_S3_URI" =~ ^s3://[^/]+/.+ ]]; then
+            echo "::error::release_manifest_s3_uri must be an s3:// URI when provided."
+            exit 1
+          fi
+
+          if [ -z "$RELEASE_MANIFEST_S3_URI" ] && [ -z "$EXPECTED_IMAGE_DIGEST" ]; then
+            echo "::error::release_manifest_s3_uri was empty and expected_image_digest was not provided, so deploy-dev cannot resolve the S3 manifest."
+            exit 1
+          fi
+
+      - name: Resolve dev deploy role
+        id: aws-role
+        shell: bash
+        env:
+          AWS_ROLE_DEV_DEPLOY: ${{ secrets.AWS_ROLE_DEV_DEPLOY }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "$AWS_ROLE_DEV_DEPLOY" ]; then
+            echo "::error::Missing AWS role secret. Configure AWS_ROLE_DEV_DEPLOY in the dev GitHub environment."
+            exit 1
+          fi
+
+          role_arn="$AWS_ROLE_DEV_DEPLOY"
+          source="AWS_ROLE_DEV_DEPLOY"
+
+          echo "::add-mask::$role_arn"
+          echo "role_arn=$role_arn" >> "$GITHUB_OUTPUT"
+          echo "role_source=$source" >> "$GITHUB_OUTPUT"
+
+      - name: AWS Login via OIDC
+        uses: ./.github/actions/aws-oidc
+        with:
+          role_arn: ${{ steps.aws-role.outputs.role_arn }}
+          aws_region: ${{ env.AWS_REGION }}
+          role_session_name: "deploy-dev"
+
+      - name: Resolve Terraform backend
+        id: backend
+        uses: ./.github/actions/resolve-backend
+        with:
+          tg_env: ${{ env.TG_ENV }}
+          aws_region: ${{ env.AWS_REGION }}
+
+      - name: Resolve S3 release manifest URI
+        shell: bash
+        env:
+          RELEASE_ARTIFACTS_BUCKET_OVERRIDE: ${{ vars.RELEASE_ARTIFACTS_BUCKET }}
+        run: |
+          set -euo pipefail
+
+          if [ -n "$RELEASE_MANIFEST_S3_URI" ]; then
+            echo "Using release_manifest_s3_uri provided by the caller."
+            exit 0
+          fi
+
+          if [ -n "$RELEASE_ARTIFACTS_BUCKET_OVERRIDE" ]; then
+            bucket="$RELEASE_ARTIFACTS_BUCKET_OVERRIDE"
+          else
+            bucket="demo-release-artifacts-${ACCOUNT_ID}"
+          fi
+
+          scripts/validate-image-digest.sh --digest "$EXPECTED_IMAGE_DIGEST"
+
+          digest_key="${EXPECTED_IMAGE_DIGEST/sha256:/sha256-}"
+          release_manifest_s3_uri="s3://${bucket}/releases/demo-api/by-digest/${digest_key}.json"
+
+          echo "RELEASE_MANIFEST_S3_URI=$release_manifest_s3_uri" >> "$GITHUB_ENV"
+          echo "Reconstructed release_manifest_s3_uri from expected_image_digest."
+
+      - name: Read S3 release manifest
+        id: manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          manifest_dir=".release-download"
+          manifest_path="${manifest_dir}/release-manifest.json"
+          resolution_path="${manifest_dir}/release-manifest-resolution.json"
+          mkdir -p "$manifest_dir"
+
+          scripts/read-release-manifest-s3.sh \
+            --manifest-uri "$RELEASE_MANIFEST_S3_URI" \
+            --output "$manifest_path" \
+            --resolution-output "$resolution_path"
+
+          manifest_app="$(jq -er '.app' "$manifest_path")"
+          manifest_git_sha="$(jq -er '.gitSha' "$manifest_path")"
+          image_digest="$(jq -er '.image.digest' "$manifest_path")"
+          image_uri="$(jq -er '.image.uri' "$manifest_path")"
+          image_tag="$(jq -er '.image.tag' "$manifest_path")"
+          image_repository="$(jq -er '.image.repository' "$manifest_path")"
+          image_registry="$(jq -er '.image.registry' "$manifest_path")"
+          resolved_manifest_uri="$(jq -er '.manifestUri' "$resolution_path")"
+
+          scripts/validate-image-digest.sh \
+            --digest "$image_digest" \
+            --image-uri "$image_uri"
+
+          if [ -n "$EXPECTED_GIT_SHA" ] && [ "$manifest_git_sha" != "$EXPECTED_GIT_SHA" ]; then
+            echo "::error::S3 manifest gitSha does not match expected_git_sha."
+            exit 1
+          fi
+
+          if [ -n "$EXPECTED_IMAGE_DIGEST" ] && [ "$image_digest" != "$EXPECTED_IMAGE_DIGEST" ]; then
+            echo "::error::S3 manifest image.digest does not match expected_image_digest."
+            exit 1
+          fi
+
+          if [ -n "$EXPECTED_IMAGE_URI" ] && [ "$image_uri" != "$EXPECTED_IMAGE_URI" ]; then
+            echo "::error::S3 manifest image.uri does not match expected_image_uri."
+            exit 1
+          fi
+
+          echo "::add-mask::$image_uri"
+
+          {
+            echo "IMAGE_URI=$image_uri"
+            echo "IMAGE_DIGEST=$image_digest"
+            echo "IMAGE_TAG=$image_tag"
+            echo "IMAGE_REPOSITORY=$image_repository"
+            echo "IMAGE_REGISTRY=$image_registry"
+            echo "RELEASE_MANIFEST_PATH=$manifest_path"
+            echo "RELEASE_MANIFEST_URI=$resolved_manifest_uri"
+            echo "RELEASE_GIT_SHA=$manifest_git_sha"
+            echo "RELEASE_APP=$manifest_app"
+          } >> "$GITHUB_ENV"
+
+          {
+            echo "manifest_path=$manifest_path"
+            echo "manifest_uri=$resolved_manifest_uri"
+            echo "image_uri=$image_uri"
+            echo "image_digest=$image_digest"
+            echo "image_tag=$image_tag"
+            echo "git_sha=$manifest_git_sha"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Download diagnostic release artifact
+        if: ${{ env.RELEASE_ARTIFACT_NAME != '' }}
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: ${{ env.RELEASE_ARTIFACT_NAME }}
+          path: .release-artifact
+
+      - name: Compare diagnostic artifact to S3 manifest
+        if: ${{ env.RELEASE_ARTIFACT_NAME != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          artifact_manifest="$(find .release-artifact -type f -name release-manifest.json | head -n 1 || true)"
+          if [ -z "$artifact_manifest" ]; then
+            echo "::warning::Diagnostic GitHub artifact was unavailable; continuing because S3 is the Phase 4 source of truth."
+            exit 0
+          fi
+
+          scripts/validate-release-manifest.sh "$artifact_manifest"
+
+          artifact_git_sha="$(jq -er '.gitSha' "$artifact_manifest")"
+          artifact_digest="$(jq -er '.image.digest' "$artifact_manifest")"
+
+          if [ "$artifact_git_sha" != "$RELEASE_GIT_SHA" ] || [ "$artifact_digest" != "$IMAGE_DIGEST" ]; then
+            echo "::error::Diagnostic artifact does not match the S3 release manifest."
+            exit 1
+          fi
+
+      - name: Resolve deploy resources
+        id: deploy-env
+        uses: ./.github/actions/resolve-demo-api-resources
+        with:
+          deploy_env: ${{ inputs.deploy_env }}
+          require_db_secret: "true"
+          alb_listener_dev: ${{ vars.ALB_LISTENER_DEV }}
+          alb_candidate_rule_dev: ${{ vars.ALB_CANDIDATE_RULE_DEV }}
+          tg_blue_dev: ${{ vars.TG_BLUE_DEV }}
+          tg_green_dev: ${{ vars.TG_GREEN_DEV }}
+          scale_down_lambda_dev: ${{ vars.SCALE_DOWN_LAMBDA_DEV }}
+          db_secret_arn_dev: ${{ vars.DB_SECRET_ARN_DEV }}
+          smoke_test_url_dev: ${{ vars.SMOKE_TEST_URL_DEV }}
+
+      - name: Preflight deploy resources
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          scripts/check-deploy-resources.sh \
+            --environment "$TG_ENV" \
+            --region "$AWS_REGION" \
+            --account-id "$ACCOUNT_ID" \
+            --cluster "$ECS_CLUSTER" \
+            --blue-service "$ECS_SERVICE_BLUE" \
+            --green-service "$ECS_SERVICE_GREEN" \
+            --listener-arn "$ALB_LISTENER_ARN" \
+            --candidate-rule-arn "$ALB_CANDIDATE_RULE_ARN" \
+            --tg-blue-arn "$TG_BLUE_ARN" \
+            --tg-green-arn "$TG_GREEN_ARN" \
+            --scale-down-rule-name "$SCALE_DOWN_RULE_NAME" \
+            --scale-down-lambda-arn "$SCALE_DOWN_LAMBDA_ARN" \
+            --db-secret-arn "$DB_SECRET_ARN" \
+            --require-db-secret true
+
+      - name: ECS Blue/Green deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          scripts/ecs-blue-green-deploy.sh \
+            --env "$TG_ENV" \
+            --region "$AWS_REGION" \
+            --account-id "$ACCOUNT_ID" \
+            --image-uri "$IMAGE_URI" \
+            --cluster "$ECS_CLUSTER" \
+            --blue-service "$ECS_SERVICE_BLUE" \
+            --green-service "$ECS_SERVICE_GREEN" \
+            --listener-arn "$ALB_LISTENER_ARN" \
+            --candidate-rule-arn "$ALB_CANDIDATE_RULE_ARN" \
+            --tg-blue-arn "$TG_BLUE_ARN" \
+            --tg-green-arn "$TG_GREEN_ARN" \
+            --scale-down-rule-name "$SCALE_DOWN_RULE_NAME" \
+            --scale-down-lambda-arn "$SCALE_DOWN_LAMBDA_ARN" \
+            --db-secret-id "$DB_SECRET_ARN" \
+            --desired-count "1" \
+            --drain-delay-minutes "5" \
+            --output-env "$GITHUB_ENV"
+
+      - name: Smoke test public readiness endpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ -z "${SMOKE_TEST_URL:-}" ]; then
+            echo "::warning::SMOKE_TEST_URL_${TG_ENV^^} is not configured; the ALB target health gate already ran before traffic switch, but the hosted-runner HTTP smoke test was skipped."
+            exit 0
+          fi
+
+          smoke_url="${SMOKE_TEST_URL%/}"
+          case "$smoke_url" in
+            http://*|https://*) ;;
+            *)
+              echo "::error::SMOKE_TEST_URL_${TG_ENV^^} must start with http:// or https://."
+              exit 1
+              ;;
+          esac
+
+          case "$smoke_url" in
+            */ready|*/health|*/health/live) ;;
+            *) smoke_url="${smoke_url}/ready" ;;
+          esac
+
+          echo "::add-mask::$smoke_url"
+          echo "Running hosted-runner HTTP smoke test against the configured readiness endpoint."
+
+          curl -fsS \
+            --retry 6 \
+            --retry-delay 10 \
+            --retry-all-errors \
+            --max-time 10 \
+            "$smoke_url" >/dev/null
+
+          echo "Smoke test passed."
+
+      - name: Write dev deployment record to S3
+        id: deployment_record
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          record_dir=".deployment"
+          record_path="${record_dir}/deployment-record.json"
+          s3_output="${record_dir}/deployment-record-s3.json"
+          bucket="demo-release-artifacts-${ACCOUNT_ID}"
+
+          mkdir -p "$record_dir"
+
+          scripts/render-deployment-record.sh \
+            --environment "$TG_ENV" \
+            --release-manifest-uri "$RELEASE_MANIFEST_URI" \
+            --git-sha "$RELEASE_GIT_SHA" \
+            --image-digest "$IMAGE_DIGEST" \
+            --image-uri "$IMAGE_URI" \
+            --github-run-id "$GITHUB_RUN_ID" \
+            --previous-color "$INACTIVE_COLOR" \
+            --new-color "$ACTIVE_COLOR" \
+            --active-service "$ACTIVE_SERVICE" \
+            --inactive-service "$INACTIVE_SERVICE" \
+            --task-definition-arn "$TASK_DEFINITION_ARN" \
+            --listener-arn "$ALB_LISTENER_ARN" \
+            --target-group-arn "$ACTIVE_TG_ARN" \
+            --output "$record_path"
+
+          scripts/write-deployment-record-s3.sh \
+            --deployment-record "$record_path" \
+            --bucket "$bucket" \
+            --environment "$TG_ENV" \
+            --git-sha "$RELEASE_GIT_SHA" \
+            --run-id "$GITHUB_RUN_ID" \
+            --output "$s3_output"
+
+          deployment_record_uri="$(jq -er '.deploymentRecordUri' "$s3_output")"
+          current_uri="$(jq -er '.currentUri' "$s3_output")"
+
+          {
+            echo "deployment_record_uri=$deployment_record_uri"
+            echo "current_uri=$current_uri"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Write deploy summary
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          {
+            echo "## Demo API dev deploy"
+            echo
+            echo "| Field | Value |"
+            echo "| --- | --- |"
+            echo "| App | ${RELEASE_APP} |"
+            echo "| Environment | ${TG_ENV} |"
+            echo "| Release git SHA | ${RELEASE_GIT_SHA} |"
+            echo "| Image tag | ${IMAGE_TAG} |"
+            echo "| Image digest | ${IMAGE_DIGEST} |"
+            echo "| Digest image URI | ${IMAGE_URI} |"
+            echo "| S3 manifest | ${RELEASE_MANIFEST_URI} |"
+            echo "| Deployment record | ${{ steps.deployment_record.outputs.deployment_record_uri }} |"
+            echo "| Current pointer | ${{ steps.deployment_record.outputs.current_uri }} |"
+            echo "| AWS role | ${{ steps.aws-role.outputs.role_source }} |"
+          } >> "$GITHUB_STEP_SUMMARY"

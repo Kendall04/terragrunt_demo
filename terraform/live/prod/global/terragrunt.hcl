@@ -17,10 +17,11 @@ dependency "shared" {
   config_path = "../shared"
 
   mock_outputs = {
-    alerts_topic_arn  = "arn:aws::region:acct:/fake"
+    alerts_topic_arn = "arn:aws::region:acct:/fake"
   }
 
-  mock_outputs_merge_with_state = true
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+  mock_outputs_merge_with_state           = true
 }
 
 # ============================================
@@ -35,7 +36,7 @@ terraform {
 # Module inputs for the global layer
 # ============================================
 inputs = {
-  env         = local.parent.locals.env
+  env     = local.parent.locals.env
   project = local.parent.locals.project_name
 
   alerts_topic_arn = dependency.shared.outputs.alerts_topic_arn

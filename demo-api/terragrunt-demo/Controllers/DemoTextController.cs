@@ -29,7 +29,7 @@ namespace terragrunt_demo.Controllers
             CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(request.Text))
-                return BadRequest("Text cannot be empty 123.");
+                return BadRequest("Text cannot be empty.1234");
 
             var command = new InsertTextCommand(request.Text);
             var result = await _mediator.Send(command, cancellationToken);

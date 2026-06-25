@@ -15,6 +15,7 @@ resource "aws_lambda_function" "this" {
   # If filename is provided, we deploy from local zip.
   # Otherwise, we fall back to S3 artifact configuration.
   filename          = var.filename
+  source_code_hash  = var.filename == null ? null : filebase64sha256(var.filename)
   s3_bucket         = var.filename == null ? var.s3_bucket : null
   s3_key            = var.filename == null ? var.s3_key : null
   s3_object_version = var.filename == null ? var.s3_object_version : null

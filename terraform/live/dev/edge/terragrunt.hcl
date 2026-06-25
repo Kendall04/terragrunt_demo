@@ -22,7 +22,8 @@ dependency "global" {
   }
 
   # When state exists, merge real outputs with mock values
-  mock_outputs_merge_with_state = true
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+  mock_outputs_merge_with_state           = true
 }
 
 # =====================================================
@@ -37,7 +38,7 @@ terraform {
 # Inputs for the edge module
 # =====================================================
 inputs = {
-  env         = local.parent.locals.env
+  env     = local.parent.locals.env
   project = local.parent.locals.project_name
 
   # From global: ALB listener used by API Gateway VPC Link

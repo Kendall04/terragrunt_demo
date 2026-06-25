@@ -1,0 +1,146 @@
+name: CI - Orchestrator
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches-ignore:
+      - develop
+      - main
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  detect-changes:
+    name: Detect CI Scope
+    runs-on: ubuntu-latest
+    outputs:
+      app: ${{ steps.scope.outputs.app }}
+      hygiene: ${{ steps.scope.outputs.hygiene }}
+      infra: ${{ steps.scope.outputs.infra }}
+      docs_only: ${{ steps.scope.outputs.docs_only }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Paths filter
+        id: filter
+        uses: dorny/paths-filter@v4
+        with:
+          base: develop
+          list-files: shell
+          filters: |
+            app:
+              - 'demo-api/**'
+              - '.github/workflows/ci-dotnet.yml'
+            infra:
+              - 'terraform/live/**'
+              - 'terraform/infra/**'
+              - '.github/actions/**'
+              - '.github/workflows/ci-terragrunt.yml'
+              - '.github/workflows/ci-terragrunt-plan.yml'
+              - '.github/workflows/ci.yml'
+              - '.github/workflows/cd-terragrunt.yml'
+            hygiene:
+              - '.github/**'
+              - 'ci/**'
+              - 'scripts/**'
+              - 'README.md'
+              - 'terraform/docs/**'
+            docs:
+              - 'README.md'
+              - 'terraform/docs/**'
+
+      - name: Resolve CI scope
+        id: scope
+        shell: bash
+        env:
+          FILTER_APP: ${{ steps.filter.outputs.app }}
+          FILTER_INFRA: ${{ steps.filter.outputs.infra }}
+          FILTER_HYGIENE: ${{ steps.filter.outputs.hygiene }}
+          FILTER_DOCS: ${{ steps.filter.outputs.docs }}
+        run: |
+          set -euo pipefail
+
+          app="${FILTER_APP:-false}"
+          infra="${FILTER_INFRA:-false}"
+          hygiene="${FILTER_HYGIENE:-false}"
+          docs="${FILTER_DOCS:-false}"
+
+          docs_only="false"
+          if [ "$docs" = "true" ] && [ "$app" != "true" ] && [ "$infra" != "true" ] && [ "$hygiene" = "true" ]; then
+            docs_only="true"
+          fi
+
+          {
+            echo "app=$app"
+            echo "infra=$infra"
+            echo "hygiene=$hygiene"
+            echo "docs_only=$docs_only"
+          } >> "$GITHUB_OUTPUT"
+
+          {
+            echo "## CI scope"
+            echo
+            echo "| Scope | Run |"
+            echo "| --- | --- |"
+            echo "| App CI | $app |"
+            echo "| Repo hygiene | $hygiene |"
+            echo "| Infra checks | $infra |"
+            echo "| Docs-only | $docs_only |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  repo-hygiene:
+    name: Repo Hygiene
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.hygiene == 'true' }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/ci-repo-hygiene.yml
+
+  app-ci:
+    name: App CI
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.app == 'true' }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/ci-dotnet.yml
+
+  infra-static:
+    name: Infra Static Checks
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.infra == 'true' }}
+    permissions:
+      contents: read
+    uses: ./.github/workflows/ci-terragrunt.yml
+    with:
+      target_env: dev
+      aws_region: us-east-1
+
+  infra-pr-plan:
+    name: Infra PR Plan
+    needs:
+      - detect-changes
+      - infra-static
+    if: >-
+      ${{
+        github.event_name == 'pull_request' &&
+        needs.detect-changes.outputs.infra == 'true'
+      }}
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+    uses: ./.github/workflows/ci-terragrunt-plan.yml
+    with:
+      target_env: dev
+      aws_region: us-east-1
+      pr_number: ${{ github.event.pull_request.number }}
+    secrets: inherit

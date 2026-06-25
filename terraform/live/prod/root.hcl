@@ -15,7 +15,7 @@ locals {
   tf_state_table  = get_env("TF_STATE_TABLE", "tfstate-locks")
 
   github_owner = "Kendall04"
-  github_repo  = "terragrunt_demo" 
+  github_repo  = "terragrunt_demo"
 
   project_name = "demo"
 
@@ -62,8 +62,8 @@ generate "provider" {
 # Global inputs injected into every Terraform module
 ###############################################################
 inputs = {
-  env         = local.env
-  aws_region  = local.aws_region
+  env        = local.env
+  aws_region = local.aws_region
 
   github_owner = local.github_owner
   github_repo  = local.github_repo

@@ -4,12 +4,28 @@ on:
   push:
     branches: [main, develop]
     paths:
-      - "terraform/**"
+      - "terraform/live/**"
+      - "terraform/infra/**"
       - "demo-api/**"
-      - ".github/workflows/**"
+      - "scripts/ecs-blue-green-deploy.sh"
+      - "scripts/render-demo-api-taskdef.sh"
+      - "scripts/render-release-manifest.sh"
+      - "scripts/render-deployment-record.sh"
+      - "scripts/publish-release-manifest-s3.sh"
+      - "scripts/read-release-manifest-s3.sh"
+      - "scripts/write-deployment-record-s3.sh"
+      - "scripts/check-deploy-resources.sh"
+      - "scripts/validate-image-digest.sh"
+      - "scripts/validate-release-manifest.sh"
+      - "scripts/validate-deployment-record.sh"
+      - "ci/schemas/**"
+      - ".github/workflows/**/*.yml"
+      - ".github/workflows/**/*.yaml"
       - ".github/actions/**"
+      - ".github/scripts/cd/**"
 
 permissions:
+  actions: read
   contents: read
   id-token: write
 
@@ -22,60 +38,999 @@ env:
   DEPLOY_ENV: ${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}
 
 jobs:
-  detect-changes:
-    name: Detect changes (terraform / demo-api)
+  detect_cd_scope:
+    name: Detect CD Scope
     runs-on: ubuntu-latest
     outputs:
-      infra: ${{ steps.filter.outputs.infra }}
-      app: ${{ steps.filter.outputs.app }}
+      target_env: ${{ steps.scope.outputs.target_env }}
+      app_changed: ${{ steps.scope.outputs.app_changed }}
+      infra_changed: ${{ steps.scope.outputs.infra_changed }}
+      safe_dev_infra_changed: ${{ steps.scope.outputs.safe_dev_infra_changed }}
+      safe_infra_changed: ${{ steps.scope.outputs.safe_dev_infra_changed }}
+      high_risk_dev_infra_changed: ${{ steps.scope.outputs.high_risk_dev_infra_changed }}
+      high_risk_managed_changed: ${{ steps.scope.outputs.high_risk_managed_changed }}
+      critical_manual_only_changed: ${{ steps.scope.outputs.critical_manual_only_changed }}
+      prod_infra_changed: ${{ steps.scope.outputs.prod_infra_changed }}
+      infra_workflow_changed: ${{ steps.scope.outputs.infra_workflow_changed }}
+      docs_only: ${{ steps.scope.outputs.docs_only }}
+      safe_layers: ${{ steps.scope.outputs.safe_layers }}
+      high_risk_layers: ${{ steps.scope.outputs.high_risk_layers }}
+      critical_manual_only_layers: ${{ steps.scope.outputs.critical_manual_only_layers }}
+      unmapped_high_risk_paths: ${{ steps.scope.outputs.unmapped_high_risk_paths }}
+      changed_app_paths: ${{ steps.scope.outputs.changed_app_paths }}
+      changed_infra_paths: ${{ steps.scope.outputs.changed_infra_paths }}
+      changed_high_risk_paths: ${{ steps.scope.outputs.changed_high_risk_paths }}
+      critical_manual_only_paths: ${{ steps.scope.outputs.critical_manual_only_paths }}
+      infra_paths: ${{ steps.scope.outputs.changed_infra_paths }}
+      safe_infra_paths: ${{ steps.scope.outputs.safe_infra_paths }}
+      high_risk_paths: ${{ steps.scope.outputs.changed_high_risk_paths }}
+      prod_infra_paths: ${{ steps.scope.outputs.prod_infra_paths }}
+      infra_workflow_paths: ${{ steps.scope.outputs.infra_workflow_paths }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Paths filter
         id: filter
-        uses: dorny/paths-filter@v3
+        uses: dorny/paths-filter@v4
         with:
-          list-files: shell
+          list-files: json
           base: ${{ github.event.before }}
           ref: ${{ github.sha }}
           filters: |
-            infra:
-              - 'terraform/**'
+            infra_raw:
+              - 'terraform/live/**'
+              - 'terraform/infra/**'
+              - '.github/workflows/cd.yml'
               - '.github/workflows/cd-terragrunt.yml'
+              - '.github/workflows/ci-terragrunt*.yml'
+              - '.github/actions/aws-oidc/action.yml'
+              - '.github/actions/resolve-backend/action.yml'
+              - '.github/scripts/cd/**'
+            safe_dev_infra:
+              - 'terraform/live/dev/shared/**'
+              - 'terraform/live/dev/secrets/**'
+              - 'terraform/live/dev/global/**'
+              - 'terraform/live/dev/platform/**'
+              - 'terraform/live/dev/edge/**'
+              - 'terraform/infra/shared/**'
+              - 'terraform/infra/secrets/**'
+              - 'terraform/infra/global/**'
+              - 'terraform/infra/platform/**'
+              - 'terraform/infra/edge/**'
+            high_risk_dev_infra:
+              - 'terraform/live/dev/data/**'
+              - 'terraform/live/dev/apps/**'
+              - 'terraform/live/dev/root.hcl'
+              - 'terraform/live/dev/**/root.hcl'
+              - 'terraform/infra/data/**'
+              - 'terraform/infra/apps/**'
+              - 'terraform/infra/modules/**'
+              - 'terraform/infra/**/modules/**'
+            prod_infra:
+              - 'terraform/live/prod/**'
+            infra_workflow:
+              - '.github/workflows/cd.yml'
+              - '.github/workflows/cd-terragrunt.yml'
+              - '.github/workflows/ci-terragrunt*.yml'
+              - '.github/actions/aws-oidc/action.yml'
+              - '.github/actions/resolve-backend/action.yml'
+              - '.github/scripts/cd/**'
             app:
               - 'demo-api/**'
+              - 'scripts/ecs-blue-green-deploy.sh'
+              - 'scripts/render-demo-api-taskdef.sh'
+              - 'scripts/render-release-manifest.sh'
+              - 'scripts/render-deployment-record.sh'
+              - 'scripts/publish-release-manifest-s3.sh'
+              - 'scripts/read-release-manifest-s3.sh'
+              - 'scripts/write-deployment-record-s3.sh'
+              - 'scripts/check-deploy-resources.sh'
+              - 'scripts/validate-image-digest.sh'
+              - 'scripts/validate-release-manifest.sh'
+              - 'scripts/validate-deployment-record.sh'
+              - 'ci/schemas/**'
               - '.github/workflows/cd-demo-api.yml'
+              - '.github/workflows/release-build.yml'
+              - '.github/workflows/deploy-dev.yml'
+              - '.github/workflows/promote-prod.yml'
               - '.github/actions/**'
+            docs:
+              - 'README.md'
+              - 'terraform/docs/**'
 
-      - name: Show detected changes
+      - name: Resolve CD scope
+        id: scope
+        shell: bash
+        env:
+          TARGET_ENV: ${{ env.DEPLOY_ENV }}
+          APP_CHANGED: ${{ steps.filter.outputs.app }}
+          INFRA_RAW_CHANGED: ${{ steps.filter.outputs.infra_raw }}
+          SAFE_INFRA_CHANGED: ${{ steps.filter.outputs.safe_dev_infra }}
+          HIGH_RISK_INFRA_CHANGED: ${{ steps.filter.outputs.high_risk_dev_infra }}
+          PROD_INFRA_CHANGED: ${{ steps.filter.outputs.prod_infra }}
+          INFRA_WORKFLOW_CHANGED: ${{ steps.filter.outputs.infra_workflow }}
+          DOCS_CHANGED: ${{ steps.filter.outputs.docs }}
+          APP_PATHS: ${{ steps.filter.outputs.app_files }}
+          INFRA_PATHS: ${{ steps.filter.outputs.infra_raw_files }}
+          SAFE_INFRA_PATHS: ${{ steps.filter.outputs.safe_dev_infra_files }}
+          HIGH_RISK_PATHS: ${{ steps.filter.outputs.high_risk_dev_infra_files }}
+          PROD_INFRA_PATHS: ${{ steps.filter.outputs.prod_infra_files }}
+          INFRA_WORKFLOW_PATHS: ${{ steps.filter.outputs.infra_workflow_files }}
         run: |
-          echo "ref        : ${{ github.ref }}"
-          echo "DEPLOY_ENV : ${{ env.DEPLOY_ENV }}"
-          echo "infra      : ${{ steps.filter.outputs.infra }}"
-          echo "app        : ${{ steps.filter.outputs.app }}"
+          set -euo pipefail
+          .github/scripts/cd/detect-scope.sh
 
-  terragrunt:
-    name: Run Terragrunt CD
-    needs: detect-changes
-    if: needs.detect-changes.outputs.infra == 'true'
-    uses: ./.github/workflows/cd-terragrunt.yml
-    with:
-      aws_region: us-east-1
-      deploy_env: ${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}
-    secrets: inherit
+  dev_infra_apply:
+    name: Dev Infra Apply (Safe Layers)
+    needs: detect_cd_scope
+    if: >-
+      ${{
+        github.ref == 'refs/heads/develop' &&
+        needs.detect_cd_scope.outputs.safe_dev_infra_changed == 'true' &&
+        needs.detect_cd_scope.outputs.critical_manual_only_changed != 'true'
+      }}
+    runs-on: ubuntu-latest
+    environment:
+      name: dev
+    permissions:
+      contents: read
+      id-token: write
+    concurrency:
+      group: infra-cd-dev
+      cancel-in-progress: false
+    env:
+      AWS_REGION: us-east-1
+      TG_ENV: dev
+      SAFE_LAYERS: ${{ needs.detect_cd_scope.outputs.safe_layers }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Validate dev infra CD role
+        shell: bash
+        env:
+          AWS_ROLE_TG_CD: ${{ secrets.AWS_ROLE_TG_CD }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "$AWS_ROLE_TG_CD" ]; then
+            echo "::error::Automatic dev infra apply requires AWS_ROLE_TG_CD in the dev GitHub environment."
+            exit 1
+          fi
+
+          if [ -z "$SAFE_LAYERS" ]; then
+            echo "::error::Safe dev infra changed, but no safe Terragrunt layers were resolved."
+            exit 1
+          fi
+
+          while IFS= read -r layer; do
+            [ -n "$layer" ] || continue
+            case "$layer" in
+              shared|secrets|global|platform|edge) ;;
+              *)
+                echo "::error::Unexpected safe dev layer: ${layer}"
+                exit 1
+                ;;
+            esac
+          done <<< "$SAFE_LAYERS"
+
+          echo "::add-mask::$AWS_ROLE_TG_CD"
+
+      - name: AWS Login via OIDC
+        uses: ./.github/actions/aws-oidc
+        with:
+          role_arn: ${{ secrets.AWS_ROLE_TG_CD }}
+          aws_region: ${{ env.AWS_REGION }}
+          role_session_name: "terragrunt-auto-dev"
+
+      - name: Resolve Terraform backend
+        id: backend
+        uses: ./.github/actions/resolve-backend
+        with:
+          tg_env: ${{ env.TG_ENV }}
+          aws_region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.13.4
+
+      - name: Install Terragrunt
+        shell: bash
+        run: |
+          set -euo pipefail
+          TG_VERSION="0.93.3"
+          curl -L "https://github.com/gruntwork-io/terragrunt/releases/download/v${TG_VERSION}/terragrunt_linux_amd64" -o terragrunt
+          chmod +x terragrunt
+          sudo mv terragrunt /usr/local/bin/terragrunt
+
+      - name: Terraform fmt
+        run: terraform fmt -check -recursive terraform/
+
+      - name: Terragrunt HCL fmt
+        run: terragrunt hcl format --check --working-dir terraform/live
+
+      - name: Plan and apply safe dev layers
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          {
+            echo "## Dev infra auto-apply"
+            echo
+            echo "Safe layers are applied in dependency order after a fresh plan."
+            echo
+            echo "| Layer | Result |"
+            echo "| --- | --- |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          while IFS= read -r layer; do
+            [ -n "$layer" ] || continue
+            layer_dir="terraform/live/${TG_ENV}/${layer}"
+
+            if [ ! -f "${layer_dir}/terragrunt.hcl" ]; then
+              echo "::error::Missing expected safe Terragrunt layer: ${layer_dir}"
+              exit 1
+            fi
+
+            echo "::group::Plan ${TG_ENV}/${layer}"
+            (
+              cd "$layer_dir"
+              terragrunt init --non-interactive -- -reconfigure
+              terragrunt validate --non-interactive
+              terragrunt plan --non-interactive -- -input=false -no-color
+            )
+            echo "::endgroup::"
+
+            echo "::group::Apply ${TG_ENV}/${layer}"
+            (
+              cd "$layer_dir"
+              terragrunt apply --non-interactive -- -input=false -auto-approve -no-color
+            )
+            echo "::endgroup::"
+
+            echo "| ${layer} | planned and applied |" >> "$GITHUB_STEP_SUMMARY"
+          done <<< "$SAFE_LAYERS"
+
+  critical_manual_only_summary:
+    name: Critical Infra Manual Operation Required
+    needs: detect_cd_scope
+    if: >-
+      ${{
+        github.ref == 'refs/heads/develop' &&
+        needs.detect_cd_scope.outputs.critical_manual_only_changed == 'true'
+      }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Write critical/manual-only infra summary
+        shell: bash
+        env:
+          APP_CHANGED: ${{ needs.detect_cd_scope.outputs.app_changed }}
+          CRITICAL_MANUAL_ONLY_LAYERS: ${{ needs.detect_cd_scope.outputs.critical_manual_only_layers }}
+          CRITICAL_MANUAL_ONLY_PATHS: ${{ needs.detect_cd_scope.outputs.critical_manual_only_paths }}
+          UNMAPPED_HIGH_RISK_PATHS: ${{ needs.detect_cd_scope.outputs.unmapped_high_risk_paths }}
+        run: |
+          set -euo pipefail
+
+          write_list() {
+            local value="$1"
+
+            if [ -z "$value" ]; then
+              echo "- none"
+              return 0
+            fi
+
+            while IFS= read -r item; do
+              [ -n "$item" ] && echo "- \`${item}\`"
+            done <<< "$value"
+          }
+
+          {
+            echo "## Critical/manual-only infra detected"
+            echo
+            echo "Deployment not performed for these paths by \`cd.yml\`."
+            echo "Use **CD - Terragrunt Layer** or an explicit human-reviewed operation for root files, shared modules, or ambiguous impact."
+            echo
+            echo "### Critical/manual-only layers"
+            echo
+            write_list "$CRITICAL_MANUAL_ONLY_LAYERS"
+            echo
+            echo "### Critical/manual-only paths"
+            echo
+            write_list "$CRITICAL_MANUAL_ONLY_PATHS"
+            if [ -n "$UNMAPPED_HIGH_RISK_PATHS" ]; then
+              echo
+              echo "### Unmapped high-risk paths"
+              echo
+              write_list "$UNMAPPED_HIGH_RISK_PATHS"
+              echo
+              echo "Unmapped high-risk paths are treated as fail-closed."
+            fi
+            if [ "$APP_CHANGED" = "true" ]; then
+              echo
+              echo "App deploy is blocked until the manual infra operation is completed outside this orchestrator."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ -n "$UNMAPPED_HIGH_RISK_PATHS" ]; then
+            echo "::error::Unmapped high-risk paths require explicit mapping or manual remediation."
+            exit 1
+          fi
+
+  high_risk_dev_infra_plan:
+    name: High-Risk Dev Infra Plan
+    needs:
+      - detect_cd_scope
+      - dev_infra_apply
+    if: >-
+      ${{
+        always() &&
+        github.ref == 'refs/heads/develop' &&
+        needs.detect_cd_scope.outputs.high_risk_layers != '' &&
+        (
+          needs.detect_cd_scope.outputs.safe_dev_infra_changed != 'true' ||
+          needs.dev_infra_apply.result == 'success'
+        )
+      }}
+    runs-on: ubuntu-latest
+    environment:
+      name: dev
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      AWS_REGION: us-east-1
+      TG_ENV: dev
+      HIGH_RISK_LAYERS: ${{ needs.detect_cd_scope.outputs.high_risk_layers }}
+      CHANGED_HIGH_RISK_PATHS: ${{ needs.detect_cd_scope.outputs.changed_high_risk_paths }}
+      CRITICAL_MANUAL_ONLY_PATHS: ${{ needs.detect_cd_scope.outputs.critical_manual_only_paths }}
+      UNMAPPED_HIGH_RISK_PATHS: ${{ needs.detect_cd_scope.outputs.unmapped_high_risk_paths }}
+      APP_CHANGED: ${{ needs.detect_cd_scope.outputs.app_changed }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Validate plan inputs
+        shell: bash
+        env:
+          AWS_ROLE_TG_CI: ${{ secrets.AWS_ROLE_TG_CI }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "$AWS_ROLE_TG_CI" ]; then
+            echo "::error::High-risk dev infra plan requires AWS_ROLE_TG_CI in the dev GitHub environment."
+            exit 1
+          fi
+
+          if [ -z "$HIGH_RISK_LAYERS" ]; then
+            echo "::error::High-risk plan started without managed high-risk layers."
+            exit 1
+          fi
+
+          if [ -n "$UNMAPPED_HIGH_RISK_PATHS" ]; then
+            echo "::error::High-risk plan refused because unmapped high-risk paths were detected."
+            exit 1
+          fi
+
+          while IFS= read -r layer; do
+            [ -n "$layer" ] || continue
+            case "$layer" in
+              data|apps/fargate) ;;
+              *)
+                echo "::error::Unexpected high-risk managed layer: ${layer}"
+                exit 1
+                ;;
+            esac
+          done <<< "$HIGH_RISK_LAYERS"
+
+          echo "::add-mask::$AWS_ROLE_TG_CI"
+
+      - name: AWS Login via OIDC
+        uses: ./.github/actions/aws-oidc
+        with:
+          role_arn: ${{ secrets.AWS_ROLE_TG_CI }}
+          aws_region: ${{ env.AWS_REGION }}
+          role_session_name: "terragrunt-high-risk-plan"
+
+      - name: Resolve Terraform backend
+        id: backend
+        uses: ./.github/actions/resolve-backend
+        with:
+          tg_env: ${{ env.TG_ENV }}
+          aws_region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.13.4
+
+      - name: Install Terragrunt
+        shell: bash
+        run: |
+          set -euo pipefail
+          TG_VERSION="0.93.3"
+          curl -L "https://github.com/gruntwork-io/terragrunt/releases/download/v${TG_VERSION}/terragrunt_linux_amd64" -o terragrunt
+          chmod +x terragrunt
+          sudo mv terragrunt /usr/local/bin/terragrunt
+
+      - name: Terraform fmt
+        run: terraform fmt -check -recursive terraform/
+
+      - name: Terragrunt HCL fmt
+        run: terragrunt hcl format --check --working-dir terraform/live
+
+      - name: Plan high-risk managed layers
+        id: high_risk_plan
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          plan_dir="${RUNNER_TEMP}/high-risk-terragrunt-plans"
+          mkdir -p "$plan_dir"
+          plan_failed="false"
+
+          {
+            echo "## High-risk dev infra plan"
+            echo
+            echo "| Field | Value |"
+            echo "| --- | --- |"
+            echo "| Target environment | ${TG_ENV} |"
+            echo "| Commit SHA | ${GITHUB_SHA} |"
+            echo "| Workflow run | ${GITHUB_RUN_ID}.${GITHUB_RUN_ATTEMPT} |"
+            echo "| Approval environment | dev-infra-approval |"
+            echo
+            if [ -n "$CRITICAL_MANUAL_ONLY_PATHS" ]; then
+              echo "Status: plan evidence will be produced, but approval/apply is blocked by critical/manual-only paths."
+              echo
+              echo "Critical/manual-only paths are also present; managed layers are planned for evidence only until those paths are handled manually."
+            else
+              echo "Status: waiting for approval after a successful plan."
+              if [ "$APP_CHANGED" = "true" ]; then
+                echo
+                echo "App deploy is waiting for the high-risk infra approval/apply gate."
+              fi
+            fi
+            echo
+            echo "### Managed layers planned"
+            echo
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          while IFS= read -r layer; do
+            [ -n "$layer" ] || continue
+            layer_dir="terraform/live/${TG_ENV}/${layer}"
+            layer_slug="${layer//\//-}"
+            plan_log="${plan_dir}/${TG_ENV}-${layer_slug}-plan.log"
+            plan_summary="${plan_dir}/${TG_ENV}-${layer_slug}-summary.log"
+
+            if [ ! -f "${layer_dir}/terragrunt.hcl" ]; then
+              echo "::error::Missing expected high-risk Terragrunt layer: ${layer_dir}"
+              plan_failed="true"
+              continue
+            fi
+
+            echo "::group::Plan ${TG_ENV}/${layer}"
+            set +e
+            (
+              cd "$layer_dir"
+              terragrunt init --non-interactive -- -reconfigure
+              terragrunt validate --non-interactive
+              terragrunt plan --non-interactive -- -lock=false -input=false -no-color
+            ) > "$plan_log" 2>&1
+            plan_exit=$?
+            set -e
+            echo "::endgroup::"
+
+            awk '
+              /No changes\./ { print; next }
+              /Plan: [0-9]+ to add, [0-9]+ to change, [0-9]+ to destroy\./ { print; next }
+            ' "$plan_log" > "$plan_summary" || true
+
+            {
+              echo "- \`${layer}\`"
+              if [ -s "$plan_summary" ]; then
+                echo
+                echo '```text'
+                cat "$plan_summary"
+                echo '```'
+              fi
+            } >> "$GITHUB_STEP_SUMMARY"
+
+            if [ "$plan_exit" -ne 0 ]; then
+              echo "::error::Terragrunt plan failed for ${TG_ENV}/${layer}. See uploaded artifact."
+              plan_failed="true"
+            fi
+          done <<< "$HIGH_RISK_LAYERS"
+
+          {
+            echo
+            echo "### Changed high-risk paths"
+            echo
+            if [ -n "$CHANGED_HIGH_RISK_PATHS" ]; then
+              while IFS= read -r path; do
+                [ -n "$path" ] && echo "- \`$path\`"
+              done <<< "$CHANGED_HIGH_RISK_PATHS"
+            else
+              echo "- none"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$plan_failed" = "true" ]; then
+            exit 1
+          fi
+
+      - name: Upload high-risk plan artifact
+        id: upload_plan
+        if: ${{ always() && steps.high_risk_plan.outcome != 'skipped' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: high-risk-dev-terragrunt-plan-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/high-risk-terragrunt-plans
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 9
+
+      - name: Add plan artifact link to summary
+        if: ${{ always() && steps.upload_plan.outcome == 'success' }}
+        shell: bash
+        run: |
+          {
+            echo
+            echo "### Plan artifact"
+            echo
+            echo "Artifact: [download high-risk Terragrunt plan logs](${{ steps.upload_plan.outputs.artifact-url }})"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  high_risk_dev_infra_apply:
+    name: High-Risk Dev Infra Apply Approval
+    needs:
+      - detect_cd_scope
+      - high_risk_dev_infra_plan
+    if: >-
+      ${{
+        always() &&
+        github.ref == 'refs/heads/develop' &&
+        needs.detect_cd_scope.outputs.high_risk_layers != '' &&
+        needs.detect_cd_scope.outputs.critical_manual_only_paths == '' &&
+        needs.detect_cd_scope.outputs.unmapped_high_risk_paths == '' &&
+        needs.high_risk_dev_infra_plan.result == 'success'
+      }}
+    runs-on: ubuntu-latest
+    environment:
+      name: dev-infra-approval
+    permissions:
+      contents: read
+      id-token: write
+    concurrency:
+      group: infra-cd-dev
+      cancel-in-progress: false
+    env:
+      AWS_REGION: us-east-1
+      TG_ENV: dev
+      HIGH_RISK_LAYERS: ${{ needs.detect_cd_scope.outputs.high_risk_layers }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Resolve high-risk infra CD role
+        id: aws-role
+        shell: bash
+        env:
+          DEV_INFRA_APPROVAL_GATE_CONFIGURED: ${{ vars.DEV_INFRA_APPROVAL_GATE_CONFIGURED }}
+          AWS_ROLE_TG_CD_HIGH_RISK: ${{ secrets.AWS_ROLE_TG_CD_HIGH_RISK }}
+          AWS_ROLE_TG_CD: ${{ secrets.AWS_ROLE_TG_CD }}
+        run: |
+          set -euo pipefail
+
+          if [ "${DEV_INFRA_APPROVAL_GATE_CONFIGURED:-}" != "true" ]; then
+            echo "::error::Configure the dev-infra-approval GitHub Environment with required reviewers, then set environment variable DEV_INFRA_APPROVAL_GATE_CONFIGURED=true."
+            exit 1
+          fi
+
+          if [ -n "$AWS_ROLE_TG_CD_HIGH_RISK" ]; then
+            role_arn="$AWS_ROLE_TG_CD_HIGH_RISK"
+            source="AWS_ROLE_TG_CD_HIGH_RISK"
+          elif [ -n "$AWS_ROLE_TG_CD" ]; then
+            role_arn="$AWS_ROLE_TG_CD"
+            source="AWS_ROLE_TG_CD"
+            echo "::warning::Using AWS_ROLE_TG_CD fallback for high-risk infra apply. Prefer a dedicated AWS_ROLE_TG_CD_HIGH_RISK secret in dev-infra-approval."
+          else
+            echo "::error::Missing high-risk Terragrunt CD role. Configure AWS_ROLE_TG_CD_HIGH_RISK or AWS_ROLE_TG_CD in dev-infra-approval."
+            exit 1
+          fi
+
+          if [ -z "$HIGH_RISK_LAYERS" ]; then
+            echo "::error::High-risk apply started without managed high-risk layers."
+            exit 1
+          fi
+
+          while IFS= read -r layer; do
+            [ -n "$layer" ] || continue
+            case "$layer" in
+              data|apps/fargate) ;;
+              *)
+                echo "::error::Unexpected high-risk managed layer: ${layer}"
+                exit 1
+                ;;
+            esac
+          done <<< "$HIGH_RISK_LAYERS"
+
+          echo "::add-mask::$role_arn"
+          echo "role_arn=$role_arn" >> "$GITHUB_OUTPUT"
+          echo "role_source=$source" >> "$GITHUB_OUTPUT"
+
+      - name: AWS Login via OIDC
+        uses: ./.github/actions/aws-oidc
+        with:
+          role_arn: ${{ steps.aws-role.outputs.role_arn }}
+          aws_region: ${{ env.AWS_REGION }}
+          role_session_name: "terragrunt-high-risk-apply"
+
+      - name: Verify AWS identity
+        id: aws-identity
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          identity_json="$(aws sts get-caller-identity --output json --region "$AWS_REGION")"
+          account_id="$(jq -er '.Account' <<< "$identity_json")"
+          arn="$(jq -er '.Arn' <<< "$identity_json")"
+
+          echo "::add-mask::$account_id"
+          echo "::add-mask::$arn"
+          echo "account_id=$account_id" >> "$GITHUB_OUTPUT"
+          echo "caller_arn=$arn" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve Terraform backend
+        id: backend
+        uses: ./.github/actions/resolve-backend
+        with:
+          tg_env: ${{ env.TG_ENV }}
+          aws_region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.13.4
+
+      - name: Install Terragrunt
+        shell: bash
+        run: |
+          set -euo pipefail
+          TG_VERSION="0.93.3"
+          curl -L "https://github.com/gruntwork-io/terragrunt/releases/download/v${TG_VERSION}/terragrunt_linux_amd64" -o terragrunt
+          chmod +x terragrunt
+          sudo mv terragrunt /usr/local/bin/terragrunt
+
+      - name: Terraform fmt
+        run: terraform fmt -check -recursive terraform/
+
+      - name: Terragrunt HCL fmt
+        run: terragrunt hcl format --check --working-dir terraform/live
+
+      - name: Re-plan and apply high-risk managed layers
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          current_layer=""
+          on_error() {
+            {
+              echo
+              echo "High-risk apply failed."
+              if [ -n "$current_layer" ]; then
+                echo
+                echo "Failed layer: \`${current_layer}\`"
+              fi
+            } >> "$GITHUB_STEP_SUMMARY"
+          }
+          trap on_error ERR
+
+          {
+            echo "## High-risk dev infra apply"
+            echo
+            echo "| Field | Value |"
+            echo "| --- | --- |"
+            echo "| Status | approved/applied |"
+            echo "| Environment gate | dev-infra-approval |"
+            echo "| Workflow actor | ${GITHUB_ACTOR} |"
+            echo "| Approval record | See GitHub deployment review history for this job. |"
+            echo "| Workflow run | ${GITHUB_RUN_ID}.${GITHUB_RUN_ATTEMPT} |"
+            echo "| Commit SHA | ${GITHUB_SHA} |"
+            echo "| AWS role source | ${{ steps.aws-role.outputs.role_source }} |"
+            echo "| AWS caller | resolved and masked |"
+            echo
+            echo "### Applied layers"
+            echo
+            echo "| Layer | Result |"
+            echo "| --- | --- |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          while IFS= read -r layer; do
+            [ -n "$layer" ] || continue
+            current_layer="$layer"
+            layer_dir="terraform/live/${TG_ENV}/${layer}"
+
+            if [ ! -f "${layer_dir}/terragrunt.hcl" ]; then
+              echo "::error::Missing expected high-risk Terragrunt layer: ${layer_dir}"
+              exit 1
+            fi
+
+            echo "::group::Re-plan ${TG_ENV}/${layer}"
+            (
+              cd "$layer_dir"
+              terragrunt init --non-interactive -- -reconfigure
+              terragrunt validate --non-interactive
+              terragrunt plan --non-interactive -- -input=false -no-color
+            )
+            echo "::endgroup::"
+
+            echo "::group::Apply ${TG_ENV}/${layer}"
+            (
+              cd "$layer_dir"
+              terragrunt apply --non-interactive -- -input=false -auto-approve -no-color
+            )
+            echo "::endgroup::"
+
+            echo "| ${layer} | re-planned and applied |" >> "$GITHUB_STEP_SUMMARY"
+          done <<< "$HIGH_RISK_LAYERS"
+
+          current_layer=""
+          {
+            echo
+            echo "Next step: infra ready gate, then app deploy if this run includes app changes."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  infra_no_apply_summary:
+    name: Infra CD Notice
+    needs: detect_cd_scope
+    if: >-
+      ${{
+        needs.detect_cd_scope.outputs.infra_changed == 'true' &&
+        (
+          github.ref == 'refs/heads/main' ||
+          (
+            github.ref == 'refs/heads/develop' &&
+            needs.detect_cd_scope.outputs.safe_dev_infra_changed != 'true' &&
+            needs.detect_cd_scope.outputs.high_risk_dev_infra_changed != 'true'
+          )
+        )
+      }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Write infra CD notice
+        shell: bash
+        env:
+          PROD_INFRA_PATHS: ${{ needs.detect_cd_scope.outputs.prod_infra_paths }}
+          PROD_INFRA_CHANGED: ${{ needs.detect_cd_scope.outputs.prod_infra_changed }}
+          INFRA_PATHS: ${{ needs.detect_cd_scope.outputs.changed_infra_paths }}
+          INFRA_WORKFLOW_CHANGED: ${{ needs.detect_cd_scope.outputs.infra_workflow_changed }}
+          INFRA_WORKFLOW_PATHS: ${{ needs.detect_cd_scope.outputs.infra_workflow_paths }}
+        run: |
+          set -euo pipefail
+
+          write_paths() {
+            local title="$1"
+            local paths="$2"
+
+            if [ -z "$paths" ]; then
+              return 0
+            fi
+
+            echo
+            echo "$title"
+            while IFS= read -r path; do
+              [ -n "$path" ] && echo "- \`$path\`"
+            done <<< "$paths"
+          }
+
+          {
+            echo "## Infrastructure change detected"
+            echo
+            if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+              echo "Prod infra auto-apply is not implemented."
+              echo "Use the manual **CD - Terragrunt Layer** workflow for prod plan/apply."
+              echo "No prod Terragrunt apply was attempted."
+              if [ "$INFRA_WORKFLOW_CHANGED" = "true" ]; then
+                echo
+                echo "Infra workflow/supporting files changed."
+              fi
+              write_paths "Detected infra paths:" "$INFRA_PATHS"
+              write_paths "Detected infra workflow paths:" "$INFRA_WORKFLOW_PATHS"
+              write_paths "Detected prod infra paths:" "$PROD_INFRA_PATHS"
+            else
+              echo "No automatic dev infra apply was needed."
+              echo
+              if [ "$INFRA_WORKFLOW_CHANGED" = "true" ]; then
+                echo "Infra workflow/supporting files changed; no Terragrunt layer apply was attempted for those files."
+              elif [ "$PROD_INFRA_CHANGED" = "true" ]; then
+                echo "Prod-only infrastructure changed on develop; dev apply was not attempted."
+              else
+                echo "The changed infra paths did not map to an automatic dev apply layer."
+              fi
+              write_paths "Detected infra paths:" "$INFRA_PATHS"
+              write_paths "Detected infra workflow paths:" "$INFRA_WORKFLOW_PATHS"
+              write_paths "Detected prod infra paths:" "$PROD_INFRA_PATHS"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  infra_ready_gate:
+    name: Infra Ready Gate
+    needs:
+      - detect_cd_scope
+      - dev_infra_apply
+      - critical_manual_only_summary
+      - high_risk_dev_infra_plan
+      - high_risk_dev_infra_apply
+    if: >-
+      ${{
+        always() &&
+        github.ref == 'refs/heads/develop' &&
+        needs.detect_cd_scope.outputs.app_changed == 'true'
+      }}
+    runs-on: ubuntu-latest
+    environment:
+      name: dev
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      AWS_REGION: us-east-1
+      TG_ENV: dev
+      TARGET_ENV: ${{ needs.detect_cd_scope.outputs.target_env }}
+      APP_CHANGED: ${{ needs.detect_cd_scope.outputs.app_changed }}
+      SAFE_DEV_INFRA_CHANGED: ${{ needs.detect_cd_scope.outputs.safe_dev_infra_changed }}
+      HIGH_RISK_DEV_INFRA_CHANGED: ${{ needs.detect_cd_scope.outputs.high_risk_dev_infra_changed }}
+      HIGH_RISK_LAYERS: ${{ needs.detect_cd_scope.outputs.high_risk_layers }}
+      CRITICAL_MANUAL_ONLY_PATHS: ${{ needs.detect_cd_scope.outputs.critical_manual_only_paths }}
+      UNMAPPED_HIGH_RISK_PATHS: ${{ needs.detect_cd_scope.outputs.unmapped_high_risk_paths }}
+      DEV_INFRA_APPLY_RESULT: ${{ needs.dev_infra_apply.result }}
+      CRITICAL_MANUAL_ONLY_RESULT: ${{ needs.critical_manual_only_summary.result }}
+      HIGH_RISK_PLAN_RESULT: ${{ needs.high_risk_dev_infra_plan.result }}
+      HIGH_RISK_APPLY_RESULT: ${{ needs.high_risk_dev_infra_apply.result }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Validate upstream infra gates
+        shell: bash
+        run: |
+          set -euo pipefail
+          .github/scripts/cd/validate-infra-gate.sh
+
+      - name: Resolve dev deploy readiness role
+        id: aws-role
+        shell: bash
+        env:
+          AWS_ROLE_DEV_DEPLOY: ${{ secrets.AWS_ROLE_DEV_DEPLOY }}
+          AWS_ROLE_APP_CD: ${{ secrets.AWS_ROLE_APP_CD }}
+        run: |
+          set -euo pipefail
+
+          if [ -n "$AWS_ROLE_DEV_DEPLOY" ]; then
+            role_arn="$AWS_ROLE_DEV_DEPLOY"
+            source="AWS_ROLE_DEV_DEPLOY"
+          elif [ -n "$AWS_ROLE_APP_CD" ]; then
+            role_arn="$AWS_ROLE_APP_CD"
+            source="AWS_ROLE_APP_CD"
+            echo "::warning::Using temporary AWS_ROLE_APP_CD fallback for infra ready gate. Bootstrap AWS_ROLE_DEV_DEPLOY and remove this fallback in Phase 5 cleanup."
+          else
+            echo "::error::Missing AWS role secret. Configure AWS_ROLE_DEV_DEPLOY, or temporarily AWS_ROLE_APP_CD during migration."
+            exit 1
+          fi
+
+          echo "::add-mask::$role_arn"
+          echo "role_arn=$role_arn" >> "$GITHUB_OUTPUT"
+          echo "role_source=$source" >> "$GITHUB_OUTPUT"
+
+      - name: AWS Login via OIDC
+        uses: ./.github/actions/aws-oidc
+        with:
+          role_arn: ${{ steps.aws-role.outputs.role_arn }}
+          aws_region: ${{ env.AWS_REGION }}
+          role_session_name: "infra-ready-gate"
+
+      - name: Resolve Terraform backend
+        id: backend
+        uses: ./.github/actions/resolve-backend
+        with:
+          tg_env: ${{ env.TG_ENV }}
+          aws_region: ${{ env.AWS_REGION }}
+
+      - name: Resolve deploy resources
+        id: deploy-env
+        uses: ./.github/actions/resolve-demo-api-resources
+        with:
+          deploy_env: dev
+          require_db_secret: "true"
+          alb_listener_dev: ${{ vars.ALB_LISTENER_DEV }}
+          alb_candidate_rule_dev: ${{ vars.ALB_CANDIDATE_RULE_DEV }}
+          tg_blue_dev: ${{ vars.TG_BLUE_DEV }}
+          tg_green_dev: ${{ vars.TG_GREEN_DEV }}
+          scale_down_lambda_dev: ${{ vars.SCALE_DOWN_LAMBDA_DEV }}
+          db_secret_arn_dev: ${{ vars.DB_SECRET_ARN_DEV }}
+          smoke_test_url_dev: ${{ vars.SMOKE_TEST_URL_DEV }}
+
+      - name: Preflight Demo API deploy resources
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if ! scripts/check-deploy-resources.sh \
+            --environment "$TG_ENV" \
+            --region "$AWS_REGION" \
+            --account-id "$ACCOUNT_ID" \
+            --cluster "$ECS_CLUSTER" \
+            --blue-service "$ECS_SERVICE_BLUE" \
+            --green-service "$ECS_SERVICE_GREEN" \
+            --listener-arn "$ALB_LISTENER_ARN" \
+            --candidate-rule-arn "$ALB_CANDIDATE_RULE_ARN" \
+            --tg-blue-arn "$TG_BLUE_ARN" \
+            --tg-green-arn "$TG_GREEN_ARN" \
+            --scale-down-rule-name "$SCALE_DOWN_RULE_NAME" \
+            --scale-down-lambda-arn "$SCALE_DOWN_LAMBDA_ARN" \
+            --db-secret-arn "$DB_SECRET_ARN" \
+            --require-db-secret true; then
+            {
+              echo
+              echo "Status: blocked. Demo API deploy resources are missing or inaccessible."
+              echo "Release build was not started, so no image or manifest was published by this CD run."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+          {
+            echo
+            echo "Status: ready. Demo API deploy can continue."
+            echo
+            echo "| Resource | Value |"
+            echo "| --- | --- |"
+            echo "| ECS cluster | ${ECS_CLUSTER} |"
+            echo "| Blue service | ${ECS_SERVICE_BLUE} |"
+            echo "| Green service | ${ECS_SERVICE_GREEN} |"
+            echo "| ALB listener | configured |"
+            echo "| Candidate rule | configured |"
+            echo "| Target groups | configured |"
+            echo "| Scale-down Lambda | configured |"
+            echo "| DB secret ARN | configured |"
+            echo "| AWS role | ${{ steps.aws-role.outputs.role_source }} |"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   demo-api:
-    name: Run Demo API CD
-    needs: [detect-changes, terragrunt]
+    name: Run Demo API Dev CD
+    needs:
+      - infra_ready_gate
     if: >-
-      ${{ always()
-          && needs.detect-changes.outputs.app == 'true'
-          && (needs.terragrunt.result == 'success' || needs.terragrunt.result == 'skipped') }}
+      ${{
+        always() &&
+        github.ref == 'refs/heads/develop' &&
+        needs.infra_ready_gate.result == 'success'
+      }}
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
     uses: ./.github/workflows/cd-demo-api.yml
+    secrets: inherit
     with:
       aws_region: us-east-1
-      deploy_env: ${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}
-    secrets: inherit
+      deploy_env: dev
+
+  prod-app-notice:
+    name: Prod app promotion is manual
+    needs: detect_cd_scope
+    if: >-
+      ${{ needs.detect_cd_scope.outputs.app_changed == 'true' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Write prod app CD notice
+        run: |
+          {
+            echo "## Demo API app change detected on main"
+            echo
+            echo "Prod promotion is intentionally manual."
+            echo "Run the manual promote-prod workflow with an existing S3 release manifest URI, git SHA/run ID, or digest."
+            echo "No Docker image was rebuilt, no ECR push was performed, and no prod ECS deploy was attempted."
+          } >> "$GITHUB_STEP_SUMMARY"

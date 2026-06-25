@@ -11,8 +11,8 @@ resource "aws_security_group" "alb_demo" {
 }
 
 # ─────────────────────────────────────────────────────────────
-# Security Group for the API Gateway VPC Link ENIs. 
-# Controls traffic entering the VPC through the VPC Link connection. 
+# Security Group for the API Gateway VPC Link ENIs.
+# Controls traffic entering the VPC through the VPC Link connection.
 # ─────────────────────────────────────────────────────────────
 resource "aws_security_group" "vpc_link" {
   name                   = "${local.name}-vpc-link-sg"
@@ -36,7 +36,7 @@ resource "aws_security_group" "nat_instance" {
 
 # ─────────────────────────────────────────────────────────────
 # Security Group for the Fargate demo service.
-# Controls traffic between the Fargate tasks and the database instance. 
+# Controls traffic between the Fargate tasks and the database instance.
 # ─────────────────────────────────────────────────────────────
 resource "aws_security_group" "fargate_demo" {
   name                   = "${local.name}-fargate-sg"

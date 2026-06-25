@@ -1,4 +1,4 @@
-name: CD - Demo API Blue/Green Deploy
+name: CD - Demo API
 
 on:
   workflow_call:
@@ -12,6 +12,7 @@ on:
         type: string
 
 permissions:
+  actions: read
   contents: read
   id-token: write
 
@@ -20,273 +21,72 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  cd-app:
-    name: Build • Push ECR • Blue/Green Deploy
+  validate-inputs:
+    name: Validate CD target
     runs-on: ubuntu-latest
-    environment:
-      name: ${{ inputs.deploy_env }}
-    env:
-      AWS_REGION: ${{ inputs.aws_region }}
-      TG_ENV: ${{ inputs.deploy_env }}
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Resolve App CD role ARN
-        id: resolve-role
+      - name: Validate deployment environment
         shell: bash
+        env:
+          TG_ENV: ${{ inputs.deploy_env }}
         run: |
           set -euo pipefail
-          ROLE_ARN="${{ secrets.AWS_ROLE_APP_CD }}"
-
-          if [ -z "${ROLE_ARN}" ]; then
-            echo "Missing AWS_ROLE_APP_CD secret for environment '${{ inputs.deploy_env }}'."
-            echo "Define it in GitHub Environment secrets (dev/prod) or as repository secret."
-            exit 1
-          fi
-
-          if ! [[ "${ROLE_ARN}" =~ ^arn:aws:iam::[0-9]{12}:role/.+ ]]; then
-            echo "AWS_ROLE_APP_CD does not look like a valid IAM role ARN: ${ROLE_ARN}"
-            exit 1
-          fi
-
-          echo "role_arn=${ROLE_ARN}" >> "$GITHUB_OUTPUT"
-
-      - name: AWS Login via OIDC
-        uses: ./.github/actions/aws-oidc
-        with:
-          role_arn: ${{ steps.resolve-role.outputs.role_arn }}
-          aws_region: ${{ env.AWS_REGION }}
-          role_session_name: "app-cd"
-
-      - name: Resolve Terraform backend
-        id: backend
-        uses: ./.github/actions/resolve-backend
-
-      - name: Show resolved env and backend
-        shell: bash
-        run: |
-          set -euo pipefail
-          echo "TG_ENV          : ${TG_ENV}"
-          echo "AWS_REGION      : ${AWS_REGION}"
-          echo "TF_STATE_BUCKET : ${TF_STATE_BUCKET}"
-          echo "TF_STATE_TABLE  : ${TF_STATE_TABLE}"
-          echo "ACCOUNT_ID      : ${ACCOUNT_ID}"
-
-      - name: Resolve deploy resources (by TG_ENV)
-        id: deploy-env
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          echo "Using TG_ENV=${TG_ENV}"
-
-          ECR_REPOSITORY="demo-${TG_ENV}-shared-demo-ms"
-          ECS_CLUSTER="demo-${TG_ENV}-platform-main-cluster"
-          ECS_SERVICE_BLUE="demo-${TG_ENV}-app-api-blue-svc"
-          ECS_SERVICE_GREEN="demo-${TG_ENV}-app-api-green-svc"
-          SCALE_DOWN_RULE_NAME="demo-${TG_ENV}-scale-down-old-color-rule"
-          SCALE_DOWN_LAMBDA_NAME="demo-${TG_ENV}-scale-down-old-color-lambda"
-
-          # Validate repository exists (prevents silent typos in naming conventions).
-          aws ecr describe-repositories --repository-names "${ECR_REPOSITORY}" >/dev/null
-
-          ALB_NAME="demo-${TG_ENV}-internal-alb"
-          ALB_ARN=$(aws elbv2 describe-load-balancers --names "${ALB_NAME}" | jq -r '.LoadBalancers[0].LoadBalancerArn')
-          ALB_LISTENER_ARN=$(aws elbv2 describe-listeners --load-balancer-arn "${ALB_ARN}" | jq -r '.Listeners[] | select(.Port == 8080) | .ListenerArn' | head -n1)
-
-          TG_BLUE_ARN=$(aws elbv2 describe-target-groups --names "demo-${TG_ENV}-blue-tg" | jq -r '.TargetGroups[0].TargetGroupArn')
-          TG_GREEN_ARN=$(aws elbv2 describe-target-groups --names "demo-${TG_ENV}-green-tg" | jq -r '.TargetGroups[0].TargetGroupArn')
-
-          ALB_CANDIDATE_RULE_ARN=$(aws elbv2 describe-rules --listener-arn "${ALB_LISTENER_ARN}" \
-            | jq -r '.Rules[] | select(any(.Conditions[]?; .Field == "path-pattern" and ((.PathPatternConfig.Values // .Values // []) | index("/__candidate_dummy__")))) | .RuleArn' \
-            | head -n1)
-
-          SCALE_DOWN_LAMBDA_ARN=$(aws lambda get-function --function-name "${SCALE_DOWN_LAMBDA_NAME}" | jq -r '.Configuration.FunctionArn')
-
-          for required in ALB_LISTENER_ARN ALB_CANDIDATE_RULE_ARN TG_BLUE_ARN TG_GREEN_ARN SCALE_DOWN_LAMBDA_ARN; do
-            if [ -z "${!required:-}" ] || [ "${!required}" = "null" ]; then
-              echo "Failed to resolve required deployment resource: ${required}"
+          case "$TG_ENV" in
+            dev|prod) ;;
+            *)
+              echo "::error::Unsupported deploy_env=${TG_ENV}. Supported values: dev, prod."
               exit 1
-            fi
-          done
+              ;;
+          esac
 
+  release-build:
+    name: Release Build
+    needs: validate-inputs
+    if: ${{ inputs.deploy_env == 'dev' }}
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/release-build.yml
+    secrets: inherit
+    with:
+      aws_region: ${{ inputs.aws_region }}
+      deploy_env: dev
+      app_name: demo-api
+
+  deploy-dev:
+    name: Deploy Dev From Manifest
+    needs:
+      - validate-inputs
+      - release-build
+    if: ${{ inputs.deploy_env == 'dev' }}
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/deploy-dev.yml
+    secrets: inherit
+    with:
+      aws_region: ${{ inputs.aws_region }}
+      deploy_env: dev
+      release_artifact_name: ${{ needs.release-build.outputs.release_artifact_name }}
+      expected_git_sha: ${{ needs.release-build.outputs.git_sha }}
+      expected_image_digest: ${{ needs.release-build.outputs.image_digest }}
+
+  prod-promotion-notice:
+    name: Prod Promotion Notice
+    needs: validate-inputs
+    if: ${{ inputs.deploy_env == 'prod' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Write prod promotion notice
+        shell: bash
+        run: |
+          set -euo pipefail
           {
-            echo "ECR_REPOSITORY=${ECR_REPOSITORY}"
-            echo "ECS_CLUSTER=${ECS_CLUSTER}"
-            echo "ECS_SERVICE_BLUE=${ECS_SERVICE_BLUE}"
-            echo "ECS_SERVICE_GREEN=${ECS_SERVICE_GREEN}"
-            echo "ALB_LISTENER_ARN=${ALB_LISTENER_ARN}"
-            echo "ALB_CANDIDATE_RULE_ARN=${ALB_CANDIDATE_RULE_ARN}"
-            echo "TG_BLUE_ARN=${TG_BLUE_ARN}"
-            echo "TG_GREEN_ARN=${TG_GREEN_ARN}"
-            echo "SCALE_DOWN_RULE_NAME=${SCALE_DOWN_RULE_NAME}"
-            echo "SCALE_DOWN_LAMBDA_ARN=${SCALE_DOWN_LAMBDA_ARN}"
-          } >> "$GITHUB_ENV"
-
-      - name: Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Cache Docker layers
-        uses: actions/cache@v4
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ hashFiles('demo-api/**/*.csproj') }}-${{ hashFiles('demo-api/Dockerfile') }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
-
-      - name: Build & push Docker image
-        id: build-image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./demo-api
-          file: ./demo-api/Dockerfile
-          push: true
-          tags: |
-            ${{ env.ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
-          provenance: false
-          sbom: false
-
-      - name: Export image URI
-        shell: bash
-        run: |
-          set -euo pipefail
-          IMAGE_URI="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}@${{ steps.build-image.outputs.digest }}"
-          echo "IMAGE_URI=$IMAGE_URI" >> "$GITHUB_ENV"
-
-      - name: Detect blue/green state
-        id: detect
-        uses: ./.github/actions/ecs-detect-blue-green
-        with:
-          listener-arn: ${{ env.ALB_LISTENER_ARN }}
-          candidate-rule-arn: ${{ env.ALB_CANDIDATE_RULE_ARN }}
-          tg-blue-arn: ${{ env.TG_BLUE_ARN }}
-          tg-green-arn: ${{ env.TG_GREEN_ARN }}
-          blue-service: ${{ env.ECS_SERVICE_BLUE }}
-          green-service: ${{ env.ECS_SERVICE_GREEN }}
-
-      - name: Update inactive ECS service with new image (inactive stays stopped)
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          INACTIVE_SERVICE="${{ steps.detect.outputs.inactive_service }}"
-          echo "Inactive service: $INACTIVE_SERVICE"
-          echo "New image URI: $IMAGE_URI"
-
-          aws ecs update-service \
-            --cluster "$ECS_CLUSTER" \
-            --service "$INACTIVE_SERVICE" \
-            --desired-count 0 >/dev/null
-
-          echo "Waiting for inactive service to be stable at desired=0..."
-          aws ecs wait services-stable \
-            --cluster "$ECS_CLUSTER" \
-            --services "$INACTIVE_SERVICE"
-
-          for i in {1..30}; do
-            TASKS=$(aws ecs list-tasks \
-              --cluster "$ECS_CLUSTER" \
-              --service-name "$INACTIVE_SERVICE" \
-              --desired-status RUNNING \
-              | jq -r '.taskArns | length')
-            if [ "$TASKS" = "0" ]; then
-              break
-            fi
-            echo "Still RUNNING tasks: $TASKS (waiting...)"
-            sleep 2
-          done
-
-          TD_ARN=$(aws ecs describe-services \
-            --cluster "$ECS_CLUSTER" \
-            --services "$INACTIVE_SERVICE" \
-            | jq -r '.services[0].taskDefinition')
-
-          echo "Current TD ARN (inactive): $TD_ARN"
-
-          aws ecs describe-task-definition --task-definition "$TD_ARN" > td.json
-
-          jq --arg IMAGE "$IMAGE_URI" '
-            .taskDefinition
-            | del(
-                .taskDefinitionArn,
-                .revision,
-                .status,
-                .registeredAt,
-                .registeredBy,
-                .requiresAttributes,
-                .compatibilities,
-                .deregisteredAt
-              )
-            | .containerDefinitions[0].image = $IMAGE
-          ' td.json > new-td.json
-
-          NEW_TD_ARN=$(aws ecs register-task-definition \
-            --cli-input-json file://new-td.json \
-            | jq -r '.taskDefinition.taskDefinitionArn')
-
-          echo "New TD ARN: $NEW_TD_ARN"
-
-          aws ecs update-service \
-            --cluster "$ECS_CLUSTER" \
-            --service "$INACTIVE_SERVICE" \
-            --task-definition "$NEW_TD_ARN" \
-            --desired-count 0 >/dev/null
-
-          for i in {1..30}; do
-            CUR_TD=$(aws ecs describe-services \
-              --cluster "$ECS_CLUSTER" \
-              --services "$INACTIVE_SERVICE" \
-              | jq -r '.services[0].taskDefinition')
-            if [ "$CUR_TD" = "$NEW_TD_ARN" ]; then
-              break
-            fi
-            echo "Service still shows TD=$CUR_TD (waiting...)"
-            sleep 2
-          done
-
-          echo "Waiting for inactive service to be stable with new TD (still desired=0)..."
-          aws ecs wait services-stable \
-            --cluster "$ECS_CLUSTER" \
-            --services "$INACTIVE_SERVICE"
-
-          RUNNING=$(aws ecs list-tasks \
-            --cluster "$ECS_CLUSTER" \
-            --service-name "$INACTIVE_SERVICE" \
-            --desired-status RUNNING \
-            | jq -r '.taskArns | length')
-
-          if [ "$RUNNING" != "0" ]; then
-            echo "ERROR: Inactive service has RUNNING tasks after update (count=$RUNNING)"
-            exit 1
-          fi
-
-          echo "OK: Inactive service updated to new image, stayed stopped, no task blip."
-
-      - name: Move Docker cache
-        shell: bash
-        run: |
-          set -euo pipefail
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
-
-      - name: ECS Blue/Green switch
-        uses: ./.github/actions/ecs-blue-green
-        with:
-          cluster: ${{ env.ECS_CLUSTER }}
-          blue-service: ${{ env.ECS_SERVICE_BLUE }}
-          green-service: ${{ env.ECS_SERVICE_GREEN }}
-          listener-arn: ${{ env.ALB_LISTENER_ARN }}
-          candidate-rule-arn: ${{ env.ALB_CANDIDATE_RULE_ARN }}
-          tg-blue-arn: ${{ env.TG_BLUE_ARN }}
-          tg-green-arn: ${{ env.TG_GREEN_ARN }}
-          desired-count: "1"
-          drain-delay-minutes: "5"
-          event-rule-name: ${{ env.SCALE_DOWN_RULE_NAME }}
-          lambda-arn: ${{ env.SCALE_DOWN_LAMBDA_ARN }}
+            echo "## Demo API prod promotion"
+            echo
+            echo "Prod rebuild/deploy is intentionally disabled in the app CD compatibility workflow."
+            echo "Use the manual promote-prod workflow with an existing S3 release manifest."
+            echo
+            echo "No Docker image was built, no ECR push was performed, and no prod ECS deploy was attempted."
+          } >> "$GITHUB_STEP_SUMMARY"
