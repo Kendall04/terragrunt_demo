@@ -3,21 +3,21 @@
 #
 # This configuration defines two independent ECS Fargate services:
 #
-#   - BLUE  : Current production service (stable, serving traffic)
-#   - GREEN : Deployment candidate (receives new release)
+#   - BLUE  : One deployable service color
+#   - GREEN : The other deployable service color
 #
 # Each service points to its own ALB target group.
 # Only one of them receives traffic at a time.
 #
 # desired_count:
-#   - BLUE  = 1 (or >0) when active
-#   - GREEN = 0 until a deployment happens
+#   - Both colors are created at 0 by Terraform.
+#   - CI/CD owns task definition revisions, active color, and runtime scale.
 #
 # CI/CD will:
-#   1. Deploy new image → GREEN
+#   1. Register a task definition with an immutable ECR digest
 #   2. Validate health
-#   3. Promote GREEN (switch ALB listeners)
-#   4. Optionally scale BLUE down
+#   3. Promote the inactive color (switch ALB listeners)
+#   4. Optionally scale the old color down
 # ─────────────────────────────────────────────────────────────
 
 
@@ -34,7 +34,7 @@ module "demo_api_blue" {
   security_group_ids = [var.demo_sg_id]
 
   container_name = local.api_blue_name
-  image          = local.container_image
+  image          = local.container_bootstrap_image
 
   port_mappings = [{
     containerPort = 8080
@@ -59,7 +59,7 @@ module "demo_api_blue" {
     DB_CONN_STRING = var.db_secret_arn
   }
 
-  desired_count = 1 # Production service is active 
+  desired_count = 0 # Runtime scale is owned by the app deployment pipeline.
   task_cpu      = "256"
   task_memory   = "512"
 
@@ -91,7 +91,7 @@ module "demo_api_green" {
   security_group_ids = [var.demo_sg_id]
 
   container_name = local.api_green_name
-  image          = local.container_image
+  image          = local.container_bootstrap_image
 
   port_mappings = [{
     containerPort = 8080
@@ -116,7 +116,7 @@ module "demo_api_green" {
     DB_CONN_STRING = var.db_secret_arn
   }
 
-  desired_count = 0 # idle, activated only during deployment
+  desired_count = 0 # Runtime scale is owned by the app deployment pipeline.
   task_cpu      = "256"
   task_memory   = "512"
 
@@ -153,6 +153,14 @@ resource "aws_iam_policy" "exec_read_db_secret" {
           "secretsmanager:DescribeSecret"
         ]
         Resource = var.db_secret_arn
+      },
+      {
+        Sid    = "DecryptDbSecret"
+        Effect = "Allow"
+        Action = [
+          "kms:Decrypt"
+        ]
+        Resource = var.kms_key_arn
       }
     ]
   })

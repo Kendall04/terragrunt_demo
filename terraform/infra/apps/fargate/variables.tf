@@ -53,9 +53,10 @@ variable "db_secret_arn" {
   description = "ARN of the Secret containing the DB connection string."
 }
 
-variable "image_digest" {
-  type    = string
-  default = ""
+variable "bootstrap_image" {
+  type        = string
+  description = "Placeholder image used only for Terraform-created bootstrap task definitions. Real app releases are registered by the deployment pipeline with immutable ECR digests."
+  default     = "public.ecr.aws/docker/library/nginx:stable-alpine"
 }
 
 # KMS

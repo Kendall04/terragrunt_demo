@@ -58,15 +58,44 @@ runs:
         BLUE_SVC="${{ inputs.blue-service }}"
         GREEN_SVC="${{ inputs.green-service }}"
 
-        # Read current ALB default target group (production)
-        DEFAULT_TG=$(aws elbv2 describe-listeners \
-          --listener-arns "$LISTENER_ARN" \
-          | jq -r '.Listeners[0].DefaultActions[0].TargetGroupArn')
+        echo "::add-mask::$LISTENER_ARN"
+        echo "::add-mask::$CANDIDATE_RULE_ARN"
+        echo "::add-mask::$BLUE_TG"
+        echo "::add-mask::$GREEN_TG"
 
-        # Read candidate rule target group (inactive path)
-        CANDIDATE_TG=$(aws elbv2 describe-rules \
-          --rule-arns "$CANDIDATE_RULE_ARN" \
-          | jq -r '.Rules[0].Actions[0].TargetGroupArn')
+        listener_err="$(mktemp)"
+        if ! LISTENER_JSON=$(aws elbv2 describe-listeners \
+          --listener-arns "$LISTENER_ARN" 2>"$listener_err"); then
+          if grep -q "ListenerNotFound" "$listener_err"; then
+            echo "::error::Configured ALB listener was not found. This is not caused by ECS desiredCount=0; check the GitHub ALB listener variable for this environment or re-apply the global Terraform layer."
+          else
+            sed 's/^/::error::/' "$listener_err"
+          fi
+          exit 1
+        fi
+
+        # Read current ALB default target group (production).
+        DEFAULT_TG=$(jq -er '
+          .Listeners[0].DefaultActions[0]
+          | .TargetGroupArn // .ForwardConfig.TargetGroups[0].TargetGroupArn
+        ' <<<"$LISTENER_JSON")
+
+        rule_err="$(mktemp)"
+        if ! RULE_JSON=$(aws elbv2 describe-rules \
+          --rule-arns "$CANDIDATE_RULE_ARN" 2>"$rule_err"); then
+          if grep -q "RuleNotFound" "$rule_err"; then
+            echo "::error::Configured ALB candidate rule was not found. Check the GitHub ALB candidate rule variable for this environment or re-apply the global Terraform layer."
+          else
+            sed 's/^/::error::/' "$rule_err"
+          fi
+          exit 1
+        fi
+
+        # Read candidate rule target group (inactive path).
+        CANDIDATE_TG=$(jq -er '
+          .Rules[0].Actions[0]
+          | .TargetGroupArn // .ForwardConfig.TargetGroups[0].TargetGroupArn
+        ' <<<"$RULE_JSON")
 
         if [[ "$DEFAULT_TG" == "$BLUE_TG" ]]; then
           ACTIVE_COLOR="blue"
@@ -84,24 +113,18 @@ runs:
           INACTIVE_SERVICE="$BLUE_SVC"
         else
           echo "Default TG does not match expected blue/green ARNs."
-          echo "Default: $DEFAULT_TG"
-          echo "Blue:    $BLUE_TG"
-          echo "Green:   $GREEN_TG"
           exit 1
         fi
 
         # Safety: candidate must point to inactive target group
         if [[ "$CANDIDATE_TG" != "$INACTIVE_TG" ]]; then
           echo "Candidate rule is not pointing to the inactive target group."
-          echo "Candidate: $CANDIDATE_TG"
-          echo "Expected:  $INACTIVE_TG"
           exit 1
         fi
 
         echo "Active color:   $ACTIVE_COLOR"
         echo "Inactive color: $INACTIVE_COLOR"
-        echo "Active service:   $ACTIVE_SERVICE"
-        echo "Inactive service: $INACTIVE_SERVICE"
+        echo "Blue/green services resolved."
 
         {
           echo "active_color=$ACTIVE_COLOR"

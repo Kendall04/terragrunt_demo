@@ -1,4 +1,4 @@
-# terragrunt_demo — Production-Grade AWS Platform (Terraform + Terragrunt + ECS Blue/Green)
+# terragrunt_demo - Production-Inspired AWS Platform
 
 ![Terraform](https://img.shields.io/badge/IaC-Terraform_%7C_Terragrunt-623CE4)
 ![AWS](https://img.shields.io/badge/Cloud-AWS-232F3E)
@@ -6,149 +6,175 @@
 ![Auth](<https://img.shields.io/badge/Auth-AWS_OIDC_(No_Static_Keys)-success>)
 ![Deploy](<https://img.shields.io/badge/Deploy-Blue%2FGreen_(ALB_Rule_Switch)-informational>)
 
-> **A realistic, production-grade AWS platform showcasing GitOps delivery, modular IaC, zero-downtime blue/green deployments, and fast operator-controlled rollback.**
+> A realistic AWS platform demo showcasing production-grade patterns: modular IaC, GitOps delivery, zero-downtime ECS blue/green deployments, immutable release manifests, and audited rollback.
 
-This repository is intentionally built as a **realistic production platform**, not a toy example.  
-It focuses on **platform engineering and delivery architecture**: reproducibility, safety, auditability, and operational control.
+This repository is intentionally built beyond a toy example. It models the kind
+of platform foundation a small team could grow from: reproducible environments,
+clear deployment ownership, no static AWS credentials in CI, and operator
+control over risky changes.
 
----
+## Key Highlights
 
-## 🚀 Key Highlights
+- **Zero-downtime app releases:** ECS Fargate blue/green deployments using ALB listener rule switching.
+- **GitOps delivery model:** PR validation, branch/environment gates, GitHub Actions logs, and Git history as the review trail.
+- **No static AWS credentials:** GitHub Actions authenticates to AWS through OIDC and assumes scoped IAM roles.
+- **Layered Terraform/Terragrunt:** reusable modules with environment-aware live roots and explicit dependency boundaries.
+- **Artifact-based promotion:** release builds publish immutable image digests and S3 release manifests; deploy/promotion jobs consume those artifacts.
+- **Cost-aware platform choices:** NAT instances and an EC2 database keep the demo affordable while documenting the production upgrade path.
 
-- **🔄 Zero-Downtime Deployments:** Blue/Green releases on **ECS Fargate** using **ALB listener rule switching** (fast rollback while the previous color remains alive).
-- **⚙️ GitOps Delivery:** PR-based validation and controlled CD with full audit trail via GitHub Actions logs and Git history.
-- **🛡️ No Static AWS Credentials:** GitHub Actions authenticates via **AWS OIDC** and assumes environment-scoped IAM roles.
-- **🧱 Modular IaC:** Layered Terraform modules orchestrated with Terragrunt for clean dependencies and DRY configuration.
-- **💰 Cost-Aware Architecture:** NAT Gateways replaced with **multi-AZ NAT instances** plus **EventBridge + Lambda auto-healing**, optimized for demos/MVPs with clear production upgrade paths.
+## Why This Exists
 
----
+Many AWS projects start with ClickOps: console-created infrastructure, manual
+ECS updates, ad hoc rollbacks, and no reliable way to recreate an environment.
 
-## 🧠 Why this exists
+This lab shows how that same class of system can be operated through code:
+infrastructure is versioned, deployments are repeatable, rollbacks are explicit,
+and CI/CD access is controlled without long-lived cloud keys.
 
-Many AWS projects start with manual operations (“ClickOps”):
+The focus is platform engineering and delivery architecture, not business logic.
 
-- Infrastructure created/changed in the console
-- Manual ECS updates
-- Slow or risky rollbacks
-- No reproducibility or reliable audit trail
+## High-Level Architecture
 
-This demo shows how the same class of system can be operated **cleanly, safely, and repeatably** using modern cloud practices—without relying on console-driven changes.
-
-It is inspired by real production constraints and focuses on **the platform foundation**, not business logic.
-
----
-
-## 🏗 High-Level Architecture
-
-The platform runs containerized workloads on **ECS Fargate** behind an **internal Application Load Balancer**, exposed through **API Gateway + VPC Link** (private integration).
-
-Blue/green deployments are implemented by switching the ALB listener rule between two target groups, enabling **zero-downtime releases** and **fast rollback**.
+The demo API runs on **ECS Fargate** in private subnets behind an **internal
+Application Load Balancer**. Public ingress goes through **API Gateway + VPC
+Link**, so ECS tasks and the ALB are not exposed directly to the internet.
 
 ![High-level AWS architecture](terraform/docs/diagrams/architecture.png)
 
-**Core characteristics**
+Core platform characteristics:
 
-- ECS tasks run in **private subnets** (no public exposure)
-- Secure ingress: **API Gateway → VPC Link → internal ALB**
-- Outbound traffic via **multi-AZ NAT instances** with auto-healing
-- Secrets injected via **AWS Secrets Manager**, encrypted with **KMS**
-- Lightweight CloudWatch alarms for critical health signals
+- ECS tasks run in private subnets.
+- API Gateway connects privately to the internal ALB through VPC Link.
+- Blue/green traffic is controlled by ALB listener rules.
+- Outbound access uses multi-AZ NAT instances with EventBridge/Lambda recovery.
+- Secrets are stored in AWS Secrets Manager and encrypted with KMS.
+- CloudWatch alarms cover the most important health signals.
 
----
+## CI/CD And GitOps Model
 
-## 🔄 CI/CD & GitOps Model
+All delivery paths are driven by GitHub Actions:
 
-All changes are driven through GitHub Actions.
-
-1. **Infra CI:** `terraform fmt` + `tflint` + `tfsec` + `terragrunt validate/plan` on PRs (plan published as artifact).
-2. **Infra CD:** `terragrunt apply` only after merge (S3 remote state + DynamoDB lock).
-3. **App CD (Blue/Green):** Build → Push to ECR → Update inactive color → Health gate (`/health`) → Switch ALB rules → Schedule scale-down.
-4. **Rollback:** **Manual by design** (operator-controlled traffic inversion in seconds).
+1. `ci.yml` routes working-branch pushes to fast local checks and PRs to `develop` / `main` to the full review gate.
+2. Infra CI runs formatting, static analysis, and remote Terragrunt plan only for environment-bound PRs or manual runs.
+3. Safe dev infra layers can auto-apply after merges to `develop`; stateful/runtime-sensitive layers stay manual.
+4. App release builds publish an immutable image digest plus an S3 release manifest.
+5. Dev deploy, prod promotion, and manifest rollback consume existing manifests instead of rebuilding.
 
 ![CI/CD pipelines overview](terraform/docs/diagrams/cd-pipelines.png)
 
-**Notes**
+The delivery boundary is deliberate: Terraform owns durable infrastructure
+skeletons, while GitHub Actions and scripts own fast release movement such as
+task definition revisions, desired counts, and ALB blue/green switches.
 
-- Environment selection is branch-based (`dev` / `prod`).
-- Change detection avoids unnecessary infra/app deployments.
-- Rollback is kept manual to prevent accidental traffic flips.
+## Blue/Green Deployment Strategy
 
----
+- Two ECS services exist: `blue` and `green`.
+- Two ALB target groups exist: one active, one inactive.
+- Deployments update the inactive color and wait for health checks.
+- Traffic switches by updating ALB listener rules.
+- The previous color remains alive for a configurable window to support fast rollback.
 
-## 🔵🟢 Blue/Green Deployment Strategy
+This keeps the deployment model deterministic without requiring CodeDeploy,
+service mesh infrastructure, or custom traffic controllers. It can evolve toward
+weighted/canary releases later.
 
-- Two ECS services exist: `blue` and `green`
-- Two ALB target groups: one active, one inactive
-- Deployments update the inactive color and wait for health checks
-- Traffic is switched by updating ALB listener rules
-- The old color remains alive for a configurable period to enable near-instant rollback
+## Operational Evidence
 
-This approach keeps deployments deterministic and avoids heavy external deployment tooling while remaining extensible (e.g., future canary releases).
+The repo includes architecture and delivery diagrams plus redacted examples of
+the release/deployment audit contracts:
 
----
+- [Architecture diagram](terraform/docs/diagrams/architecture.png)
+- [CI/CD pipeline diagram](terraform/docs/diagrams/cd-pipelines.png)
+- [Redacted release manifest](terraform/docs/evidence/release-manifest.redacted.json)
+- [Redacted deployment record](terraform/docs/evidence/deployment-record.redacted.json)
 
-## 📂 Repository Structure (simplified)
+When publishing the portfolio version, add a real GitHub Actions run screenshot
+under `terraform/docs/evidence/` after redacting account IDs, ARNs, bucket names,
+image URIs, and any environment-specific identifiers.
+
+## What I Would Change For Real Production
+
+This lab intentionally optimizes for learning value and demo cost. For a real
+production workload, I would prioritize:
+
+- **Managed data layer:** replace the EC2 SQL Server host with RDS Multi-AZ or Aurora, plus tested backup/restore.
+- **Egress strategy:** use NAT Gateway, VPC endpoints, or a workload-specific hybrid based on traffic and reliability needs.
+- **Edge protection:** add WAF, stricter throttling, and a clearer public API abuse model.
+- **Progressive delivery:** introduce canary or weighted target group shifts before full traffic movement.
+- **Observability:** add OpenTelemetry tracing, structured logs, dashboards, SLOs, and alert runbooks.
+- **Secrets lifecycle:** formalize rotation, break-glass access, audit review, and incident response.
+- **Production operations:** add disaster recovery drills, load tests, cost budgets, and release readiness checks.
+
+## Repository Structure
 
 ```text
 terraform/
-├── global/        # VPC, ALB, NAT instances
-├── platform/      # ECS cluster
-├── shared/        # ECR, IAM (OIDC), KMS
-├── edge/          # API Gateway, VPC Link
-├── data/          # Database layer (demo / cost-optimized)
-├── apps/          # ECS services & Lambdas
-└── modules/       # Reusable Terraform modules
+├── infra/         # Reusable Terraform modules and layer implementations
+├── live/          # Terragrunt live roots for dev/prod
+└── docs/          # Architecture, deployment, bootstrap and security docs
 
-.github/workflows/
-├── ci-dotnet.yml & ci-terragrunt.yml         # Validation & planning
-├── cd.yml                                    # Orchestrated CD
-└── rollback.yml                              # Manual rollback workflow
+.github/
+├── actions/       # Reusable composite actions
+├── scripts/       # CI/CD helper scripts and tests
+└── workflows/     # CI, infra CD, app deploy, promotion and rollback workflows
 
+demo-api/          # .NET 8 demo service and tests
+scripts/           # Local bootstrap, deploy, manifest and audit helpers
+ci/schemas/        # JSON schemas for release manifests and deployment records
 ```
 
-## 📖 Case Study (Deep Dive)
+## Documentation Map
 
-A full architecture case study explaining **design decisions, trade-offs, failure modes and future improvements** is available here:
+- [Architecture case study](terraform/docs/case-study.md): design decisions, trade-offs, failure modes, and future production improvements.
+- [Interview guide](terraform/docs/interview-guide.md): 10 discussion-ready decisions with trade-offs.
+- [Deployment runbook](terraform/docs/deployment.md): GitHub Actions roles, environment variables, deploy paths, and audit notes.
+- [CI/CD target architecture](terraform/docs/ci-cd-target-architecture.md): artifact promotion, S3 manifests, deployment records, and rollback model.
+- [Bootstrap guide](terraform/docs/bootstrap.md): staged local environment creation and recovery steps.
+- [Secrets strategy](terraform/docs/secrets-strategy.md): how secret metadata stays in Terraform while secret values stay out of state.
 
-➡️ **[Architecture Case Study](terraform/docs/case-study.md)**
+## Quick Local Deploy
 
----
+Recommended complete EC2/Codex dev deployment:
 
-## 🛠 Tech Stack
+```bash
+unset AWS_PROFILE
+scripts/deploy.sh full-dev-deploy --env dev --region us-east-1 --use-instance-role --include-edge --smoke-test --yes
+```
 
-**Cloud**  
-AWS (ECS Fargate, ALB, API Gateway, VPC, IAM, EC2, Lambda, EventBridge, CloudWatch, ECR, KMS, Secrets Manager)
+Recommended complete local named-profile deployment:
 
-**IaC**  
-Terraform, Terragrunt
+```bash
+scripts/deploy.sh full-dev-deploy --env dev --region us-east-1 --profile terraform-lab --include-edge --smoke-test --yes
+```
 
-**CI/CD**  
-GitHub Actions, AWS OIDC
+The bootstrap is staged because Terraform creates Secrets Manager metadata only;
+actual DB password and connection-string values are written outside Terraform by
+the bootstrap scripts. Full details are in the
+[Bootstrap Guide](terraform/docs/bootstrap.md).
 
-**Containers**  
-Docker
+## Tech Stack
 
-**Runtime**  
-.NET 8
+- **Cloud:** AWS ECS Fargate, ALB, API Gateway, VPC, IAM, EC2, Lambda, EventBridge, CloudWatch, ECR, KMS, Secrets Manager
+- **IaC:** Terraform, Terragrunt
+- **CI/CD:** GitHub Actions, AWS OIDC
+- **Runtime:** .NET 8
+- **Containers:** Docker
+- **Database (demo):** SQL Server on EC2, single-AZ and cost-optimized
 
-**Database (demo)**  
-SQL Server on EC2 (cost-optimized, single-AZ)
+## Disclaimer
 
----
+This is a demo platform with production-inspired patterns. Some components are
+intentionally simplified or cost-optimized so the repo can demonstrate platform
+architecture without requiring an expensive always-on production footprint.
 
-## ⚠️ Disclaimer
+## Author / Hiring
 
-This is a **demo platform**. Some components are intentionally simplified or cost-optimized (e.g., single-AZ database) to keep focus on platform architecture and delivery patterns.
+This repository represents how I approach AWS platform work: modular IaC,
+GitOps delivery, explicit deployment ownership, and practical trade-off
+management.
 
-Production upgrade paths (canary deployments, RDS Multi-AZ, advanced observability) are documented in the case study.
-
----
-
-## 👨‍💻 Author / Hiring
-
-This repository represents how I design and operate real AWS platforms: **modular IaC, GitOps delivery, and safe deployment strategies**.
-
-If you’re hiring for **Cloud / DevOps / Platform Engineering** contract roles, this project reflects the level of ownership and rigor I bring to production systems.
+If you are hiring for **Cloud / DevOps / Platform Engineering** contract roles,
+this project reflects the level of ownership and rigor I bring to real systems.
 
 - **LinkedIn:** [Kendall Fernandez](https://www.linkedin.com/in/kendall-fernandez-fernandez-b4930b174)
 - **Email:** [kendallffernandez@gmail.com](mailto:kendallffernandez@gmail.com)

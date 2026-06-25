@@ -3,6 +3,7 @@ import os
 import time
 
 ec2 = boto3.client('ec2')
+autoscaling = boto3.client('autoscaling')
 
 # Common prefix used to validate that the instance belongs
 # to one of the expected Auto Scaling Groups.
@@ -17,6 +18,28 @@ def _extract_asg_name(detail):
     return detail.get('AutoScalingGroupName')
 
 
+def _instance_id_from_asg(asg_name):
+    if not asg_name:
+        return None
+
+    resp = autoscaling.describe_auto_scaling_groups(
+        AutoScalingGroupNames=[asg_name]
+    )
+    groups = resp.get('AutoScalingGroups', [])
+    if not groups:
+        print(f"ASG not found: {asg_name}")
+        return None
+
+    instances = groups[0].get('Instances', [])
+    preferred = [
+        i for i in instances
+        if i.get('LifecycleState') == 'InService'
+        and i.get('HealthStatus') == 'Healthy'
+    ]
+    selected = (preferred or instances or [None])[0]
+    return selected.get('InstanceId') if selected else None
+
+
 def lambda_handler(event, context):
     detail = event.get('detail', {})
     instance_id = _extract_instance_id(detail)
@@ -27,11 +50,13 @@ def lambda_handler(event, context):
         print(f"Ignoring event: instance_id={instance_id}, state={state}")
         return
 
-    if not instance_id:
-        print(f"Ignoring event without instance ID: {event}")
-        return
-
     asg_name = _extract_asg_name(detail)
+
+    if not instance_id:
+        instance_id = _instance_id_from_asg(asg_name)
+        if not instance_id:
+            print(f"Ignoring event without resolvable instance ID: {event}")
+            return
 
     # For EC2 state-change events, try to read ASG tag (it may not appear immediately)
     if not asg_name:

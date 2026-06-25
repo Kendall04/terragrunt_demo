@@ -3,6 +3,7 @@ import os
 from botocore.exceptions import ClientError
 
 ec2 = boto3.client('ec2')
+autoscaling = boto3.client('autoscaling')
 
 # Environment variables provided by Terraform
 ROUTE_TABLE_A_ID = os.environ.get('ROUTE_TABLE_A_ID')
@@ -18,6 +19,28 @@ def _extract_instance_id(detail):
 
 def _extract_asg_name(detail):
     return detail.get('AutoScalingGroupName')
+
+
+def _instance_id_from_asg(asg_name):
+    if not asg_name:
+        return None
+
+    resp = autoscaling.describe_auto_scaling_groups(
+        AutoScalingGroupNames=[asg_name]
+    )
+    groups = resp.get('AutoScalingGroups', [])
+    if not groups:
+        print(f"ASG not found: {asg_name}")
+        return None
+
+    instances = groups[0].get('Instances', [])
+    preferred = [
+        i for i in instances
+        if i.get('LifecycleState') == 'InService'
+        and i.get('HealthStatus') == 'Healthy'
+    ]
+    selected = (preferred or instances or [None])[0]
+    return selected.get('InstanceId') if selected else None
 
 
 def _upsert_default_route(route_table_id, eni_id):
@@ -74,8 +97,10 @@ def lambda_handler(event, context):
         return
 
     if not instance_id:
-        print(f"Ignoring event without instance ID: {event}")
-        return
+        instance_id = _instance_id_from_asg(asg_name)
+        if not instance_id:
+            print(f"Ignoring event without resolvable instance ID: {event}")
+            return
 
     if ASG_PREFIX and asg_name and not asg_name.startswith(ASG_PREFIX):
         print(f"Ignoring instance {instance_id} from non-NAT ASG {asg_name}")

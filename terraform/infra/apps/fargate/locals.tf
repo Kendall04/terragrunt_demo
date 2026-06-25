@@ -12,10 +12,7 @@ locals {
     Owner       = "kendall"
   }
 
-  ecr_repo_demo = "demo-${var.env}-shared-demo-ms"
-  ecr_repo_base = "${local.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com/${local.ecr_repo_demo}"
-
-  container_image = var.image_digest != "" ? "${local.ecr_repo_base}@${var.image_digest}" : "${local.ecr_repo_base}:latest"
+  container_bootstrap_image = var.bootstrap_image
 
   api_blue_name  = "${local.name}-api-blue"
   api_green_name = "${local.name}-api-green"

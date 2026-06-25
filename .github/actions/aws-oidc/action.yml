@@ -19,6 +19,26 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Validate AWS role ARN input
+      shell: bash
+      env:
+        ROLE_ARN: ${{ inputs.role_arn }}
+      run: |
+        set -euo pipefail
+
+        if [ -z "${ROLE_ARN}" ]; then
+          echo "::error::AWS role ARN input is empty. Check the GitHub environment or repository secret used by this workflow."
+          exit 1
+        fi
+
+        case "${ROLE_ARN}" in
+          arn:aws:iam::*:role/*) ;;
+          *)
+            echo "::error::AWS role ARN input does not look like an IAM role ARN."
+            exit 1
+            ;;
+        esac
+
     - name: Configure AWS credentials via OIDC
       uses: aws-actions/configure-aws-credentials@v4
       with:
@@ -31,6 +51,5 @@ runs:
         # STS session name (helps with auditability in CloudTrail)
         role-session-name: ${{ inputs.role_session_name }}
 
-        # Optional:
         # Masks the AWS account ID in logs for extra security
-        # mask-aws-account-id: true
+        mask-aws-account-id: true

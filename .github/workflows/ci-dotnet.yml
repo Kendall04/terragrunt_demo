@@ -1,55 +1,31 @@
 name: CI - .NET + Docker Build
 
 on:
-  pull_request:
-    branches: [develop, main]
-    paths:
-      - "demo-api/**"
-      - ".github/workflows/ci-dotnet.yml"
-      - ".github/workflows/cd-demo-api.yml"
-      - ".github/actions/**"
-  push:
-    branches:
-      - "feature/**"
-    paths:
-      - "demo-api/**"
-      - ".github/workflows/ci-dotnet.yml"
-      - ".github/workflows/cd-demo-api.yml"
-      - ".github/actions/**"
+  workflow_call:
+    inputs:
+      dotnet_version:
+        description: ".NET SDK version"
+        required: false
+        type: string
+        default: "8.0.x"
 
 permissions:
   contents: read
 
 jobs:
   dotnet-ci:
-    if: |
-      github.event_name == 'push' ||
-      github.event_name == 'pull_request'
-
     name: .NET Restore • Build • Test • Docker Validate
     runs-on: ubuntu-latest
 
-    environment:
-      name: ${{ (github.event_name == 'pull_request' && github.base_ref == 'main') && 'prod' || 'dev' }}
-
     steps:
-      # ----------------------------------------
-      # 1) Checkout repo
-      # ----------------------------------------
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      # ----------------------------------------
-      # 2) Setup .NET SDK
-      # ----------------------------------------
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "8.0.x"
+          dotnet-version: ${{ inputs.dotnet_version }}
 
-      # ----------------------------------------
-      # 3) Cache NuGet packages
-      # ----------------------------------------
       - name: Cache NuGet
         uses: actions/cache@v4
         with:
@@ -58,52 +34,18 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
 
-      # ----------------------------------------
-      # 4) Restore
-      # ----------------------------------------
       - name: Restore dependencies
         run: dotnet restore ./demo-api/terragrunt-demo.sln
 
-      # ----------------------------------------
-      # 5) Build
-      # ----------------------------------------
       - name: Build
         run: dotnet build ./demo-api/terragrunt-demo.sln --configuration Release --no-restore
 
-      # ----------------------------------------
-      # 6) Validate test projects exist
-      # ----------------------------------------
-      - name: Validate test projects
-        shell: bash
-        run: |
-          set -euo pipefail
-          TEST_PROJECT_COUNT=$(find ./demo-api -name "*.Tests.csproj" -o -name "*Tests.csproj" | wc -l)
-          if [ "${TEST_PROJECT_COUNT}" -eq 0 ]; then
-            echo "No test projects found under demo-api/"
-            exit 1
-          fi
-
-      # ----------------------------------------
-      # 7) Run tests
-      # ----------------------------------------
       - name: Run tests
-        shell: bash
-        run: |
-          set -euo pipefail
-          while IFS= read -r project; do
-            echo "Running tests in ${project}"
-            dotnet test "${project}" --configuration Release --verbosity normal
-          done < <(find ./demo-api -name "*.Tests.csproj" -o -name "*Tests.csproj")
+        run: dotnet test ./demo-api/terragrunt-demo.sln --configuration Release --no-build --verbosity normal
 
-      # ----------------------------------------
-      # 8) Setup Docker Buildx
-      # ----------------------------------------
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # ----------------------------------------
-      # 9) Cache Docker layers
-      # ----------------------------------------
       - name: Cache Docker layers
         uses: actions/cache@v4
         with:
@@ -112,9 +54,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
 
-      # ----------------------------------------
-      # 10) Docker Build (with cache)
-      # ----------------------------------------
       - name: Build Docker image
         uses: docker/build-push-action@v5
         with:
@@ -126,10 +65,8 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
 
-      # ----------------------------------------
-      # 11) Move updated Docker cache
-      # ----------------------------------------
       - name: Move Docker cache
         run: |
+          set -euo pipefail
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache

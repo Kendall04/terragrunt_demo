@@ -1,0 +1,121 @@
+name: "Resolve Demo API artifact resources"
+description: "Resolve Demo API ECR and release artifact resources without deploy dependencies."
+
+inputs:
+  deploy_env:
+    description: "Deployment environment: dev or prod."
+    required: true
+  aws_region:
+    description: "AWS region."
+    required: false
+    default: "us-east-1"
+  ecr_repository_override:
+    description: "Optional ECR repository name override, used after shared artifact ECR is bootstrapped."
+    required: false
+    default: ""
+  release_artifacts_bucket_override:
+    description: "Optional release artifacts bucket name override."
+    required: false
+    default: ""
+
+outputs:
+  account_id:
+    description: "AWS account ID."
+    value: ${{ steps.resolve.outputs.account_id }}
+  ecr_registry:
+    description: "ECR registry hostname."
+    value: ${{ steps.resolve.outputs.ecr_registry }}
+  ecr_repository:
+    description: "ECR repository name."
+    value: ${{ steps.resolve.outputs.ecr_repository }}
+  ecr_repository_url:
+    description: "Full ECR repository URL."
+    value: ${{ steps.resolve.outputs.ecr_repository_url }}
+  release_artifacts_bucket:
+    description: "Release artifacts S3 bucket."
+    value: ${{ steps.resolve.outputs.release_artifacts_bucket }}
+
+runs:
+  using: "composite"
+  steps:
+    - id: resolve
+      shell: bash
+      env:
+        DEPLOY_ENV: ${{ inputs.deploy_env }}
+        AWS_REGION_INPUT: ${{ inputs.aws_region }}
+        ECR_REPOSITORY_OVERRIDE: ${{ inputs.ecr_repository_override }}
+        RELEASE_ARTIFACTS_BUCKET_OVERRIDE: ${{ inputs.release_artifacts_bucket_override }}
+      run: |
+        set -euo pipefail
+
+        case "$DEPLOY_ENV" in
+          dev|prod) ;;
+          *)
+            echo "::error::Unsupported deploy_env=$DEPLOY_ENV"
+            exit 1
+            ;;
+        esac
+
+        aws_region="${AWS_REGION_INPUT:-${AWS_REGION:-us-east-1}}"
+        account_id="${ACCOUNT_ID:-}"
+        if [ -z "$account_id" ]; then
+          account_id="$(aws sts get-caller-identity \
+            --query Account \
+            --output text \
+            --region "$aws_region")"
+        fi
+
+        if ! [[ "$account_id" =~ ^[0-9]{12}$ ]]; then
+          echo "::error::Unable to resolve a valid AWS account ID."
+          exit 1
+        fi
+
+        if [ -n "$ECR_REPOSITORY_OVERRIDE" ]; then
+          ecr_repository="$ECR_REPOSITORY_OVERRIDE"
+        else
+          # Transition default: keep the existing working dev ECR path until
+          # the shared artifact repository is bootstrapped and selected via
+          # DEMO_API_ARTIFACT_ECR_REPOSITORY.
+          ecr_repository="demo-${DEPLOY_ENV}-shared-demo-ms"
+        fi
+
+        if ! [[ "$ecr_repository" =~ ^[a-z0-9]+([._/-][a-z0-9]+)*$ ]]; then
+          echo "::error::ECR repository name is invalid."
+          exit 1
+        fi
+
+        if [ -n "$RELEASE_ARTIFACTS_BUCKET_OVERRIDE" ]; then
+          release_artifacts_bucket="$RELEASE_ARTIFACTS_BUCKET_OVERRIDE"
+        else
+          release_artifacts_bucket="demo-release-artifacts-${account_id}"
+        fi
+
+        if ! [[ "$release_artifacts_bucket" =~ ^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$ ]]; then
+          echo "::error::Release artifacts bucket name is invalid."
+          exit 1
+        fi
+
+        ecr_registry="${account_id}.dkr.ecr.${aws_region}.amazonaws.com"
+        ecr_repository_url="${ecr_registry}/${ecr_repository}"
+
+        echo "::add-mask::$account_id"
+        echo "::add-mask::$release_artifacts_bucket"
+
+        {
+          echo "AWS_REGION=$aws_region"
+          echo "ACCOUNT_ID=$account_id"
+          echo "ECR_REGISTRY=$ecr_registry"
+          echo "ECR_REPOSITORY=$ecr_repository"
+          echo "ECR_REPOSITORY_URL=$ecr_repository_url"
+          echo "RELEASE_ARTIFACTS_BUCKET=$release_artifacts_bucket"
+        } >> "$GITHUB_ENV"
+
+        {
+          echo "account_id=$account_id"
+          echo "ecr_registry=$ecr_registry"
+          echo "ecr_repository=$ecr_repository"
+          echo "ecr_repository_url=$ecr_repository_url"
+          echo "release_artifacts_bucket=$release_artifacts_bucket"
+        } >> "$GITHUB_OUTPUT"
+
+        echo "Resolved Demo API artifact resources for deploy_env=${DEPLOY_ENV}."

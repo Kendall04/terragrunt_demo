@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1.0",
+  "app": "demo-api",
+  "repository": "Kendall04/terragrunt_demo",
+  "gitSha": "0123456789abcdef0123456789abcdef01234567",
+  "sourceBranch": "develop",
+  "githubRunId": "1234567890",
+  "githubRunAttempt": "1",
+  "createdAt": "2026-06-24T12:00:00Z",
+  "image": {
+    "registry": "123456789012.dkr.ecr.us-east-1.amazonaws.com",
+    "repository": "demo-shared-demo-ms",
+    "tag": "demo-api-0123456-1234567890",
+    "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "uri": "123456789012.dkr.ecr.us-east-1.amazonaws.com/demo-shared-demo-ms@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "quality": {
+    "dotnetTests": "passed",
+    "dockerBuild": "passed",
+    "scanStatus": "passed"
+  }
+}

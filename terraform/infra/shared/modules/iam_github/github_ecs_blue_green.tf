@@ -1,89 +1,120 @@
 # ===========================================
-# Shared IAM policy - ECS blue/green deploy
-# Used by both "app CD" and "rollback" roles
+# IAM policy - ECS blue/green deploy
 # ===========================================
-data "aws_iam_policy_document" "github_ecs_blue_green" {
-  # ECS read-only APIs used by deployment and rollback scripts.
-  #tfsec:ignore:aws-iam-no-policy-wildcards
+data "aws_iam_policy_document" "github_oidc_trust_app_cd" {
   statement {
-    sid    = "ECSReadOnly"
     effect = "Allow"
+
+    principals {
+      type        = "Federated"
+      identifiers = [local.github_oidc_provider_arn]
+    }
+
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:aud"
+      values   = ["sts.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringLike"
+      variable = "token.actions.githubusercontent.com:sub"
+      values   = local.github_app_cd_subjects
+    }
+  }
+}
+
+#tfsec:ignore:aws-iam-no-policy-wildcards
+# Wildcards are limited to this demo env's ECS/ALB/log naming conventions, and some read/register APIs require Resource "*".
+data "aws_iam_policy_document" "github_app_cd" {
+  statement {
+    sid    = "DenySecretAndParameterReadsAndWrites"
+    effect = "Deny"
     actions = [
-      "ecs:DescribeServices",
-      "ecs:DescribeTaskDefinition",
-      "ecs:DescribeTasks",
-      "ecs:ListTasks",
-      "ecs:ListServices",
-      "ecs:ListClusters",
-      "ecs:DescribeClusters"
+      "kms:Decrypt",
+      "secretsmanager:GetSecretValue",
+      "secretsmanager:PutSecretValue",
+      "secretsmanager:UpdateSecret",
+      "secretsmanager:UpdateSecretVersionStage",
+      "ssm:GetParameter",
+      "ssm:GetParameters",
+      "ssm:GetParametersByPath",
     ]
     resources = ["*"]
   }
 
-  # ECS mutable actions scoped to this demo platform.
   statement {
-    sid    = "ECSWriteScoped"
+    sid    = "ECSDeployControl"
     effect = "Allow"
     actions = [
-      "ecs:UpdateService"
+      "ecs:DescribeClusters",
+      "ecs:DescribeServices",
+      "ecs:DescribeTaskDefinition",
+      "ecs:DescribeTaskSets",
+      "ecs:DescribeTasks",
+      "ecs:ListTasks",
+      "ecs:RegisterTaskDefinition",
+      "ecs:UpdateService",
+      "ecs:UpdateServicePrimaryTaskSet",
     ]
-    resources = [
-      "arn:aws:ecs:${local.aws_region}:${local.account_id}:service/demo-*-platform-main-cluster/demo-*-app-api-*-svc",
-    ]
+    #tfsec:ignore:aws-iam-no-policy-wildcards
+    resources = concat(
+      [local.app_ecs_cluster_arn],
+      local.app_ecs_service_arns,
+      local.app_ecs_task_definition_arns,
+      local.app_ecs_task_arns,
+      local.app_ecs_container_instance_arns,
+    )
   }
 
-  # RegisterTaskDefinition is required by deployments and uses wildcard scope.
-  #tfsec:ignore:aws-iam-no-policy-wildcards
+  # ECS task definition registration and some describe/list APIs do not support
+  # complete resource scoping across all request shapes used by the deploy action.
   statement {
-    sid    = "ECSRegisterTaskDefinition"
+    sid    = "ECSDeployDiscovery"
     effect = "Allow"
     actions = [
+      "ecs:DescribeTaskDefinition",
+      "ecs:ListClusters",
+      "ecs:ListServices",
       "ecs:RegisterTaskDefinition",
     ]
     resources = ["*"]
   }
 
-  # ELBv2 read-only calls.
-  #tfsec:ignore:aws-iam-no-policy-wildcards
+  # ELBv2 describe APIs do not consistently support resource-level scoping.
   statement {
-    sid    = "ELBv2ReadOnly"
+    sid    = "ELBv2BlueGreenDiscovery"
     effect = "Allow"
     actions = [
-      "elasticloadbalancing:DescribeLoadBalancers",
       "elasticloadbalancing:DescribeTargetGroups",
       "elasticloadbalancing:DescribeTargetHealth",
       "elasticloadbalancing:DescribeListeners",
-      "elasticloadbalancing:DescribeRules"
+      "elasticloadbalancing:DescribeRules",
     ]
     resources = ["*"]
   }
 
-  # ELBv2 mutable calls scoped to demo ALBs/listeners/rules.
   statement {
-    sid    = "ELBv2WriteScoped"
+    sid    = "ELBv2BlueGreenMutation"
     effect = "Allow"
     actions = [
       "elasticloadbalancing:ModifyListener",
       "elasticloadbalancing:ModifyRule"
     ]
-    resources = [
-      "arn:aws:elasticloadbalancing:${local.aws_region}:${local.account_id}:listener/app/demo-*-internal-alb/*/*",
-      "arn:aws:elasticloadbalancing:${local.aws_region}:${local.account_id}:listener-rule/app/demo-*-internal-alb/*/*/*",
-      "arn:aws:elasticloadbalancing:${local.aws_region}:${local.account_id}:rule/app/demo-*-internal-alb/*/*/*",
-    ]
+    #tfsec:ignore:aws-iam-no-policy-wildcards
+    resources = local.app_elbv2_blue_green_mutation_arns
   }
 
-  # Pass only the ECS task/execution roles used by the services
   statement {
     sid    = "IAMPassTaskRoles"
     effect = "Allow"
     actions = [
       "iam:PassRole"
     ]
-    resources = [
-      "arn:aws:iam::${local.account_id}:role/demo-*-app-api-*-exec-role",
-      "arn:aws:iam::${local.account_id}:role/demo-*-app-api-*-task-role",
-    ]
+    #tfsec:ignore:aws-iam-no-policy-wildcards
+    resources = local.app_task_role_arns
 
     condition {
       test     = "StringEquals"
@@ -92,22 +123,7 @@ data "aws_iam_policy_document" "github_ecs_blue_green" {
     }
   }
 
-  # Optional: ECR read-only (validate images, digests, etc.)
-  statement {
-    sid    = "ECRReadOnly"
-    effect = "Allow"
-    actions = [
-      "ecr:DescribeImages",
-      "ecr:DescribeRepositories",
-      "ecr:BatchGetImage"
-    ]
-    resources = [
-      "arn:aws:ecr:${local.aws_region}:${local.account_id}:repository/demo-*-shared-demo-ms",
-    ]
-  }
-
-  # ECR auth token must stay wildcard.
-  #tfsec:ignore:aws-iam-no-policy-wildcards
+  # ECR authorization tokens must use Resource "*".
   statement {
     sid    = "ECRAuthToken"
     effect = "Allow"
@@ -117,83 +133,100 @@ data "aws_iam_policy_document" "github_ecs_blue_green" {
     resources = ["*"]
   }
 
-  # ECR write on demo repositories only.
-  #tfsec:ignore:aws-iam-no-policy-wildcards
   statement {
-    sid    = "ECRWriteDemoRepos"
+    sid    = "ECRReadWriteAppRepo"
     effect = "Allow"
 
     actions = [
+      "ecr:BatchGetImage",
       "ecr:BatchCheckLayerAvailability",
       "ecr:CompleteLayerUpload",
-      "ecr:UploadLayerPart",
-      "ecr:InitiateLayerUpload",
-      "ecr:PutImage",
+      "ecr:DescribeImages",
+      "ecr:DescribeRepositories",
       "ecr:GetDownloadUrlForLayer",
+      "ecr:InitiateLayerUpload",
       "ecr:ListImages",
+      "ecr:PutImage",
+      "ecr:UploadLayerPart",
     ]
 
-    resources = [
-      "arn:aws:ecr:${local.aws_region}:${local.account_id}:repository/demo-*-shared-demo-ms",
-    ]
+    resources = [local.app_ecr_repository_arn]
   }
 
-  # Optional: CloudWatch Logs group listing (requires wildcard scope).
-  #tfsec:ignore:aws-iam-no-policy-wildcards
   statement {
-    sid    = "CloudWatchLogGroupsRead"
+    sid    = "ReleaseArtifactsBucketLocation"
+    effect = "Allow"
+    actions = [
+      "s3:GetBucketLocation",
+    ]
+    resources = [local.release_artifacts_bucket_arn]
+  }
+
+  statement {
+    sid    = "ReleaseArtifactsBucketList"
+    effect = "Allow"
+    actions = [
+      "s3:ListBucket",
+    ]
+    resources = [local.release_artifacts_bucket_arn]
+
+    condition {
+      test     = "StringLike"
+      variable = "s3:prefix"
+      values   = local.release_artifacts_app_list_prefixes
+    }
+  }
+
+  statement {
+    sid    = "ReleaseArtifactsObjectsReadWrite"
+    effect = "Allow"
+    actions = [
+      "s3:GetObject",
+      "s3:PutObject",
+    ]
+    resources = local.release_artifacts_app_object_arns
+  }
+
+  statement {
+    sid    = "CloudWatchLogsRead"
     effect = "Allow"
     actions = [
       "logs:DescribeLogGroups",
-    ]
-    resources = ["*"]
-  }
-
-  # Optional: CloudWatch Logs read-only (debugging, health checks)
-  statement {
-    sid    = "CloudWatchLogsStreamsRead"
-    effect = "Allow"
-    actions = [
       "logs:DescribeLogStreams",
       "logs:GetLogEvents",
     ]
-    resources = [
-      "arn:aws:logs:${local.aws_region}:${local.account_id}:log-group:/aws/ecs/demo-*",
-      "arn:aws:logs:${local.aws_region}:${local.account_id}:log-group:/aws/ecs/demo-*:log-stream:*",
-    ]
+    #tfsec:ignore:aws-iam-no-policy-wildcards
+    resources = local.app_log_group_arns
   }
 
-  # Read scale-down lambda ARN during deploy discovery.
-  statement {
-    sid    = "LambdaReadScaleDown"
-    effect = "Allow"
-    actions = [
-      "lambda:GetFunction",
-    ]
-    resources = [
-      "arn:aws:lambda:${local.aws_region}:${local.account_id}:function:demo-*-scale-down-old-color-lambda",
-    ]
-  }
-
-  # EventBridge: schedule delayed scale-down Lambda
   statement {
     sid    = "EventBridgeScaleDown"
     effect = "Allow"
     actions = [
+      "events:DescribeRule",
+      "events:ListTargetsByRule",
       "events:PutRule",
       "events:PutTargets",
     ]
-    resources = [
-      "arn:aws:events:${local.aws_region}:${local.account_id}:rule/demo-*-scale-down-old-color-rule",
+    resources = [local.app_scale_down_rule_arn]
+  }
+
+  statement {
+    sid    = "DeploymentReadinessChecks"
+    effect = "Allow"
+    actions = [
+      "iam:GetRole",
+      "lambda:GetFunction",
     ]
+    resources = concat(local.app_task_role_arns, [local.app_scale_down_lambda_arn])
   }
 
 }
 
-resource "aws_iam_policy" "github_ecs_blue_green" {
-  name        = "${var.name}-ecs-blue-green"
+resource "aws_iam_policy" "github_app_cd" {
+  name        = "${var.name}-app-cd"
   description = "Minimal policy for ECS blue/green deploy via GitHub Actions"
-  policy      = data.aws_iam_policy_document.github_ecs_blue_green.json
+  policy      = data.aws_iam_policy_document.github_app_cd.json
 }
 
 
@@ -203,24 +236,140 @@ resource "aws_iam_policy" "github_ecs_blue_green" {
 # ===========================================
 resource "aws_iam_role" "github_app_cd" {
   name               = "${var.name}-app-cd"
-  assume_role_policy = data.aws_iam_policy_document.github_oidc_trust.json
+  assume_role_policy = data.aws_iam_policy_document.github_oidc_trust_app_cd.json
 }
 
-resource "aws_iam_role_policy_attachment" "github_app_cd_ecs" {
+resource "aws_iam_role_policy_attachment" "github_app_cd" {
   role       = aws_iam_role.github_app_cd.name
-  policy_arn = aws_iam_policy.github_ecs_blue_green.arn
+  policy_arn = aws_iam_policy.github_app_cd.arn
 }
 
 
 # ===========================================
 # IAM Role for GitHub OIDC (App rollback)
 # ===========================================
-resource "aws_iam_role" "github_app_rollback" {
-  name               = "${var.name}-app-rollback"
-  assume_role_policy = data.aws_iam_policy_document.github_oidc_trust.json
+data "aws_iam_policy_document" "github_oidc_trust_app_rollback" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Federated"
+      identifiers = [local.github_oidc_provider_arn]
+    }
+
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+
+    condition {
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:aud"
+      values   = ["sts.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringLike"
+      variable = "token.actions.githubusercontent.com:sub"
+      values   = local.github_app_rollback_subjects
+    }
+  }
 }
 
-resource "aws_iam_role_policy_attachment" "github_app_rollback_ecs" {
+#tfsec:ignore:aws-iam-no-policy-wildcards
+# Rollback needs the same blue/green scoped ECS/ALB ARN patterns; secret value access is explicitly denied.
+data "aws_iam_policy_document" "github_app_rollback" {
+  statement {
+    sid    = "DenySecretAndParameterReadsAndWrites"
+    effect = "Deny"
+    actions = [
+      "kms:Decrypt",
+      "secretsmanager:GetSecretValue",
+      "secretsmanager:PutSecretValue",
+      "secretsmanager:UpdateSecret",
+      "secretsmanager:UpdateSecretVersionStage",
+      "ssm:GetParameter",
+      "ssm:GetParameters",
+      "ssm:GetParametersByPath",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "ECSRollbackControl"
+    effect = "Allow"
+    actions = [
+      "ecs:DescribeClusters",
+      "ecs:DescribeServices",
+      "ecs:DescribeTaskSets",
+      "ecs:DescribeTasks",
+      "ecs:ListTasks",
+      "ecs:UpdateService",
+      "ecs:UpdateServicePrimaryTaskSet",
+    ]
+    #tfsec:ignore:aws-iam-no-policy-wildcards
+    resources = concat(
+      [local.app_ecs_cluster_arn],
+      local.app_ecs_service_arns,
+      local.app_ecs_task_arns,
+      local.app_ecs_container_instance_arns,
+    )
+  }
+
+  statement {
+    sid    = "ECSRollbackDiscovery"
+    effect = "Allow"
+    actions = [
+      "ecs:ListClusters",
+      "ecs:ListServices",
+    ]
+    resources = ["*"]
+  }
+
+  # ELBv2 describe APIs do not consistently support resource-level scoping.
+  statement {
+    sid    = "ELBv2BlueGreenRollbackDiscovery"
+    effect = "Allow"
+    actions = [
+      "elasticloadbalancing:DescribeListeners",
+      "elasticloadbalancing:DescribeRules",
+      "elasticloadbalancing:DescribeTargetGroups",
+      "elasticloadbalancing:DescribeTargetHealth",
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "ELBv2BlueGreenRollbackMutation"
+    effect = "Allow"
+    actions = [
+      "elasticloadbalancing:ModifyListener",
+      "elasticloadbalancing:ModifyRule",
+    ]
+    #tfsec:ignore:aws-iam-no-policy-wildcards
+    resources = local.app_elbv2_blue_green_mutation_arns
+  }
+
+  statement {
+    sid    = "EventBridgeScaleDown"
+    effect = "Allow"
+    actions = [
+      "events:PutRule",
+      "events:PutTargets",
+    ]
+    resources = [local.app_scale_down_rule_arn]
+  }
+}
+
+resource "aws_iam_policy" "github_app_rollback" {
+  name        = "${var.name}-app-rollback"
+  description = "Minimal policy for ECS blue/green rollback via GitHub Actions"
+  policy      = data.aws_iam_policy_document.github_app_rollback.json
+}
+
+resource "aws_iam_role" "github_app_rollback" {
+  name               = "${var.name}-app-rollback"
+  assume_role_policy = data.aws_iam_policy_document.github_oidc_trust_app_rollback.json
+}
+
+resource "aws_iam_role_policy_attachment" "github_app_rollback" {
   role       = aws_iam_role.github_app_rollback.name
-  policy_arn = aws_iam_policy.github_ecs_blue_green.arn
+  policy_arn = aws_iam_policy.github_app_rollback.arn
 }

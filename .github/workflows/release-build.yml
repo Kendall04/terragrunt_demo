@@ -1,0 +1,343 @@
+name: Release Build - Demo API
+
+on:
+  workflow_call:
+    inputs:
+      aws_region:
+        required: false
+        type: string
+        default: us-east-1
+      deploy_env:
+        required: true
+        type: string
+      app_name:
+        required: false
+        type: string
+        default: demo-api
+    outputs:
+      release_artifact_name:
+        description: "Diagnostic GitHub artifact containing release metadata."
+        value: ${{ jobs.release-build.outputs.release_artifact_name }}
+      image_digest:
+        description: "Image digest from ECR."
+        value: ${{ jobs.release-build.outputs.image_digest }}
+      image_tag:
+        description: "Image tag pushed to ECR."
+        value: ${{ jobs.release-build.outputs.image_tag }}
+      image_repository:
+        description: "ECR repository name."
+        value: ${{ jobs.release-build.outputs.image_repository }}
+      git_sha:
+        description: "Git SHA used for the release."
+        value: ${{ jobs.release-build.outputs.git_sha }}
+      github_run_id:
+        description: "GitHub Actions run ID used in the release manifest."
+        value: ${{ jobs.release-build.outputs.github_run_id }}
+      github_run_attempt:
+        description: "GitHub Actions run attempt used in the release manifest."
+        value: ${{ jobs.release-build.outputs.github_run_attempt }}
+      manifest_path:
+        description: "Manifest path inside the runner workspace."
+        value: ${{ jobs.release-build.outputs.manifest_path }}
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  release-build:
+    name: Build • Push ECR • Publish S3 Manifest
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.deploy_env }}
+    outputs:
+      release_artifact_name: ${{ steps.release.outputs.release_artifact_name }}
+      image_digest: ${{ steps.image.outputs.image_digest }}
+      image_tag: ${{ steps.image.outputs.image_tag }}
+      image_repository: ${{ steps.image.outputs.image_repository }}
+      git_sha: ${{ github.sha }}
+      github_run_id: ${{ github.run_id }}
+      github_run_attempt: ${{ github.run_attempt }}
+      manifest_path: ${{ steps.release.outputs.manifest_path }}
+    env:
+      AWS_REGION: ${{ inputs.aws_region }}
+      TG_ENV: ${{ inputs.deploy_env }}
+      APP_NAME: ${{ inputs.app_name }}
+      IMAGE_TAG: ${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Validate release build target
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ "$APP_NAME" != "demo-api" ]; then
+            echo "::error::release-build only supports app_name=demo-api."
+            exit 1
+          fi
+
+          if [ "$TG_ENV" != "dev" ]; then
+            echo "::error::Prod must not rebuild Docker images. Use the manual promote-prod workflow with an existing S3 release manifest."
+            exit 1
+          fi
+
+      - name: Resolve release build role
+        id: aws-role
+        shell: bash
+        env:
+          AWS_ROLE_RELEASE_BUILD: ${{ secrets.AWS_ROLE_RELEASE_BUILD }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "$AWS_ROLE_RELEASE_BUILD" ]; then
+            echo "::error::Missing AWS role secret. Configure AWS_ROLE_RELEASE_BUILD in the dev GitHub environment."
+            exit 1
+          fi
+
+          role_arn="$AWS_ROLE_RELEASE_BUILD"
+          source="AWS_ROLE_RELEASE_BUILD"
+
+          echo "::add-mask::$role_arn"
+          echo "role_arn=$role_arn" >> "$GITHUB_OUTPUT"
+          echo "role_source=$source" >> "$GITHUB_OUTPUT"
+
+      - name: AWS Login via OIDC
+        uses: ./.github/actions/aws-oidc
+        with:
+          role_arn: ${{ steps.aws-role.outputs.role_arn }}
+          aws_region: ${{ env.AWS_REGION }}
+          role_session_name: "release-build"
+
+      - name: Resolve Terraform backend
+        id: backend
+        uses: ./.github/actions/resolve-backend
+        with:
+          tg_env: ${{ env.TG_ENV }}
+          aws_region: ${{ env.AWS_REGION }}
+
+      - name: Resolve artifact resources
+        id: artifact-env
+        uses: ./.github/actions/resolve-demo-api-artifact-resources
+        with:
+          deploy_env: ${{ inputs.deploy_env }}
+          aws_region: ${{ env.AWS_REGION }}
+          ecr_repository_override: ${{ vars.DEMO_API_ARTIFACT_ECR_REPOSITORY }}
+          release_artifacts_bucket_override: ${{ vars.RELEASE_ARTIFACTS_BUCKET }}
+
+      - name: Show release target
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "TG_ENV       : ${TG_ENV}"
+          echo "AWS_REGION   : ${AWS_REGION}"
+          echo "ECR repo     : ${ECR_REPOSITORY}"
+          echo "Image tag    : ${IMAGE_TAG}"
+          echo "S3 bucket    : resolved"
+          echo "AWS role     : ${{ steps.aws-role.outputs.role_source }}"
+
+      - name: Preflight release artifacts bucket
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if ! aws s3api get-bucket-location --bucket "$RELEASE_ARTIFACTS_BUCKET" >/dev/null 2>&1; then
+            {
+              echo "## Release artifacts bucket is not ready"
+              echo
+              echo "The resolved S3 release artifacts bucket was not found or is not accessible."
+              echo "Bootstrap \`terraform/live/dev/shared\` before running app CD."
+              echo
+              echo "This check runs before Docker build/push so app CD does not publish an image without a durable S3 release manifest."
+            } >> "$GITHUB_STEP_SUMMARY"
+
+            echo "::error::Release artifacts bucket was not found or is not accessible. Bootstrap terraform/live/dev/shared before running app CD."
+            exit 1
+          fi
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ hashFiles('demo-api/**/*.csproj') }}-${{ hashFiles('demo-api/Dockerfile') }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Build & push Docker image
+        id: build-image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./demo-api
+          file: ./demo-api/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.artifact-env.outputs.ecr_repository_url }}:${{ env.IMAGE_TAG }}
+          labels: |
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+          provenance: false
+          sbom: false
+
+      - name: Export image metadata
+        id: image
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          image_digest="${{ steps.build-image.outputs.digest }}"
+          image_registry="${ECR_REGISTRY}"
+          image_uri="${image_registry}/${ECR_REPOSITORY}@${image_digest}"
+
+          echo "::add-mask::$image_uri"
+
+          scripts/validate-image-digest.sh \
+            --digest "$image_digest" \
+            --image-uri "$image_uri"
+
+          {
+            echo "IMAGE_DIGEST=$image_digest"
+            echo "IMAGE_REGISTRY=$image_registry"
+            echo "IMAGE_URI=$image_uri"
+          } >> "$GITHUB_ENV"
+
+          {
+            echo "image_digest=$image_digest"
+            echo "image_registry=$image_registry"
+            echo "image_repository=$ECR_REPOSITORY"
+            echo "image_tag=$IMAGE_TAG"
+            echo "image_uri=$image_uri"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Render and validate release manifest
+        id: release
+        shell: bash
+        env:
+          RELEASE_ARTIFACT_NAME: release-manifest-demo-api-${{ inputs.deploy_env }}-${{ github.sha }}-${{ github.run_id }}
+        run: |
+          set -euo pipefail
+
+          manifest_dir=".release"
+          manifest_path="${manifest_dir}/release-manifest.json"
+          diagnostics_path="${manifest_dir}/image-diagnostics.json"
+
+          mkdir -p "$manifest_dir"
+
+          scripts/render-release-manifest.sh \
+            --app "$APP_NAME" \
+            --repository "$GITHUB_REPOSITORY" \
+            --git-sha "$GITHUB_SHA" \
+            --source-branch "$GITHUB_REF_NAME" \
+            --github-run-id "$GITHUB_RUN_ID" \
+            --github-run-attempt "$GITHUB_RUN_ATTEMPT" \
+            --image-registry "$IMAGE_REGISTRY" \
+            --image-repository "$ECR_REPOSITORY" \
+            --image-tag "$IMAGE_TAG" \
+            --image-digest "$IMAGE_DIGEST" \
+            --output "$manifest_path"
+
+          scripts/validate-release-manifest.sh "$manifest_path"
+
+          jq -n \
+            --arg app "$APP_NAME" \
+            --arg environment "$TG_ENV" \
+            --arg repository "$GITHUB_REPOSITORY" \
+            --arg git_sha "$GITHUB_SHA" \
+            --arg github_run_id "$GITHUB_RUN_ID" \
+            --arg github_run_attempt "$GITHUB_RUN_ATTEMPT" \
+            --arg image_tag "$IMAGE_TAG" \
+            --arg image_digest "$IMAGE_DIGEST" \
+            --arg image_uri "$IMAGE_URI" \
+            --arg manifest_path "$manifest_path" \
+            '{
+              app: $app,
+              environment: $environment,
+              repository: $repository,
+              gitSha: $git_sha,
+              githubRunId: $github_run_id,
+              githubRunAttempt: $github_run_attempt,
+              imageTag: $image_tag,
+              imageDigest: $image_digest,
+              imageUri: $image_uri,
+              releaseManifestPath: $manifest_path
+            }' > "$diagnostics_path"
+
+          {
+            echo "release_artifact_name=$RELEASE_ARTIFACT_NAME"
+            echo "manifest_path=$manifest_path"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Publish release manifest to S3
+        id: s3
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          s3_output=".release/release-manifest-s3.json"
+
+          scripts/publish-release-manifest-s3.sh \
+            --manifest "${{ steps.release.outputs.manifest_path }}" \
+            --bucket "$RELEASE_ARTIFACTS_BUCKET" \
+            --app "$APP_NAME" \
+            --source-branch develop \
+            --output "$s3_output"
+
+          by_digest_uri="$(jq -er '.byDigestUri' "$s3_output")"
+          by_commit_uri="$(jq -er '.byCommitUri' "$s3_output")"
+          candidate_uri="$(jq -er '.candidateUri' "$s3_output")"
+
+          {
+            echo "by_digest_uri=$by_digest_uri"
+            echo "by_commit_uri=$by_commit_uri"
+            echo "candidate_uri=$candidate_uri"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Upload diagnostic release artifact
+        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: ${{ steps.release.outputs.release_artifact_name }}
+          path: |
+            .release/release-manifest.json
+            .release/image-diagnostics.json
+            .release/release-manifest-s3.json
+          if-no-files-found: error
+          retention-days: 30
+        # S3 is the durable source of truth. This artifact is now
+        # diagnostic only; S3 publish above blocks downstream deploy.
+
+      - name: Move Docker cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+      - name: Write release build summary
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          {
+            echo "## Demo API release build"
+            echo
+            echo "| Field | Value |"
+            echo "| --- | --- |"
+            echo "| App | ${APP_NAME} |"
+            echo "| Environment | ${TG_ENV} |"
+            echo "| Git SHA | ${GITHUB_SHA} |"
+            echo "| Image tag | ${IMAGE_TAG} |"
+            echo "| Image digest | ${IMAGE_DIGEST} |"
+            echo "| Digest image URI | ${IMAGE_URI} |"
+            echo "| S3 manifest | ${{ steps.s3.outputs.by_digest_uri }} |"
+            echo "| Diagnostic artifact | ${{ steps.release.outputs.release_artifact_name }} |"
+          } >> "$GITHUB_STEP_SUMMARY"
