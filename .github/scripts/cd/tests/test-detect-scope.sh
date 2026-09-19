@@ -103,22 +103,22 @@ run_scenario() {
     export PROD_INFRA_PATHS
     export INFRA_WORKFLOW_PATHS
 
-    TARGET_ENV="$(scenario_value "$scenario" '.target_env')"
-    APP_CHANGED="$(scenario_value "$scenario" '.inputs.app_changed')"
-    INFRA_RAW_CHANGED="$(scenario_value "$scenario" '.inputs.infra_raw_changed')"
-    SAFE_INFRA_CHANGED="$(scenario_value "$scenario" '.inputs.safe_infra_changed')"
-    HIGH_RISK_INFRA_CHANGED="$(scenario_value "$scenario" '.inputs.high_risk_infra_changed')"
-    PROD_INFRA_CHANGED="$(scenario_value "$scenario" '.inputs.prod_infra_changed')"
-    INFRA_WORKFLOW_CHANGED="$(scenario_value "$scenario" '.inputs.infra_workflow_changed')"
-    DOCS_CHANGED="$(scenario_value "$scenario" '.inputs.docs_changed')"
-    APP_PATHS="$(scenario_json_array "$scenario" '.inputs.app_paths')"
-    INFRA_PATHS="$(scenario_json_array "$scenario" '.inputs.infra_paths')"
-    SAFE_INFRA_PATHS="$(scenario_json_array "$scenario" '.inputs.safe_infra_paths')"
-    HIGH_RISK_PATHS="$(scenario_json_array "$scenario" '.inputs.high_risk_paths')"
-    PROD_INFRA_PATHS="$(scenario_json_array "$scenario" '.inputs.prod_infra_paths')"
-    INFRA_WORKFLOW_PATHS="$(scenario_json_array "$scenario" '.inputs.infra_workflow_paths')"
+    TARGET_ENV="$(scenario_value "$scenario" '.target_env')" || exit 1
+    APP_CHANGED="$(scenario_value "$scenario" '.inputs.app_changed')" || exit 1
+    INFRA_RAW_CHANGED="$(scenario_value "$scenario" '.inputs.infra_raw_changed')" || exit 1
+    SAFE_INFRA_CHANGED="$(scenario_value "$scenario" '.inputs.safe_infra_changed')" || exit 1
+    HIGH_RISK_INFRA_CHANGED="$(scenario_value "$scenario" '.inputs.high_risk_infra_changed')" || exit 1
+    PROD_INFRA_CHANGED="$(scenario_value "$scenario" '.inputs.prod_infra_changed')" || exit 1
+    INFRA_WORKFLOW_CHANGED="$(scenario_value "$scenario" '.inputs.infra_workflow_changed')" || exit 1
+    DOCS_CHANGED="$(scenario_value "$scenario" '.inputs.docs_changed')" || exit 1
+    APP_PATHS="$(scenario_json_array "$scenario" '.inputs.app_paths')" || exit 1
+    INFRA_PATHS="$(scenario_json_array "$scenario" '.inputs.infra_paths')" || exit 1
+    SAFE_INFRA_PATHS="$(scenario_json_array "$scenario" '.inputs.safe_infra_paths')" || exit 1
+    HIGH_RISK_PATHS="$(scenario_json_array "$scenario" '.inputs.high_risk_paths')" || exit 1
+    PROD_INFRA_PATHS="$(scenario_json_array "$scenario" '.inputs.prod_infra_paths')" || exit 1
+    INFRA_WORKFLOW_PATHS="$(scenario_json_array "$scenario" '.inputs.infra_workflow_paths')" || exit 1
 
-    "$SCRIPT"
+    "$SCRIPT" || exit 1
 
     jq -e --argjson expected "$(jq '.expected_outputs' <<< "$scenario")" '
       .outputs == $expected
@@ -131,7 +131,7 @@ run_scenario() {
       exit 1
     }
 
-    assert_github_output_names "$output_file"
+    assert_github_output_names "$output_file" || exit 1
 
     if ! grep -Fq "## CD scope" "$summary_file"; then
       echo "summary missing CD scope heading for ${name}"
