@@ -1,5 +1,18 @@
 # Architecture Case Study — terragrunt_demo
 
+> **HISTORICAL / SUPERSEDED narrative — retained for design context.**
+> This case study mixes original requirements, past experience and earlier
+> implementation. It is not a current deployment runbook or verified live-state
+> record. No AWS infrastructure exists as of owner reconciliation on 2026-09-18.
+> Read [architecture](architecture.md), [delivery](deployment.md) and
+> [decisions/limitations](decisions-and-limitations.md) for current authority.
+> Claims below about zero downtime, proven recovery, broad production readiness,
+> delivery gates and future production upgrades are historical, not guarantees.
+> RDS as a default next step is superseded: SQL Server stays on EC2; durability
+> work is deferred until later deployed experiments. The owner has not proven
+> rollback comprehensively. Do not execute commands from this historical text.
+
+
 ## Table of Contents
 
 - [1. Executive Summary](#1-executive-summary)
