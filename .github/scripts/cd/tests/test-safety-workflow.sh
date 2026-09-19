@@ -4,6 +4,10 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
 scratch="$(mktemp -d)"
 trap 'rm -rf "$scratch"' EXIT
 
+# Step env supports the job context, not status-check functions. Check the
+# binding as well as the extracted shell so the rejected V1 cannot regress.
+grep -Fxq '          JOB_STATUS: ${{ job.status }}' "$ROOT/.github/workflows/ci-cd-safety.yml"
+
 # Execute the workflow's actual Bash, rather than a duplicate implementation.
 for block in SUITE RESULT; do
   awk -v block="$block" '
@@ -20,7 +24,7 @@ export GITHUB_EVENT_NAME=pull_request GITHUB_REF=refs/pull/1/merge
 export GITHUB_BASE_REF=main GITHUB_RUN_ID=local GITHUB_RUN_ATTEMPT=1 PR_NUMBER=1
 export BASE_SHA=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 export HEAD_SHA=cccccccccccccccccccccccccccccccccccccccc MERGE_BASE=''
-export ACTUAL_SHA="$GITHUB_SHA" CANCELLED=false
+export ACTUAL_SHA="$GITHUB_SHA" JOB_STATUS=success
 export DEPENDENCIES=success SELF_TESTS=success SELECTOR=success
 export SELECTION=RUN REASON=relevant-path SUITE_OUTCOME=success
 export SCOPE_EXIT=0 LAYERS_EXIT=0 GATE_EXIT=0
@@ -45,7 +49,10 @@ SELECTION='' expect_result missing-selection 1
 REASON='' expect_result missing-reason 1
 ACTUAL_SHA="$BASE_SHA" expect_result identity-mismatch 1
 ACTUAL_SHA='' expect_result missing-identity 1
-CANCELLED=true expect_result cancelled-run 1
+JOB_STATUS=cancelled expect_result cancelled-run 1
+JOB_STATUS=failure expect_result failed-job 1
+JOB_STATUS='' expect_result missing-job-status 1
+JOB_STATUS=unknown expect_result invalid-job-status 1
 SUITE_OUTCOME=skipped expect_result skipped-relevant-suite 1
 SUITE_OUTCOME=failure expect_result failed-suite-process 1
 SUITE_OUTCOME=cancelled expect_result cancelled-suite 1
@@ -63,7 +70,10 @@ expect_result proven-exemption 0
 grep -Fq 'Result: suite not required' "$GITHUB_STEP_SUMMARY"
 if grep -Fq 'suite passed' "$GITHUB_STEP_SUMMARY"; then exit 1; fi
 SELF_TESTS=failure expect_result exemption-cannot-hide-failed-self-tests 1
-CANCELLED=true expect_result exemption-cannot-hide-cancellation 1
+JOB_STATUS=cancelled expect_result exemption-cannot-hide-cancellation 1
+JOB_STATUS=failure expect_result exemption-cannot-hide-failed-job 1
+JOB_STATUS='' expect_result exemption-cannot-hide-missing-job-status 1
+JOB_STATUS=unknown expect_result exemption-cannot-hide-invalid-job-status 1
 SUITE_OUTCOME=failure expect_result exemption-cannot-hide-failure 1
 
 # Controlled stand-ins prove the real workflow runner attempts every process,

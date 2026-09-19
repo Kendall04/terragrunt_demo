@@ -78,7 +78,7 @@ jobs:
           SCOPE_EXIT: ${{ steps.suite.outputs.detect-scope }}
           LAYERS_EXIT: ${{ steps.suite.outputs.resolve-terragrunt-layers }}
           GATE_EXIT: ${{ steps.suite.outputs.validate-infra-gate }}
-          CANCELLED: ${{ cancelled() }}
+          JOB_STATUS: ${{ job.status }}
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -86,7 +86,7 @@ jobs:
           # BEGIN SAFETY RESULT
           set -euo pipefail
           result=failed
-          if [[ $CANCELLED == false && $DEPENDENCIES == success && $SELF_TESTS == success && $SELECTOR == success && $ACTUAL_SHA == "$GITHUB_SHA" && -n $ACTUAL_SHA ]]; then
+          if [[ $JOB_STATUS == success && $DEPENDENCIES == success && $SELF_TESTS == success && $SELECTOR == success && $ACTUAL_SHA == "$GITHUB_SHA" && -n $ACTUAL_SHA ]]; then
             if [[ $SELECTION == RUN && -n $REASON && $SUITE_OUTCOME == success && $SCOPE_EXIT == 0 && $LAYERS_EXIT == 0 && $GATE_EXIT == 0 ]]; then
               result='suite passed'
             elif [[ $SELECTION == EXEMPT && $REASON == complete-unrelated-diff && $SUITE_OUTCOME == skipped && -z $SCOPE_EXIT && -z $LAYERS_EXIT && -z $GATE_EXIT ]]; then
@@ -99,7 +99,7 @@ jobs:
             printf '```text\n'
             printf 'event=%s ref=%s PR=%s target=%s run=%s attempt=%s\n' "$GITHUB_EVENT_NAME" "$GITHUB_REF" "$PR_NUMBER" "$GITHUB_BASE_REF" "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT"
             printf 'event_test_sha=%s actual_sha=%s base_or_before=%s head_or_push=%s merge_base=%s\n' "$GITHUB_SHA" "$ACTUAL_SHA" "$BASE_SHA" "$HEAD_SHA" "$MERGE_BASE"
-            printf 'selection=%s reason=%s dependencies=%s self_tests=%s selector=%s suite=%s cancelled=%s\n' "$SELECTION" "$REASON" "$DEPENDENCIES" "$SELF_TESTS" "$SELECTOR" "$SUITE_OUTCOME" "$CANCELLED"
+            printf 'selection=%s reason=%s dependencies=%s self_tests=%s selector=%s suite=%s job_status=%s\n' "$SELECTION" "$REASON" "$DEPENDENCIES" "$SELF_TESTS" "$SELECTOR" "$SUITE_OUTCOME" "$JOB_STATUS"
             printf 'detect-scope exit=%s\nresolve-terragrunt-layers exit=%s\nvalidate-infra-gate exit=%s\n' "${SCOPE_EXIT:-not executed}" "${LAYERS_EXIT:-not executed}" "${GATE_EXIT:-not executed}"
             printf '```\n'
           } >> "$GITHUB_STEP_SUMMARY"
