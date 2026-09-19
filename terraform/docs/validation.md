@@ -56,11 +56,49 @@ verify encryption/persistence/decryption/pagination using doubles.
 verify liveness/readiness responses and Swagger/environment behavior.
 They do not prove real KMS, SQL migrations, deployment or rollback.
 
-CD fixture tests exercise scope/layer/gate behavior, but no workflow invocation
-is currently wired. Hygiene checks top-level scripts and artifact examples,
-not the complete CD helper/test tree. It parses schema JSON and uses hand-written
+CD fixture tests exercise scope/layer/gate behavior through the dedicated
+[CD safety workflow](../../.github/workflows/ci-cd-safety.yml), described below.
+Hygiene checks top-level scripts and artifact examples, not the complete CD
+helper/test tree. It parses schema JSON and uses hand-written
 validators; that is not exhaustive JSON Schema conformance testing.
 No Lambda unit tests or comprehensive deployed rollback evidence were found.
+
+## CD safety enforcement — implementation, review pending
+
+`CI - CD Safety` exposes the unconditional `CD Safety Validation` job for PRs
+targeting develop/main (including retargeting edits) and pushes to develop.
+It has no event path filter, deployment invocation or AWS dependency. It checks
+the exact event checkout, runs selector/result self-tests, then executes all
+three scope/layer/gate suites when selected. Each process exit is recorded;
+missing, skipped or failed required execution cannot satisfy the final result.
+
+The [selector](../../.github/scripts/cd/select-safety-tests.sh) defaults to RUN.
+Exemption requires complete history and only ordinary non-executable files in
+root README.md, Markdown/PNG under terraform/docs, or C# under the application
+and application-test directories. AGENTS.md files remain relevant everywhere.
+Unknown paths, executable/type changes, and uncertain comparisons run the suite.
+PR selection combines merge-base-to-head and base-to-tested-merge differences;
+push selection uses before-to-pushed differences. Rename detection is disabled
+to retain relevant deleted origins. Checkout identity mismatch fails validation.
+
+Offline entry points (Bash/Git/jq/Unix tools; disposable temporary writes):
+
+- The three existing `test-detect-scope.sh`, `test-resolve-terragrunt-layers.sh`
+  and `test-validate-infra-gate.sh` scripts under `.github/scripts/cd/tests/`.
+- [Selector histories](../../.github/scripts/cd/tests/test-select-safety-tests.sh)
+  and [workflow outcomes](../../.github/scripts/cd/tests/test-safety-workflow.sh)
+  run unconditionally in this workflow, including exempt changes.
+- [Controlled mutations](../../.github/scripts/cd/tests/test-safety-mutations.sh)
+  are a local evidence command; they corrupt only disposable copies and verify
+  failing assertions and accidental exemption-policy broadening are rejected.
+
+Local Linux execution has demonstrated passing fixture suites, selector history
+cases, outcome handling and controlled mutation failures. This is implementation
+evidence, not Reviewer PASS or observed GitHub Actions enforcement. Actual PR and
+develop runs, displayed check identity, and external branch-protection settings
+remain pending. Logs/summaries distinguish "suite not required" from "suite passed"
+and record event, comparison/test SHAs, run identity and process results. These
+helper tests do not establish full workflow expression, ALB or AWS readiness proof.
 
 ## Working guidance
 

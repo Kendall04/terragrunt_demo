@@ -9,6 +9,7 @@ results. No AWS infrastructure currently exists (owner reconciliation 2026-09-18
 | Entry point | Behavior |
 | --- | --- |
 | ci.yml | Path-selected checks on working-branch pushes and PRs to develop/main |
+| ci-cd-safety.yml | Independent CD Safety Validation job on PRs to develop/main and develop pushes; conservative selection, offline scope/layer/gate tests and explicit outcome checks |
 | ci-dotnet.yml | Restore/build/test and Docker build |
 | ci-terragrunt.yml | TFLint, tfsec and format checks; no remote plan |
 | ci-terragrunt-plan.yml | AWS-backed initialization/validation/plan; PR caller currently passes dev even for main-target PRs |
@@ -24,6 +25,16 @@ results. No AWS infrastructure currently exists (owner reconciliation 2026-09-18
 Evidence: [workflows](../../.github/workflows),
 [scope resolver](../../.github/scripts/cd/resolve-terragrunt-layers.sh),
 [gate](../../.github/scripts/cd/validate-infra-gate.sh).
+
+The new [CD safety check](../../.github/workflows/ci-cd-safety.yml) is an
+implementation awaiting review and remote evidence. Its local test entry points
+and selection/history behavior are described in [validation](validation.md#cd-safety-enforcement--implementation-review-pending).
+It detects regressions on develop without changing CD ordering or adding a new
+deployment dependency. Required-check compatibility is implemented; the observed
+GitHub check identity and main protection configuration remain unverified.
+Required/missing-check enforcement, bypass exceptions, fork approval policy and
+any actual merge-queue usage must be checked externally before claiming governance
+is enforced. No merge-queue compatibility is claimed by this implementation.
 
 Develop change classification orders safe layers shared, secrets, global,
 platform, edge. Nested module changes and root/unmapped paths are critical/manual;
