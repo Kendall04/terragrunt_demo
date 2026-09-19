@@ -1,4 +1,15 @@
-# CI/CD Target Architecture
+# CI/CD Target Architecture — Historical Evolution Notes
+
+> **HISTORICAL / SUPERSEDED phase plan.** Preserve the phases below as context,
+> not current behavior, a pending implementation plan, or approved new specs.
+> [Deployment](deployment.md) is the current contract; [decisions and backlog](decisions-and-limitations.md)
+> owns future intent. In particular, high-risk dev applies now have an approval
+> path; prod high-risk manual CD is explicitly unsupported; manifests are
+> versioned but overwriteable; rollback is not proven. Phase completion claims
+> below do not prove live deployment or GitHub governance enforcement.
+> The pipeline PNG is likewise superseded. No infrastructure is deployed as of
+> owner reconciliation on 2026-09-18. Do not follow commands from this history.
+
 
 This document describes the artifact-based delivery target for the demo API.
 Phase 4 made durable S3 release manifests the source of truth for app delivery.

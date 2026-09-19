@@ -1,129 +1,92 @@
-# Secrets Strategy
+# Security and secret lifecycle
 
-This demo intentionally keeps secret values out of Terraform and Terragrunt state.
+## ACCEPTED DECISION — state invariant
 
-## What Terraform Manages
+**SECRET VALUES MUST NOT BE INTRODUCED INTO TERRAFORM STATE.**
+Keep passwords, connection strings and other secret values out of Terraform
+resources/data sources, inputs, outputs and generated artifacts. Marking a value
+sensitive only redacts display; it is not an alternative to this invariant.
 
-- `terraform/infra/secrets` owns all Secrets Manager secret metadata:
-  - SQL Server SA password secret
-  - SQL Server application user password secret
-  - application DB connection string secret
-- the reusable `secret_metadata` module creates only `aws_secretsmanager_secret`
-- KMS key references used to encrypt the secret values at rest
-- IAM permissions that allow:
-  - the SQL Server EC2 instance to read only the SQL bootstrap password secrets
-  - the ECS execution role to inject only the DB connection string secret
-- ECS task definition references to secret ARNs
+Owner reconciliation, 2026-09-18: historical state likely contained secret values
+but was destroyed. No forensic/cleanup task is required for deleted state.
+The next deployment must verify the invariant through evidence; no AWS inspection
+has been performed as part of this documentation bootstrap.
 
-Terraform does not manage `aws_secretsmanager_secret_version` resources and does not generate passwords with `random_password`.
-The data layer no longer declares the Random provider; no random password resources remain in configuration.
+## CURRENT CONTRACT — secret ownership and encryption
 
-Secret names are normalized before rebuild:
+[Secrets layer](../infra/secrets) creates metadata containers only via
+[secret_metadata](../infra/secrets/modules/secret_metadata/main.tf):
 
-```text
-demo/<env>/db/sql-sa-password
-demo/<env>/db/sql-app-password
-demo/<env>/app/db-connection-string
-```
+- demo/<env>/db/sql-sa-password
+- demo/<env>/db/sql-app-password
+- demo/<env>/app/db-connection-string
 
-## What Terraform Does Not Manage
+Terraform does not create secret versions or generate the passwords.
+[bootstrap-db-secrets.sh](../../scripts/bootstrap-db-secrets.sh) writes values
+outside Terraform; its lower-level entry point requires
+--confirm-secret-value-bootstrap. Prefer the staged wrapper sequence in
+[bootstrap](bootstrap.md), not a graph-wide initial apply.
 
-- Actual SQL passwords
-- Actual DB connection string values
-- Secret rotation values
-- Any plaintext secret in outputs, Terragrunt inputs, CI variables, logs, or artifacts
+Existing passwords stay unchanged unless --rotate is requested. A different
+nonempty connection string stays unchanged unless explicitly forced/rotated.
+Rotation updates Secrets Manager values only: an existing SQL login must also
+be updated and tasks restarted/redeployed to consume new injected values.
+This is an operational dependency, not an implemented end-to-end rotation service.
 
-## Secret Bootstrap
+The DB instance role reads the two password secrets. ECS execution roles inject
+the connection string; application task roles use KMS Encrypt/Decrypt.
+A per-environment customer-managed KMS key encrypts both secret values and text;
+rotation is enabled and deletion waits 30 days. EBS defaults to its AWS-managed
+key. Loss of the text key affects decryptability independently of DB backups.
+Evidence: [data IAM](../infra/data/main.tf),
+[app IAM](../infra/apps/fargate/demo.tf),
+[KMS](../infra/shared/modules/kms_key/key.tf).
 
-Secret values are bootstrapped outside Terraform with:
+## CURRENT CONTRACT — identity boundaries and limitations
 
-```bash
-scripts/bootstrap.sh bootstrap-db-passwords --env dev --region us-east-1 --profile terraform-lab
-scripts/bootstrap.sh bootstrap-db-connection --env dev --region us-east-1 --profile terraform-lab
-```
+GitHub authentication uses OIDC environment-shaped subjects. Branch/reviewer
+restrictions must be externally configured; checked-in workflows do not prove
+them. Desired protected main/PR/check/approval governance is a TARGET.
 
-Prefer the wrapper commands above. The lower-level `scripts/bootstrap-db-secrets.sh`
-helper is intentionally guarded and refuses to run unless
-`--confirm-secret-value-bootstrap` is passed, because it reads and writes secret
-values without printing them.
+CI has ReadOnlyAccess plus explicit secret/parameter-read and decrypt denies.
+Infrastructure CD also denies direct secret access and selected GitHub-role
+mutation, but grants broad infrastructure APIs including EC2/ECS/Lambda/KMS.
+Normal and high-risk CD share that permission policy. The high-risk role is
+declared for both environments with a dev-infra-approval trust subject.
+These are hardening concerns, not demonstrated least-privilege isolation.
+An explicit direct-secret-read deny does not by itself prevent indirect access
+through mutable workloads.
 
-The script is idempotent:
+Evidence: [IAM locals](../infra/shared/modules/iam_github/locals.tf),
+[CI role](../infra/shared/modules/iam_github/github_terragrunt_ci.tf),
+[CD roles](../infra/shared/modules/iam_github/github_terragrunt_cd.tf),
+[delivery roles](../infra/shared/modules/iam_github/github_delivery_split.tf).
 
-- existing password secrets are left unchanged unless `--rotate` is used
-- generated values are never printed
-- the DB connection string is written when empty, left unchanged when already
-  matching, and left unchanged when it already has a different non-empty value
-  unless `--force-update-db-conn` or `--rotate` is used deliberately
+## CURRENT CONTRACT versus security decisions
 
-Required IAM for the bootstrap identity:
+| Current implementation | Status of future treatment |
+| --- | --- |
+| Public API routes authorization NONE; plaintext read/write interface | TARGET: meaningful backend expansion before auth design; no cosmetic auth retrofit |
+| Broad application/DB egress | UNRESOLVED hardening candidate, not permanent acceptance |
+| Internal ALB HTTP:8080 | UNRESOLVED TLS decision; blue/green does not require HTTP |
+| Encrypt=True;TrustServerCertificate=True SQL connection | UNRESOLVED certificate-validation review |
+| Runtime user db_owner; migrations at task startup | UNRESOLVED migration/runtime privilege separation |
+| Dev-owned OIDC/artifact resources consumed by prod | TARGET: production operational independence; mechanism unresolved |
 
-- `secretsmanager:DescribeSecret`
-- `secretsmanager:GetSecretValue`
-- `secretsmanager:PutSecretValue`
-- `ec2:DescribeInstances` when DB host auto-discovery is used
-- `kms:Encrypt`, `kms:GenerateDataKey`, and `kms:Decrypt` when secrets use a customer-managed KMS key
+Evidence: [routes](../infra/edge/modules/apigateway/routes.tf),
+[SG rules](../infra/global/security_rules.tf),
+[ALB](../infra/global/modules/alb/alb.tf),
+[connection bootstrap](../../scripts/bootstrap-db-secrets.sh),
+[SQL setup](../infra/data/user_data.sh).
 
-For a fresh rebuild, use the staged bootstrap flow:
+## Evidence handling
 
-1. Apply `shared` so the KMS key exists.
-2. Apply `secrets` so Secret Manager metadata exists.
-3. Run `scripts/bootstrap.sh bootstrap-db-passwords` so SQL bootstrap password values exist before DB provisioning.
-4. Apply `data`; the EC2 SQL bootstrap reads the SA/app password secret values.
-5. Run `scripts/bootstrap.sh bootstrap-db-connection` so it reads the DB private IP and writes the DB connection string secret value.
-6. Apply `platform`.
-7. Run `scripts/deploy.sh deploy-app`; it builds and pushes the demo API image to ECR, resolves the immutable image digest, applies the `apps/fargate` ECS skeleton, renders the task definition template, and promotes a blue/green color.
-8. ECS injects the DB connection string from Secrets Manager into the container task definition.
+Do not print secret values or raw state into documentation, logs or PRs.
+Use synthetic/redacted examples. Existing audit scripts are AWS-connected,
+download state and create temporary files; see [validation](validation.md).
+Pattern-based auditing supports, but does not alone prove, secret-free state.
+The owner will require evidence for future deployment rather than assuming
+metadata-only configuration proves the whole operational path safe.
 
-The EC2 SQL bootstrap script waits for password secret values to become available and does not enable shell tracing.
-
-Do not use `terragrunt run --all apply` for initial bootstrap. The Terragrunt
-dependency graph cannot express the required out-of-band secret value writes
-between the `secrets`, `data`, and `apps/fargate` layers. Use the staged
-bootstrap commands instead. After the environment exists, `run --all plan` may
-still require caution because dependency outputs must exist.
-
-The full dev orchestration is documented in [Bootstrap Guide](bootstrap.md):
-
-```bash
-scripts/bootstrap.sh full-dev-bootstrap --profile terraform-lab --region us-east-1
-```
-
-## State Cleanup
-
-Previous versions of this demo stored generated SQL passwords and DB connection
-strings in Terraform state. Current configuration is metadata-only, but state
-history must still be treated carefully.
-
-Run the redacted state audit before considering the secrets cleanup complete:
-
-```bash
-scripts/audit-terraform-state-secrets.sh --env dev --region us-east-1 --profile terraform-lab --historical
-```
-
-From the EC2/Codex instance:
-
-```bash
-scripts/audit-terraform-state-secrets.sh --env dev --region us-east-1 --use-instance-role --historical
-```
-
-The audit script downloads state versions only to a private temporary directory,
-scans resource addresses, resource types and output names, and deletes the
-temporary files automatically. It must not print secret values, full state, state
-object keys, S3 bucket names, account IDs, ARNs, or Secrets Manager values.
-
-Rotate/recreate credentials if the latest or historical state audit finds exact
-secret-value resources such as `random_password`,
-`aws_secretsmanager_secret_version`, credential-like `random_string`, or
-SecureString-style `aws_ssm_parameter` resources. Rotation means:
-
-1. Rotate the SQL Server SA password secret value.
-2. Rotate the SQL application user password secret value.
-3. Update or recreate the matching SQL login/user on the DB host.
-4. Rebuild the DB connection-string secret value.
-5. Redeploy/restart ECS tasks so they consume the new secret version.
-6. Treat copied local state files, CI artifacts and terminal logs from the
-   contaminated period as sensitive and delete them where possible.
-
-Metadata-pattern findings, such as `aws_secretsmanager_secret` containers, ECS
-secret references, IAM policies that allow `GetSecretValue`, or outputs whose
-names contain `secret`, require review but are not automatically leaked values.
+Least privilege, stricter provenance and environment independence remain targets.
+Do not invent certificate/account architectures or silently accept these gaps.

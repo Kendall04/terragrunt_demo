@@ -1,5 +1,16 @@
 # Interview Guide - terragrunt_demo
 
+> **HISTORICAL / SUPERSEDED interview narrative.** Retained to explain earlier
+> reasoning, not to define present contracts or approved future solutions.
+> Use [architecture](architecture.md), [delivery](deployment.md) and
+> [decisions/limitations](decisions-and-limitations.md) for current statements.
+> There is no deployed AWS infrastructure (owner reconciliation 2026-09-18).
+> Rollback is not proven, S3 manifests are overwriteable, and GitHub protections
+> are unverified. Historical RDS recommendations are superseded by the EC2 SQL
+> constraint and deferred durability experiments. Describe one operator, not an
+> assumed organization. Do not present the answers below as verified guarantees.
+
+
 Use this guide to turn the repository into a technical conversation. The goal is
 not to claim every component is production-complete; the goal is to explain the
 platform decisions, the trade-offs, and what would change for a real production
