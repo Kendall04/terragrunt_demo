@@ -11,7 +11,7 @@ write_newline_file() {
   local value="$1"
   local file="$2"
 
-  : > "$file"
+  : > "$file" || return 1
   if [ -n "$value" ]; then
     printf '%s\n' "$value" > "$file"
   fi
@@ -22,7 +22,7 @@ write_json_file() {
   local file="$2"
 
   if [ -z "$value" ]; then
-    printf '[]\n' > "$file"
+    printf '[]\n' > "$file" || return 1
     return 0
   fi
 
@@ -50,8 +50,8 @@ assert_file_equals() {
   local label="$3"
 
   local expected_file
-  expected_file="$(mktemp)"
-  write_newline_file "$expected" "$expected_file"
+  expected_file="$(mktemp)" || return 1
+  write_newline_file "$expected" "$expected_file" || return 1
 
   if ! diff -u "$expected_file" "$file" >/dev/null; then
     echo "not ok - ${label}"
@@ -77,26 +77,26 @@ run_fixture() {
   (
     set -a
     # shellcheck source=/dev/null
-    . "$fixture"
+    . "$fixture" || exit 1
     set +a
 
-    write_input_file "$SAFE_PATHS" "${tmpdir}/safe-paths.txt" "$INPUT_FORMAT"
-    write_input_file "$HIGH_RISK_PATHS" "${tmpdir}/high-risk-paths.txt" "$INPUT_FORMAT"
-    write_input_file "$INFRA_PATHS" "${tmpdir}/infra-paths.txt" "$INPUT_FORMAT"
+    write_input_file "$SAFE_PATHS" "${tmpdir}/safe-paths.txt" "$INPUT_FORMAT" || exit 1
+    write_input_file "$HIGH_RISK_PATHS" "${tmpdir}/high-risk-paths.txt" "$INPUT_FORMAT" || exit 1
+    write_input_file "$INFRA_PATHS" "${tmpdir}/infra-paths.txt" "$INPUT_FORMAT" || exit 1
 
     "$SCRIPT" \
       --target-env dev \
       --safe-paths-file "${tmpdir}/safe-paths.txt" \
       --high-risk-paths-file "${tmpdir}/high-risk-paths.txt" \
       --infra-paths-file "${tmpdir}/infra-paths.txt" \
-      --output-dir "${tmpdir}/out"
+      --output-dir "${tmpdir}/out" || exit 1
 
-    assert_file_equals "$EXPECTED_SAFE_LAYERS" "${tmpdir}/out/safe-layers.txt" "${name} safe layers"
-    assert_file_equals "$EXPECTED_HIGH_RISK_LAYERS" "${tmpdir}/out/high-risk-layers.txt" "${name} high-risk layers"
-    assert_file_equals "$EXPECTED_CRITICAL_LAYERS" "${tmpdir}/out/critical-manual-only-layers.txt" "${name} critical layers"
-    assert_file_equals "$EXPECTED_CRITICAL_PATHS" "${tmpdir}/out/critical-manual-only-paths.txt" "${name} critical paths"
-    assert_file_equals "$EXPECTED_UNMAPPED_PATHS" "${tmpdir}/out/unmapped-high-risk-paths.txt" "${name} unmapped paths"
-    assert_file_equals "$EXPECTED_CHANGED_HIGH_RISK_PATHS" "${tmpdir}/out/changed-high-risk-paths.txt" "${name} changed high-risk paths"
+    assert_file_equals "$EXPECTED_SAFE_LAYERS" "${tmpdir}/out/safe-layers.txt" "${name} safe layers" || exit 1
+    assert_file_equals "$EXPECTED_HIGH_RISK_LAYERS" "${tmpdir}/out/high-risk-layers.txt" "${name} high-risk layers" || exit 1
+    assert_file_equals "$EXPECTED_CRITICAL_LAYERS" "${tmpdir}/out/critical-manual-only-layers.txt" "${name} critical layers" || exit 1
+    assert_file_equals "$EXPECTED_CRITICAL_PATHS" "${tmpdir}/out/critical-manual-only-paths.txt" "${name} critical paths" || exit 1
+    assert_file_equals "$EXPECTED_UNMAPPED_PATHS" "${tmpdir}/out/unmapped-high-risk-paths.txt" "${name} unmapped paths" || exit 1
+    assert_file_equals "$EXPECTED_CHANGED_HIGH_RISK_PATHS" "${tmpdir}/out/changed-high-risk-paths.txt" "${name} changed high-risk paths" || exit 1
   ) || failures=$((failures + 1))
 
   rm -rf "$tmpdir"

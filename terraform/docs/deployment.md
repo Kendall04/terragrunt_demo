@@ -1,5 +1,24 @@
 # Deployment Runbook
 
+## CD safety validation
+
+[CI - CD Safety](../../.github/workflows/ci-cd-safety.yml) provides the independent
+`CD Safety Validation` job on PRs targeting develop/main and pushes to develop.
+It runs offline selector/result self-tests and, for relevant changes, the three
+scope/layer/gate suites. See [validation](validation.md) for selection, local
+entry points, revision attribution, and pending develop integration evidence.
+
+The check does not change deployment ordering or gate existing CD jobs. For the
+bounded safety helper/workflow and documentation integration, CI selects repo
+hygiene without app or infrastructure checks. A develop push starts CD scope
+detection and the infrastructure notice, with no apply layers or app changes;
+AWS-backed plan/apply, readiness, release and deployment jobs should be skipped.
+Verify the complete diff and actual job outcomes before claiming that evidence.
+Broader changes require a fresh scope assessment. External branch protection
+and merge-queue compatibility are not established by this integration.
+
+## Deployment operations
+
 Use the repository scripts for bootstrap and full dev deploy operations. They set
 the Terragrunt backend environment, call the staged bootstrap commands in the
 right order, and avoid direct `terragrunt run --all apply` for this lab.
