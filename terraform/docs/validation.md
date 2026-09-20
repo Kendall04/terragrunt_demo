@@ -63,7 +63,7 @@ helper/test tree. It parses schema JSON and uses hand-written
 validators; that is not exhaustive JSON Schema conformance testing.
 No Lambda unit tests or comprehensive deployed rollback evidence were found.
 
-## CD safety enforcement — implementation, review pending
+## CD safety enforcement — reviewed contract
 
 `CI - CD Safety` exposes the unconditional `CD Safety Validation` job for PRs
 targeting develop/main (including retargeting edits) and pushes to develop.
@@ -92,13 +92,45 @@ Offline entry points (Bash/Git/jq/Unix tools; disposable temporary writes):
   are a local evidence command; they corrupt only disposable copies and verify
   failing assertions and accidental exemption-policy broadening are rejected.
 
-Local Linux execution has demonstrated passing fixture suites, selector history
-cases, outcome handling and controlled mutation failures. This is implementation
-evidence, not Reviewer PASS or observed GitHub Actions enforcement. Actual PR and
-develop runs, displayed check identity, and external branch-protection settings
-remain pending. Logs/summaries distinguish "suite not required" from "suite passed"
-and record event, comparison/test SHAs, run identity and process results. These
-helper tests do not establish full workflow expression, ALB or AWS readiness proof.
+Preserve the narrow exemption boundary when dependencies change: if a helper
+starts consuming an exempt area, reconsider and test that exemption. History
+uncertainty means RUN; selector errors or wrong checkout identity cannot become
+a successful exemption. Logs/summaries distinguish "suite not required" from
+"suite passed" and record event, comparison/test SHAs, run identity and process
+results.
+
+### Review and evidence boundary
+
+The independent Reviewer returned REVIEW_PASS for all 12 acceptance criteria
+of [the spec](../../specs/cd-test-enforcement/spec.md), as supplied in the
+post-review handoff. Authoritative identities:
+
+- BASE_REVISION: `ac28991a8346118fecc001c216add63a2884b221`.
+- CANDIDATE_REVISION: `9cef1cb7ea712857c947ed8e5591651122fa476a`.
+- MAIN_INTEGRATION_REVISION: `41c53252efc66ff86b88cb96d50b7825e88ae27d`.
+- DEVELOP_INTEGRATION_REVISION: `399cc900ec3068284ca982bde163427c80e70de3`.
+
+Remote job/step metadata rechecked during knowledge capture confirms the stable
+`CD Safety Validation` identity and these outcomes:
+
+| Evidence | Recorded revision (PR head or pushed commit) | Outcome |
+| --- | --- | --- |
+| [Candidate PR](https://github.com/Kendall04/terragrunt_demo/actions/runs/35422984748) | `9cef1cb7ea712857c947ed8e5591651122fa476a` | Suite execution and final result succeeded |
+| [Controlled failure](https://github.com/Kendall04/terragrunt_demo/actions/runs/35423039579) | `39d7fc8f416454345fc529faa04e9f93593537b4` | Suite and final result failed |
+| [Restored experiment](https://github.com/Kendall04/terragrunt_demo/actions/runs/35423077706) | `6fa33890cb0e71d5f30a5c3e1407641c18738629` | Suite execution and final result succeeded |
+| [Unrelated PR](https://github.com/Kendall04/terragrunt_demo/actions/runs/35426970333) | `c1352aeb10abe6f19719c7e40c6e43828e33dc6a` | Self-tests and final result succeeded; suite skipped as exempt |
+| [Develop integration push](https://github.com/Kendall04/terragrunt_demo/actions/runs/35428412430) | `399cc900ec3068284ca982bde163427c80e70de3` | Suite execution and final result succeeded |
+
+PR head identities above are not substitutes for the tested merge SHA. Log
+downloads returned HTTP 403 during capture; exact checkout/per-process log
+validation and the full acceptance assessment rely on the supplied Reviewer PASS,
+not a claim that those logs were independently reread here.
+
+Required-status-check enforcement remains external and unconfigured/unverified;
+see [delivery](deployment.md) for outstanding governance actions. These tests
+do not prove AWS readiness, full deployment correctness, every workflow expression
+or ALB behavior, or tamper resistance against deliberate removal of enforcement
+and its tests.
 
 ## Working guidance
 

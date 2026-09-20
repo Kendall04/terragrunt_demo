@@ -21,12 +21,15 @@ control and verified external enforcement are distinct evidence.
 
 Baseline → owner reconciliation → durable knowledge → agent map → selection of
 one improvement → durable spec → technical planning → implementation → review
-against that spec. This bootstrap stops at durable knowledge and agent guidance.
+against that spec → selective post-review knowledge capture.
 Before selecting an improvement, review its current contract, constraints and
 open questions together. Later specs should state outcomes, non-goals and
 acceptance evidence independently of a technical plan. Update current-contract
 docs only when implementation/evidence warrants it; retain superseded rationale
-with explicit status. No first implementation spec has been created.
+with explicit status. The first improvement, [CD safety test enforcement](../../specs/cd-test-enforcement/spec.md),
+has passed independent review of all 12 acceptance criteria. Its
+[review identities and evidence](validation.md#review-and-evidence-boundary)
+close the repository-side CD fixture enforcement gap, not external governance.
 
 ## Accepted decisions and constraints
 
@@ -90,7 +93,7 @@ mean low importance. Scope/dependencies below do not authorize implementation.
 | B8 Medium artifacts | Overwriteable S3 manifests; ECR retains only 15 images regardless of tag | Medium; identity/idempotency/rollback horizon; medium publishing/cost risk | Narrow publication contract may fit |
 | B9 Medium provenance | Renderer defaults tests/build to passed without exact test-result binding | Medium; qualifying evidence; medium release-blocking risk | Good bounded candidate |
 | B10 Medium backend | KMS input-size gap, pagination overflow/ties, error behavior | Small; input/error policy; low-medium compatibility risk | Strong candidate: text-size boundary |
-| B11 Medium testing | CD fixture tests not run by workflows; shell checks omit CD helpers; no Lambda unit tests | Small for wiring tests; trigger policy; low risk | Strong first candidate |
+| B11 Medium testing — partially completed | CD fixture enforcement completed and reviewed through CI - CD Safety; shell checks still omit CD helpers; no Lambda unit tests | Preserve reviewed selection/failure boundaries in [validation](validation.md#cd-safety-enforcement--reviewed-contract); remaining coverage is separate work | CD safety portion complete; required-status-check enforcement remains external and unconfigured/unverified |
 | B12 Medium IaC CI | PR plans target dev; prod high-risk CD unsupported; reviewed plan not saved for apply | Medium; prod/governance model; medium-high risk | One routing contract may fit |
 | B13 Medium NAT | Independent recovery, no DLQ/forwarding probe; ignored AMI updates | Medium; NAT/patch policy; medium-high egress risk | Offline Lambda behavior first; live recovery later |
 | B14 Medium reproducibility/DX | Partial locks, moving image/tool/action inputs, no explicit container user | Medium; update/toolchain policy; medium compatibility risk | Narrow one contract |
@@ -107,4 +110,5 @@ Evidence: [IAM](../infra/shared/modules/iam_github),
 [CI](../../.github/workflows/ci.yml), [fixtures](../../.github/scripts/cd/tests).
 
 Managed NAT, canaries and more services are alternatives, not approved requirements.
-Historical RDS recommendations are superseded by D4. No first spec is selected.
+Historical RDS recommendations are superseded by D4. Remaining backlog items are
+not selected or authorized by completion of the CD safety spec.
