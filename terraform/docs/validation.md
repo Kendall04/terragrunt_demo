@@ -52,6 +52,13 @@ broadening integration tests.
 
 [Text handler tests](../../demo-api/terragrunt-demo.Tests/TextHandlersTests.cs)
 verify encryption/persistence/decryption/pagination using doubles.
+[KMS wrapper tests](../../demo-api/terragrunt-demo.Tests/KmsEncryptionServiceTests.cs)
+and [text endpoint tests](../../demo-api/terragrunt-demo.Tests/TextEndpointTests.cs)
+cover the 4095/4096/4097 UTF-8 byte boundaries with ASCII and multibyte input,
+including surrogate pairs. Recording SDK/repository doubles verify local rejection
+without encryption or persistence, HTTP 400 string errors, blank-input precedence,
+and accepted bytes, ciphertext, DTOs and cancellation forwarding. The wrapper
+tests also cover base64/UTF-8 decryption conversion; no live AWS is required.
 [Health tests](../../demo-api/terragrunt-demo.Tests/HealthEndpointTests.cs)
 verify liveness/readiness responses and Swagger/environment behavior.
 They do not prove real KMS, SQL migrations, deployment or rollback.

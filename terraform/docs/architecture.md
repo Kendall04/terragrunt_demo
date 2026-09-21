@@ -80,7 +80,7 @@ Evidence: [app skeleton](../infra/apps/fargate/demo.tf),
 
 | Interface | Behavior |
 | --- | --- |
-| POST /text | Reject blank input; KMS-encrypt UTF-8 bytes; persist base64 ciphertext; return plaintext DTO |
+| POST /text | Reject blank input, then plaintext over 4096 UTF-8 bytes; KMS-encrypt accepted bytes; persist base64 ciphertext; return plaintext DTO |
 | GET /text | Read/decrypt page; default 50, maximum 100; ten concurrent decrypts per request |
 | /health, /health/live | Process liveness only |
 | /ready, /health/ready | DB connectivity/pending migrations and KMS Encrypt |
@@ -90,8 +90,11 @@ Gateway authorization is NONE; no application auth pipeline exists. GET proxy
 routing exposes health endpoints too. CORS is disabled by default, not an access
 control. MediatR handlers call an EF SQL repository and KMS interface.
 No business queues or separate encryption service exist. One decryption failure
-fails the request. Payload size, pagination overflow/tie ordering and dependency
-error contracts remain limitations.
+fails the request. The symmetric direct-KMS wrapper accepts at most 4096 UTF-8
+bytes and rejects larger plaintext before calling KMS. POST returns HTTP 400
+with the string `Text must not exceed 4096 UTF-8 bytes.`; blank-input validation
+still takes precedence. Larger payload support, pagination overflow/tie ordering
+and dependency error contracts remain limitations.
 
 DB_CONN_STRING is required outside Development; Development may use configured
 fallback. KMS_KEY_ID selects encryption; SDK credentials use the runtime chain.
