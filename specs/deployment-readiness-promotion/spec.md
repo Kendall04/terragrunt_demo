@@ -63,6 +63,20 @@ For a candidate that becomes ready:
 - existing deployment ownership and routing semantics remain unchanged;
 - existing post-promotion behavior remains unchanged unless required to enforce this readiness gate.
 
+### 3.6 Candidate identity, evidence freshness, and consistency boundary
+
+Promotion requires bounded, repeatedly revalidated control-plane evidence that:
+
+- every exact candidate replica has independently satisfied the application's existing `/ready` contract;
+- each replica matches the expected task-definition revision and application image identity;
+- the candidate routable target set exactly matches the replicas for which successful readiness evidence was obtained;
+- evidence is fresh within the bounded deployment attempt; and
+- the full candidate set is revalidated as late as practical immediately before the traffic switch.
+
+Any observed inconsistency, missing evidence, replacement, identity change, timeout, or ambiguity invalidates promotion authorization and fails the attempt closed before switching traffic. Previous readiness evidence must not be transferred to replacement tasks.
+
+Absolute atomicity between the final observation and ALB `ModifyListener` is not required. ECS discovery and the listener update provide no shared atomic compare-and-swap boundary. The implementation must minimize and document the residual observation-to-switch race; eliminating it through a routing or runtime redesign is outside this feature's scope.
+
 ## 4. Scope Boundaries
 
 This feature does not:
