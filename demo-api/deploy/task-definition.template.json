@@ -55,6 +55,22 @@
           "awslogs-stream-prefix": ""
         }
       }
+    },
+    {
+      "name": "",
+      "image": "",
+      "essential": false,
+      "command": [
+        "readiness-probe"
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "",
+          "awslogs-region": "",
+          "awslogs-stream-prefix": ""
+        }
+      }
     }
   ]
 }

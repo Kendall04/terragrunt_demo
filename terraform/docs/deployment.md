@@ -79,11 +79,23 @@ defaults and validation. Do not copy real resource/credential values into docs.
 4. Dev/prod/manifest rollback consume an existing image digest.
 5. The common deployment script discovers active color from the ALB, requires the
    candidate rule to point at the other color, stops that inactive service,
-   registers a rendered task definition, starts it and waits for ECS stability
-   and enough healthy ALB targets.
-6. It changes the listener default action, then the candidate action, and schedules
+   registers a rendered task definition and starts the requested replicas.
+6. Each task's non-essential one-shot probe polls its application's loopback
+   `/ready` endpoint under finite request/response/total bounds and requires three
+   consecutive healthy responses. The controller freezes the full cohort and
+   repeatedly validates exact service, revision, digest, container, ENI and healthy
+   target identities. Missing, stale, replaced, ambiguous or inconsistent evidence
+   fails closed. A final complete revalidation occurs immediately before switching.
+7. It changes the listener default action, then the candidate action, and schedules
    delayed scale-down. Those operations are not atomic.
-7. Workflow smoke checks and deployment/current/history records follow the switch.
+8. Workflow smoke checks and deployment/current/history records follow the switch.
+
+The readiness controller uses existing ListTasks/DescribeTasks, service, listener,
+rule and target-health reads; it adds no ECS Exec, secret read, public candidate
+route or target-group mutation. It exhausts AWS CLI pagination and batches task
+descriptions at 100. Evidence is invocation-local and bounded by the scale-up
+attempt deadline. Older image digests without the packaged `readiness-probe`
+command fail before promotion and are not rebuilt or downgraded to liveness.
 
 The renderer defaults dotnetTests/dockerBuild to passed; the release-build job
 does not bind a real exact-source test result to that default. Validation checks
@@ -104,11 +116,22 @@ Evidence: [release renderer](../../scripts/render-release-manifest.sh),
 
 ## CURRENT CONTRACT — health and failure boundaries
 
-ALB checks /health, which is liveness only. Dependency checks live at /ready
-(and /health/ready); KMS readiness tests Encrypt only. Hosted-runner smoke checks
+ALB checks /health, which remains liveness only. Dependency checks live at /ready
+(and /health/ready); KMS readiness tests Encrypt only. Task-local `/ready` evidence
+is required before promotion, but it is historical one-shot evidence rather than
+continuous dependency-health enforcement. Hosted-runner smoke checks
 are optional and occur after the switch. Dev smoke URL handling also accepts
 /health and /health/live, so its label does not guarantee readiness validation.
 Local deploy --smoke-test calls /ready after active target health is observed.
+
+The final ECS/target/routing observation and ALB ModifyListener have no shared
+conditional-write boundary. The script minimizes this accepted residual race by
+performing no unrelated work between them. Concurrent authorized workflows or the
+cleanup Lambda can still change state; any observed mapping, count, revision, task
+or target change aborts without a stale compensating write. A failed pre-switch
+gate leaves active routing and the active service untouched, but candidate tasks
+and the newly registered revision can remain for diagnosis. Startup migrations
+may already have affected the shared database.
 
 A failed post-switch smoke/record write does not automatically restore traffic.
 Listener/rule failure can leave inconsistent color mappings. current.json can

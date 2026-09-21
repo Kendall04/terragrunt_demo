@@ -28,6 +28,7 @@ before execution. A command listed here is not blanket permission to run it.
 | Local/static checks with existing tools | bash -n scripts/*.sh; bash -n .github/scripts/cd/*.sh; shellcheck scripts/*.sh .github/scripts/cd/*.sh; terraform fmt -check -recursive terraform/; terragrunt hcl format --check --working-dir terraform/live | Check-only flags are essential; do not drop them or install tools implicitly |
 | Local tool analysis | actionlint; tflint --recursive; tfsec --no-color . --minimum-severity=MEDIUM | Inspect installed tool/config behavior; initialization/downloads/caches are separate write/network operations, not guaranteed read-only |
 | Offline tests with writes | .github/scripts/cd/tests/test-detect-scope.sh; test-resolve-terragrunt-layers.sh; test-validate-infra-gate.sh in the same directory | Bash/jq fixtures create temporary outputs; do not run during a strict no-write assessment |
+| Readiness deployment tests | scripts/tests/test-ecs-readiness-gate.sh; test-render-demo-api-taskdef.sh | Offline Bash/jq tests use synthetic AWS identities and a fail-on-unexpected-call AWS function; they create only disposable temporary files and never use real AWS |
 | App build/tests | dotnet restore/build/test demo-api/terragrunt-demo.sln | Restore uses package network/cache; build/test create bin/obj/results; not read-only |
 | Container checks | Docker build of demo-api | Pulls/builds images, writes caches and executes Dockerfile steps |
 | Artifact helper checks | render/validate scripts in scripts/ | Renderers write files; validate-only JSON helpers use local jq; inspect caller because adjacent publish/read helpers use S3 |
@@ -62,6 +63,16 @@ tests also cover base64/UTF-8 decryption conversion; no live AWS is required.
 [Health tests](../../demo-api/terragrunt-demo.Tests/HealthEndpointTests.cs)
 verify liveness/readiness responses and Swagger/environment behavior.
 They do not prove real KMS, SQL migrations, deployment or rollback.
+[Readiness probe tests](../../demo-api/terragrunt-demo.Tests/ReadinessProbeTests.cs)
+exercise transient startup, consecutive-success reset, bounded failure, fixed
+loopback `/ready` addressing and strict response validation without starting the
+normal application or using AWS/SQL. The deployment fixtures exercise both color
+directions, per-replica evidence, exact target/cohort identity, stale/missing and
+hostile observations, invalidation, bounds, and the no-listener-write failure
+boundary. Renderer checks prove the same immutable image, non-essential probe,
+no secret/environment injection, no restart/health policy and unchanged essential
+application launch. App CI also executes the packaged probe capability from the
+built image. These are deterministic contract checks, not live Fargate evidence.
 
 CD fixture tests exercise scope/layer/gate behavior through the dedicated
 [CD safety workflow](../../.github/workflows/ci-cd-safety.yml), described below.

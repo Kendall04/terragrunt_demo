@@ -10,8 +10,8 @@ health gates or schema compatibility; security docs for credential/KMS changes.
 - Persist ciphertext, not plaintext. The KMS wrapper receives UTF-8 input and
   stores base64 ciphertext; existing payload/pagination edge cases are backlog.
 - Preserve the distinction: /health and /health/live are liveness; /ready and
-  /health/ready test dependencies. ALB currently uses liveness; do not claim
-  dependency readiness is enforced before promotion.
+  /health/ready test dependencies. ALB uses liveness; deployment separately
+  requires per-task one-shot /ready evidence before promotion.
 - DB_CONN_STRING is required outside Development. APP_ENV is not ASP.NET's
   environment selector. SDK credentials use the runtime chain.
 - Startup migrations currently use db_owner and affect the shared database.

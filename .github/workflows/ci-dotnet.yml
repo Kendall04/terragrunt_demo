@@ -43,6 +43,12 @@ jobs:
       - name: Run tests
         run: dotnet test ./demo-api/terragrunt-demo.sln --configuration Release --no-build --verbosity normal
 
+      - name: Validate readiness deployment contracts
+        run: |
+          set -euo pipefail
+          scripts/tests/test-render-demo-api-taskdef.sh
+          scripts/tests/test-ecs-readiness-gate.sh
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -64,6 +70,12 @@ jobs:
           push: false
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+      - name: Verify readiness probe is packaged
+        run: |
+          set -euo pipefail
+          output="$(docker run --rm demo-api-ci:latest readiness-probe --check-capability)"
+          grep -Fx 'readiness-probe-capability=available' <<<"$output"
 
       - name: Move Docker cache
         run: |

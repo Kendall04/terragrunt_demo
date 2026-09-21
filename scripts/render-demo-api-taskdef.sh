@@ -116,12 +116,14 @@ validate_args() {
 
 render_task_definition() {
   local app_name
+  local probe_name
   local execution_role_arn
   local task_role_arn
   local log_group
   local output_dir
 
   app_name="demo-${ENV_NAME}-app-api-${COLOR}"
+  probe_name="${app_name}-readiness-probe"
   execution_role_arn="arn:aws:iam::${ACCOUNT_ID}:role/${app_name}-exec-role"
   task_role_arn="arn:aws:iam::${ACCOUNT_ID}:role/${app_name}-task-role"
   log_group="/aws/ecs/${app_name}"
@@ -132,6 +134,7 @@ render_task_definition() {
   jq \
     --arg family "$app_name" \
     --arg container_name "$app_name" \
+    --arg probe_name "$probe_name" \
     --arg image_uri "$IMAGE_URI" \
     --arg execution_role_arn "$execution_role_arn" \
     --arg task_role_arn "$task_role_arn" \
@@ -152,6 +155,8 @@ render_task_definition() {
       | .taskRoleArn = $task_role_arn
       | .containerDefinitions[0].name = $container_name
       | .containerDefinitions[0].image = $image_uri
+      | .containerDefinitions[1].name = $probe_name
+      | .containerDefinitions[1].image = $image_uri
       | set_env("AWS_REGION"; $aws_region)
       | set_env("APP_ENV"; $app_env)
       | set_env("DEPLOYMENT"; $deployment)
@@ -160,6 +165,9 @@ render_task_definition() {
       | .containerDefinitions[0].logConfiguration.options["awslogs-group"] = $log_group
       | .containerDefinitions[0].logConfiguration.options["awslogs-region"] = $aws_region
       | .containerDefinitions[0].logConfiguration.options["awslogs-stream-prefix"] = $container_name
+      | .containerDefinitions[1].logConfiguration.options["awslogs-group"] = $log_group
+      | .containerDefinitions[1].logConfiguration.options["awslogs-region"] = $aws_region
+      | .containerDefinitions[1].logConfiguration.options["awslogs-stream-prefix"] = $probe_name
     ' "$TEMPLATE_FILE" > "$OUTPUT_FILE"
 }
 

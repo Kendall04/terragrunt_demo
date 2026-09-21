@@ -23,6 +23,7 @@ DESIRED_COUNT="1"
 DRAIN_DELAY_MINUTES="5"
 TARGET_HEALTH_MAX_WAIT_SECONDS="${TARGET_HEALTH_MAX_WAIT_SECONDS:-300}"
 TARGET_HEALTH_POLL_INTERVAL_SECONDS="${TARGET_HEALTH_POLL_INTERVAL_SECONDS:-10}"
+READINESS_STABLE_OBSERVATIONS="${READINESS_STABLE_OBSERVATIONS:-2}"
 OUTPUT_ENV_FILE=""
 
 AWS_ARGS=()
@@ -59,6 +60,7 @@ Options:
   --drain-delay-minutes N     Delay before scaling down old color. Default: 5
   --target-health-timeout N   Seconds to wait for ALB target health. Default: 300
   --target-health-interval N  Seconds between target health polls. Default: 10
+                              These bounds also govern the pre-promotion readiness gate.
   --profile PROFILE           AWS CLI profile for local runs
   --use-instance-role         Use default AWS credential chain and do not pass a profile
   --output-env FILE           Append ACTIVE_COLOR/ACTIVE_SERVICE outputs to FILE
@@ -187,7 +189,7 @@ parse_args() {
 }
 
 set_aws_args() {
-  AWS_ARGS=(--region "$AWS_REGION_NAME")
+  AWS_ARGS=(--region "$AWS_REGION_NAME" --cli-connect-timeout 5 --cli-read-timeout 10)
   if [ "$USE_INSTANCE_ROLE" != "true" ] && [ -n "$AWS_PROFILE_NAME" ]; then
     AWS_ARGS+=(--profile "$AWS_PROFILE_NAME")
   fi
@@ -234,6 +236,10 @@ validate_args() {
     die "--target-health-interval must be a positive integer."
   fi
 
+  if ! [[ "$READINESS_STABLE_OBSERVATIONS" =~ ^[0-9]+$ ]] || [ "$READINESS_STABLE_OBSERVATIONS" -lt 2 ] || [ "$READINESS_STABLE_OBSERVATIONS" -gt 10 ]; then
+    die "READINESS_STABLE_OBSERVATIONS must be an integer between 2 and 10."
+  fi
+
   local required=(
     ECS_CLUSTER
     ECS_SERVICE_BLUE
@@ -251,6 +257,8 @@ validate_args() {
       die "Required value $var_name is empty."
     fi
   done
+
+  [ -x "$ROOT_DIR/scripts/ecs-readiness-gate.sh" ] || die "Readiness gate is missing or not executable."
 }
 
 validate_db_secret_id() {
@@ -298,18 +306,36 @@ detect_blue_green_state() {
     "${AWS_ARGS[@]}")"
 
   default_tg="$(jq -er '
-    .Listeners[0].DefaultActions[0]
-    | .TargetGroupArn // .ForwardConfig.TargetGroups[0].TargetGroupArn
-  ' <<<"$listener_json")"
+    select((.Listeners | length) == 1)
+    | .Listeners[0].DefaultActions as $actions
+    | select(($actions | length) == 1 and $actions[0].Type == "forward")
+    | $actions[0]
+    | if has("TargetGroupArn") and ((.ForwardConfig? // null) == null)
+      then .TargetGroupArn
+      elif ((.TargetGroupArn? // null) == null)
+        and ((.ForwardConfig.TargetGroups // []) | length == 1)
+        and ((.ForwardConfig.TargetGroups[0].Weight? // 1) == 1)
+      then .ForwardConfig.TargetGroups[0].TargetGroupArn
+      else empty end
+  ' <<<"$listener_json")" || die "ALB listener forwarding configuration is ambiguous."
 
   rule_json="$(aws elbv2 describe-rules \
     --rule-arns "$ALB_CANDIDATE_RULE_ARN" \
     "${AWS_ARGS[@]}")"
 
   candidate_tg="$(jq -er '
-    .Rules[0].Actions[0]
-    | .TargetGroupArn // .ForwardConfig.TargetGroups[0].TargetGroupArn
-  ' <<<"$rule_json")"
+    select((.Rules | length) == 1)
+    | .Rules[0].Actions as $actions
+    | select(($actions | length) == 1 and $actions[0].Type == "forward")
+    | $actions[0]
+    | if has("TargetGroupArn") and ((.ForwardConfig? // null) == null)
+      then .TargetGroupArn
+      elif ((.TargetGroupArn? // null) == null)
+        and ((.ForwardConfig.TargetGroups // []) | length == 1)
+        and ((.ForwardConfig.TargetGroups[0].Weight? // 1) == 1)
+      then .ForwardConfig.TargetGroups[0].TargetGroupArn
+      else empty end
+  ' <<<"$rule_json")" || die "ALB candidate-rule forwarding configuration is ambiguous."
 
   if [ "$default_tg" = "$TG_BLUE_ARN" ]; then
     ACTIVE_COLOR="blue"
@@ -473,52 +499,18 @@ attach_task_definition_to_inactive_service() {
   wait_for_no_running_tasks "$INACTIVE_SERVICE"
 }
 
-wait_for_target_group_healthy() {
-  local target_group_arn="$1"
-  local color="$2"
-  local start
-  local now
-  local elapsed
-  local healthy_count="0"
-  local last_health="[]"
-
-  start="$(date +%s)"
-  log "Waiting for ALB target health before traffic switch: color=$color target_group=$(redact_text "$target_group_arn")"
-
-  while true; do
-    if ! healthy_count="$(aws elbv2 describe-target-health \
-      --target-group-arn "$target_group_arn" \
-      --query "length(TargetHealthDescriptions[?TargetHealth.State==\`healthy\`])" \
-      --output text \
-      "${AWS_ARGS[@]}" 2>&1)"; then
-      die "Failed to describe target health for color=$color target_group=$(redact_text "$target_group_arn"): $(redact_text "$healthy_count")"
-    fi
-
-    if ! last_health="$(aws elbv2 describe-target-health \
-      --target-group-arn "$target_group_arn" \
-      --query 'TargetHealthDescriptions[].{Id:Target.Id,Port:Target.Port,State:TargetHealth.State,Reason:TargetHealth.Reason}' \
-      --output json \
-      "${AWS_ARGS[@]}" 2>&1)"; then
-      die "Failed to read target health diagnostics for color=$color target_group=$(redact_text "$target_group_arn"): $(redact_text "$last_health")"
-    fi
-
-    if [[ "$healthy_count" =~ ^[0-9]+$ ]] && [ "$healthy_count" -ge "$DESIRED_COUNT" ]; then
-      log "ALB target group has $healthy_count healthy target(s) for color=$color."
-      return 0
-    fi
-
-    now="$(date +%s)"
-    elapsed=$((now - start))
-    if [ "$elapsed" -ge "$TARGET_HEALTH_MAX_WAIT_SECONDS" ]; then
-      printf '%s\n' "$last_health" >&2
-      die "Expected at least $DESIRED_COUNT healthy ALB target(s) for color=$color after ${TARGET_HEALTH_MAX_WAIT_SECONDS}s."
-    fi
-
-    sleep "$TARGET_HEALTH_POLL_INTERVAL_SECONDS"
-  done
-}
-
 promote_inactive_color() {
+  local readiness_started_at
+  local readiness_deadline
+  local app_container
+  local probe_container
+  local gate_args
+
+  readiness_started_at="$(date +%s)"
+  readiness_deadline=$((readiness_started_at + TARGET_HEALTH_MAX_WAIT_SECONDS))
+  app_container="demo-${ENV_NAME}-app-api-${INACTIVE_COLOR}"
+  probe_container="${app_container}-readiness-probe"
+
   log "Scaling $INACTIVE_COLOR to desired-count=$DESIRED_COUNT"
   aws ecs update-service \
     --cluster "$ECS_CLUSTER" \
@@ -526,12 +518,34 @@ promote_inactive_color() {
     --desired-count "$DESIRED_COUNT" \
     "${AWS_ARGS[@]}" >/dev/null
 
-  aws ecs wait services-stable \
-    --cluster "$ECS_CLUSTER" \
-    --services "$INACTIVE_SERVICE" \
-    "${AWS_ARGS[@]}"
+  gate_args=(
+    "$ROOT_DIR/scripts/ecs-readiness-gate.sh"
+    --region "$AWS_REGION_NAME"
+    --cluster "$ECS_CLUSTER"
+    --service "$INACTIVE_SERVICE"
+    --task-definition-arn "$NEW_TASK_DEFINITION_ARN"
+    --image-uri "$IMAGE_URI"
+    --app-container "$app_container"
+    --probe-container "$probe_container"
+    --target-group-arn "$INACTIVE_TG"
+    --listener-arn "$ALB_LISTENER_ARN"
+    --candidate-rule-arn "$ALB_CANDIDATE_RULE_ARN"
+    --active-target-group-arn "$ACTIVE_TG"
+    --desired-count "$DESIRED_COUNT"
+    --attempt-start-epoch "$readiness_started_at"
+    --deadline-epoch "$readiness_deadline"
+    --poll-interval "$TARGET_HEALTH_POLL_INTERVAL_SECONDS"
+    --stable-observations "$READINESS_STABLE_OBSERVATIONS"
+  )
+  if [ "$USE_INSTANCE_ROLE" = "true" ] || [ -z "$AWS_PROFILE_NAME" ]; then
+    gate_args+=(--use-instance-role)
+  else
+    gate_args+=(--profile "$AWS_PROFILE_NAME")
+  fi
 
-  wait_for_target_group_healthy "$INACTIVE_TG" "$INACTIVE_COLOR"
+  if ! execute_readiness_gate "${gate_args[@]}"; then
+    die "Candidate readiness gate failed before traffic switching."
+  fi
 
   log "Switching ALB production traffic to $INACTIVE_COLOR"
   aws elbv2 modify-listener \
@@ -543,6 +557,10 @@ promote_inactive_color() {
     --rule-arn "$ALB_CANDIDATE_RULE_ARN" \
     --actions "Type=forward,TargetGroupArn=$ACTIVE_TG" \
     "${AWS_ARGS[@]}" >/dev/null
+}
+
+execute_readiness_gate() {
+  "$@"
 }
 
 schedule_old_color_scale_down() {
@@ -589,6 +607,9 @@ main() {
   parse_args "$@"
   require_command aws
   require_command jq
+  export AWS_MAX_ATTEMPTS=3
+  export AWS_RETRY_MODE=standard
+  export AWS_PAGER=""
   set_aws_args
   resolve_account_id
   validate_args
@@ -604,4 +625,6 @@ main() {
   log "Blue/green deployment completed. New active color: $INACTIVE_COLOR"
 }
 
-main "$@"
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+  main "$@"
+fi
