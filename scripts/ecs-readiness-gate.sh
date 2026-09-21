@@ -110,8 +110,10 @@ validate_args() {
   [[ "$ATTEMPT_START_EPOCH" =~ ^[0-9]+$ ]] || die "--attempt-start-epoch must be an epoch integer."
   [[ "$DEADLINE_EPOCH" =~ ^[0-9]+$ ]] || die "--deadline-epoch must be an epoch integer."
   [[ "$POLL_INTERVAL_SECONDS" =~ ^[1-9][0-9]*$ ]] || die "--poll-interval must be a positive integer."
-  [[ "$STABLE_OBSERVATIONS" =~ ^[0-9]+$ ]] && [ "$STABLE_OBSERVATIONS" -ge 2 ] && [ "$STABLE_OBSERVATIONS" -le 10 ] ||
+  if ! [[ "$STABLE_OBSERVATIONS" =~ ^[0-9]+$ ]] ||
+    [ "$STABLE_OBSERVATIONS" -lt 2 ] || [ "$STABLE_OBSERVATIONS" -gt 10 ]; then
     die "--stable-observations must be between 2 and 10."
+  fi
   [ "$DEADLINE_EPOCH" -gt "$ATTEMPT_START_EPOCH" ] || die "Readiness deadline must follow attempt start."
   [ $((DEADLINE_EPOCH - ATTEMPT_START_EPOCH)) -le 1800 ] || die "Readiness budget cannot exceed 1800 seconds."
   [ "$POLL_INTERVAL_SECONDS" -lt $((DEADLINE_EPOCH - ATTEMPT_START_EPOCH)) ] ||
@@ -251,9 +253,9 @@ describe_tasks_batched() {
     chunks+=("$batch_json")
   done
 
-  local combined
-  combined="$(printf '%s\n' "${chunks[@]}" | jq -s '{tasks:[.[].tasks[]?],failures:[.[].failures[]?]}')"
-  printf -v "$destination" '%s' "$combined"
+  local aggregate_json
+  aggregate_json="$(printf '%s\n' "${chunks[@]}" | jq -s '{tasks:[.[].tasks[]?],failures:[.[].failures[]?]}')"
+  printf -v "$destination" '%s' "$aggregate_json"
 }
 
 retain_task_observations() {

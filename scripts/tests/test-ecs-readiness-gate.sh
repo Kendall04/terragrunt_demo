@@ -131,6 +131,7 @@ EOF
   chmod +x "$hostile_bin/aws"
   HOSTILE_SENTINEL="$sentinel"
   export HOSTILE_SENTINEL
+  # shellcheck disable=SC2317 # Deliberately exported for attempted indirect invocation by the child Bash process.
   aws() { printf function >>"$HOSTILE_SENTINEL"; return 96; }
   export -f aws
   HOME="$hostile_home" PATH="$hostile_bin:/usr/bin:/bin" BASH_ENV="$hook" ENV="$hook" \

@@ -65,8 +65,8 @@ task_json() {
     unready) exit_code=23 ;;
     missing_exit) exit_code=null ;;
     transient) if [ "$call" -eq 1 ]; then probe_status=RUNNING; exit_code=null; fi ;;
-    container_change) if [ "$call" -ge 3 ] && [ "$suffix" = two ]; then runtime=runtime-two-changed; fi ;;
-    identity_contradiction) if [ "$call" -ge 2 ] && [ "$suffix" = one ]; then runtime=runtime-one-changed; fi ;;
+    container_change) if [ "$call" -ge 3 ] && [ "$suffix" = two ]; then runtime="runtime-two-changed"; fi ;;
+    identity_contradiction) if [ "$call" -ge 2 ] && [ "$suffix" = one ]; then runtime="runtime-one-changed"; fi ;;
     version_regression)
       if [ "$call" -eq 1 ] && [ "$suffix" = one ]; then version=2; probe_status=RUNNING; exit_code=null; fi
       ;;
@@ -138,10 +138,10 @@ for argument in "$@"; do
   [ "$argument" != --cli-connect-timeout ] || connect_timeout=true
   [ "$argument" != --cli-read-timeout ] || read_timeout=true
 done
-[ "$connect_timeout" = true ] && [ "$read_timeout" = true ] || {
+if [ "$connect_timeout" != true ] || [ "$read_timeout" != true ]; then
   printf 'AWS call omitted socket bounds: %s\n' "$*" >&2
   exit 93
-}
+fi
 
 printf '%s\n' "$*" >>"$CASE_DIR/aws-log"
 case "${1:-} ${2:-}" in
