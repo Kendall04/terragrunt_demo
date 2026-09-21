@@ -74,6 +74,9 @@ run_case() {
     [ "$status" -ne 0 ] || fail "$scenario unexpectedly passed"
     grep -Fq "$pattern" <<<"$output" || fail "$scenario missing diagnostic '$pattern': $output"
   fi
+  if [[ "$scenario" == final_* ]]; then
+    [ "$(<"$CASE_DIR/service")" = 6 ] || fail "$scenario did not reach the final service revalidation"
+  fi
   printf '[PASS] gate scenario: %s\n' "$scenario"
 }
 
@@ -142,6 +145,33 @@ EOF
   printf '[PASS] hostile inherited environment cannot escape to external AWS\n'
 }
 
+run_routing_detection() {
+  local scenario="$1" expected="$2" driver output status=0
+  setup_case "$scenario"
+  driver="$CASE_DIR/detect.sh"
+  cat >"$driver" <<EOF
+#!/bin/bash
+set -euo pipefail
+source "$DEPLOY"
+ALB_LISTENER_ARN=listener; ALB_CANDIDATE_RULE_ARN=rule
+TG_BLUE_ARN=tg-active; TG_GREEN_ARN=tg-candidate
+ECS_SERVICE_BLUE=svc-blue; ECS_SERVICE_GREEN=svc-green
+AWS_ARGS=(--cli-connect-timeout 5 --cli-read-timeout 10)
+detect_blue_green_state
+[ "\$ACTIVE_COLOR" = blue ] && [ "\$INACTIVE_COLOR" = green ]
+EOF
+  output="$(/usr/bin/env -i HOME="${HOME:-/tmp}" PATH="$FAKE_BIN:/usr/bin:/bin" BASH_ENV= ENV= \
+    CASE_DIR="$CASE_DIR" SCENARIO="$SCENARIO" TEST_IMAGE="$IMAGE" TEST_TASK_DEFINITION="$TASK_DEFINITION" \
+    /bin/bash --noprofile --norc "$driver" 2>&1)" || status=$?
+  if [ "$expected" = pass ]; then
+    [ "$status" -eq 0 ] || fail "routing detection $scenario failed: $output"
+  else
+    [ "$status" -ne 0 ] || fail "routing detection $scenario accepted ambiguity"
+    grep -Fq ambiguous <<<"$output" || fail "routing diagnostic missing: $output"
+  fi
+  printf '[PASS] deploy routing detection: %s\n' "$scenario"
+}
+
 run_promotion_integration() {
   local scenario="$1" expected="$2" active="$3" inactive="$4" driver output status=0 gate_line switch_line
   setup_case "promotion-$scenario-$active-$inactive"
@@ -180,6 +210,30 @@ EOF
 
 command -v jq >/dev/null || fail 'jq is required'
 run_case ready pass
+run_case lifecycle_success pass
+run_case lifecycle_no_containers pass
+run_case lifecycle_mixed pass
+run_case lifecycle_identity fail 'contradicted an earlier startup observation'
+run_case lifecycle_metadata_regression fail 'contradicted an earlier startup observation'
+run_case lifecycle_container_regression fail 'lifecycle regressed'
+run_case lifecycle_replacement fail 'previously observed candidate task disappeared'
+run_case lifecycle_regression fail 'lifecycle regressed'
+run_case missing_completed_metadata fail 'Completed probe lacks required'
+run_case network_contradiction fail 'task, container, image, network'
+run_case deployment_change fail 'service/deployment identity contradicted'
+run_case service_failures fail 'deployment set'
+run_case extra_services fail 'deployment set'
+run_case final_failures fail 'deployment set'
+run_case final_extra fail 'deployment set'
+run_case final_malformed fail 'deployment set'
+run_case running_regression fail 'running count regressed'
+run_case probe_regression fail 'lifecycle regressed'
+run_case route_config pass
+run_case route_default pass
+run_case route_dual pass
+run_case route_conflict fail 'ambiguous'
+run_case route_zero fail 'ambiguous'
+run_case route_malformed fail 'ambiguous'
 run_case normal_startup pass
 run_case transient pass
 run_case unready fail 'without an explicit zero exit code'
@@ -200,7 +254,16 @@ run_case api_failure fail 'embedded failures'
 run_case ambiguous fail 'ambiguous'
 run_case mapping_change fail 'mapping changed'
 run_case count_change fail 'desired count'
+run_routing_detection ready pass
+run_routing_detection route_config pass
+run_routing_detection route_dual pass
+run_routing_detection route_conflict fail
+run_routing_detection ambiguous fail
+hard_started=$SECONDS
+run_case resistant_call fail 'forced process-group termination' 1004
+run_case orphan_call fail 'forced process-group termination' 1004
 run_case hung_call fail 'AWS observation failed' 1004
+[ $((SECONDS - hard_started)) -le 10 ] || fail 'external calls exceeded the total bounded tolerance'
 run_batching_case
 run_invalid_timing_case
 run_hostile_environment_case

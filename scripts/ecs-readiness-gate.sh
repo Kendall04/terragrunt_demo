@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 AWS_REGION_NAME=""
 AWS_PROFILE_NAME=""
 USE_INSTANCE_ROLE="false"
@@ -25,6 +27,8 @@ FROZEN_COHORT=""
 OBSERVED_TASKS=""
 OBSERVED_TASK_IDENTITIES='{}'
 OBSERVED_TASK_VERSIONS='{}'
+OBSERVED_LIFECYCLES='{}'
+OBSERVED_SERVICE_IDENTITY=''
 PROBE_SUCCEEDED_TASKS=""
 TARGET_SET_ESTABLISHED="false"
 MAX_SERVICE_RUNNING_COUNT=0
@@ -161,7 +165,7 @@ aws_capture() {
   local output remaining
   check_deadline
   remaining="$(remaining_seconds)"
-  if ! output="$(timeout --foreground --signal=TERM "${remaining}s" \
+  if ! output="$(python3 "$SCRIPT_DIR/bounded-process.py" "$remaining" \
     env AWS_MAX_ATTEMPTS=3 AWS_RETRY_MODE=standard AWS_PAGER='' \
     aws "$@" "${AWS_ARGS[@]}" 2>&1)"; then
     die "AWS observation failed for '$1': $(redact_text "$output")"
@@ -209,21 +213,7 @@ validate_registered_definition() {
 extract_route_target() {
   local json="$1"
   local root="$2"
-  jq -er --arg root "$root" '
-    (if $root == "listener" then .Listeners else .Rules end) as $items
-    | select(($items | length) == 1)
-    | (if $root == "listener" then $items[0].DefaultActions else $items[0].Actions end) as $actions
-    | select(($actions | length) == 1 and $actions[0].Type == "forward")
-    | $actions[0]
-    | if has("TargetGroupArn") and ((.ForwardConfig? // null) == null)
-      then .TargetGroupArn
-      elif ((.TargetGroupArn? // null) == null)
-        and ((.ForwardConfig.TargetGroups // []) | length == 1)
-        and ((.ForwardConfig.TargetGroups[0].Weight? // 1) == 1)
-      then .ForwardConfig.TargetGroups[0].TargetGroupArn
-      else empty
-      end
-  ' <<<"$json"
+  jq -er --arg root "$root" -f "$SCRIPT_DIR/alb-route-target.jq" <<<"$json"
 }
 
 observe_routing() {
@@ -263,16 +253,22 @@ retain_task_observations() {
   local current_identities current_versions
 
   current_identities="$(jq -cS --arg app "$APP_CONTAINER" --arg probe "$PROBE_CONTAINER" '
-    [.tasks[] | {key:.taskArn, value:{
+    def populated:
+      if type == "object" then with_entries(.value |= populated | select(.value != null and .value != [] and .value != {}))
+      else . end;
+    [.tasks[] | {key:.taskArn, value:({
       taskDefinitionArn,group,startedBy,createdAt,
-      app:(.containers[] | select(.name == $app) | {containerArn,runtimeId,image,imageDigest,networkInterfaces}),
-      probe:(.containers[] | select(.name == $probe) | {containerArn,runtimeId,image,imageDigest})
-    }}] | from_entries
+      eniAttached:(if any(.attachments[]?; .type == "ElasticNetworkInterface" and .status == "ATTACHED") then true else null end),
+      eniAddresses:[.attachments[]? | select(.type == "ElasticNetworkInterface")
+        | .details[]? | select(.name == "privateIPv4Address") | .value],
+      app:([.containers[]? | select(.name == $app) | {containerArn,runtimeId,image,imageDigest,networkInterfaces}][0]),
+      probe:([.containers[]? | select(.name == $probe) | {containerArn,runtimeId,image,imageDigest}][0])
+    } | populated)}] | from_entries
   ' <<<"$tasks_json")"
   current_versions="$(jq -cS '[.tasks[] | {key:.taskArn, value:.version}] | from_entries' <<<"$tasks_json")"
 
   if ! jq -en --argjson previous "$OBSERVED_TASK_IDENTITIES" --argjson current "$current_identities" '
-    all($current | keys[]; $previous[.] == null or $previous[.] == $current[.])
+    all($previous | paths(scalars); . as $path | ($previous | getpath($path)) == ($current | getpath($path)))
   ' >/dev/null; then
     die "Candidate task or container identity contradicted an earlier startup observation."
   fi
@@ -283,8 +279,57 @@ retain_task_observations() {
     die "Candidate task version regressed from a newer startup observation."
   fi
 
+  local lifecycles
+  lifecycles="$(jq -c --arg app "$APP_CONTAINER" --arg probe "$PROBE_CONTAINER" '
+    def rank: {PROVISIONING:0,PENDING:1,ACTIVATING:2,RUNNING:3,STOPPED:4}[.];
+    [.tasks[] | {key:.taskArn,value:{task:(.lastStatus | rank),
+      connectivity:(if .connectivity == null then null else {DISCONNECTED:0,CONNECTED:1}[.connectivity] end),
+      app:([.containers[]? | select(.name == $app) | .lastStatus | rank][0]),
+      probe:([.containers[]? | select(.name == $probe) | .lastStatus | rank][0])}}] | from_entries
+  ' <<<"$tasks_json")"
+  jq -en --argjson previous "$OBSERVED_LIFECYCLES" --argjson current "$lifecycles" '
+    all($previous | paths(numbers); . as $path | ($current | getpath($path)) >= ($previous | getpath($path)))
+  ' >/dev/null || die "Candidate task/container lifecycle regressed during startup."
+  OBSERVED_LIFECYCLES="$lifecycles"
+
   OBSERVED_TASK_IDENTITIES="$(jq -cn --argjson previous "$OBSERVED_TASK_IDENTITIES" --argjson current "$current_identities" '$previous * $current')"
   OBSERVED_TASK_VERSIONS="$(jq -cn --argjson previous "$OBSERVED_TASK_VERSIONS" --argjson current "$current_versions" '$previous * $current')"
+}
+
+validate_service_observation() {
+  if ! jq -e \
+    --arg service "$ECS_SERVICE" \
+    --arg task_definition "$TASK_DEFINITION_ARN" \
+    --arg target_group "$TARGET_GROUP_ARN" \
+    --arg app "$APP_CONTAINER" \
+    --argjson desired "$DESIRED_COUNT" '
+      (.failures | type == "array" and length == 0)
+      and (.services | type == "array" and length == 1)
+      and .services[0].serviceName == $service
+      and (.services[0].serviceArn | type == "string" and length > 0)
+      and .services[0].status == "ACTIVE"
+      and ([.services[0].runningCount, .services[0].pendingCount,
+            .services[0].deployments[0].runningCount, .services[0].deployments[0].pendingCount]
+        | all(.[]; type == "number" and . == floor and . >= 0 and . <= $desired))
+      and .services[0].taskDefinition == $task_definition
+      and .services[0].desiredCount == $desired
+      and (.services[0].loadBalancers | length) == 1
+      and .services[0].loadBalancers[0].targetGroupArn == $target_group
+      and .services[0].loadBalancers[0].containerName == $app
+      and .services[0].loadBalancers[0].containerPort == 8080
+      and (.services[0].deployments | length) == 1
+      and .services[0].deployments[0].status == "PRIMARY"
+      and .services[0].deployments[0].taskDefinition == $task_definition
+      and .services[0].deployments[0].desiredCount == $desired
+      and (.services[0].deployments[0].id | type == "string" and length > 0)
+    ' <<<"$1" >/dev/null; then
+    die "Candidate service revision, desired count, deployment set, or status changed."
+  fi
+  local identity
+  identity="$(jq -cS '.services[0] | {serviceArn,serviceName,taskDefinition,desiredCount,loadBalancers,deploymentId:.deployments[0].id}' <<<"$1")"
+  [ -z "$OBSERVED_SERVICE_IDENTITY" ] || [ "$identity" = "$OBSERVED_SERVICE_IDENTITY" ] ||
+    die "Candidate service/deployment identity contradicted an earlier observation."
+  OBSERVED_SERVICE_IDENTITY="$identity"
 }
 
 observe_once() {
@@ -301,30 +346,7 @@ observe_once() {
   expected_digest="${IMAGE_URI##*@}"
 
   aws_capture service_before ecs describe-services --cluster "$ECS_CLUSTER" --services "$ECS_SERVICE" --output json
-  if ! jq -e \
-    --arg service "$ECS_SERVICE" \
-    --arg task_definition "$TASK_DEFINITION_ARN" \
-    --arg target_group "$TARGET_GROUP_ARN" \
-    --arg app "$APP_CONTAINER" \
-    --argjson desired "$DESIRED_COUNT" '
-      (.failures | length) == 0
-      and (.services | length) == 1
-      and .services[0].serviceName == $service
-      and .services[0].status == "ACTIVE"
-      and .services[0].taskDefinition == $task_definition
-      and .services[0].desiredCount == $desired
-      and (.services[0].loadBalancers | length) == 1
-      and .services[0].loadBalancers[0].targetGroupArn == $target_group
-      and .services[0].loadBalancers[0].containerName == $app
-      and .services[0].loadBalancers[0].containerPort == 8080
-      and (.services[0].deployments | length) == 1
-      and .services[0].deployments[0].status == "PRIMARY"
-      and .services[0].deployments[0].taskDefinition == $task_definition
-      and .services[0].deployments[0].desiredCount == $desired
-      and (.services[0].deployments[0].id | type == "string" and length > 0)
-    ' <<<"$service_before" >/dev/null; then
-    die "Candidate service revision, desired count, deployment set, or status changed."
-  fi
+  validate_service_observation "$service_before"
   deployment_id="$(jq -er '.services[0].deployments[0].id' <<<"$service_before")"
   service_fingerprint_before="$(jq -cS '.services[0] | {serviceArn,serviceName,status,taskDefinition,desiredCount,runningCount,pendingCount,loadBalancers,deployments}' <<<"$service_before")"
 
@@ -394,7 +416,46 @@ observe_once() {
     tasks_json='{"tasks":[],"failures":[]}'
   fi
 
-  if ! jq -e \
+  # Startup permits absent metadata, never conflicting populated values. Once
+  # the probe stops, complete runtime/network identity is mandatory.
+  if ! jq -e --arg td "$TASK_DEFINITION_ARN" --arg group "service:$ECS_SERVICE" \
+    --arg deployment "$deployment_id" --arg app "$APP_CONTAINER" --arg probe "$PROBE_CONTAINER" \
+    --arg image "$IMAGE_URI" --arg digest "$expected_digest" '
+      def nonempty: type == "string" and length > 0;
+      def startup: . == "PROVISIONING" or . == "PENDING" or . == "ACTIVATING" or . == "RUNNING";
+      all(.tasks[];
+        .taskDefinitionArn == $td and .group == $group and .startedBy == $deployment
+        and .desiredStatus == "RUNNING" and (.lastStatus | startup)
+        and (.version | type == "number" and . == floor and . >= 0)
+        and (.createdAt | nonempty)
+        and ((.connectivity // "CONNECTED") == "CONNECTED" or
+             (.lastStatus != "RUNNING" and .connectivity == "DISCONNECTED"))
+        and ([.attachments[]? | select(.type == "ElasticNetworkInterface")
+          | .details[]? | select(.name == "privateIPv4Address") | .value] as $eni
+          | ($eni | length <= 1) and all($eni[]; nonempty)
+          and all(.containers[]? | select(.name == $app) | .networkInterfaces[]?;
+            ($eni | length == 0) or .privateIpv4Address == $eni[0]))
+        and ((.containers // []) | type == "array")
+        and ([.containers[]?.name] | length == (unique | length))
+        and all(.containers[]?;
+          (.name == $app or .name == $probe)
+          and (.image == $image)
+          and ((.imageDigest // $digest) == $digest)
+          and (if .name == $app then (.lastStatus | startup)
+               else (.lastStatus | startup or . == "STOPPED") end)
+          and (if has("containerArn") then (.containerArn | nonempty) else true end)
+          and (if has("runtimeId") then (.runtimeId | nonempty) else true end)
+          and (if has("networkInterfaces") then
+            (.networkInterfaces | type == "array" and length <= 1)
+            and all(.networkInterfaces[]; .privateIpv4Address | nonempty)
+            else true end))
+      )
+    ' <<<"$tasks_json" >/dev/null; then
+    die "Candidate task, container, image, network, or startup identity is invalid."
+  fi
+
+  local incomplete_tasks
+  incomplete_tasks="$(jq -c \
     --arg task_definition "$TASK_DEFINITION_ARN" \
     --arg group "service:$ECS_SERVICE" \
     --arg deployment "$deployment_id" \
@@ -402,7 +463,7 @@ observe_once() {
     --arg probe "$PROBE_CONTAINER" \
     --arg image "$IMAGE_URI" \
     --arg digest "$expected_digest" '
-      all(.tasks[];
+      [.tasks[] | select((
         .taskDefinitionArn == $task_definition
         and .group == $group
         and .startedBy == $deployment
@@ -411,9 +472,9 @@ observe_once() {
         and .connectivity == "CONNECTED"
         and (.version | type == "number")
         and (.createdAt | type == "string" and length > 0)
-        and ([.containers[] | select(.name == $app)] | length == 1)
-        and ([.containers[] | select(.name == $probe)] | length == 1)
-        and (.containers[] | select(.name == $app)
+        and ([.containers[]? | select(.name == $app)] | length == 1)
+        and ([.containers[]? | select(.name == $probe)] | length == 1)
+        and ([.containers[]? | select(.name == $app)][0]
           | .image == $image
             and .imageDigest == $digest
             and .lastStatus == "RUNNING"
@@ -421,7 +482,7 @@ observe_once() {
             and (.runtimeId | type == "string" and length > 0)
             and (.networkInterfaces | length == 1)
             and (.networkInterfaces[0].privateIpv4Address | type == "string" and length > 0))
-        and (.containers[] | select(.name == $probe)
+        and ([.containers[]? | select(.name == $probe)][0]
           | .image == $image
             and .imageDigest == $digest
             and (.containerArn | type == "string" and length > 0)
@@ -434,11 +495,9 @@ observe_once() {
         and ([.attachments[]?
           | select(.type == "ElasticNetworkInterface" and .status == "ATTACHED")
           | [.details[]? | select(.name == "privateIPv4Address") | .value][0]
-        ][0] == (.containers[] | select(.name == $app) | .networkInterfaces[0].privateIpv4Address))
-      )
-    ' <<<"$tasks_json" >/dev/null; then
-    die "Candidate task, container, image, network, or attempt-freshness identity is invalid."
-  fi
+        ][0] == ([.containers[]? | select(.name == $app)][0].networkInterfaces[0].privateIpv4Address))
+      ) | not)]
+    ' <<<"$tasks_json")"
 
   local created_at created_epoch
   while IFS= read -r created_at; do
@@ -452,11 +511,16 @@ observe_once() {
 
   retain_task_observations "$tasks_json"
 
-  invalid_probe="$(jq -r --arg probe "$PROBE_CONTAINER" '[.tasks[] | .containers[] | select(.name == $probe) | select(.lastStatus == "STOPPED" and ((.exitCode | type) != "number" or .exitCode != 0))] | length' <<<"$tasks_json")"
-  [ "$invalid_probe" = "0" ] || die "A candidate readiness probe stopped without an explicit zero exit code."
-  probe_pending="$(jq -r --arg probe "$PROBE_CONTAINER" '[.tasks[] | .containers[] | select(.name == $probe and .lastStatus != "STOPPED")] | length' <<<"$tasks_json")"
+  invalid_probe="$(jq -r --arg probe "$PROBE_CONTAINER" '
+    .tasks[] | .taskArn as $task | .containers[]? | select(.name == $probe)
+    | select(.lastStatus == "STOPPED" and ((.exitCode | type) != "number" or .exitCode != 0))
+    | "replica=\($task | split("/")[-1]) exit=\(.exitCode // "missing")"
+  ' <<<"$tasks_json")"
+  [ -z "$invalid_probe" ] || die "A candidate readiness probe stopped without an explicit zero exit code: $invalid_probe"
+
+  probe_pending="$(jq -r --arg probe "$PROBE_CONTAINER" '[.tasks[] | .containers[]? | select(.name == $probe and .lastStatus != "STOPPED")] | length' <<<"$tasks_json")"
   local current_probe_successes
-  current_probe_successes="$(jq -r --arg probe "$PROBE_CONTAINER" '.tasks[] | select(any(.containers[]; .name == $probe and .lastStatus == "STOPPED" and .exitCode == 0)) | .taskArn' <<<"$tasks_json" | sort)"
+  current_probe_successes="$(jq -r --arg probe "$PROBE_CONTAINER" '.tasks[] | select(any(.containers[]?; .name == $probe and .lastStatus == "STOPPED" and .exitCode == 0)) | .taskArn' <<<"$tasks_json" | sort)"
   if [ -n "$PROBE_SUCCEEDED_TASKS" ]; then
     while IFS= read -r succeeded_task; do
       [ -z "$succeeded_task" ] || grep -Fxq "$succeeded_task" <<<"$current_probe_successes" ||
@@ -464,6 +528,15 @@ observe_once() {
     done <<<"$PROBE_SUCCEEDED_TASKS"
   fi
   PROBE_SUCCEEDED_TASKS="$(printf '%s\n%s\n' "$PROBE_SUCCEEDED_TASKS" "$current_probe_successes" | sed '/^$/d' | sort -u)"
+
+  if [ "$incomplete_tasks" != "[]" ]; then
+    jq -e --arg probe "$PROBE_CONTAINER" '
+      any(.[]; any(.containers[]?; .name == $probe and .lastStatus == "STOPPED"))
+    ' <<<"$incomplete_tasks" >/dev/null &&
+      die "Completed probe lacks required task, container, image, network identity."
+    [ -z "$FROZEN_COHORT" ] || die "Complete candidate runtime metadata regressed."
+    return 0
+  fi
 
   if [ "$task_count" -lt "$DESIRED_COUNT" ] || [ "$service_complete" != "true" ]; then
     [ -z "$FROZEN_COHORT" ] || die "A frozen candidate task disappeared during readiness evaluation."
@@ -505,6 +578,7 @@ observe_once() {
   routing_after="$(observe_routing)"
   [ "$routing_after" = "$routing_before" ] || die "Routing mapping changed within an evidence observation."
   aws_capture service_after ecs describe-services --cluster "$ECS_CLUSTER" --services "$ECS_SERVICE" --output json
+  validate_service_observation "$service_after"
   service_fingerprint_after="$(jq -cS '.services[0] | {serviceArn,serviceName,status,taskDefinition,desiredCount,runningCount,pendingCount,loadBalancers,deployments}' <<<"$service_after")"
   [ "$service_fingerprint_after" = "$service_fingerprint_before" ] || die "Candidate service changed within an evidence observation."
 
@@ -557,7 +631,7 @@ main() {
   require_command jq
   require_command sha256sum
   require_command date
-  require_command timeout
+  require_command python3
   require_command env
   validate_args
   run_gate

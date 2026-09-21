@@ -30,3 +30,6 @@ for test_file in \
     AWS_EC2_METADATA_DISABLED=true \
     /bin/bash --noprofile --norc "$test_file"
 done
+
+/usr/bin/env -i HOME="${HOME:-/tmp}" PATH="$SYSTEM_PATH" \
+  python3 "$ROOT_DIR/scripts/tests/test-bounded-process.py"

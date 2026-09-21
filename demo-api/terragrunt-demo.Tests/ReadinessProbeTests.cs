@@ -108,6 +108,31 @@ public class ReadinessProbeTests
         Assert.Equal(0, handler.RequestCount);
     }
 
+    [Fact]
+    public async Task TotalCancellation_ReturnsControlledFailure()
+    {
+        using var diagnostics = new StringWriter();
+        var options = Options() with
+        {
+            TotalTimeout = TimeSpan.FromMilliseconds(50),
+            RequestTimeout = TimeSpan.FromMilliseconds(50)
+        };
+        var exitCode = await ReadinessProbe.RunAsync(options, new CancelledHandler(), diagnostics: diagnostics);
+        Assert.Equal(1, exitCode);
+        Assert.Contains("Readiness probe failed", diagnostics.ToString());
+        Assert.DoesNotContain("succeeded", diagnostics.ToString());
+    }
+
+    private sealed class CancelledHandler : HttpMessageHandler
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+            throw new InvalidOperationException("Cancellation was not propagated.");
+        }
+    }
+
     private static ReadinessProbeOptions Options(int totalSeconds = 10, int consecutiveSuccesses = 3) =>
         new(
             TimeSpan.FromSeconds(totalSeconds),

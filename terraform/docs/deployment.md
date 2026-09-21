@@ -97,6 +97,29 @@ descriptions at 100. Evidence is invocation-local and bounded by the scale-up
 attempt deadline. Older image digests without the packaged `readiness-probe`
 command fail before promotion and are not rebuilt or downgraded to liveness.
 
+Startup observations retain service/deployment and task identities even before
+the cohort is complete. PROVISIONING/PENDING/ACTIVATING may progress to RUNNING;
+runtime metadata may fill in before probe completion. Previously populated
+identity must remain unchanged, lifecycle cannot regress, and a stopped probe
+requires complete task/container/network identity. Missing metadata never grants
+promotion and cannot extend the original deadline.
+
+Listener and candidate-rule reads use one forwarding normalizer: a direct ARN,
+a single positive-weight target, or agreeing copies of both resolve to one target.
+Conflicting, multi-target and unsupported shapes fail closed. Every service read,
+including both reads in final revalidation, validates the complete response and
+the retained deployment identity.
+
+Readiness scale-up, the gate and its AWS observations require Python 3 on the
+Linux runner. The process supervisor reserves a graceful termination interval
+inside the remaining budget, then sends SIGKILL to the private process group,
+including surviving children. It cleans descendants even when their leader exits
+first; nested observer supervisors clean their own groups on outer cancellation.
+Output pipes are inherited rather than drained with an unbounded read. Cleanup
+reaping has a further 250 ms cap, subject to normal OS scheduling tolerance.
+These are implementation properties; exact-candidate deterministic and remote
+validation evidence is tracked separately in [validation](validation.md).
+
 The renderer defaults dotnetTests/dockerBuild to passed; the release-build job
 does not bind a real exact-source test result to that default. Validation checks
 shape/consistency but permits failed/skipped quality values. A prior PR check is

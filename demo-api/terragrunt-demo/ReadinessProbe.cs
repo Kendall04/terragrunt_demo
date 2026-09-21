@@ -136,7 +136,12 @@ public static class ReadinessProbe
                     lastResult = $"HTTP {(int)response.StatusCode}";
                 }
             }
-            catch (OperationCanceledException) when (!totalCancellation.IsCancellationRequested)
+            catch (OperationCanceledException) when (totalCancellation.IsCancellationRequested)
+            {
+                lastResult = "total readiness deadline expired";
+                break;
+            }
+            catch (OperationCanceledException)
             {
                 streak = 0;
                 lastResult = "request timed out";

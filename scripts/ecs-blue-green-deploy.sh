@@ -305,37 +305,15 @@ detect_blue_green_state() {
     --listener-arns "$ALB_LISTENER_ARN" \
     "${AWS_ARGS[@]}")"
 
-  default_tg="$(jq -er '
-    select((.Listeners | length) == 1)
-    | .Listeners[0].DefaultActions as $actions
-    | select(($actions | length) == 1 and $actions[0].Type == "forward")
-    | $actions[0]
-    | if has("TargetGroupArn") and ((.ForwardConfig? // null) == null)
-      then .TargetGroupArn
-      elif ((.TargetGroupArn? // null) == null)
-        and ((.ForwardConfig.TargetGroups // []) | length == 1)
-        and ((.ForwardConfig.TargetGroups[0].Weight? // 1) == 1)
-      then .ForwardConfig.TargetGroups[0].TargetGroupArn
-      else empty end
-  ' <<<"$listener_json")" || die "ALB listener forwarding configuration is ambiguous."
+  default_tg="$(jq -er --arg root listener -f "$ROOT_DIR/scripts/alb-route-target.jq" <<<"$listener_json")" ||
+    die "ALB listener forwarding configuration is ambiguous."
 
   rule_json="$(aws elbv2 describe-rules \
     --rule-arns "$ALB_CANDIDATE_RULE_ARN" \
     "${AWS_ARGS[@]}")"
 
-  candidate_tg="$(jq -er '
-    select((.Rules | length) == 1)
-    | .Rules[0].Actions as $actions
-    | select(($actions | length) == 1 and $actions[0].Type == "forward")
-    | $actions[0]
-    | if has("TargetGroupArn") and ((.ForwardConfig? // null) == null)
-      then .TargetGroupArn
-      elif ((.TargetGroupArn? // null) == null)
-        and ((.ForwardConfig.TargetGroups // []) | length == 1)
-        and ((.ForwardConfig.TargetGroups[0].Weight? // 1) == 1)
-      then .ForwardConfig.TargetGroups[0].TargetGroupArn
-      else empty end
-  ' <<<"$rule_json")" || die "ALB candidate-rule forwarding configuration is ambiguous."
+  candidate_tg="$(jq -er --arg root rule -f "$ROOT_DIR/scripts/alb-route-target.jq" <<<"$rule_json")" ||
+    die "ALB candidate-rule forwarding configuration is ambiguous."
 
   if [ "$default_tg" = "$TG_BLUE_ARN" ]; then
     ACTIVE_COLOR="blue"
@@ -512,7 +490,7 @@ promote_inactive_color() {
   probe_container="${app_container}-readiness-probe"
 
   log "Scaling $INACTIVE_COLOR to desired-count=$DESIRED_COUNT"
-  if ! timeout --foreground --signal=TERM "${TARGET_HEALTH_MAX_WAIT_SECONDS}s" aws ecs update-service \
+  if ! python3 "$ROOT_DIR/scripts/bounded-process.py" "$TARGET_HEALTH_MAX_WAIT_SECONDS" aws ecs update-service \
     --cluster "$ECS_CLUSTER" \
     --service "$INACTIVE_SERVICE" \
     --desired-count "$DESIRED_COUNT" \
@@ -548,7 +526,7 @@ promote_inactive_color() {
   local remaining
   remaining=$((readiness_deadline - $(date +%s)))
   [ "$remaining" -gt 0 ] || die "Candidate readiness budget expired during scale-up."
-  if ! timeout --foreground --signal=TERM "${remaining}s" "${gate_args[@]}"; then
+  if ! python3 "$ROOT_DIR/scripts/bounded-process.py" "$remaining" "${gate_args[@]}"; then
     die "Candidate readiness gate failed before traffic switching."
   fi
 
@@ -608,7 +586,7 @@ main() {
   parse_args "$@"
   require_command aws
   require_command jq
-  require_command timeout
+  require_command python3
   export AWS_MAX_ATTEMPTS=3
   export AWS_RETRY_MODE=standard
   export AWS_PAGER=""
