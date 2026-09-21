@@ -26,12 +26,13 @@ Evidence: [workflows](../../.github/workflows),
 [scope resolver](../../.github/scripts/cd/resolve-terragrunt-layers.sh),
 [gate](../../.github/scripts/cd/validate-infra-gate.sh).
 
-The new [CD safety check](../../.github/workflows/ci-cd-safety.yml) is an
-implementation awaiting review and remote evidence. Its local test entry points
-and selection/history behavior are described in [validation](validation.md#cd-safety-enforcement--implementation-review-pending).
+The [CD safety check](../../.github/workflows/ci-cd-safety.yml) has passed independent
+review of all 12 spec criteria. Its entry points, selection/history contract and
+review/remote evidence are recorded in [validation](validation.md#cd-safety-enforcement--reviewed-contract).
 It detects regressions on develop without changing CD ordering or adding a new
-deployment dependency. Required-check compatibility is implemented; the observed
-GitHub check identity and main protection configuration remain unverified.
+deployment dependency. The observed GitHub check identity is `CD Safety Validation`.
+Required-status-check enforcement remains external and unconfigured/unverified:
+configure main to require this check from the expected GitHub Actions source.
 Required/missing-check enforcement, bypass exceptions, fork approval policy and
 any actual merge-queue usage must be checked externally before claiming governance
 is enforced. No merge-queue compatibility is claimed by this implementation.

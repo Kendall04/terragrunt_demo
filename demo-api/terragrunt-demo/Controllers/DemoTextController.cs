@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using terragrunt_demo.Dtos;
 using terragrunt_demo.Features.Texts.Commands;
 using terragrunt_demo.Features.Texts.Queries;
+using terragrunt_demo.Services;
 
 namespace terragrunt_demo.Controllers
 {
@@ -32,9 +33,15 @@ namespace terragrunt_demo.Controllers
                 return BadRequest("Text cannot be empty.1234");
 
             var command = new InsertTextCommand(request.Text);
-            var result = await _mediator.Send(command, cancellationToken);
-
-            return Ok(result);
+            try
+            {
+                var result = await _mediator.Send(command, cancellationToken);
+                return Ok(result);
+            }
+            catch (PlaintextTooLargeException ex)
+            {
+                return BadRequest($"Text must not exceed {ex.MaxPlaintextBytes} UTF-8 bytes.");
+            }
         }
 
         // GET /text
