@@ -13,14 +13,14 @@ public sealed record ReadinessProbeOptions(
     public static ReadinessProbeOptions FromEnvironment()
     {
         return new ReadinessProbeOptions(
-            TimeSpan.FromSeconds(ReadBoundedInt("READINESS_PROBE_TIMEOUT_SECONDS", 120, 300)),
-            TimeSpan.FromSeconds(ReadBoundedInt("READINESS_PROBE_REQUEST_TIMEOUT_SECONDS", 5, 30)),
-            TimeSpan.FromSeconds(ReadBoundedInt("READINESS_PROBE_INTERVAL_SECONDS", 2, 30)),
-            ReadBoundedInt("READINESS_PROBE_CONSECUTIVE_SUCCESSES", 3, 10),
-            ReadBoundedInt("READINESS_PROBE_MAX_RESPONSE_BYTES", 16 * 1024, 1024 * 1024));
+            TimeSpan.FromSeconds(ReadBoundedInt("READINESS_PROBE_TIMEOUT_SECONDS", 120, 1, 300)),
+            TimeSpan.FromSeconds(ReadBoundedInt("READINESS_PROBE_REQUEST_TIMEOUT_SECONDS", 5, 1, 30)),
+            TimeSpan.FromSeconds(ReadBoundedInt("READINESS_PROBE_INTERVAL_SECONDS", 2, 1, 30)),
+            ReadBoundedInt("READINESS_PROBE_CONSECUTIVE_SUCCESSES", 3, 3, 10),
+            ReadBoundedInt("READINESS_PROBE_MAX_RESPONSE_BYTES", 16 * 1024, 1, 1024 * 1024));
     }
 
-    private static int ReadBoundedInt(string name, int defaultValue, int maximumValue)
+    private static int ReadBoundedInt(string name, int defaultValue, int minimumValue, int maximumValue)
     {
         var raw = Environment.GetEnvironmentVariable(name);
         if (string.IsNullOrEmpty(raw))
@@ -28,9 +28,9 @@ public sealed record ReadinessProbeOptions(
             return defaultValue;
         }
 
-        if (!int.TryParse(raw, out var value) || value <= 0 || value > maximumValue)
+        if (!int.TryParse(raw, out var value) || value < minimumValue || value > maximumValue)
         {
-            throw new InvalidOperationException($"{name} must be between 1 and {maximumValue}.");
+            throw new InvalidOperationException($"{name} must be between {minimumValue} and {maximumValue}.");
         }
 
         return value;
@@ -176,7 +176,7 @@ public static class ReadinessProbe
         if (options.TotalTimeout <= TimeSpan.Zero ||
             options.RequestTimeout <= TimeSpan.Zero ||
             options.PollInterval <= TimeSpan.Zero ||
-            options.ConsecutiveSuccesses <= 0 ||
+            options.ConsecutiveSuccesses < 3 ||
             options.MaximumResponseBytes <= 0 ||
             options.RequestTimeout > options.TotalTimeout ||
             options.TotalTimeout > TimeSpan.FromMinutes(5) ||
@@ -185,7 +185,7 @@ public static class ReadinessProbe
             options.ConsecutiveSuccesses > 10 ||
             options.MaximumResponseBytes > 1024 * 1024)
         {
-            throw new ArgumentException("All probe bounds must be positive and request timeout cannot exceed total timeout.");
+            throw new ArgumentException("Probe bounds are invalid; at least three consecutive successes are required and request timeout cannot exceed total timeout.");
         }
     }
 

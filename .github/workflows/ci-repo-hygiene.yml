@@ -28,7 +28,12 @@ jobs:
           "$(go env GOPATH)/bin/actionlint"
 
       - name: Bash syntax
-        run: bash -n scripts/*.sh scripts/tests/*.sh
+        run: |
+          set -euo pipefail
+          for file in scripts/*.sh scripts/tests/*.sh; do
+            bash -n "$file"
+          done
+          bash -n scripts/tests/fake-readiness-aws
 
       - name: Install ShellCheck
         run: |
@@ -36,14 +41,14 @@ jobs:
           sudo apt-get install -y shellcheck
 
       - name: Shellcheck
-        run: shellcheck scripts/*.sh scripts/tests/*.sh
+        run: shellcheck scripts/*.sh scripts/tests/*.sh scripts/tests/fake-readiness-aws
 
       - name: Validate Demo API task definition and readiness gate
         shell: bash
         run: |
           set -euo pipefail
-          scripts/tests/test-render-demo-api-taskdef.sh
-          scripts/tests/test-ecs-readiness-gate.sh
+          /usr/bin/env -i HOME=/tmp PATH=/usr/bin:/bin BASH_ENV= ENV= \
+            /bin/bash --noprofile --norc scripts/tests/run-offline-readiness-tests.sh
 
       - name: Validate release manifest contracts
         shell: bash

@@ -1,0 +1,158 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+IMAGE="${TEST_IMAGE:?}"
+TASK_DEFINITION="${TEST_TASK_DEFINITION:?}"
+SCENARIO="${SCENARIO:?}"
+CASE_DIR="${CASE_DIR:?}"
+APP_NAME="${APP_NAME:-app}"
+PROBE_NAME="${PROBE_NAME:-app-readiness-probe}"
+EXPECTED_SERVICE="${EXPECTED_SERVICE:-svc}"
+
+increment_counter() {
+  local file="$CASE_DIR/$1" value=0
+  [ ! -f "$file" ] || value="$(<"$file")"
+  value=$((value + 1))
+  printf '%s' "$value" >"$file"
+  printf '%s' "$value"
+}
+
+task_definition() {
+  jq -n --arg td "$TASK_DEFINITION" --arg image "$IMAGE" --arg app "$APP_NAME" --arg probe "$PROBE_NAME" '{taskDefinition:{
+    taskDefinitionArn:$td,networkMode:"awsvpc",requiresCompatibilities:["FARGATE"],containerDefinitions:[
+      {name:$app,image:$image,essential:true,portMappings:[{containerPort:8080,protocol:"tcp"}]},
+      {name:$probe,image:$image,essential:false,command:["readiness-probe"],logConfiguration:{logDriver:"awslogs",options:{}}}
+    ]}}'
+}
+
+service() {
+  local call desired=2 running=2 pending=0
+  call="$(increment_counter service)"
+  case "$SCENARIO" in
+    normal_startup|partial_replacement|identity_contradiction|version_regression)
+      if [ "$call" -eq 1 ]; then running=1; pending=1; fi ;;
+    count_change)
+      if [ "$call" -ge 5 ]; then desired=1; running=1; fi ;;
+  esac
+  jq -n --arg td "$TASK_DEFINITION" --arg service "$EXPECTED_SERVICE" --arg app "$APP_NAME" \
+    --argjson desired "$desired" --argjson running "$running" --argjson pending "$pending" '{
+      failures:[],services:[{serviceArn:("arn:aws:ecs:us-east-1:123456789012:service/cluster/"+$service),
+      serviceName:$service,status:"ACTIVE",taskDefinition:$td,desiredCount:$desired,runningCount:$running,pendingCount:$pending,
+      loadBalancers:[{targetGroupArn:"tg-candidate",containerName:$app,containerPort:8080}],
+      deployments:[{id:"ecs-svc/1",status:"PRIMARY",taskDefinition:$td,desiredCount:$desired,runningCount:$running,pendingCount:$pending}]}]}'
+}
+
+list_tasks() {
+  local call
+  call="$(increment_counter list)"
+  case "$SCENARIO" in
+    normal_startup|identity_contradiction|version_regression)
+      if [ "$call" -eq 1 ]; then jq -n '{taskArns:["task/one"]}'; else jq -n '{taskArns:["task/one","task/two"]}'; fi ;;
+    partial_replacement)
+      if [ "$call" -eq 1 ]; then jq -n '{taskArns:["task/one"]}'; else jq -n '{taskArns:["task/two","task/three"]}'; fi ;;
+    replacement)
+      if [ "$call" -ge 3 ]; then jq -n '{taskArns:["task/one","task/three"]}'; else jq -n '{taskArns:["task/one","task/two"]}'; fi ;;
+    *) jq -n '{taskArns:["task/one","task/two"]}' ;;
+  esac
+}
+
+task_json() {
+  local arn="$1" call="$2" suffix ip runtime probe_status="STOPPED" exit_code=0 version=1
+  suffix="${arn##*/}"
+  case "$suffix" in one) ip=10.0.0.1;; two) ip=10.0.0.2;; three) ip=10.0.0.3;; four) ip=10.0.0.4;; *) exit 98;; esac
+  runtime="runtime-$suffix"
+  case "$SCENARIO" in
+    unready) exit_code=23 ;;
+    missing_exit) exit_code=null ;;
+    transient) if [ "$call" -eq 1 ]; then probe_status=RUNNING; exit_code=null; fi ;;
+    container_change) if [ "$call" -ge 3 ] && [ "$suffix" = two ]; then runtime=runtime-two-changed; fi ;;
+    identity_contradiction) if [ "$call" -ge 2 ] && [ "$suffix" = one ]; then runtime=runtime-one-changed; fi ;;
+    version_regression)
+      if [ "$call" -eq 1 ] && [ "$suffix" = one ]; then version=2; probe_status=RUNNING; exit_code=null; fi
+      ;;
+  esac
+  local td="$TASK_DEFINITION" created=1970-01-01T00:16:40Z
+  [ "$SCENARIO" != stale ] || created=1970-01-01T00:00:01Z
+  [ "$SCENARIO" != wrong_revision ] || td=arn:aws:ecs:us-east-1:123456789012:task-definition/demo:41
+  jq -n --arg arn "$arn" --arg td "$td" --arg image "$IMAGE" --arg app "$APP_NAME" --arg probe "$PROBE_NAME" \
+    --arg service "$EXPECTED_SERVICE" --arg digest sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa \
+    --arg ip "$ip" --arg runtime "$runtime" --arg probe_status "$probe_status" --arg created "$created" \
+    --argjson exit_code "$exit_code" --argjson version "$version" '{
+      taskArn:$arn,taskDefinitionArn:$td,group:("service:"+$service),startedBy:"ecs-svc/1",desiredStatus:"RUNNING",
+      lastStatus:"RUNNING",connectivity:"CONNECTED",version:$version,createdAt:$created,
+      attachments:[{type:"ElasticNetworkInterface",status:"ATTACHED",details:[{name:"privateIPv4Address",value:$ip}]}],
+      containers:[
+        {name:$app,containerArn:($arn+"/app"),runtimeId:$runtime,image:$image,imageDigest:$digest,lastStatus:"RUNNING",networkInterfaces:[{privateIpv4Address:$ip}]},
+        ({name:$probe,containerArn:($arn+"/probe"),runtimeId:($runtime+"-probe"),image:$image,imageDigest:$digest,lastStatus:$probe_status}
+          + if $exit_code == null then {} else {exitCode:$exit_code} end)]}'
+}
+
+describe_tasks() {
+  local call arg collect=false
+  local -a arns=() rendered=()
+  call="$(increment_counter tasks)"
+  shift 2
+  for arg in "$@"; do
+    if [ "$arg" = --tasks ]; then collect=true; continue; fi
+    if [ "$collect" = true ]; then [[ "$arg" == --* ]] && break; arns+=("$arg"); fi
+  done
+  case "$SCENARIO" in
+    swapped_describe) arns=(task/three task/four) ;;
+    missing_describe) arns=(task/one) ;;
+    duplicate_describe) arns=(task/one task/one) ;;
+  esac
+  for arg in "${arns[@]}"; do rendered+=("$(task_json "$arg" "$call")"); done
+  if [ "$SCENARIO" = api_failure ]; then
+    printf '%s\n' "${rendered[@]}" | jq -s '{tasks:.,failures:[{arn:"task/two",reason:"ACCESS_DENIED"}]}'
+  else
+    printf '%s\n' "${rendered[@]}" | jq -s '{tasks:.,failures:[]}'
+  fi
+}
+
+route() {
+  local kind="$1" target call
+  call="$(increment_counter "$kind")"
+  if [ "$kind" = listener ]; then target=tg-active; else target=tg-candidate; fi
+  [ "$SCENARIO" != mapping_change ] || [ "$kind" != listener ] || [ "$call" -lt 5 ] || target=tg-candidate
+  if [ "$SCENARIO" = ambiguous ] && [ "$kind" = listener ]; then
+    jq -n '{Listeners:[{DefaultActions:[{Type:"forward",ForwardConfig:{TargetGroups:[{TargetGroupArn:"tg-active",Weight:1},{TargetGroupArn:"tg-other",Weight:1}]}}]}]}'
+  elif [ "$kind" = listener ]; then
+    jq -n --arg target "$target" '{Listeners:[{DefaultActions:[{Type:"forward",TargetGroupArn:$target}]}]}'
+  else
+    jq -n --arg target "$target" '{Rules:[{Actions:[{Type:"forward",TargetGroupArn:$target}]}]}'
+  fi
+}
+
+targets() {
+  case "$SCENARIO" in
+    extra_target) jq -n '{TargetHealthDescriptions:[{Target:{Id:"10.0.0.1",Port:8080},TargetHealth:{State:"healthy"}},{Target:{Id:"10.0.0.2",Port:8080},TargetHealth:{State:"healthy"}},{Target:{Id:"10.0.0.99",Port:8080},TargetHealth:{State:"healthy"}}]}' ;;
+    missing_target) jq -n '{TargetHealthDescriptions:[{Target:{Id:"10.0.0.1",Port:8080},TargetHealth:{State:"healthy"}}]}' ;;
+    *) jq -n '{TargetHealthDescriptions:[{Target:{Id:"10.0.0.1",Port:8080},TargetHealth:{State:"healthy"}},{Target:{Id:"10.0.0.2",Port:8080},TargetHealth:{State:"healthy"}}]}' ;;
+  esac
+}
+
+connect_timeout=false
+read_timeout=false
+for argument in "$@"; do
+  [ "$argument" != --no-paginate ] || { printf 'Pagination was disabled: %s\n' "$*" >&2; exit 94; }
+  [ "$argument" != --cli-connect-timeout ] || connect_timeout=true
+  [ "$argument" != --cli-read-timeout ] || read_timeout=true
+done
+[ "$connect_timeout" = true ] && [ "$read_timeout" = true ] || {
+  printf 'AWS call omitted socket bounds: %s\n' "$*" >&2
+  exit 93
+}
+
+printf '%s\n' "$*" >>"$CASE_DIR/aws-log"
+case "${1:-} ${2:-}" in
+  "ecs describe-task-definition") [ "$SCENARIO" != hung_call ] || /bin/sleep 5; task_definition ;;
+  "ecs describe-services") service ;;
+  "ecs list-tasks") list_tasks ;;
+  "ecs describe-tasks") describe_tasks "$@" ;;
+  "ecs update-service") jq -n '{}' ;;
+  "elbv2 describe-listeners") route listener ;;
+  "elbv2 describe-rules") route rule ;;
+  "elbv2 describe-target-health") targets ;;
+  "elbv2 modify-listener"|"elbv2 modify-rule") jq -n '{}' ;;
+  *) printf 'Unexpected fake AWS call: %s\n' "$*" >&2; exit 99 ;;
+esac

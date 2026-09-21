@@ -512,11 +512,13 @@ promote_inactive_color() {
   probe_container="${app_container}-readiness-probe"
 
   log "Scaling $INACTIVE_COLOR to desired-count=$DESIRED_COUNT"
-  aws ecs update-service \
+  if ! timeout --foreground --signal=TERM "${TARGET_HEALTH_MAX_WAIT_SECONDS}s" aws ecs update-service \
     --cluster "$ECS_CLUSTER" \
     --service "$INACTIVE_SERVICE" \
     --desired-count "$DESIRED_COUNT" \
-    "${AWS_ARGS[@]}" >/dev/null
+    "${AWS_ARGS[@]}" >/dev/null; then
+    die "Candidate scale-up did not complete within the readiness budget."
+  fi
 
   gate_args=(
     "$ROOT_DIR/scripts/ecs-readiness-gate.sh"
@@ -543,7 +545,10 @@ promote_inactive_color() {
     gate_args+=(--profile "$AWS_PROFILE_NAME")
   fi
 
-  if ! execute_readiness_gate "${gate_args[@]}"; then
+  local remaining
+  remaining=$((readiness_deadline - $(date +%s)))
+  [ "$remaining" -gt 0 ] || die "Candidate readiness budget expired during scale-up."
+  if ! timeout --foreground --signal=TERM "${remaining}s" "${gate_args[@]}"; then
     die "Candidate readiness gate failed before traffic switching."
   fi
 
@@ -557,10 +562,6 @@ promote_inactive_color() {
     --rule-arn "$ALB_CANDIDATE_RULE_ARN" \
     --actions "Type=forward,TargetGroupArn=$ACTIVE_TG" \
     "${AWS_ARGS[@]}" >/dev/null
-}
-
-execute_readiness_gate() {
-  "$@"
 }
 
 schedule_old_color_scale_down() {
@@ -607,6 +608,7 @@ main() {
   parse_args "$@"
   require_command aws
   require_command jq
+  require_command timeout
   export AWS_MAX_ATTEMPTS=3
   export AWS_RETRY_MODE=standard
   export AWS_PAGER=""

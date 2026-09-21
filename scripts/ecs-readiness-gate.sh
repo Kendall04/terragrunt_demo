@@ -23,9 +23,12 @@ STABLE_OBSERVATIONS="2"
 AWS_ARGS=()
 FROZEN_COHORT=""
 OBSERVED_TASKS=""
-FROZEN_TASK_IDENTITIES=""
+OBSERVED_TASK_IDENTITIES='{}'
+OBSERVED_TASK_VERSIONS='{}'
 PROBE_SUCCEEDED_TASKS=""
 TARGET_SET_ESTABLISHED="false"
+MAX_SERVICE_RUNNING_COUNT=0
+MAX_DEPLOYMENT_RUNNING_COUNT=0
 OBSERVATION_STATUS=""
 OBSERVATION_FINGERPRINT=""
 
@@ -55,7 +58,7 @@ die() {
 redact_text() {
   printf '%s\n' "$*" | sed -E \
     -e 's/[0-9]{12}/<aws-account-id>/g' \
-    -e 's#arn:aws:[^[:space:]"'"']+#<aws-arn>#g' \
+    -e 's#arn:aws:[^[:space:]"'"'"']+#<aws-arn>#g' \
     -e 's#[0-9]{12}\.dkr\.ecr\.([A-Za-z0-9-]+)\.amazonaws\.com#<aws-account-id>.dkr.ecr.\1.amazonaws.com#g'
 }
 
@@ -130,6 +133,14 @@ check_deadline() {
   [ "$now" -lt "$DEADLINE_EPOCH" ] || die "Readiness evidence deadline expired before traffic switching."
 }
 
+remaining_seconds() {
+  local now remaining
+  now="$(now_epoch)"
+  remaining=$((DEADLINE_EPOCH - now))
+  [ "$remaining" -gt 0 ] || die "Readiness evidence deadline expired before traffic switching."
+  printf '%s\n' "$remaining"
+}
+
 sleep_until_next_poll() {
   local now remaining duration
   now="$(now_epoch)"
@@ -145,9 +156,12 @@ sleep_until_next_poll() {
 aws_capture() {
   local destination="$1"
   shift
-  local output
+  local output remaining
   check_deadline
-  if ! output="$(AWS_MAX_ATTEMPTS=3 AWS_RETRY_MODE=standard AWS_PAGER='' aws "$@" "${AWS_ARGS[@]}" 2>&1)"; then
+  remaining="$(remaining_seconds)"
+  if ! output="$(timeout --foreground --signal=TERM "${remaining}s" \
+    env AWS_MAX_ATTEMPTS=3 AWS_RETRY_MODE=standard AWS_PAGER='' \
+    aws "$@" "${AWS_ARGS[@]}" 2>&1)"; then
     die "AWS observation failed for '$1': $(redact_text "$output")"
   fi
   check_deadline
@@ -196,7 +210,7 @@ extract_route_target() {
   jq -er --arg root "$root" '
     (if $root == "listener" then .Listeners else .Rules end) as $items
     | select(($items | length) == 1)
-    | $items[0].Actions as $actions
+    | (if $root == "listener" then $items[0].DefaultActions else $items[0].Actions end) as $actions
     | select(($actions | length) == 1 and $actions[0].Type == "forward")
     | $actions[0]
     | if has("TargetGroupArn") and ((.ForwardConfig? // null) == null)
@@ -242,10 +256,39 @@ describe_tasks_batched() {
   printf -v "$destination" '%s' "$combined"
 }
 
+retain_task_observations() {
+  local tasks_json="$1"
+  local current_identities current_versions
+
+  current_identities="$(jq -cS --arg app "$APP_CONTAINER" --arg probe "$PROBE_CONTAINER" '
+    [.tasks[] | {key:.taskArn, value:{
+      taskDefinitionArn,group,startedBy,createdAt,
+      app:(.containers[] | select(.name == $app) | {containerArn,runtimeId,image,imageDigest,networkInterfaces}),
+      probe:(.containers[] | select(.name == $probe) | {containerArn,runtimeId,image,imageDigest})
+    }}] | from_entries
+  ' <<<"$tasks_json")"
+  current_versions="$(jq -cS '[.tasks[] | {key:.taskArn, value:.version}] | from_entries' <<<"$tasks_json")"
+
+  if ! jq -en --argjson previous "$OBSERVED_TASK_IDENTITIES" --argjson current "$current_identities" '
+    all($current | keys[]; $previous[.] == null or $previous[.] == $current[.])
+  ' >/dev/null; then
+    die "Candidate task or container identity contradicted an earlier startup observation."
+  fi
+
+  if ! jq -en --argjson previous "$OBSERVED_TASK_VERSIONS" --argjson current "$current_versions" '
+    all($current | keys[]; $previous[.] == null or $current[.] >= $previous[.])
+  ' >/dev/null; then
+    die "Candidate task version regressed from a newer startup observation."
+  fi
+
+  OBSERVED_TASK_IDENTITIES="$(jq -cn --argjson previous "$OBSERVED_TASK_IDENTITIES" --argjson current "$current_identities" '$previous * $current')"
+  OBSERVED_TASK_VERSIONS="$(jq -cn --argjson previous "$OBSERVED_TASK_VERSIONS" --argjson current "$current_versions" '$previous * $current')"
+}
+
 observe_once() {
   local service_before service_after service_fingerprint_before service_fingerprint_after
   local routing_before routing_after list_json tasks_json target_json
-  local deployment_id task_count cohort expected_digest now
+  local deployment_id task_count cohort expected_digest now service_complete
   local probe_pending invalid_probe target_invalid target_pending
   local task_fingerprint target_fingerprint
   local task_arns=()
@@ -283,16 +326,26 @@ observe_once() {
   deployment_id="$(jq -er '.services[0].deployments[0].id' <<<"$service_before")"
   service_fingerprint_before="$(jq -cS '.services[0] | {serviceArn,serviceName,status,taskDefinition,desiredCount,runningCount,pendingCount,loadBalancers,deployments}' <<<"$service_before")"
 
+  local service_running deployment_running
+  service_running="$(jq -er '.services[0].runningCount' <<<"$service_before")"
+  deployment_running="$(jq -er '.services[0].deployments[0].runningCount' <<<"$service_before")"
+  [ "$service_running" -ge "$MAX_SERVICE_RUNNING_COUNT" ] || die "Candidate service running count regressed during startup."
+  [ "$deployment_running" -ge "$MAX_DEPLOYMENT_RUNNING_COUNT" ] || die "Candidate deployment running count regressed during startup."
+  MAX_SERVICE_RUNNING_COUNT="$service_running"
+  MAX_DEPLOYMENT_RUNNING_COUNT="$deployment_running"
+
   routing_before="$(observe_routing)"
 
-  if ! jq -e --argjson desired "$DESIRED_COUNT" '
+  service_complete="false"
+  if jq -e --argjson desired "$DESIRED_COUNT" '
     .services[0].runningCount == $desired
     and .services[0].pendingCount == 0
     and .services[0].deployments[0].runningCount == $desired
     and .services[0].deployments[0].pendingCount == 0
   ' <<<"$service_before" >/dev/null; then
-    [ -z "$FROZEN_COHORT" ] || die "Candidate service stability regressed after cohort discovery."
-    return 0
+    service_complete="true"
+  elif [ -n "$FROZEN_COHORT" ]; then
+    die "Candidate service stability regressed after cohort discovery."
   fi
 
   aws_capture list_json ecs list-tasks \
@@ -302,6 +355,10 @@ observe_once() {
     --output json
   jq -e '.taskArns | type == "array"' <<<"$list_json" >/dev/null ||
     die "ListTasks response did not contain a task ARN array."
+  jq -e '
+    all(.taskArns[]; type == "string" and length > 0)
+    and ((.taskArns | length) == (.taskArns | unique | length))
+  ' <<<"$list_json" >/dev/null || die "ListTasks returned empty or duplicate task ARNs."
   mapfile -t task_arns < <(jq -r '.taskArns | sort | .[]' <<<"$list_json")
   task_count="${#task_arns[@]}"
   if [ "$task_count" -gt "$DESIRED_COUNT" ]; then
@@ -317,24 +374,22 @@ observe_once() {
   fi
   OBSERVED_TASKS="$(printf '%s\n%s\n' "$OBSERVED_TASKS" "$cohort" | sed '/^$/d' | sort -u)"
 
-  if [ "$task_count" -lt "$DESIRED_COUNT" ]; then
-    [ -z "$FROZEN_COHORT" ] || die "A frozen candidate task disappeared during readiness evaluation."
-    return 0
-  fi
-
-  if [ -z "$FROZEN_COHORT" ]; then
-    FROZEN_COHORT="$cohort"
-    log "Candidate cohort frozen with $task_count replica(s)."
-  elif [ "$cohort" != "$FROZEN_COHORT" ]; then
-    die "Candidate task replacement or identity change invalidated prior evidence."
-  fi
-
-  describe_tasks_batched tasks_json "${task_arns[@]}"
-  if ! jq -e '(.failures | length) == 0' <<<"$tasks_json" >/dev/null; then
-    die "DescribeTasks returned one or more embedded failures."
-  fi
-  if [ "$(jq -r '.tasks | length' <<<"$tasks_json")" != "$DESIRED_COUNT" ]; then
-    die "DescribeTasks did not return the complete frozen cohort."
+  if [ "$task_count" -gt 0 ]; then
+    local requested_task_arns
+    requested_task_arns="$(printf '%s\n' "${task_arns[@]}" | jq -Rsc 'split("\n") | map(select(length > 0)) | sort')"
+    describe_tasks_batched tasks_json "${task_arns[@]}"
+    if ! jq -e '(.failures | length) == 0' <<<"$tasks_json" >/dev/null; then
+      die "DescribeTasks returned one or more embedded failures."
+    fi
+    if ! jq -e --argjson requested "$requested_task_arns" '
+      ([.tasks[].taskArn] | all(.[]; type == "string" and length > 0))
+      and (([.tasks[].taskArn] | length) == ([.tasks[].taskArn] | unique | length))
+      and (([.tasks[].taskArn] | sort) == $requested)
+    ' <<<"$tasks_json" >/dev/null; then
+      die "DescribeTasks task ARN set did not exactly match the requested cohort."
+    fi
+  else
+    tasks_json='{"tasks":[],"failures":[]}'
   fi
 
   if ! jq -e \
@@ -393,17 +448,7 @@ observe_once() {
     fi
   done < <(jq -r '.tasks[].createdAt' <<<"$tasks_json")
 
-  local current_task_identities
-  current_task_identities="$(jq -cS --arg app "$APP_CONTAINER" --arg probe "$PROBE_CONTAINER" '[.tasks[] | {
-    taskArn,taskDefinitionArn,group,startedBy,createdAt,
-    app:(.containers[] | select(.name == $app) | {containerArn,runtimeId,image,imageDigest,networkInterfaces}),
-    probe:(.containers[] | select(.name == $probe) | {containerArn,runtimeId,image,imageDigest})
-  }] | sort_by(.taskArn)' <<<"$tasks_json")"
-  if [ -z "$FROZEN_TASK_IDENTITIES" ]; then
-    FROZEN_TASK_IDENTITIES="$current_task_identities"
-  elif [ "$current_task_identities" != "$FROZEN_TASK_IDENTITIES" ]; then
-    die "Candidate task or container identity changed after cohort discovery."
-  fi
+  retain_task_observations "$tasks_json"
 
   invalid_probe="$(jq -r --arg probe "$PROBE_CONTAINER" '[.tasks[] | .containers[] | select(.name == $probe) | select(.lastStatus == "STOPPED" and ((.exitCode | type) != "number" or .exitCode != 0))] | length' <<<"$tasks_json")"
   [ "$invalid_probe" = "0" ] || die "A candidate readiness probe stopped without an explicit zero exit code."
@@ -417,6 +462,18 @@ observe_once() {
     done <<<"$PROBE_SUCCEEDED_TASKS"
   fi
   PROBE_SUCCEEDED_TASKS="$(printf '%s\n%s\n' "$PROBE_SUCCEEDED_TASKS" "$current_probe_successes" | sed '/^$/d' | sort -u)"
+
+  if [ "$task_count" -lt "$DESIRED_COUNT" ] || [ "$service_complete" != "true" ]; then
+    [ -z "$FROZEN_COHORT" ] || die "A frozen candidate task disappeared during readiness evaluation."
+    return 0
+  fi
+
+  if [ -z "$FROZEN_COHORT" ]; then
+    FROZEN_COHORT="$cohort"
+    log "Candidate cohort frozen with $task_count replica(s)."
+  elif [ "$cohort" != "$FROZEN_COHORT" ]; then
+    die "Candidate task replacement or identity change invalidated prior evidence."
+  fi
 
   aws_capture target_json elbv2 describe-target-health --target-group-arn "$TARGET_GROUP_ARN" --output json
   target_invalid="$(jq -r \
@@ -498,6 +555,8 @@ main() {
   require_command jq
   require_command sha256sum
   require_command date
+  require_command timeout
+  require_command env
   validate_args
   run_gate
 }

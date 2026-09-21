@@ -80,7 +80,7 @@ public class ReadinessProbeTests
         var clock = new ManualTimeProvider();
 
         var exitCode = await ReadinessProbe.RunAsync(
-            Options(totalSeconds: 1, consecutiveSuccesses: 1),
+            Options(totalSeconds: 1),
             handler,
             clock.Delay,
             clock);
@@ -93,6 +93,16 @@ public class ReadinessProbeTests
     {
         var handler = new SequenceHandler(new ResponseSpec(HttpStatusCode.OK, Healthy));
         var invalid = Options(totalSeconds: 1) with { RequestTimeout = TimeSpan.FromSeconds(2) };
+
+        await Assert.ThrowsAsync<ArgumentException>(() => ReadinessProbe.RunAsync(invalid, handler));
+        Assert.Equal(0, handler.RequestCount);
+    }
+
+    [Fact]
+    public async Task FewerThanThreeSuccesses_CannotWeakenStableReadiness()
+    {
+        var handler = new SequenceHandler(new ResponseSpec(HttpStatusCode.OK, Healthy));
+        var invalid = Options() with { ConsecutiveSuccesses = 2 };
 
         await Assert.ThrowsAsync<ArgumentException>(() => ReadinessProbe.RunAsync(invalid, handler));
         Assert.Equal(0, handler.RequestCount);

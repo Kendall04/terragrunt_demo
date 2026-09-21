@@ -3,12 +3,25 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 TASKDEF_FILE="$(mktemp)"
+SENTINEL_FILE="$(mktemp)"
+FAKE_BIN="$(mktemp -d)"
 IMAGE="123456789012.dkr.ecr.us-east-1.amazonaws.com/demo-dev-shared-demo-ms@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 
 cleanup() {
-  rm -f "$TASKDEF_FILE"
+  rm -f "$TASKDEF_FILE" "$SENTINEL_FILE"
+  rm -rf "$FAKE_BIN"
 }
 trap cleanup EXIT
+
+cat >"$FAKE_BIN/aws" <<'EOF'
+#!/bin/bash
+printf 'external aws was invoked\n' >>"$OFFLINE_AWS_SENTINEL"
+exit 97
+EOF
+chmod +x "$FAKE_BIN/aws"
+export OFFLINE_AWS_SENTINEL="$SENTINEL_FILE"
+PATH="$FAKE_BIN:/usr/bin:/bin"
+export PATH
 
 "$ROOT_DIR/scripts/render-demo-api-taskdef.sh" \
   --env dev \
@@ -44,11 +57,6 @@ jq -e --arg image "$IMAGE" '
       and ((.restartPolicy? // null) == null))
 ' "$TASKDEF_FILE" >/dev/null
 
-if command -v aws >/dev/null 2>&1; then
-  aws ecs register-task-definition \
-    --region us-east-1 \
-    --generate-cli-skeleton output \
-    --cli-input-json "file://$TASKDEF_FILE" >/dev/null
-fi
+[ ! -s "$SENTINEL_FILE" ] || { printf 'Renderer test escaped to AWS.\n' >&2; exit 1; }
 
 printf 'Task definition readiness-probe contract passed.\n'
