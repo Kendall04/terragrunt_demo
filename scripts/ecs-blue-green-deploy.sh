@@ -2,6 +2,8 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=scripts/aws-response-boundary.sh
+source "$ROOT_DIR/scripts/aws-response-boundary.sh"
 
 ENV_NAME="${TG_ENV:-dev}"
 AWS_REGION_NAME="${AWS_REGION:-us-east-1}"
@@ -23,6 +25,7 @@ DESIRED_COUNT="1"
 DRAIN_DELAY_MINUTES="5"
 TARGET_HEALTH_MAX_WAIT_SECONDS="${TARGET_HEALTH_MAX_WAIT_SECONDS:-300}"
 TARGET_HEALTH_POLL_INTERVAL_SECONDS="${TARGET_HEALTH_POLL_INTERVAL_SECONDS:-10}"
+READINESS_STABLE_OBSERVATIONS="${READINESS_STABLE_OBSERVATIONS:-2}"
 OUTPUT_ENV_FILE=""
 
 AWS_ARGS=()
@@ -59,6 +62,7 @@ Options:
   --drain-delay-minutes N     Delay before scaling down old color. Default: 5
   --target-health-timeout N   Seconds to wait for ALB target health. Default: 300
   --target-health-interval N  Seconds between target health polls. Default: 10
+                              These bounds also govern the pre-promotion readiness gate.
   --profile PROFILE           AWS CLI profile for local runs
   --use-instance-role         Use default AWS credential chain and do not pass a profile
   --output-env FILE           Append ACTIVE_COLOR/ACTIVE_SERVICE outputs to FILE
@@ -187,7 +191,7 @@ parse_args() {
 }
 
 set_aws_args() {
-  AWS_ARGS=(--region "$AWS_REGION_NAME")
+  AWS_ARGS=(--region "$AWS_REGION_NAME" --cli-connect-timeout 5 --cli-read-timeout 10)
   if [ "$USE_INSTANCE_ROLE" != "true" ] && [ -n "$AWS_PROFILE_NAME" ]; then
     AWS_ARGS+=(--profile "$AWS_PROFILE_NAME")
   fi
@@ -234,6 +238,10 @@ validate_args() {
     die "--target-health-interval must be a positive integer."
   fi
 
+  if ! [[ "$READINESS_STABLE_OBSERVATIONS" =~ ^[0-9]+$ ]] || [ "$READINESS_STABLE_OBSERVATIONS" -lt 2 ] || [ "$READINESS_STABLE_OBSERVATIONS" -gt 10 ]; then
+    die "READINESS_STABLE_OBSERVATIONS must be an integer between 2 and 10."
+  fi
+
   local required=(
     ECS_CLUSTER
     ECS_SERVICE_BLUE
@@ -251,6 +259,8 @@ validate_args() {
       die "Required value $var_name is empty."
     fi
   done
+
+  [ -x "$ROOT_DIR/scripts/ecs-readiness-gate.sh" ] || die "Readiness gate is missing or not executable."
 }
 
 validate_db_secret_id() {
@@ -278,8 +288,10 @@ preflight_resources() {
   services_json="$(aws ecs describe-services \
     --cluster "$ECS_CLUSTER" \
     --services "$ECS_SERVICE_BLUE" "$ECS_SERVICE_GREEN" \
+    --output json \
     "${AWS_ARGS[@]}")"
 
+  validate_aws_response describe-services <<<"$services_json" || die "DescribeServices response envelope is malformed."
   failures="$(jq -r '.failures | length' <<<"$services_json")"
   if [ "$failures" != "0" ]; then
     jq -r '.failures[] | (.arn // .reason) + " " + (.reason // "")' <<<"$services_json" >&2
@@ -295,21 +307,21 @@ detect_blue_green_state() {
 
   listener_json="$(aws elbv2 describe-listeners \
     --listener-arns "$ALB_LISTENER_ARN" \
+    --output json \
     "${AWS_ARGS[@]}")"
 
-  default_tg="$(jq -er '
-    .Listeners[0].DefaultActions[0]
-    | .TargetGroupArn // .ForwardConfig.TargetGroups[0].TargetGroupArn
-  ' <<<"$listener_json")"
+  validate_aws_response describe-listeners <<<"$listener_json" || die "ALB listener response is malformed or ambiguous."
+  default_tg="$(jq -er --arg root listener -f "$ROOT_DIR/scripts/alb-route-target.jq" <<<"$listener_json")" ||
+    die "ALB listener forwarding configuration is ambiguous."
 
   rule_json="$(aws elbv2 describe-rules \
     --rule-arns "$ALB_CANDIDATE_RULE_ARN" \
+    --output json \
     "${AWS_ARGS[@]}")"
 
-  candidate_tg="$(jq -er '
-    .Rules[0].Actions[0]
-    | .TargetGroupArn // .ForwardConfig.TargetGroups[0].TargetGroupArn
-  ' <<<"$rule_json")"
+  validate_aws_response describe-rules <<<"$rule_json" || die "ALB candidate-rule response is malformed or ambiguous."
+  candidate_tg="$(jq -er --arg root rule -f "$ROOT_DIR/scripts/alb-route-target.jq" <<<"$rule_json")" ||
+    die "ALB candidate-rule forwarding configuration is ambiguous."
 
   if [ "$default_tg" = "$TG_BLUE_ARN" ]; then
     ACTIVE_COLOR="blue"
@@ -358,8 +370,10 @@ resolve_db_secret_id() {
 
   task_definition_json="$(aws ecs describe-task-definition \
     --task-definition "$task_definition_arn" \
+    --output json \
     "${AWS_ARGS[@]}")"
 
+  validate_aws_response describe-task-definition <<<"$task_definition_json" || die "Task definition response envelope is malformed."
   DB_SECRET_ID="$(jq -er '
     .taskDefinition.containerDefinitions[]
     | .secrets[]?
@@ -473,65 +487,58 @@ attach_task_definition_to_inactive_service() {
   wait_for_no_running_tasks "$INACTIVE_SERVICE"
 }
 
-wait_for_target_group_healthy() {
-  local target_group_arn="$1"
-  local color="$2"
-  local start
-  local now
-  local elapsed
-  local healthy_count="0"
-  local last_health="[]"
-
-  start="$(date +%s)"
-  log "Waiting for ALB target health before traffic switch: color=$color target_group=$(redact_text "$target_group_arn")"
-
-  while true; do
-    if ! healthy_count="$(aws elbv2 describe-target-health \
-      --target-group-arn "$target_group_arn" \
-      --query "length(TargetHealthDescriptions[?TargetHealth.State==\`healthy\`])" \
-      --output text \
-      "${AWS_ARGS[@]}" 2>&1)"; then
-      die "Failed to describe target health for color=$color target_group=$(redact_text "$target_group_arn"): $(redact_text "$healthy_count")"
-    fi
-
-    if ! last_health="$(aws elbv2 describe-target-health \
-      --target-group-arn "$target_group_arn" \
-      --query 'TargetHealthDescriptions[].{Id:Target.Id,Port:Target.Port,State:TargetHealth.State,Reason:TargetHealth.Reason}' \
-      --output json \
-      "${AWS_ARGS[@]}" 2>&1)"; then
-      die "Failed to read target health diagnostics for color=$color target_group=$(redact_text "$target_group_arn"): $(redact_text "$last_health")"
-    fi
-
-    if [[ "$healthy_count" =~ ^[0-9]+$ ]] && [ "$healthy_count" -ge "$DESIRED_COUNT" ]; then
-      log "ALB target group has $healthy_count healthy target(s) for color=$color."
-      return 0
-    fi
-
-    now="$(date +%s)"
-    elapsed=$((now - start))
-    if [ "$elapsed" -ge "$TARGET_HEALTH_MAX_WAIT_SECONDS" ]; then
-      printf '%s\n' "$last_health" >&2
-      die "Expected at least $DESIRED_COUNT healthy ALB target(s) for color=$color after ${TARGET_HEALTH_MAX_WAIT_SECONDS}s."
-    fi
-
-    sleep "$TARGET_HEALTH_POLL_INTERVAL_SECONDS"
-  done
-}
-
 promote_inactive_color() {
+  local readiness_started_at
+  local readiness_deadline
+  local app_container
+  local probe_container
+  local gate_args
+
+  readiness_started_at="$(date +%s)"
+  readiness_deadline=$((readiness_started_at + TARGET_HEALTH_MAX_WAIT_SECONDS))
+  app_container="demo-${ENV_NAME}-app-api-${INACTIVE_COLOR}"
+  probe_container="${app_container}-readiness-probe"
+
   log "Scaling $INACTIVE_COLOR to desired-count=$DESIRED_COUNT"
-  aws ecs update-service \
+  if ! python3 "$ROOT_DIR/scripts/bounded-process.py" "$TARGET_HEALTH_MAX_WAIT_SECONDS" aws ecs update-service \
     --cluster "$ECS_CLUSTER" \
     --service "$INACTIVE_SERVICE" \
     --desired-count "$DESIRED_COUNT" \
-    "${AWS_ARGS[@]}" >/dev/null
+    "${AWS_ARGS[@]}" >/dev/null; then
+    die "Candidate scale-up did not complete within the readiness budget."
+  fi
 
-  aws ecs wait services-stable \
-    --cluster "$ECS_CLUSTER" \
-    --services "$INACTIVE_SERVICE" \
-    "${AWS_ARGS[@]}"
+  gate_args=(
+    "$ROOT_DIR/scripts/ecs-readiness-gate.sh"
+    --region "$AWS_REGION_NAME"
+    --cluster "$ECS_CLUSTER"
+    --service "$INACTIVE_SERVICE"
+    --task-definition-arn "$NEW_TASK_DEFINITION_ARN"
+    --image-uri "$IMAGE_URI"
+    --app-container "$app_container"
+    --probe-container "$probe_container"
+    --target-group-arn "$INACTIVE_TG"
+    --listener-arn "$ALB_LISTENER_ARN"
+    --candidate-rule-arn "$ALB_CANDIDATE_RULE_ARN"
+    --active-target-group-arn "$ACTIVE_TG"
+    --desired-count "$DESIRED_COUNT"
+    --attempt-start-epoch "$readiness_started_at"
+    --deadline-epoch "$readiness_deadline"
+    --poll-interval "$TARGET_HEALTH_POLL_INTERVAL_SECONDS"
+    --stable-observations "$READINESS_STABLE_OBSERVATIONS"
+  )
+  if [ "$USE_INSTANCE_ROLE" = "true" ] || [ -z "$AWS_PROFILE_NAME" ]; then
+    gate_args+=(--use-instance-role)
+  else
+    gate_args+=(--profile "$AWS_PROFILE_NAME")
+  fi
 
-  wait_for_target_group_healthy "$INACTIVE_TG" "$INACTIVE_COLOR"
+  local remaining
+  remaining=$((readiness_deadline - $(date +%s)))
+  [ "$remaining" -gt 0 ] || die "Candidate readiness budget expired during scale-up."
+  if ! python3 "$ROOT_DIR/scripts/bounded-process.py" "$remaining" "${gate_args[@]}"; then
+    die "Candidate readiness gate failed before traffic switching."
+  fi
 
   log "Switching ALB production traffic to $INACTIVE_COLOR"
   aws elbv2 modify-listener \
@@ -589,6 +596,10 @@ main() {
   parse_args "$@"
   require_command aws
   require_command jq
+  require_command python3
+  export AWS_MAX_ATTEMPTS=3
+  export AWS_RETRY_MODE=standard
+  export AWS_PAGER=""
   set_aws_args
   resolve_account_id
   validate_args
@@ -604,4 +615,6 @@ main() {
   log "Blue/green deployment completed. New active color: $INACTIVE_COLOR"
 }
 
-main "$@"
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+  main "$@"
+fi

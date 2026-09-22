@@ -63,18 +63,28 @@ is unresolved. Evidence: [dev root](../live/dev/root.hcl),
 
 Terraform creates both colors at zero tasks, 256 CPU units and 512 MiB memory,
 with separate roles/logs and IP target groups. Deployments render the real
-[task template](../../demo-api/deploy/task-definition.template.json).
+[task template](../../demo-api/deploy/task-definition.template.json), containing
+the essential application and a non-essential one-shot readiness probe from the
+same digest-qualified image. The probe calls the same task's loopback `/ready`,
+requires bounded consecutive healthy dependency responses, then stops.
 ECS ignores task-definition/desired-count changes; ALB ignores forwarding action
 changes. Deployment tooling owns those fields. Blue is only the initial default,
 not permanently active. A dummy-path candidate rule associates the inactive TG.
 
 Deployments default to one task; no app autoscaling exists. Container Insights and
 capacity providers exist, but services explicitly use FARGATE, not Spot.
-No Cloud Map registration exists despite a stale code comment.
+No Cloud Map registration exists despite a stale code comment. Before changing
+the listener, deployment tooling freezes the exact candidate cohort and requires
+every task's probe exit-zero evidence, expected revision/image/container/network
+identity, exact healthy target membership and repeated unchanged routing/service
+observations. It performs an immediate final revalidation before the listener
+write. This is a bounded observational boundary, not an atomic ECS/ALB transaction;
+unseen changes after the final read remain possible.
 Evidence: [app skeleton](../infra/apps/fargate/demo.tf),
 [ECS lifecycle](../infra/apps/fargate/modules/ecs_service/service.tf),
 [ALB](../infra/global/modules/alb/alb.tf),
-[cluster](../infra/platform/modules/ecs_cluster/main.tf).
+[cluster](../infra/platform/modules/ecs_cluster/main.tf),
+[deployment gate](../../scripts/ecs-readiness-gate.sh).
 
 ## CURRENT CONTRACT — application and data
 

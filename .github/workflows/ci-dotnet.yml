@@ -43,6 +43,12 @@ jobs:
       - name: Run tests
         run: dotnet test ./demo-api/terragrunt-demo.sln --configuration Release --no-build --verbosity normal
 
+      - name: Validate readiness deployment contracts
+        run: |
+          set -euo pipefail
+          /usr/bin/env -i HOME=/tmp PATH=/usr/bin:/bin BASH_ENV= ENV= \
+            /bin/bash --noprofile --norc scripts/tests/run-offline-readiness-tests.sh
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -64,6 +70,20 @@ jobs:
           push: false
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+
+      - name: Verify readiness probe is packaged
+        run: |
+          set -euo pipefail
+          output="$(docker run --rm demo-api-ci:latest readiness-probe --check-capability)"
+          grep -Fx 'readiness-probe-capability=available' <<<"$output"
+          if docker run --rm \
+            -e READINESS_PROBE_TIMEOUT_SECONDS=1 \
+            -e READINESS_PROBE_REQUEST_TIMEOUT_SECONDS=1 \
+            -e READINESS_PROBE_INTERVAL_SECONDS=1 \
+            demo-api-ci:latest readiness-probe; then
+            echo "::error::Packaged readiness probe unexpectedly succeeded without a local /ready server."
+            exit 1
+          fi
 
       - name: Move Docker cache
         run: |

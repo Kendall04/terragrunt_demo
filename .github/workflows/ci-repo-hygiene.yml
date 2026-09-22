@@ -28,7 +28,12 @@ jobs:
           "$(go env GOPATH)/bin/actionlint"
 
       - name: Bash syntax
-        run: bash -n scripts/*.sh
+        run: |
+          set -euo pipefail
+          for file in scripts/*.sh scripts/tests/*.sh; do
+            bash -n "$file"
+          done
+          bash -n scripts/tests/fake-readiness-aws
 
       - name: Install ShellCheck
         run: |
@@ -36,40 +41,14 @@ jobs:
           sudo apt-get install -y shellcheck
 
       - name: Shellcheck
-        run: shellcheck scripts/*.sh
+        run: shellcheck scripts/*.sh scripts/tests/*.sh scripts/tests/fake-readiness-aws
 
-      - name: Render Demo API task definition
+      - name: Validate Demo API task definition and readiness gate
         shell: bash
         run: |
           set -euo pipefail
-
-          taskdef_file="$(mktemp)"
-          scripts/render-demo-api-taskdef.sh \
-            --env dev \
-            --region us-east-1 \
-            --account-id 123456789012 \
-            --color blue \
-            --image-uri 123456789012.dkr.ecr.us-east-1.amazonaws.com/demo-dev-shared-demo-ms@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa \
-            --db-secret-id arn:aws:secretsmanager:us-east-1:123456789012:secret:demo/dev/app/db-connection-string-AbCdEf \
-            --output "$taskdef_file"
-
-          jq -e '
-            .family == "demo-dev-app-api-blue"
-            and .executionRoleArn == "arn:aws:iam::123456789012:role/demo-dev-app-api-blue-exec-role"
-            and .taskRoleArn == "arn:aws:iam::123456789012:role/demo-dev-app-api-blue-task-role"
-            and .containerDefinitions[0].name == "demo-dev-app-api-blue"
-            and .containerDefinitions[0].image == "123456789012.dkr.ecr.us-east-1.amazonaws.com/demo-dev-shared-demo-ms@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
-            and .containerDefinitions[0].secrets[0].valueFrom == "arn:aws:secretsmanager:us-east-1:123456789012:secret:demo/dev/app/db-connection-string-AbCdEf"
-          ' "$taskdef_file" >/dev/null
-
-          if command -v aws >/dev/null 2>&1; then
-            aws ecs register-task-definition \
-              --region us-east-1 \
-              --generate-cli-skeleton output \
-              --cli-input-json "file://$taskdef_file" >/dev/null
-          fi
-
-          rm -f "$taskdef_file"
+          /usr/bin/env -i HOME=/tmp PATH=/usr/bin:/bin BASH_ENV= ENV= \
+            /bin/bash --noprofile --norc scripts/tests/run-offline-readiness-tests.sh
 
       - name: Validate release manifest contracts
         shell: bash

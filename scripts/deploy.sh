@@ -247,6 +247,7 @@ require_prod_confirmation() {
 validate_layout() {
   [ -f "$ROOT_DIR/scripts/bootstrap.sh" ] || die "Missing scripts/bootstrap.sh."
   [ -f "$ROOT_DIR/scripts/ecs-blue-green-deploy.sh" ] || die "Missing scripts/ecs-blue-green-deploy.sh."
+  [ -f "$ROOT_DIR/scripts/ecs-readiness-gate.sh" ] || die "Missing scripts/ecs-readiness-gate.sh."
   [ -f "$ROOT_DIR/scripts/render-demo-api-taskdef.sh" ] || die "Missing scripts/render-demo-api-taskdef.sh."
   [ -f "$ROOT_DIR/demo-api/deploy/task-definition.template.json" ] || die "Missing demo-api/deploy/task-definition.template.json."
   [ -f "$ROOT_DIR/demo-api/Dockerfile" ] || die "Missing demo-api/Dockerfile."

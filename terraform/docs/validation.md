@@ -28,6 +28,7 @@ before execution. A command listed here is not blanket permission to run it.
 | Local/static checks with existing tools | bash -n scripts/*.sh; bash -n .github/scripts/cd/*.sh; shellcheck scripts/*.sh .github/scripts/cd/*.sh; terraform fmt -check -recursive terraform/; terragrunt hcl format --check --working-dir terraform/live | Check-only flags are essential; do not drop them or install tools implicitly |
 | Local tool analysis | actionlint; tflint --recursive; tfsec --no-color . --minimum-severity=MEDIUM | Inspect installed tool/config behavior; initialization/downloads/caches are separate write/network operations, not guaranteed read-only |
 | Offline tests with writes | .github/scripts/cd/tests/test-detect-scope.sh; test-resolve-terragrunt-layers.sh; test-validate-infra-gate.sh in the same directory | Bash/jq fixtures create temporary outputs; do not run during a strict no-write assessment |
+| Readiness deployment tests | scripts/tests/run-offline-readiness-tests.sh | Offline Bash/jq tests run in a scrubbed environment with a pinned fake AWS executable, synthetic identities and disposable temporary files; inherited credentials, profiles, startup hooks and shell functions cannot reach real AWS |
 | App build/tests | dotnet restore/build/test demo-api/terragrunt-demo.sln | Restore uses package network/cache; build/test create bin/obj/results; not read-only |
 | Container checks | Docker build of demo-api | Pulls/builds images, writes caches and executes Dockerfile steps |
 | Artifact helper checks | render/validate scripts in scripts/ | Renderers write files; validate-only JSON helpers use local jq; inspect caller because adjacent publish/read helpers use S3 |
@@ -62,6 +63,16 @@ tests also cover base64/UTF-8 decryption conversion; no live AWS is required.
 [Health tests](../../demo-api/terragrunt-demo.Tests/HealthEndpointTests.cs)
 verify liveness/readiness responses and Swagger/environment behavior.
 They do not prove real KMS, SQL migrations, deployment or rollback.
+[Readiness probe tests](../../demo-api/terragrunt-demo.Tests/ReadinessProbeTests.cs)
+exercise transient startup, consecutive-success reset, bounded failure, fixed
+loopback `/ready` addressing and strict response validation without starting the
+normal application or using AWS/SQL. The deployment fixtures exercise both color
+directions, per-replica evidence, exact target/cohort identity, stale/missing and
+hostile observations, invalidation, bounds, and the no-listener-write failure
+boundary. Renderer checks prove the same immutable image, non-essential probe,
+no secret/environment injection, no restart/health policy and unchanged essential
+application launch. App CI also executes the packaged probe capability from the
+built image. These are deterministic contract checks, not live Fargate evidence.
 
 CD fixture tests exercise scope/layer/gate behavior through the dedicated
 [CD safety workflow](../../.github/workflows/ci-cd-safety.yml), described below.
@@ -139,7 +150,55 @@ do not prove AWS readiness, full deployment correctness, every workflow expressi
 or ALB behavior, or tamper resistance against deliberate removal of enforcement
 and its tests.
 
+## Readiness correction evidence — 2026-09-21
+
+The owner reports exact-revision remote CI green for the preceding candidate
+`8e829eff4a88d6599b4a05e7596a1d2928331865`. That evidence does not validate the
+following correction. Architecture, digest/probe packaging, permanent `/health`,
+IAM and the accepted final observation-to-listener race remain unchanged.
+
+| Review finding | Correction and deterministic fixtures added |
+| --- | --- |
+| Ordinary ECS startup | Retain partial identities and monotonic lifecycle states; actual PENDING → RUNNING/incomplete → complete → probe success, absent early containers, mixed replica progress, startup replacement, task/container regression, metadata loss and identity contradiction |
+| ALB normalization | Shared `scripts/alb-route-target.jq`; direct, single ForwardConfig (explicit/default positive weight), agreeing dual, conflicting dual, zero weight, malformed config and multiple targets; gate and deployment discovery use the same parser |
+| Service/deployment identity | Validate and retain identity on every service response; stable success, incomplete D1 → D2, embedded failures, extra services and missing failure envelope on the final sixth service read |
+| Hard external-call bounds | `scripts/bounded-process.py`; cooperative timeout, TERM-resistant process, orphan holding output pipes, surviving child/grandchild and nested observer cancellation; real elapsed-time limits and survivor checks on Linux |
+
+Local results for this correction: Git Bash syntax checks passed; Python source
+parsing and git diff/whitespace checks passed. All nine focused .NET readiness
+probe cases passed, including controlled total cancellation. The broader offline
+.NET run passed 34/36; two health endpoint tests failed because Windows Event Log
+write access was denied by the sandbox. Their failure traces identify logging
+permissions, not a changed `/health` contract.
+
+Linux Bash/jq gate/renderer fixtures, process-group execution, ShellCheck and
+Docker packaging were **not validated locally**: WSL has no `/bin/bash`, jq and
+ShellCheck are unavailable, and no Docker engine is running. The five Linux
+process tests explicitly skip on Windows; that is not passing process evidence.
+The existing hermetic readiness entry point now includes those process tests.
+Exact-candidate Linux CI must run that entry point, ShellCheck, full app tests and
+packaged-probe checks before review acceptance. No live AWS was accessed.
+
 ## Working guidance
+
+The correction subset `scripts/tests/test-ecs-readiness-gate.sh
+--validation-fixes-only` runs first in the full suite. It rejects malformed
+nested attachment/detail/container/network evidence at startup, complete and
+final observations; final cases exercise the promotion path and assert no
+listener/rule mutation. Registered-definition cases reject execution overrides
+and invalid/enabled restart policies before task probe results are read. Positive
+cases retain missing startup collections, empty API defaults and explicitly
+disabled restart policies. The renderer suite feeds its actual rendered payload
+through the production registered-definition validator using a local capture
+double. No AWS registration or discovery occurs in these tests.
+
+Authorization-response boundary regressions follow the correction subset in
+`scripts/tests/test-ecs-readiness-gate.sh`; use `--response-boundaries-only` for
+the focused subset. They cover initial/final listener and rule streams, registered
+definitions, services, task lists and target-health envelopes, including actual
+promotion-path no-listener-write assertions. The normal hermetic readiness entry
+point runs this subset together with the existing regression suites. These tests
+create disposable files and require Linux Bash/jq tooling; they do not access AWS.
 
 For future changes, choose checks matching the affected contract and authorized
 side effects. Report what was actually run and what remains unverified.

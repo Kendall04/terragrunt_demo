@@ -8,6 +8,10 @@ on:
       - "terraform/infra/**"
       - "demo-api/**"
       - "scripts/ecs-blue-green-deploy.sh"
+      - "scripts/ecs-readiness-gate.sh"
+      - "scripts/aws-response-boundary.sh"
+      - "scripts/alb-route-target.jq"
+      - "scripts/bounded-process.py"
       - "scripts/render-demo-api-taskdef.sh"
       - "scripts/render-release-manifest.sh"
       - "scripts/render-deployment-record.sh"
@@ -121,6 +125,10 @@ jobs:
             app:
               - 'demo-api/**'
               - 'scripts/ecs-blue-green-deploy.sh'
+              - 'scripts/ecs-readiness-gate.sh'
+              - 'scripts/aws-response-boundary.sh'
+              - 'scripts/alb-route-target.jq'
+              - 'scripts/bounded-process.py'
               - 'scripts/render-demo-api-taskdef.sh'
               - 'scripts/render-release-manifest.sh'
               - 'scripts/render-deployment-record.sh'

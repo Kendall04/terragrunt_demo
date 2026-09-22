@@ -1,0 +1,369 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+IMAGE="${TEST_IMAGE:?}"
+TASK_DEFINITION="${TEST_TASK_DEFINITION:?}"
+SCENARIO="${SCENARIO:?}"
+CASE_DIR="${CASE_DIR:?}"
+APP_NAME="${APP_NAME:-app}"
+PROBE_NAME="${PROBE_NAME:-app-readiness-probe}"
+EXPECTED_SERVICE="${EXPECTED_SERVICE:-svc}"
+
+increment_counter() {
+  local file="$CASE_DIR/$1" value=0
+  [ ! -f "$file" ] || value="$(<"$file")"
+  value=$((value + 1))
+  printf '%s' "$value" >"$file"
+  printf '%s' "$value"
+}
+
+task_definition() {
+  jq -n --arg td "$TASK_DEFINITION" --arg image "$IMAGE" --arg app "$APP_NAME" --arg probe "$PROBE_NAME" '{taskDefinition:{
+    taskDefinitionArn:$td,networkMode:"awsvpc",requiresCompatibilities:["FARGATE"],containerDefinitions:[
+      {name:$app,image:$image,essential:true,portMappings:[{containerPort:8080,protocol:"tcp"}]},
+      {name:$probe,image:$image,essential:false,command:["readiness-probe"],logConfiguration:{logDriver:"awslogs",options:{}}}
+    ]}}' | jq --arg scenario "$SCENARIO" '
+      .taskDefinition.containerDefinitions |= (
+        if $scenario == "definition_entrypoint" then .[1].entryPoint = ["/bin/true"]
+        elif $scenario == "definition_entrypoint_null" then .[1].entryPoint = null
+        elif $scenario == "definition_command" then .[1].command = ["readiness-probe", "--check-capability"]
+        elif $scenario == "definition_essential" then .[1].essential = true
+        elif $scenario == "definition_image" then .[1].image = "different-image"
+        elif $scenario == "definition_app_entrypoint" then .[0].entryPoint = ["/bin/true"]
+        elif $scenario == "definition_app_command" then .[0].command = ["readiness-probe"]
+        elif $scenario == "definition_app_restart" then .[0].restartPolicy = {enabled:true}
+        elif $scenario == "definition_probe_restart" then .[1].restartPolicy = {enabled:true}
+        elif $scenario == "definition_restart_false" then .[1].restartPolicy = false
+        elif $scenario == "definition_restart_null" then .[1].restartPolicy = null
+        elif $scenario == "definition_restart_array" then .[1].restartPolicy = []
+        elif $scenario == "definition_restart_string" then .[1].restartPolicy = "disabled"
+        elif $scenario == "definition_restart_missing_enabled" then .[1].restartPolicy = {}
+        elif $scenario == "definition_restart_enabled_string" then .[1].restartPolicy = {enabled:"false"}
+        elif $scenario == "definition_restart_codes" then .[1].restartPolicy = {enabled:false,ignoredExitCodes:[null]}
+        elif $scenario == "definition_restart_period" then .[1].restartPolicy = {enabled:false,restartAttemptPeriod:false}
+        elif $scenario == "definition_restart_disabled" then map(.restartPolicy = {enabled:false,ignoredExitCodes:[1],restartAttemptPeriod:60})
+        elif $scenario == "definition_environment_files" then .[1].environmentFiles = [{value:"arn:aws:s3:::example/env",type:"s3"}]
+        elif $scenario == "definition_environment_files_null" then .[1].environmentFiles = null
+        elif $scenario == "definition_mount" then .[1].mountPoints = [{sourceVolume:"override",containerPath:"/app"}]
+        elif $scenario == "definition_volumes" then .[1].volumesFrom = [{sourceContainer:"app"}]
+        elif $scenario == "definition_directory" then .[1].workingDirectory = "/override"
+        elif $scenario == "definition_user" then .[1].user = "other"
+        elif $scenario == "definition_health" then .[1].healthCheck = {command:["CMD", "true"]}
+        elif $scenario == "definition_dependency" then .[1].dependsOn = [{containerName:"app",condition:"SUCCESS"}]
+        elif $scenario == "definition_app_dependency" then .[0].dependsOn = [{containerName:"probe",condition:"SUCCESS"}]
+        elif $scenario == "definition_empty_defaults" then .[1] += {environment:[],secrets:[],environmentFiles:[],mountPoints:[],volumesFrom:[],dependsOn:[],portMappings:[]}
+        else . end)'
+}
+
+service() {
+  local call desired=2 running=2 pending=0
+  call="$(increment_counter service)"
+  case "$SCENARIO" in
+    later_describe_stream) desired=101; running=101 ;;
+    normal_startup|partial_replacement|identity_contradiction|version_regression|deployment_change)
+      if [ "$call" -eq 1 ]; then running=1; pending=1; fi ;;
+    count_change)
+      if [ "$call" -ge 5 ]; then desired=1; running=1; fi ;;
+  esac
+  jq -n --arg td "$TASK_DEFINITION" --arg service "$EXPECTED_SERVICE" --arg app "$APP_NAME" \
+    --argjson desired "$desired" --argjson running "$running" --argjson pending "$pending" '{
+      failures:[],services:[{serviceArn:("arn:aws:ecs:us-east-1:123456789012:service/cluster/"+$service),
+      serviceName:$service,status:"ACTIVE",taskDefinition:$td,desiredCount:$desired,runningCount:$running,pendingCount:$pending,
+      loadBalancers:[{targetGroupArn:"tg-candidate",containerName:$app,containerPort:8080}],
+      deployments:[{id:"ecs-svc/1",status:"PRIMARY",taskDefinition:$td,desiredCount:$desired,runningCount:$running,pendingCount:$pending}]}]}' | jq --arg scenario "$SCENARIO" --argjson call "$call" '
+      if $scenario == "deployment_change" and $call >= 2 then .services[0].deployments[0].id = "ecs-svc/2"
+      elif $scenario == "service_failures" or ($scenario == "final_failures" and $call == 6) then .failures = [{reason:"MISSING"}]
+      elif $scenario == "extra_services" or ($scenario == "final_extra" and $call == 6) then .services += [.services[0]]
+      elif $scenario == "final_malformed" and $call == 6 then del(.failures)
+      elif $scenario == "running_regression" and $call >= 3 then .services[0].runningCount = 1
+      elif ($scenario | startswith("lifecycle")) and $call == 1 then
+        .services[0] |= (.runningCount = 0 | .pendingCount = 2 | .deployments[0].runningCount = 0 | .deployments[0].pendingCount = 2)
+      else . end'
+
+}
+
+list_tasks() {
+  local call
+  call="$(increment_counter list)"
+  case "$SCENARIO" in
+    later_describe_stream) jq -n '{taskArns:[range(1;102) | "task/replica\(.)"]}' ;;
+    normal_startup|identity_contradiction|version_regression)
+      if [ "$call" -eq 1 ]; then jq -n '{taskArns:["task/one"]}'; else jq -n '{taskArns:["task/one","task/two"]}'; fi ;;
+    partial_replacement)
+      if [ "$call" -eq 1 ]; then jq -n '{taskArns:["task/one"]}'; else jq -n '{taskArns:["task/two","task/three"]}'; fi ;;
+    replacement)
+      if [ "$call" -ge 3 ]; then jq -n '{taskArns:["task/one","task/three"]}'; else jq -n '{taskArns:["task/one","task/two"]}'; fi ;;
+    lifecycle_replacement)
+      if [ "$call" -ge 2 ]; then jq -n '{taskArns:["task/one","task/three"]}'; else jq -n '{taskArns:["task/one","task/two"]}'; fi ;;
+    *) jq -n '{taskArns:["task/one","task/two"]}' ;;
+  esac
+}
+
+task_json() {
+  local arn="$1" call="$2" suffix ip runtime probe_status="STOPPED" exit_code=0 version=1
+  suffix="${arn##*/}"
+  case "$suffix" in one) ip=10.0.0.1;; two) ip=10.0.0.2;; three) ip=10.0.0.3;; four) ip=10.0.0.4;; replica*) ip="10.0.0.${suffix#replica}";; *) exit 98;; esac
+  runtime="runtime-$suffix"
+  case "$SCENARIO" in
+    unready) exit_code=23 ;;
+    missing_exit) exit_code=null ;;
+    transient) if [ "$call" -eq 1 ]; then probe_status=RUNNING; exit_code=null; fi ;;
+    container_change) if [ "$call" -ge 3 ] && [ "$suffix" = two ]; then runtime="runtime-two-changed"; fi ;;
+    identity_contradiction) if [ "$call" -ge 2 ] && [ "$suffix" = one ]; then runtime="runtime-one-changed"; fi ;;
+    version_regression)
+      if [ "$call" -eq 1 ] && [ "$suffix" = one ]; then version=2; probe_status=RUNNING; exit_code=null; fi
+      ;;
+  esac
+  local td="$TASK_DEFINITION" created=1970-01-01T00:16:40Z
+  [ "$SCENARIO" != stale ] || created=1970-01-01T00:00:01Z
+  [ "$SCENARIO" != wrong_revision ] || td=arn:aws:ecs:us-east-1:123456789012:task-definition/demo:41
+  jq -n --arg arn "$arn" --arg td "$td" --arg image "$IMAGE" --arg app "$APP_NAME" --arg probe "$PROBE_NAME" \
+    --arg service "$EXPECTED_SERVICE" --arg digest sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa \
+    --arg ip "$ip" --arg runtime "$runtime" --arg probe_status "$probe_status" --arg created "$created" \
+    --argjson exit_code "$exit_code" --argjson version "$version" '{
+      taskArn:$arn,taskDefinitionArn:$td,group:("service:"+$service),startedBy:"ecs-svc/1",desiredStatus:"RUNNING",
+      lastStatus:"RUNNING",connectivity:"CONNECTED",version:$version,createdAt:$created,
+      attachments:[{type:"ElasticNetworkInterface",status:"ATTACHED",details:[{name:"privateIPv4Address",value:$ip}]}],
+      containers:[
+        {name:$app,containerArn:($arn+"/app"),runtimeId:$runtime,image:$image,imageDigest:$digest,lastStatus:"RUNNING",networkInterfaces:[{privateIpv4Address:$ip}]},
+        ({name:$probe,containerArn:($arn+"/probe"),runtimeId:($runtime+"-probe"),image:$image,imageDigest:$digest,lastStatus:$probe_status}
+          + if $exit_code == null then {} else {exitCode:$exit_code} end)]}' | jq --arg scenario "$SCENARIO" --argjson call "$call" '
+      if ($scenario | startswith("lifecycle")) then
+        if $scenario == "lifecycle_mixed" and .taskArn == "task/one" then .
+        elif $call == 1 then
+          .lastStatus = "PENDING" | del(.connectivity,.attachments) |
+          .containers |= map(.lastStatus = "PENDING" | del(.runtimeId,.imageDigest,.networkInterfaces,.exitCode)) |
+          if $scenario == "lifecycle_no_containers" then .containers = []
+          elif $scenario == "lifecycle_absent_collections" then del(.containers)
+          else . end
+        elif $call == 2 then
+          .containers |= map(.lastStatus = "RUNNING" | del(.runtimeId,.exitCode)) |
+          if $scenario == "lifecycle_identity" then .containers[0].containerArn += "-changed" else . end
+        elif $call == 3 then
+          if $scenario == "lifecycle_regression" then .lastStatus = "PENDING" else . end |
+          .containers |= map(.lastStatus = "RUNNING" | del(.exitCode)) |
+          if $scenario == "lifecycle_container_regression" then .containers[0].lastStatus = "PENDING" else . end
+        elif $scenario == "lifecycle_metadata_regression" then .containers[0] |= del(.runtimeId)
+        else . end
+      elif $scenario == "missing_completed_metadata" then .containers[0] |= del(.runtimeId)
+      elif $scenario == "probe_regression" and $call >= 2 then .containers[1].lastStatus = "RUNNING" | del(.containers[1].exitCode)
+      elif $scenario == "network_contradiction" then .containers[0].networkInterfaces[0].privateIpv4Address = "10.0.0.99"
+      else . end' | mutate_nested_task "$call"
+
+}
+
+mutate_nested_task() {
+  jq --arg scenario "$SCENARIO" --argjson call "$1" '
+    if ($scenario | startswith("nested_")) then
+      ($scenario | split("_")[1]) as $stage
+      | ($scenario | split("_")[2:] | join("_")) as $shape
+      | if $stage == "final" and $call != 3 then . else
+        (if $stage == "startup" then
+          .lastStatus = "PENDING" | .containers |= map(.lastStatus = "PENDING" | del(.runtimeId,.exitCode))
+          else . end)
+        | if $shape == "attachments_object" then .attachments = {unexpected:.attachments[0]}
+          elif $shape == "attachments_null" then .attachments = null
+          elif $shape == "attachments_scalar" then .attachments = false
+          elif $shape == "attachment_null" then .attachments += [null]
+          elif $shape == "attachment_scalar" then .attachments += [42]
+          elif $shape == "attachment_type" then del(.attachments[0].type)
+          elif $shape == "attachment_status" then .attachments[0].status = []
+          elif $shape == "details_object" then .attachments[0].details = {unexpected:.attachments[0].details[0]}
+          elif $shape == "details_null" then .attachments[0].details = null
+          elif $shape == "details_scalar" then .attachments[0].details = false
+          elif $shape == "detail_null" then .attachments[0].details += [null]
+          elif $shape == "detail_scalar" then .attachments[0].details += [42]
+          elif $shape == "detail_name" then .attachments[0].details += [{value:"ignored"}]
+          elif $shape == "detail_value" then .attachments[0].details += [{name:"ignored",value:[]}]
+          elif $shape == "containers_object" then .containers = {app:.containers[0],probe:.containers[1]}
+          elif $shape == "containers_null" then .containers = null
+          elif $shape == "containers_scalar" then .containers = false
+          elif $shape == "container_null" then .containers += [null]
+          elif $shape == "container_name" then .containers[0].name = []
+          elif $shape == "runtime_null" then .containers[0].runtimeId = null
+          elif $shape == "digest_false" then .containers[0].imageDigest = false
+          elif $shape == "exit_string" then .containers[1].exitCode = "0"
+          elif $shape == "network_object" then .containers[0].networkInterfaces = {unexpected:.containers[0].networkInterfaces[0]}
+          elif $shape == "network_null" then .containers[0].networkInterfaces = null
+          elif $shape == "network_scalar" then .containers[0].networkInterfaces = false
+          elif $shape == "network_entry_null" then .containers[0].networkInterfaces += [null]
+          elif $shape == "network_ip" then .containers[0].networkInterfaces[0].privateIpv4Address = []
+          else error("Unknown nested evidence fixture") end
+        end
+    else . end'
+}
+
+describe_tasks() {
+  local call arg collect=false response
+  local -a arns=() rendered=()
+  call="$(increment_counter tasks)"
+  shift 2
+  for arg in "$@"; do
+    if [ "$arg" = --tasks ]; then collect=true; continue; fi
+    if [ "$collect" = true ]; then [[ "$arg" == --* ]] && break; arns+=("$arg"); fi
+  done
+  case "$SCENARIO" in
+    swapped_describe) arns=(task/three task/four) ;;
+    missing_describe) arns=(task/one) ;;
+    duplicate_describe) arns=(task/one task/one) ;;
+  esac
+  for arg in "${arns[@]}"; do rendered+=("$(task_json "$arg" "$call")"); done
+  if [ "$SCENARIO" = api_failure ] || [ "$SCENARIO" = describe_embedded_failure ]; then
+    response="$(printf '%s\n' "${rendered[@]}" | jq -s '{tasks:.,failures:[{arn:"task/two",reason:"ACCESS_DENIED"}]}')"
+  else
+    response="$(printf '%s\n' "${rendered[@]}" | jq -s '{tasks:.,failures:[]}')"
+  fi
+  case "$SCENARIO" in
+    describe_empty) return ;;
+    describe_stream_prefix)
+      printf '%s\n' '{"tasks":{},"failures":{}}' "$response"; return ;;
+    describe_stream_object)
+      jq '.tasks |= (map({key:.taskArn,value:.}) | from_entries) | .failures = {}' <<<"$response"
+      printf '%s\n' '{"tasks":[],"failures":[]}'; return ;;
+    describe_stream_suffix)
+      printf '%s\n' "$response" '{"tasks":[],"failures":[]}'; return ;;
+    describe_stream_scalar)
+      printf '%s\n' "$response" 'true'; return ;;
+    later_describe_stream|final_describe_stream)
+      if { [ "$SCENARIO" = later_describe_stream ] && [ "$call" -eq 2 ]; } ||
+         { [ "$SCENARIO" = final_describe_stream ] && [ "$call" -eq 3 ]; }; then
+        printf '%s\n' '{"tasks":{},"failures":{}}' "$response"; return
+      fi ;;
+  esac
+  jq --arg scenario "$SCENARIO" --argjson call "$call" '
+    if $scenario == "describe_top_scalar" then "uninterpretable"
+    elif $scenario == "describe_top_array" then [.]
+    elif $scenario == "describe_failures_scalar" or
+      ($scenario == "final_describe_failures_scalar" and $call == 3)
+      then .failures = "uninterpretable"
+    elif $scenario == "describe_failures_object" then .failures = {unexpected:true}
+    elif $scenario == "describe_failures_null" then .failures = null
+    elif $scenario == "describe_failures_missing" then del(.failures)
+    elif $scenario == "describe_failure_entry_scalar" then .failures = ["uninterpretable"]
+    elif $scenario == "describe_tasks_object" then .tasks = {unexpected:true}
+    elif $scenario == "describe_tasks_scalar" then .tasks = "uninterpretable"
+    elif $scenario == "describe_tasks_null" then .tasks = null
+    elif $scenario == "describe_tasks_missing" then del(.tasks)
+    elif $scenario == "describe_task_entry_scalar" then .tasks[0] = "uninterpretable"
+    else . end
+  ' <<<"$response"
+}
+
+route() {
+  local kind="$1" target call
+  call="$(increment_counter "$kind")"
+  if [ "$kind" = listener ]; then target=tg-active; else target=tg-candidate; fi
+  [ "$SCENARIO" != mapping_change ] || [ "$kind" != listener ] || [ "$call" -lt 5 ] || target=tg-candidate
+  {
+  if [ "$SCENARIO" = ambiguous ] && [ "$kind" = listener ]; then
+    jq -n '{Listeners:[{DefaultActions:[{Type:"forward",ForwardConfig:{TargetGroups:[{TargetGroupArn:"tg-active",Weight:1},{TargetGroupArn:"tg-other",Weight:1}]}}]}]}'
+  elif [ "$kind" = listener ]; then
+    jq -n --arg target "$target" '{Listeners:[{DefaultActions:[{Type:"forward",TargetGroupArn:$target}]}]}'
+  else
+    jq -n --arg target "$target" '{Rules:[{Actions:[{Type:"forward",TargetGroupArn:$target}]}]}'
+  fi
+  } | jq --arg scenario "$SCENARIO" '
+    def shape:
+      if $scenario == "route_config" then .ForwardConfig = {TargetGroups:[{TargetGroupArn:.TargetGroupArn,Weight:100}]} | del(.TargetGroupArn)
+      elif $scenario == "route_default" then .ForwardConfig = {TargetGroups:[{TargetGroupArn:.TargetGroupArn}]} | del(.TargetGroupArn)
+      elif $scenario == "route_dual" then .ForwardConfig = {TargetGroups:[{TargetGroupArn:.TargetGroupArn,Weight:1}],TargetGroupStickinessConfig:{Enabled:false}}
+      elif $scenario == "route_conflict" then .ForwardConfig = {TargetGroups:[{TargetGroupArn:"tg-other",Weight:1}]}
+      elif $scenario == "route_zero" then .ForwardConfig = {TargetGroups:[{TargetGroupArn:.TargetGroupArn,Weight:0}]}
+      elif $scenario == "route_malformed" then .ForwardConfig = null
+      else . end;
+    if has("Listeners") then .Listeners[0].DefaultActions |= map(shape)
+    else .Rules[0].Actions |= map(shape) end'
+
+}
+
+targets() {
+  case "$SCENARIO" in
+    later_describe_stream) jq -n '{TargetHealthDescriptions:[range(1;102) | {Target:{Id:"10.0.0.\(.)",Port:8080},TargetHealth:{State:"healthy"}}]}' ;;
+    extra_target) jq -n '{TargetHealthDescriptions:[{Target:{Id:"10.0.0.1",Port:8080},TargetHealth:{State:"healthy"}},{Target:{Id:"10.0.0.2",Port:8080},TargetHealth:{State:"healthy"}},{Target:{Id:"10.0.0.99",Port:8080},TargetHealth:{State:"healthy"}}]}' ;;
+    missing_target) jq -n '{TargetHealthDescriptions:[{Target:{Id:"10.0.0.1",Port:8080},TargetHealth:{State:"healthy"}}]}' ;;
+    *) jq -n '{TargetHealthDescriptions:[{Target:{Id:"10.0.0.1",Port:8080},TargetHealth:{State:"healthy"}},{Target:{Id:"10.0.0.2",Port:8080},TargetHealth:{State:"healthy"}}]}' ;;
+  esac
+}
+
+# Inject hostile captured responses without bypassing the production consumers.
+emit_response() {
+  local endpoint="$1" response mode="" counter=""
+  shift
+  response="$("$@")"
+  case "$endpoint" in
+    describe-listeners) counter=listener ;;
+    describe-rules) counter=rule ;;
+    describe-task-definition) counter=definition ;;
+    describe-services) counter=service ;;
+    list-tasks) counter=list ;;
+    describe-target-health) counter=target ;;
+  esac
+  if [[ "$SCENARIO" == "boundary_${counter}_"* ]]; then
+    mode="${SCENARIO#boundary_"${counter}"_}"
+    if [[ "$mode" == final_* ]]; then
+      if [ "$(<"$CASE_DIR/$counter")" = 6 ]; then
+        mode="${mode#final_}"
+      else
+        mode=""
+      fi
+    fi
+  fi
+  case "$mode" in
+    prefix)
+      case "$counter" in
+        listener|rule)
+          jq 'walk(if type == "object" and .Type? == "forward" then
+            .ForwardConfig = {TargetGroups:[{TargetGroupArn:"tg-contradiction",Weight:1}]}
+            else . end)' <<<"$response" ;;
+        definition) jq '.taskDefinition.containerDefinitions[1].essential = true' <<<"$response" ;;
+        service) jq '.failures = [{reason:"MISSING"}]' <<<"$response" ;;
+        list) printf '%s\n' '{"taskArns":[]}' ;;
+        target) printf '%s\n' '{"TargetHealthDescriptions":[]}' ;;
+      esac
+      printf '%s\n' "$response" ;;
+    suffix) printf '%s\n' "$response" '{}' ;;
+    unsupported) printf '%s\n' '{"Listeners":[],"Rules":[]}' "$response" ;;
+    empty) printf ' \n\t' ;;
+    array) printf '[%s]\n' "$response" ;;
+    object_entries)
+      jq '.TargetHealthDescriptions |= (to_entries | map(.key |= tostring) | from_entries)' <<<"$response" ;;
+    *) printf '%s\n' "$response" ;;
+  esac
+}
+
+connect_timeout=false
+read_timeout=false
+for argument in "$@"; do
+  [ "$argument" != --no-paginate ] || { printf 'Pagination was disabled: %s\n' "$*" >&2; exit 94; }
+  [ "$argument" != --cli-connect-timeout ] || connect_timeout=true
+  [ "$argument" != --cli-read-timeout ] || read_timeout=true
+done
+if [ "$connect_timeout" != true ] || [ "$read_timeout" != true ]; then
+  printf 'AWS call omitted socket bounds: %s\n' "$*" >&2
+  exit 93
+fi
+
+printf '%s\n' "$*" >>"$CASE_DIR/aws-log"
+case "${1:-} ${2:-}" in
+  "ecs describe-task-definition")
+    case "$SCENARIO" in
+      hung_call) /bin/sleep 5 ;;
+      resistant_call) trap '' TERM; /bin/sleep 60 ;;
+      orphan_call)
+        /bin/bash -c 'trap "" TERM; printf ready >"$CASE_DIR/child-ready"; exec /bin/sleep 60' &
+        while [ ! -f "$CASE_DIR/child-ready" ]; do /bin/sleep 0.01; done
+        exit 0 ;;
+
+    esac
+    emit_response describe-task-definition task_definition ;;
+
+  "ecs describe-services") emit_response describe-services service ;;
+  "ecs list-tasks") emit_response list-tasks list_tasks ;;
+  "ecs describe-tasks") describe_tasks "$@" ;;
+  "ecs update-service") jq -n '{}' ;;
+  "elbv2 describe-listeners") emit_response describe-listeners route listener ;;
+  "elbv2 describe-rules") emit_response describe-rules route rule ;;
+  "elbv2 describe-target-health") emit_response describe-target-health targets ;;
+  "elbv2 modify-listener"|"elbv2 modify-rule") jq -n '{}' ;;
+  *) printf 'Unexpected fake AWS call: %s\n' "$*" >&2; exit 99 ;;
+esac

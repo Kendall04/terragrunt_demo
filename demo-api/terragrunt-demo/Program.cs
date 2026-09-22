@@ -8,6 +8,12 @@ using terragrunt_demo.Data;
 using terragrunt_demo.Health;
 using terragrunt_demo.Repositories;
 using terragrunt_demo.Services;
+using terragrunt_demo;
+
+if (ReadinessProbe.IsProbeCommand(args))
+{
+    return await ReadinessProbe.RunCommandAsync(args);
+}
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -114,7 +120,8 @@ app.MapHealthChecks("/health/live", liveHealthOptions);
 app.MapHealthChecks("/ready", readyHealthOptions);
 app.MapHealthChecks("/health/ready", readyHealthOptions);
 
-app.Run();
+await app.RunAsync();
+return 0;
 
 static HealthCheckOptions CreateHealthCheckOptions(Func<HealthCheckRegistration, bool> predicate)
 {
