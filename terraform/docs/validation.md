@@ -150,34 +150,35 @@ do not prove AWS readiness, full deployment correctness, every workflow expressi
 or ALB behavior, or tamper resistance against deliberate removal of enforcement
 and its tests.
 
-## Readiness correction evidence — 2026-09-21
+## Deployment readiness promotion — reviewed evidence
 
-The owner reports exact-revision remote CI green for the preceding candidate
-`8e829eff4a88d6599b4a05e7596a1d2928331865`. That evidence does not validate the
-following correction. Architecture, digest/probe packaging, permanent `/health`,
-IAM and the accepted final observation-to-listener race remain unchanged.
+The deployment-readiness feature completed independent review with
+`REVIEW_PASS_WITH_NON_BLOCKING_FINDINGS`. Authoritative identities:
 
-| Review finding | Correction and deterministic fixtures added |
-| --- | --- |
-| Ordinary ECS startup | Retain partial identities and monotonic lifecycle states; actual PENDING → RUNNING/incomplete → complete → probe success, absent early containers, mixed replica progress, startup replacement, task/container regression, metadata loss and identity contradiction |
-| ALB normalization | Shared `scripts/alb-route-target.jq`; direct, single ForwardConfig (explicit/default positive weight), agreeing dual, conflicting dual, zero weight, malformed config and multiple targets; gate and deployment discovery use the same parser |
-| Service/deployment identity | Validate and retain identity on every service response; stable success, incomplete D1 → D2, embedded failures, extra services and missing failure envelope on the final sixth service read |
-| Hard external-call bounds | `scripts/bounded-process.py`; cooperative timeout, TERM-resistant process, orphan holding output pipes, surviving child/grandchild and nested observer cancellation; real elapsed-time limits and survivor checks on Linux |
+- Planning revision: `cfef900b576a9aa811859e8e194f41528daff1fc`.
+- Reviewed candidate: `e7634874da19b1502eaa5451ed00d57ad0d80e94`.
+- Main integration revision: `6da9a699b5de0e8fe228fd4f099f1e13320d6558`.
+- Integrated pull request: [#16](https://github.com/Kendall04/terragrunt_demo/pull/16).
 
-Local results for this correction: Git Bash syntax checks passed; Python source
-parsing and git diff/whitespace checks passed. All nine focused .NET readiness
-probe cases passed, including controlled total cancellation. The broader offline
-.NET run passed 34/36; two health endpoint tests failed because Windows Event Log
-write access was denied by the sandbox. Their failure traces identify logging
-permissions, not a changed `/health` contract.
+[Exact-candidate CI](https://github.com/Kendall04/terragrunt_demo/actions/runs/35756560824)
+completed successfully for the reviewed candidate. It covered the application
+tests and packaged probe, hermetic Bash/jq readiness fixtures, task-definition
+rendering/validation, bounded Linux process supervision, ShellCheck/repository
+hygiene and selected infrastructure static checks. The deterministic suites cover
+both color directions, every-replica evidence, identity and cohort replacement,
+malformed external and nested JSON, ALB normalization, repeated service identity,
+deadline enforcement, registered-definition execution controls, and the
+no-listener-write failure boundary.
 
-Linux Bash/jq gate/renderer fixtures, process-group execution, ShellCheck and
-Docker packaging were **not validated locally**: WSL has no `/bin/bash`, jq and
-ShellCheck are unavailable, and no Docker engine is running. The five Linux
-process tests explicitly skip on Windows; that is not passing process evidence.
-The existing hermetic readiness entry point now includes those process tests.
-Exact-candidate Linux CI must run that entry point, ShellCheck, full app tests and
-packaged-probe checks before review acceptance. No live AWS was accessed.
+[Post-merge orchestration](https://github.com/Kendall04/terragrunt_demo/actions/runs/35762365169)
+completed successfully for the integration revision. It ran scope detection and
+main-branch informational notices; infrastructure apply and application delivery
+jobs were skipped. It is evidence of repository orchestration behavior, not AWS
+runtime validation.
+
+This provenance establishes deterministic local/CI behavior and the reviewed
+repository contract. No live Fargate task, ALB promotion, dependency readiness or
+other AWS runtime behavior was exercised, so it is not deployed-production proof.
 
 ## Working guidance
 
