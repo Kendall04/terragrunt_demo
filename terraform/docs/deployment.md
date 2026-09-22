@@ -118,6 +118,26 @@ service/definition reads. DescribeTasks retains its independent per-batch bounda
 before aggregation. A malformed prefix, suffix or additional JSON document cannot
 be discarded to salvage an otherwise acceptable observation.
 
+Each DescribeTasks batch also validates the nested evidence before aggregation:
+attachments, attachment details, containers and container network interfaces must
+be arrays of correctly shaped objects when present. Missing collections and
+runtime fields may populate during startup; explicit null, wrong types and
+malformed entries are rejected even when a later filter would ignore them.
+Completion still requires the existing full runtime/network identity. This same
+boundary applies to startup, complete observations and final revalidation.
+
+Registered definitions must retain the image entrypoint (entryPoint absent), the
+normal application command (command absent), and the exact probe command
+`["readiness-probe"]`. App/probe essential flags remain true/false respectively.
+Both restart policies must be absent or objects with boolean enabled=false and
+valid optional policy fields; null, scalar values and enabled policies fail.
+Neither container may add a health check or nonempty dependency list. The probe
+also rejects workingDirectory/user overrides, nonempty mounts/volumesFrom, and
+environment-file injection. Probe environment, secrets and port mappings must
+be absent or empty arrays, as must its dependency/mount/environment-file lists;
+explicit null is not an alternative spelling of absence. Logging/resource fields
+that do not replace the probe execution remain outside this narrow validator.
+
 Readiness scale-up, the gate and its AWS observations require Python 3 on the
 Linux runner. The process supervisor reserves a graceful termination interval
 inside the remaining budget, then sends SIGKILL to the private process group,

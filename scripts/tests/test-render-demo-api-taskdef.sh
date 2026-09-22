@@ -57,6 +57,25 @@ jq -e --arg image "$IMAGE" '
       and ((.restartPolicy? // null) == null))
 ' "$TASKDEF_FILE" >/dev/null
 
+# Exercise the production registered-definition consumer with the real rendered
+# payload. Only the ARN normally assigned at registration is synthesized.
+(
+  # shellcheck source=scripts/ecs-readiness-gate.sh
+  source "$ROOT_DIR/scripts/ecs-readiness-gate.sh"
+  TASK_DEFINITION_ARN=arn:aws:ecs:us-east-1:123456789012:task-definition/demo:42
+  IMAGE_URI="$IMAGE"
+  APP_CONTAINER=demo-dev-app-api-blue
+  PROBE_CONTAINER=demo-dev-app-api-blue-readiness-probe
+  registered_payload="$(jq --arg arn "$TASK_DEFINITION_ARN" '{taskDefinition:(. + {taskDefinitionArn:$arn})}' "$TASKDEF_FILE")"
+  # shellcheck disable=SC2317 # Called by the sourced production validator.
+  aws_capture() {
+    [ "$2 $3" = 'ecs describe-task-definition' ] || exit 98
+    validate_aws_response describe-task-definition <<<"$registered_payload" || exit 99
+    printf -v "$1" '%s' "$registered_payload"
+  }
+  validate_registered_definition
+)
+
 [ ! -s "$SENTINEL_FILE" ] || { printf 'Renderer test escaped to AWS.\n' >&2; exit 1; }
 
 printf 'Task definition readiness-probe contract passed.\n'

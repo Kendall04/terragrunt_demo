@@ -181,7 +181,18 @@ packaged-probe checks before review acceptance. No live AWS was accessed.
 
 ## Working guidance
 
-Authorization-response boundary regressions run first in
+The correction subset `scripts/tests/test-ecs-readiness-gate.sh
+--validation-fixes-only` runs first in the full suite. It rejects malformed
+nested attachment/detail/container/network evidence at startup, complete and
+final observations; final cases exercise the promotion path and assert no
+listener/rule mutation. Registered-definition cases reject execution overrides
+and invalid/enabled restart policies before task probe results are read. Positive
+cases retain missing startup collections, empty API defaults and explicitly
+disabled restart policies. The renderer suite feeds its actual rendered payload
+through the production registered-definition validator using a local capture
+double. No AWS registration or discovery occurs in these tests.
+
+Authorization-response boundary regressions follow the correction subset in
 `scripts/tests/test-ecs-readiness-gate.sh`; use `--response-boundaries-only` for
 the focused subset. They cover initial/final listener and rule streams, registered
 definitions, services, task lists and target-health envelopes, including actual

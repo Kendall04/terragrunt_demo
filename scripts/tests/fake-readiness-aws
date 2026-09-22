@@ -22,7 +22,37 @@ task_definition() {
     taskDefinitionArn:$td,networkMode:"awsvpc",requiresCompatibilities:["FARGATE"],containerDefinitions:[
       {name:$app,image:$image,essential:true,portMappings:[{containerPort:8080,protocol:"tcp"}]},
       {name:$probe,image:$image,essential:false,command:["readiness-probe"],logConfiguration:{logDriver:"awslogs",options:{}}}
-    ]}}'
+    ]}}' | jq --arg scenario "$SCENARIO" '
+      .taskDefinition.containerDefinitions |= (
+        if $scenario == "definition_entrypoint" then .[1].entryPoint = ["/bin/true"]
+        elif $scenario == "definition_entrypoint_null" then .[1].entryPoint = null
+        elif $scenario == "definition_command" then .[1].command = ["readiness-probe", "--check-capability"]
+        elif $scenario == "definition_essential" then .[1].essential = true
+        elif $scenario == "definition_image" then .[1].image = "different-image"
+        elif $scenario == "definition_app_entrypoint" then .[0].entryPoint = ["/bin/true"]
+        elif $scenario == "definition_app_command" then .[0].command = ["readiness-probe"]
+        elif $scenario == "definition_app_restart" then .[0].restartPolicy = {enabled:true}
+        elif $scenario == "definition_probe_restart" then .[1].restartPolicy = {enabled:true}
+        elif $scenario == "definition_restart_false" then .[1].restartPolicy = false
+        elif $scenario == "definition_restart_null" then .[1].restartPolicy = null
+        elif $scenario == "definition_restart_array" then .[1].restartPolicy = []
+        elif $scenario == "definition_restart_string" then .[1].restartPolicy = "disabled"
+        elif $scenario == "definition_restart_missing_enabled" then .[1].restartPolicy = {}
+        elif $scenario == "definition_restart_enabled_string" then .[1].restartPolicy = {enabled:"false"}
+        elif $scenario == "definition_restart_codes" then .[1].restartPolicy = {enabled:false,ignoredExitCodes:[null]}
+        elif $scenario == "definition_restart_period" then .[1].restartPolicy = {enabled:false,restartAttemptPeriod:false}
+        elif $scenario == "definition_restart_disabled" then map(.restartPolicy = {enabled:false,ignoredExitCodes:[1],restartAttemptPeriod:60})
+        elif $scenario == "definition_environment_files" then .[1].environmentFiles = [{value:"arn:aws:s3:::example/env",type:"s3"}]
+        elif $scenario == "definition_environment_files_null" then .[1].environmentFiles = null
+        elif $scenario == "definition_mount" then .[1].mountPoints = [{sourceVolume:"override",containerPath:"/app"}]
+        elif $scenario == "definition_volumes" then .[1].volumesFrom = [{sourceContainer:"app"}]
+        elif $scenario == "definition_directory" then .[1].workingDirectory = "/override"
+        elif $scenario == "definition_user" then .[1].user = "other"
+        elif $scenario == "definition_health" then .[1].healthCheck = {command:["CMD", "true"]}
+        elif $scenario == "definition_dependency" then .[1].dependsOn = [{containerName:"app",condition:"SUCCESS"}]
+        elif $scenario == "definition_app_dependency" then .[0].dependsOn = [{containerName:"probe",condition:"SUCCESS"}]
+        elif $scenario == "definition_empty_defaults" then .[1] += {environment:[],secrets:[],environmentFiles:[],mountPoints:[],volumesFrom:[],dependsOn:[],portMappings:[]}
+        else . end)'
 }
 
 service() {
@@ -103,7 +133,9 @@ task_json() {
         elif $call == 1 then
           .lastStatus = "PENDING" | del(.connectivity,.attachments) |
           .containers |= map(.lastStatus = "PENDING" | del(.runtimeId,.imageDigest,.networkInterfaces,.exitCode)) |
-          if $scenario == "lifecycle_no_containers" then .containers = [] else . end
+          if $scenario == "lifecycle_no_containers" then .containers = []
+          elif $scenario == "lifecycle_absent_collections" then del(.containers)
+          else . end
         elif $call == 2 then
           .containers |= map(.lastStatus = "RUNNING" | del(.runtimeId,.exitCode)) |
           if $scenario == "lifecycle_identity" then .containers[0].containerArn += "-changed" else . end
@@ -116,8 +148,49 @@ task_json() {
       elif $scenario == "missing_completed_metadata" then .containers[0] |= del(.runtimeId)
       elif $scenario == "probe_regression" and $call >= 2 then .containers[1].lastStatus = "RUNNING" | del(.containers[1].exitCode)
       elif $scenario == "network_contradiction" then .containers[0].networkInterfaces[0].privateIpv4Address = "10.0.0.99"
-      else . end'
+      else . end' | mutate_nested_task "$call"
 
+}
+
+mutate_nested_task() {
+  jq --arg scenario "$SCENARIO" --argjson call "$1" '
+    if ($scenario | startswith("nested_")) then
+      ($scenario | split("_")[1]) as $stage
+      | ($scenario | split("_")[2:] | join("_")) as $shape
+      | if $stage == "final" and $call != 3 then . else
+        (if $stage == "startup" then
+          .lastStatus = "PENDING" | .containers |= map(.lastStatus = "PENDING" | del(.runtimeId,.exitCode))
+          else . end)
+        | if $shape == "attachments_object" then .attachments = {unexpected:.attachments[0]}
+          elif $shape == "attachments_null" then .attachments = null
+          elif $shape == "attachments_scalar" then .attachments = false
+          elif $shape == "attachment_null" then .attachments += [null]
+          elif $shape == "attachment_scalar" then .attachments += [42]
+          elif $shape == "attachment_type" then del(.attachments[0].type)
+          elif $shape == "attachment_status" then .attachments[0].status = []
+          elif $shape == "details_object" then .attachments[0].details = {unexpected:.attachments[0].details[0]}
+          elif $shape == "details_null" then .attachments[0].details = null
+          elif $shape == "details_scalar" then .attachments[0].details = false
+          elif $shape == "detail_null" then .attachments[0].details += [null]
+          elif $shape == "detail_scalar" then .attachments[0].details += [42]
+          elif $shape == "detail_name" then .attachments[0].details += [{value:"ignored"}]
+          elif $shape == "detail_value" then .attachments[0].details += [{name:"ignored",value:[]}]
+          elif $shape == "containers_object" then .containers = {app:.containers[0],probe:.containers[1]}
+          elif $shape == "containers_null" then .containers = null
+          elif $shape == "containers_scalar" then .containers = false
+          elif $shape == "container_null" then .containers += [null]
+          elif $shape == "container_name" then .containers[0].name = []
+          elif $shape == "runtime_null" then .containers[0].runtimeId = null
+          elif $shape == "digest_false" then .containers[0].imageDigest = false
+          elif $shape == "exit_string" then .containers[1].exitCode = "0"
+          elif $shape == "network_object" then .containers[0].networkInterfaces = {unexpected:.containers[0].networkInterfaces[0]}
+          elif $shape == "network_null" then .containers[0].networkInterfaces = null
+          elif $shape == "network_scalar" then .containers[0].networkInterfaces = false
+          elif $shape == "network_entry_null" then .containers[0].networkInterfaces += [null]
+          elif $shape == "network_ip" then .containers[0].networkInterfaces[0].privateIpv4Address = []
+          else error("Unknown nested evidence fixture") end
+        end
+    else . end'
 }
 
 describe_tasks() {

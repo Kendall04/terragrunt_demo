@@ -189,6 +189,17 @@ validate_registered_definition() {
     --arg image "$IMAGE_URI" \
     --arg app "$APP_CONTAINER" \
     --arg probe "$PROBE_CONTAINER" '
+      # Absent means inherited/default. Explicit null/false is not absence.
+      def absent($key): has($key) | not;
+      def empty_array($key): absent($key) or (.[$key] | type == "array" and length == 0);
+      def restart_disabled:
+        absent("restartPolicy") or (.restartPolicy | type == "object"
+          and ((keys - ["enabled", "ignoredExitCodes", "restartAttemptPeriod"]) | length == 0)
+          and .enabled == false
+          and (absent("ignoredExitCodes") or (.ignoredExitCodes | type == "array"
+            and length <= 50 and all(.[]; type == "number" and . == floor)))
+          and (absent("restartAttemptPeriod") or (.restartAttemptPeriod | type == "number"
+            and . == floor and . >= 60 and . <= 1800)));
       .taskDefinition as $td
       | ($td.taskDefinitionArn == $task_definition)
         and ($td.networkMode == "awsvpc")
@@ -199,15 +210,22 @@ validate_registered_definition() {
         and ($td.containerDefinitions[] | select(.name == $app)
           | .image == $image
             and .essential == true
+            and absent("entryPoint") and absent("command")
+            and restart_disabled
+            and absent("healthCheck") and empty_array("dependsOn")
             and ([.portMappings[]? | select(.containerPort == 8080 and .protocol == "tcp")] | length == 1))
         and ($td.containerDefinitions[] | select(.name == $probe)
           | .image == $image
             and .essential == false
+            and absent("entryPoint")
             and .command == ["readiness-probe"]
-            and ((.restartPolicy? // null) == null or .restartPolicy.enabled == false)
-            and ((.secrets? // []) | length == 0)
-            and ((.environment? // []) | length == 0)
-            and ((.portMappings? // []) | length == 0))
+            and restart_disabled
+            and absent("healthCheck") and empty_array("dependsOn")
+            and absent("workingDirectory") and absent("user")
+            and empty_array("mountPoints") and empty_array("volumesFrom")
+            and empty_array("environmentFiles")
+            and empty_array("secrets") and empty_array("environment")
+            and empty_array("portMappings"))
     ' <<<"$definition_json" >/dev/null; then
     die "Registered task definition does not match the required app/probe contract."
   fi
@@ -257,12 +275,44 @@ describe_tasks_batched() {
     ' <<<"$batch_json" >/dev/null; then
       die "DescribeTasks batch response envelope is malformed."
     fi
+    validate_task_evidence_structure "$batch_json"
     chunks+=("$batch_json")
   done
 
   local aggregate_json
   aggregate_json="$(printf '%s\n' "${chunks[@]}" | jq -s '{tasks:[.[].tasks[]],failures:[.[].failures[]]}')"
   printf -v "$destination" '%s' "$aggregate_json"
+}
+
+validate_task_evidence_structure() {
+  # Missing collections/runtime fields may populate during startup. Present
+  # values must have their API shape, even if a later select would ignore them.
+  # Run on every batch, before aggregation or any nested evidence extraction.
+  if ! jq -e '
+    def nonempty: type == "string" and length > 0;
+    def optional($key; valid): if has($key) then .[$key] | valid else true end;
+    def objects: type == "array" and all(.[]; type == "object");
+    def integer: type == "number" and . == floor;
+    all(.tasks[];
+      optional("connectivity"; nonempty)
+      and optional("attachments"; objects and all(.[];
+        (.type | nonempty) and (.status | nonempty)
+        and optional("details"; objects and all(.[];
+          (.name | nonempty) and (.value | type == "string")))))
+      and optional("containers"; objects and all(.[];
+        (.name | nonempty) and (.image | nonempty) and (.lastStatus | nonempty)
+        and optional("containerArn"; nonempty)
+        and optional("runtimeId"; nonempty)
+        and optional("imageDigest"; nonempty)
+        and optional("exitCode"; integer)
+        and optional("networkInterfaces"; objects and all(.[];
+          (.privateIpv4Address | nonempty)
+          and optional("attachmentId"; nonempty)
+          and optional("ipv6Address"; nonempty)))))
+    )
+  ' <<<"$1" >/dev/null; then
+    die "DescribeTasks nested task evidence is malformed."
+  fi
 }
 
 retain_task_observations() {

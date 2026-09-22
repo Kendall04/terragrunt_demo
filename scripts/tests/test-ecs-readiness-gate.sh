@@ -82,6 +82,9 @@ run_case() {
   elif [ "$scenario" = final_describe_failures_scalar ] || [ "$scenario" = final_describe_stream ]; then
     [ "$(<"$CASE_DIR/tasks")" = 3 ] || fail "$scenario did not reach the final DescribeTasks observation"
     [ "$(<"$CASE_DIR/service")" = 5 ] || fail "$scenario continued after the malformed final DescribeTasks response"
+  elif [[ "$scenario" == nested_final_* ]]; then
+    [ "$(<"$CASE_DIR/tasks")" = 3 ] || fail "$scenario did not reach final task revalidation"
+    [ "$(<"$CASE_DIR/service")" = 5 ] || fail "$scenario continued after malformed final evidence"
   elif [[ "$scenario" == final_* ]]; then
     [ "$(<"$CASE_DIR/service")" = 6 ] || fail "$scenario did not reach the final service revalidation"
   elif [[ "$scenario" == boundary_*_final_* ]]; then
@@ -229,11 +232,46 @@ EOF
   else
     [ "$status" -ne 0 ] || fail 'unready real-gate promotion passed'
     ! grep -q '^elbv2 modify-listener ' "$CASE_DIR/aws-log" || fail 'listener mutated after real gate failure'
+    ! grep -q '^elbv2 modify-rule ' "$CASE_DIR/aws-log" || fail 'rule mutated after real gate failure'
+    if [[ "$scenario" == nested_final_* ]]; then
+      [ "$(<"$CASE_DIR/tasks")" = 3 ] || fail 'promotion fixture did not reach final task revalidation'
+      grep -Fq 'nested task evidence is malformed' <<<"$output" || fail 'wrong final-evidence failure'
+    elif [[ "$scenario" == definition_* ]]; then
+      grep -Fq 'Registered task definition does not match' <<<"$output" || fail 'wrong definition failure'
+      ! grep -q '^ecs describe-tasks ' "$CASE_DIR/aws-log" || fail 'invalid definition allowed probe interpretation'
+    fi
   fi
   printf '[PASS] real gate to promotion: %s\n' "$scenario"
 }
 
 command -v jq >/dev/null || fail 'jq is required'
+# Correction regressions run before every previous group, including focused runs.
+for shape in attachments_object attachments_null attachments_scalar attachment_null \
+  attachment_scalar attachment_type attachment_status details_object details_null \
+  details_scalar detail_null detail_scalar detail_name detail_value containers_object \
+  containers_null containers_scalar container_null container_name runtime_null \
+  digest_false exit_string network_object network_null network_scalar network_entry_null network_ip; do
+  for stage in startup complete final; do
+    run_case "nested_${stage}_${shape}" fail 'nested task evidence is malformed'
+  done
+  run_promotion_integration "nested_final_${shape}" fail blue green
+done
+for shape in entrypoint entrypoint_null command essential image app_entrypoint app_command \
+  app_restart probe_restart restart_false restart_null restart_array restart_string \
+  restart_missing_enabled restart_enabled_string restart_codes restart_period \
+  environment_files environment_files_null mount volumes directory user health dependency app_dependency; do
+  run_case "definition_${shape}" fail 'Registered task definition does not match'
+  run_promotion_integration "definition_${shape}" fail blue green
+done
+run_case definition_restart_disabled pass
+run_case definition_empty_defaults pass
+run_case lifecycle_absent_collections pass
+run_case lifecycle_no_containers pass
+run_promotion_integration ready pass blue green
+if [ "${1:-}" = --validation-fixes-only ]; then
+  printf 'All nested evidence and registered execution correction tests passed.\n'
+  exit 0
+fi
 # Exercise captured-response boundaries first, including the actual switch path.
 for endpoint in listener rule; do
   for shape in prefix suffix unsupported empty array; do
