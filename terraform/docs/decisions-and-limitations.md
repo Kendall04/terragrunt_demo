@@ -85,7 +85,7 @@ mean low importance. Scope/dependencies below do not authorize implementation.
 | --- | --- | --- | --- |
 | B1 High IAM | Broad infrastructure APIs; shared normal/high-risk policy; prod-created high-risk role trusts dev-infra-approval | Medium-large; environment authority decision; high lockout/apply risk | Clarify boundary first |
 | B2 High delivery | Distinct deploy/rollback concurrency groups; cleanup not bound to release generation | Medium; mutation ownership; medium-high outage risk | Narrow concurrency contract may fit |
-| B3 High readiness — implemented, review pending | Per-task one-shot readiness gate now precedes promotion; residual ECS/ALB observation race and historical rather than continuous readiness remain explicit | Preserve exact cohort/digest/target evidence, bounded failure, unchanged `/health`, and immediate final revalidation | [Durable spec](../../specs/deployment-readiness-promotion/spec.md) and [plan](../../specs/deployment-readiness-promotion/plan.md); remote CI and independent review remain |
+| B3 High readiness — completed | Per-task one-shot readiness gate precedes promotion; the bounded ECS/ALB observation model and historical rather than continuous readiness are explicit | Preserve exact cohort/digest/target evidence, bounded failure, unchanged `/health`, fail-closed external evidence handling and immediate final revalidation | [Durable spec](../../specs/deployment-readiness-promotion/spec.md), [plan](../../specs/deployment-readiness-promotion/plan.md) and [reviewed evidence](validation.md#deployment-readiness-promotion--reviewed-evidence) complete the feature; optional hardening below is separate |
 | B4 High recovery | Separate listener/rule/schedule/record operations permit partial success | Medium-large; rollback/concurrency contract; high risk | Isolate one failure scenario first |
 | B5 High data durability | Termination-deleted root disk; no repository backup/restore; startup migrations under db_owner | Large overall; D4/D5 and recovery objectives; high data/schema risk | IMPORTANT, DEFERRED until deployed AWS near program end; no deep design now |
 | B6 High conditional API security | Public writes and plaintext reads | Medium; domain/data policy first; high compatibility risk | Auth follows backend expansion |
@@ -99,6 +99,15 @@ mean low importance. Scope/dependencies below do not authorize implementation.
 | B14 Medium reproducibility/DX | Partial locks, moving image/tool/action inputs, no explicit container user | Medium; update/toolchain policy; medium compatibility risk | Narrow one contract |
 | B15 Medium operations/cost | No verified alerts, restore drills, SLOs, business probes, tracing or budgets | Medium; explicit expectations; variable runtime/cost risk | Define useful evidence before tooling |
 | B16 Medium knowledge | Historical docs/code comments remain non-authoritative; maintain current docs as behavior evolves | Small ongoing; low risk | Continuing maintenance |
+
+### Optional readiness hardening — outside completed B3
+
+These non-blocking improvements do not reopen the completed readiness feature:
+
+- Canonicalize container ordering in task fingerprints so semantically equivalent
+  reordered observations do not cause a false rejection.
+- Expand post-switch fault-injection coverage for scheduling and deployment
+  output/history failure paths.
 
 Evidence: [IAM](../infra/shared/modules/iam_github),
 [deploy script](../../scripts/ecs-blue-green-deploy.sh),

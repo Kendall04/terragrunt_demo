@@ -67,6 +67,8 @@ with separate roles/logs and IP target groups. Deployments render the real
 the essential application and a non-essential one-shot readiness probe from the
 same digest-qualified image. The probe calls the same task's loopback `/ready`,
 requires bounded consecutive healthy dependency responses, then stops.
+Permanent ALB health remains process-liveness `/health`; `/ready` is a
+deployment-time promotion gate, not continuous runtime health enforcement.
 ECS ignores task-definition/desired-count changes; ALB ignores forwarding action
 changes. Deployment tooling owns those fields. Blue is only the initial default,
 not permanently active. A dummy-path candidate rule associates the inactive TG.
@@ -75,11 +77,38 @@ Deployments default to one task; no app autoscaling exists. Container Insights a
 capacity providers exist, but services explicitly use FARGATE, not Spot.
 No Cloud Map registration exists despite a stale code comment. Before changing
 the listener, deployment tooling freezes the exact candidate cohort and requires
-every task's probe exit-zero evidence, expected revision/image/container/network
-identity, exact healthy target membership and repeated unchanged routing/service
-observations. It performs an immediate final revalidation before the listener
-write. This is a bounded observational boundary, not an atomic ECS/ALB transaction;
-unseen changes after the final read remain possible.
+independent evidence from every exact candidate replica. Evidence is bound to the
+task, deployment, revision, digest, container and network identity that produced
+it and cannot transfer to a replacement task. The frozen cohort must equal the
+observed routable healthy ALB target set. Contradictions, identity or lifecycle
+regressions, replacements, malformed responses and ambiguous observations fail
+closed. An unsuccessful gate leaves active traffic unchanged.
+
+Probe exit zero authorizes promotion only after the registered task definition
+proves the intended execution contract: the immutable application image, exact
+`["readiness-probe"]` command, inherited image entrypoint, application/probe
+essential flags, disabled restart semantics, and the absence of the execution
+overrides or injection paths rejected by this feature. This is a narrow validator,
+not a claim that every possible container-isolation property is enforced.
+
+Authorization data from external commands is structural evidence, not merely jq
+input. Before semantic interpretation it must establish, in order: exactly one
+JSON document, the expected top-level/cardinality contract, endpoint-specific
+structure, required nested structure, and semantic validity. Filtering, optional
+iteration, `select`, slurping, normalization or jq last-result behavior must not
+discard malformed or contradictory evidence to salvage an authorization result.
+
+Readiness is bounded by a total probe deadline plus request, response-body and
+external-observation bounds; a success arriving after the total deadline is not
+success. External observations use bounded process supervision and terminate the
+private process group. Process-group containment is the implemented boundary; it
+does not promise universal containment of a deliberately escaped group/session.
+
+The controller performs a complete final revalidation immediately before the
+listener write. This is intentionally a bounded observational consistency model,
+not an atomic ECS/ALB transaction: those APIs provide no shared compare-and-swap
+boundary, so the remaining final-observation-to-`ModifyListener` race is an
+accepted consistency boundary rather than an unresolved defect.
 Evidence: [app skeleton](../infra/apps/fargate/demo.tf),
 [ECS lifecycle](../infra/apps/fargate/modules/ecs_service/service.tf),
 [ALB](../infra/global/modules/alb/alb.tf),
