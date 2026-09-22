@@ -240,11 +240,20 @@ describe_tasks_batched() {
       --cluster "$ECS_CLUSTER" \
       --tasks "${task_arns[@]:offset:100}" \
       --output json
+    if ! jq -e '
+      type == "object"
+      and (.tasks | type == "array")
+      and (.failures | type == "array")
+      and all(.tasks[]; type == "object")
+      and all(.failures[]; type == "object")
+    ' <<<"$batch_json" >/dev/null; then
+      die "DescribeTasks batch response envelope is malformed."
+    fi
     chunks+=("$batch_json")
   done
 
   local aggregate_json
-  aggregate_json="$(printf '%s\n' "${chunks[@]}" | jq -s '{tasks:[.[].tasks[]?],failures:[.[].failures[]?]}')"
+  aggregate_json="$(printf '%s\n' "${chunks[@]}" | jq -s '{tasks:[.[].tasks[]],failures:[.[].failures[]]}')"
   printf -v "$destination" '%s' "$aggregate_json"
 }
 

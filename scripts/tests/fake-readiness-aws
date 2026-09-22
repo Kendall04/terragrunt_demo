@@ -119,7 +119,7 @@ task_json() {
 }
 
 describe_tasks() {
-  local call arg collect=false
+  local call arg collect=false response
   local -a arns=() rendered=()
   call="$(increment_counter tasks)"
   shift 2
@@ -133,11 +133,28 @@ describe_tasks() {
     duplicate_describe) arns=(task/one task/one) ;;
   esac
   for arg in "${arns[@]}"; do rendered+=("$(task_json "$arg" "$call")"); done
-  if [ "$SCENARIO" = api_failure ]; then
-    printf '%s\n' "${rendered[@]}" | jq -s '{tasks:.,failures:[{arn:"task/two",reason:"ACCESS_DENIED"}]}'
+  if [ "$SCENARIO" = api_failure ] || [ "$SCENARIO" = describe_embedded_failure ]; then
+    response="$(printf '%s\n' "${rendered[@]}" | jq -s '{tasks:.,failures:[{arn:"task/two",reason:"ACCESS_DENIED"}]}')"
   else
-    printf '%s\n' "${rendered[@]}" | jq -s '{tasks:.,failures:[]}'
+    response="$(printf '%s\n' "${rendered[@]}" | jq -s '{tasks:.,failures:[]}')"
   fi
+  jq --arg scenario "$SCENARIO" --argjson call "$call" '
+    if $scenario == "describe_top_scalar" then "uninterpretable"
+    elif $scenario == "describe_top_array" then [.]
+    elif $scenario == "describe_failures_scalar" or
+      ($scenario == "final_describe_failures_scalar" and $call == 3)
+      then .failures = "uninterpretable"
+    elif $scenario == "describe_failures_object" then .failures = {unexpected:true}
+    elif $scenario == "describe_failures_null" then .failures = null
+    elif $scenario == "describe_failures_missing" then del(.failures)
+    elif $scenario == "describe_failure_entry_scalar" then .failures = ["uninterpretable"]
+    elif $scenario == "describe_tasks_object" then .tasks = {unexpected:true}
+    elif $scenario == "describe_tasks_scalar" then .tasks = "uninterpretable"
+    elif $scenario == "describe_tasks_null" then .tasks = null
+    elif $scenario == "describe_tasks_missing" then del(.tasks)
+    elif $scenario == "describe_task_entry_scalar" then .tasks[0] = "uninterpretable"
+    else . end
+  ' <<<"$response"
 }
 
 route() {

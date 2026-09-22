@@ -209,6 +209,21 @@ EOF
 }
 
 command -v jq >/dev/null || fail 'jq is required'
+run_case describe_valid_envelope pass
+run_case describe_top_scalar fail 'batch response envelope is malformed'
+run_case describe_top_array fail 'batch response envelope is malformed'
+run_case describe_failures_scalar fail 'batch response envelope is malformed'
+run_case describe_failures_object fail 'batch response envelope is malformed'
+run_case describe_failures_null fail 'batch response envelope is malformed'
+run_case describe_failures_missing fail 'batch response envelope is malformed'
+run_case describe_failure_entry_scalar fail 'batch response envelope is malformed'
+run_case describe_tasks_object fail 'batch response envelope is malformed'
+run_case describe_tasks_scalar fail 'batch response envelope is malformed'
+run_case describe_tasks_null fail 'batch response envelope is malformed'
+run_case describe_tasks_missing fail 'batch response envelope is malformed'
+run_case describe_task_entry_scalar fail 'batch response envelope is malformed'
+run_case describe_embedded_failure fail 'embedded failures'
+run_case final_describe_failures_scalar fail 'batch response envelope is malformed'
 run_case ready pass
 run_case lifecycle_success pass
 run_case lifecycle_no_containers pass
@@ -270,4 +285,5 @@ run_hostile_environment_case
 run_promotion_integration ready pass blue green
 run_promotion_integration ready pass green blue
 run_promotion_integration unready fail blue green
+run_promotion_integration describe_failures_scalar fail blue green
 printf 'All readiness gate tests passed.\n'
