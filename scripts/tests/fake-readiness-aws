@@ -44,7 +44,7 @@ service() {
       elif $scenario == "service_failures" or ($scenario == "final_failures" and $call == 6) then .failures = [{reason:"MISSING"}]
       elif $scenario == "extra_services" or ($scenario == "final_extra" and $call == 6) then .services += [.services[0]]
       elif $scenario == "final_malformed" and $call == 6 then del(.failures)
-      elif $scenario == "running_regression" and $call >= 2 then .services[0].runningCount = 1
+      elif $scenario == "running_regression" and $call >= 3 then .services[0].runningCount = 1
       elif ($scenario | startswith("lifecycle")) and $call == 1 then
         .services[0] |= (.runningCount = 0 | .pendingCount = 2 | .deployments[0].runningCount = 0 | .deployments[0].pendingCount = 2)
       else . end'
