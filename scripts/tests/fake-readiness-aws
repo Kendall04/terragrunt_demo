@@ -212,6 +212,52 @@ targets() {
   esac
 }
 
+# Inject hostile captured responses without bypassing the production consumers.
+emit_response() {
+  local endpoint="$1" response mode="" counter=""
+  shift
+  response="$("$@")"
+  case "$endpoint" in
+    describe-listeners) counter=listener ;;
+    describe-rules) counter=rule ;;
+    describe-task-definition) counter=definition ;;
+    describe-services) counter=service ;;
+    list-tasks) counter=list ;;
+    describe-target-health) counter=target ;;
+  esac
+  if [[ "$SCENARIO" == "boundary_${counter}_"* ]]; then
+    mode="${SCENARIO#boundary_${counter}_}"
+    if [[ "$mode" == final_* ]]; then
+      if [ "$(<"$CASE_DIR/$counter")" = 6 ]; then
+        mode="${mode#final_}"
+      else
+        mode=""
+      fi
+    fi
+  fi
+  case "$mode" in
+    prefix)
+      case "$counter" in
+        listener|rule)
+          jq 'walk(if type == "object" and .Type? == "forward" then
+            .ForwardConfig = {TargetGroups:[{TargetGroupArn:"tg-contradiction",Weight:1}]}
+            else . end)' <<<"$response" ;;
+        definition) jq '.taskDefinition.containerDefinitions[1].essential = true' <<<"$response" ;;
+        service) jq '.failures = [{reason:"MISSING"}]' <<<"$response" ;;
+        list) printf '%s\n' '{"taskArns":[]}' ;;
+        target) printf '%s\n' '{"TargetHealthDescriptions":[]}' ;;
+      esac
+      printf '%s\n' "$response" ;;
+    suffix) printf '%s\n' "$response" '{}' ;;
+    unsupported) printf '%s\n' '{"Listeners":[],"Rules":[]}' "$response" ;;
+    empty) printf ' \n\t' ;;
+    array) printf '[%s]\n' "$response" ;;
+    object_entries)
+      jq '.TargetHealthDescriptions |= (to_entries | map(.key |= tostring) | from_entries)' <<<"$response" ;;
+    *) printf '%s\n' "$response" ;;
+  esac
+}
+
 connect_timeout=false
 read_timeout=false
 for argument in "$@"; do
@@ -236,15 +282,15 @@ case "${1:-} ${2:-}" in
         exit 0 ;;
 
     esac
-    task_definition ;;
+    emit_response describe-task-definition task_definition ;;
 
-  "ecs describe-services") service ;;
-  "ecs list-tasks") list_tasks ;;
+  "ecs describe-services") emit_response describe-services service ;;
+  "ecs list-tasks") emit_response list-tasks list_tasks ;;
   "ecs describe-tasks") describe_tasks "$@" ;;
   "ecs update-service") jq -n '{}' ;;
-  "elbv2 describe-listeners") route listener ;;
-  "elbv2 describe-rules") route rule ;;
-  "elbv2 describe-target-health") targets ;;
+  "elbv2 describe-listeners") emit_response describe-listeners route listener ;;
+  "elbv2 describe-rules") emit_response describe-rules route rule ;;
+  "elbv2 describe-target-health") emit_response describe-target-health targets ;;
   "elbv2 modify-listener"|"elbv2 modify-rule") jq -n '{}' ;;
   *) printf 'Unexpected fake AWS call: %s\n' "$*" >&2; exit 99 ;;
 esac

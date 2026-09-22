@@ -2,6 +2,8 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# shellcheck source=scripts/aws-response-boundary.sh
+source "$ROOT_DIR/scripts/aws-response-boundary.sh"
 
 ENV_NAME="${TG_ENV:-dev}"
 AWS_REGION_NAME="${AWS_REGION:-us-east-1}"
@@ -286,8 +288,10 @@ preflight_resources() {
   services_json="$(aws ecs describe-services \
     --cluster "$ECS_CLUSTER" \
     --services "$ECS_SERVICE_BLUE" "$ECS_SERVICE_GREEN" \
+    --output json \
     "${AWS_ARGS[@]}")"
 
+  validate_aws_response describe-services <<<"$services_json" || die "DescribeServices response envelope is malformed."
   failures="$(jq -r '.failures | length' <<<"$services_json")"
   if [ "$failures" != "0" ]; then
     jq -r '.failures[] | (.arn // .reason) + " " + (.reason // "")' <<<"$services_json" >&2
@@ -303,15 +307,19 @@ detect_blue_green_state() {
 
   listener_json="$(aws elbv2 describe-listeners \
     --listener-arns "$ALB_LISTENER_ARN" \
+    --output json \
     "${AWS_ARGS[@]}")"
 
+  validate_aws_response describe-listeners <<<"$listener_json" || die "ALB listener response is malformed or ambiguous."
   default_tg="$(jq -er --arg root listener -f "$ROOT_DIR/scripts/alb-route-target.jq" <<<"$listener_json")" ||
     die "ALB listener forwarding configuration is ambiguous."
 
   rule_json="$(aws elbv2 describe-rules \
     --rule-arns "$ALB_CANDIDATE_RULE_ARN" \
+    --output json \
     "${AWS_ARGS[@]}")"
 
+  validate_aws_response describe-rules <<<"$rule_json" || die "ALB candidate-rule response is malformed or ambiguous."
   candidate_tg="$(jq -er --arg root rule -f "$ROOT_DIR/scripts/alb-route-target.jq" <<<"$rule_json")" ||
     die "ALB candidate-rule forwarding configuration is ambiguous."
 
@@ -362,8 +370,10 @@ resolve_db_secret_id() {
 
   task_definition_json="$(aws ecs describe-task-definition \
     --task-definition "$task_definition_arn" \
+    --output json \
     "${AWS_ARGS[@]}")"
 
+  validate_aws_response describe-task-definition <<<"$task_definition_json" || die "Task definition response envelope is malformed."
   DB_SECRET_ID="$(jq -er '
     .taskDefinition.containerDefinitions[]
     | .secrets[]?

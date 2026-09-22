@@ -2,6 +2,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/aws-response-boundary.sh
+source "$SCRIPT_DIR/aws-response-boundary.sh"
 
 AWS_REGION_NAME=""
 AWS_PROFILE_NAME=""
@@ -171,6 +173,9 @@ aws_capture() {
     die "AWS observation failed for '$1': $(redact_text "$output")"
   fi
   check_deadline
+  if [ "$2" != describe-tasks ]; then
+    validate_aws_response "$2" <<<"$output" || die "$2 response envelope is malformed."
+  fi
   printf -v "$destination" '%s' "$output"
 }
 

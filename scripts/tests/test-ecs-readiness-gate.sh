@@ -84,6 +84,13 @@ run_case() {
     [ "$(<"$CASE_DIR/service")" = 5 ] || fail "$scenario continued after the malformed final DescribeTasks response"
   elif [[ "$scenario" == final_* ]]; then
     [ "$(<"$CASE_DIR/service")" = 6 ] || fail "$scenario did not reach the final service revalidation"
+  elif [[ "$scenario" == boundary_*_final_* ]]; then
+    local counter="${scenario#boundary_}"
+    counter="${counter%%_*}"
+    [ "$(<"$CASE_DIR/$counter")" = 6 ] || fail "$scenario did not reach the last final routing/service read"
+    if [ "$counter" != service ]; then
+      [ "$(<"$CASE_DIR/service")" = 5 ] || fail "$scenario continued after malformed final routing"
+    fi
   fi
   printf '[PASS] gate scenario: %s\n' "$scenario"
 }
@@ -197,6 +204,14 @@ ACTIVE_TG=tg-active; INACTIVE_TG=tg-candidate; ALB_LISTENER_ARN=listener; ALB_CA
 NEW_TASK_DEFINITION_ARN="$TASK_DEFINITION"; IMAGE_URI="$IMAGE"; DESIRED_COUNT=$replicas
 TARGET_HEALTH_MAX_WAIT_SECONDS=300; TARGET_HEALTH_POLL_INTERVAL_SECONDS=1; READINESS_STABLE_OBSERVATIONS=2
 AWS_ARGS=(--region us-east-1 --cli-connect-timeout 5 --cli-read-timeout 10)
+# Include initial routing discovery for initial boundary failures; final-stage
+# cases start at promotion so the sixth read remains the final routing bracket.
+if [[ "\$SCENARIO" == boundary_listener_* || "\$SCENARIO" == boundary_rule_* ]] &&
+   [[ "\$SCENARIO" != *_final_* ]]; then
+  TG_BLUE_ARN=tg-active; TG_GREEN_ARN=tg-candidate
+  ECS_SERVICE_BLUE=svc-blue; ECS_SERVICE_GREEN=svc-green
+  detect_blue_green_state
+fi
 promote_inactive_color
 EOF
   set +e
@@ -219,6 +234,33 @@ EOF
 }
 
 command -v jq >/dev/null || fail 'jq is required'
+# Exercise captured-response boundaries first, including the actual switch path.
+for endpoint in listener rule; do
+  for shape in prefix suffix unsupported empty array; do
+    scenario="boundary_${endpoint}_${shape}"
+    run_case "$scenario" fail 'response envelope is malformed'
+    run_routing_detection "$scenario" fail
+    run_promotion_integration "$scenario" fail blue green
+  done
+  for shape in prefix suffix unsupported; do
+    scenario="boundary_${endpoint}_final_${shape}"
+    run_case "$scenario" fail 'response envelope is malformed'
+    run_promotion_integration "$scenario" fail blue green
+  done
+done
+for scenario in boundary_definition_prefix boundary_definition_suffix \
+  boundary_service_prefix boundary_service_final_prefix boundary_list_prefix \
+  boundary_target_prefix boundary_target_object_entries; do
+  run_case "$scenario" fail 'response envelope is malformed'
+  run_promotion_integration "$scenario" fail blue green
+done
+run_case ready pass
+run_routing_detection route_default pass
+run_promotion_integration ready pass blue green
+if [ "${1:-}" = --response-boundaries-only ]; then
+  printf 'All authorization response boundary tests passed.\n'
+  exit 0
+fi
 # Keep new boundary counterexamples first, before the existing regression suite.
 run_case describe_stream_prefix fail 'batch response envelope is malformed'
 run_case describe_stream_object fail 'batch response envelope is malformed'
@@ -261,7 +303,7 @@ run_case service_failures fail 'deployment set'
 run_case extra_services fail 'deployment set'
 run_case final_failures fail 'deployment set'
 run_case final_extra fail 'deployment set'
-run_case final_malformed fail 'deployment set'
+run_case final_malformed fail 'response envelope is malformed'
 run_case running_regression fail 'running count regressed'
 run_case probe_regression fail 'lifecycle regressed'
 run_case route_config pass

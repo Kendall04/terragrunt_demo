@@ -181,6 +181,14 @@ packaged-probe checks before review acceptance. No live AWS was accessed.
 
 ## Working guidance
 
+Authorization-response boundary regressions run first in
+`scripts/tests/test-ecs-readiness-gate.sh`; use `--response-boundaries-only` for
+the focused subset. They cover initial/final listener and rule streams, registered
+definitions, services, task lists and target-health envelopes, including actual
+promotion-path no-listener-write assertions. The normal hermetic readiness entry
+point runs this subset together with the existing regression suites. These tests
+create disposable files and require Linux Bash/jq tooling; they do not access AWS.
+
 For future changes, choose checks matching the affected contract and authorized
 side effects. Report what was actually run and what remains unverified.
 Do not claim tests passed based on metadata defaults or old generated outputs.

@@ -110,6 +110,14 @@ Conflicting, multi-target and unsupported shapes fail closed. Every service read
 including both reads in final revalidation, validates the complete response and
 the retained deployment identity.
 
+Captured authorization JSON is checked as exactly one object with the expected
+endpoint envelope before filtering or semantic interpretation. The shared
+`scripts/aws-response-boundary.sh` validator covers routing discovery and gate
+observations (definitions, services, task lists and target health), plus preparatory
+service/definition reads. DescribeTasks retains its independent per-batch boundary
+before aggregation. A malformed prefix, suffix or additional JSON document cannot
+be discarded to salvage an otherwise acceptable observation.
+
 Readiness scale-up, the gate and its AWS observations require Python 3 on the
 Linux runner. The process supervisor reserves a graceful termination interval
 inside the remaining budget, then sends SIGKILL to the private process group,
