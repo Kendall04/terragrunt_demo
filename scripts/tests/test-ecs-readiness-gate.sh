@@ -74,7 +74,10 @@ run_case() {
     [ "$status" -ne 0 ] || fail "$scenario unexpectedly passed"
     grep -Fq "$pattern" <<<"$output" || fail "$scenario missing diagnostic '$pattern': $output"
   fi
-  if [[ "$scenario" == final_* ]]; then
+  if [ "$scenario" = final_describe_failures_scalar ]; then
+    [ "$(<"$CASE_DIR/tasks")" = 3 ] || fail "$scenario did not reach the final DescribeTasks observation"
+    [ "$(<"$CASE_DIR/service")" = 5 ] || fail "$scenario continued after the malformed final DescribeTasks response"
+  elif [[ "$scenario" == final_* ]]; then
     [ "$(<"$CASE_DIR/service")" = 6 ] || fail "$scenario did not reach the final service revalidation"
   fi
   printf '[PASS] gate scenario: %s\n' "$scenario"
@@ -286,4 +289,5 @@ run_promotion_integration ready pass blue green
 run_promotion_integration ready pass green blue
 run_promotion_integration unready fail blue green
 run_promotion_integration describe_failures_scalar fail blue green
+run_promotion_integration final_describe_failures_scalar fail blue green
 printf 'All readiness gate tests passed.\n'
