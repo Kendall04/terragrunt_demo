@@ -29,6 +29,7 @@ service() {
   local call desired=2 running=2 pending=0
   call="$(increment_counter service)"
   case "$SCENARIO" in
+    later_describe_stream) desired=101; running=101 ;;
     normal_startup|partial_replacement|identity_contradiction|version_regression|deployment_change)
       if [ "$call" -eq 1 ]; then running=1; pending=1; fi ;;
     count_change)
@@ -55,6 +56,7 @@ list_tasks() {
   local call
   call="$(increment_counter list)"
   case "$SCENARIO" in
+    later_describe_stream) jq -n '{taskArns:[range(1;102) | "task/replica\(.)"]}' ;;
     normal_startup|identity_contradiction|version_regression)
       if [ "$call" -eq 1 ]; then jq -n '{taskArns:["task/one"]}'; else jq -n '{taskArns:["task/one","task/two"]}'; fi ;;
     partial_replacement)
@@ -70,7 +72,7 @@ list_tasks() {
 task_json() {
   local arn="$1" call="$2" suffix ip runtime probe_status="STOPPED" exit_code=0 version=1
   suffix="${arn##*/}"
-  case "$suffix" in one) ip=10.0.0.1;; two) ip=10.0.0.2;; three) ip=10.0.0.3;; four) ip=10.0.0.4;; *) exit 98;; esac
+  case "$suffix" in one) ip=10.0.0.1;; two) ip=10.0.0.2;; three) ip=10.0.0.3;; four) ip=10.0.0.4;; replica*) ip="10.0.0.${suffix#replica}";; *) exit 98;; esac
   runtime="runtime-$suffix"
   case "$SCENARIO" in
     unready) exit_code=23 ;;
@@ -138,6 +140,23 @@ describe_tasks() {
   else
     response="$(printf '%s\n' "${rendered[@]}" | jq -s '{tasks:.,failures:[]}')"
   fi
+  case "$SCENARIO" in
+    describe_empty) return ;;
+    describe_stream_prefix)
+      printf '%s\n' '{"tasks":{},"failures":{}}' "$response"; return ;;
+    describe_stream_object)
+      jq '.tasks |= (map({key:.taskArn,value:.}) | from_entries) | .failures = {}' <<<"$response"
+      printf '%s\n' '{"tasks":[],"failures":[]}'; return ;;
+    describe_stream_suffix)
+      printf '%s\n' "$response" '{"tasks":[],"failures":[]}'; return ;;
+    describe_stream_scalar)
+      printf '%s\n' "$response" 'true'; return ;;
+    later_describe_stream|final_describe_stream)
+      if { [ "$SCENARIO" = later_describe_stream ] && [ "$call" -eq 2 ]; } ||
+         { [ "$SCENARIO" = final_describe_stream ] && [ "$call" -eq 3 ]; }; then
+        printf '%s\n' '{"tasks":{},"failures":{}}' "$response"; return
+      fi ;;
+  esac
   jq --arg scenario "$SCENARIO" --argjson call "$call" '
     if $scenario == "describe_top_scalar" then "uninterpretable"
     elif $scenario == "describe_top_array" then [.]
@@ -186,6 +205,7 @@ route() {
 
 targets() {
   case "$SCENARIO" in
+    later_describe_stream) jq -n '{TargetHealthDescriptions:[range(1;102) | {Target:{Id:"10.0.0.\(.)",Port:8080},TargetHealth:{State:"healthy"}}]}' ;;
     extra_target) jq -n '{TargetHealthDescriptions:[{Target:{Id:"10.0.0.1",Port:8080},TargetHealth:{State:"healthy"}},{Target:{Id:"10.0.0.2",Port:8080},TargetHealth:{State:"healthy"}},{Target:{Id:"10.0.0.99",Port:8080},TargetHealth:{State:"healthy"}}]}' ;;
     missing_target) jq -n '{TargetHealthDescriptions:[{Target:{Id:"10.0.0.1",Port:8080},TargetHealth:{State:"healthy"}}]}' ;;
     *) jq -n '{TargetHealthDescriptions:[{Target:{Id:"10.0.0.1",Port:8080},TargetHealth:{State:"healthy"}},{Target:{Id:"10.0.0.2",Port:8080},TargetHealth:{State:"healthy"}}]}' ;;

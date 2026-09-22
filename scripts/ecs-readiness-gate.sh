@@ -240,12 +240,15 @@ describe_tasks_batched() {
       --cluster "$ECS_CLUSTER" \
       --tasks "${task_arns[@]:offset:100}" \
       --output json
-    if ! jq -e '
-      type == "object"
-      and (.tasks | type == "array")
-      and (.failures | type == "array")
-      and all(.tasks[]; type == "object")
-      and all(.failures[]; type == "object")
+    # Slurp this AWS call only: -e alone checks the last result in a JSON
+    # stream. Reject zero/multiple documents before inspecting the envelope.
+    if ! jq -se '
+      length == 1 and (.[0] |
+        type == "object"
+        and (.tasks | type == "array")
+        and (.failures | type == "array")
+        and all(.tasks[]; type == "object")
+        and all(.failures[]; type == "object"))
     ' <<<"$batch_json" >/dev/null; then
       die "DescribeTasks batch response envelope is malformed."
     fi

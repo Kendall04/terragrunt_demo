@@ -123,6 +123,50 @@ public class ReadinessProbeTests
         Assert.DoesNotContain("succeeded", diagnostics.ToString());
     }
 
+    [Theory]
+    [InlineData(11, 1)]
+    [InlineData(10, 1)]
+    [InlineData(9, 0)]
+    public async Task FinalSuccessBoundary_EnforcesElapsedDeadline(int completionSeconds, int expectedExit)
+    {
+        var clock = new ManualTimeProvider();
+        var handler = new SequenceHandler(new ResponseSpec(HttpStatusCode.OK, Healthy))
+        {
+            AfterThirdBodyRead = () => clock.AdvanceTo(completionSeconds)
+        };
+        using var diagnostics = new StringWriter();
+
+        var exitCode = await ReadinessProbe.RunAsync(
+            Options(), handler, clock.Delay, clock, diagnostics);
+
+        Assert.Equal(expectedExit, exitCode);
+        Assert.Equal(3, handler.RequestCount);
+        Assert.Equal(TimeSpan.FromSeconds(completionSeconds), clock.Elapsed);
+        Assert.Equal(expectedExit == 0, diagnostics.ToString().Contains("succeeded"));
+        if (expectedExit != 0)
+            Assert.Contains("total readiness deadline expired", diagnostics.ToString());
+    }
+
+    [Fact]
+    public async Task FinalSuccessBoundary_HonorsCancellationWithoutAnotherRead()
+    {
+        var clock = new ManualTimeProvider();
+        var handler = new SequenceHandler(new ResponseSpec(HttpStatusCode.OK, Healthy))
+        {
+            AfterThirdBodyRead = clock.FireTotalTimeout
+        };
+        using var diagnostics = new StringWriter();
+
+        var exitCode = await ReadinessProbe.RunAsync(
+            Options(), handler, clock.Delay, clock, diagnostics);
+
+        Assert.Equal(1, exitCode);
+        Assert.Equal(3, handler.RequestCount);
+        Assert.Equal(TimeSpan.FromSeconds(2), clock.Elapsed);
+        Assert.Contains("total readiness deadline expired", diagnostics.ToString());
+        Assert.DoesNotContain("succeeded", diagnostics.ToString());
+    }
+
     private sealed class CancelledHandler : HttpMessageHandler
     {
         protected override async Task<HttpResponseMessage> SendAsync(
@@ -150,6 +194,7 @@ public class ReadinessProbeTests
 
         public int RequestCount { get; private set; }
         public List<string> Requests { get; } = [];
+        public Action? AfterThirdBodyRead { get; init; }
 
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
@@ -165,14 +210,32 @@ public class ReadinessProbeTests
             var response = _last ?? throw new InvalidOperationException("No response configured.");
             return Task.FromResult(new HttpResponseMessage(response.Status)
             {
-                Content = new StringContent(response.Body, Encoding.UTF8, "application/json")
+                Content = RequestCount == 3 && AfterThirdBodyRead is not null
+                    ? new StreamContent(new FinalReadStream(response.Body, AfterThirdBodyRead))
+                    : new StringContent(response.Body, Encoding.UTF8, "application/json")
             });
+        }
+    }
+
+    private sealed class FinalReadStream(string body, Action afterRead)
+        : MemoryStream(Encoding.UTF8.GetBytes(body))
+    {
+        public override async ValueTask<int> ReadAsync(
+            Memory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            var read = await base.ReadAsync(buffer, cancellationToken);
+            // Deliver time/cancellation after the last I/O check, before the
+            // production parser and success accounting resume.
+            if (read == 0)
+                afterRead();
+            return read;
         }
     }
 
     private sealed class ManualTimeProvider : TimeProvider
     {
         private long _timestamp;
+        private ManualTimer? _totalTimer;
 
         public TimeSpan Elapsed => TimeSpan.FromSeconds(_timestamp);
 
@@ -180,11 +243,27 @@ public class ReadinessProbeTests
 
         public override long GetTimestamp() => _timestamp;
 
+        // Control elapsed time and timer delivery independently to exercise
+        // both a delayed timer and cancellation at the success boundary.
+        public void AdvanceTo(long seconds) => _timestamp = seconds;
+        public void FireTotalTimeout() => _totalTimer!.Fire();
+
+        public override ITimer CreateTimer(TimerCallback callback, object? state,
+            TimeSpan dueTime, TimeSpan period) => _totalTimer = new ManualTimer(callback, state);
+
         public Task Delay(TimeSpan delay, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             _timestamp += (long)delay.TotalSeconds;
             return Task.CompletedTask;
         }
+    }
+
+    private sealed class ManualTimer(TimerCallback callback, object? state) : ITimer
+    {
+        public void Fire() => callback(state);
+        public bool Change(TimeSpan dueTime, TimeSpan period) => true;
+        public void Dispose() { }
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }
 }

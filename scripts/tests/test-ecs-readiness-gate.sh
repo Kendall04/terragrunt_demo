@@ -45,6 +45,8 @@ EOF
 
 run_gate_process() {
   local deadline="${1:-1300}"
+  local replicas=2
+  [ "$SCENARIO" != later_describe_stream ] || replicas=101
   /usr/bin/env -i HOME="${HOME:-/tmp}" PATH="$FAKE_BIN:/usr/bin:/bin" BASH_ENV= ENV= \
     CASE_DIR="$CASE_DIR" SCENARIO="$SCENARIO" TEST_IMAGE="$IMAGE" TEST_TASK_DEFINITION="$TASK_DEFINITION" \
     AWS_ACCESS_KEY_ID= AWS_SECRET_ACCESS_KEY= AWS_SESSION_TOKEN= AWS_PROFILE= AWS_DEFAULT_PROFILE= \
@@ -57,7 +59,7 @@ run_gate_process() {
       --app-container app --probe-container app-readiness-probe \
       --target-group-arn tg-candidate --listener-arn listener \
       --candidate-rule-arn rule --active-target-group-arn tg-active \
-      --desired-count 2 --attempt-start-epoch 1000 --deadline-epoch "$deadline" \
+      --desired-count "$replicas" --attempt-start-epoch 1000 --deadline-epoch "$deadline" \
       --poll-interval 1 --stable-observations 2
 }
 
@@ -74,7 +76,10 @@ run_case() {
     [ "$status" -ne 0 ] || fail "$scenario unexpectedly passed"
     grep -Fq "$pattern" <<<"$output" || fail "$scenario missing diagnostic '$pattern': $output"
   fi
-  if [ "$scenario" = final_describe_failures_scalar ]; then
+  if [ "$scenario" = later_describe_stream ]; then
+    [ "$(<"$CASE_DIR/tasks")" = 2 ] || fail "$scenario did not reject the second DescribeTasks batch"
+    ! grep -q '^elbv2 describe-target-health ' "$CASE_DIR/aws-log" || fail "$scenario aggregated malformed batch evidence"
+  elif [ "$scenario" = final_describe_failures_scalar ] || [ "$scenario" = final_describe_stream ]; then
     [ "$(<"$CASE_DIR/tasks")" = 3 ] || fail "$scenario did not reach the final DescribeTasks observation"
     [ "$(<"$CASE_DIR/service")" = 5 ] || fail "$scenario continued after the malformed final DescribeTasks response"
   elif [[ "$scenario" == final_* ]]; then
@@ -177,6 +182,8 @@ EOF
 
 run_promotion_integration() {
   local scenario="$1" expected="$2" active="$3" inactive="$4" driver output status=0 gate_line switch_line
+  local replicas=2
+  [ "$scenario" != later_describe_stream ] || replicas=101
   setup_case "promotion-$scenario-$active-$inactive"
   SCENARIO="$scenario"; export SCENARIO
   driver="$CASE_DIR/driver.sh"
@@ -187,7 +194,7 @@ source "$DEPLOY"
 ENV_NAME=dev; AWS_REGION_NAME=us-east-1; USE_INSTANCE_ROLE=true; ECS_CLUSTER=cluster
 INACTIVE_SERVICE=svc-$inactive; INACTIVE_COLOR=$inactive; ACTIVE_COLOR=$active; ACTIVE_SERVICE=svc-$active
 ACTIVE_TG=tg-active; INACTIVE_TG=tg-candidate; ALB_LISTENER_ARN=listener; ALB_CANDIDATE_RULE_ARN=rule
-NEW_TASK_DEFINITION_ARN="$TASK_DEFINITION"; IMAGE_URI="$IMAGE"; DESIRED_COUNT=2
+NEW_TASK_DEFINITION_ARN="$TASK_DEFINITION"; IMAGE_URI="$IMAGE"; DESIRED_COUNT=$replicas
 TARGET_HEALTH_MAX_WAIT_SECONDS=300; TARGET_HEALTH_POLL_INTERVAL_SECONDS=1; READINESS_STABLE_OBSERVATIONS=2
 AWS_ARGS=(--region us-east-1 --cli-connect-timeout 5 --cli-read-timeout 10)
 promote_inactive_color
@@ -212,6 +219,17 @@ EOF
 }
 
 command -v jq >/dev/null || fail 'jq is required'
+# Keep new boundary counterexamples first, before the existing regression suite.
+run_case describe_stream_prefix fail 'batch response envelope is malformed'
+run_case describe_stream_object fail 'batch response envelope is malformed'
+run_case describe_stream_suffix fail 'batch response envelope is malformed'
+run_case describe_stream_scalar fail 'batch response envelope is malformed'
+run_case describe_empty fail 'batch response envelope is malformed'
+run_case later_describe_stream fail 'batch response envelope is malformed'
+run_case final_describe_stream fail 'batch response envelope is malformed'
+for stream_scenario in describe_stream_prefix describe_stream_object describe_stream_suffix describe_stream_scalar describe_empty later_describe_stream final_describe_stream; do
+  run_promotion_integration "$stream_scenario" fail blue green
+done
 run_case describe_valid_envelope pass
 run_case describe_top_scalar fail 'batch response envelope is malformed'
 run_case describe_top_array fail 'batch response envelope is malformed'

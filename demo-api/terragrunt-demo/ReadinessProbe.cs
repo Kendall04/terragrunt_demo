@@ -89,7 +89,7 @@ public static class ReadinessProbe
         {
             MaxResponseContentBufferSize = options.MaximumResponseBytes
         };
-        using var totalCancellation = new CancellationTokenSource(options.TotalTimeout);
+        using var totalCancellation = new CancellationTokenSource(options.TotalTimeout, timeProvider);
 
         var started = timeProvider.GetTimestamp();
         var streak = 0;
@@ -120,6 +120,15 @@ public static class ReadinessProbe
                         lastResult = "healthy readiness response";
                         if (streak >= options.ConsecutiveSuccesses)
                         {
+                            // Reading/parsing the final body can finish after the
+                            // deadline without another cancellable await.
+                            if (timeProvider.GetElapsedTime(started) >= options.TotalTimeout ||
+                                totalCancellation.IsCancellationRequested)
+                            {
+                                lastResult = "total readiness deadline expired";
+                                break;
+                            }
+                            requestCancellation.Token.ThrowIfCancellationRequested();
                             diagnostics.WriteLine($"Readiness probe succeeded after {attempts} attempt(s).");
                             return 0;
                         }
