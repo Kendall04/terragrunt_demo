@@ -226,7 +226,7 @@ emit_response() {
     describe-target-health) counter=target ;;
   esac
   if [[ "$SCENARIO" == "boundary_${counter}_"* ]]; then
-    mode="${SCENARIO#boundary_${counter}_}"
+    mode="${SCENARIO#boundary_"${counter}"_}"
     if [[ "$mode" == final_* ]]; then
       if [ "$(<"$CASE_DIR/$counter")" = 6 ]; then
         mode="${mode#final_}"
