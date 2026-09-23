@@ -100,24 +100,90 @@ def attributes(text):
     return attrs
 
 
+RESOURCE_ATTRIBUTES = {
+    "aws_iam_role": {"name", "assume_role_policy", "count", "tags", "description"},
+    "aws_iam_policy": {"name", "description", "policy", "count", "tags"},
+    "aws_iam_role_policy": {"name", "role", "policy", "count"},
+    "aws_iam_role_policy_attachment": {"role", "policy_arn", "count"},
+}
+
+
+def admit_resource(typ, body):
+    if typ not in RESOURCE_ATTRIBUTES:
+        raise Unsupported("SOURCE_ADMISSION_UNKNOWN resource type: " + str(typ))
+    children, rest = blocks(body)
+    if children:
+        raise Unsupported("SOURCE_ADMISSION_UNKNOWN nested/dynamic resource block")
+    attrs = attributes(rest)
+    if set(attrs) - RESOURCE_ATTRIBUTES[typ]:
+        raise Unsupported("SOURCE_ADMISSION_UNKNOWN attributes: " + str(sorted(set(attrs) - RESOURCE_ATTRIBUTES[typ])))
+    return attrs
+
+
 class Adapter:
     def __init__(self, root, env):
         self.root, self.env = Path(root), env
+        if list((self.root / IAM).glob("*.tf.json")):
+            raise Unsupported("SOURCE_ADMISSION_UNKNOWN Terraform JSON module")
         metadata = json.loads((self.root / "ci/authority/synthetic-context.json").read_text())
+        self.metadata = metadata
+        if env not in ("dev", "prod") or metadata["bindings"] != metadata["fixed_values"]:
+            raise Unsupported("SOURCE_BINDING_FAILURE synthetic value/context changed")
         self.values = {k: v.replace("{env}", env) for k, v in metadata["bindings"].items()}
         self.locals = {}
         local_blocks, _ = blocks((self.root / IAM / "locals.tf").read_text())
         for kind, _, _, body in local_blocks:
             if kind == "locals":
                 self.locals.update(attributes(body))
+        declarations = {t: clean(b).strip() for k, t, n, b in
+                        blocks((self.root / IAM / "variables.tf").read_text())[0] if k == "variable"}
+        if set(metadata["source_bindings"]) != set(self.values):
+            raise Unsupported("SOURCE_BINDING_FAILURE missing binding")
+        for key, binding in metadata["source_bindings"].items():
+            actual = self.locals.get(key[6:]) if key.startswith("local.") else declarations.get(key[4:])
+            if actual != binding["expression"]:
+                raise Unsupported("SOURCE_BINDING_FAILURE " + key)
+        self.binding_status = "BINDING_VALIDATED"
         self.active = set()
         self.docs, self.roles, self.resources = {}, {}, []
+        seen = set()
+        providers = []
         for path in sorted((self.root / IAM).glob("*.tf")):
-            for kind, typ, name, body in blocks(path.read_text())[0]:
+            children, remainder = blocks(path.read_text())
+            if remainder.strip():
+                raise Unsupported("SOURCE_ADMISSION_UNKNOWN top-level expression")
+            for kind, typ, name, body in children:
+                identity = (kind, typ, name)
+                if kind in ("resource", "data"):
+                    if identity in seen:
+                        raise Unsupported("SOURCE_ADMISSION_UNKNOWN duplicate declaration")
+                    seen.add(identity)
+                if kind == "locals" and path.name != "locals.tf":
+                    raise Unsupported("SOURCE_ADMISSION_UNKNOWN additional locals")
+                if typ in ("tls_certificate", "aws_iam_openid_connect_provider"):
+                    candidate = {"kind": kind, "type": typ, "name": name, "body": clean(body).strip()}
+                    providers.append(candidate)
+                    if candidate not in metadata["provider_blocks"]:
+                        raise Unsupported("SOURCE_BINDING_FAILURE provider declaration")
+                    continue
                 if kind == "data" and typ == "aws_iam_policy_document":
                     self.docs[name] = (body, path.relative_to(self.root).as_posix())
                 elif kind == "resource":
-                    self.resources.append((typ, name, attributes(body), path.relative_to(self.root).as_posix()))
+                    self.resources.append((typ, name, admit_resource(typ, body), path.relative_to(self.root).as_posix()))
+                elif kind == "data" and typ in ("aws_region", "aws_caller_identity") and name == "current" and not body.strip():
+                    continue
+                elif kind not in ("locals", "variable", "output", "terraform"):
+                    raise Unsupported("SOURCE_ADMISSION_UNKNOWN block: " + str((kind, typ, name)))
+        if not {("data", "aws_region", "current"), ("data", "aws_caller_identity", "current")} <= seen:
+            raise Unsupported("SOURCE_BINDING_FAILURE missing account/region data declaration")
+        if len(providers) != len(metadata["provider_blocks"]):
+            raise Unsupported("SOURCE_BINDING_FAILURE missing provider declaration")
+        for name in self.docs:
+            self.document_reference("data.aws_iam_policy_document." + name + ".json")
+        for typ, name, attrs, path in self.resources:
+            self.exists(attrs)
+            if typ in ("aws_iam_policy", "aws_iam_role_policy"):
+                self.document_reference(attrs["policy"])
         for typ, name, attrs, path in self.resources:
             if typ != "aws_iam_role" or not self.exists(attrs):
                 continue
@@ -125,8 +191,6 @@ class Adapter:
             self.roles[name] = {"name": self.value(attrs["name"]), "trust": trust,
                                 "policies": [], "unknown": [], "source": path,
                                 "boundary": None}
-            if "permissions_boundary" in attrs:
-                self.roles[name]["unknown"].append("boundary attachment requires reviewed adapter")
         for typ, name, attrs, path in self.resources:
             if typ not in ("aws_iam_role_policy", "aws_iam_role_policy_attachment") or not self.exists(attrs):
                 continue
@@ -140,11 +204,54 @@ class Adapter:
                 reference = re.fullmatch(r"aws_iam_policy\.(\w+)(?:\[0\])?\.arn", attrs["policy_arn"])
                 if reference:
                     matches = [a for t, n, a, _ in self.resources if t == "aws_iam_policy" and n == reference[1]]
-                    if len(matches) != 1:
+                    if len(matches) != 1 or not self.exists(matches[0]):
                         raise Unsupported("unresolved policy attachment")
                     role["policies"].append(self.document_reference(matches[0]["policy"]))
                 else:
                     role["unknown"].append("AWS-managed policy content not snapshotted: " + self.value(attrs["policy_arn"]))
+
+    def workload(self):
+        for path, binding in self.metadata["workload_binding_files"].items():
+            if not (self.root / path).is_file() or digest(self.root / path) != binding["sha256"]:
+                raise Unsupported("SOURCE_BINDING_FAILURE workload dependency: " + path)
+        # Derive names from the now-validated actual module/role declarations,
+        # never from the calling principal's permission allowlist.
+        base = "terraform/infra/apps/fargate/"
+        local_values = {}
+        for k, t, n, b in blocks((self.root / base / "locals.tf").read_text())[0]:
+            if k == "locals":
+                local_values.update(attributes(b))
+        saved_locals, saved_values = self.locals, self.values.copy()
+        self.locals = local_values
+        try:
+            modules = {t: attributes(b) for k, t, n, b in blocks((self.root / base / "demo.tf").read_text())[0] if k == "module"}
+            name = self.value(modules["demo_api_blue"]["name"])
+            self.values["var.name"] = name
+            roles = {n: admit_resource(t, b) for k, t, n, b in blocks((self.root / base / "modules/ecs_service/iam.tf").read_text())[0]
+                     if k == "resource" and t == "aws_iam_role"}
+            if set(roles) != {"task_role", "execution_role"}:
+                raise Unsupported("SOURCE_BINDING_FAILURE workload declarations")
+            account = self.values["local.account_id"]
+            task = "arn:aws:iam::" + account + ":role/" + self.value(roles["task_role"]["name"])
+            execution = "arn:aws:iam::" + account + ":role/" + self.value(roles["execution_role"]["name"])
+            region = self.values["local.aws_region"]
+            platform = self.root / "terraform/infra/platform"
+            self.locals = {}
+            for k, t, n, b in blocks((platform / "locals.tf").read_text())[0]:
+                if k == "locals":
+                    self.locals.update(attributes(b))
+            cluster_module = next(attributes(b) for k, t, n, b in blocks((platform / "main.tf").read_text())[0]
+                                  if k == "module" and t == "ecs_cluster")
+            cluster = self.value(cluster_module["name"])
+            service_body = next(b for k, t, n, b in blocks((self.root / base / "modules/ecs_service/service.tf").read_text())[0]
+                                if k == "resource" and t == "aws_ecs_service" and n == "this")
+            service_name = self.value(attributes(blocks(service_body)[1])["name"])
+            return {"task_role": task, "exec_role": execution,
+                    "family": f"arn:aws:ecs:{region}:{account}:task-definition/{name}:42",
+                    "service": f"arn:aws:ecs:{region}:{account}:service/{cluster}/{service_name}",
+                    "binding_status": "BINDING_VALIDATED"}
+        finally:
+            self.locals, self.values = saved_locals, saved_values
 
     def exists(self, attrs):
         if "count" not in attrs:
@@ -217,3 +324,25 @@ class Adapter:
                     raise Unsupported("unsupported nested policy block")
             result.append(st)
         return {"Version": "2012-10-17", "Statement": result}
+
+
+def semantic_inventory(root):
+    """Structural coverage is never semantic admission, even after hash refresh.
+
+    Every security declaration outside the narrow evaluated module remains UNKNOWN.
+    This is evidence of a known unsupported surface, not a characterization failure.
+    No effective-negative graph claim may use this as a modeled policy universe.
+    """
+    from inventory import scan
+    records = []
+    for path, record in scan(root).items():
+        for declaration in record["declarations"]:
+            typ = declaration["type"] or ""
+            if (typ.startswith("aws_iam_") or typ == "aws_lambda_permission" or
+                    "policy" in typ or typ.startswith("aws_kms_")):
+                modeled = path.startswith(IAM + "/") and typ in set(RESOURCE_ATTRIBUTES) | {"aws_iam_policy_document"}
+                records.append({"source": path, "declaration": declaration,
+                                "admission": "MODELED_BY_ADAPTER" if modeled else "SOURCE_ADMISSION_UNKNOWN",
+                                "reason": "Requires successful Adapter construction" if modeled else
+                                "Outside semantic subset: policies, expansions, resource controls or delegation not evaluated"})
+    return records

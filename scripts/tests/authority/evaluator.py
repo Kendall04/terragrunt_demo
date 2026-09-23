@@ -33,10 +33,52 @@ def matches(pattern, value, insensitive=False):
     if not isinstance(pattern, str) or not isinstance(value, str):
         raise Unsupported("non-string matching operand")
     expression = re.escape(pattern).replace(r"\*", ".*").replace(r"\?", ".")
-    return re.fullmatch(expression, value, re.I if insensitive else 0) is not None
+    return re.fullmatch(expression, value, re.S | (re.I if insensitive else 0)) is not None
+
+
+def normalized_context(context):
+    if not isinstance(context, dict):
+        raise Unsupported("invalid context mapping")
+    result = {}
+    for key, value in context.items():
+        if not isinstance(key, str) or key.lower() in result:
+            raise Unsupported("invalid/ambiguous case-insensitive context key")
+        result[key.lower()] = value
+    return result
+
+
+def arn_matches(pattern, value):
+    # The resource component may itself contain colons; the first five may not.
+    parts, actual = pattern.split(":", 5), value.split(":", 5)
+    if len(parts) != 6 or len(actual) != 6 or parts[0] != "arn" or actual[0] != "arn":
+        raise Unsupported("invalid ARN condition operand")
+    return all(matches(p, v) for p, v in zip(parts, actual))
+
+
+def principal_form(category, value, kind):
+    """Admission precedes matching, including nonmatching/conditioned principals."""
+    if not isinstance(value, str) or not value:
+        return "INVALID"
+    if "*" in value or "?" in value:
+        return "UNSUPPORTED"
+    if category == "AWS":
+        if re.fullmatch(r"arn:aws:iam::[0-9]{12}:role/[^\s]+", value):
+            return "SUPPORTED_AND_MODELED"
+        if re.fullmatch(r"arn:aws:sts::[0-9]{12}:assumed-role/[^/\s]+/[^/\s]+", value):
+            return "SUPPORTED_AND_MODELED" if kind == "resource" else "UNSUPPORTED"
+        if re.fullmatch(r"[0-9]{12}|arn:[^:]+:iam::[0-9]{12}:(root|user/.+)", value):
+            return "UNSUPPORTED"
+    elif category == "Service" and re.fullmatch(r"[a-z0-9.-]+\.amazonaws\.com", value):
+        return "SUPPORTED_AND_MODELED" if kind == "trust" else "UNSUPPORTED"
+    elif category == "Federated" and re.fullmatch(r"arn:aws:iam::[0-9]{12}:oidc-provider/[^\s]+", value):
+        return "SUPPORTED_AND_MODELED" if kind == "trust" else "UNSUPPORTED"
+    return "UNSUPPORTED" if value.startswith("arn:") else "INVALID"
 
 
 def condition(conditions, context):
+    context = normalized_context(context)
+    if not isinstance(conditions, dict):
+        raise Unsupported("invalid condition mapping")
     answers = []
     for operator, tests in conditions.items():
         quantifier = None
@@ -47,12 +89,15 @@ def condition(conditions, context):
         if_exists = operator.endswith("IfExists")
         if if_exists:
             operator = operator[:-8]
+        if quantifier and if_exists:
+            raise Unsupported("combined set operator/IfExists not modeled")
         supported = {"StringEquals", "StringLike", "ArnEquals", "ArnLike", "Bool", "Null"}
         if operator not in supported or (operator == "Null" and (if_exists or quantifier)):
             raise Unsupported("condition operator " + operator)
         if not isinstance(tests, dict):
             raise Unsupported("condition must be a mapping")
         for key, expected in tests.items():
+            key = key.lower()
             values = many(expected)
             if not values or any(not isinstance(x, str) for x in values):
                 raise Unsupported("condition values must be nonempty string lists")
@@ -60,6 +105,10 @@ def condition(conditions, context):
                 raise Unsupported("invalid Bool literal")
             present = key in context and context[key] is not None
             actual = many(context[key]) if present else []
+            if actual and all(x == "" for x in actual):
+                actual = []
+            elif "" in actual:
+                raise Unsupported("mixed null/non-null dataset")
             if any(not isinstance(x, str) for x in actual):
                 raise Unsupported("request context requires typed string values")
             if operator == "Null":
@@ -74,7 +123,7 @@ def condition(conditions, context):
                 raise Unsupported("multivalued key without set operator")
             if operator == "Bool" and any(x not in ("true", "false") for x in values + actual):
                 raise Unsupported("invalid Bool literal")
-            compare = matches if operator.endswith("Like") else lambda a, b: a == b
+            compare = arn_matches if operator.startswith("Arn") else (matches if operator.endswith("Like") else lambda a, b: a == b)
             checks = [any(compare(wanted, got) for wanted in values) for got in actual]
             answers.append(all(checks) if quantifier == "ForAllValues" else any(checks))
     return all(answers)
@@ -109,8 +158,12 @@ def _principal(statement, request, kind):
     if category not in ("AWS", "Federated", "Service"):
         raise Unsupported("principal category")
     identities = many(identities)
-    if any(not isinstance(x, str) or "*" in x or "?" in x for x in identities):
-        raise Unsupported("wildcard-principal resource/trust grant")
+    if not identities:
+        raise Unsupported("INVALID empty principal")
+    for identity in identities:
+        admission = principal_form(category, identity, kind)
+        if admission != "SUPPORTED_AND_MODELED":
+            raise Unsupported(admission + " principal: " + str(identity))
     if kind == "resource" and category != "AWS":
         raise Unsupported("service-specific resource delegation")
     if request.get("principal") in identities:
@@ -160,11 +213,6 @@ def evaluate(request, identities=(), boundary=None, resources=(), trust=None):
         parts = caller.split(":")
         if len(parts) < 6 or request.get("resource_account") != parts[4]:
             return Result(Decision.UNKNOWN, ("same-account resource-policy context not established",))
-    for policy in resources:
-        for st in many(policy.get("Statement", [])):
-            for arn in many(st.get("Principal", {}).get("AWS", [])) if isinstance(st.get("Principal"), dict) else []:
-                if ":role/" not in arn and ":assumed-role/" not in arn:
-                    return Result(Decision.UNKNOWN, ("resource principal is not an exact role/session",))
     ia, ideny, iu = _statements(identities, request, "identity")
     ba, bdeny, bu = _statements(boundary or [], request, "identity")
     ra, rdeny, ru = _statements(resources, request, "resource")
@@ -201,14 +249,14 @@ def authorize(request, capabilities, **policies):
         return Result(Decision.UNKNOWN, ("multi-resource API unsupported",))
     if not any(matches(x, request["resource"]) for x in cap["resources"]):
         return Result(Decision.UNKNOWN, ("resource/action applicability",))
-    if set(request.get("context", {})) - set(cap.get("context", [])):
+    if {k.lower() for k in request.get("context", {})} - {k.lower() for k in cap.get("context", [])}:
         return Result(Decision.UNKNOWN, ("condition-key applicability",))
     for kind in ("identities", "resources", "boundary"):
         for doc in policies.get(kind) or ():
             for st in many(doc.get("Statement", [])):
                 if any(matches(a, request["action"], True) for a in many(st.get("Action", []))):
                     keys = {k for tests in st.get("Condition", {}).values() for k in tests}
-                    if keys - set(cap.get("context", [])):
+                    if {k.lower() for k in keys} - {k.lower() for k in cap.get("context", [])}:
                         return Result(Decision.UNKNOWN, ("policy condition-key applicability",))
     dependencies = request.get("dependencies", [])
     if sorted(x["action"].lower() for x in dependencies) != sorted(cap.get("dependencies", [])):

@@ -14,5 +14,191 @@
     "var.tf_state_lock_table_name": "demo-tflock-{env}-111122223333",
     "var.release_artifacts_bucket_name": "demo-release-artifacts-111122223333",
     "var.shared_artifact_ecr_repository_name": "demo-shared-demo-ms"
+  },
+  "source_bindings": {
+    "var.env": {
+      "classification": "SOURCE_BINDING",
+      "source": "terraform/infra/shared/modules/iam_github/variables.tf",
+      "declaration": "var.env",
+      "expression": "type = string",
+      "value_kind": "SYNTHETIC_VALUE",
+      "scope": "Fixed module input/provider stand-in; not live configuration"
+    },
+    "var.name": {
+      "classification": "SOURCE_BINDING",
+      "source": "terraform/infra/shared/modules/iam_github/variables.tf",
+      "declaration": "var.name",
+      "expression": "type = string",
+      "value_kind": "SYNTHETIC_VALUE",
+      "scope": "Fixed module input/provider stand-in; not live configuration"
+    },
+    "var.project": {
+      "classification": "SOURCE_BINDING",
+      "source": "terraform/infra/shared/modules/iam_github/variables.tf",
+      "declaration": "var.project",
+      "expression": "type = string",
+      "value_kind": "SYNTHETIC_VALUE",
+      "scope": "Fixed module input/provider stand-in; not live configuration"
+    },
+    "var.github_owner": {
+      "classification": "SOURCE_BINDING",
+      "source": "terraform/infra/shared/modules/iam_github/variables.tf",
+      "declaration": "var.github_owner",
+      "expression": "type = string",
+      "value_kind": "SYNTHETIC_VALUE",
+      "scope": "Fixed module input/provider stand-in; not live configuration"
+    },
+    "var.github_repo": {
+      "classification": "SOURCE_BINDING",
+      "source": "terraform/infra/shared/modules/iam_github/variables.tf",
+      "declaration": "var.github_repo",
+      "expression": "type = string",
+      "value_kind": "SYNTHETIC_VALUE",
+      "scope": "Fixed module input/provider stand-in; not live configuration"
+    },
+    "local.account_id": {
+      "classification": "SOURCE_BINDING",
+      "source": "terraform/infra/shared/modules/iam_github/locals.tf",
+      "declaration": "local.account_id",
+      "expression": "data.aws_caller_identity.current.account_id",
+      "value_kind": "SYNTHETIC_VALUE",
+      "scope": "Fixed module input/provider stand-in; not live configuration"
+    },
+    "local.aws_region": {
+      "classification": "SOURCE_BINDING",
+      "source": "terraform/infra/shared/modules/iam_github/locals.tf",
+      "declaration": "local.aws_region",
+      "expression": "data.aws_region.current.name",
+      "value_kind": "SYNTHETIC_VALUE",
+      "scope": "Fixed module input/provider stand-in; not live configuration"
+    },
+    "local.github_oidc_provider_arn": {
+      "classification": "SOURCE_BINDING",
+      "source": "terraform/infra/shared/modules/iam_github/locals.tf",
+      "declaration": "local.github_oidc_provider_arn",
+      "expression": "coalesce(\n    var.github_oidc_provider_arn,\n    try(aws_iam_openid_connect_provider.github[0].arn, null),\n    try(data.aws_iam_openid_connect_provider.github[0].arn, null),\n  )",
+      "value_kind": "SYNTHETIC_VALUE",
+      "scope": "Fixed module input/provider stand-in; not live configuration"
+    },
+    "var.tf_state_bucket_name": {
+      "classification": "SOURCE_BINDING",
+      "source": "terraform/infra/shared/modules/iam_github/variables.tf",
+      "declaration": "var.tf_state_bucket_name",
+      "expression": "type        = string\n  description = \"Terraform/Terragrunt remote state S3 bucket name. Used only for scoping CI/CD IAM permissions.\"",
+      "value_kind": "SYNTHETIC_VALUE",
+      "scope": "Fixed module input/provider stand-in; not live configuration"
+    },
+    "var.tf_state_lock_table_name": {
+      "classification": "SOURCE_BINDING",
+      "source": "terraform/infra/shared/modules/iam_github/variables.tf",
+      "declaration": "var.tf_state_lock_table_name",
+      "expression": "type        = string\n  description = \"Terraform/Terragrunt DynamoDB lock table name. Used only for scoping CI/CD IAM permissions.\"",
+      "value_kind": "SYNTHETIC_VALUE",
+      "scope": "Fixed module input/provider stand-in; not live configuration"
+    },
+    "var.release_artifacts_bucket_name": {
+      "classification": "SOURCE_BINDING",
+      "source": "terraform/infra/shared/modules/iam_github/variables.tf",
+      "declaration": "var.release_artifacts_bucket_name",
+      "expression": "type        = string\n  description = \"Account-level S3 bucket name used for release manifests and deployment records.\"",
+      "value_kind": "SYNTHETIC_VALUE",
+      "scope": "Fixed module input/provider stand-in; not live configuration"
+    },
+    "var.shared_artifact_ecr_repository_name": {
+      "classification": "SOURCE_BINDING",
+      "source": "terraform/infra/shared/modules/iam_github/variables.tf",
+      "declaration": "var.shared_artifact_ecr_repository_name",
+      "expression": "type        = string\n  description = \"Account-level, environment-neutral ECR repository name for promoted application artifacts.\"",
+      "value_kind": "SYNTHETIC_VALUE",
+      "scope": "Fixed module input/provider stand-in; not live configuration"
+    }
+  },
+  "fixed_values": {
+    "var.env": "{env}",
+    "var.name": "demo-{env}-shared-github",
+    "var.project": "demo",
+    "var.github_owner": "Kendall04",
+    "var.github_repo": "terragrunt_demo",
+    "local.account_id": "111122223333",
+    "local.aws_region": "us-east-1",
+    "local.github_oidc_provider_arn": "arn:aws:iam::111122223333:oidc-provider/token.actions.githubusercontent.com",
+    "var.tf_state_bucket_name": "demo-tfstate-{env}-111122223333",
+    "var.tf_state_lock_table_name": "demo-tflock-{env}-111122223333",
+    "var.release_artifacts_bucket_name": "demo-release-artifacts-111122223333",
+    "var.shared_artifact_ecr_repository_name": "demo-shared-demo-ms"
+  },
+  "provider_blocks": [
+    {
+      "kind": "data",
+      "type": "tls_certificate",
+      "name": "github_actions",
+      "body": "count = var.create_github_oidc_provider ? 1 : 0\n  url   = \"https://token.actions.githubusercontent.com/.well-known/openid-configuration\""
+    },
+    {
+      "kind": "resource",
+      "type": "aws_iam_openid_connect_provider",
+      "name": "github",
+      "body": "count = var.create_github_oidc_provider ? 1 : 0\n\n  url = \"https://token.actions.githubusercontent.com\"\n\n  client_id_list = [\n    \"sts.amazonaws.com\",\n  ]\n\n  thumbprint_list = [\n    data.tls_certificate.github_actions[0].certificates[0].sha1_fingerprint,\n  ]"
+    },
+    {
+      "kind": "data",
+      "type": "aws_iam_openid_connect_provider",
+      "name": "github",
+      "body": "count = var.create_github_oidc_provider || var.github_oidc_provider_arn != null ? 0 : 1\n  url   = \"https://token.actions.githubusercontent.com\""
+    }
+  ],
+  "workload_binding_files": {
+    "terraform/infra/apps/fargate/demo.tf": {
+      "sha256": "9daf2dbde4a80b1923fd9bc9fb1778530c035fbea026c346022eb076cbefe51f",
+      "relationship": "Reviewed blue/green module instance, task/execution role, family, service and platform cluster wiring. Any change requires binding review, not just inventory refresh."
+    },
+    "terraform/infra/apps/fargate/locals.tf": {
+      "sha256": "8e0924ac6b3049dc0b872978e81e6d0a4a6e8509b7f0422bdf02229bfc440da2",
+      "relationship": "Reviewed blue/green module instance, task/execution role, family, service and platform cluster wiring. Any change requires binding review, not just inventory refresh."
+    },
+    "terraform/infra/apps/fargate/modules/ecs_service/iam.tf": {
+      "sha256": "ccde108a00b27f50218df727e8b9bd84cfc6c2acda3758efc8fba329b6af78c5",
+      "relationship": "Reviewed blue/green module instance, task/execution role, family, service and platform cluster wiring. Any change requires binding review, not just inventory refresh."
+    },
+    "terraform/infra/apps/fargate/modules/ecs_service/service.tf": {
+      "sha256": "6e0d160ff848709960363577b60ed08bfa628cb2949482c50a1ae32dce5e33ba",
+      "relationship": "Reviewed blue/green module instance, task/execution role, family, service and platform cluster wiring. Any change requires binding review, not just inventory refresh."
+    },
+    "terraform/infra/apps/fargate/modules/ecs_service/taskdef.tf": {
+      "sha256": "08c1569a65e8e0fb1ae45a5e8732636c92db82f30ee88038a7aa0f53d05167b2",
+      "relationship": "Reviewed blue/green module instance, task/execution role, family, service and platform cluster wiring. Any change requires binding review, not just inventory refresh."
+    },
+    "terraform/infra/apps/fargate/modules/ecs_service/variables.tf": {
+      "sha256": "a05ed414195db447fad1a233b6e148ab8e371b0e7c41394558d762c6a24c49ee",
+      "relationship": "Reviewed blue/green module instance, task/execution role, family, service and platform cluster wiring. Any change requires binding review, not just inventory refresh."
+    },
+    "terraform/infra/platform/locals.tf": {
+      "sha256": "50e51ee4f3a4d60408978939e6c0e75e6782d4c79ced2d80fe070a73776a086a",
+      "relationship": "Reviewed blue/green module instance, task/execution role, family, service and platform cluster wiring. Any change requires binding review, not just inventory refresh."
+    },
+    "terraform/infra/platform/main.tf": {
+      "sha256": "3e0e259d45c36203a83590aef21d69d7ca2a075a3a50afab5771e9e2eb8ab3d8",
+      "relationship": "Reviewed blue/green module instance, task/execution role, family, service and platform cluster wiring. Any change requires binding review, not just inventory refresh."
+    },
+    "terraform/infra/platform/modules/ecs_cluster/main.tf": {
+      "sha256": "6b0bd680ac09e99c5bf35dde7c72300e1b06a5cdc14f4e8a5bff619aaaba84c9",
+      "relationship": "Reviewed blue/green module instance, task/execution role, family, service and platform cluster wiring. Any change requires binding review, not just inventory refresh."
+    },
+    "terraform/live/dev/apps/fargate/terragrunt.hcl": {
+      "sha256": "26bbd04a56c18698c5f82e7239cef4ef06e315a34648e3c7404ceee457920fe1",
+      "relationship": "Reviewed blue/green module instance, task/execution role, family, service and platform cluster wiring. Any change requires binding review, not just inventory refresh."
+    },
+    "terraform/live/dev/platform/terragrunt.hcl": {
+      "sha256": "75ba5620ea246a97e2b4317e04aec0f66ca870a49e4e0ca3325e7e26a10e2268",
+      "relationship": "Reviewed blue/green module instance, task/execution role, family, service and platform cluster wiring. Any change requires binding review, not just inventory refresh."
+    },
+    "terraform/live/prod/apps/fargate/terragrunt.hcl": {
+      "sha256": "26bbd04a56c18698c5f82e7239cef4ef06e315a34648e3c7404ceee457920fe1",
+      "relationship": "Reviewed blue/green module instance, task/execution role, family, service and platform cluster wiring. Any change requires binding review, not just inventory refresh."
+    },
+    "terraform/live/prod/platform/terragrunt.hcl": {
+      "sha256": "75ba5620ea246a97e2b4317e04aec0f66ca870a49e4e0ca3325e7e26a10e2268",
+      "relationship": "Reviewed blue/green module instance, task/execution role, family, service and platform cluster wiring. Any change requires binding review, not just inventory refresh."
+    }
   }
 }

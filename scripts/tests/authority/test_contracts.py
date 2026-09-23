@@ -104,9 +104,9 @@ class ContractTests(unittest.TestCase):
             if mode == "immutable_ids":
                 self.assertIn("Kendall04@123/terragrunt_demo@456", subject)
             trust = {"Statement": [{"Effect": "Allow", "Action": "sts:AssumeRoleWithWebIdentity",
-                                    "Principal": {"Federated": "synthetic-provider"},
+                                    "Principal": {"Federated": "arn:aws:iam::111122223333:oidc-provider/token.actions.githubusercontent.com"},
                                     "Condition": {"StringEquals": {"sub": subject, "aud": "sts.amazonaws.com"}}}]}
-            request = {"action": "sts:AssumeRoleWithWebIdentity", "resource": "synthetic-role", "principal": "synthetic-provider",
+            request = {"action": "sts:AssumeRoleWithWebIdentity", "resource": "synthetic-role", "principal": "arn:aws:iam::111122223333:oidc-provider/token.actions.githubusercontent.com",
                        "context": {"sub": subject, "aud": "sts.amazonaws.com"}}
             self.assertEqual(evaluate(request, trust=[trust]).decision, D.ALLOW)
             for bad in (subject.replace("a" * 40, "b" * 40), "repo:Kendall04/terragrunt_demo:environment:prod"):

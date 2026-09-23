@@ -68,7 +68,7 @@ class RepositoryTests(unittest.TestCase):
         path = root / IAM / "github_delivery_split.tf"
         original = path.read_text()
         path.write_text(original.replace('"iam:PassRole"', '"iam:ListRoles"'))
-        self.assertEqual(baseline(root)[0]["states"]["delivery:runtime"], "DENY")
+        self.assertEqual(baseline(root)[0]["states"]["delivery:runtime"], "UNKNOWN")
         self.assertTrue(verify(root))
         path.write_text(original)
         self.assertEqual(baseline(root)[0]["states"]["delivery:runtime"], "ALLOW")
@@ -78,7 +78,7 @@ class RepositoryTests(unittest.TestCase):
         path = root / IAM / "github_ecs_blue_green.tf"
         original = path.read_text()
         path.write_text(original.replace('"elasticloadbalancing:ModifyListener"', '"elasticloadbalancing:DescribeListeners"'))
-        self.assertEqual(baseline(root)[0]["states"]["github_app_rollback:direct-routing"], "DENY")
+        self.assertEqual(baseline(root)[0]["states"]["github_app_rollback:direct-routing"], "UNKNOWN")
         path.write_text(original)
         self.assertEqual(baseline(root)[0]["states"]["github_app_rollback:direct-routing"], "ALLOW")
 
@@ -87,7 +87,7 @@ class RepositoryTests(unittest.TestCase):
         path = root / IAM / "github_delivery_split.tf"
         original = path.read_text()
         path.write_text(original.replace('"ecs:UpdateService"', '"ecs:DescribeServices"'))
-        self.assertEqual(baseline(root)[0]["states"]["delivery:runtime"], "DENY")
+        self.assertEqual(baseline(root)[0]["states"]["delivery:runtime"], "UNKNOWN")
         path.write_text(original)
         self.assertEqual(baseline(root)[0]["states"]["delivery:runtime"], "ALLOW")
 
@@ -99,7 +99,7 @@ class RepositoryTests(unittest.TestCase):
         self.assertIn(old, original)
         isolated = 'github_dev_deploy_subjects    = ["repo:fixture:environment:dev:job_workflow_ref:pinned"]'
         path.write_text(original.replace(old, isolated))
-        self.assertEqual(baseline(root)[0]["states"]["acquire:github_dev_deploy"], "DENY")
+        self.assertEqual(baseline(root)[0]["states"]["acquire:github_dev_deploy"], "UNKNOWN")
         path.write_text(original.replace(old, isolated[:-1] + ", local.github_environment_subject]"))
         self.assertEqual(baseline(root)[0]["states"]["acquire:github_dev_deploy"], "ALLOW")
 
@@ -115,7 +115,7 @@ class RepositoryTests(unittest.TestCase):
         root = self.fixture()
         path = root / IAM / "github_terragrunt_cd.tf"
         path.write_text(path.read_text().replace('"iam:PutRolePolicy"', '"iam:ListRoles"'))
-        self.assertEqual(baseline(root)[0]["states"]["infra:stronger-workload-compute"], "DENY")
+        self.assertEqual(baseline(root)[0]["states"]["infra:stronger-workload-compute"], "ALLOW")
 
     def test_boundary_or_workload_trust_change_invalidates_chain(self):
         root = self.fixture()
@@ -131,7 +131,7 @@ class RepositoryTests(unittest.TestCase):
         start = text.index('resource "aws_iam_role_policy_attachment" "github_dev_deploy"')
         end = text.index('\n}', start) + 2
         path.write_text(text[:start] + text[end:])
-        self.assertEqual(baseline(root)[0]["states"]["delivery:runtime"], "DENY")
+        self.assertEqual(baseline(root)[0]["states"]["delivery:runtime"], "UNKNOWN")
 
     def test_necessity_covers_every_evaluated_statement(self):
         necessity = json.loads((ROOT / "ci/authority/necessity.json").read_text())
@@ -165,7 +165,7 @@ class RepositoryTests(unittest.TestCase):
         rules.append(Rule("middle", ("seed",), (Result(D.ALLOW, ("proven alternative",)),), "alternative"))
         self.assertEqual(closure(["seed"], rules)[0]["end"], D.ALLOW)
         deny_rules = [Rule("middle", ("seed",), (Result(D.DENY, ("denied",)),), "deny"), rules[0]]
-        self.assertEqual(closure(["seed"], deny_rules)[0]["end"], D.DENY)
+        self.assertEqual(closure(["seed"], deny_rules)[0]["end"], D.UNKNOWN)
 
     def test_current_direct_secret_denial_not_inherited_by_workload(self):
         model = Adapter(ROOT, "dev")

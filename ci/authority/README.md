@@ -63,7 +63,7 @@ policies, full root/module expansion and live configuration remain unevaluated.
 Supported: identity union, explicit deny precedence, boundary intersection, exact
 role/service/federated trust, exact same-account role/session resource grants,
 IAM star/question-mark matching, String/Arn Equals/Like, Bool/Null, set operators,
-supported IfExists and absent keys. Session grants bypass implicit identity and
+non-set IfExists and absent keys. Combined set-operator/IfExists expressions are UNKNOWN. Session grants bypass implicit identity and
 boundary denies but not explicit denies. Same-account context must be explicit.
 
 UNKNOWN or source Unsupported: NotAction/NotResource/NotPrincipal, policy
@@ -105,3 +105,61 @@ workload boundary drift and new source files.
 
 No AC1â€“AC16 is fully accepted by this package. External configuration remains
 unverified, and no WP2â€“WP7 resources or behavioral changes are included.
+
+
+## V2 correction boundary (F1–F5)
+
+V1 is `fd6e17d89a805d05fe120f95d1b6fd61f8e09b33`; V2 is a separate correction
+commit, not E1 acceptance. The spec and plan remain immutable.
+
+* F1: condition-key names are case-insensitive; colliding request keys fail as
+  UNKNOWN. Values retain case. ArnEquals and ArnLike use identical wildcard
+  comparison of the six ARN components (the last component may contain colons).
+  Empty/null datasets have explicit set/Null behavior. Mixed null/non-null sets
+  and combined set/IfExists operators are unsupported, not approximated.
+* F2: principal admission precedes matching. Exact AWS role ARNs, resource-policy
+  session ARNs, and trust-only service/OIDC principals are modeled. Account/root,
+  user, wildcard, trust-session and other delegation forms return UNKNOWN,
+  including when conditioned or nonmatching. Trust results describe the trust
+  side, not complete cross-account STS acquisition.
+* F3: `source.RESOURCE_ATTRIBUTES` is the closed semantic resource schema. The
+  adapter admits role, managed policy, separate inline policy and role-policy
+  attachment resources, with the existing environment-count expression only.
+  Other resources, nested inline/dynamic blocks, for_each, boundaries, alternate
+  attachment attributes, Terraform JSON and policy-document merges are rejected.
+  Unreferenced/count-zero documents are inspected too. Exact provider declarations
+  are bound separately rather than interpreted. Refreshing source-inventory hashes
+  does not relax these checks. The report enumerates security declarations outside
+  this subset as SOURCE_ADMISSION_UNKNOWN, including workload expansion, KMS,
+  resource policies, instance profiles and delegated Lambda permissions. These are
+  known unsupported current surfaces, never an absence-of-authority assertion.
+* F4: every synthetic module input/provider value has a SOURCE_BINDING entry.
+  Locals must retain the exact admitted expression; variables must retain their
+  admitted declaration. Provider/account/region declarations must exist. Values
+  are fixed fixture inputs, not discovered root configuration. Separate reviewed
+  workload dependency pins guard module, role, service, task-family and cluster
+  wiring; updating the general inventory cannot update those pins. Names are
+  derived from the validated module/role/service declarations, not PassRole
+  allowlists. A changed/missing binding produces SOURCE_BINDING_FAILURE or UNKNOWN.
+  These pins deliberately reject even harmless dependency edits pending review;
+  they are not policy snapshots or a general Terraform interpreter.
+* F5: each graph outcome has explicit coverage: COMPLETE_FOR_CURRENT_ADMITTED_MODEL,
+  PARTIAL or UNKNOWN, with a reason. One grounded path establishes WITNESS_ALLOW.
+  Only explicit complete coverage permits EFFECTIVE_DENY. Missing coverage defaults
+  to PARTIAL and cannot establish DENY. All current baseline outcomes remain
+  PARTIAL: the bounded graph has no exhaustive AWS escalation proof. Inline and
+  create-managed-policy/attach routes are independent witnesses. Version/default,
+  trust and existing Lambda mutation/invocation permissions are exposed separately;
+  unexpanded attachment/default/executable/config transitions remain path gaps.
+  Removing both modeled broadening routes therefore yields UNKNOWN, not DENY.
+  Closed synthetic two-route graphs test the complete-coverage DENY behavior.
+
+The regression suite changes disposable real sources, acknowledges inventory
+hashes, and still requires semantic/binding rejection. It also checks role rename,
+role removal, module drift, synthetic ARN mismatch, alternative-route removal,
+cycles and independent IAM truth tables. Existing positive controls remain active.
+
+N1 remains a failed Git Bash selector run caused by temporary-directory cleanup.
+N2 remains outstanding supported-Linux validation; the inspected docker-desktop
+WSL environment has no Bash/Git/Python. Neither is claimed passed. They are separate
+from the F1–F5 correction and require no selector redesign here.

@@ -43,6 +43,8 @@ def main():
     install()
     from inventory import scan, verify
     from graph import baseline
+    from source import semantic_inventory
+    from evaluator import Unsupported
     files = {name: hashlib.sha256((ROOT / name).read_bytes()).hexdigest() for name in scan(ROOT)}
     for directory in (ROOT / "ci/authority", HERE):
         for path in sorted(directory.rglob("*")):
@@ -58,7 +60,12 @@ def main():
             super().startTest(test)
     executed = []
     result = unittest.TextTestRunner(verbosity=2, resultclass=Recorded).run(suite)
-    chains = baseline(ROOT) if not errors else []
+    chains = []
+    if not errors:
+        try:
+            chains = baseline(ROOT)
+        except Unsupported as exc:
+            errors.append(str(exc))
     good = result.wasSuccessful() and not result.skipped and result.testsRun > 0 and not errors
     report = {
         "result": "WP1_CHARACTERIZATION_PASS" if good else "WP1_CHARACTERIZATION_FAIL",
@@ -69,6 +76,7 @@ def main():
         "executed_tests": executed, "counts": {"executed": result.testsRun, "failures": len(result.failures),
                                                  "errors": len(result.errors), "skipped": len(result.skipped)},
         "inventory_errors": errors, "baseline": chains,
+        "semantic_source_admission": semantic_inventory(ROOT),
         "external_prerequisites": "UNVERIFIED",
         "hermetic": "credential environment scrubbed; AWS files disabled; PATH empty; process/socket/dlopen audit guard active",
         "limitations": ["process-level accidental-I/O guard, not malicious-code sandbox", "only admitted policy/API semantics evaluated",
