@@ -107,7 +107,7 @@ No AC1–AC16 is fully accepted by this package. External configuration remains
 unverified, and no WP2–WP7 resources or behavioral changes are included.
 
 
-## V2 correction boundary (F1�F5)
+## Historical V2 correction boundary (F1-F5)
 
 V1 is `fd6e17d89a805d05fe120f95d1b6fd61f8e09b33`; V2 is a separate correction
 commit, not E1 acceptance. The spec and plan remain immutable.
@@ -162,4 +162,90 @@ cycles and independent IAM truth tables. Existing positive controls remain activ
 N1 remains a failed Git Bash selector run caused by temporary-directory cleanup.
 N2 remains outstanding supported-Linux validation; the inspected docker-desktop
 WSL environment has no Bash/Git/Python. Neither is claimed passed. They are separate
-from the F1�F5 correction and require no selector redesign here.
+from the F1-F5 correction and require no selector redesign here.
+
+## V3 semantic-admission correction (R1–R6)
+
+V1 is `fd6e17d89a805d05fe120f95d1b6fd61f8e09b33`; V2 is
+`687a75defdb86d1ec58940443b6fa17e62be7ac9`. V3 is a separate correction
+commit on V2. This is WP1 characterization, pending independent review, not
+WP1 acceptance or evidence that E1 is secure. The spec and plan are unchanged.
+
+The current processing stages are explicit:
+
+1. `discovery.py` recursively discovers Terraform native/JSON files and local
+   module boundaries independently of the freshness inventory. JSON and all
+   override forms are unsupported applicable configuration. New resource types,
+   embedded policy/provisioner mechanisms and unresolved module/attachment
+   destinations are uncertainty. Local nested files cannot inherit MODELED from
+   their directory. Declaration IDs receive MODELED only after adapter admission.
+2. `source.py` admits the narrow IAM subset; `bindings.py` verifies root/wrapper
+   inputs, the actual IAM module invocation, workload module/role/cluster/service
+   relationships and ALB/listener/rule identities. Unsupported binding expressions
+   abort admission. Existing workload hash pins remain an additional freshness
+   check; refreshing them cannot substitute for semantic relationship checks.
+3. `evaluator.py` admits the complete condition expression before truth evaluation.
+   Every ARN value is checked even when a prior value matches or the key is absent.
+   Empty operator mappings and malformed keys/values are UNKNOWN. A normalized
+   request identity rejects contradictory role/session/service aliases. A role
+   session's account and unique role name establish its parent relationship;
+   IAM paths are checked against supplied full aliases, never invented.
+4. `graph.py` evaluates the actual trust referenced by each workload role, separately.
+   It combines primitive permissions, both role trusts, passing and activation.
+   Applicable unresolved policy controls taint positive as well as negative
+   conclusions. A possible omitted Deny is not an alternative Allow path.
+5. `coverage.py` issues completeness only for its closed synthetic fixture grammar.
+   A certificate binds the source snapshot, graph, seeds, outcome, subjects,
+   mechanism classes and route families. Closure rereads the fixture universe;
+   stale sources/rules or applicable UNKNOWN invalidate the evidence. A plain
+   COMPLETE label cannot prove DENY. Current repository outcomes have no issuer
+   and remain PARTIAL. A valid positive path does not need a negative certificate.
+
+Applicability is deliberately conservative. Exact module-local attachment
+references to role-name patterns disjoint from the queried GitHub principals
+remain UNKNOWN for those other roles, but do not manufacture uncertainty about
+GitHub identity grants. KMS and Lambda resource delegation retain service-specific
+UNKNOWN scopes. Unresolved destinations, JSON and overrides taint all queried
+subjects. Known non-policy resources retain alternate-path uncertainty; they do
+not prove execution authority. Literal outputs cannot independently grant access.
+This is neither a universal Terraform interpreter nor a complete escalation finder.
+
+Reports expose declaration IDs, source hashes/admission reasons, module binding
+expressions, fixed synthetic substitutions, actual role-specific trusts, concrete
+resource bindings, applicable UNKNOWN records and graph prerequisite/statement
+traces. Account/region/provider IDs remain explicit synthetic stand-ins, not live
+facts. Routing uses the declared ALB identity rather than a permission allowlist.
+Primitive permissions on hypothetical managed-policy/Lambda/ECR/object ARNs are
+separately identified as policy-scope evidence, not existence or execution proof.
+
+`test_v3.py` exercises R1–R6 using the production evaluator, source discovery,
+resolver and graph. Mutations change disposable source files and deliberately
+refresh inventory (and, for trust/identity tests, workload pins). Closed-universe
+mutations add a fourth route, unsupported source, changed hash and explicit Deny;
+a structurally inert literal output does not invalidate unrelated coverage.
+Operand/identity permutations test generalized admission, not only review examples.
+The original F1–F5 tests remain, including dual escalation routes and anti-deny-all
+controls. Earlier absent-key ARN fixtures now use valid ARNs; malformed operands
+have independent UNKNOWN tests. Complete synthetic graph tests now obtain actual
+source-bound certificates instead of supplying a label.
+
+Supported policy semantics remain identity union, explicit deny precedence,
+boundary intersection, exact role/session grants, service/OIDC trust, supported
+String/ARN/Bool/Null conditions, set quantifiers and non-set IfExists. Unsupported
+operators/delegation, unknown API context/dependencies and unresolved applicable
+sources remain UNKNOWN or visible source-admission failure. Target runtime schemas
+are closed structural contracts only; WP4 enforcement/API-model work is unchanged.
+
+No Terraform, application, deployment, AWS or GitHub-settings behavior changes.
+The offline guard remains credential-scrubbed, metadata-disabled, null credential
+files, empty PATH and process/socket/dlopen audit denial. It is not a general sandbox.
+Git Bash full selector remains FAILED/UNRESOLVED (cleanup); supported Linux remains
+UNVALIDATED. No platform result is inferred from Windows execution.
+
+V3 also binds layer wrapper inputs and both platform output hops to the actual
+cluster declaration, and rejects colliding workload role identities. The stronger
+task-role witness separately checks the existing task policy inputs/attachments.
+A closed, literal-Effect jsonencode subset proves only that these task identity
+policies contain no Deny; it does not establish their resource grants. A changed
+Deny, unsnapshotted policy or unresolved attachment preserves the primitive policy
+mutation witness but makes the stronger composed outcome UNKNOWN.

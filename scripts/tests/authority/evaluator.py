@@ -18,6 +18,7 @@ class Decision(str, Enum):
 class Result:
     decision: Decision
     reasons: tuple[str, ...]
+    provenance: tuple = ()
 
 
 class Unsupported(ValueError):
@@ -49,10 +50,60 @@ def normalized_context(context):
 
 def arn_matches(pattern, value):
     # The resource component may itself contain colons; the first five may not.
-    parts, actual = pattern.split(":", 5), value.split(":", 5)
-    if len(parts) != 6 or len(actual) != 6 or parts[0] != "arn" or actual[0] != "arn":
+    if not isinstance(pattern, str) or not isinstance(value, str):
         raise Unsupported("invalid ARN condition operand")
+    parts, actual = pattern.split(":", 5), value.split(":", 5)
+    for operand, components in ((pattern, parts), (value, actual)):
+        if (len(components) != 6 or components[0] != "arn" or
+                not components[1] or not components[2] or not components[5] or
+                re.search(r"\s", operand) or "${" in operand):
+            raise Unsupported("invalid ARN condition operand")
     return all(matches(p, v) for p, v in zip(parts, actual))
+
+
+ROLE = re.compile(r"arn:aws:iam::([0-9]{12}):role/((?:[A-Za-z0-9+=,.@_-]+/)*)([A-Za-z0-9+=,.@_-]{1,64})")
+SESSION = re.compile(r"arn:aws:sts::([0-9]{12}):assumed-role/([A-Za-z0-9+=,.@_-]{1,64})/([A-Za-z0-9+=,.@_-]{2,64})")
+
+
+@dataclass(frozen=True)
+class Identity:
+    category: str
+    principal: str
+    account: str = ""
+    role_name: str = ""
+    role_arn: str = ""
+
+
+def request_identity(request):
+    """IAM role names are account-unique; STS session ARNs omit the IAM path.
+
+    Compare an admitted policy role's account/name rather than inventing its path.
+    A supplied full role ARN must agree with this relationship.
+    """
+    principal, alias = request.get("principal"), request.get("role_arn")
+    if not isinstance(principal, str):
+        raise Unsupported("INVALID_IDENTITY missing principal")
+    role, session = ROLE.fullmatch(principal), SESSION.fullmatch(principal)
+    if role:
+        identity = Identity("role", principal, role[1], role[3], principal)
+        if alias is not None and alias != principal:
+            raise Unsupported("INVALID_IDENTITY contradictory role alias")
+    elif session:
+        identity = Identity("session", principal, session[1], session[2])
+        if alias is not None:
+            parent = ROLE.fullmatch(alias) if isinstance(alias, str) else None
+            if not parent or (parent[1], parent[3]) != (session[1], session[2]):
+                raise Unsupported("INVALID_IDENTITY contradictory session parent")
+            identity = Identity("session", principal, session[1], session[2], alias)
+    elif principal_form("Service", principal, "trust") == "SUPPORTED_AND_MODELED":
+        identity = Identity("service", principal)
+    elif principal_form("Federated", principal, "trust") == "SUPPORTED_AND_MODELED":
+        identity = Identity("oidc", principal, principal.split(":")[4])
+    else:
+        raise Unsupported("INVALID_IDENTITY unsupported principal")
+    if identity.category in ("service", "oidc") and alias is not None:
+        raise Unsupported("INVALID_IDENTITY non-role principal with role alias")
+    return identity
 
 
 def principal_form(category, value, kind):
@@ -62,9 +113,9 @@ def principal_form(category, value, kind):
     if "*" in value or "?" in value:
         return "UNSUPPORTED"
     if category == "AWS":
-        if re.fullmatch(r"arn:aws:iam::[0-9]{12}:role/[^\s]+", value):
+        if ROLE.fullmatch(value):
             return "SUPPORTED_AND_MODELED"
-        if re.fullmatch(r"arn:aws:sts::[0-9]{12}:assumed-role/[^/\s]+/[^/\s]+", value):
+        if SESSION.fullmatch(value):
             return "SUPPORTED_AND_MODELED" if kind == "resource" else "UNSUPPORTED"
         if re.fullmatch(r"[0-9]{12}|arn:[^:]+:iam::[0-9]{12}:(root|user/.+)", value):
             return "UNSUPPORTED"
@@ -75,12 +126,14 @@ def principal_form(category, value, kind):
     return "UNSUPPORTED" if value.startswith("arn:") else "INVALID"
 
 
-def condition(conditions, context):
-    context = normalized_context(context)
+def admit_conditions(conditions):
+    """Validate the whole policy expression before any request-dependent truth."""
     if not isinstance(conditions, dict):
         raise Unsupported("invalid condition mapping")
-    answers = []
+    admitted = []
     for operator, tests in conditions.items():
+        if not isinstance(operator, str) or not operator:
+            raise Unsupported("invalid condition operator")
         quantifier = None
         if ":" in operator:
             quantifier, operator = operator.split(":", 1)
@@ -94,38 +147,57 @@ def condition(conditions, context):
         supported = {"StringEquals", "StringLike", "ArnEquals", "ArnLike", "Bool", "Null"}
         if operator not in supported or (operator == "Null" and (if_exists or quantifier)):
             raise Unsupported("condition operator " + operator)
-        if not isinstance(tests, dict):
-            raise Unsupported("condition must be a mapping")
+        if not isinstance(tests, dict) or not tests:
+            raise Unsupported("condition must be a nonempty mapping")
+        seen = set()
         for key, expected in tests.items():
+            if not isinstance(key, str) or not key or key.lower() in seen:
+                raise Unsupported("invalid/duplicate condition key")
             key = key.lower()
+            seen.add(key)
             values = many(expected)
             if not values or any(not isinstance(x, str) for x in values):
                 raise Unsupported("condition values must be nonempty string lists")
-            if operator == "Bool" and any(x not in ("true", "false") for x in values):
-                raise Unsupported("invalid Bool literal")
-            present = key in context and context[key] is not None
-            actual = many(context[key]) if present else []
-            if actual and all(x == "" for x in actual):
-                actual = []
-            elif "" in actual:
-                raise Unsupported("mixed null/non-null dataset")
-            if any(not isinstance(x, str) for x in actual):
-                raise Unsupported("request context requires typed string values")
-            if operator == "Null":
-                if any(x not in ("true", "false") for x in values):
-                    raise Unsupported("invalid Null literal")
-                answers.append(str(not present or not actual).lower() in values)
-                continue
-            if not present or not actual:
-                answers.append(if_exists or quantifier == "ForAllValues")
-                continue
-            if len(actual) > 1 and not quantifier:
-                raise Unsupported("multivalued key without set operator")
-            if operator == "Bool" and any(x not in ("true", "false") for x in values + actual):
-                raise Unsupported("invalid Bool literal")
-            compare = arn_matches if operator.startswith("Arn") else (matches if operator.endswith("Like") else lambda a, b: a == b)
-            checks = [any(compare(wanted, got) for wanted in values) for got in actual]
-            answers.append(all(checks) if quantifier == "ForAllValues" else any(checks))
+            if operator in ("Bool", "Null") and any(x not in ("true", "false") for x in values):
+                raise Unsupported("invalid boolean literal")
+            if operator.startswith("Arn"):
+                for value in values:
+                    arn_matches(value, value)
+            admitted.append((operator, quantifier, if_exists, key, tuple(values)))
+    return tuple(admitted)
+
+
+def condition(conditions, context):
+    admitted = admit_conditions(conditions)
+    context = normalized_context(context)
+    answers = []
+    for operator, quantifier, if_exists, key, values in admitted:
+        present = key in context and context[key] is not None
+        actual = many(context[key]) if present else []
+        if actual and all(x == "" for x in actual):
+            actual = []
+        elif "" in actual:
+            raise Unsupported("mixed null/non-null dataset")
+        if any(not isinstance(x, str) for x in actual):
+            raise Unsupported("request context requires typed string values")
+        if operator == "Null":
+            if any(x not in ("true", "false") for x in values):
+                raise Unsupported("invalid Null literal")
+            answers.append(str(not present or not actual).lower() in values)
+            continue
+        if not present or not actual:
+            answers.append(if_exists or quantifier == "ForAllValues")
+            continue
+        if len(actual) > 1 and not quantifier:
+            raise Unsupported("multivalued key without set operator")
+        if operator == "Bool" and any(x not in ("true", "false") for x in actual):
+            raise Unsupported("invalid Bool literal")
+        if operator.startswith("Arn"):
+            for value in actual:
+                arn_matches(value, value)
+        compare = arn_matches if operator.startswith("Arn") else (matches if operator.endswith("Like") else lambda a, b: a == b)
+        checks = [any(compare(wanted, got) for wanted in values) for got in actual]
+        answers.append(all(checks) if quantifier == "ForAllValues" else any(checks))
     return all(answers)
 
 
@@ -138,6 +210,8 @@ def _validate_statement(statement, kind):
         raise Unsupported("unsupported statement keys: " + ",".join(sorted(extra)))
     if statement.get("Effect") not in ("Allow", "Deny") or "Action" not in statement:
         raise Unsupported("missing/invalid effect or action")
+    if "Condition" in statement and not statement["Condition"]:
+        raise Unsupported("empty explicit Condition")
     if "${" in str(statement):
         raise Unsupported("policy variables")
     for field in ("Action", "Resource"):
@@ -166,17 +240,26 @@ def _principal(statement, request, kind):
             raise Unsupported(admission + " principal: " + str(identity))
     if kind == "resource" and category != "AWS":
         raise Unsupported("service-specific resource delegation")
-    if request.get("principal") in identities:
-        return "session" if ":assumed-role/" in request["principal"] else "role"
-    if category == "AWS" and request.get("role_arn") in identities:
-        return "role"
+    caller = request["_identity"]
+    categories = {"AWS": ("role", "session"), "Service": ("service",), "Federated": ("oidc",)}
+    if caller.category not in categories[category]:
+        return None
+    if caller.principal in identities:
+        return "session" if caller.category == "session" else "role"
+    if category == "AWS" and caller.category == "session":
+        for value in identities:
+            parent = ROLE.fullmatch(value)
+            if parent and (parent[1], parent[3]) == (caller.account, caller.role_name):
+                if caller.role_arn and caller.role_arn != value:
+                    raise Unsupported("INVALID_IDENTITY inconsistent role path")
+                return "role"
     return None
 
 
 def _statements(policies, request, kind):
     allows, denies, unknown = [], [], []
     for policy in policies:
-        if set(policy) - {"Version", "Statement", "Id"} or not isinstance(policy.get("Statement"), (list, dict)):
+        if not isinstance(policy, dict) or set(policy) - {"Version", "Statement", "Id"} or not isinstance(policy.get("Statement"), (list, dict)):
             unknown.append("unsupported/missing policy document")
             continue
         for statement in many(policy["Statement"]):
@@ -206,12 +289,16 @@ def evaluate(request, identities=(), boundary=None, resources=(), trust=None):
     """
     if not isinstance(request.get("resource"), str) or not isinstance(request.get("action"), str):
         return Result(Decision.UNKNOWN, ("invalid or multi-resource request",))
+    if resources or trust is not None or "principal" in request or "role_arn" in request:
+        try:
+            request = request | {"_identity": request_identity(request)}
+        except Unsupported as exc:
+            return Result(Decision.UNKNOWN, (str(exc),))
     if resources and request["action"].lower().startswith("kms:"):
         return Result(Decision.UNKNOWN, ("KMS key policy/grant semantics unsupported",))
     if resources:
-        caller = request.get("role_arn", request.get("principal", ""))
-        parts = caller.split(":")
-        if len(parts) < 6 or request.get("resource_account") != parts[4]:
+        caller = request["_identity"]
+        if caller.category not in ("role", "session") or request.get("resource_account") != caller.account:
             return Result(Decision.UNKNOWN, ("same-account resource-policy context not established",))
     ia, ideny, iu = _statements(identities, request, "identity")
     ba, bdeny, bu = _statements(boundary or [], request, "identity")
@@ -236,7 +323,7 @@ def evaluate(request, identities=(), boundary=None, resources=(), trust=None):
                   tuple(x[1] for x in ia + ra) if allowed else ("implicit deny/boundary intersection",))
 
 
-def authorize(request, capabilities, **policies):
+def _authorize(request, capabilities, **policies):
     """Restricted action applicability admission. Unknown service behavior fails visibly.
 
     Dependent permissions must be explicit subrequests; never infer PassRole from
@@ -268,3 +355,10 @@ def authorize(request, capabilities, **policies):
     if any(x.decision == Decision.UNKNOWN for x in checks):
         return Result(Decision.UNKNOWN, tuple(y for x in checks for y in x.reasons))
     return own
+
+
+def authorize(request, capabilities, **policies):
+    try:
+        return _authorize(request, capabilities, **policies)
+    except (Unsupported, TypeError, KeyError, AttributeError, ValueError) as exc:
+        return Result(Decision.UNKNOWN, ("invalid API/policy admission: " + str(exc),))

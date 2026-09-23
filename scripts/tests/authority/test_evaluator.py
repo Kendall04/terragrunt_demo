@@ -59,12 +59,12 @@ class EvaluatorTests(unittest.TestCase):
         for operator, expected in (("StringEquals", False), ("StringLike", False), ("ArnEquals", False),
                                    ("Bool", False), ("StringEqualsIfExists", True),
                                    ("ForAllValues:ArnEquals", True), ("ForAnyValue:ArnEquals", False)):
-            value = "true" if operator == "Bool" else "v"
+            value = "true" if operator == "Bool" else "arn:aws:s3:::bucket/key" if "Arn" in operator else "v"
             with self.subTest(operator=operator):
                 self.assertEqual(condition({operator: {"k": value}}, {}), expected)
         self.assertTrue(condition({"Null": {"k": "true"}}, {}))
         self.assertFalse(condition({"Null": {"k": "false"}}, {}))
-        self.assertFalse(condition({"ForAllValues:ArnEquals": {"k": "v"}, "Null": {"k": "false"}}, {}))
+        self.assertFalse(condition({"ForAllValues:ArnEquals": {"k": "arn:aws:s3:::bucket/key"}, "Null": {"k": "false"}}, {}))
 
     def test_condition_sets_and_types(self):
         self.assertTrue(condition({"ForAnyValue:StringLike": {"k": "dev*"}}, {"k": ["prod", "dev1"]}))

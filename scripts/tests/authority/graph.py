@@ -5,7 +5,9 @@ UNKNOWN is propagated on applicable paths; it is never a missing/denied edge.
 """
 from dataclasses import dataclass
 from evaluator import Decision, Result, Unsupported, authorize, evaluate
-from source import Adapter, blocks
+from source import Adapter
+from bindings import Bindings
+from coverage import Certificate, fingerprint
 import json
 
 
@@ -15,22 +17,33 @@ class Rule:
     prerequisites: tuple[str, ...]
     checks: tuple[Result, ...]
     meaning: str
+    mechanism: str = "repository-witness"
 
 
-def closure(seeds, rules, coverage=None):
+def closure(seeds, rules, coverage=None, universe=None):
     # Coverage is an explicit claim about the outcome, never inferred from edges.
     coverage = coverage or {}
     targets = {r.target for r in rules} | {p for r in rules for p in r.prerequisites}
     states, traces = {}, {}
     for target in sorted(targets):
         claim = coverage.get(target, {"status": "PARTIAL", "reason": "No exhaustive path-space proof"})
-        if claim["status"] not in ("COMPLETE_FOR_CURRENT_ADMITTED_MODEL", "PARTIAL", "UNKNOWN") or not claim.get("reason"):
+        if isinstance(claim, Certificate):
+            complete = universe is not None and universe.validates(claim, target, seeds, rules)
+            claim = {"status": "COMPLETE_FOR_CURRENT_ADMITTED_MODEL" if complete else "UNKNOWN",
+                     "reason": "Validated source-bound certificate" if complete else "Invalid/stale completeness certificate",
+                     "certificate": claim.__dict__}
+        elif claim["status"] not in ("COMPLETE_FOR_CURRENT_ADMITTED_MODEL", "PARTIAL", "UNKNOWN") or not claim.get("reason"):
             raise ValueError("invalid outcome coverage")
-        complete = claim["status"] == "COMPLETE_FOR_CURRENT_ADMITTED_MODEL"
+        else:
+            complete = False
+            if claim["status"] == "COMPLETE_FOR_CURRENT_ADMITTED_MODEL":
+                claim = {"status": "UNKNOWN", "reason": "A label is not completeness evidence"}
         states[target] = Decision.DENY if complete else Decision.UNKNOWN
         traces[target] = {"coverage": claim, "meaning": "All modeled alternatives denied" if complete else "UNKNOWN_INCOMPLETE_PATH_COVERAGE"}
     states.update({x: Decision.ALLOW for x in seeds})
     traces.update({x: {"seed": True} for x in seeds})
+    if universe is not None and not universe.current(seeds, rules):
+        return {x: Decision.UNKNOWN for x in states}, {x: {"meaning": "STALE_OR_UNADMITTED_SOURCE_UNIVERSE"} for x in states}
     changed = True
     while changed:
         changed = False
@@ -51,8 +64,8 @@ def closure(seeds, rules, coverage=None):
                 traces[rule.target].update({"prerequisites": rule.prerequisites, "checks": [{"decision": x.decision.value, "reasons": x.reasons} for x in rule.checks]})
             if rank[state] > rank[previous]:
                 states[rule.target] = state
-                traces[rule.target] = {"coverage": coverage.get(rule.target, {"status": "PARTIAL", "reason": "No exhaustive path-space proof"}), "prerequisites": rule.prerequisites, "meaning": rule.meaning,
-                                      "checks": [{"decision": x.decision.value, "reasons": x.reasons}
+                traces[rule.target] = {"coverage": traces[rule.target].get("coverage"), "prerequisites": rule.prerequisites, "meaning": rule.meaning,
+                                      "checks": [{"decision": x.decision.value, "reasons": x.reasons, "provenance": x.provenance}
                                                  for x in rule.checks]}
                 changed = True
     return states, traces
@@ -63,6 +76,8 @@ def baseline(root):
     capabilities = json.loads((root / "ci/authority/capabilities.json").read_text())["actions"]
     records = []
     for env, model in contexts.items():
+        discovery = model.discovery()
+        source_snapshot = fingerprint(discovery.records)
         binding_error = None
         try:
             workload = model.workload()
@@ -71,18 +86,38 @@ def baseline(root):
             workload = {key: "UNBOUND" for key in ("task_role", "exec_role", "family", "service")}
         task_role, exec_role = workload["task_role"], workload["exec_role"]
         family, service = workload["family"], workload["service"]
-        listener = model.value("local.app_elbv2_blue_green_mutation_arns")[0].replace("*", "synthetic")
+        routing_error, routing = None, {}
+        try:
+            routing = Bindings(model).routing()
+            listener = routing["listener"]
+        except Unsupported as exc:
+            routing_error, listener = str(exc), "UNBOUND"
         oidc = model.value("local.github_oidc_provider_arn")
-        iam_path = root / "terraform/infra/apps/fargate/modules/ecs_service/iam.tf"
-        if binding_error:
-            workload_assume = Result(Decision.UNKNOWN, (binding_error,))
-        else:
-            for kind, typ, name, body in blocks(iam_path.read_text())[0]:
-                if kind == "data" and typ == "aws_iam_policy_document":
-                    model.docs[name] = (body, iam_path.relative_to(root).as_posix())
-            workload_trust = model.document_reference("data.aws_iam_policy_document.ecs_tasks_assume.json")
-            workload_assume = evaluate({"action": "sts:AssumeRole", "resource": task_role,
-                                       "principal": "ecs-tasks.amazonaws.com"}, trust=[workload_trust])
+
+        def admitted(result, subject, action, resource, extra_error=None):
+            taints = discovery.taints("github", "api:" + action.split(":")[0].lower())
+            provenance = ({"subject": subject, "action": action, "resource": resource,
+                           "source_snapshot": source_snapshot, "policy_statements": result.reasons,
+                           "applicable_unknown": taints,
+                           "binding_error": extra_error},)
+            if taints or extra_error:
+                return Result(Decision.UNKNOWN, tuple([r["source"] + ": " + r["reason"] for r in taints] +
+                              ([extra_error] if extra_error else [])), provenance)
+            return Result(result.decision, result.reasons, provenance)
+
+        def role_trust(role, arn):
+            if binding_error:
+                return admitted(Result(Decision.UNKNOWN, (binding_error,)), role, "sts:AssumeRole", arn, binding_error)
+            result = evaluate({"action": "sts:AssumeRole", "resource": arn, "principal": "ecs-tasks.amazonaws.com"},
+                              trust=[workload["trusts"][role]])
+            return admitted(result, role, "sts:AssumeRole", arn)
+
+        task_assume = role_trust("task_role", task_role)
+        execution_assume = role_trust("execution_role", exec_role)
+        task_controls = workload.get("task_policy_controls", {"status": "UNKNOWN", "reason": binding_error})
+        broadening = admitted(Result(Decision.ALLOW if task_controls["status"] != "UNKNOWN" else Decision.UNKNOWN,
+                                    (json.dumps(task_controls, sort_keys=True),)),
+                               "task_role", "iam:PutRolePolicy", task_role)
 
         def permission(role, action, resource, context=None, dependencies=None):
             if binding_error:
@@ -90,9 +125,11 @@ def baseline(root):
             known = model.roles[role]
             if known["unknown"]:
                 return Result(Decision.UNKNOWN, tuple(known["unknown"]))
-            return authorize({"action": action, "resource": resource, "context": context or {},
+            result = authorize({"action": action, "resource": resource, "context": context or {},
                               "dependencies": dependencies or []}, capabilities,
                              identities=known["policies"])
+            return admitted(result, role, action, resource,
+                            routing_error if action.startswith("elasticloadbalancing:") else None)
 
         def passing(role, arn):
             return permission(role, "iam:PassRole", arn, {"iam:PassedToService": "ecs-tasks.amazonaws.com"})
@@ -105,7 +142,7 @@ def baseline(root):
                          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
                          "token.actions.githubusercontent.com:sub": model.value("local.github_environment_subject")}}
             rules.append(Rule("acquire:" + role_name, ("environment-token",),
-                              (evaluate(token, trust=[role["trust"]]),), "shared environment OIDC trust"))
+                              (admitted(evaluate(token, trust=[role["trust"]]), role_name, token["action"], token["resource"]),), "shared environment OIDC trust"))
         # API checks below are primitive permissions. Runtime role-dependent actions
         # are expressed explicitly in the conjunctive rule, rather than omitted.
         for principal in (delivery, "github_terragrunt_cd"):
@@ -114,7 +151,7 @@ def baseline(root):
                               (permission(principal, "ecs:RegisterTaskDefinition", family),),
                               "family-compatible definition with caller-selected runtime content"))
             rules.append(Rule(prefix + ":runtime", (prefix + ":registration",),
-                              (passing(principal, task_role), passing(principal, exec_role), workload_assume,
+                              (passing(principal, task_role), passing(principal, exec_role), task_assume, execution_assume,
                                permission(principal, "ecs:UpdateService", service)),
                               "registration + both PassRole checks + service activation; before helper validation"))
         rules.append(Rule("infra:broaden-role", ("acquire:github_terragrunt_cd",),
@@ -139,10 +176,10 @@ def baseline(root):
             rules.append(Rule("infra:capability:" + label, ("acquire:github_terragrunt_cd",),
                               (permission("github_terragrunt_cd", action, resource),),
                               "primitive permission only; downstream authority remains PARTIAL"))
-        rules.append(Rule("infra:stronger-workload-compute", ("infra:broaden-role", "infra:runtime"), (),
+        rules.append(Rule("infra:stronger-workload-compute", ("infra:broaden-role", "infra:runtime"), (broadening,),
                           "attacker content executes under broadened role; not proof of any KMS key-policy grant"))
         rules.append(Rule("delivery:role-field-substitution", ("delivery:runtime",),
-                          (passing(delivery, exec_role), workload_assume),
+                          (passing(delivery, exec_role), execution_assume),
                           "PassRole service condition cannot distinguish executionRoleArn from taskRoleArn"))
         for principal in (delivery, "github_app_rollback"):
             rules.append(Rule(principal + ":direct-routing", ("acquire:" + principal,),
@@ -165,6 +202,7 @@ def baseline(root):
                               "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
                               "token.actions.githubusercontent.com:sub": "repo:Kendall04/terragrunt_demo:environment:dev-infra-approval"}},
                          trust=[model.roles["github_terragrunt_cd_high_risk"]["trust"]])
+        cross = admitted(cross, "github_terragrunt_cd_high_risk", "sts:AssumeRoleWithWebIdentity", "synthetic-role")
         records.append({"environment": env, "classification": "CURRENT_FACT",
                         "evidence_type": "REPOSITORY_MODEL_REACHABILITY_NOT_EXECUTED_EXPLOIT",
                         "states": {k: v.value for k, v in states.items()}, "traces": traces,
@@ -173,6 +211,15 @@ def baseline(root):
                                          "coverage": coverage.get(k, {"status": "COMPLETE_FOR_CURRENT_ADMITTED_MODEL", "reason": "explicit seed"})}
                                      for k, v in states.items()},
                         "source_binding": binding_error or model.binding_status,
+                        "provenance": {"identity": model.provenance(), "source_snapshot": source_snapshot,
+                                       "source_admission": discovery.records,
+                                       "workload": workload, "routing": routing,
+                                       "routing_error": routing_error,
+                                       "witness_scope": "Declared role/service/listener identities with synthetic account/region/provider IDs; policy permission and trust prerequisites, not successful cloud execution",
+                                       "policy_scope_only": {"managed_policy": managed,
+                                           "lambda": model.value("local.app_scale_down_lambda_arn"),
+                                           "ecr": model.value("local.app_ecr_repository_arn"),
+                                           "release_object": prod_record}},
                         "remaining_path_gaps": ["existing managed-policy default/attachment expansion", "trust mutation followed by acquisition", "existing compute executable/config and state dependencies"],
                         "dev_approval_to_high_risk": cross.decision.value,
                         "dev_approval_evidence": {"verdict": "WITNESS_ALLOW" if cross.decision == Decision.ALLOW else "UNKNOWN",

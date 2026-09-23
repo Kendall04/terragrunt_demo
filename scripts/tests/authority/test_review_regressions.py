@@ -2,12 +2,14 @@
 import json
 from pathlib import Path
 import unittest
+import tempfile
 from unittest.mock import patch
 import test_contracts
 from evaluator import Decision as D, Result, Unsupported, condition, evaluate, principal_form
 from graph import Rule, baseline, closure
 from inventory import scan, verify
 from source import Adapter, IAM, semantic_inventory
+from fixture_support import write_universe
 import test_repository
 
 
@@ -91,7 +93,10 @@ class SemanticRegressions(unittest.TestCase):
             doc = {"Statement": [{"Effect": "Allow", "Action": "sts:AssumeRole", "Principal": {category: principal}}]}
             request = {"action": "sts:AssumeRole", "resource": "target", "principal": principal}
             self.assertEqual(evaluate(request, trust=[doc]).decision, D.ALLOW)
-            self.assertEqual(evaluate(request | {"principal": "different"}, trust=[doc]).decision, D.DENY)
+            other = {"AWS": "arn:aws:iam::111122223333:role/different", "Service": "lambda.amazonaws.com",
+                     "Federated": "arn:aws:iam::111122223333:oidc-provider/different.example"}[category]
+            self.assertEqual(evaluate(request | {"principal": other}, trust=[doc]).decision, D.DENY)
+            self.assertEqual(evaluate(request | {"principal": "different"}, trust=[doc]).decision, D.UNKNOWN)
         self.assertEqual(principal_form("AWS", None, "trust"), "INVALID")
 
 
@@ -149,11 +154,11 @@ class SourceBindingRegressions(unittest.TestCase):
     def test_unexpanded_security_surfaces_explicitly_unknown(self):
         root = self.fixture()
         records = semantic_inventory(root)
-        self.assertTrue(any(r["admission"] == "MODELED_BY_ADAPTER" for r in records))
+        self.assertTrue(any(r["admission"] == "MODELED" for r in records))
         for typ in ("aws_kms_key", "aws_lambda_permission"):
-            found = [r for r in records if r["declaration"]["type"] == typ]
+            found = [r for r in records if r["declaration"] and r["declaration"]["type"] == typ]
             self.assertTrue(found)
-            self.assertTrue(all(r["admission"] == "SOURCE_ADMISSION_UNKNOWN" for r in found))
+            self.assertTrue(all(r["admission"] == "UNSUPPORTED_APPLICABLE" for r in found))
 
     def test_terraform_json_rejected_after_inventory_refresh(self):
         root = self.fixture()
@@ -238,14 +243,15 @@ class CompletenessRegressions(unittest.TestCase):
                 self.assertEqual(result.errors, [])
 
     def test_two_independent_witnesses_and_explicit_completeness(self):
-        complete = {"out": {"status": "COMPLETE_FOR_CURRENT_ADMITTED_MODEL", "reason": "Synthetic closed universe: exactly A and B; no other mutation/acquisition mechanisms"}}
         for a, b, expected in ((D.ALLOW, D.ALLOW, D.ALLOW), (D.DENY, D.ALLOW, D.ALLOW),
                                (D.ALLOW, D.DENY, D.ALLOW), (D.DENY, D.DENY, D.DENY),
                                (D.UNKNOWN, D.DENY, D.UNKNOWN)):
-            rules = [Rule("out", ("seed",), (Result(d, (name,)),), name) for name, d in (("A", a), ("B", b))]
-            self.assertEqual(closure(["seed"], rules, complete)[0]["out"], expected)
-            if a == b == D.DENY:
-                self.assertEqual(closure(["seed"], rules)[0]["out"], D.UNKNOWN)
+            with tempfile.TemporaryDirectory(prefix="e1-closed-universe-") as directory:
+                universe = write_universe(Path(directory), {"A": a, "B": b})
+                complete = {} if universe.unknown else {"out": universe.certificate("out")}
+                self.assertEqual(closure(universe.seeds, universe.rules, complete, universe)[0]["out"], expected)
+                if a == b == D.DENY:
+                    self.assertEqual(closure(universe.seeds, universe.rules)[0]["out"], D.UNKNOWN)
 
     def test_cycles_do_not_manufacture_witness(self):
         rules = [Rule("a", ("b",), (), "cycle"), Rule("b", ("a",), (), "cycle")]
