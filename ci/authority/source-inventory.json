@@ -1,0 +1,5910 @@
+{
+  "classification": "CURRENT_FACT",
+  "baseline_revision": "acbe54481c8c5c86f6cb6d4b5826b07aa64713eb",
+  "meaning": "Review freshness and structural coverage; hashes alone are not semantic proof. No automatic acceptance refresh.",
+  "sources": {
+    ".github/actions/aws-oidc/action.yml": {
+      "sha256": "8ec316c81fc2d1d8d3ed583b641868faa60f6bb716f95e9db0bc02b17de9d786",
+      "declarations": [],
+      "signals": {
+        "credential-acquisition": [
+          43
+        ],
+        "role-input": [
+          5,
+          25,
+          46
+        ],
+        "launch-or-mutation": [
+          35,
+          43,
+          49,
+          55
+        ],
+        "executable-dependency": [
+          43
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/actions/ecs-blue-green/action.yml": {
+      "sha256": "7a96b575aec0965f4d84931557680582c09e7ab0a3ea54ee8dc69bcdec59d048",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          70,
+          101,
+          107,
+          113,
+          126,
+          147,
+          151,
+          174,
+          183
+        ],
+        "executable-dependency": [
+          56
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/actions/ecs-detect-blue-green/action.yml": {
+      "sha256": "fabee615f941e7ed753768a1ce15e921578beb49a6a0f207fc934513acacbb79",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          67,
+          84
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/actions/resolve-backend/action.yml": {
+      "sha256": "3ce6df3fd198476d8d4a9cb9cf8397d9872e37481fa228b7ceb04425455d5e65",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          54
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/actions/resolve-demo-api-artifact-resources/action.yml": {
+      "sha256": "f349e36ca38f9fb3fa7d3226abf0b54f1383272650f2a09dc656a343b7d8379b",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          62
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/actions/resolve-demo-api-resources/action.yml": {
+      "sha256": "9bd6c396bf2cd9b9d6c88cd0c859dcba3740de90c89fbd52dff26f452ca8a201",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          185
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/actions/resolve-env/action.yml": {
+      "sha256": "c2ccc8418ab1b912f9cebfd6c33d0b782434998e78f12684bf33254375dbe638",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/scripts/cd/detect-scope.sh": {
+      "sha256": "c7d185bf9b05a3d827711cd6cdb20cb22239cc9457558e7f776032c55e4d37bb",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          300
+        ],
+        "executable-dependency": [
+          29,
+          30,
+          279,
+          300
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/scripts/cd/resolve-terragrunt-layers.sh": {
+      "sha256": "173b8028a94958c7be01e131dba2614397a6bd1698c06c856e9998415ec054b7",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          13,
+          163,
+          166,
+          169,
+          173,
+          177,
+          181,
+          185,
+          200,
+          203,
+          206,
+          210,
+          231,
+          233,
+          236,
+          239
+        ],
+        "executable-dependency": [
+          13,
+          33,
+          34,
+          106
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/scripts/cd/select-safety-tests.sh": {
+      "sha256": "8dc08309c1bec318cd107813ddb1403bcf093b930caedd5121671ed8edf4fdf7",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          72
+        ],
+        "executable-dependency": [
+          8
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/scripts/cd/tests/fixtures/detect-scope/golden-outputs.json": {
+      "sha256": "cc940f97a2511cd0b05ebe3f4e5c1047a2288eab36248a95b6d38e3b733338bb",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          69,
+          70,
+          92,
+          95,
+          98,
+          114,
+          115,
+          137,
+          140,
+          143,
+          159,
+          161,
+          182,
+          183,
+          188,
+          189,
+          204,
+          206,
+          227,
+          228,
+          233,
+          234,
+          249,
+          251,
+          272,
+          273,
+          274,
+          278,
+          279,
+          294,
+          296,
+          317,
+          318,
+          319,
+          323,
+          324,
+          339,
+          360,
+          362,
+          364,
+          368,
+          429,
+          432,
+          452,
+          456,
+          458
+        ],
+        "executable-dependency": [
+          474,
+          478,
+          497,
+          502,
+          503
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/scripts/cd/tests/fixtures/infra-gate/app-only.env": {
+      "sha256": "aeb176c7aa65acbe6e8be42e986d9ff5aa7746a8b8a5faf299bbd60a487ac466",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/scripts/cd/tests/fixtures/infra-gate/apply-failure.env": {
+      "sha256": "0b2bf431502170c66d9dc3f9207b291fe57f83b867cf7217f99b641c7ede2b1e",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/scripts/cd/tests/fixtures/infra-gate/critical-manual-only-app.env": {
+      "sha256": "8bbd736b913fecc61f6f2785d4ad1ed5defc0df2545f82c564aa13dc52790dd9",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          6
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/scripts/cd/tests/fixtures/infra-gate/high-risk-apply-cancelled.env": {
+      "sha256": "ece1ac6f3d0feb7a2ca1520ab93cd9cd17bf20e04697edd1745c63301292ea4d",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/scripts/cd/tests/fixtures/infra-gate/high-risk-managed-app-success.env": {
+      "sha256": "6939dc675949942cc7fcb5119f961655e71b6f42eee445bffe745869ec73faee",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/scripts/cd/tests/fixtures/infra-gate/plan-failure.env": {
+      "sha256": "0566188bee97e0702668024e34c6f57524bd5258a7fd5a99aaea1bebcbf12488",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/scripts/cd/tests/fixtures/infra-gate/safe-infra-app-success.env": {
+      "sha256": "f07ed08df6be9ccc90f6b42ecc65fd6678b861cd92b5ecfdb091fc5edc9ed00e",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/scripts/cd/tests/fixtures/infra-gate/safe-infra-required-but-skipped.env": {
+      "sha256": "eb385baa1eef095ac38baef79efe444d1fe2358bbf13ce11a9b98cb48ad8b9d5",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/scripts/cd/tests/fixtures/infra-gate/unmapped-high-risk-app.env": {
+      "sha256": "b899dda0b897647798669b358a89cd69bafe0922665914bd13d268e36035aee2",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          6,
+          7
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/scripts/cd/tests/fixtures/resolve-layers/app-only.env": {
+      "sha256": "4ea653037eff23d86a33ee6150812771a1052774a220130f61e92582e34e81e8",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/scripts/cd/tests/fixtures/resolve-layers/docs-only.env": {
+      "sha256": "4ea653037eff23d86a33ee6150812771a1052774a220130f61e92582e34e81e8",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/scripts/cd/tests/fixtures/resolve-layers/high-risk-apps-fargate.env": {
+      "sha256": "c9ff0eba23aa68dfe963842ba292f3a41ff56e32f93db34e0918013230d2e007",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          3,
+          4,
+          10
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/scripts/cd/tests/fixtures/resolve-layers/high-risk-data.env": {
+      "sha256": "c86faaa18c86cf11d3786d5f502b2c05492e9340745907e38300d096e6b90d7f",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          3,
+          4,
+          10
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/scripts/cd/tests/fixtures/resolve-layers/infra-workflow-script.env": {
+      "sha256": "24e93a22f5e296bae5a79158feb1c66d1a7440e6ff484a55e47d619b332db7c7",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/scripts/cd/tests/fixtures/resolve-layers/infra-workflow.env": {
+      "sha256": "e1f095f6baa04f5ee4233e9a2997099ed352830bfc1ac2ef201d8d037991f3a0",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/scripts/cd/tests/fixtures/resolve-layers/module-path.env": {
+      "sha256": "68b4d6ee635745b2d8c3dda5a782c6592e1bfd3ce47b58844b2fa283af537051",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          3,
+          4,
+          8,
+          10
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/scripts/cd/tests/fixtures/resolve-layers/prod-infra.env": {
+      "sha256": "55664b8334b9aeb415eefcf1ec7003c94dd47375d7fd2ba7e342b3e0f7a2b53c",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/scripts/cd/tests/fixtures/resolve-layers/root-hcl.env": {
+      "sha256": "4b9e1b89cbf5aacc62071b22708ad71ffec3089d40cb51e54ad3733ae8165d72",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          3,
+          4,
+          8,
+          10
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/scripts/cd/tests/fixtures/resolve-layers/safe-infra-app.env": {
+      "sha256": "bd927dcee7a2d1e60a8ab63bdae7e9d01c10eca8a116c281cfdb4ca8b0f23d6a",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          2,
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/scripts/cd/tests/fixtures/resolve-layers/safe-infra-only.env": {
+      "sha256": "bb0543c1720f5782afc2729d8609b6f367811acd9c0f67196d2e2f745edcf02a",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          2,
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/scripts/cd/tests/fixtures/resolve-layers/unmapped-infra-path.env": {
+      "sha256": "c8a5710f8b7c77f8dfb94cb0bd400ee813ccf53b8e3cbf650b09ad2f238ef5c6",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          4,
+          8,
+          9
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/scripts/cd/tests/test-detect-scope.sh": {
+      "sha256": "33df7d6a5444a7f410751ccc380a2b0e862d3db39a5c21fa697f044ce475e935",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          5
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/scripts/cd/tests/test-resolve-terragrunt-layers.sh": {
+      "sha256": "b1fb550048f883b4d830e1f8110550cf693316ad8b16e16d73f79d9be02ba50f",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          5,
+          129
+        ],
+        "executable-dependency": [
+          5,
+          79
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/scripts/cd/tests/test-safety-mutations.sh": {
+      "sha256": "c994b97b0d0e7be04b9bcbdfc17363903e7869f615eba3e0a2b2793efdf30e84",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          27,
+          46
+        ],
+        "executable-dependency": [
+          27,
+          33,
+          36,
+          37,
+          41,
+          46,
+          47
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/scripts/cd/tests/test-safety-workflow.sh": {
+      "sha256": "23a432ceeaf80c0ea77d13da58ffc8c0e7944d9704b7262e60ead09a0271ec35",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          83
+        ],
+        "executable-dependency": [
+          17,
+          18,
+          19,
+          35,
+          88,
+          90,
+          93
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/scripts/cd/tests/test-select-safety-tests.sh": {
+      "sha256": "7dd003b84b00e9ade882ce8e5c295075b82be17d339f2eaac4ad22023a253c87",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          64,
+          69,
+          70,
+          71,
+          72,
+          73,
+          75,
+          84,
+          85,
+          86,
+          102,
+          103,
+          108,
+          149,
+          150,
+          153
+        ],
+        "executable-dependency": [
+          5,
+          64,
+          65,
+          66,
+          68,
+          73,
+          74,
+          98,
+          103,
+          113,
+          115,
+          149,
+          163,
+          164,
+          207
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/scripts/cd/tests/test-validate-infra-gate.sh": {
+      "sha256": "d7af6e02bb94d22b4f2149a0200f8294f49053dd3023dfae3d73a352726cd91f",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          5,
+          25
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/scripts/cd/validate-infra-gate.sh": {
+      "sha256": "e012ed39e9919776ce5a4728fb15c16811c05565ff74116b0196c73f79474a04",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/workflows/cd-demo-api.yml": {
+      "sha256": "cde8e6375db997550398ee57fe1d80e9c0dd7e6ad063a2359615b83af71d320b",
+      "declarations": [],
+      "signals": {
+        "credential-acquisition": [
+          17,
+          48,
+          65
+        ],
+        "executable-dependency": [
+          49,
+          66
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/workflows/cd-rollback.yml": {
+      "sha256": "53c09756a727232826827b62dbfa0f8a51948f421ea31509d0f3285a1444de2a",
+      "declarations": [],
+      "signals": {
+        "credential-acquisition": [
+          18
+        ],
+        "role-input": [
+          57
+        ],
+        "launch-or-mutation": [
+          55
+        ],
+        "executable-dependency": [
+          39,
+          55,
+          64,
+          86,
+          102
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/workflows/cd-terragrunt.yml": {
+      "sha256": "b5c86781737761440f1ed49a3c3c052e51b98e6f7d5dbfe5aab9a5e1196f2e3a",
+      "declarations": [],
+      "signals": {
+        "credential-acquisition": [
+          40
+        ],
+        "role-input": [
+          68,
+          110,
+          111,
+          115,
+          121,
+          201,
+          227,
+          228,
+          237,
+          243,
+          316
+        ],
+        "launch-or-mutation": [
+          43,
+          47,
+          59,
+          105,
+          119,
+          123,
+          143,
+          145,
+          152,
+          153,
+          154,
+          157,
+          160,
+          164,
+          168,
+          173,
+          178,
+          180,
+          192,
+          232,
+          241,
+          245,
+          265,
+          267,
+          274,
+          275,
+          276,
+          279,
+          282,
+          286,
+          290,
+          295,
+          300,
+          302
+        ],
+        "executable-dependency": [
+          63,
+          119,
+          127,
+          143,
+          196,
+          241,
+          249,
+          265
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/workflows/cd.yml": {
+      "sha256": "4c41a12e2e0d3f345c5e0f8d673196c29d59aa3ad1d30aef3b8af619e107b07b",
+      "declarations": [],
+      "signals": {
+        "credential-acquisition": [
+          34,
+          188,
+          391,
+          613,
+          886,
+          1022
+        ],
+        "role-input": [
+          203,
+          207,
+          208,
+          228,
+          233,
+          407,
+          411,
+          412,
+          437,
+          442,
+          630,
+          631,
+          640,
+          641,
+          642,
+          643,
+          644,
+          645,
+          646,
+          648,
+          668,
+          669,
+          675,
+          915,
+          916,
+          920,
+          921,
+          922,
+          923,
+          924,
+          925,
+          926,
+          928,
+          932,
+          933,
+          939
+        ],
+        "launch-or-mutation": [
+          7,
+          8,
+          12,
+          88,
+          89,
+          91,
+          92,
+          93,
+          97,
+          98,
+          99,
+          100,
+          101,
+          102,
+          103,
+          104,
+          105,
+          106,
+          108,
+          109,
+          110,
+          111,
+          112,
+          113,
+          114,
+          115,
+          117,
+          120,
+          121,
+          122,
+          129,
+          150,
+          231,
+          235,
+          245,
+          247,
+          254,
+          255,
+          256,
+          259,
+          262,
+          280,
+          282,
+          290,
+          291,
+          292,
+          299,
+          440,
+          444,
+          454,
+          456,
+          463,
+          464,
+          465,
+          468,
+          471,
+          479,
+          511,
+          516,
+          526,
+          527,
+          528,
+          577,
+          578,
+          626,
+          673,
+          675,
+          677,
+          680,
+          685,
+          702,
+          704,
+          711,
+          712,
+          713,
+          716,
+          719,
+          750,
+          762,
+          764,
+          772,
+          773,
+          774,
+          781,
+          912,
+          937,
+          939,
+          1006
+        ],
+        "executable-dependency": [
+          10,
+          11,
+          12,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          75,
+          81,
+          127,
+          128,
+          129,
+          131,
+          132,
+          133,
+          134,
+          135,
+          136,
+          137,
+          138,
+          139,
+          140,
+          141,
+          172,
+          198,
+          231,
+          239,
+          245,
+          402,
+          440,
+          448,
+          454,
+          575,
+          623,
+          642,
+          645,
+          670,
+          673,
+          696,
+          702,
+          903,
+          909,
+          922,
+          925,
+          934,
+          937,
+          945,
+          952,
+          969,
+          1023
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/workflows/ci-cd-safety.yml": {
+      "sha256": "20571f32fe64f57e0a48ced61f3f04752abd3715ed7890222dcaead957e17c0e",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          56,
+          79,
+          103
+        ],
+        "executable-dependency": [
+          19,
+          30,
+          37,
+          38,
+          46,
+          58
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/workflows/ci-dotnet.yml": {
+      "sha256": "d11c3285da8af1e99bdaea719bed6dce11368929551c43b1244bef7faf7bc6f9",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          38,
+          41,
+          44,
+          77,
+          79
+        ],
+        "executable-dependency": [
+          22,
+          25,
+          30,
+          50,
+          53,
+          56,
+          64
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/workflows/ci-repo-hygiene.yml": {
+      "sha256": "098836966fbda5c22380b82089a8c1c67d5327801094a777b9d8eee131d09f20",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          36,
+          44,
+          71,
+          116,
+          117,
+          118,
+          134,
+          135,
+          136,
+          164,
+          166,
+          171,
+          172,
+          173,
+          176,
+          179
+        ],
+        "executable-dependency": [
+          16,
+          19,
+          33,
+          44,
+          51,
+          70,
+          82,
+          83,
+          85,
+          99,
+          105,
+          121,
+          123,
+          145,
+          147,
+          164
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/workflows/ci-terragrunt-manual.yml": {
+      "sha256": "4a9a785f3709bcf382b1d8b8f341440bfda4f98689235d1fafce7404ad99d81a",
+      "declarations": [],
+      "signals": {
+        "credential-acquisition": [
+          48
+        ],
+        "launch-or-mutation": [
+          29,
+          37,
+          50
+        ],
+        "executable-dependency": [
+          37,
+          50
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/workflows/ci-terragrunt-plan.yml": {
+      "sha256": "bcda03d0afc5c77dfd03cb29519c32a6e6a016ff62199bcba80dec6c52cf7dd8",
+      "declarations": [],
+      "signals": {
+        "credential-acquisition": [
+          38
+        ],
+        "role-input": [
+          22,
+          51,
+          63,
+          64,
+          71
+        ],
+        "launch-or-mutation": [
+          69,
+          73,
+          91,
+          93,
+          99,
+          100,
+          101,
+          104,
+          105,
+          108,
+          109,
+          112,
+          113,
+          115,
+          116,
+          120,
+          125,
+          132,
+          137,
+          149,
+          174,
+          177,
+          178,
+          190,
+          216
+        ],
+        "executable-dependency": [
+          46,
+          69,
+          77,
+          91,
+          175,
+          212
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/workflows/ci-terragrunt.yml": {
+      "sha256": "1d681e644807f0edd9c208d258ef71a291eb6681610711f77e9643dd7f164650",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          46,
+          48,
+          54,
+          55,
+          56,
+          59,
+          78,
+          81
+        ],
+        "executable-dependency": [
+          30,
+          46,
+          59
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/workflows/ci.yml": {
+      "sha256": "cffdeb8a4efdbfd6ff79875156aa57c927dc49938a1b174a745adf0837f848a3",
+      "declarations": [],
+      "signals": {
+        "credential-acquisition": [
+          139
+        ],
+        "launch-or-mutation": [
+          44,
+          45,
+          47,
+          48,
+          50,
+          56,
+          59,
+          122,
+          141
+        ],
+        "executable-dependency": [
+          31,
+          35,
+          106,
+          114,
+          122,
+          141
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/workflows/deploy-dev.yml": {
+      "sha256": "c02b920af89d4acd0df876ab545b1f57b88e9baed499efec6eb5c2b52ee70e80",
+      "declarations": [],
+      "signals": {
+        "credential-acquisition": [
+          37
+        ],
+        "role-input": [
+          82,
+          86,
+          87,
+          91,
+          92,
+          94,
+          95,
+          101
+        ],
+        "launch-or-mutation": [
+          79,
+          99,
+          101,
+          394
+        ],
+        "executable-dependency": [
+          56,
+          92,
+          96,
+          99,
+          107,
+          130,
+          149,
+          163,
+          207,
+          225,
+          237,
+          254,
+          275,
+          343,
+          359
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/workflows/promote-prod.yml": {
+      "sha256": "18ec8e6147e2316c2ddada639174d34fe88655da78f10ef1f84fd64a208f1c28",
+      "declarations": [],
+      "signals": {
+        "credential-acquisition": [
+          39
+        ],
+        "role-input": [
+          109,
+          113,
+          114,
+          118,
+          119,
+          121,
+          122,
+          128
+        ],
+        "launch-or-mutation": [
+          106,
+          126,
+          128,
+          227,
+          237,
+          246,
+          421
+        ],
+        "executable-dependency": [
+          62,
+          81,
+          119,
+          123,
+          126,
+          134,
+          180,
+          191,
+          228,
+          249,
+          273,
+          290,
+          319,
+          370,
+          386
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/workflows/release-build.yml": {
+      "sha256": "a726fc43976a152332505f449edbdf184975c228a13015f9903e0496ecaeba3c",
+      "declarations": [],
+      "signals": {
+        "credential-acquisition": [
+          45
+        ],
+        "role-input": [
+          91,
+          95,
+          96,
+          100,
+          101,
+          103,
+          104,
+          110
+        ],
+        "launch-or-mutation": [
+          88,
+          108,
+          110,
+          139,
+          146,
+          151,
+          156,
+          161
+        ],
+        "executable-dependency": [
+          70,
+          101,
+          105,
+          108,
+          116,
+          123,
+          161,
+          164,
+          167,
+          176,
+          185,
+          203,
+          235,
+          248,
+          287,
+          305
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    ".github/workflows/rollback-manifest.yml": {
+      "sha256": "c078aa23ff6ef123fd3b5a8a7b5cb9828deb605eb99e4b99cf3d9664ce1491bb",
+      "declarations": [],
+      "signals": {
+        "credential-acquisition": [
+          67
+        ],
+        "role-input": [
+          170,
+          171,
+          177,
+          178,
+          181,
+          182,
+          185,
+          186,
+          189,
+          190,
+          194,
+          195,
+          201
+        ],
+        "launch-or-mutation": [
+          167,
+          199,
+          201,
+          242,
+          491
+        ],
+        "executable-dependency": [
+          93,
+          152,
+          182,
+          190,
+          196,
+          199,
+          207,
+          247,
+          280,
+          289,
+          298,
+          328,
+          352,
+          381,
+          432,
+          454
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "demo-api/deploy/task-definition.template.json": {
+      "sha256": "c6097b3446e267ee4a9b51ae498a952520f771f4a87faf7536ecaa1c2d561644",
+      "declarations": [],
+      "signals": {
+        "role-input": [
+          9,
+          10
+        ],
+        "executable-dependency": [
+          63
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "demo-api/Dockerfile": {
+      "sha256": "a2c91491a2650cace1e83acc1e8ffbf367d8bd95ebe19e18669441ea341aac66",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          18,
+          21,
+          24,
+          27,
+          40
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "scripts/alb-route-target.jq": {
+      "sha256": "70071f6215840ddfc7e42caf0011b9879ec0ce671007957df044cb50874dfa31",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "scripts/audit-terraform-state-secrets.sh": {
+      "sha256": "7c88b76f8de2a054439cdf36666d1f4fea004624a3b115bff80fc386d5a6a242",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          14,
+          100,
+          101,
+          103,
+          104,
+          173,
+          201,
+          223,
+          240,
+          253,
+          254,
+          255,
+          256,
+          257,
+          258,
+          259,
+          272
+        ],
+        "executable-dependency": [
+          14,
+          47,
+          48,
+          240,
+          241
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "scripts/aws-response-boundary.sh": {
+      "sha256": "b7fb314dc086cfdb2c763a9c4f923de8a638ac14437410acfc657fc1386096ac",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "scripts/bootstrap-db-secrets.sh": {
+      "sha256": "bb2acc41b05b1ab36c016066f2977c8d6348ac5ba6bddda41d9e2f780ff4a56f",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          168,
+          184,
+          194,
+          225,
+          273,
+          274
+        ],
+        "executable-dependency": [
+          7,
+          148,
+          273,
+          277
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "scripts/bootstrap.sh": {
+      "sha256": "924f9abbc4ef6d0da299ca334a662364a44ecacab02120e8e70aa150dab3e382",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          13,
+          61,
+          65,
+          76,
+          77,
+          78,
+          79,
+          111,
+          112,
+          113,
+          114,
+          229,
+          233,
+          235,
+          275,
+          276,
+          277,
+          278,
+          279,
+          280,
+          281,
+          287,
+          302,
+          312,
+          313,
+          314,
+          336,
+          337,
+          342,
+          347,
+          356,
+          363,
+          370,
+          377,
+          385,
+          401,
+          402,
+          406,
+          414,
+          423,
+          424,
+          427,
+          436,
+          443,
+          452,
+          455,
+          459,
+          465,
+          467,
+          507,
+          532,
+          560,
+          589,
+          590,
+          592,
+          593,
+          595,
+          633,
+          636,
+          642,
+          645,
+          651,
+          654,
+          657
+        ],
+        "executable-dependency": [
+          41,
+          65,
+          66,
+          68,
+          76,
+          77,
+          78,
+          79,
+          82,
+          83,
+          198,
+          199,
+          229,
+          298,
+          312,
+          313,
+          314,
+          315,
+          316,
+          452,
+          489,
+          507,
+          522,
+          542,
+          560,
+          580,
+          598,
+          618,
+          666,
+          670
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "scripts/bounded-process.py": {
+      "sha256": "d9cb4bfcc5e2e2e07a18aa62842bc39a1b50e3b34cf1152478772bbe21f4695e",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "scripts/check-deploy-resources.sh": {
+      "sha256": "99b8ace7d37ac805a5aaa5cab82c990164e143685a4340a0681545c804c78613",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          144,
+          187,
+          205,
+          211,
+          221,
+          224,
+          227,
+          230,
+          238,
+          245
+        ],
+        "executable-dependency": [
+          27,
+          48,
+          49,
+          245,
+          246
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "scripts/deploy.sh": {
+      "sha256": "3110f2b732bb008447a67b6b6ecac3f7580fd2eeb8f6d0f7c6f7558e936b4946",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          71,
+          74,
+          106,
+          107,
+          108,
+          109,
+          110,
+          198,
+          199,
+          206,
+          209,
+          210,
+          254,
+          255,
+          256,
+          379,
+          384,
+          387,
+          392,
+          408,
+          432,
+          440,
+          458,
+          484,
+          511,
+          516,
+          525,
+          526,
+          527,
+          540,
+          543,
+          544,
+          545,
+          546,
+          547,
+          548,
+          549,
+          590,
+          595,
+          608,
+          611,
+          621,
+          626,
+          634,
+          654,
+          658,
+          681,
+          689,
+          719,
+          720,
+          732,
+          735,
+          738,
+          775
+        ],
+        "executable-dependency": [
+          40,
+          41,
+          65,
+          70,
+          71,
+          72,
+          73,
+          74,
+          75,
+          76,
+          113,
+          114,
+          198,
+          209,
+          248,
+          249,
+          250,
+          251,
+          264,
+          395,
+          399,
+          402,
+          422,
+          435,
+          463,
+          496,
+          504,
+          540,
+          553,
+          719,
+          720,
+          735,
+          736,
+          775,
+          811,
+          849,
+          852,
+          855,
+          856,
+          858,
+          879
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "scripts/ecs-blue-green-deploy.sh": {
+      "sha256": "c7260692520034221e8878178b45463b58f627876a146e08c91160b88b34ff6f",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          5,
+          6,
+          84,
+          85,
+          86,
+          205,
+          267,
+          276,
+          280,
+          284,
+          288,
+          308,
+          317,
+          360,
+          371,
+          393,
+          414,
+          420,
+          443,
+          455,
+          463,
+          482,
+          503,
+          544,
+          549,
+          564,
+          574,
+          597
+        ],
+        "executable-dependency": [
+          5,
+          6,
+          53,
+          89,
+          90,
+          263,
+          434,
+          503,
+          512,
+          539,
+          597,
+          598,
+          599
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "scripts/ecs-readiness-gate.sh": {
+      "sha256": "e809c9c9e4e21d40859313fd880ec90e5786bd0420e81adbed46f06b64c00c3a",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          5,
+          6,
+          66,
+          67,
+          68,
+          172,
+          697
+        ],
+        "executable-dependency": [
+          5,
+          6,
+          43,
+          98,
+          99,
+          170,
+          211,
+          213,
+          218,
+          220,
+          221,
+          509,
+          545,
+          553,
+          697,
+          698,
+          699,
+          700,
+          701,
+          702
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "scripts/list-deployment-history-s3.sh": {
+      "sha256": "070d8b82c2e3102c74664579fac266c70fce249f5c2094d03f5afebe3eaebc03",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          107,
+          117,
+          130,
+          186
+        ],
+        "executable-dependency": [
+          14,
+          28,
+          29,
+          112,
+          134,
+          186,
+          187
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "scripts/publish-release-manifest-s3.sh": {
+      "sha256": "27066fe2877fb31fefc1d988ad7ea7a8b8fcb7c6ee64f4a12dbd379ac5fa404b",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          97,
+          98,
+          150,
+          192
+        ],
+        "executable-dependency": [
+          16,
+          35,
+          36,
+          86,
+          168,
+          190,
+          192
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "scripts/read-release-manifest-s3.sh": {
+      "sha256": "9f32085966b4e234749f88b9bb30a9963bcc8317399d8aa051859a954c1072c5",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          151,
+          170,
+          210
+        ],
+        "executable-dependency": [
+          19,
+          20,
+          21,
+          22,
+          35,
+          36,
+          139,
+          156,
+          174,
+          210,
+          211
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "scripts/render-demo-api-taskdef.sh": {
+      "sha256": "00773afe94e9150c28adb97d3e11ee76779a4a168096fa025ca01bd538f12a9d",
+      "declarations": [],
+      "signals": {
+        "role-input": [
+          120,
+          121,
+          127,
+          128,
+          139,
+          140,
+          154,
+          155
+        ],
+        "launch-or-mutation": [
+          23,
+          105,
+          127,
+          128,
+          129
+        ],
+        "executable-dependency": [
+          19,
+          32,
+          33,
+          157,
+          159,
+          176
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "scripts/render-deployment-record.sh": {
+      "sha256": "15e88b77425e1ee55ccab48c8c378174963184d74ca7a99f4c1d9a467fdeada0",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          32,
+          48,
+          49,
+          205,
+          281,
+          286
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "scripts/render-release-manifest.sh": {
+      "sha256": "5639361d7f56b418a73d68d0b71503d1e8f30cfd9d5370819c2a2732aa3cb52a",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          24,
+          44,
+          45,
+          145,
+          198,
+          203
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "scripts/tests/fake-readiness-aws": {
+      "sha256": "eea1af552065312cd7a18de91a0d7abf9c3bff6a178f072279c69751047197ff",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          45,
+          70,
+          119,
+          346,
+          363,
+          367
+        ],
+        "executable-dependency": [
+          24,
+          27,
+          28,
+          29,
+          31,
+          32,
+          33,
+          51
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "scripts/tests/run-offline-readiness-tests.sh": {
+      "sha256": "b4d4b0b2b90cbebfaca535d25953cc7506ef95a61c0f8ad8d8a033b1cc045f40",
+      "declarations": [],
+      "signals": {
+        "role-input": [
+          22,
+          23
+        ],
+        "executable-dependency": [
+          9,
+          10,
+          35
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "scripts/tests/test-bounded-process.py": {
+      "sha256": "347f235bdb032d2a50cf0a6e7ee3a660a3468690b5868b351ede2ba2cbbb376e",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          11
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "scripts/tests/test-ecs-readiness-gate.sh": {
+      "sha256": "b79751007ce8bcf5cfc77a084f542478a993d8f1897c0302f46e037fea123c24",
+      "declarations": [],
+      "signals": {
+        "role-input": [
+          53
+        ],
+        "launch-or-mutation": [
+          7,
+          9,
+          22,
+          23,
+          42,
+          81,
+          144,
+          145,
+          146,
+          147,
+          152,
+          156,
+          157,
+          160,
+          162,
+          229,
+          230,
+          234,
+          235,
+          241
+        ],
+        "executable-dependency": [
+          5,
+          6,
+          113,
+          169,
+          199,
+          247,
+          259
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "scripts/tests/test-render-demo-api-taskdef.sh": {
+      "sha256": "2409e3104a3e30d437a67cc3055a39cb3b377f4396967259d4e32eca3ad06303",
+      "declarations": [],
+      "signals": {
+        "role-input": [
+          37,
+          38
+        ],
+        "launch-or-mutation": [
+          16,
+          18,
+          21,
+          32,
+          37,
+          38,
+          44,
+          65
+        ],
+        "executable-dependency": [
+          26,
+          42,
+          50,
+          52,
+          63,
+          64
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "scripts/validate-deployment-record.sh": {
+      "sha256": "9cf1fcf46f01241bd737ac71985c560b241c18dd551c74ccc72e5eb5bf9f8c17",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          49,
+          50,
+          51
+        ],
+        "executable-dependency": [
+          10,
+          22,
+          23,
+          75,
+          90
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "scripts/validate-image-digest.sh": {
+      "sha256": "ad34ca506140ea1a267faf43de2de9146c34daf16635cf58bba10ef0e20e4427",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          10,
+          11,
+          12
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "scripts/validate-release-manifest.sh": {
+      "sha256": "a40c88d2dd7490acd8e9b3b0c3744c1d402ad401549be6f7ec7190f5ae58c3e3",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          10,
+          22,
+          23,
+          67,
+          86
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "scripts/write-deployment-record-s3.sh": {
+      "sha256": "22966491a1dafad32557941dd34479aee923699dbdbaaa854f635940f6c2937d",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          109,
+          122,
+          183
+        ],
+        "executable-dependency": [
+          17,
+          39,
+          40,
+          97,
+          181,
+          183
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/docs/evidence/deployment-record.redacted.json": {
+      "sha256": "7370fd29da27cefd8e3619b1187f8ae77765d946eabdb978b04927e56e4c89f2",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          17,
+          18,
+          19
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/docs/evidence/release-manifest.redacted.json": {
+      "sha256": "a206a24a0870c986a0ab95f6701cc2e4824f2f8a672b286983cdd80c416b12bf",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/apps/fargate/demo.tf": {
+      "sha256": "9daf2dbde4a80b1923fd9bc9fb1778530c035fbea026c346022eb076cbefe51f",
+      "declarations": [
+        {
+          "kind": "module",
+          "type": "demo_api_blue",
+          "name": null,
+          "line": 27
+        },
+        {
+          "kind": "module",
+          "type": "demo_api_green",
+          "name": null,
+          "line": 84
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_policy",
+          "name": "exec_read_db_secret",
+          "line": 141
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_policy",
+          "name": "task_use_kms",
+          "line": 173
+        }
+      ],
+      "signals": {
+        "executable-dependency": [
+          28,
+          37,
+          85,
+          94,
+          155,
+          163,
+          187
+        ],
+        "security-control": [
+          66,
+          67,
+          70,
+          71,
+          123,
+          124,
+          127,
+          128,
+          141,
+          145,
+          173,
+          177
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/apps/fargate/iam_lambda_scale_down.tf": {
+      "sha256": "614d17cda283a09338f6ca3fa0e47cb3d2baa14f56302b7a40e6a9102d80e8ea",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_iam_role",
+          "name": "scale_down_lambda",
+          "line": 1
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_policy",
+          "name": "scale_down_lambda",
+          "line": 15
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role_policy_attachment",
+          "name": "scale_down_custom_attach",
+          "line": 55
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role_policy_attachment",
+          "name": "scale_down_basic_exec",
+          "line": 60
+        }
+      ],
+      "signals": {
+        "credential-acquisition": [
+          9
+        ],
+        "launch-or-mutation": [
+          39,
+          40,
+          50,
+          63
+        ],
+        "executable-dependency": [
+          26,
+          32,
+          38,
+          50
+        ],
+        "security-control": [
+          1,
+          4,
+          16,
+          19,
+          56,
+          57,
+          58,
+          61,
+          62,
+          63
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/apps/fargate/lambda/scale_down_old_color.py": {
+      "sha256": "e3cdf48ad7056068475704cf8ec7a528c571e3944d2e41ada529bddc33ab656e",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          4,
+          9,
+          10,
+          11
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/apps/fargate/lambda_scale_down.tf": {
+      "sha256": "51714c06e5df6c90f0ee824c007d7c1100dd60885ae555965154208b260996d0",
+      "declarations": [
+        {
+          "kind": "data",
+          "type": "archive_file",
+          "name": "scale_down_old_color_zip",
+          "line": 1
+        },
+        {
+          "kind": "module",
+          "type": "scale_down_lambda",
+          "name": null,
+          "line": 6
+        }
+      ],
+      "signals": {
+        "role-input": [
+          13
+        ],
+        "launch-or-mutation": [
+          40
+        ],
+        "executable-dependency": [
+          3,
+          8,
+          16
+        ],
+        "security-control": [
+          13
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/apps/fargate/locals.tf": {
+      "sha256": "8e0924ac6b3049dc0b872978e81e6d0a4a6e8509b7f0422bdf02229bfc440da2",
+      "declarations": [
+        {
+          "kind": "data",
+          "type": "aws_caller_identity",
+          "name": "current",
+          "line": 1
+        }
+      ],
+      "signals": {
+        "launch-or-mutation": [
+          11
+        ],
+        "executable-dependency": [
+          15
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/apps/fargate/modules/ecs_service/alarm_ecs_service.tf": {
+      "sha256": "95f4e4e060032be9d02a3520c0352d1868994044d5674966225cc8f6444d2b78",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_metric_alarm",
+          "name": "ecs_tasks_gap",
+          "line": 6
+        }
+      ],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/apps/fargate/modules/ecs_service/iam.tf": {
+      "sha256": "ccde108a00b27f50218df727e8b9bd84cfc6c2acda3758efc8fba329b6af78c5",
+      "declarations": [
+        {
+          "kind": "data",
+          "type": "aws_iam_policy_document",
+          "name": "ecs_tasks_assume",
+          "line": 1
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role",
+          "name": "task_role",
+          "line": 12
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role",
+          "name": "execution_role",
+          "line": 19
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role_policy_attachment",
+          "name": "exec_base",
+          "line": 26
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role_policy_attachment",
+          "name": "exec_extras",
+          "line": 32
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role_policy_attachment",
+          "name": "task_extras",
+          "line": 37
+        }
+      ],
+      "signals": {
+        "credential-acquisition": [
+          3
+        ],
+        "launch-or-mutation": [
+          28
+        ],
+        "security-control": [
+          1,
+          12,
+          14,
+          19,
+          21,
+          26,
+          27,
+          28,
+          32,
+          33,
+          34,
+          35,
+          38,
+          39,
+          40,
+          41
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/apps/fargate/modules/ecs_service/locals.tf": {
+      "sha256": "0304a670ff8270d7de73f3b9b638e4109b3f98a2ec3b0b86d95647ad29fe09a5",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          22,
+          47
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/apps/fargate/modules/ecs_service/logs.tf": {
+      "sha256": "7bfb583d25b42ba1696505eb288c577847334a7c915ad903961889a70a0b265f",
+      "declarations": [
+        {
+          "kind": "data",
+          "type": "aws_region",
+          "name": "current",
+          "line": 1
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_log_group",
+          "name": "this",
+          "line": 4
+        }
+      ],
+      "signals": {
+        "launch-or-mutation": [
+          5
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/apps/fargate/modules/ecs_service/outputs.tf": {
+      "sha256": "c7184492c3b6223bc4664b2f8779b382dce0e816dc19930db5777623cfb68b5c",
+      "declarations": [],
+      "signals": {
+        "role-input": [
+          1,
+          6
+        ],
+        "security-control": [
+          2,
+          7
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/apps/fargate/modules/ecs_service/service.tf": {
+      "sha256": "6e0d160ff848709960363577b60ed08bfa628cb2949482c50a1ae32dce5e33ba",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_ecs_service",
+          "name": "this",
+          "line": 2
+        }
+      ],
+      "signals": {
+        "executable-dependency": [
+          10
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/apps/fargate/modules/ecs_service/taskdef.tf": {
+      "sha256": "08c1569a65e8e0fb1ae45a5e8732636c92db82f30ee88038a7aa0f53d05167b2",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_ecs_task_definition",
+          "name": "this",
+          "line": 2
+        }
+      ],
+      "signals": {
+        "role-input": [
+          10,
+          11
+        ],
+        "security-control": [
+          10,
+          11
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/apps/fargate/modules/ecs_service/variables.tf": {
+      "sha256": "a05ed414195db447fad1a233b6e148ab8e371b0e7c41394558d762c6a24c49ee",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          103,
+          133
+        ],
+        "security-control": [
+          120,
+          126
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/apps/fargate/modules/ecs_service/versions.tf": {
+      "sha256": "c785853dd5eb368b8d57c83793a99a76e1eb31b28bd9287d6038e83571aa13f4",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ],
+        "executable-dependency": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/apps/fargate/outputs.tf": {
+      "sha256": "f93123d9d06b13101a8b13cf5a24f90d39e09f67b9ec73ed4b93946767dedc40",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/apps/fargate/variables.tf": {
+      "sha256": "025e00ebdc70dbc033fb1eb12236d075b7821ce7ba0983f93e4f8df086339f02",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          59
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/apps/fargate/versions.tf": {
+      "sha256": "0a47175c14939f1ac4e2e84d7e7c2c789dc454d653c062758016ebf8a5224a1b",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ],
+        "executable-dependency": [
+          4,
+          5
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/data/locals.tf": {
+      "sha256": "8c35fba709553885da988f870c772851c19d95214b2f86ebb44a162bf63fbd06",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          7
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/data/main.tf": {
+      "sha256": "d6c920170f42bedaf6f8f133548ee2a8b6bbfca8bd4187de7dda1a7831c63cf8",
+      "declarations": [
+        {
+          "kind": "data",
+          "type": "aws_ami",
+          "name": "ubuntu_2204",
+          "line": 5
+        },
+        {
+          "kind": "data",
+          "type": "aws_iam_policy",
+          "name": "ssm_core",
+          "line": 32
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role",
+          "name": "ec2_role",
+          "line": 35
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role_policy_attachment",
+          "name": "ssm_attach",
+          "line": 48
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role_policy",
+          "name": "secrets_access",
+          "line": 55
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_instance_profile",
+          "name": "ec2_profile",
+          "line": 78
+        },
+        {
+          "kind": "resource",
+          "type": "aws_instance",
+          "name": "db",
+          "line": 91
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_metric_alarm",
+          "name": "statuscheck_failed",
+          "line": 136
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_metric_alarm",
+          "name": "cpu_credit_low",
+          "line": 161
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_metric_alarm",
+          "name": "cpu_high",
+          "line": 184
+        }
+      ],
+      "signals": {
+        "credential-acquisition": [
+          43
+        ],
+        "role-input": [
+          79,
+          96
+        ],
+        "launch-or-mutation": [
+          33
+        ],
+        "executable-dependency": [
+          65,
+          73,
+          89,
+          109
+        ],
+        "security-control": [
+          32,
+          36,
+          38,
+          49,
+          50,
+          51,
+          55,
+          57,
+          59,
+          79,
+          81,
+          96
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/data/outputs.tf": {
+      "sha256": "549a7bd00a9d1273bec1b006df4c5cbe2c7178d8849dde4a00262cbc288beadb",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/data/user_data.sh": {
+      "sha256": "98b4d17937711d27244c161a35832d6f05135b59f5cb5609a5016fd19b10cd7b",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          39
+        ],
+        "executable-dependency": [
+          101
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/data/variables.tf": {
+      "sha256": "38d653d8e80d236fc9c0b011bcd232986dbcfd01000436d6c3fe762d7d500c1e",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          36
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/data/versions.tf": {
+      "sha256": "c785853dd5eb368b8d57c83793a99a76e1eb31b28bd9287d6038e83571aa13f4",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ],
+        "executable-dependency": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/edge/locals.tf": {
+      "sha256": "b742324f5d09624d59139286418a261b85400807fe2472fbb9bed7b17d2bd136",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          7
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/edge/main.tf": {
+      "sha256": "e2f79fd4eda870e32618aa1e5dbf61a2edc9319349e25853c00b13562e8ac67e",
+      "declarations": [
+        {
+          "kind": "module",
+          "type": "apigateway",
+          "name": null,
+          "line": 1
+        },
+        {
+          "kind": "module",
+          "type": "vpclink",
+          "name": null,
+          "line": 13
+        }
+      ],
+      "signals": {
+        "executable-dependency": [
+          2,
+          15
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/edge/modules/apigateway/apigw_http.tf": {
+      "sha256": "e30e5cef9fd7553ec86fda461cd6b179fb34b114a4c3f698709f00500e90a1d6",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_apigatewayv2_api",
+          "name": "http",
+          "line": 4
+        },
+        {
+          "kind": "resource",
+          "type": "aws_apigatewayv2_integration",
+          "name": "alb_integration",
+          "line": 33
+        },
+        {
+          "kind": "resource",
+          "type": "aws_apigatewayv2_stage",
+          "name": "default",
+          "line": 50
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_log_group",
+          "name": "api_gw_access",
+          "line": 70
+        }
+      ],
+      "signals": {
+        "launch-or-mutation": [
+          72
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/edge/modules/apigateway/locals.tf": {
+      "sha256": "98a71d98bb276d0c48102eb7d7c12323bc5f4f32b9f7db3a3d49ecf2dd7d00ed",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/edge/modules/apigateway/outputs.tf": {
+      "sha256": "c050556cca178ff99382a6c02a6c28c77de7a92800fcbf91cf6cf76db2975843",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/edge/modules/apigateway/routes.tf": {
+      "sha256": "ca8cd5c4d7eb977ec936c6322fc0e00b93d020acc90b5e1f842d699acf22078d",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_apigatewayv2_route",
+          "name": "routes",
+          "line": 1
+        }
+      ],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/edge/modules/apigateway/variables.tf": {
+      "sha256": "112892abff770b604c5bc0676d9bf7b57ef5186e8c273f15dd1fda8bc4c72cf4",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/edge/modules/apigateway/versions.tf": {
+      "sha256": "c785853dd5eb368b8d57c83793a99a76e1eb31b28bd9287d6038e83571aa13f4",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ],
+        "executable-dependency": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/edge/modules/vpc_link/outputs.tf": {
+      "sha256": "08b36bd68e78f3b94d86d93217a764d0e43c02a230bd834ffa911c4e68b6d540",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/edge/modules/vpc_link/variables.tf": {
+      "sha256": "4b375f4aee19d0e4f2a07fe1b58b6e38b09e0a5006570b2b3e914441128fb49d",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/edge/modules/vpc_link/versions.tf": {
+      "sha256": "c785853dd5eb368b8d57c83793a99a76e1eb31b28bd9287d6038e83571aa13f4",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ],
+        "executable-dependency": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/edge/modules/vpc_link/vpc_link.tf": {
+      "sha256": "549bc3d5b4d1cbcdeaf8a80508a4a92a9702e92170e937a67e89bc029a8e2c09",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_apigatewayv2_vpc_link",
+          "name": "this",
+          "line": 1
+        }
+      ],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/edge/outputs.tf": {
+      "sha256": "01e1381dc1754b1e5feeb36725c662e1f4f6691e288b890ba95890962957ac90",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/edge/variables.tf": {
+      "sha256": "506106d9002783ca0c60fc2b9f0aaf317f49679da46de782300b9eecdf3c8aad",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/edge/versions.tf": {
+      "sha256": "c785853dd5eb368b8d57c83793a99a76e1eb31b28bd9287d6038e83571aa13f4",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ],
+        "executable-dependency": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/locals.tf": {
+      "sha256": "7290760379293a23e56e8a490be07d4e5ad6d5803907c0963ffc1f9492243693",
+      "declarations": [
+        {
+          "kind": "data",
+          "type": "aws_availability_zones",
+          "name": "available",
+          "line": 1
+        }
+      ],
+      "signals": {
+        "launch-or-mutation": [
+          11
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/main.tf": {
+      "sha256": "fd19d279d2695441e4887b800becda6e3cb446cd98a77752d230877e1c56d67b",
+      "declarations": [
+        {
+          "kind": "module",
+          "type": "vpc",
+          "name": null,
+          "line": 1
+        },
+        {
+          "kind": "module",
+          "type": "alb",
+          "name": null,
+          "line": 7
+        },
+        {
+          "kind": "module",
+          "type": "nat",
+          "name": null,
+          "line": 17
+        }
+      ],
+      "signals": {
+        "executable-dependency": [
+          2,
+          9,
+          19
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/modules/alb/alarms_tg.tf": {
+      "sha256": "e8bd25fafa989462a48f1acd0acc4de483d416d83a00a230e5d05a76634cf5b9",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_metric_alarm",
+          "name": "tg_blue_5xx",
+          "line": 1
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_metric_alarm",
+          "name": "tg_green_5xx",
+          "line": 24
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_metric_alarm",
+          "name": "tg_blue_latency",
+          "line": 48
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_metric_alarm",
+          "name": "tg_green_latency",
+          "line": 73
+        }
+      ],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/modules/alb/alb.tf": {
+      "sha256": "fe2eb6c8bdfa75c0b1230ec249b2e4b1d923b769bb9eab9f175d9772b67ca948",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_lb",
+          "name": "demo_internal_alb",
+          "line": 7
+        },
+        {
+          "kind": "resource",
+          "type": "aws_lb_listener",
+          "name": "demo_http_listener",
+          "line": 36
+        },
+        {
+          "kind": "resource",
+          "type": "aws_lb_listener_rule",
+          "name": "candidate_rule",
+          "line": 52
+        }
+      ],
+      "signals": {
+        "launch-or-mutation": [
+          35
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/modules/alb/outputs.tf": {
+      "sha256": "456276ab46e07f221d6e4bd791be2bce7ed4393bbb22f9c9197942715026ad7d",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/modules/alb/target_group.tf": {
+      "sha256": "dfa8077372c3937f6acb12c5d21562c42cece7589e636804d4871d713f777340",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_lb_target_group",
+          "name": "blue",
+          "line": 17
+        },
+        {
+          "kind": "resource",
+          "type": "aws_lb_target_group",
+          "name": "green",
+          "line": 40
+        }
+      ],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/modules/alb/variables.tf": {
+      "sha256": "8032d67c772eea72a0401180f65589913767295f9160acbcb32eea7ce7e26fe0",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/modules/alb/versions.tf": {
+      "sha256": "c785853dd5eb368b8d57c83793a99a76e1eb31b28bd9287d6038e83571aa13f4",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ],
+        "executable-dependency": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/modules/nat/alarms_nat.tf": {
+      "sha256": "035e9fc3291035668fb9553f58c57269c950f4364d7c5a1770786d80a2119328",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_metric_alarm",
+          "name": "nat_a_inservice_low",
+          "line": 4
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_metric_alarm",
+          "name": "nat_b_inservice_low",
+          "line": 30
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_metric_alarm",
+          "name": "nat_a_capacity_gap",
+          "line": 52
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_metric_alarm",
+          "name": "nat_b_capacity_gap",
+          "line": 109
+        }
+      ],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/modules/nat/autoscaling_group.tf": {
+      "sha256": "31fbd5674b85d1e9beb0df793e6616335e512066f94e23585bd2cd26ebc51a6f",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_autoscaling_group",
+          "name": "nat_a",
+          "line": 8
+        },
+        {
+          "kind": "resource",
+          "type": "aws_autoscaling_group",
+          "name": "nat_b",
+          "line": 56
+        }
+      ],
+      "signals": {
+        "security-control": [
+          51,
+          52,
+          53,
+          99,
+          100,
+          101
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/modules/nat/elastic_ip.tf": {
+      "sha256": "da3374fea959ae833fb343cdc681a7c8ac6e7f7724db27acd0cc68e7aecb326c",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_eip",
+          "name": "nat_a",
+          "line": 6
+        },
+        {
+          "kind": "resource",
+          "type": "aws_eip",
+          "name": "nat_b",
+          "line": 11
+        }
+      ],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/modules/nat/events_nat.tf": {
+      "sha256": "4fac45437579be7397935a8541bb82b2f61f0d8230162edc9c1ba22ff3e0e6af",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_event_rule",
+          "name": "ec2_running",
+          "line": 11
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_event_target",
+          "name": "t_assign_eip",
+          "line": 27
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_event_target",
+          "name": "t_change_rt",
+          "line": 32
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_event_target",
+          "name": "t_disable_sdc",
+          "line": 36
+        },
+        {
+          "kind": "resource",
+          "type": "aws_lambda_permission",
+          "name": "allow_events_assign_eip",
+          "line": 40
+        },
+        {
+          "kind": "resource",
+          "type": "aws_lambda_permission",
+          "name": "allow_events_change_rt",
+          "line": 48
+        },
+        {
+          "kind": "resource",
+          "type": "aws_lambda_permission",
+          "name": "allow_events_disable_sdc",
+          "line": 55
+        }
+      ],
+      "signals": {
+        "launch-or-mutation": [
+          16
+        ],
+        "security-control": [
+          41,
+          48,
+          55
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/modules/nat/iam_lambda_nat.tf": {
+      "sha256": "2a0e544fe6c05549cc2e33bfb43fe79b7fdcd2083f5f46deaac8c80c07ea2d04",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_iam_role",
+          "name": "lambda_nat",
+          "line": 8
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_policy",
+          "name": "lambda_nat",
+          "line": 27
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role_policy_attachment",
+          "name": "lambda_nat_attach",
+          "line": 85
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role_policy_attachment",
+          "name": "lambda_nat_basic_exec",
+          "line": 90
+        }
+      ],
+      "signals": {
+        "credential-acquisition": [
+          16
+        ],
+        "launch-or-mutation": [
+          26,
+          70,
+          93
+        ],
+        "security-control": [
+          9,
+          11,
+          27,
+          29,
+          86,
+          87,
+          88,
+          91,
+          92,
+          93
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/modules/nat/iam_nat.tf": {
+      "sha256": "291540ec6b2a9cab6b33a88f857408cd81757bcbcd4e5eeb43499ee2f44f44ca",
+      "declarations": [
+        {
+          "kind": "data",
+          "type": "aws_iam_policy_document",
+          "name": "nat_assume",
+          "line": 10
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role",
+          "name": "nat",
+          "line": 20
+        },
+        {
+          "kind": "data",
+          "type": "aws_iam_policy_document",
+          "name": "nat_inline",
+          "line": 26
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_policy",
+          "name": "nat",
+          "line": 39
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role_policy_attachment",
+          "name": "nat_attach",
+          "line": 44
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_instance_profile",
+          "name": "nat",
+          "line": 49
+        }
+      ],
+      "signals": {
+        "credential-acquisition": [
+          13
+        ],
+        "role-input": [
+          50
+        ],
+        "security-control": [
+          11,
+          21,
+          23,
+          27,
+          40,
+          42,
+          45,
+          46,
+          47,
+          50,
+          52
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/modules/nat/lambda/assign_eip.py": {
+      "sha256": "ea0a2b5f8bee20d348bb805333822f27dfc47f320767e5886f3ead40167a41bd",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4,
+          5
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/modules/nat/lambda/change_rt.py": {
+      "sha256": "bb239c6e800f60bc07f6c7681654c435cc7e1081e083f3fc3c4c110adb3cbeab",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          5,
+          6
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/modules/nat/lambda/disable_sdc.py": {
+      "sha256": "ab8864f9ca81e39a02aa070a708154c5d283c37815bde73628bbbc821d333a98",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          5,
+          6,
+          96
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/modules/nat/lambda_nat.tf": {
+      "sha256": "121cfba3382b3b941cf9c1146f5d1e084bc1ceda19b8977ff5216d6dc7510420",
+      "declarations": [
+        {
+          "kind": "data",
+          "type": "archive_file",
+          "name": "assign_eip_zip",
+          "line": 11
+        },
+        {
+          "kind": "data",
+          "type": "archive_file",
+          "name": "change_rt_zip",
+          "line": 17
+        },
+        {
+          "kind": "data",
+          "type": "archive_file",
+          "name": "disable_sdc_zip",
+          "line": 23
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_log_group",
+          "name": "lg_assign_eip",
+          "line": 29
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_log_group",
+          "name": "lg_change_rt",
+          "line": 35
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_log_group",
+          "name": "lg_disable_sdc",
+          "line": 41
+        },
+        {
+          "kind": "module",
+          "type": "lambda_assign_eip",
+          "name": null,
+          "line": 51
+        },
+        {
+          "kind": "module",
+          "type": "lambda_change_rt",
+          "name": null,
+          "line": 83
+        },
+        {
+          "kind": "module",
+          "type": "lambda_disable_sdc",
+          "name": null,
+          "line": 110
+        }
+      ],
+      "signals": {
+        "role-input": [
+          58,
+          89,
+          116
+        ],
+        "launch-or-mutation": [
+          31,
+          37,
+          43
+        ],
+        "executable-dependency": [
+          14,
+          20,
+          26,
+          52,
+          61,
+          84,
+          91,
+          111,
+          118
+        ],
+        "security-control": [
+          58,
+          89,
+          116
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/modules/nat/launch_template.tf": {
+      "sha256": "091c4fc897e200981f08769109036d4e84a2661be628d5f02608e1b786472691",
+      "declarations": [
+        {
+          "kind": "data",
+          "type": "aws_ami",
+          "name": "al2",
+          "line": 12
+        },
+        {
+          "kind": "resource",
+          "type": "aws_launch_template",
+          "name": "nat_a",
+          "line": 41
+        },
+        {
+          "kind": "resource",
+          "type": "aws_launch_template",
+          "name": "nat_b",
+          "line": 82
+        }
+      ],
+      "signals": {
+        "role-input": [
+          46,
+          47,
+          87,
+          88
+        ],
+        "executable-dependency": [
+          61,
+          102
+        ],
+        "security-control": [
+          47,
+          88
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/modules/nat/locals.tf": {
+      "sha256": "3a597856cd43fe9a1a0141379c6ff8d9c547b1a5f79c753d2736fce1a3358f67",
+      "declarations": [
+        {
+          "kind": "data",
+          "type": "aws_caller_identity",
+          "name": "current",
+          "line": 1
+        },
+        {
+          "kind": "data",
+          "type": "aws_region",
+          "name": "current",
+          "line": 2
+        }
+      ],
+      "signals": {
+        "launch-or-mutation": [
+          8,
+          10,
+          11
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/modules/nat/outputs.tf": {
+      "sha256": "bb9d05951c2ea2e1436da999caf4742d0b7a861ab6769efbd7db86d94b927e6c",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/modules/nat/variables.tf": {
+      "sha256": "1357e0c0e408b90f548936831117b0f10d96b24867dc9a7aab024d60b9c3634a",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/modules/nat/versions.tf": {
+      "sha256": "0a47175c14939f1ac4e2e84d7e7c2c789dc454d653c062758016ebf8a5224a1b",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ],
+        "executable-dependency": [
+          4,
+          5
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/modules/vpc/locals.tf": {
+      "sha256": "6fb796e207057dcd3801a5286ec6d8857ed38a1cba92c23674b37899df2b0b35",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/modules/vpc/outputs.tf": {
+      "sha256": "a6c3ee4ecdab35266da00fbf02fada52de2faba0b76227d68535d9ea7e67e7ab",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/modules/vpc/route_tables.tf": {
+      "sha256": "51ac4cd46be7f28963d47cd6d50dc93ccd8a1c045d903d88c6bd6ea5e0b1c21c",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_internet_gateway",
+          "name": "igw",
+          "line": 6
+        },
+        {
+          "kind": "resource",
+          "type": "aws_route_table",
+          "name": "public",
+          "line": 17
+        },
+        {
+          "kind": "resource",
+          "type": "aws_route",
+          "name": "public_default_igw",
+          "line": 22
+        },
+        {
+          "kind": "resource",
+          "type": "aws_route_table_association",
+          "name": "public0_assoc",
+          "line": 34
+        },
+        {
+          "kind": "resource",
+          "type": "aws_route_table_association",
+          "name": "public1_assoc",
+          "line": 39
+        },
+        {
+          "kind": "resource",
+          "type": "aws_route_table",
+          "name": "private0",
+          "line": 51
+        },
+        {
+          "kind": "resource",
+          "type": "aws_route_table_association",
+          "name": "private0_assoc",
+          "line": 56
+        },
+        {
+          "kind": "resource",
+          "type": "aws_route_table",
+          "name": "private1",
+          "line": 61
+        },
+        {
+          "kind": "resource",
+          "type": "aws_route_table_association",
+          "name": "private1_assoc",
+          "line": 66
+        }
+      ],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/modules/vpc/subnets.tf": {
+      "sha256": "0f884af56bbf3438f7f977d071c086677b57395da15551f1c46eba68d08e2216",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_subnet",
+          "name": "public0",
+          "line": 10
+        },
+        {
+          "kind": "resource",
+          "type": "aws_subnet",
+          "name": "public1",
+          "line": 21
+        },
+        {
+          "kind": "resource",
+          "type": "aws_subnet",
+          "name": "private0",
+          "line": 35
+        },
+        {
+          "kind": "resource",
+          "type": "aws_subnet",
+          "name": "private1",
+          "line": 42
+        }
+      ],
+      "signals": {
+        "launch-or-mutation": [
+          9,
+          20
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/modules/vpc/variables.tf": {
+      "sha256": "42c76753d1332f6ac30ebe1bf55e81a1fd7e7bc51b3f8c262a14bff134f690fa",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/modules/vpc/versions.tf": {
+      "sha256": "c785853dd5eb368b8d57c83793a99a76e1eb31b28bd9287d6038e83571aa13f4",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ],
+        "executable-dependency": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/modules/vpc/vpc.tf": {
+      "sha256": "7e5f1d69073fa24a67bfc9adcad9b601e01689c5b1d703c7abc37d9ebf066497",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_vpc",
+          "name": "this",
+          "line": 6
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_log_group",
+          "name": "vpc_flow_logs",
+          "line": 13
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role",
+          "name": "vpc_flow_logs",
+          "line": 19
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role_policy",
+          "name": "vpc_flow_logs",
+          "line": 34
+        },
+        {
+          "kind": "resource",
+          "type": "aws_flow_log",
+          "name": "vpc",
+          "line": 54
+        }
+      ],
+      "signals": {
+        "credential-acquisition": [
+          28
+        ],
+        "role-input": [
+          58
+        ],
+        "launch-or-mutation": [
+          15
+        ],
+        "executable-dependency": [
+          50
+        ],
+        "security-control": [
+          20,
+          23,
+          35,
+          37,
+          39,
+          58
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/outputs.tf": {
+      "sha256": "aaef66dd3f9b4acbb0dbb043ee2aff3c222349cc987be7f23bb9fea50557409f",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/security_groups.tf": {
+      "sha256": "d7c22c889a6d09722918a94531a84c42d705d60f3dcadb896bef8fc62b999ec1",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_security_group",
+          "name": "alb_demo",
+          "line": 5
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group",
+          "name": "vpc_link",
+          "line": 17
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group",
+          "name": "nat_instance",
+          "line": 29
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group",
+          "name": "fargate_demo",
+          "line": 41
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group",
+          "name": "db_instance",
+          "line": 53
+        }
+      ],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/security_rules.tf": {
+      "sha256": "98c91164a57ca40cbf6287983007390e0d65a08cecc9a43f228bef8254e98d0f",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_security_group_rule",
+          "name": "alb_ingress_from_vpc_link",
+          "line": 6
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group_rule",
+          "name": "alb_egress_to_fargate_demo",
+          "line": 17
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group_rule",
+          "name": "vpc_link_egress_to_alb",
+          "line": 32
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group_rule",
+          "name": "nat_ingress_from_vpc",
+          "line": 45
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group_rule",
+          "name": "nat_egress_all_inet",
+          "line": 63
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group_rule",
+          "name": "db_ingress_1433_from_fargate_demo",
+          "line": 78
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group_rule",
+          "name": "db_egress_any",
+          "line": 94
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group_rule",
+          "name": "fargate_demo_ingress_from_alb",
+          "line": 110
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group_rule",
+          "name": "fargate_demo_egress_to_db",
+          "line": 119
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group_rule",
+          "name": "fargate_egress_any",
+          "line": 134
+        }
+      ],
+      "signals": {
+        "launch-or-mutation": [
+          62,
+          93,
+          133
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/variables.tf": {
+      "sha256": "e82d58e38ff7a145fbacd5e2e26cbc03e576ba9068db9c70d7c686f6f87c32f5",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/global/versions.tf": {
+      "sha256": "c785853dd5eb368b8d57c83793a99a76e1eb31b28bd9287d6038e83571aa13f4",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ],
+        "executable-dependency": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/modules/lambda_function/main.tf": {
+      "sha256": "380ea09cf3361b82799937af846329d92beb13e1432d8658a182e25beca4dd22",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_lambda_function",
+          "name": "this",
+          "line": 10
+        },
+        {
+          "kind": "resource",
+          "type": "aws_lambda_permission",
+          "name": "invoke",
+          "line": 49
+        }
+      ],
+      "signals": {
+        "role-input": [
+          13
+        ],
+        "executable-dependency": [
+          17,
+          18,
+          19,
+          20,
+          21
+        ],
+        "security-control": [
+          50
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/modules/lambda_function/outputs.tf": {
+      "sha256": "5ea105d3f0d0b84f43de9f7b2b02f0038acd13b6a2820aec1406c3bac35c33af",
+      "declarations": [],
+      "signals": {
+        "role-input": [
+          16,
+          17
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/modules/lambda_function/variables.tf": {
+      "sha256": "d5e345b6f679c45b6f0e4d6fbfe04610331d1d52064611fb81c51b73fe6efab5",
+      "declarations": [],
+      "signals": {
+        "role-input": [
+          10
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/modules/lambda_function/versions.tf": {
+      "sha256": "c785853dd5eb368b8d57c83793a99a76e1eb31b28bd9287d6038e83571aa13f4",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ],
+        "executable-dependency": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/platform/locals.tf": {
+      "sha256": "50e51ee4f3a4d60408978939e6c0e75e6782d4c79ced2d80fe070a73776a086a",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          7
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/platform/main.tf": {
+      "sha256": "3e0e259d45c36203a83590aef21d69d7ca2a075a3a50afab5771e9e2eb8ab3d8",
+      "declarations": [
+        {
+          "kind": "module",
+          "type": "ecs_cluster",
+          "name": null,
+          "line": 6
+        }
+      ],
+      "signals": {
+        "executable-dependency": [
+          8
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/platform/modules/ecs_cluster/main.tf": {
+      "sha256": "6b0bd680ac09e99c5bf35dde7c72300e1b06a5cdc14f4e8a5bff619aaaba84c9",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_ecs_cluster",
+          "name": "this",
+          "line": 6
+        },
+        {
+          "kind": "resource",
+          "type": "aws_ecs_cluster_capacity_providers",
+          "name": "cp",
+          "line": 23
+        }
+      ],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/platform/modules/ecs_cluster/outputs.tf": {
+      "sha256": "bf9f96587fbeb25f1a872dba53f89abeb4103d91d32d6e528c8f54ce1422518d",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/platform/modules/ecs_cluster/variables.tf": {
+      "sha256": "824a916336bcb80433cb708bfcf92b087aee9d4060ad78fe6fca66614612c5e2",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/platform/modules/ecs_cluster/versions.tf": {
+      "sha256": "c785853dd5eb368b8d57c83793a99a76e1eb31b28bd9287d6038e83571aa13f4",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ],
+        "executable-dependency": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/platform/outputs.tf": {
+      "sha256": "6542022444702384d0c2cb584e4a8ddcc0bde9243e2bd1e78b730b2c7cad3772",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/platform/variables.tf": {
+      "sha256": "fda6dc6f99c32c49f84a12e9e2d8d023124df562c089efe2932144ad2a57a120",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/platform/versions.tf": {
+      "sha256": "c785853dd5eb368b8d57c83793a99a76e1eb31b28bd9287d6038e83571aa13f4",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ],
+        "executable-dependency": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/secrets/app_secrets.tf": {
+      "sha256": "211a6d1e97a2c0a6a2438e74e926be38b25f50114194f4c292dc11b5c9a1334e",
+      "declarations": [
+        {
+          "kind": "module",
+          "type": "demo_api_db_connection_string",
+          "name": null,
+          "line": 1
+        }
+      ],
+      "signals": {
+        "executable-dependency": [
+          2
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/secrets/db_secrets.tf": {
+      "sha256": "8c7466624a0be1b5bc21bfc24bd177e4a2d9393e534dc09d8355e0479abfc647",
+      "declarations": [
+        {
+          "kind": "module",
+          "type": "sql_sa_password",
+          "name": null,
+          "line": 1
+        },
+        {
+          "kind": "module",
+          "type": "sql_app_password",
+          "name": null,
+          "line": 10
+        }
+      ],
+      "signals": {
+        "executable-dependency": [
+          2,
+          12
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/secrets/locals.tf": {
+      "sha256": "518a605d5891f63be176d37755709e75fe727a4e91ab1e50476bdd44ececfda6",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          5
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/secrets/main.tf": {
+      "sha256": "7ef6d48b3451daa8eea25bf5e2d4ffab81c3f71983c57c3496ab0b00f63a19e0",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/secrets/modules/secret_metadata/main.tf": {
+      "sha256": "594dcb4b37b345d588b4472d7e3c06d105bebe97b49b9c41091642115ee851e2",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_secretsmanager_secret",
+          "name": "this",
+          "line": 1
+        }
+      ],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/secrets/modules/secret_metadata/outputs.tf": {
+      "sha256": "9bf9e8ba877bbb475c9dbc4b106f3c4f569b2ce884ff40c092d1fe4155f83ee4",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/secrets/modules/secret_metadata/variables.tf": {
+      "sha256": "a96f5c24c54d8a608d67a5366d8b94fa895dbe3cabca67d6d701c3aa1caf23ac",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/secrets/modules/secret_metadata/versions.tf": {
+      "sha256": "c785853dd5eb368b8d57c83793a99a76e1eb31b28bd9287d6038e83571aa13f4",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ],
+        "executable-dependency": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/secrets/outputs.tf": {
+      "sha256": "d36abfcb4be346165b23d1a53153e709c14a6606349c5b904b6f7a6f08330c2f",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/secrets/variables.tf": {
+      "sha256": "44e1eaac370749e3d9ec06a27a68d9a0cc2fe7f0e951f8965a3153bb354c3e4f",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/secrets/versions.tf": {
+      "sha256": "c785853dd5eb368b8d57c83793a99a76e1eb31b28bd9287d6038e83571aa13f4",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ],
+        "executable-dependency": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/shared/locals.tf": {
+      "sha256": "6e05e7d20b8d0c62a09b056e261bb252cf2ce57c95aace37361b2a6a8dce726c",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          17
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/shared/main.tf": {
+      "sha256": "5cdbe15cc7b04f7e1606717963ee4fd52b03cfe750475136b7cd4b73b8228cd5",
+      "declarations": [
+        {
+          "kind": "module",
+          "type": "kms",
+          "name": null,
+          "line": 9
+        },
+        {
+          "kind": "module",
+          "type": "ecr",
+          "name": null,
+          "line": 26
+        },
+        {
+          "kind": "module",
+          "type": "iam_github",
+          "name": null,
+          "line": 54
+        },
+        {
+          "kind": "resource",
+          "type": "aws_sns_topic",
+          "name": "alerts",
+          "line": 83
+        },
+        {
+          "kind": "resource",
+          "type": "aws_sns_topic_subscription",
+          "name": "alerts_email",
+          "line": 88
+        }
+      ],
+      "signals": {
+        "launch-or-mutation": [
+          78,
+          82,
+          85
+        ],
+        "executable-dependency": [
+          10,
+          27,
+          55
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/shared/modules/ecr/locals.tf": {
+      "sha256": "791e3c55eac7352553fab874766a80d6d6fc969ddeaaa4e54788087dedbc587b",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/shared/modules/ecr/main.tf": {
+      "sha256": "a31cb13f9d66fd2399de4690365c866ac7e33910eeda9bfe10475ce66a966508",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_ecr_repository",
+          "name": "repos",
+          "line": 2
+        },
+        {
+          "kind": "resource",
+          "type": "aws_ecr_lifecycle_policy",
+          "name": "repos",
+          "line": 18
+        }
+      ],
+      "signals": {
+        "security-control": [
+          18,
+          22
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/shared/modules/ecr/outputs.tf": {
+      "sha256": "ae6493a1d3afb796aa5080ab707d9b132fa3212fdd27af3a381b3ac13760d7c9",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/shared/modules/ecr/variables.tf": {
+      "sha256": "d6d63ab2edd7a12ec55d6188491179be457ee57c92d9a50723de4d988f10ed0a",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/shared/modules/ecr/versions.tf": {
+      "sha256": "c785853dd5eb368b8d57c83793a99a76e1eb31b28bd9287d6038e83571aa13f4",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ],
+        "executable-dependency": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/shared/modules/iam_github/github_delivery_split.tf": {
+      "sha256": "bf82ccce07d84d91d1c8c4079249c52bb31842dc0cd21d98b3fbb6e5cd1d8c75",
+      "declarations": [
+        {
+          "kind": "data",
+          "type": "aws_iam_policy_document",
+          "name": "github_oidc_trust_release_build",
+          "line": 4
+        },
+        {
+          "kind": "data",
+          "type": "aws_iam_policy_document",
+          "name": "github_oidc_trust_dev_deploy",
+          "line": 29
+        },
+        {
+          "kind": "data",
+          "type": "aws_iam_policy_document",
+          "name": "github_oidc_trust_prod_promote",
+          "line": 54
+        },
+        {
+          "kind": "data",
+          "type": "aws_iam_policy_document",
+          "name": "github_release_build",
+          "line": 82
+        },
+        {
+          "kind": "data",
+          "type": "aws_iam_policy_document",
+          "name": "github_dev_deploy",
+          "line": 161
+        },
+        {
+          "kind": "data",
+          "type": "aws_iam_policy_document",
+          "name": "github_prod_promote",
+          "line": 316
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_policy",
+          "name": "github_release_build",
+          "line": 471
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_policy",
+          "name": "github_dev_deploy",
+          "line": 479
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_policy",
+          "name": "github_prod_promote",
+          "line": 487
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role",
+          "name": "github_release_build",
+          "line": 495
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role",
+          "name": "github_dev_deploy",
+          "line": 502
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role",
+          "name": "github_prod_promote",
+          "line": 509
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role_policy_attachment",
+          "name": "github_release_build",
+          "line": 516
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role_policy_attachment",
+          "name": "github_dev_deploy",
+          "line": 523
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role_policy_attachment",
+          "name": "github_prod_promote",
+          "line": 530
+        }
+      ],
+      "signals": {
+        "credential-acquisition": [
+          14,
+          39,
+          64
+        ],
+        "role-input": [
+          285,
+          313,
+          440,
+          468
+        ],
+        "launch-or-mutation": [
+          80,
+          123,
+          234,
+          274,
+          284,
+          389,
+          429,
+          439
+        ],
+        "security-control": [
+          5,
+          30,
+          55,
+          82,
+          162,
+          317,
+          472,
+          477,
+          480,
+          485,
+          488,
+          493,
+          496,
+          500,
+          503,
+          507,
+          510,
+          514,
+          517,
+          520,
+          521,
+          524,
+          527,
+          528,
+          531,
+          534,
+          535
+        ]
+      },
+      "semantic_status": "CURRENT_FACT",
+      "coverage": "Policy/trust statements and attachments evaluated by source.Adapter",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED"
+    },
+    "terraform/infra/shared/modules/iam_github/github_ecs_blue_green.tf": {
+      "sha256": "81dbabb7d2660c5d42e444b77d247c7d94b8ab269e1cfcf4bf46f70a3716c6e7",
+      "declarations": [
+        {
+          "kind": "data",
+          "type": "aws_iam_policy_document",
+          "name": "github_oidc_trust_app_cd",
+          "line": 4
+        },
+        {
+          "kind": "data",
+          "type": "aws_iam_policy_document",
+          "name": "github_app_cd",
+          "line": 31
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_policy",
+          "name": "github_app_cd",
+          "line": 225
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role",
+          "name": "github_app_cd",
+          "line": 237
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role_policy_attachment",
+          "name": "github_app_cd",
+          "line": 241
+        },
+        {
+          "kind": "data",
+          "type": "aws_iam_policy_document",
+          "name": "github_oidc_trust_app_rollback",
+          "line": 251
+        },
+        {
+          "kind": "data",
+          "type": "aws_iam_policy_document",
+          "name": "github_app_rollback",
+          "line": 278
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_policy",
+          "name": "github_app_rollback",
+          "line": 360
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role",
+          "name": "github_app_rollback",
+          "line": 366
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role_policy_attachment",
+          "name": "github_app_rollback",
+          "line": 371
+        }
+      ],
+      "signals": {
+        "credential-acquisition": [
+          13,
+          260
+        ],
+        "role-input": [
+          117,
+          221
+        ],
+        "launch-or-mutation": [
+          29,
+          62,
+          106,
+          116,
+          198,
+          276,
+          307,
+          346
+        ],
+        "security-control": [
+          4,
+          31,
+          226,
+          229,
+          237,
+          239,
+          242,
+          243,
+          244,
+          251,
+          278,
+          361,
+          364,
+          367,
+          369,
+          372,
+          373,
+          374
+        ]
+      },
+      "semantic_status": "CURRENT_FACT",
+      "coverage": "Policy/trust statements and attachments evaluated by source.Adapter",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED"
+    },
+    "terraform/infra/shared/modules/iam_github/github_terragrunt_cd.tf": {
+      "sha256": "cf02bc2fc5cc7297015ba635898c59e54f864220cb37c726eee34e46f6f6a645",
+      "declarations": [
+        {
+          "kind": "data",
+          "type": "aws_iam_policy_document",
+          "name": "github_oidc_trust_terragrunt_cd",
+          "line": 4
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role",
+          "name": "github_terragrunt_cd",
+          "line": 28
+        },
+        {
+          "kind": "data",
+          "type": "aws_iam_policy_document",
+          "name": "github_oidc_trust_terragrunt_cd_high_risk",
+          "line": 33
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role",
+          "name": "github_terragrunt_cd_high_risk",
+          "line": 58
+        },
+        {
+          "kind": "data",
+          "type": "aws_iam_policy_document",
+          "name": "terragrunt_cd",
+          "line": 71
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role_policy",
+          "name": "terragrunt_cd",
+          "line": 379
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role_policy",
+          "name": "terragrunt_cd_high_risk",
+          "line": 389
+        }
+      ],
+      "signals": {
+        "credential-acquisition": [
+          13,
+          43,
+          84,
+          202
+        ],
+        "role-input": [
+          88,
+          207,
+          237,
+          260,
+          270
+        ],
+        "launch-or-mutation": [
+          4,
+          24,
+          29,
+          30,
+          31,
+          34,
+          54,
+          59,
+          60,
+          61,
+          64,
+          71,
+          206,
+          207,
+          225,
+          226,
+          236,
+          237,
+          259,
+          260,
+          269,
+          297,
+          304,
+          309,
+          319,
+          334,
+          350,
+          380,
+          381,
+          382,
+          383,
+          389,
+          390,
+          391,
+          392
+        ],
+        "security-control": [
+          4,
+          29,
+          31,
+          34,
+          59,
+          61,
+          71,
+          102,
+          226,
+          242,
+          380,
+          382,
+          383,
+          389,
+          391,
+          392
+        ]
+      },
+      "semantic_status": "CURRENT_FACT",
+      "coverage": "Policy/trust statements and attachments evaluated by source.Adapter",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED"
+    },
+    "terraform/infra/shared/modules/iam_github/github_terragrunt_ci.tf": {
+      "sha256": "353f5a942485ecbe886b56102f87de44587230a37948df3a6ce2b947a89f4cd5",
+      "declarations": [
+        {
+          "kind": "data",
+          "type": "tls_certificate",
+          "name": "github_actions",
+          "line": 4
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_openid_connect_provider",
+          "name": "github",
+          "line": 8
+        },
+        {
+          "kind": "data",
+          "type": "aws_iam_openid_connect_provider",
+          "name": "github",
+          "line": 22
+        },
+        {
+          "kind": "data",
+          "type": "aws_iam_policy_document",
+          "name": "github_oidc_trust_ci",
+          "line": 31
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role",
+          "name": "github_terragrunt_ci",
+          "line": 59
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role_policy_attachment",
+          "name": "ci_readonly_access",
+          "line": 68
+        },
+        {
+          "kind": "data",
+          "type": "aws_iam_policy_document",
+          "name": "ci_deny_secret_values",
+          "line": 79
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role_policy",
+          "name": "ci_deny_secret_values",
+          "line": 97
+        }
+      ],
+      "signals": {
+        "credential-acquisition": [
+          40
+        ],
+        "launch-or-mutation": [
+          59,
+          60,
+          69,
+          70,
+          100
+        ],
+        "security-control": [
+          9,
+          23,
+          31,
+          59,
+          61,
+          68,
+          69,
+          70,
+          79,
+          98,
+          100,
+          101
+        ]
+      },
+      "semantic_status": "CURRENT_FACT",
+      "coverage": "Policy/trust statements and attachments evaluated by source.Adapter",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED"
+    },
+    "terraform/infra/shared/modules/iam_github/locals.tf": {
+      "sha256": "4cac750db2c9421f8ab96f820a101a55eb4b77f51427424fda9b17a020df17ce",
+      "declarations": [
+        {
+          "kind": "data",
+          "type": "aws_region",
+          "name": "current",
+          "line": 1
+        },
+        {
+          "kind": "data",
+          "type": "aws_caller_identity",
+          "name": "current",
+          "line": 2
+        }
+      ],
+      "signals": {
+        "role-input": [
+          89,
+          108,
+          174,
+          180,
+          184,
+          188,
+          191,
+          192,
+          193,
+          194,
+          195
+        ],
+        "launch-or-mutation": [
+          18,
+          19,
+          34,
+          36,
+          38,
+          90,
+          91,
+          92,
+          93,
+          94,
+          95,
+          96,
+          97,
+          101,
+          102,
+          103,
+          104,
+          105,
+          108,
+          109,
+          110,
+          111,
+          112,
+          113,
+          114,
+          115,
+          116,
+          117,
+          120,
+          121,
+          122,
+          123,
+          124,
+          125,
+          126,
+          127,
+          128,
+          129,
+          132,
+          133,
+          134,
+          135,
+          139,
+          140,
+          141,
+          145,
+          150,
+          153,
+          154,
+          161,
+          163,
+          166,
+          169,
+          172,
+          175,
+          176,
+          177,
+          178,
+          181,
+          182,
+          185,
+          186,
+          189,
+          198,
+          199,
+          201,
+          202,
+          204,
+          205
+        ],
+        "security-control": [
+          30,
+          31,
+          100,
+          120,
+          138,
+          144,
+          145,
+          146
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/shared/modules/iam_github/outputs.tf": {
+      "sha256": "45976e3351c7b1eb02102853b5435a5de03fbf79e9e464544c5ea28683f86aee",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          3,
+          6,
+          8,
+          11,
+          13
+        ],
+        "security-control": [
+          3,
+          8,
+          13,
+          18,
+          23,
+          28,
+          33,
+          38
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/shared/modules/iam_github/variables.tf": {
+      "sha256": "804d7c0e99b19c48e0c6f0451c498eab141b5c92fa33df80a707d3e7484de225",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/shared/modules/iam_github/versions.tf": {
+      "sha256": "c3b5d66606462f66ac71545ae3ce15e67198913b276d6596fc5b8059e756f7c8",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ],
+        "executable-dependency": [
+          4,
+          5
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/shared/modules/kms_key/key.tf": {
+      "sha256": "1b67ae849614e65e4868ef30e9a48a7e0656ba44ed9d739b7ef9bd6139b4bf70",
+      "declarations": [
+        {
+          "kind": "data",
+          "type": "aws_caller_identity",
+          "name": "current",
+          "line": 1
+        },
+        {
+          "kind": "resource",
+          "type": "aws_kms_key",
+          "name": "kms_microservice",
+          "line": 8
+        },
+        {
+          "kind": "resource",
+          "type": "aws_kms_alias",
+          "name": "alias",
+          "line": 36
+        }
+      ],
+      "signals": {
+        "executable-dependency": [
+          24
+        ],
+        "security-control": [
+          8,
+          16,
+          36,
+          38
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/shared/modules/kms_key/locals.tf": {
+      "sha256": "e16f2f093bf357901d9dab7a780e61a6091d819cee8835a0f73244ad12607931",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          2
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/shared/modules/kms_key/outputs.tf": {
+      "sha256": "3e2df8fa78a217f7ef52a5b71702a7c54249c274f3a31af4bb855352c7431321",
+      "declarations": [],
+      "signals": {
+        "security-control": [
+          3,
+          8,
+          13,
+          18
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/shared/modules/kms_key/variables.tf": {
+      "sha256": "e7086c4073bad771764dd45b54b43d311c2d37a9fda7d1783467a62a7b32770f",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/shared/modules/kms_key/versions.tf": {
+      "sha256": "c785853dd5eb368b8d57c83793a99a76e1eb31b28bd9287d6038e83571aa13f4",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ],
+        "executable-dependency": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/shared/outputs.tf": {
+      "sha256": "bbc6fad072f224f4357102322e192f40ca11efbd6603a3a434e4e1a2ddf272a7",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          54,
+          69,
+          71,
+          74,
+          76,
+          79,
+          81,
+          122
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/shared/release_artifacts_bucket.tf": {
+      "sha256": "dee8b61c44fa158870eb362c60581b06e949fa129e844df49375d8a920ba1dac",
+      "declarations": [
+        {
+          "kind": "data",
+          "type": "aws_caller_identity",
+          "name": "current",
+          "line": 1
+        },
+        {
+          "kind": "resource",
+          "type": "aws_s3_bucket",
+          "name": "release_artifacts",
+          "line": 6
+        },
+        {
+          "kind": "resource",
+          "type": "aws_s3_bucket_public_access_block",
+          "name": "release_artifacts",
+          "line": 12
+        },
+        {
+          "kind": "resource",
+          "type": "aws_s3_bucket_ownership_controls",
+          "name": "release_artifacts",
+          "line": 23
+        },
+        {
+          "kind": "resource",
+          "type": "aws_s3_bucket_versioning",
+          "name": "release_artifacts",
+          "line": 33
+        },
+        {
+          "kind": "resource",
+          "type": "aws_s3_bucket_server_side_encryption_configuration",
+          "name": "release_artifacts",
+          "line": 43
+        },
+        {
+          "kind": "resource",
+          "type": "aws_s3_bucket_lifecycle_configuration",
+          "name": "release_artifacts",
+          "line": 55
+        }
+      ],
+      "signals": {
+        "launch-or-mutation": [
+          5
+        ],
+        "security-control": [
+          19
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/shared/variables.tf": {
+      "sha256": "1f99ef826952f89b6acee427c9a75fdda166a9b8ee620ec820744410f9d88d7e",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/infra/shared/versions.tf": {
+      "sha256": "c785853dd5eb368b8d57c83793a99a76e1eb31b28bd9287d6038e83571aa13f4",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ],
+        "executable-dependency": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/live/dev/apps/fargate/terragrunt.hcl": {
+      "sha256": "26bbd04a56c18698c5f82e7239cef4ef06e315a34648e3c7404ceee457920fe1",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          7,
+          17,
+          19,
+          20,
+          23,
+          33,
+          37,
+          47,
+          49,
+          52,
+          66,
+          69,
+          76
+        ],
+        "executable-dependency": [
+          23,
+          37,
+          52,
+          69,
+          77
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/live/dev/data/.terraform.lock.hcl": {
+      "sha256": "5f6ef854d6bf8c37eaf074f4bd7a5f2ecfff589bbe7204edb5b85e687f744bd6",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/live/dev/data/terragrunt.hcl": {
+      "sha256": "2eff885ef25f63a3e54760c035efca951e3a8d1a7d0c04c93279a65e46b5de40",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          7,
+          23,
+          33,
+          36,
+          46,
+          47,
+          48,
+          51,
+          59
+        ],
+        "executable-dependency": [
+          23,
+          36,
+          51,
+          60
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/live/dev/edge/terragrunt.hcl": {
+      "sha256": "fd20f25403f8fc54e6568c405fd9c9ba65c07a835b15e721bc42a09de55e17cb",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          7,
+          19,
+          25,
+          33
+        ],
+        "executable-dependency": [
+          25,
+          34
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/live/dev/global/.terraform.lock.hcl": {
+      "sha256": "5d9b49e0e4d253b662c66982948503e3d8e8104ec7dca5a9f5e2dc44c3c3d8a9",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4,
+          25
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/live/dev/global/terragrunt.hcl": {
+      "sha256": "755bcd356d6ddf5e5129fe241ce1385f8f579a7ecf3de74ba7320952aa778a93",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          11,
+          20,
+          23,
+          31
+        ],
+        "executable-dependency": [
+          23,
+          32
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/live/dev/platform/.terraform.lock.hcl": {
+      "sha256": "5f6ef854d6bf8c37eaf074f4bd7a5f2ecfff589bbe7204edb5b85e687f744bd6",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/live/dev/platform/terragrunt.hcl": {
+      "sha256": "75ba5620ea246a97e2b4317e04aec0f66ca870a49e4e0ca3325e7e26a10e2268",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          8,
+          15
+        ],
+        "executable-dependency": [
+          16
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/live/dev/root.hcl": {
+      "sha256": "ce3aa5be9377d416e02bbdebb340d320ea2881913bc91d91188986f9aa3b4410",
+      "declarations": [
+        {
+          "kind": "data",
+          "type": "aws_region",
+          "name": "current",
+          "line": 56
+        }
+      ],
+      "signals": {
+        "launch-or-mutation": [
+          12,
+          18,
+          41,
+          53
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/live/dev/secrets/.terraform.lock.hcl": {
+      "sha256": "5f6ef854d6bf8c37eaf074f4bd7a5f2ecfff589bbe7204edb5b85e687f744bd6",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/live/dev/secrets/terragrunt.hcl": {
+      "sha256": "fd43dac69c31637e8cb33858a6fd5cc89015f8a02b4756de1d4b4ebe7bd59566",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          7,
+          16,
+          19,
+          23
+        ],
+        "executable-dependency": [
+          19,
+          24
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/live/dev/shared/.terraform.lock.hcl": {
+      "sha256": "7dc6d859b19f579cc3856d7bc3ba9cc0dbc8044cfa4c54c672016af64902e1a8",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4,
+          27
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/live/dev/shared/terragrunt.hcl": {
+      "sha256": "5c78236e7ce5d7a3dbdc004ad8c6902edf1ac4a9992eb1eb9b3d199ba0711b28",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          7,
+          14
+        ],
+        "executable-dependency": [
+          15
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/live/prod/apps/fargate/terragrunt.hcl": {
+      "sha256": "26bbd04a56c18698c5f82e7239cef4ef06e315a34648e3c7404ceee457920fe1",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          7,
+          17,
+          19,
+          20,
+          23,
+          33,
+          37,
+          47,
+          49,
+          52,
+          66,
+          69,
+          76
+        ],
+        "executable-dependency": [
+          23,
+          37,
+          52,
+          69,
+          77
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/live/prod/data/terragrunt.hcl": {
+      "sha256": "2eff885ef25f63a3e54760c035efca951e3a8d1a7d0c04c93279a65e46b5de40",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          7,
+          23,
+          33,
+          36,
+          46,
+          47,
+          48,
+          51,
+          59
+        ],
+        "executable-dependency": [
+          23,
+          36,
+          51,
+          60
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/live/prod/edge/terragrunt.hcl": {
+      "sha256": "fd20f25403f8fc54e6568c405fd9c9ba65c07a835b15e721bc42a09de55e17cb",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          7,
+          19,
+          25,
+          33
+        ],
+        "executable-dependency": [
+          25,
+          34
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/live/prod/global/terragrunt.hcl": {
+      "sha256": "755bcd356d6ddf5e5129fe241ce1385f8f579a7ecf3de74ba7320952aa778a93",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          11,
+          20,
+          23,
+          31
+        ],
+        "executable-dependency": [
+          23,
+          32
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/live/prod/platform/terragrunt.hcl": {
+      "sha256": "75ba5620ea246a97e2b4317e04aec0f66ca870a49e4e0ca3325e7e26a10e2268",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          8,
+          15
+        ],
+        "executable-dependency": [
+          16
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/live/prod/root.hcl": {
+      "sha256": "e6599e5e8aa79baa71f19fbe04e312f23155e96c676b8284b1dd99ab4a127227",
+      "declarations": [
+        {
+          "kind": "data",
+          "type": "aws_region",
+          "name": "current",
+          "line": 56
+        }
+      ],
+      "signals": {
+        "launch-or-mutation": [
+          12,
+          18,
+          41,
+          53
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/live/prod/secrets/terragrunt.hcl": {
+      "sha256": "fd43dac69c31637e8cb33858a6fd5cc89015f8a02b4756de1d4b4ebe7bd59566",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          7,
+          16,
+          19,
+          23
+        ],
+        "executable-dependency": [
+          19,
+          24
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    },
+    "terraform/live/prod/shared/terragrunt.hcl": {
+      "sha256": "45db813582f73aab20462c3bd1c0a7e38ddf4603b4865576cc1f6ed7430b37cc",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          7,
+          14
+        ],
+        "executable-dependency": [
+          15
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "UNKNOWN"
+    }
+  },
+  "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged"
+}

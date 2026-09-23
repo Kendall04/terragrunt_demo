@@ -1,0 +1,356 @@
+{
+  "classification": "CURRENT_FACT",
+  "coverage": "Actual declarations and evaluated GitHub role instances; workload declarations explicitly not full module-instance evaluation",
+  "principals": [
+    {
+      "id": "dev:github_release_build",
+      "classification": "CURRENT_FACT",
+      "instance_context": "SYNTHETIC_ENVIRONMENT_MODULE_INPUTS",
+      "name": "demo-dev-shared-github-release-build",
+      "responsibilities": [
+        "release-build-publication"
+      ],
+      "source": "terraform/infra/shared/modules/iam_github/github_delivery_split.tf",
+      "trust": "source.Adapter reads actual assume_role_policy reference",
+      "policies": "source.Adapter resolves actual inline/managed attachments",
+      "boundary": "NONE_DECLARED",
+      "unknowns": []
+    },
+    {
+      "id": "dev:github_dev_deploy",
+      "classification": "CURRENT_FACT",
+      "instance_context": "SYNTHETIC_ENVIRONMENT_MODULE_INPUTS",
+      "name": "demo-dev-shared-github-dev-deploy",
+      "responsibilities": [
+        "application-deployment",
+        "manifest-history-rollback"
+      ],
+      "source": "terraform/infra/shared/modules/iam_github/github_delivery_split.tf",
+      "trust": "source.Adapter reads actual assume_role_policy reference",
+      "policies": "source.Adapter resolves actual inline/managed attachments",
+      "boundary": "NONE_DECLARED",
+      "unknowns": []
+    },
+    {
+      "id": "dev:github_app_cd",
+      "classification": "CURRENT_FACT",
+      "instance_context": "SYNTHETIC_ENVIRONMENT_MODULE_INPUTS",
+      "name": "demo-dev-shared-github-app-cd",
+      "responsibilities": [
+        "release-build-publication",
+        "application-deployment",
+        "manifest-history-rollback"
+      ],
+      "source": "terraform/infra/shared/modules/iam_github/github_ecs_blue_green.tf",
+      "trust": "source.Adapter reads actual assume_role_policy reference",
+      "policies": "source.Adapter resolves actual inline/managed attachments",
+      "boundary": "NONE_DECLARED",
+      "unknowns": []
+    },
+    {
+      "id": "dev:github_app_rollback",
+      "classification": "CURRENT_FACT",
+      "instance_context": "SYNTHETIC_ENVIRONMENT_MODULE_INPUTS",
+      "name": "demo-dev-shared-github-app-rollback",
+      "responsibilities": [
+        "emergency-color-flip"
+      ],
+      "source": "terraform/infra/shared/modules/iam_github/github_ecs_blue_green.tf",
+      "trust": "source.Adapter reads actual assume_role_policy reference",
+      "policies": "source.Adapter resolves actual inline/managed attachments",
+      "boundary": "NONE_DECLARED",
+      "unknowns": []
+    },
+    {
+      "id": "dev:github_terragrunt_cd",
+      "classification": "CURRENT_FACT",
+      "instance_context": "SYNTHETIC_ENVIRONMENT_MODULE_INPUTS",
+      "name": "demo-dev-shared-github-terragrunt-cd",
+      "responsibilities": [
+        "ordinary-infrastructure-lifecycle"
+      ],
+      "source": "terraform/infra/shared/modules/iam_github/github_terragrunt_cd.tf",
+      "trust": "source.Adapter reads actual assume_role_policy reference",
+      "policies": "source.Adapter resolves actual inline/managed attachments",
+      "boundary": "NONE_DECLARED",
+      "unknowns": []
+    },
+    {
+      "id": "dev:github_terragrunt_cd_high_risk",
+      "classification": "CURRENT_FACT",
+      "instance_context": "SYNTHETIC_ENVIRONMENT_MODULE_INPUTS",
+      "name": "demo-dev-shared-github-terragrunt-cd-high-risk",
+      "responsibilities": [
+        "ordinary-infrastructure-lifecycle"
+      ],
+      "source": "terraform/infra/shared/modules/iam_github/github_terragrunt_cd.tf",
+      "trust": "source.Adapter reads actual assume_role_policy reference",
+      "policies": "source.Adapter resolves actual inline/managed attachments",
+      "boundary": "NONE_DECLARED",
+      "unknowns": []
+    },
+    {
+      "id": "dev:github_terragrunt_ci",
+      "classification": "CURRENT_FACT",
+      "instance_context": "SYNTHETIC_ENVIRONMENT_MODULE_INPUTS",
+      "name": "demo-dev-shared-github-terragrunt-ci",
+      "responsibilities": [
+        "infrastructure-planning"
+      ],
+      "source": "terraform/infra/shared/modules/iam_github/github_terragrunt_ci.tf",
+      "trust": "source.Adapter reads actual assume_role_policy reference",
+      "policies": "source.Adapter resolves actual inline/managed attachments",
+      "boundary": "NONE_DECLARED",
+      "unknowns": [
+        "AWS-managed policy content not snapshotted: arn:aws:iam::aws:policy/ReadOnlyAccess"
+      ]
+    },
+    {
+      "id": "prod:github_prod_promote",
+      "classification": "CURRENT_FACT",
+      "instance_context": "SYNTHETIC_ENVIRONMENT_MODULE_INPUTS",
+      "name": "demo-prod-shared-github-prod-promote",
+      "responsibilities": [
+        "production-promotion",
+        "manifest-history-rollback"
+      ],
+      "source": "terraform/infra/shared/modules/iam_github/github_delivery_split.tf",
+      "trust": "source.Adapter reads actual assume_role_policy reference",
+      "policies": "source.Adapter resolves actual inline/managed attachments",
+      "boundary": "NONE_DECLARED",
+      "unknowns": []
+    },
+    {
+      "id": "prod:github_app_cd",
+      "classification": "CURRENT_FACT",
+      "instance_context": "SYNTHETIC_ENVIRONMENT_MODULE_INPUTS",
+      "name": "demo-prod-shared-github-app-cd",
+      "responsibilities": [
+        "release-build-publication",
+        "application-deployment",
+        "manifest-history-rollback"
+      ],
+      "source": "terraform/infra/shared/modules/iam_github/github_ecs_blue_green.tf",
+      "trust": "source.Adapter reads actual assume_role_policy reference",
+      "policies": "source.Adapter resolves actual inline/managed attachments",
+      "boundary": "NONE_DECLARED",
+      "unknowns": []
+    },
+    {
+      "id": "prod:github_app_rollback",
+      "classification": "CURRENT_FACT",
+      "instance_context": "SYNTHETIC_ENVIRONMENT_MODULE_INPUTS",
+      "name": "demo-prod-shared-github-app-rollback",
+      "responsibilities": [
+        "emergency-color-flip"
+      ],
+      "source": "terraform/infra/shared/modules/iam_github/github_ecs_blue_green.tf",
+      "trust": "source.Adapter reads actual assume_role_policy reference",
+      "policies": "source.Adapter resolves actual inline/managed attachments",
+      "boundary": "NONE_DECLARED",
+      "unknowns": []
+    },
+    {
+      "id": "prod:github_terragrunt_cd",
+      "classification": "CURRENT_FACT",
+      "instance_context": "SYNTHETIC_ENVIRONMENT_MODULE_INPUTS",
+      "name": "demo-prod-shared-github-terragrunt-cd",
+      "responsibilities": [
+        "ordinary-infrastructure-lifecycle"
+      ],
+      "source": "terraform/infra/shared/modules/iam_github/github_terragrunt_cd.tf",
+      "trust": "source.Adapter reads actual assume_role_policy reference",
+      "policies": "source.Adapter resolves actual inline/managed attachments",
+      "boundary": "NONE_DECLARED",
+      "unknowns": []
+    },
+    {
+      "id": "prod:github_terragrunt_cd_high_risk",
+      "classification": "CURRENT_FACT",
+      "instance_context": "SYNTHETIC_ENVIRONMENT_MODULE_INPUTS",
+      "name": "demo-prod-shared-github-terragrunt-cd-high-risk",
+      "responsibilities": [
+        "ordinary-infrastructure-lifecycle"
+      ],
+      "source": "terraform/infra/shared/modules/iam_github/github_terragrunt_cd.tf",
+      "trust": "source.Adapter reads actual assume_role_policy reference",
+      "policies": "source.Adapter resolves actual inline/managed attachments",
+      "boundary": "NONE_DECLARED",
+      "unknowns": []
+    },
+    {
+      "id": "prod:github_terragrunt_ci",
+      "classification": "CURRENT_FACT",
+      "instance_context": "SYNTHETIC_ENVIRONMENT_MODULE_INPUTS",
+      "name": "demo-prod-shared-github-terragrunt-ci",
+      "responsibilities": [
+        "infrastructure-planning"
+      ],
+      "source": "terraform/infra/shared/modules/iam_github/github_terragrunt_ci.tf",
+      "trust": "source.Adapter reads actual assume_role_policy reference",
+      "policies": "source.Adapter resolves actual inline/managed attachments",
+      "boundary": "NONE_DECLARED",
+      "unknowns": [
+        "AWS-managed policy content not snapshotted: arn:aws:iam::aws:policy/ReadOnlyAccess"
+      ]
+    },
+    {
+      "id": "terraform/infra/apps/fargate/iam_lambda_scale_down.tf#scale_down_lambda",
+      "classification": "CURRENT_FACT",
+      "instance_context": "MODULE_DECLARATION; dev/prod and color expansion inventoried, semantic expansion UNVERIFIED",
+      "responsibilities": [
+        "bounded-cleanup-recovery"
+      ],
+      "source": "terraform/infra/apps/fargate/iam_lambda_scale_down.tf",
+      "declaration": {
+        "kind": "resource",
+        "type": "aws_iam_role",
+        "name": "scale_down_lambda",
+        "line": 1
+      },
+      "trust": "STRUCTURALLY_PRESENT; ECS trust evaluated for baseline chains; other trust semantics UNVERIFIED",
+      "policies": "UNVERIFIED unless explicitly evaluated by a baseline chain",
+      "boundary": "UNVERIFIED",
+      "unknowns": [
+        "Workload policy expansion and external managed-policy contents not fully evaluated in WP1"
+      ]
+    },
+    {
+      "id": "terraform/infra/apps/fargate/modules/ecs_service/iam.tf#task_role",
+      "classification": "CURRENT_FACT",
+      "instance_context": "MODULE_DECLARATION; dev/prod and color expansion inventoried, semantic expansion UNVERIFIED",
+      "responsibilities": [
+        "application-runtime"
+      ],
+      "source": "terraform/infra/apps/fargate/modules/ecs_service/iam.tf",
+      "declaration": {
+        "kind": "resource",
+        "type": "aws_iam_role",
+        "name": "task_role",
+        "line": 12
+      },
+      "trust": "STRUCTURALLY_PRESENT; ECS trust evaluated for baseline chains; other trust semantics UNVERIFIED",
+      "policies": "UNVERIFIED unless explicitly evaluated by a baseline chain",
+      "boundary": "UNVERIFIED",
+      "unknowns": [
+        "Workload policy expansion and external managed-policy contents not fully evaluated in WP1"
+      ]
+    },
+    {
+      "id": "terraform/infra/apps/fargate/modules/ecs_service/iam.tf#execution_role",
+      "classification": "CURRENT_FACT",
+      "instance_context": "MODULE_DECLARATION; dev/prod and color expansion inventoried, semantic expansion UNVERIFIED",
+      "responsibilities": [
+        "ecs-execution"
+      ],
+      "source": "terraform/infra/apps/fargate/modules/ecs_service/iam.tf",
+      "declaration": {
+        "kind": "resource",
+        "type": "aws_iam_role",
+        "name": "execution_role",
+        "line": 19
+      },
+      "trust": "STRUCTURALLY_PRESENT; ECS trust evaluated for baseline chains; other trust semantics UNVERIFIED",
+      "policies": "UNVERIFIED unless explicitly evaluated by a baseline chain",
+      "boundary": "UNVERIFIED",
+      "unknowns": [
+        "Workload policy expansion and external managed-policy contents not fully evaluated in WP1"
+      ]
+    },
+    {
+      "id": "terraform/infra/data/main.tf#ec2_role",
+      "classification": "CURRENT_FACT",
+      "instance_context": "MODULE_DECLARATION; dev/prod and color expansion inventoried, semantic expansion UNVERIFIED",
+      "responsibilities": [
+        "application-runtime"
+      ],
+      "source": "terraform/infra/data/main.tf",
+      "declaration": {
+        "kind": "resource",
+        "type": "aws_iam_role",
+        "name": "ec2_role",
+        "line": 35
+      },
+      "trust": "STRUCTURALLY_PRESENT; ECS trust evaluated for baseline chains; other trust semantics UNVERIFIED",
+      "policies": "UNVERIFIED unless explicitly evaluated by a baseline chain",
+      "boundary": "UNVERIFIED",
+      "unknowns": [
+        "Workload policy expansion and external managed-policy contents not fully evaluated in WP1"
+      ]
+    },
+    {
+      "id": "terraform/infra/global/modules/nat/iam_lambda_nat.tf#lambda_nat",
+      "classification": "CURRENT_FACT",
+      "instance_context": "MODULE_DECLARATION; dev/prod and color expansion inventoried, semantic expansion UNVERIFIED",
+      "responsibilities": [
+        "bounded-cleanup-recovery"
+      ],
+      "source": "terraform/infra/global/modules/nat/iam_lambda_nat.tf",
+      "declaration": {
+        "kind": "resource",
+        "type": "aws_iam_role",
+        "name": "lambda_nat",
+        "line": 8
+      },
+      "trust": "STRUCTURALLY_PRESENT; ECS trust evaluated for baseline chains; other trust semantics UNVERIFIED",
+      "policies": "UNVERIFIED unless explicitly evaluated by a baseline chain",
+      "boundary": "UNVERIFIED",
+      "unknowns": [
+        "Workload policy expansion and external managed-policy contents not fully evaluated in WP1"
+      ]
+    },
+    {
+      "id": "terraform/infra/global/modules/nat/iam_nat.tf#nat",
+      "classification": "CURRENT_FACT",
+      "instance_context": "MODULE_DECLARATION; dev/prod and color expansion inventoried, semantic expansion UNVERIFIED",
+      "responsibilities": [
+        "bounded-cleanup-recovery"
+      ],
+      "source": "terraform/infra/global/modules/nat/iam_nat.tf",
+      "declaration": {
+        "kind": "resource",
+        "type": "aws_iam_role",
+        "name": "nat",
+        "line": 20
+      },
+      "trust": "STRUCTURALLY_PRESENT; ECS trust evaluated for baseline chains; other trust semantics UNVERIFIED",
+      "policies": "UNVERIFIED unless explicitly evaluated by a baseline chain",
+      "boundary": "UNVERIFIED",
+      "unknowns": [
+        "Workload policy expansion and external managed-policy contents not fully evaluated in WP1"
+      ]
+    },
+    {
+      "id": "terraform/infra/global/modules/vpc/vpc.tf#vpc_flow_logs",
+      "classification": "CURRENT_FACT",
+      "instance_context": "MODULE_DECLARATION; dev/prod and color expansion inventoried, semantic expansion UNVERIFIED",
+      "responsibilities": [
+        "bounded-cleanup-recovery"
+      ],
+      "source": "terraform/infra/global/modules/vpc/vpc.tf",
+      "declaration": {
+        "kind": "resource",
+        "type": "aws_iam_role",
+        "name": "vpc_flow_logs",
+        "line": 19
+      },
+      "trust": "STRUCTURALLY_PRESENT; ECS trust evaluated for baseline chains; other trust semantics UNVERIFIED",
+      "policies": "UNVERIFIED unless explicitly evaluated by a baseline chain",
+      "boundary": "UNVERIFIED",
+      "unknowns": [
+        "Workload policy expansion and external managed-policy contents not fully evaluated in WP1"
+      ]
+    },
+    {
+      "id": "operator-security-admin",
+      "classification": "EXTERNAL_PREREQUISITE",
+      "responsibilities": [
+        "security-administration"
+      ],
+      "source": "specs/iam-hardening/plan.md#4",
+      "unknowns": [
+        "Actual principal/account authority unverified; no current AWS identity invented"
+      ]
+    }
+  ]
+}

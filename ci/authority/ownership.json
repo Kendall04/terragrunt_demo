@@ -1,0 +1,53 @@
+{
+  "classification": "TARGET_REQUIREMENT",
+  "entries": [
+    {
+      "surface": "OIDC/IAM/policies/versions/boundaries/profiles/KMS/secret resource policies",
+      "current_owner": "environment Terraform lifecycle; dev owns shared controls",
+      "target_owner": "separately authenticated security administration",
+      "source": "terraform/infra/shared/modules/iam_github/github_terragrunt_cd.tf",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED"
+    },
+    {
+      "surface": "controller code/images/bundles/config/state/evidence writers",
+      "current_owner": "NOT_IMPLEMENTED",
+      "target_owner": "security administration",
+      "necessity": "TARGET_REQUIRED"
+    },
+    {
+      "surface": "shared ECR/release bucket",
+      "current_owner": "dev/shared",
+      "target_owner": "neutral security administration; protected publisher has bounded writes",
+      "source": "terraform/live/dev/shared/terragrunt.hcl",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED"
+    },
+    {
+      "surface": "task revisions/counts and ALB forwarding",
+      "current_owner": "direct delivery/recovery roles and scripts",
+      "target_owner": "protected delivery/recovery only",
+      "source": "scripts/ecs-blue-green-deploy.sh",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED"
+    },
+    {
+      "surface": "skeletons and lifecycle state",
+      "current_owner": "environment Terraform lifecycle",
+      "target_owner": "protected environment lifecycle executor",
+      "source": "terraform/infra/apps/fargate/modules/ecs_service/service.tf",
+      "necessity": "TARGET_REQUIRED"
+    },
+    {
+      "surface": "NAT/cleanup executable, event configuration and authorizing tags",
+      "current_owner": "environment Terraform lifecycle",
+      "target_owner": "protected installation; bounded recovery invocations",
+      "source": "terraform/infra/global/modules/nat/iam_lambda_nat.tf",
+      "necessity": "TARGET_REQUIRED"
+    },
+    {
+      "surface": "secret values",
+      "current_owner": "out-of-band operator bootstrap",
+      "target_owner": "out-of-band bootstrap; never Terraform state",
+      "source": "scripts/bootstrap-db-secrets.sh",
+      "necessity": "REQUIRED"
+    }
+  ]
+}

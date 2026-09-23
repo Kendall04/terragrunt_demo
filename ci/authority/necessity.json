@@ -1,0 +1,784 @@
+{
+  "classification": "CURRENT_FACT",
+  "entries": [
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_delivery_split.tf#github_release_build/DenySecretAndParameterReadsAndWrites",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_release_build"
+      ],
+      "legitimate_purpose": "DenySecretAndParameterReadsAndWrites",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_delivery_split.tf#github_release_build/ECRAuthToken",
+      "classification": "CURRENT_FACT",
+      "necessity": "UNKNOWN",
+      "consumers": [
+        "github_release_build"
+      ],
+      "legitimate_purpose": "ECRAuthToken",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_delivery_split.tf#github_release_build/ECRReadWriteArtifactRepos",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_release_build"
+      ],
+      "legitimate_purpose": "ECRReadWriteArtifactRepos",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_delivery_split.tf#github_release_build/ReleaseArtifactsBucketLocation",
+      "classification": "CURRENT_FACT",
+      "necessity": "REQUIRED",
+      "consumers": [
+        "github_release_build"
+      ],
+      "legitimate_purpose": "ReleaseArtifactsBucketLocation",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_delivery_split.tf#github_release_build/ReleaseArtifactsBucketList",
+      "classification": "CURRENT_FACT",
+      "necessity": "UNKNOWN",
+      "consumers": [
+        "github_release_build"
+      ],
+      "legitimate_purpose": "ReleaseArtifactsBucketList",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_delivery_split.tf#github_release_build/ReleaseArtifactsObjectsReadWrite",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_release_build"
+      ],
+      "legitimate_purpose": "ReleaseArtifactsObjectsReadWrite",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_delivery_split.tf#github_dev_deploy/DenySecretAndParameterReadsAndWrites",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_dev_deploy"
+      ],
+      "legitimate_purpose": "DenySecretAndParameterReadsAndWrites",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_delivery_split.tf#github_dev_deploy/ReleaseArtifactsBucketLocation",
+      "classification": "CURRENT_FACT",
+      "necessity": "REQUIRED",
+      "consumers": [
+        "github_dev_deploy"
+      ],
+      "legitimate_purpose": "ReleaseArtifactsBucketLocation",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_delivery_split.tf#github_dev_deploy/ReleaseArtifactsBucketList",
+      "classification": "CURRENT_FACT",
+      "necessity": "UNKNOWN",
+      "consumers": [
+        "github_dev_deploy"
+      ],
+      "legitimate_purpose": "ReleaseArtifactsBucketList",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_delivery_split.tf#github_dev_deploy/ReleaseArtifactsObjectsRead",
+      "classification": "CURRENT_FACT",
+      "necessity": "UNKNOWN",
+      "consumers": [
+        "github_dev_deploy"
+      ],
+      "legitimate_purpose": "ReleaseArtifactsObjectsRead",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_delivery_split.tf#github_dev_deploy/DevDeploymentRecordsWrite",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_dev_deploy"
+      ],
+      "legitimate_purpose": "DevDeploymentRecordsWrite",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_delivery_split.tf#github_dev_deploy/ECSDeployControl",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_dev_deploy"
+      ],
+      "legitimate_purpose": "ECSDeployControl",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_delivery_split.tf#github_dev_deploy/ECSDeployDiscovery",
+      "classification": "CURRENT_FACT",
+      "necessity": "REQUIRED",
+      "consumers": [
+        "github_dev_deploy"
+      ],
+      "legitimate_purpose": "ECSDeployDiscovery",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_delivery_split.tf#github_dev_deploy/ELBv2BlueGreenDiscovery",
+      "classification": "CURRENT_FACT",
+      "necessity": "REQUIRED",
+      "consumers": [
+        "github_dev_deploy"
+      ],
+      "legitimate_purpose": "ELBv2BlueGreenDiscovery",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_delivery_split.tf#github_dev_deploy/ELBv2BlueGreenMutation",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_dev_deploy"
+      ],
+      "legitimate_purpose": "ELBv2BlueGreenMutation",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_delivery_split.tf#github_dev_deploy/IAMPassTaskRoles",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_dev_deploy"
+      ],
+      "legitimate_purpose": "IAMPassTaskRoles",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_delivery_split.tf#github_dev_deploy/EventBridgeScaleDown",
+      "classification": "CURRENT_FACT",
+      "necessity": "UNKNOWN",
+      "consumers": [
+        "github_dev_deploy"
+      ],
+      "legitimate_purpose": "EventBridgeScaleDown",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_delivery_split.tf#github_dev_deploy/DeploymentReadinessChecks",
+      "classification": "CURRENT_FACT",
+      "necessity": "UNKNOWN",
+      "consumers": [
+        "github_dev_deploy"
+      ],
+      "legitimate_purpose": "DeploymentReadinessChecks",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_ecs_blue_green.tf#github_app_cd/DenySecretAndParameterReadsAndWrites",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_app_cd"
+      ],
+      "legitimate_purpose": "DenySecretAndParameterReadsAndWrites",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_ecs_blue_green.tf#github_app_cd/ECSDeployControl",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_app_cd"
+      ],
+      "legitimate_purpose": "ECSDeployControl",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_ecs_blue_green.tf#github_app_cd/ECSDeployDiscovery",
+      "classification": "CURRENT_FACT",
+      "necessity": "REQUIRED",
+      "consumers": [
+        "github_app_cd"
+      ],
+      "legitimate_purpose": "ECSDeployDiscovery",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_ecs_blue_green.tf#github_app_cd/ELBv2BlueGreenDiscovery",
+      "classification": "CURRENT_FACT",
+      "necessity": "REQUIRED",
+      "consumers": [
+        "github_app_cd"
+      ],
+      "legitimate_purpose": "ELBv2BlueGreenDiscovery",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_ecs_blue_green.tf#github_app_cd/ELBv2BlueGreenMutation",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_app_cd"
+      ],
+      "legitimate_purpose": "ELBv2BlueGreenMutation",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_ecs_blue_green.tf#github_app_cd/IAMPassTaskRoles",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_app_cd"
+      ],
+      "legitimate_purpose": "IAMPassTaskRoles",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_ecs_blue_green.tf#github_app_cd/ECRAuthToken",
+      "classification": "CURRENT_FACT",
+      "necessity": "UNKNOWN",
+      "consumers": [
+        "github_app_cd"
+      ],
+      "legitimate_purpose": "ECRAuthToken",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_ecs_blue_green.tf#github_app_cd/ECRReadWriteAppRepo",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_app_cd"
+      ],
+      "legitimate_purpose": "ECRReadWriteAppRepo",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_ecs_blue_green.tf#github_app_cd/ReleaseArtifactsBucketLocation",
+      "classification": "CURRENT_FACT",
+      "necessity": "REQUIRED",
+      "consumers": [
+        "github_app_cd"
+      ],
+      "legitimate_purpose": "ReleaseArtifactsBucketLocation",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_ecs_blue_green.tf#github_app_cd/ReleaseArtifactsBucketList",
+      "classification": "CURRENT_FACT",
+      "necessity": "UNKNOWN",
+      "consumers": [
+        "github_app_cd"
+      ],
+      "legitimate_purpose": "ReleaseArtifactsBucketList",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_ecs_blue_green.tf#github_app_cd/ReleaseArtifactsObjectsReadWrite",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_app_cd"
+      ],
+      "legitimate_purpose": "ReleaseArtifactsObjectsReadWrite",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_ecs_blue_green.tf#github_app_cd/CloudWatchLogsRead",
+      "classification": "CURRENT_FACT",
+      "necessity": "UNKNOWN",
+      "consumers": [
+        "github_app_cd"
+      ],
+      "legitimate_purpose": "CloudWatchLogsRead",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_ecs_blue_green.tf#github_app_cd/EventBridgeScaleDown",
+      "classification": "CURRENT_FACT",
+      "necessity": "UNKNOWN",
+      "consumers": [
+        "github_app_cd"
+      ],
+      "legitimate_purpose": "EventBridgeScaleDown",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_ecs_blue_green.tf#github_app_cd/DeploymentReadinessChecks",
+      "classification": "CURRENT_FACT",
+      "necessity": "UNKNOWN",
+      "consumers": [
+        "github_app_cd"
+      ],
+      "legitimate_purpose": "DeploymentReadinessChecks",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_ecs_blue_green.tf#github_app_rollback/DenySecretAndParameterReadsAndWrites",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_app_rollback"
+      ],
+      "legitimate_purpose": "DenySecretAndParameterReadsAndWrites",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_ecs_blue_green.tf#github_app_rollback/ECSRollbackControl",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_app_rollback"
+      ],
+      "legitimate_purpose": "ECSRollbackControl",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_ecs_blue_green.tf#github_app_rollback/ECSRollbackDiscovery",
+      "classification": "CURRENT_FACT",
+      "necessity": "REQUIRED",
+      "consumers": [
+        "github_app_rollback"
+      ],
+      "legitimate_purpose": "ECSRollbackDiscovery",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_ecs_blue_green.tf#github_app_rollback/ELBv2BlueGreenRollbackDiscovery",
+      "classification": "CURRENT_FACT",
+      "necessity": "REQUIRED",
+      "consumers": [
+        "github_app_rollback"
+      ],
+      "legitimate_purpose": "ELBv2BlueGreenRollbackDiscovery",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_ecs_blue_green.tf#github_app_rollback/ELBv2BlueGreenRollbackMutation",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_app_rollback"
+      ],
+      "legitimate_purpose": "ELBv2BlueGreenRollbackMutation",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_ecs_blue_green.tf#github_app_rollback/EventBridgeScaleDown",
+      "classification": "CURRENT_FACT",
+      "necessity": "UNKNOWN",
+      "consumers": [
+        "github_app_rollback"
+      ],
+      "legitimate_purpose": "EventBridgeScaleDown",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_terragrunt_cd.tf#terragrunt_cd/DenyGitHubOIDCRoleMutation",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_terragrunt_cd",
+        "github_terragrunt_cd_high_risk"
+      ],
+      "legitimate_purpose": "DenyGitHubOIDCRoleMutation",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_terragrunt_cd.tf#terragrunt_cd/DenyGitHubOIDCPolicyMutation",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_terragrunt_cd",
+        "github_terragrunt_cd_high_risk"
+      ],
+      "legitimate_purpose": "DenyGitHubOIDCPolicyMutation",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_terragrunt_cd.tf#terragrunt_cd/TerraformStateBucket",
+      "classification": "CURRENT_FACT",
+      "necessity": "REQUIRED",
+      "consumers": [
+        "github_terragrunt_cd",
+        "github_terragrunt_cd_high_risk"
+      ],
+      "legitimate_purpose": "TerraformStateBucket",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_terragrunt_cd.tf#terragrunt_cd/TerraformStateObjects",
+      "classification": "CURRENT_FACT",
+      "necessity": "REQUIRED",
+      "consumers": [
+        "github_terragrunt_cd",
+        "github_terragrunt_cd_high_risk"
+      ],
+      "legitimate_purpose": "TerraformStateObjects",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_terragrunt_cd.tf#terragrunt_cd/ReleaseArtifactsBucketLifecycle",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_terragrunt_cd",
+        "github_terragrunt_cd_high_risk"
+      ],
+      "legitimate_purpose": "ReleaseArtifactsBucketLifecycle",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_terragrunt_cd.tf#terragrunt_cd/ReleaseArtifactsObjectLifecycle",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_terragrunt_cd",
+        "github_terragrunt_cd_high_risk"
+      ],
+      "legitimate_purpose": "ReleaseArtifactsObjectLifecycle",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_terragrunt_cd.tf#terragrunt_cd/TerraformStateLocks",
+      "classification": "CURRENT_FACT",
+      "necessity": "REQUIRED",
+      "consumers": [
+        "github_terragrunt_cd",
+        "github_terragrunt_cd_high_risk"
+      ],
+      "legitimate_purpose": "TerraformStateLocks",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_terragrunt_cd.tf#terragrunt_cd/WorkloadRoleLifecycle",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_terragrunt_cd",
+        "github_terragrunt_cd_high_risk"
+      ],
+      "legitimate_purpose": "WorkloadRoleLifecycle",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_terragrunt_cd.tf#terragrunt_cd/WorkloadManagedPolicyLifecycle",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_terragrunt_cd",
+        "github_terragrunt_cd_high_risk"
+      ],
+      "legitimate_purpose": "WorkloadManagedPolicyLifecycle",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_terragrunt_cd.tf#terragrunt_cd/AttachApprovedPoliciesToWorkloadRoles",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_terragrunt_cd",
+        "github_terragrunt_cd_high_risk"
+      ],
+      "legitimate_purpose": "AttachApprovedPoliciesToWorkloadRoles",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_terragrunt_cd.tf#terragrunt_cd/WorkloadInstanceProfileLifecycle",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_terragrunt_cd",
+        "github_terragrunt_cd_high_risk"
+      ],
+      "legitimate_purpose": "WorkloadInstanceProfileLifecycle",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_terragrunt_cd.tf#terragrunt_cd/PassWorkloadServiceRoles",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_terragrunt_cd",
+        "github_terragrunt_cd_high_risk"
+      ],
+      "legitimate_purpose": "PassWorkloadServiceRoles",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_terragrunt_cd.tf#terragrunt_cd/GitHubOIDCProviderManagement",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_terragrunt_cd",
+        "github_terragrunt_cd_high_risk"
+      ],
+      "legitimate_purpose": "GitHubOIDCProviderManagement",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_terragrunt_cd.tf#terragrunt_cd/IAMReadOnlyDiscovery",
+      "classification": "CURRENT_FACT",
+      "necessity": "REQUIRED",
+      "consumers": [
+        "github_terragrunt_cd",
+        "github_terragrunt_cd_high_risk"
+      ],
+      "legitimate_purpose": "IAMReadOnlyDiscovery",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_terragrunt_cd.tf#terragrunt_cd/DemoInfrastructureLifecycle",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_terragrunt_cd",
+        "github_terragrunt_cd_high_risk"
+      ],
+      "legitimate_purpose": "DemoInfrastructureLifecycle",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_terragrunt_cd.tf#terragrunt_cd/SecretsManagerMetadataOnly",
+      "classification": "CURRENT_FACT",
+      "necessity": "UNKNOWN",
+      "consumers": [
+        "github_terragrunt_cd",
+        "github_terragrunt_cd_high_risk"
+      ],
+      "legitimate_purpose": "SecretsManagerMetadataOnly",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_terragrunt_cd.tf#terragrunt_cd/SecretsManagerList",
+      "classification": "CURRENT_FACT",
+      "necessity": "UNKNOWN",
+      "consumers": [
+        "github_terragrunt_cd",
+        "github_terragrunt_cd_high_risk"
+      ],
+      "legitimate_purpose": "SecretsManagerList",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_terragrunt_cd.tf#terragrunt_cd/DenySecretAndParameterReadsAndWrites",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_terragrunt_cd",
+        "github_terragrunt_cd_high_risk"
+      ],
+      "legitimate_purpose": "DenySecretAndParameterReadsAndWrites",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_terragrunt_ci.tf#ci_deny_secret_values/0",
+      "classification": "CURRENT_FACT",
+      "necessity": "REQUIRED",
+      "consumers": [
+        "github_terragrunt_ci"
+      ],
+      "legitimate_purpose": "secret-value deny",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_delivery_split.tf#github_prod_promote/DenySecretAndParameterReadsAndWrites",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_prod_promote"
+      ],
+      "legitimate_purpose": "DenySecretAndParameterReadsAndWrites",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_delivery_split.tf#github_prod_promote/ReleaseArtifactsBucketLocation",
+      "classification": "CURRENT_FACT",
+      "necessity": "REQUIRED",
+      "consumers": [
+        "github_prod_promote"
+      ],
+      "legitimate_purpose": "ReleaseArtifactsBucketLocation",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_delivery_split.tf#github_prod_promote/ReleaseArtifactsBucketList",
+      "classification": "CURRENT_FACT",
+      "necessity": "UNKNOWN",
+      "consumers": [
+        "github_prod_promote"
+      ],
+      "legitimate_purpose": "ReleaseArtifactsBucketList",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_delivery_split.tf#github_prod_promote/ReleaseArtifactsObjectsRead",
+      "classification": "CURRENT_FACT",
+      "necessity": "UNKNOWN",
+      "consumers": [
+        "github_prod_promote"
+      ],
+      "legitimate_purpose": "ReleaseArtifactsObjectsRead",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_delivery_split.tf#github_prod_promote/ProdDeploymentRecordsWrite",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_prod_promote"
+      ],
+      "legitimate_purpose": "ProdDeploymentRecordsWrite",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_delivery_split.tf#github_prod_promote/ECSDeployControl",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_prod_promote"
+      ],
+      "legitimate_purpose": "ECSDeployControl",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_delivery_split.tf#github_prod_promote/ECSDeployDiscovery",
+      "classification": "CURRENT_FACT",
+      "necessity": "REQUIRED",
+      "consumers": [
+        "github_prod_promote"
+      ],
+      "legitimate_purpose": "ECSDeployDiscovery",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_delivery_split.tf#github_prod_promote/ELBv2BlueGreenDiscovery",
+      "classification": "CURRENT_FACT",
+      "necessity": "REQUIRED",
+      "consumers": [
+        "github_prod_promote"
+      ],
+      "legitimate_purpose": "ELBv2BlueGreenDiscovery",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_delivery_split.tf#github_prod_promote/ELBv2BlueGreenMutation",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_prod_promote"
+      ],
+      "legitimate_purpose": "ELBv2BlueGreenMutation",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_delivery_split.tf#github_prod_promote/IAMPassTaskRoles",
+      "classification": "CURRENT_FACT",
+      "necessity": "CURRENTLY_BROADER_THAN_REQUIRED",
+      "consumers": [
+        "github_prod_promote"
+      ],
+      "legitimate_purpose": "IAMPassTaskRoles",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_delivery_split.tf#github_prod_promote/EventBridgeScaleDown",
+      "classification": "CURRENT_FACT",
+      "necessity": "UNKNOWN",
+      "consumers": [
+        "github_prod_promote"
+      ],
+      "legitimate_purpose": "EventBridgeScaleDown",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    },
+    {
+      "source": "terraform/infra/shared/modules/iam_github/github_delivery_split.tf#github_prod_promote/DeploymentReadinessChecks",
+      "classification": "CURRENT_FACT",
+      "necessity": "UNKNOWN",
+      "consumers": [
+        "github_prod_promote"
+      ],
+      "legitimate_purpose": "DeploymentReadinessChecks",
+      "actions_resources_conditions": "Extracted from this exact source statement at runtime; never copied as target grants",
+      "limitation": "Statement group classification; no assertion that every action is minimal. UNKNOWN requires later necessity review."
+    }
+  ],
+  "unmodeled_surface_rule": "source-inventory UNVERIFIED entries retain UNKNOWN necessity; not implicitly authorized or unnecessary",
+  "target_permissions": "NOT_IMPLEMENTED"
+}

@@ -1,0 +1,18 @@
+{
+  "classification": "UNVERIFIED",
+  "meaning": "Fixed synthetic module-instance inputs, not discovered account configuration. Root/module wiring is source-inventoried; no live/provider resolution.",
+  "bindings": {
+    "var.env": "{env}",
+    "var.name": "demo-{env}-shared-github",
+    "var.project": "demo",
+    "var.github_owner": "Kendall04",
+    "var.github_repo": "terragrunt_demo",
+    "local.account_id": "111122223333",
+    "local.aws_region": "us-east-1",
+    "local.github_oidc_provider_arn": "arn:aws:iam::111122223333:oidc-provider/token.actions.githubusercontent.com",
+    "var.tf_state_bucket_name": "demo-tfstate-{env}-111122223333",
+    "var.tf_state_lock_table_name": "demo-tflock-{env}-111122223333",
+    "var.release_artifacts_bucket_name": "demo-release-artifacts-111122223333",
+    "var.shared_artifact_ecr_repository_name": "demo-shared-demo-ms"
+  }
+}

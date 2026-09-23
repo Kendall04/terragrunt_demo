@@ -1,0 +1,67 @@
+{
+  "classification": "EXTERNAL_PREREQUISITE",
+  "verification": "UNVERIFIED",
+  "include_claim_keys": [
+    "repo",
+    "context",
+    "job_workflow_ref"
+  ],
+  "audience": "sts.amazonaws.com",
+  "subject_modes": [
+    "name",
+    "immutable_ids"
+  ],
+  "selected_repository_mode": "UNVERIFIED",
+  "sources": [
+    "https://docs.github.com/en/actions/reference/security/oidc",
+    "https://docs.github.com/en/actions/how-tos/reuse-automations/reuse-workflows"
+  ],
+  "expectations": [
+    {
+      "id": "G1",
+      "expectation": "Repository subject customization enabled with exact ordered template",
+      "verification": "UNVERIFIED"
+    },
+    {
+      "id": "G2",
+      "expectation": "Protected reusable entry workflow SHAs, old SHAs retired",
+      "verification": "UNVERIFIED"
+    },
+    {
+      "id": "G3",
+      "expectation": "Distinct hardcoded responsibility/environment/role per entry",
+      "verification": "UNVERIFIED"
+    },
+    {
+      "id": "G4",
+      "expectation": "Protected source refs and environment branch/tag restrictions",
+      "verification": "UNVERIFIED"
+    },
+    {
+      "id": "G5",
+      "expectation": "Human approval for prod/high-risk/emergency; one operator may approve own operation",
+      "verification": "UNVERIFIED"
+    },
+    {
+      "id": "G6",
+      "expectation": "No admin, repository-governance or approval credentials exposed to jobs",
+      "verification": "UNVERIFIED"
+    },
+    {
+      "id": "G7",
+      "expectation": "Isolated ephemeral runners without stronger-job credential sharing",
+      "verification": "UNVERIFIED"
+    },
+    {
+      "id": "G8",
+      "expectation": "Only security administration publishes protected controller/security bundles",
+      "verification": "UNVERIFIED"
+    },
+    {
+      "id": "G9",
+      "expectation": "No external account grants bypass checked-in controls",
+      "verification": "UNVERIFIED"
+    }
+  ],
+  "prerequisites_are_not_current_facts": true
+}
