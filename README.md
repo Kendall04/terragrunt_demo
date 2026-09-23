@@ -60,3 +60,5 @@ contact AWS and mutate resources; their documentation is not authorization.
 - [Kendall Fernandez](https://www.linkedin.com/in/kendall-fernandez-fernandez-b4930b174)
 - [kendallffernandez@gmail.com](mailto:kendallffernandez@gmail.com)
 - Costa Rica; remote Cloud / DevOps / Platform Engineering work.
+
+<!-- Temporary unrelated-change evidence. -->
