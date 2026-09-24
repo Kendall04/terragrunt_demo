@@ -164,3 +164,11 @@ dev/prod resources, runtime ownership and deployment paths are unchanged; legacy
 security ownership remains transitional and is not E1-secure. Protected ARN/ID
 interfaces are reserved but unavailable; ordinary lifecycle must not read or write
 security-root state. No bootstrap, migration or deployment has occurred.
+
+## TARGET FOUNDATION — E1 WP2B protected control bundles
+
+[WP2B](e1-control-bundles.md) extends the same root with a dedicated admin-only
+versioned bundle store and canonical content-addressed reservations. Nine planned
+controller classes have fixed inactive consumer bindings. There is no controller
+compute, installed executable, live upload or request invocation. Existing
+environment roots and runtime ownership remain unchanged.

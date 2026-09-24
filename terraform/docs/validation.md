@@ -224,3 +224,16 @@ positive/PARTIAL characterization; closed synthetic negative fixtures are not
 CURRENT or final target completeness. Run formatting checks without init; missing
 provider validation is an explicit gap, never a reason to contact AWS/download.
 Git Bash selector cleanup is still FAILED/UNRESOLVED and Linux UNVALIDATED.
+
+## E1 WP2B foundation — offline evidence
+
+[Control bundles](e1-control-bundles.md) add `python -I -B
+scripts/tests/control_bundles/run.py --report <temporary-report-path>`. The suite
+uses hermetic guards and disposable production-source mutations. Run the complete
+WP1 and WP2A suites alongside it; CURRENT evidence meaning is unchanged.
+The existing security-root renderer now checks both admitted modules and catalog
+integrity. `pack_bundle.py` in the same directory prepares/verifies only inactive
+artifacts outside the repository; it cannot upload, install or execute them.
+Python AST/JSON parsing and check-only formatting are offline; provider-free
+Terraform expression evaluation must use disposable configuration with no backend
+or provider. Provider-backed validation remains UNVERIFIED/not initialized.

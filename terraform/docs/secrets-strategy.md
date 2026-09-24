@@ -101,3 +101,11 @@ controller security and backend protections are security-admin owned; except for
 inert request roles, their implementation is deferred. Existing broad IAM remains
 unchanged, so this is transitional repository evidence, not deployed isolation or
 E1 acceptance. GitHub governance and backend controls remain UNVERIFIED.
+
+## TARGET FOUNDATION — control-bundle storage
+
+[WP2B](e1-control-bundles.md) declares a separate versioned S3 bundle bucket,
+canonical admin-only/TLS/create-only policy and exact SHA-256 artifact identities.
+SSE-S3 is not an integrity proof. No KMS resource, controller read grant or request
+permission is added; all eleven request roles remain inert. Live protections and
+installation are UNVERIFIED. No secret values are bundled or published.

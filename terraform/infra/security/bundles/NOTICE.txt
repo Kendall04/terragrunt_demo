@@ -1,0 +1,3 @@
+E1 WP2B protected control-bundle foundation.
+This bundle contains reservation metadata only, not controller executable code.
+Installation and operational activation have not occurred.

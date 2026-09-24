@@ -6,11 +6,17 @@ The accepted baseline is `c8e880b552b5782e9bca94891b75a71b45ddc113`.
 The immutable [spec](../../../specs/iam-hardening/spec.md) and
 [plan section 6](../../../specs/iam-hardening/plan.md#61-security-root) govern it.
 
+WP2B extends this accepted foundation with the
+[protected control-bundle contract](../../docs/e1-control-bundles.md): canonical
+inactive bundle reservations and admin-only storage. The WP2A identity, backend
+and external-administration boundaries below remain unchanged.
+
 ## Neutral root and external administration
 
 `terraform/live/security/terragrunt.hcl` selects this root. It inherits neither
 dev nor prod configuration and has no dependency on either environment. The root
-calls only `modules/request_identities`. No workflow or existing bootstrap script
+calls `modules/request_identities` and the WP2B `modules/control_bundle_storage`.
+No workflow or existing bootstrap script
 invokes it. The existing operational dev/prod paths are unchanged.
 
 The operator supplies an **existing, separately authenticated human administrative
@@ -99,7 +105,8 @@ All OIDC/IAM/trust/profile/boundary administration, KMS policy/grant authority,
 secret metadata/resource policies, shared ECR/storage/evidence protection,
 controller identities/code/configuration and security state/lock ownership point
 outward to security administration. Only inert request identities are declared
-resources here; the other protected classes are explicitly DEFERRED.
+IAM resources here. WP2B also declares bundle storage; controller-code and
+artifact-protection labels describe that foundation only. Other controls remain deferred.
 
 Ordinary owns intended network/platform skeleton reconciliation; high-risk owns
 intended data/apps skeleton reconciliation. Normal revision/count/forwarding and
@@ -122,7 +129,7 @@ infra-high-risk-dev/prod, release, deploy-dev, promote-prod and emergency-dev/pr
 Their names use the new `e1-request-` namespace. Each has a trust document with
 no Allow and an inline `Deny Action=* Resource=*`. Even the recorded admin is
 denied assumption; admin manages these resources through separately held authority.
-There is no OIDC principal in live trust, no endpoint, no operational grant and
+There is no OIDC principal in the declared trust, no endpoint, no operational grant and
 no enable switch. Later activation must replace this inert policy through a
 reviewed security-admin change; adding an Allow alongside the deny is insufficient.
 No permissions boundary is introduced: final responsibility ceilings are deferred,
@@ -162,7 +169,7 @@ or download for this task. Git Bash selector remains FAILED/UNRESOLVED cleanup;
 supported Linux execution remains UNVALIDATED. Windows tests do not clear either.
 
 Later slices still own backend bootstrap/protection, OIDC and workload/recovery
-security migration, permissions boundaries, controller identities/bundles, protected
+security migration, permissions boundaries, controller identities/executable bundles, protected
 outputs publication and privileged controllers. WP3–WP7 delivery/qualification,
 runtime enforcement, protected lifecycle execution, workflow cutover and legacy
 revocation remain out of scope. No state import, live IAM change or deployment

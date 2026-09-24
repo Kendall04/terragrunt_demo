@@ -39,11 +39,11 @@
     "protected_classes": {
       "artifact_and_evidence_protection": {
         "owner": "SECURITY_ROOT_OWNED",
-        "implementation": "DEFERRED"
+        "implementation": "WP2B_BUNDLE_FOUNDATION_ONLY"
       },
       "controller_code_and_configuration": {
         "owner": "SECURITY_ROOT_OWNED",
-        "implementation": "DEFERRED"
+        "implementation": "WP2B_BUNDLE_FOUNDATION_ONLY"
       },
       "controller_iam": {
         "owner": "SECURITY_ROOT_OWNED",
@@ -312,6 +312,505 @@
       "transport": "ADMIN_PUBLISHED_ARN_ID_RECORD",
       "secret_values": false,
       "security_state_access": false
+    }
+  },
+  "control_bundles": {
+    "stage": "E1_WP2B_PROTECTED_CONTROL_BUNDLE_FOUNDATION",
+    "format": "E1_BUNDLE_JSON_V1",
+    "owner": "SECURITY_ROOT_OWNED",
+    "source": "terraform/infra/security/bundles/NOTICE.txt",
+    "storage": {
+      "id": "control-bundles",
+      "owner": "SECURITY_ROOT_OWNED",
+      "bucket_prefix": "e1-control-bundles-",
+      "prefix": "bundles/sha256/",
+      "versioning": "Enabled",
+      "encryption": "AES256",
+      "public_access_block": true,
+      "object_ownership": "BucketOwnerEnforced",
+      "force_destroy": false,
+      "prevent_destroy": true,
+      "live": "UNVERIFIED",
+      "readers": [],
+      "policy": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Sid": "AdminOnly",
+            "Effect": "Deny",
+            "Principal": "*",
+            "Action": "s3:*",
+            "Resource": [
+              "__BUCKET_ARN__",
+              "__BUCKET_ARN__/*"
+            ],
+            "Condition": {
+              "ArnNotEquals": {
+                "aws:PrincipalArn": "__ADMIN_ARN__"
+              }
+            }
+          },
+          {
+            "Sid": "RequireTLS",
+            "Effect": "Deny",
+            "Principal": "*",
+            "Action": "s3:*",
+            "Resource": [
+              "__BUCKET_ARN__",
+              "__BUCKET_ARN__/*"
+            ],
+            "Condition": {
+              "Bool": {
+                "aws:SecureTransport": "false"
+              }
+            }
+          },
+          {
+            "Sid": "RequireCreateOnly",
+            "Effect": "Deny",
+            "Principal": "*",
+            "Action": "s3:PutObject",
+            "Resource": "__BUCKET_ARN__/*",
+            "Condition": {
+              "Null": {
+                "s3:if-none-match": "true"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "installation": {
+      "installer": "SECURITY_ROOT_OWNED",
+      "authentication": "SEPARATELY_HELD_HUMAN_AUTHORITY",
+      "approval": "EXTERNAL_UNVERIFIED",
+      "upload": "CONDITIONAL_SINGLE_PUT",
+      "replacement": "NEW_CONTENT_ID_REQUIRES_ADMIN_REVIEW",
+      "version_capture": "READ_BACK_EXACT_VERSION_AND_VERIFY",
+      "live": "UNVERIFIED",
+      "active_set": []
+    },
+    "runtime_contract": {
+      "overrides": {
+        "artifact_key": "FORBIDDEN",
+        "buildspec": "FORBIDDEN",
+        "cache": "FORBIDDEN",
+        "command": "FORBIDDEN",
+        "debug": "FORBIDDEN",
+        "environment_variables": "FORBIDDEN",
+        "image": "FORBIDDEN",
+        "logging": "FORBIDDEN",
+        "network": "FORBIDDEN",
+        "plugins": "FORBIDDEN",
+        "script": "FORBIDDEN",
+        "secondary_sources": "FORBIDDEN",
+        "service_role": "FORBIDDEN",
+        "source": "FORBIDDEN",
+        "source_revision": "FORBIDDEN",
+        "terraform_bundle": "FORBIDDEN",
+        "terragrunt_bundle": "FORBIDDEN"
+      },
+      "dependencies": "REVIEWED_IN_BUNDLE_OR_DIGEST_PINNED_IMAGE",
+      "image": null,
+      "buildspec": null,
+      "execution": "NOT_IMPLEMENTED"
+    },
+    "classes": {
+      "request-gateway": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "state": "RESERVED",
+        "operational": false,
+        "consumers": {
+          "deploy-dev": "dev",
+          "emergency-dev": "dev",
+          "emergency-prod": "prod",
+          "infra-dev": "dev",
+          "infra-high-risk-dev": "dev",
+          "infra-high-risk-prod": "prod",
+          "infra-prod": "prod",
+          "promote-prod": "prod",
+          "release": "neutral"
+        },
+        "sha256": "0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
+        "engine": "LAMBDA"
+      },
+      "build": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "state": "RESERVED",
+        "operational": false,
+        "consumers": {
+          "release": "neutral"
+        },
+        "sha256": "6d01b973015fd06556fc10dc1dd1e4ecc300292af4327d29855943084094c4a2",
+        "engine": "CODEBUILD"
+      },
+      "qualification-finalizer": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "state": "RESERVED",
+        "operational": false,
+        "consumers": {
+          "qualification": "neutral"
+        },
+        "sha256": "c68e803055070e2e279063851d0371bc1b6e565bf229e34fe482f59e2d10bb64",
+        "engine": "LAMBDA"
+      },
+      "status": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "state": "RESERVED",
+        "operational": false,
+        "consumers": {
+          "status-neutral": "neutral",
+          "status-dev": "dev",
+          "status-prod": "prod"
+        },
+        "sha256": "10bb83de76c8eefa49c1a96e04f25b3b86bffda3573a9b3b03380b406cb20e8b",
+        "engine": "LAMBDA"
+      },
+      "environment-lifecycle": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "state": "RESERVED",
+        "operational": false,
+        "consumers": {
+          "infra-dev": "dev",
+          "infra-high-risk-dev": "dev",
+          "infra-high-risk-prod": "prod",
+          "infra-prod": "prod"
+        },
+        "sha256": "ec6506979a772686a41fcdfb02cfaa7255c1e459517ccf3a3d45117dda553f14",
+        "engine": "CODEBUILD"
+      },
+      "normal-delivery": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "state": "RESERVED",
+        "operational": false,
+        "consumers": {
+          "deploy-dev": "dev",
+          "promote-prod": "prod"
+        },
+        "sha256": "b4b70fe16d42d090ca5da575a8da6527475d5a597f45c7005f3b882331d7c298",
+        "engine": "CODEBUILD"
+      },
+      "emergency-recovery": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "state": "RESERVED",
+        "operational": false,
+        "consumers": {
+          "emergency-dev": "dev",
+          "emergency-prod": "prod"
+        },
+        "sha256": "95af1e11b9a78ba1e7f96c74df25fb386a95664a7fcfd252745365bb5c148d97",
+        "engine": "CODEBUILD"
+      },
+      "cleanup-recovery": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "state": "RESERVED",
+        "operational": false,
+        "consumers": {
+          "cleanup-dev": "dev",
+          "cleanup-prod": "prod"
+        },
+        "sha256": "16af2a5223599a22de134e7a73659a85aec54297d76ae22e39e80d4405f3e726",
+        "engine": "LAMBDA"
+      },
+      "nat-recovery": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "state": "RESERVED",
+        "operational": false,
+        "consumers": {
+          "nat-dev": "dev",
+          "nat-prod": "prod"
+        },
+        "sha256": "f6441b2b13b86a6512f7df875fb9e5025a66196ffb93265b78d5c13950e2301b",
+        "engine": "LAMBDA"
+      }
+    },
+    "consumer_references": {
+      "request-gateway/deploy-dev": {
+        "class": "request-gateway",
+        "consumer": "deploy-dev",
+        "bundle_id": "sha256:0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
+        "sha256": "0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "request-gateway/emergency-dev": {
+        "class": "request-gateway",
+        "consumer": "emergency-dev",
+        "bundle_id": "sha256:0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
+        "sha256": "0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "request-gateway/emergency-prod": {
+        "class": "request-gateway",
+        "consumer": "emergency-prod",
+        "bundle_id": "sha256:0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
+        "sha256": "0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "request-gateway/infra-dev": {
+        "class": "request-gateway",
+        "consumer": "infra-dev",
+        "bundle_id": "sha256:0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
+        "sha256": "0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "request-gateway/infra-high-risk-dev": {
+        "class": "request-gateway",
+        "consumer": "infra-high-risk-dev",
+        "bundle_id": "sha256:0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
+        "sha256": "0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "request-gateway/infra-high-risk-prod": {
+        "class": "request-gateway",
+        "consumer": "infra-high-risk-prod",
+        "bundle_id": "sha256:0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
+        "sha256": "0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "request-gateway/infra-prod": {
+        "class": "request-gateway",
+        "consumer": "infra-prod",
+        "bundle_id": "sha256:0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
+        "sha256": "0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "request-gateway/promote-prod": {
+        "class": "request-gateway",
+        "consumer": "promote-prod",
+        "bundle_id": "sha256:0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
+        "sha256": "0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "request-gateway/release": {
+        "class": "request-gateway",
+        "consumer": "release",
+        "bundle_id": "sha256:0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
+        "sha256": "0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "build/release": {
+        "class": "build",
+        "consumer": "release",
+        "bundle_id": "sha256:6d01b973015fd06556fc10dc1dd1e4ecc300292af4327d29855943084094c4a2",
+        "sha256": "6d01b973015fd06556fc10dc1dd1e4ecc300292af4327d29855943084094c4a2",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/6d01b973015fd06556fc10dc1dd1e4ecc300292af4327d29855943084094c4a2.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "qualification-finalizer/qualification": {
+        "class": "qualification-finalizer",
+        "consumer": "qualification",
+        "bundle_id": "sha256:c68e803055070e2e279063851d0371bc1b6e565bf229e34fe482f59e2d10bb64",
+        "sha256": "c68e803055070e2e279063851d0371bc1b6e565bf229e34fe482f59e2d10bb64",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/c68e803055070e2e279063851d0371bc1b6e565bf229e34fe482f59e2d10bb64.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "status/status-neutral": {
+        "class": "status",
+        "consumer": "status-neutral",
+        "bundle_id": "sha256:10bb83de76c8eefa49c1a96e04f25b3b86bffda3573a9b3b03380b406cb20e8b",
+        "sha256": "10bb83de76c8eefa49c1a96e04f25b3b86bffda3573a9b3b03380b406cb20e8b",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/10bb83de76c8eefa49c1a96e04f25b3b86bffda3573a9b3b03380b406cb20e8b.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "status/status-dev": {
+        "class": "status",
+        "consumer": "status-dev",
+        "bundle_id": "sha256:10bb83de76c8eefa49c1a96e04f25b3b86bffda3573a9b3b03380b406cb20e8b",
+        "sha256": "10bb83de76c8eefa49c1a96e04f25b3b86bffda3573a9b3b03380b406cb20e8b",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/10bb83de76c8eefa49c1a96e04f25b3b86bffda3573a9b3b03380b406cb20e8b.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "status/status-prod": {
+        "class": "status",
+        "consumer": "status-prod",
+        "bundle_id": "sha256:10bb83de76c8eefa49c1a96e04f25b3b86bffda3573a9b3b03380b406cb20e8b",
+        "sha256": "10bb83de76c8eefa49c1a96e04f25b3b86bffda3573a9b3b03380b406cb20e8b",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/10bb83de76c8eefa49c1a96e04f25b3b86bffda3573a9b3b03380b406cb20e8b.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "environment-lifecycle/infra-dev": {
+        "class": "environment-lifecycle",
+        "consumer": "infra-dev",
+        "bundle_id": "sha256:ec6506979a772686a41fcdfb02cfaa7255c1e459517ccf3a3d45117dda553f14",
+        "sha256": "ec6506979a772686a41fcdfb02cfaa7255c1e459517ccf3a3d45117dda553f14",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/ec6506979a772686a41fcdfb02cfaa7255c1e459517ccf3a3d45117dda553f14.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "environment-lifecycle/infra-high-risk-dev": {
+        "class": "environment-lifecycle",
+        "consumer": "infra-high-risk-dev",
+        "bundle_id": "sha256:ec6506979a772686a41fcdfb02cfaa7255c1e459517ccf3a3d45117dda553f14",
+        "sha256": "ec6506979a772686a41fcdfb02cfaa7255c1e459517ccf3a3d45117dda553f14",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/ec6506979a772686a41fcdfb02cfaa7255c1e459517ccf3a3d45117dda553f14.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "environment-lifecycle/infra-high-risk-prod": {
+        "class": "environment-lifecycle",
+        "consumer": "infra-high-risk-prod",
+        "bundle_id": "sha256:ec6506979a772686a41fcdfb02cfaa7255c1e459517ccf3a3d45117dda553f14",
+        "sha256": "ec6506979a772686a41fcdfb02cfaa7255c1e459517ccf3a3d45117dda553f14",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/ec6506979a772686a41fcdfb02cfaa7255c1e459517ccf3a3d45117dda553f14.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "environment-lifecycle/infra-prod": {
+        "class": "environment-lifecycle",
+        "consumer": "infra-prod",
+        "bundle_id": "sha256:ec6506979a772686a41fcdfb02cfaa7255c1e459517ccf3a3d45117dda553f14",
+        "sha256": "ec6506979a772686a41fcdfb02cfaa7255c1e459517ccf3a3d45117dda553f14",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/ec6506979a772686a41fcdfb02cfaa7255c1e459517ccf3a3d45117dda553f14.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "normal-delivery/deploy-dev": {
+        "class": "normal-delivery",
+        "consumer": "deploy-dev",
+        "bundle_id": "sha256:b4b70fe16d42d090ca5da575a8da6527475d5a597f45c7005f3b882331d7c298",
+        "sha256": "b4b70fe16d42d090ca5da575a8da6527475d5a597f45c7005f3b882331d7c298",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/b4b70fe16d42d090ca5da575a8da6527475d5a597f45c7005f3b882331d7c298.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "normal-delivery/promote-prod": {
+        "class": "normal-delivery",
+        "consumer": "promote-prod",
+        "bundle_id": "sha256:b4b70fe16d42d090ca5da575a8da6527475d5a597f45c7005f3b882331d7c298",
+        "sha256": "b4b70fe16d42d090ca5da575a8da6527475d5a597f45c7005f3b882331d7c298",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/b4b70fe16d42d090ca5da575a8da6527475d5a597f45c7005f3b882331d7c298.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "emergency-recovery/emergency-dev": {
+        "class": "emergency-recovery",
+        "consumer": "emergency-dev",
+        "bundle_id": "sha256:95af1e11b9a78ba1e7f96c74df25fb386a95664a7fcfd252745365bb5c148d97",
+        "sha256": "95af1e11b9a78ba1e7f96c74df25fb386a95664a7fcfd252745365bb5c148d97",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/95af1e11b9a78ba1e7f96c74df25fb386a95664a7fcfd252745365bb5c148d97.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "emergency-recovery/emergency-prod": {
+        "class": "emergency-recovery",
+        "consumer": "emergency-prod",
+        "bundle_id": "sha256:95af1e11b9a78ba1e7f96c74df25fb386a95664a7fcfd252745365bb5c148d97",
+        "sha256": "95af1e11b9a78ba1e7f96c74df25fb386a95664a7fcfd252745365bb5c148d97",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/95af1e11b9a78ba1e7f96c74df25fb386a95664a7fcfd252745365bb5c148d97.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "cleanup-recovery/cleanup-dev": {
+        "class": "cleanup-recovery",
+        "consumer": "cleanup-dev",
+        "bundle_id": "sha256:16af2a5223599a22de134e7a73659a85aec54297d76ae22e39e80d4405f3e726",
+        "sha256": "16af2a5223599a22de134e7a73659a85aec54297d76ae22e39e80d4405f3e726",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/16af2a5223599a22de134e7a73659a85aec54297d76ae22e39e80d4405f3e726.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "cleanup-recovery/cleanup-prod": {
+        "class": "cleanup-recovery",
+        "consumer": "cleanup-prod",
+        "bundle_id": "sha256:16af2a5223599a22de134e7a73659a85aec54297d76ae22e39e80d4405f3e726",
+        "sha256": "16af2a5223599a22de134e7a73659a85aec54297d76ae22e39e80d4405f3e726",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/16af2a5223599a22de134e7a73659a85aec54297d76ae22e39e80d4405f3e726.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "nat-recovery/nat-dev": {
+        "class": "nat-recovery",
+        "consumer": "nat-dev",
+        "bundle_id": "sha256:f6441b2b13b86a6512f7df875fb9e5025a66196ffb93265b78d5c13950e2301b",
+        "sha256": "f6441b2b13b86a6512f7df875fb9e5025a66196ffb93265b78d5c13950e2301b",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/f6441b2b13b86a6512f7df875fb9e5025a66196ffb93265b78d5c13950e2301b.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "nat-recovery/nat-prod": {
+        "class": "nat-recovery",
+        "consumer": "nat-prod",
+        "bundle_id": "sha256:f6441b2b13b86a6512f7df875fb9e5025a66196ffb93265b78d5c13950e2301b",
+        "sha256": "f6441b2b13b86a6512f7df875fb9e5025a66196ffb93265b78d5c13950e2301b",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/f6441b2b13b86a6512f7df875fb9e5025a66196ffb93265b78d5c13950e2301b.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      }
     }
   }
 }

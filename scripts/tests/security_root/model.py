@@ -10,6 +10,7 @@ import re
 
 from contracts import load_json
 from evaluator import Unsupported
+import bundles
 
 BASELINE = "c8e880b552b5782e9bca94891b75a71b45ddc113"
 AUTHORITY = "terraform/infra/security/authority.json"
@@ -48,7 +49,7 @@ def load_authority(root):
     doc = load_json((Path(root) / AUTHORITY).read_text())
     keys(doc, {"format_version", "classification", "stage", "security_admin",
                "backend", "ownership", "request_identities", "policies",
-               "governance", "interfaces"}, "authority")
+               "governance", "interfaces", "control_bundles"}, "authority")
     require(doc["format_version"] == 1 and doc["classification"] == "TARGET_REQUIREMENT"
             and doc["stage"] == "E1_WP2A_PROTECTED_SECURITY_ROOT_FOUNDATION", "stage")
     admin = doc["security_admin"]
@@ -73,7 +74,10 @@ def load_authority(root):
     for name, item in own["protected_classes"].items():
         keys(item, {"owner", "implementation"}, name)
         require(item["owner"] == "SECURITY_ROOT_OWNED", "ordinary ownership of " + name)
-        require(item["implementation"] == ("WP2A_DECLARED_INERT" if name == "request_identities" else "DEFERRED"), name + " implementation")
+        implementation = ("WP2A_DECLARED_INERT" if name == "request_identities" else
+                          "WP2B_BUNDLE_FOUNDATION_ONLY" if name in {"controller_code_and_configuration", "artifact_and_evidence_protection"}
+                          else "DEFERRED")
+        require(item["implementation"] == implementation, name + " implementation")
     expected_owners = {"network_and_platform_skeletons": "ORDINARY_LIFECYCLE_OWNED",
                        "data_and_apps_skeletons": "HIGH_RISK_LIFECYCLE_OWNED",
                        "normal_revision_count_and_forwarding": "DELIVERY_CONTROLLER_OWNED",
@@ -121,6 +125,7 @@ def load_authority(root):
     # templatefile may interpolate exactly this one admin identity, nowhere else.
     encoded = json.dumps(doc)
     require(encoded.count("${") == 1 and "%{" not in encoded and "$${" not in encoded, "unadmitted template mechanism")
+    bundles.validate_catalog(root, doc)
     return doc
 
 
@@ -161,8 +166,15 @@ def wiring(doc):
             "aws_iam_role_policy": {"inert": {"for_each": expression("var.authority.request_identities"), "name": "wp2a-inert",
                 "role": expression("aws_iam_role.request[each.key].id"), "policy": expression("jsonencode(var.authority.policies.inert_permissions)")}}},
         "output": {"role_arns": {"value": expression("{ for key, role in aws_iam_role.request : key => role.arn }")}}}
+    root["module"]["control_bundle_storage"] = {
+        "source": "./modules/control_bundle_storage", "catalog": expression("local.authority.control_bundles"),
+        "account_id": expression("var.aws_account_id"), "region": expression("var.aws_region"),
+        "admin_arn": expression("var.security_admin_principal_arn")}
+    root["output"]["control_bundle_reservation"] = {"value": expression("module.control_bundle_storage.reservation"),
+        "description": "TARGET reservation only; no installed bundle, consumer read grant or operational controller."}
     return {"terraform/infra/security/main.tf.json": root,
-            "terraform/infra/security/modules/request_identities/main.tf.json": child}
+            "terraform/infra/security/modules/request_identities/main.tf.json": child,
+            bundles.MODULE: bundles.wiring(doc["control_bundles"])}
 
 
 def wrapper(doc):
@@ -215,7 +227,7 @@ def validate_repository(root):
         require(load_json((root / name).read_text()) == configuration, "target wiring drift " + name)
     require((root / wrapper_path).read_text() == wrapper(doc), "security wrapper drift")
     # Non-IaC payloads under the protected roots are closed too.
-    permitted = set(expected) | {AUTHORITY, "terraform/infra/security/README.md", wrapper_path}
+    permitted = set(expected) | {AUTHORITY, "terraform/infra/security/README.md", wrapper_path, bundles.SOURCE}
     for directory in (root / "terraform/infra/security", root / "terraform/live/security"):
         for path in directory.rglob("*"):
             if path.is_file():

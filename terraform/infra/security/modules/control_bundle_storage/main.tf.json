@@ -1,0 +1,90 @@
+{
+  "terraform": {
+    "required_providers": {
+      "aws": {
+        "source": "hashicorp/aws",
+        "version": "~> 5.50"
+      }
+    }
+  },
+  "variable": {
+    "catalog": {
+      "type": "any"
+    },
+    "account_id": {
+      "type": "string"
+    },
+    "region": {
+      "type": "string"
+    },
+    "admin_arn": {
+      "type": "string"
+    }
+  },
+  "resource": {
+    "aws_s3_bucket": {
+      "bundles": {
+        "bucket": "${\"${var.catalog.storage.bucket_prefix}${var.account_id}-${var.region}\"}",
+        "force_destroy": "${var.catalog.storage.force_destroy}",
+        "lifecycle": {
+          "prevent_destroy": true
+        },
+        "tags": {
+          "E1Owner": "${var.catalog.storage.owner}",
+          "E1Stage": "${var.catalog.stage}"
+        }
+      }
+    },
+    "aws_s3_bucket_versioning": {
+      "bundles": {
+        "bucket": "${aws_s3_bucket.bundles.id}",
+        "versioning_configuration": {
+          "status": "${var.catalog.storage.versioning}"
+        }
+      }
+    },
+    "aws_s3_bucket_public_access_block": {
+      "bundles": {
+        "bucket": "${aws_s3_bucket.bundles.id}",
+        "block_public_acls": "${var.catalog.storage.public_access_block}",
+        "block_public_policy": "${var.catalog.storage.public_access_block}",
+        "ignore_public_acls": "${var.catalog.storage.public_access_block}",
+        "restrict_public_buckets": "${var.catalog.storage.public_access_block}"
+      }
+    },
+    "aws_s3_bucket_ownership_controls": {
+      "bundles": {
+        "bucket": "${aws_s3_bucket.bundles.id}",
+        "rule": {
+          "object_ownership": "${var.catalog.storage.object_ownership}"
+        }
+      }
+    },
+    "aws_s3_bucket_server_side_encryption_configuration": {
+      "bundles": {
+        "bucket": "${aws_s3_bucket.bundles.id}",
+        "rule": {
+          "apply_server_side_encryption_by_default": {
+            "sse_algorithm": "${var.catalog.storage.encryption}"
+          }
+        }
+      }
+    },
+    "aws_s3_bucket_policy": {
+      "bundles": {
+        "bucket": "${aws_s3_bucket.bundles.id}",
+        "policy": "${replace(replace(jsonencode(var.catalog.storage.policy), \"__BUCKET_ARN__\", aws_s3_bucket.bundles.arn), \"__ADMIN_ARN__\", var.admin_arn)}"
+      }
+    }
+  },
+  "output": {
+    "reservation": {
+      "value": {
+        "bucket_id": "${aws_s3_bucket.bundles.id}",
+        "catalog": "${var.catalog}",
+        "operational": false,
+        "installation": "UNVERIFIED"
+      }
+    }
+  }
+}
