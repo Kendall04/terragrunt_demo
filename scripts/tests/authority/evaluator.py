@@ -148,7 +148,7 @@ CONTEXT_KEYS = {
     **{key: ("DERIVED_AUTHORITATIVE", "identity") for key in PRINCIPAL_CONTEXT},
     "aws:resourceaccount": ("DERIVED_AUTHORITATIVE", "resource"),
     "s3:resourceaccount": ("DERIVED_AUTHORITATIVE", "resource"),
-    "aws:sourcearn": ("SUPPORTED_REQUEST_CONTEXT_WITH_VALIDATION", "arn"),
+    "aws:sourcearn": ("UNSUPPORTED", "availability_unmodeled"),
     "aws:securetransport": ("SUPPORTED_REQUEST_CONTEXT_WITH_VALIDATION", "bool"),
     "iam:passedtoservice": ("SUPPORTED_REQUEST_CONTEXT_WITH_VALIDATION", "service"),
     "iam:policyarn": ("SUPPORTED_REQUEST_CONTEXT_WITH_VALIDATION", "arn"),
@@ -157,6 +157,39 @@ CONTEXT_KEYS = {
     "token.actions.githubusercontent.com:sub": ("SUPPORTED_REQUEST_CONTEXT_WITH_VALIDATION", "oidc"),
     "fixture:k": ("SUPPORTED_CALLER_CONTEXT", "fixture"),
 }
+
+# Availability is separate from syntax. No service-forwarding model is admitted.
+CONTEXT_AVAILABILITY = {
+    **{key: "NORMALIZED_DERIVED_FACT" for key, (kind, _) in CONTEXT_KEYS.items()
+       if kind == "DERIVED_AUTHORITATIVE"},
+    "aws:sourcearn": "UNSUPPORTED",
+    "aws:securetransport": "DIRECT_REQUEST_TRANSPORT",
+    "iam:passedtoservice": "iam:passrole",
+    "iam:policyarn": "iam:attachrolepolicy",
+    "s3:prefix": "s3:listbucket",
+    "token.actions.githubusercontent.com:aud": "GITHUB_WEB_IDENTITY",
+    "token.actions.githubusercontent.com:sub": "GITHUB_WEB_IDENTITY",
+    "fixture:k": "SYMBOLIC_FIXTURE",
+}
+
+
+def context_availability(key, identity=None, action=""):
+    rule = CONTEXT_AVAILABILITY.get(key, "UNSUPPORTED")
+    if rule == "UNSUPPORTED":
+        return "REQUEST_KEY_AVAILABILITY_UNKNOWN"
+    if rule == "NORMALIZED_DERIVED_FACT":
+        return "NORMALIZED_FACT_RECONCILIATION_REQUIRED"
+    if rule == "GITHUB_WEB_IDENTITY":
+        valid = (identity is not None and identity.category == "oidc" and
+                 identity.principal.endswith(":oidc-provider/token.actions.githubusercontent.com") and
+                 action.lower() == "sts:assumerolewithwebidentity")
+    elif rule == "DIRECT_REQUEST_TRANSPORT":
+        valid = identity is None or identity.category in ("role", "session")
+    elif rule == "SYMBOLIC_FIXTURE":
+        valid = True
+    else:
+        valid = action.lower() == rule and (identity is None or identity.category in ("role", "session"))
+    return "REQUEST_HAS_AUTHORITATIVE_KEY" if valid else "REQUEST_CANNOT_HAVE_KEY"
 
 
 def context_classification(key):
@@ -228,12 +261,14 @@ def normalize_resource_arn(resource):
     return service, account
 
 
-def validate_request_context(key, value, identity=None):
+def validate_request_context(key, value, identity=None, action=""):
     classification, validator = CONTEXT_KEYS.get(key, ("UNSUPPORTED", "unmodeled"))
     if classification == "UNSUPPORTED":
         raise Unsupported("unsupported condition context key " + key)
     if classification != "SUPPORTED_REQUEST_CONTEXT_WITH_VALIDATION":
         return
+    if value is not None and context_availability(key, identity, action) != "REQUEST_HAS_AUTHORITATIVE_KEY":
+        raise Unsupported("invalid request context availability " + key)
     if validator == "oidc" and (not identity or identity.category != "oidc" or
             not identity.principal.endswith(":oidc-provider/token.actions.githubusercontent.com")):
         raise Unsupported("unbound OIDC provider context " + key)
@@ -308,7 +343,7 @@ def normalized_request(request, identity_required=False, resource_policy=False):
     context.update(derived)
     for key, value in context.items():
         if key in CONTEXT_KEYS:
-            validate_request_context(key, value, identity)
+            validate_request_context(key, value, identity, action)
 
     account, service = "", ""
     if resource.startswith("arn:"):
@@ -603,7 +638,7 @@ def _statements(admitted_documents, request, kind):
             if used & request["_unavailable_context"]:
                 raise Unsupported("INVALID_REQUEST unresolved normalized condition facts")
             for key in used:
-                validate_request_context(key, request["context"].get(key), request["_identity"])
+                validate_request_context(key, request["context"].get(key), request["_identity"], request["action"])
             # Request-dependent checks also precede statement matching. A malformed
             # context operand cannot be hidden behind a false action/condition.
             condition_match = condition(conditions, request["context"])
@@ -661,6 +696,8 @@ def evaluate(request, identities=(), boundary=None, resources=(), trust=None):
         provenance["context_facts"] = {key: {
             "classification": context_classification(key),
             "origin": CONTEXT_KEYS[key][1],
+            "availability_rule": CONTEXT_AVAILABILITY[key],
+            "availability": context_availability(key, request["_identity"], request["action"]),
             "status": "UNAVAILABLE" if key in request["_unavailable_context"] else
                       "PRESENT" if key in request["context"] and request["context"][key] is not None else "ABSENT",
             "value": request["context"].get(key)} for key in sorted(used)}

@@ -20,10 +20,10 @@ class SemanticRegressions(unittest.TestCase):
             for pattern, expected in (("arn:aws:lambda:us-east-1:111122223333:function:*", True),
                                       ("arn:aws:lambda:us-east-1:999999999999:function:*", False)):
                 with self.subTest(op=op, pattern=pattern):
-                    cond = {op: {"AWS:SourceArn": pattern}}
-                    self.assertEqual(condition(cond, {"aws:SourceArn": arn}), expected)
+                    cond = {op: {"FIXTURE:K": pattern}}
+                    self.assertEqual(condition(cond, {"fixture:k": arn}), expected)
                     allow = {"Effect": "Allow", "Action": "s3:GetObject", "Resource": "*"}
-                    request = {"action": "s3:GetObject", "resource": "arn:aws:s3:::bucket/key", "context": {"aws:SourceArn": arn}}
+                    request = {"action": "s3:GetObject", "resource": "arn:aws:s3:::bucket/key", "context": {"fixture:k": arn}}
                     self.assertEqual(evaluate(request, [{"Statement": [allow | {"Condition": cond}]}]).decision,
                                      D.ALLOW if expected else D.DENY)
                     self.assertEqual(evaluate(request, [{"Statement": [allow, allow | {"Effect": "Deny", "Condition": cond}]}]).decision,

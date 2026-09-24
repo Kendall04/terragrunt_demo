@@ -26,6 +26,14 @@ def evidence_groups(executed, result):
     a passed group, and each group retains IDs so a reviewer can inspect scope.
     """
     selectors = {
+        "module_instance_scope": lambda t: t.startswith("test_v6.ModuleScopeTests.") or t.startswith("test_v6.RepositoryScopeTests."),
+        "variable_default_input_resolution": lambda t: t.startswith("test_v6.") and ".test_variable_" in t,
+        "local_scope": lambda t: t.startswith("test_v6.ModuleScopeTests.test_local_"),
+        "synthetic_scope": lambda t: t.startswith("test_v6.ModuleScopeTests.test_synthetic_") or t.startswith("test_v6.ModuleScopeTests.test_local_collision"),
+        "sourcearn_context_availability": lambda t: t.startswith("test_v6.ContextAvailabilityTests."),
+        "certificate_context_validation": lambda t: t.startswith("test_v6.ContextAvailabilityTests.test_certificate_"),
+        "terminal_inert_consumers": lambda t: t.startswith("test_v6.ConsumerTests.test_terminal_"),
+        "security_consumer_applicability": lambda t: t.startswith("test_v6.ConsumerTests.") and ".test_terminal_" not in t,
         "resource_arn_admission": lambda t: t.startswith("test_v5_evaluator.ResourceArnV5Tests."),
         "context_fact_registry_normalization": lambda t: t.startswith("test_v5_evaluator.ContextFactsV5Tests."),
         "terragrunt_dependency_binding": lambda t: t.startswith("test_v5_bindings."),

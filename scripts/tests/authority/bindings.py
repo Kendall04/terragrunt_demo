@@ -81,18 +81,9 @@ class Bindings:
                 result.update(more)
         return result
 
-    def scalar(self, expression, directory, values=None):
-        model = self.model
-        old_locals, old_values = model.locals, model.values
-        try:
-            model.locals = self.locals(directory)
-            model.values = old_values | (values or {})
-            value = model.value(expression)
-            if not isinstance(value, str):
-                raise Unsupported("SOURCE_BINDING_FAILURE non-scalar identity")
-            return value
-        finally:
-            model.locals, model.values = old_locals, old_values
+    def instance(self, directory, identity, supplied, parent=None):
+        from instances import ModuleInstance
+        return ModuleInstance(self, directory, identity, supplied, parent)
 
     def require(self, attrs, expected):
         for key, value in expected.items():
@@ -256,9 +247,14 @@ class Bindings:
         references = {"local.parent.locals.env": self.model.env,
                       "local.parent.locals.project_name": self.model.values["var.project"],
                       "local.parent.locals.aws_region": self.model.values["local.aws_region"]}
-        self.inputs(path, expressions, references, WORKLOAD_INPUTS if layer == "apps/fargate" else LAYER_INPUTS)
+        resolved = self.inputs(path, expressions, references, WORKLOAD_INPUTS if layer == "apps/fargate" else LAYER_INPUTS)
         self.evidence.append({"source": path, "sha256": digest(self.root / path),
                               "admitted_construct": "layer source/environment/project relationship"})
+        # Preserve unknown supplied expressions; a consumed one must not fall
+        # back to a declaration default or another module's fixture values.
+        arguments = {k: json.dumps(resolved[k]) if k in resolved else v for k, v in expressions.items()}
+        directory = "terraform/infra/" + layer
+        return self.instance(directory, path, arguments)
 
     def task_policy_controls(self, base, child, module):
         """Prove only absence of an existing task identity-policy Deny.
@@ -349,7 +345,9 @@ class Bindings:
             "create_github_oidc_provider": "var.create_github_oidc_provider",
             "release_artifacts_bucket_name": "local.release_artifacts_bucket_name",
             "shared_artifact_ecr_repository_name": "local.shared_artifact_ecr_repository_name"})
-        name = self.scalar(attrs["name"], "terraform/infra/shared")
+        shared = self.instance("terraform/infra/shared", f"terraform/live/{self.model.env}/shared/terragrunt.hcl",
+                               {k: json.dumps(v) for k, v in self.model.effective_inputs.items()})
+        name = shared.scalar(attrs["name"])
         if name != self.model.values["var.name"]:
             raise Unsupported("SOURCE_BINDING_FAILURE IAM module name differs from synthetic instance")
         # The root's optional coalesce inputs are fixture parameters; the fallback
@@ -467,8 +465,8 @@ class Bindings:
         from source import admit_resource
         base = "terraform/infra/apps/fargate"
         child = base + "/modules/ecs_service"
-        self.layer_inputs("apps/fargate", "../../../../infra//apps/fargate")
-        self.layer_inputs("platform", "../../../infra/platform")
+        root_instance = self.layer_inputs("apps/fargate", "../../../../infra//apps/fargate")
+        platform_instance = self.layer_inputs("platform", "../../../infra/platform")
         from source import blocks, attributes
         tg = self.root / f"terraform/live/{self.model.env}/apps/fargate/terragrunt.hcl"
         tg_blocks, tg_rest = blocks(tg.read_text())
@@ -485,8 +483,8 @@ class Bindings:
         self.require(module, {"source": '"./modules/ecs_service"', "cluster_arn": "var.cluster_arn"})
         if "family" in module:
             raise Unsupported("SOURCE_BINDING_FAILURE task-family override")
-        name = self.scalar(module["name"], base)
-        values = {"var.name": name}
+        instance = self.instance(child, root_instance.identity + "/module.demo_api_blue", module, root_instance)
+        name = instance.scalar("var.name")
         roles, trusts = {}, {}
         docs = {}
         for k, t, n, b, p in self.declarations(child):
@@ -496,23 +494,23 @@ class Bindings:
                 roles[n] = admit_resource(t, b)
         if set(roles) != {"task_role", "execution_role"}:
             raise Unsupported("SOURCE_BINDING_FAILURE workload role set")
-        old_docs, old_values = self.model.docs, self.model.values
+        old_docs, old_instance = self.model.docs, self.model.expression_instance
         try:
             # Scope documents to their own module. Equal local names in other
             # modules cannot satisfy a missing workload reference.
             self.model.docs = docs
-            self.model.values = old_values | values
+            self.model.expression_instance = instance
             for role, attrs in roles.items():
-                if not self.model.exists(attrs):
-                    raise Unsupported("SOURCE_BINDING_FAILURE absent workload role")
+                if "count" in attrs:
+                    raise Unsupported("SOURCE_BINDING_FAILURE workload count expansion unsupported")
                 trusts[role] = self.model.document_reference(attrs["assume_role_policy"])
         finally:
-            self.model.docs, self.model.values = old_docs, old_values
+            self.model.docs, self.model.expression_instance = old_docs, old_instance
         cluster_module = self.one("terraform/infra/platform", "module", "ecs_cluster")
         self.require(cluster_module, {"source": '"./modules/ecs_cluster"'})
-        cluster_input = self.scalar(cluster_module["name"], "terraform/infra/platform")
+        cluster_instance = self.instance("terraform/infra/platform/modules/ecs_cluster", platform_instance.identity + "/module.ecs_cluster", cluster_module, platform_instance)
         cluster_decl = self.one("terraform/infra/platform/modules/ecs_cluster", "resource", "aws_ecs_cluster", "this")
-        cluster = self.scalar(cluster_decl["name"], "terraform/infra/platform/modules/ecs_cluster", {"var.name": cluster_input})
+        cluster = cluster_instance.scalar(cluster_decl["name"])
         for field in ("cluster_arn", "cluster_name"):
             self.require(self.one("terraform/infra/platform", "output", field), {"value": "module.ecs_cluster." + field})
             self.require(self.one("terraform/infra/platform/modules/ecs_cluster", "output", field),
@@ -527,13 +525,13 @@ class Bindings:
         account, region = self.model.values["local.account_id"], self.model.values["local.aws_region"]
         result = {"family": f"arn:aws:ecs:{region}:{account}:task-definition/{name}:42",
                   "service": ("UNBOUND" if service_binding_error else
-                              f"arn:aws:ecs:{region}:{account}:service/{cluster}/{self.scalar(service['name'], child, values)}"),
+                              f"arn:aws:ecs:{region}:{account}:service/{cluster}/{instance.scalar(service['name'])}"),
                   "binding_status": "PARTIAL" if service_binding_error else "BINDING_VALIDATED", "trusts": trusts,
                   "service_binding_error": service_binding_error,
                   "dependency_output_selection": dependency_selection}
         for key, role in (("task_role", "task_role"), ("exec_role", "execution_role")):
             self.one(child, "resource", "aws_iam_role", role)
-            result[key] = "arn:aws:iam::" + account + ":role/" + self.scalar(roles[role]["name"], child, values)
+            result[key] = "arn:aws:iam::" + account + ":role/" + instance.scalar(roles[role]["name"])
         if result["task_role"].lower() == result["exec_role"].lower():
             raise Unsupported("SOURCE_BINDING_FAILURE colliding workload role identities")
         try:
@@ -545,13 +543,13 @@ class Bindings:
 
     def routing(self):
         base, child = "terraform/infra/global", "terraform/infra/global/modules/alb"
-        self.layer_inputs("global", "../../../infra//global")
+        root_instance = self.layer_inputs("global", "../../../infra//global")
         module = self.one(base, "module", "alb")
         self.require(module, {"source": '"./modules/alb"'})
-        name = self.scalar(module["name"], base)
+        instance = self.instance(child, root_instance.identity + "/module.alb", module, root_instance)
         alb = self.one(child, "resource", "aws_lb", "demo_internal_alb")
         self.require(alb, {"load_balancer_type": '"application"'})
-        name = self.scalar(alb["name"], child, {"var.name": name})
+        name = instance.scalar(alb["name"])
         listener = self.one(child, "resource", "aws_lb_listener", "demo_http_listener")
         self.require(listener, {"load_balancer_arn": "aws_lb.demo_internal_alb.arn"})
         rule = self.one(child, "resource", "aws_lb_listener_rule", "candidate_rule")

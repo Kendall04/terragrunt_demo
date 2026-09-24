@@ -460,3 +460,110 @@ EXTERNAL/UNVERIFIED. No live AWS, external GitHub/AWS settings or WP2-WP7 behavi
 is part of this correction. Hermetic guards remain accidental-I/O protection,
 not a malicious-code sandbox. Git Bash full selector remains
 **FAILED / UNRESOLVED cleanup issue**; supported Linux remains **UNVALIDATED**.
+
+## V6 correction boundary (V5-01–V5-03)
+
+V6 corrects V5 `022523df2f064c20f812e1e6018068ed7a170ecc`; it does not
+accept WP1 or implement WP2–WP7. Specification and planning remain immutable.
+The earlier sections are historical where superseded below.
+
+### Exact module-instance values
+
+`instances.py` replaces the ambient scalar namespace for shared-root naming,
+workload roles/trusts/services, cluster identity and routing identity. Each
+instance carries its source directory, invocation identity, supplied argument
+expressions, declared variables/defaults, locals and resolved-value evidence.
+A child argument resolves in its parent instance; an omitted argument uses only
+that child's admitted literal default. There is no fallback to a sibling, root
+or IAM synthetic `var.*`/`local.*`. Resolution is lazy: an unsupported expression
+only fails when a consumed binding needs it. The current graph can conservatively
+invalidate its composed workload binding while independent acquisitions survive.
+
+The intentionally small language admits consumed string variables, literal
+strings, simple interpolation, exact variable/local references and string lists
+needed by trust documents. Arbitrary functions, provider references, variable
+validation blocks, unknown variable controls, cycles and template directives are
+unsupported here. Workload role `count` is now unsupported instead of borrowing
+the IAM instance's environment. General module expansion is not implemented.
+Repeated invocations are distinct objects with distinct invocation identities;
+the current repository witness still deliberately selects its declared blue
+instance. It does not claim coverage of every module invocation.
+
+Every synthetic substitution is explicitly `MODULE_INSTANCE_BOUND_FACT` in
+`synthetic-context.json`, with exact source, declaration, expression and IAM
+invocation identity. The adapter verifies those fields and keys its replacement
+values by instance identity. No expression substitution is classified as
+`GLOBAL_DETERMINISTIC_FACT`. Synthetic account/region values used to render ARNs
+are explicitly taken from the admitted IAM fixture; they do not enter another
+module's expression namespace or establish live/provider identity.
+
+The V5 counterexample now resolves the child's omitted `env` to `prod`, so dev
+PassRole no longer supports the delivery witness. Supplying `env = "dev"`
+explicitly restores it. A child `local.aws_region` resolves its own declaration.
+The unchanged repository's representative dev/prod witnesses remain available.
+
+### Context-key audit and narrower admission
+
+No current repository primitive requires SourceArn. V6 classifies it UNSUPPORTED,
+including well-formed ARN values, omission in a policy that uses it, direct service
+principals and assumed-role callers. Supplying SourceArn also invalidates an
+otherwise unrelated request. No primitive or certificate can be based on it.
+No service-forward-access or general AWS availability model is introduced.
+
+| Keys | Syntax/type and provenance | Availability in the WP1 model |
+| --- | --- | --- |
+| PrincipalArn, PrincipalAccount, PrincipalType, PrincipalIsAWSService | Derived authoritative facts; supplied string/singleton values can only confirm normalized facts | Existing role/session/service derivation; unavailable facts remain UNKNOWN when used |
+| ResourceAccount, S3 ResourceAccount | Derived encoded account, or explicit S3 source-bound fixture account; contradictions rejected | Supported resource normalization; S3 key only for S3 |
+| SourceArn | UNSUPPORTED regardless of ARN syntax | REQUEST_KEY_AVAILABILITY_UNKNOWN; cannot supply evidence |
+| SecureTransport | One `true`/`false` string; supplied offline transport assumption, not an observed AWS fact | Direct role/session or symbolic permission request only; service/OIDC supplied values rejected |
+| PassedToService | One service-principal-shaped string; supplied request description | Only iam:PassRole for role/session or symbolic permission scope |
+| PolicyARN | One concrete ARN; supplied attachment request description | Only iam:AttachRolePolicy for role/session or symbolic permission scope |
+| S3 prefix | One string, including empty prefix; supplied request description | Only s3:ListBucket for role/session or symbolic permission scope |
+| GitHub OIDC aud/sub | One nonempty string; supplied synthetic token claim | Exact GitHub provider principal and sts:AssumeRoleWithWebIdentity |
+| fixture:k | Typed fixture strings/list; explicitly synthetic caller fact | Operator fixtures only; no AWS provenance asserted |
+
+`CONTEXT_AVAILABILITY` records the rule for every registry key. The request
+validator checks supplied values against principal/action availability; omission
+retains supported missing-key semantics. Derived facts still require their own
+normalization/reconciliation. Provenance records availability separately from
+syntax/provenance classification. `REQUEST_HAS_AUTHORITATIVE_KEY` means the
+request class can carry the described key, not that an external token/request was
+observed. Unsupported keys and contradictions yield UNKNOWN before certificate
+issuance; syntax alone never authorizes availability.
+
+The historical ARN-operator fixture used SourceArn as a generic comparison
+operand. It now uses the already-admitted `fixture:k` namespace, retaining its
+wildcard, set, case and explicit-Deny assertions without asserting impossible AWS
+context. No historical test was removed to conceal a regression.
+
+### Narrow terminal-consumer classification
+
+Discovery recognizes only exact-reference chains from an admitted literal JSON
+output through local assignments. If every use terminates in unused locals, the
+relationship is `TERMINAL_INERT`. A native-HCL equivalent remains inert as before.
+Direct resource/data/module consumption is `SECURITY_RELEVANT_SINK`; transformed,
+dynamic, cyclic, duplicate or unparsed consumers are `UNRESOLVED`. Both latter
+classes preserve conservative applicability. JSON/override and security content
+receive no broad exemption. Consumer invocations exclusive to another environment
+are excluded from the selected environment's relationship analysis.
+
+This is a small terminal-use proof, not general Terraform data-flow. Unknown
+consumers may still conservatively affect multiple witnesses; an exact unused
+local chain cannot globally suppress independent evidence merely by existing.
+
+### Evidence and unchanged boundaries
+
+V6 tests cover sibling and repeated instances, arguments/defaults, local collisions,
+missing/unsupported symbols, the actual false repository witness, SourceArn Allow
+and Deny/certificate cases, availability restrictions and inert/security/unresolved
+consumer chains. The runner reports separate V6 evidence groups alongside all
+historical, positive, mutation, runtime/governance and hermetic groups. Unsupported
+alternatives still preserve an independently grounded witness; applicable controls
+still invalidate it. Negative completeness still requires current source-bound
+certificates and admitted primitives. Current repository coverage remains PARTIAL.
+
+The process guard is unchanged: credentials/proxies scrubbed, metadata disabled,
+AWS files redirected, PATH empty, socket/process/subprocess/dlopen execution denied.
+No live AWS, external settings, Terraform execution or dependency installation is
+part of validation. Git Bash full selector remains FAILED/UNRESOLVED cleanup;
+supported Linux remains UNVALIDATED. Windows tests do not clear either gap.

@@ -22,7 +22,9 @@
       "declaration": "var.env",
       "expression": "type = string",
       "value_kind": "SYNTHETIC_VALUE",
-      "scope": "Fixed module input/provider stand-in; not live configuration"
+      "scope": "Fixed module input/provider stand-in; not live configuration",
+      "fact_class": "MODULE_INSTANCE_BOUND_FACT",
+      "module_instance": "terraform/live/{env}/shared/terragrunt.hcl/module.iam_github"
     },
     "var.name": {
       "classification": "SOURCE_BINDING",
@@ -30,7 +32,9 @@
       "declaration": "var.name",
       "expression": "type = string",
       "value_kind": "SYNTHETIC_VALUE",
-      "scope": "Fixed module input/provider stand-in; not live configuration"
+      "scope": "Fixed module input/provider stand-in; not live configuration",
+      "fact_class": "MODULE_INSTANCE_BOUND_FACT",
+      "module_instance": "terraform/live/{env}/shared/terragrunt.hcl/module.iam_github"
     },
     "var.project": {
       "classification": "SOURCE_BINDING",
@@ -38,7 +42,9 @@
       "declaration": "var.project",
       "expression": "type = string",
       "value_kind": "SYNTHETIC_VALUE",
-      "scope": "Fixed module input/provider stand-in; not live configuration"
+      "scope": "Fixed module input/provider stand-in; not live configuration",
+      "fact_class": "MODULE_INSTANCE_BOUND_FACT",
+      "module_instance": "terraform/live/{env}/shared/terragrunt.hcl/module.iam_github"
     },
     "var.github_owner": {
       "classification": "SOURCE_BINDING",
@@ -46,7 +52,9 @@
       "declaration": "var.github_owner",
       "expression": "type = string",
       "value_kind": "SYNTHETIC_VALUE",
-      "scope": "Fixed module input/provider stand-in; not live configuration"
+      "scope": "Fixed module input/provider stand-in; not live configuration",
+      "fact_class": "MODULE_INSTANCE_BOUND_FACT",
+      "module_instance": "terraform/live/{env}/shared/terragrunt.hcl/module.iam_github"
     },
     "var.github_repo": {
       "classification": "SOURCE_BINDING",
@@ -54,7 +62,9 @@
       "declaration": "var.github_repo",
       "expression": "type = string",
       "value_kind": "SYNTHETIC_VALUE",
-      "scope": "Fixed module input/provider stand-in; not live configuration"
+      "scope": "Fixed module input/provider stand-in; not live configuration",
+      "fact_class": "MODULE_INSTANCE_BOUND_FACT",
+      "module_instance": "terraform/live/{env}/shared/terragrunt.hcl/module.iam_github"
     },
     "local.account_id": {
       "classification": "SOURCE_BINDING",
@@ -62,7 +72,9 @@
       "declaration": "local.account_id",
       "expression": "data.aws_caller_identity.current.account_id",
       "value_kind": "SYNTHETIC_VALUE",
-      "scope": "Fixed module input/provider stand-in; not live configuration"
+      "scope": "Fixed module input/provider stand-in; not live configuration",
+      "fact_class": "MODULE_INSTANCE_BOUND_FACT",
+      "module_instance": "terraform/live/{env}/shared/terragrunt.hcl/module.iam_github"
     },
     "local.aws_region": {
       "classification": "SOURCE_BINDING",
@@ -70,7 +82,9 @@
       "declaration": "local.aws_region",
       "expression": "data.aws_region.current.name",
       "value_kind": "SYNTHETIC_VALUE",
-      "scope": "Fixed module input/provider stand-in; not live configuration"
+      "scope": "Fixed module input/provider stand-in; not live configuration",
+      "fact_class": "MODULE_INSTANCE_BOUND_FACT",
+      "module_instance": "terraform/live/{env}/shared/terragrunt.hcl/module.iam_github"
     },
     "local.github_oidc_provider_arn": {
       "classification": "SOURCE_BINDING",
@@ -78,7 +92,9 @@
       "declaration": "local.github_oidc_provider_arn",
       "expression": "coalesce(\n    var.github_oidc_provider_arn,\n    try(aws_iam_openid_connect_provider.github[0].arn, null),\n    try(data.aws_iam_openid_connect_provider.github[0].arn, null),\n  )",
       "value_kind": "SYNTHETIC_VALUE",
-      "scope": "Fixed module input/provider stand-in; not live configuration"
+      "scope": "Fixed module input/provider stand-in; not live configuration",
+      "fact_class": "MODULE_INSTANCE_BOUND_FACT",
+      "module_instance": "terraform/live/{env}/shared/terragrunt.hcl/module.iam_github"
     },
     "var.tf_state_bucket_name": {
       "classification": "SOURCE_BINDING",
@@ -86,7 +102,9 @@
       "declaration": "var.tf_state_bucket_name",
       "expression": "type        = string\n  description = \"Terraform/Terragrunt remote state S3 bucket name. Used only for scoping CI/CD IAM permissions.\"",
       "value_kind": "SYNTHETIC_VALUE",
-      "scope": "Fixed module input/provider stand-in; not live configuration"
+      "scope": "Fixed module input/provider stand-in; not live configuration",
+      "fact_class": "MODULE_INSTANCE_BOUND_FACT",
+      "module_instance": "terraform/live/{env}/shared/terragrunt.hcl/module.iam_github"
     },
     "var.tf_state_lock_table_name": {
       "classification": "SOURCE_BINDING",
@@ -94,7 +112,9 @@
       "declaration": "var.tf_state_lock_table_name",
       "expression": "type        = string\n  description = \"Terraform/Terragrunt DynamoDB lock table name. Used only for scoping CI/CD IAM permissions.\"",
       "value_kind": "SYNTHETIC_VALUE",
-      "scope": "Fixed module input/provider stand-in; not live configuration"
+      "scope": "Fixed module input/provider stand-in; not live configuration",
+      "fact_class": "MODULE_INSTANCE_BOUND_FACT",
+      "module_instance": "terraform/live/{env}/shared/terragrunt.hcl/module.iam_github"
     },
     "var.release_artifacts_bucket_name": {
       "classification": "SOURCE_BINDING",
@@ -102,7 +122,9 @@
       "declaration": "var.release_artifacts_bucket_name",
       "expression": "type        = string\n  description = \"Account-level S3 bucket name used for release manifests and deployment records.\"",
       "value_kind": "SYNTHETIC_VALUE",
-      "scope": "Fixed module input/provider stand-in; not live configuration"
+      "scope": "Fixed module input/provider stand-in; not live configuration",
+      "fact_class": "MODULE_INSTANCE_BOUND_FACT",
+      "module_instance": "terraform/live/{env}/shared/terragrunt.hcl/module.iam_github"
     },
     "var.shared_artifact_ecr_repository_name": {
       "classification": "SOURCE_BINDING",
@@ -110,7 +132,9 @@
       "declaration": "var.shared_artifact_ecr_repository_name",
       "expression": "type        = string\n  description = \"Account-level, environment-neutral ECR repository name for promoted application artifacts.\"",
       "value_kind": "SYNTHETIC_VALUE",
-      "scope": "Fixed module input/provider stand-in; not live configuration"
+      "scope": "Fixed module input/provider stand-in; not live configuration",
+      "fact_class": "MODULE_INSTANCE_BOUND_FACT",
+      "module_instance": "terraform/live/{env}/shared/terragrunt.hcl/module.iam_github"
     }
   },
   "fixed_values": {
@@ -200,5 +224,6 @@
       "sha256": "75ba5620ea246a97e2b4317e04aec0f66ca870a49e4e0ca3325e7e26a10e2268",
       "relationship": "Reviewed blue/green module instance, task/execution role, family, service and platform cluster wiring. Any change requires binding review, not just inventory refresh."
     }
-  }
+  },
+  "fact_classification_contract": "All substitutions are MODULE_INSTANCE_BOUND_FACT; no symbolic var/local name is a GLOBAL_DETERMINISTIC_FACT. Account/region ARN rendering is explicitly sourced from this admitted IAM instance, not an ambient expression namespace."
 }

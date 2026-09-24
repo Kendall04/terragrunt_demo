@@ -177,6 +177,49 @@ class Applicability:
         self.reached_wrappers = wrappers
         self.all_reached = expand(set().union(*(x["targets"] for x in self.entries.values())) if self.entries else set(), self.edges)
 
+    def terminal_consumer(self, parent, symbol, active=()):
+        """Only exact-reference local chains can be proved terminal inert.
+
+        Any other expression, JSON consumer, dynamic local access, collision,
+        cycle or unparsed remainder stays unresolved. This is not data-flow.
+        """
+        from source import attributes, blocks, clean
+        if symbol in active:
+            return "UNRESOLVED"
+        pattern = re.escape(symbol) + r"(?![A-Za-z0-9_])"
+        seen, children = set(), []
+        for candidate in sorted(parent.glob("*.tf*")):
+            text = clean(candidate.read_text())
+            if re.search(r"\blocal(?:\s+\.|\s*\.\s+)", text):
+                return "UNRESOLVED"  # No whitespace-normalizing reference parser.
+            if candidate.suffix != ".tf" or "override" in candidate.name:
+                if re.search(pattern, text) or re.search(r"\blocal\s*\[", text):
+                    return "UNRESOLVED"
+                continue
+            try:
+                declarations, rest = blocks(text)
+                if rest.strip():
+                    return "UNRESOLVED"
+                for kind, _, _, body in declarations:
+                    if kind == "locals":
+                        for name, expr in attributes(body).items():
+                            if name in seen:
+                                return "UNRESOLVED"
+                            seen.add(name)
+                            if re.search(r"\blocal\s*\[", expr):
+                                return "UNRESOLVED"
+                            if re.search(pattern, expr):
+                                if expr.strip() != symbol:
+                                    return "UNRESOLVED"
+                                children.append("local." + name)
+                    elif re.search(pattern, body) or re.search(r"\blocal\s*\[", body):
+                        return "SECURITY_RELEVANT_SINK" if kind in ("resource", "data", "module") else "UNRESOLVED"
+            except (Unsupported, ValueError, TypeError):
+                return "UNRESOLVED"
+        states = [self.terminal_consumer(parent, child, active + (symbol,)) for child in children]
+        return ("SECURITY_RELEVANT_SINK" if "SECURITY_RELEVANT_SINK" in states else
+                "UNRESOLVED" if "UNRESOLVED" in states else "TERMINAL_INERT")
+
     def output_relationships(self, source, outputs):
         """Find collisions and potential consumers without evaluating expressions.
 
@@ -209,10 +252,22 @@ class Applicability:
         for target, parent, label, invocation in self.module_links:
             if target != directory:
                 continue
-            pattern = r"\bmodule\." + re.escape(label)
+            if not self.classify(invocation)[0]:
+                continue  # A different environment's consumers are not this instance.
+            pattern = r"\bmodule\s*\.\s*" + re.escape(label)
             for candidate in sorted(parent.glob("*.tf*")):
                 if consumes(candidate.read_text(), pattern):
+                    text = clean(candidate.read_text())
+                    exact = [name for name in outputs if re.search(pattern + r"\." + re.escape(name) + r"(?![A-Za-z0-9_])", text)]
+                    # Whole module/indexed references cannot use this exemption.
+                    accesses = list(re.finditer(pattern + r"(?![A-Za-z0-9_])(?:\.([A-Za-z_][A-Za-z0-9_]*))?", text))
+                    states = [self.terminal_consumer(parent, "module." + label + "." + name) for name in exact]
+                    unusual_spacing = re.search(r"\bmodule(?:\s+\.|\s*\.\s+)", text)
+                    state = ("TERMINAL_INERT" if not unusual_spacing and states and all(x == "TERMINAL_INERT" for x in states)
+                             and all(m[1] is not None for m in accesses) else
+                             "SECURITY_RELEVANT_SINK" if "SECURITY_RELEVANT_SINK" in states else "UNRESOLVED")
                     relationships.append({"kind": "POTENTIAL_MODULE_OUTPUT_CONSUMER",
+                        "consumer_classification": state,
                         "source": candidate.relative_to(self.root).as_posix(), "invocation": invocation})
         for target, wrapper, label in self.dependency_links:
             if directory in self.entries.get(target, {}).get("targets", ()) and consumes(
@@ -404,14 +459,15 @@ class Discovery:
                 filename = Path(source).name
                 override = filename == "override.tf.json" or filename.endswith("_override.tf.json")
                 relationships = applicability.output_relationships(source, json_documents[source]["output"])
+                relevant_relationships = [r for r in relationships if r.get("consumer_classification") != "TERMINAL_INERT"]
                 record["construct_kind"] = "LITERAL_JSON_OUTPUT"
                 record["consumer_relationships"] = relationships
-                if override or applicable and relationships:
+                if override or applicable and relevant_relationships:
                     record.update(admission="UNSUPPORTED_APPLICABLE", affects=["*"],
                         reason="JSON output override/collision or potential consumer requires binding admission")
                 else:
-                    record["reason"] = "Literal JSON outputs have no override, collision, or discovered consumer; module reachability alone adds no control"
-                record["security_relevance"] = "UNRESOLVED_CONSUMER_OR_OVERRIDE" if override or applicable and relationships else "INERT_LITERAL_OUTPUT"
+                    record["reason"] = "Literal JSON outputs have no relevant override/collision/consumer; exact terminal inert consumers add no control"
+                record["security_relevance"] = "UNRESOLVED_CONSUMER_OR_OVERRIDE" if override or applicable and relevant_relationships else "INERT_LITERAL_OUTPUT"
             record["applicability"] = {"status": "APPLICABLE" if applicable else "NOT_APPLICABLE",
                                        "environment": env, "reason": reason}
             record["source_support"] = record["admission"]

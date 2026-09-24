@@ -140,11 +140,19 @@ class Adapter:
         if set(metadata["source_bindings"]) != set(self.values):
             raise Unsupported("SOURCE_BINDING_FAILURE missing binding")
         for key, binding in metadata["source_bindings"].items():
+            expected_source = IAM + ("/locals.tf" if key.startswith("local.") else "/variables.tf")
+            if (binding.get("fact_class") != "MODULE_INSTANCE_BOUND_FACT" or
+                    binding.get("module_instance") != "terraform/live/{env}/shared/terragrunt.hcl/module.iam_github" or
+                    binding.get("source") != expected_source or binding.get("declaration") != key):
+                raise Unsupported("SOURCE_BINDING_FAILURE synthetic instance scope " + key)
             actual = self.locals.get(key[6:]) if key.startswith("local.") else declarations.get(key[4:])
             if actual != binding["expression"]:
                 raise Unsupported("SOURCE_BINDING_FAILURE " + key)
         self.binding_status = "BINDING_VALIDATED"
         self.active = set()
+        self.expression_instance = None
+        self.instance_identity = f"terraform/live/{env}/shared/terragrunt.hcl/module.iam_github"
+        self.instance_values = {self.instance_identity: self.values}
         # Resolve effective wrapper inputs before any policy interpolation. A
         # later binding check cannot repair documents built from stale defaults.
         from bindings import Bindings
@@ -238,6 +246,8 @@ class Adapter:
 
     def provenance(self):
         return {"environment": self.env, "synthetic_values": self.values,
+                "module_instance": self.instance_identity,
+                "instance_bound_values": self.instance_values,
                 "substitution_bindings": self.metadata["source_bindings"],
                 "effective_inputs": self.effective_inputs,
                 "module_binding": self.module_binding,
@@ -252,9 +262,12 @@ class Adapter:
         return match[1] == self.env
 
     def value(self, expression):
+        if self.expression_instance is not None:
+            return self.expression_instance.value(expression)
         expression = expression.strip()
-        if expression in self.values:
-            return self.values[expression]
+        bound_values = self.instance_values[self.instance_identity]
+        if expression in bound_values:
+            return bound_values[expression]
         if expression.startswith('"'):
             text = json.loads(expression)
             return re.sub(r"\$\{([^}]+)\}", lambda m: str(self.value(m[1])), text)
