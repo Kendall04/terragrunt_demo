@@ -20,6 +20,18 @@ class Rule:
     mechanism: str = "repository-witness"
 
 
+def unknown_codes(checks):
+    reasons = " ".join(y for x in checks for y in x.reasons)
+    codes = []
+    if "SOURCE_BINDING" in reasons:
+        codes.append("SOURCE_BINDING_UNKNOWN")
+    if "SEMANTIC_ADMISSION" in reasons or "INVALID_IDENTITY" in reasons or "INVALID_RESOURCE" in reasons:
+        codes.append("SEMANTIC_ADMISSION_UNKNOWN")
+    if "UNKNOWN_APPLICABLE_CONTROL" in reasons:
+        codes.append("UNKNOWN_APPLICABLE_CONTROL")
+    return codes or ["UNKNOWN_INCOMPLETE_PATHS"]
+
+
 def closure(seeds, rules, coverage=None, universe=None):
     # Coverage is an explicit claim about the outcome, never inferred from edges.
     coverage = coverage or {}
@@ -39,11 +51,15 @@ def closure(seeds, rules, coverage=None, universe=None):
             if claim["status"] == "COMPLETE_FOR_CURRENT_ADMITTED_MODEL":
                 claim = {"status": "UNKNOWN", "reason": "A label is not completeness evidence"}
         states[target] = Decision.DENY if complete else Decision.UNKNOWN
-        traces[target] = {"coverage": claim, "meaning": "All modeled alternatives denied" if complete else "UNKNOWN_INCOMPLETE_PATH_COVERAGE"}
+        traces[target] = {"coverage": claim, "reason_codes": ["EFFECTIVE_DENY" if complete else "UNKNOWN_INCOMPLETE_PATHS"],
+                          "meaning": "All modeled alternatives denied" if complete else "UNKNOWN_INCOMPLETE_PATH_COVERAGE"}
     states.update({x: Decision.ALLOW for x in seeds})
     traces.update({x: {"seed": True} for x in seeds})
     if universe is not None and not universe.current(seeds, rules):
-        return {x: Decision.UNKNOWN for x in states}, {x: {"meaning": "STALE_OR_UNADMITTED_SOURCE_UNIVERSE"} for x in states}
+        return {x: Decision.UNKNOWN for x in states}, {x: {"meaning": "STALE_SOURCE_UNIVERSE", "reason_codes": ["SOURCE_BINDING_UNKNOWN"]} for x in states}
+    if universe is not None and universe.positive_taints():
+        return {x: Decision.UNKNOWN for x in states}, {x: {"meaning": "UNKNOWN_APPLICABLE_CONTROL",
+                "reason_codes": ["UNKNOWN_APPLICABLE_CONTROL"], "applicable_unknown": universe.positive_taints()} for x in states}
     changed = True
     while changed:
         changed = False
@@ -61,23 +77,34 @@ def closure(seeds, rules, coverage=None, universe=None):
             # Existential path join: proven path > possible path > denied path.
             rank = {None: -1, Decision.DENY: 0, Decision.UNKNOWN: 1, Decision.ALLOW: 2}
             if state == Decision.UNKNOWN and previous == Decision.UNKNOWN and "prerequisites" not in traces[rule.target]:
-                traces[rule.target].update({"prerequisites": rule.prerequisites, "checks": [{"decision": x.decision.value, "reasons": x.reasons} for x in rule.checks]})
+                traces[rule.target].update({"route": rule.meaning, "reason_codes": unknown_codes(rule.checks),
+                    "prerequisites": rule.prerequisites, "checks": [{"decision": x.decision.value,
+                    "reasons": x.reasons, "provenance": x.provenance} for x in rule.checks]})
             if rank[state] > rank[previous]:
                 states[rule.target] = state
                 traces[rule.target] = {"coverage": traces[rule.target].get("coverage"), "prerequisites": rule.prerequisites, "meaning": rule.meaning,
+                                      "route": rule.meaning, "reason_codes": ["WITNESS_ALLOW"] if state == Decision.ALLOW else unknown_codes(rule.checks),
                                       "checks": [{"decision": x.decision.value, "reasons": x.reasons, "provenance": x.provenance}
                                                  for x in rule.checks]}
                 changed = True
+    # Keep every final alternative, including denied paths which never raised
+    # the fixed-point rank. A certificate alone is not primitive provenance.
+    for target in targets:
+        traces[target]["alternatives"] = [
+            {"route": rule.meaning, "mechanism": rule.mechanism,
+             "prerequisites": {p: states[p].value for p in rule.prerequisites},
+             "checks": [{"decision": x.decision.value, "reasons": x.reasons,
+                         "provenance": x.provenance} for x in rule.checks]}
+            for rule in rules if rule.target == target]
     return states, traces
 
 
-def baseline(root):
-    contexts = {env: Adapter(root, env) for env in ("dev", "prod")}
+def baseline(root, environments=("dev", "prod")):
+    contexts = {env: Adapter(root, env) for env in environments}
     capabilities = json.loads((root / "ci/authority/capabilities.json").read_text())["actions"]
     records = []
     for env, model in contexts.items():
         discovery = model.discovery()
-        source_snapshot = fingerprint(discovery.records)
         binding_error = None
         try:
             workload = model.workload()
@@ -93,15 +120,21 @@ def baseline(root):
         except Unsupported as exc:
             routing_error, listener = str(exc), "UNBOUND"
         oidc = model.value("local.github_oidc_provider_arn")
+        source_snapshot = fingerprint({"sources": discovery.records, "identity": model.provenance(),
+                                       "workload": workload, "routing": routing})
 
         def admitted(result, subject, action, resource, extra_error=None):
             taints = discovery.taints("github", "api:" + action.split(":")[0].lower())
+            if subject in ("task_role", "execution_role") and not binding_error:
+                external = discovery.taints_for_role(resource, "terraform/infra/apps/fargate/modules/ecs_service")
+                taints = taints + [r for r in external if r not in taints]
             provenance = ({"subject": subject, "action": action, "resource": resource,
                            "source_snapshot": source_snapshot, "policy_statements": result.reasons,
                            "applicable_unknown": taints,
-                           "binding_error": extra_error},)
+                           "binding_error": extra_error, "effective_bindings_snapshot": fingerprint(model.module_binding),
+                           "binding_provenance": "provenance.identity.module_binding"},) + result.provenance
             if taints or extra_error:
-                return Result(Decision.UNKNOWN, tuple([r["source"] + ": " + r["reason"] for r in taints] +
+                return Result(Decision.UNKNOWN, tuple(["UNKNOWN_APPLICABLE_CONTROL " + r["source"] + ": " + r["reason"] for r in taints] +
                               ([extra_error] if extra_error else [])), provenance)
             return Result(result.decision, result.reasons, provenance)
 
@@ -120,12 +153,13 @@ def baseline(root):
                                "task_role", "iam:PutRolePolicy", task_role)
 
         def permission(role, action, resource, context=None, dependencies=None):
-            if binding_error:
-                return Result(Decision.UNKNOWN, (binding_error,))
+            if binding_error and (action.startswith("ecs:") or action == "iam:PassRole" or resource == "UNBOUND"):
+                return admitted(Result(Decision.UNKNOWN, (binding_error,)), role, action, resource, binding_error)
             known = model.roles[role]
             if known["unknown"]:
                 return Result(Decision.UNKNOWN, tuple(known["unknown"]))
             result = authorize({"action": action, "resource": resource, "context": context or {},
+                              "principal": "arn:aws:iam::" + model.values["local.account_id"] + ":role/" + known["name"],
                               "dependencies": dependencies or []}, capabilities,
                              identities=known["policies"])
             return admitted(result, role, action, resource,
@@ -137,7 +171,7 @@ def baseline(root):
         delivery = "github_dev_deploy" if env == "dev" else "github_prod_promote"
         rules = []
         for role_name, role in model.roles.items():
-            token = {"action": "sts:AssumeRoleWithWebIdentity", "resource": role["name"],
+            token = {"action": "sts:AssumeRoleWithWebIdentity", "resource": "arn:aws:iam::" + model.values["local.account_id"] + ":role/" + role["name"],
                      "principal": oidc, "context": {
                          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
                          "token.actions.githubusercontent.com:sub": model.value("local.github_environment_subject")}}
@@ -197,12 +231,13 @@ def baseline(root):
                     "Concrete witness only. Other acquisitions, managed-policy defaults/attachments, trust mutation, resource controls and mutable executable/config paths are not exhaustively expanded."} for r in rules}
         states, traces = closure(["environment-token"], rules, coverage)
         # Independent token: current prod high-risk trust accepts dev approval.
-        cross = evaluate({"action": "sts:AssumeRoleWithWebIdentity", "resource": "synthetic-role",
+        high_risk = "arn:aws:iam::" + model.values["local.account_id"] + ":role/" + model.roles["github_terragrunt_cd_high_risk"]["name"]
+        cross = evaluate({"action": "sts:AssumeRoleWithWebIdentity", "resource": high_risk,
                           "principal": oidc, "context": {
                               "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-                              "token.actions.githubusercontent.com:sub": "repo:Kendall04/terragrunt_demo:environment:dev-infra-approval"}},
+                              "token.actions.githubusercontent.com:sub": "repo:" + model.values["var.github_owner"] + "/" + model.values["var.github_repo"] + ":environment:dev-infra-approval"}},
                          trust=[model.roles["github_terragrunt_cd_high_risk"]["trust"]])
-        cross = admitted(cross, "github_terragrunt_cd_high_risk", "sts:AssumeRoleWithWebIdentity", "synthetic-role")
+        cross = admitted(cross, "github_terragrunt_cd_high_risk", "sts:AssumeRoleWithWebIdentity", high_risk)
         records.append({"environment": env, "classification": "CURRENT_FACT",
                         "evidence_type": "REPOSITORY_MODEL_REACHABILITY_NOT_EXECUTED_EXPLOIT",
                         "states": {k: v.value for k, v in states.items()}, "traces": traces,
@@ -223,6 +258,7 @@ def baseline(root):
                         "remaining_path_gaps": ["existing managed-policy default/attachment expansion", "trust mutation followed by acquisition", "existing compute executable/config and state dependencies"],
                         "dev_approval_to_high_risk": cross.decision.value,
                         "dev_approval_evidence": {"verdict": "WITNESS_ALLOW" if cross.decision == Decision.ALLOW else "UNKNOWN",
-                                                  "coverage": "PARTIAL", "scope": "exact supplied token and current trust only"},
+                                                  "coverage": "PARTIAL", "scope": "exact supplied token and current trust only",
+                                                  "reasons": cross.reasons, "provenance": cross.provenance},
                         "unknowns": {k: v["unknown"] for k, v in model.roles.items() if v["unknown"]}})
     return records

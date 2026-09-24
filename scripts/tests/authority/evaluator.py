@@ -3,7 +3,7 @@
 No I/O, SDK, credentials or network. Unsupported syntax is observable UNKNOWN.
 Policy decisions are distinct from complete API authorization (see authorize).
 """
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from enum import Enum
 import re
 
@@ -12,6 +12,17 @@ class Decision(str, Enum):
     ALLOW = "ALLOW"
     DENY = "DENY"
     UNKNOWN = "UNKNOWN"
+
+
+class PolicyKind(str, Enum):
+    IDENTITY_POLICY = "IDENTITY_POLICY"
+    RESOURCE_POLICY = "RESOURCE_POLICY"
+    TRUST_POLICY = "TRUST_POLICY"
+    PERMISSIONS_BOUNDARY = "PERMISSIONS_BOUNDARY"
+
+
+KINDS = {"identity": PolicyKind.IDENTITY_POLICY, "resource": PolicyKind.RESOURCE_POLICY,
+         "trust": PolicyKind.TRUST_POLICY, "boundary": PolicyKind.PERMISSIONS_BOUNDARY}
 
 
 @dataclass(frozen=True)
@@ -58,6 +69,14 @@ def arn_matches(pattern, value):
                 not components[1] or not components[2] or not components[5] or
                 re.search(r"\s", operand) or "${" in operand):
             raise Unsupported("invalid ARN condition operand")
+        if (not re.fullmatch(r"[a-z0-9*?-]+", components[1]) or
+                not re.fullmatch(r"[a-z0-9*?-]+", components[2]) or
+                not re.fullmatch(r"[a-z0-9*?-]*", components[3]) or
+                (components[4] and not re.fullmatch(r"[0-9*?]+", components[4]) and not
+                 (components[1:5] == ["aws", "iam", "", "aws"] and components[5].startswith("policy/")))):
+            raise Unsupported("invalid ARN component")
+        if components[4].isdigit() and len(components[4]) != 12:
+            raise Unsupported("invalid ARN account length")
     return all(matches(p, v) for p, v in zip(parts, actual))
 
 
@@ -104,6 +123,119 @@ def request_identity(request):
     if identity.category in ("service", "oidc") and alias is not None:
         raise Unsupported("INVALID_IDENTITY non-role principal with role alias")
     return identity
+
+
+# Only these resource families have an admitted account location. S3 bucket and
+# object ARNs have no account: an explicit, source-bound account is required for
+# resource-policy evaluation. Identity-only checks remain policy-scope evidence.
+ACCOUNT_SERVICES = {"iam", "sts", "sqs", "sns", "ecs", "ecr", "lambda", "kms",
+                    "ssm", "secretsmanager", "events", "logs", "elasticloadbalancing",
+                    "ec2", "dynamodb"}
+PRINCIPAL_CONTEXT = {"aws:principalarn", "aws:principalaccount", "aws:principaltype"}
+
+
+def normalized_request(request, identity_required=False, resource_policy=False):
+    """Build one fact set; supplied context can confirm but never replace it.
+
+    A role-session ARN omits the IAM path. Without a bound role_arn alias we know
+    its account/name, but cannot manufacture a full aws:PrincipalArn. A policy
+    using that unavailable fact is UNKNOWN rather than a nonmatching DENY.
+    """
+    if not isinstance(request, dict):
+        raise Unsupported("INVALID_REQUEST request is not an object")
+    supported_fields = {"action", "resource", "principal", "role_arn", "resource_account", "context", "dependencies"}
+    if set(request) - supported_fields:
+        raise Unsupported("INVALID_REQUEST unadmitted request fields/identity aliases")
+    action, resource = request.get("action"), request.get("resource")
+    if not isinstance(action, str) or not re.fullmatch(r"[A-Za-z0-9-]+:[A-Za-z0-9]+", action):
+        raise Unsupported("INVALID_REQUEST invalid action")
+    if not isinstance(resource, str) or not resource or re.search(r"\s", resource):
+        raise Unsupported("INVALID_RESOURCE invalid or multi-resource request")
+    context = normalized_context(request.get("context", {}))
+    for value in context.values():
+        if value is not None and (not isinstance(value, (str, list)) or
+                                  any(not isinstance(x, str) for x in many(value))):
+            raise Unsupported("INVALID_REQUEST context requires typed string values")
+    identity = None
+    derived, unavailable = {}, set()
+    if identity_required or "principal" in request or "role_arn" in request:
+        identity = request_identity(request)
+        if identity.category in ("role", "session"):
+            derived = {"aws:principalaccount": identity.account}
+            if identity.category == "session":
+                derived["aws:principaltype"] = "AssumedRole"
+            else:
+                # A role ARN is a policy principal, not proof of an STS session.
+                unavailable.add("aws:principaltype")
+            if identity.role_arn:
+                derived["aws:principalarn"] = identity.role_arn
+            else:
+                unavailable.add("aws:principalarn")
+        else:
+            # Service and web-identity request context is deliberately smaller.
+            # WP1 does not map provider principals to IAM role global facts.
+            unavailable.update(PRINCIPAL_CONTEXT)
+    else:
+        unavailable.update(PRINCIPAL_CONTEXT)
+    for key in PRINCIPAL_CONTEXT:
+        if key in context:
+            if key not in derived or context[key] not in (derived[key], [derived[key]]):
+                raise Unsupported("INVALID_IDENTITY contradictory/unresolved " + key)
+    context.update(derived)
+
+    account, service = "", ""
+    if resource.startswith("arn:"):
+        arn_matches(resource, resource)
+        _, partition, service, region, encoded_account, name = resource.split(":", 5)
+        if partition != "aws" or "*" in resource or "?" in resource:
+            raise Unsupported("INVALID_RESOURCE unsupported concrete ARN")
+        if service in ACCOUNT_SERVICES:
+            if not re.fullmatch(r"[0-9]{12}", encoded_account):
+                raise Unsupported("INVALID_RESOURCE invalid encoded account")
+            if service in ("iam", "sts"):
+                if region:
+                    raise Unsupported("INVALID_RESOURCE invalid global-service region")
+            elif not re.fullmatch(r"[a-z]{2}(?:-[a-z]+)+-[0-9]+", region):
+                raise Unsupported("INVALID_RESOURCE unsupported regional ARN")
+            account = encoded_account
+        elif service == "s3" and not region and not encoded_account:
+            if not re.fullmatch(r"[a-z0-9][a-z0-9.-]*(?:/[^\s]+)?", name):
+                raise Unsupported("INVALID_RESOURCE unsupported S3 resource shape")
+        elif resource_policy:
+            raise Unsupported("INVALID_RESOURCE account semantics unsupported for " + service)
+    elif resource_policy:
+        raise Unsupported("INVALID_RESOURCE resource-policy request requires concrete ARN")
+    supplied = request.get("resource_account")
+    if supplied is not None:
+        if not isinstance(supplied, str) or not re.fullmatch(r"[0-9]{12}", supplied):
+            raise Unsupported("INVALID_RESOURCE invalid resource_account")
+        if account and supplied != account:
+            raise Unsupported("INVALID_RESOURCE contradictory resource_account")
+        if not account and service == "s3":
+            account = supplied
+        elif not account:
+            raise Unsupported("INVALID_RESOURCE account semantics unresolved")
+    resource_context = {"aws:resourceaccount": account} if account else {}
+    if service == "s3" and account:
+        resource_context["s3:resourceaccount"] = account
+    for key in ("aws:resourceaccount", "s3:resourceaccount"):
+        if key in context and (key not in resource_context or
+                               context[key] not in (resource_context[key], [resource_context[key]])):
+            raise Unsupported("INVALID_RESOURCE contradictory/unresolved " + key)
+        if key not in resource_context:
+            unavailable.add(key)
+    context.update(resource_context)
+    if resource_policy and (not identity or identity.category not in ("role", "session") or
+                            not account or account != identity.account):
+        raise Unsupported("INVALID_RESOURCE same-account resource-policy context not established")
+    facts = {"identity": asdict(identity) if identity else {"category": "unbound_policy_scope"},
+             "principal_context": derived, "unavailable_principal_context": sorted(unavailable & PRINCIPAL_CONTEXT),
+             "unavailable_resource_context": sorted(unavailable - PRINCIPAL_CONTEXT),
+             "resource_context": resource_context,
+             "resource": resource, "resource_service": service, "resource_account": account,
+             "action": action, "requested_service": action.split(":")[0].lower()}
+    return request | {"_identity": identity, "context": context,
+                      "_unavailable_context": unavailable, "_facts": facts}
 
 
 def principal_form(category, value, kind):
@@ -160,6 +292,8 @@ def admit_conditions(conditions):
                 raise Unsupported("condition values must be nonempty string lists")
             if operator in ("Bool", "Null") and any(x not in ("true", "false") for x in values):
                 raise Unsupported("invalid boolean literal")
+            if operator in ("Bool", "Null") and len(values) != 1:
+                raise Unsupported("invalid boolean condition cardinality")
             if operator.startswith("Arn"):
                 for value in values:
                     arn_matches(value, value)
@@ -201,29 +335,123 @@ def condition(conditions, context):
     return all(answers)
 
 
+def _kind(kind):
+    if kind in KINDS:
+        return KINDS[kind]
+    try:
+        return PolicyKind(kind)
+    except (ValueError, TypeError):
+        raise Unsupported("unsupported policy document kind") from None
+
+
+def _string_values(value, field):
+    if not isinstance(value, (str, list)):
+        raise Unsupported("invalid " + field + " container")
+    values = many(value)
+    if not values or any(not isinstance(x, str) or not x for x in values):
+        raise Unsupported("invalid/empty " + field + " values")
+    return values
+
+
+def _admit_principal(principal, kind):
+    if not isinstance(principal, dict) or len(principal) != 1:
+        raise Unsupported("wildcard/unknown principal shape")
+    category, values = next(iter(principal.items()))
+    if category not in ("AWS", "Federated", "Service"):
+        raise Unsupported("principal category")
+    short_kind = "trust" if kind == PolicyKind.TRUST_POLICY else "resource"
+    for identity in _string_values(values, "Principal"):
+        admission = principal_form(category, identity, short_kind)
+        if admission != "SUPPORTED_AND_MODELED":
+            raise Unsupported(admission + " principal: " + str(identity))
+    return category
+
+
 def _validate_statement(statement, kind):
-    allowed = {"Sid", "Effect", "Action", "Resource", "Condition", "_source"}
-    if kind in ("resource", "trust"):
+    if not isinstance(statement, dict) or any(not isinstance(k, str) for k in statement):
+        raise Unsupported("statement must be an object with string keys")
+    allowed = {"Sid", "Effect", "Action", "Condition", "_source"}
+    if kind != PolicyKind.TRUST_POLICY:
+        allowed.add("Resource")
+    if kind in (PolicyKind.RESOURCE_POLICY, PolicyKind.TRUST_POLICY):
         allowed.add("Principal")
-    extra = set(statement) - allowed
-    if extra:
-        raise Unsupported("unsupported statement keys: " + ",".join(sorted(extra)))
+    if set(statement) - allowed:
+        raise Unsupported("unsupported statement keys for " + kind.value + ": " +
+                          ",".join(sorted(set(statement) - allowed)))
     if statement.get("Effect") not in ("Allow", "Deny") or "Action" not in statement:
         raise Unsupported("missing/invalid effect or action")
-    if "Condition" in statement and not statement["Condition"]:
-        raise Unsupported("empty explicit Condition")
+    for optional in ("Sid", "_source"):
+        if optional in statement and (not isinstance(statement[optional], str) or not statement[optional]):
+            raise Unsupported("invalid " + optional)
+    if "Sid" in statement and not re.fullmatch(r"[A-Za-z0-9]+", statement["Sid"]):
+        raise Unsupported("unsupported Sid grammar")
     if "${" in str(statement):
         raise Unsupported("policy variables")
-    for field in ("Action", "Resource"):
-        if field not in statement and (field != "Resource" or kind != "trust"):
-            raise Unsupported("missing " + field)
-        if field in statement and (not many(statement[field]) or
-                                  any(not isinstance(x, str) for x in many(statement[field]))):
-            raise Unsupported("invalid " + field)
+    actions = _string_values(statement["Action"], "Action")
+    for action in actions:
+        if action != "*" and not re.fullmatch(r"[A-Za-z0-9-]+:[A-Za-z0-9*?]+", action):
+            raise Unsupported("invalid Action operand")
+    if kind != PolicyKind.TRUST_POLICY:
+        if "Resource" not in statement:
+            raise Unsupported("missing Resource")
+        for resource in _string_values(statement["Resource"], "Resource"):
+            if resource != "*":
+                arn_matches(resource, resource)
+                if resource.split(":", 5)[1] != "aws":
+                    raise Unsupported("unsupported resource ARN partition")
+    if kind in (PolicyKind.RESOURCE_POLICY, PolicyKind.TRUST_POLICY):
+        category = _admit_principal(statement.get("Principal"), kind)
+        if kind == PolicyKind.TRUST_POLICY:
+            supported = "sts:assumerolewithwebidentity" if category == "Federated" else "sts:assumerole"
+            if any(action.lower() != supported for action in actions):
+                raise Unsupported("unsupported principal/action trust combination")
+    if "Condition" in statement:
+        if not isinstance(statement["Condition"], dict) or not statement["Condition"]:
+            raise Unsupported("empty/invalid explicit Condition")
+        admit_conditions(statement["Condition"])
+
+
+def admit_policy(policy, kind):
+    """Admit the complete kind-specific document before matching any statement.
+
+    Version omission is admitted for legacy fixture envelopes without variables;
+    the only explicit supported version is 2012-10-17. NotAction/NotResource/
+    NotPrincipal and all other unmodeled keys fail visibly, never as a nonmatch.
+    """
+    kind = _kind(kind)
+    if not isinstance(policy, dict) or any(not isinstance(k, str) for k in policy):
+        raise Unsupported("policy document must be an object")
+    if set(policy) - {"Version", "Statement", "Id"}:
+        raise Unsupported("unsupported policy envelope")
+    if "Version" in policy and policy["Version"] != "2012-10-17":
+        raise Unsupported("unsupported/invalid policy Version")
+    if "Id" in policy and (not isinstance(policy["Id"], str) or not policy["Id"]):
+        raise Unsupported("invalid policy Id")
+    if "Id" in policy and kind in (PolicyKind.IDENTITY_POLICY, PolicyKind.PERMISSIONS_BOUNDARY):
+        raise Unsupported("unsupported Id for identity policy/boundary")
+    statements = policy.get("Statement")
+    if not isinstance(statements, (dict, list)) or not statements:
+        raise Unsupported("missing/empty/invalid Statement container")
+    statements = many(statements)
+    sids = set()
+    for statement in statements:
+        _validate_statement(statement, kind)
+        if "Sid" in statement:
+            if statement["Sid"] in sids:
+                raise Unsupported("duplicate Sid")
+            sids.add(statement["Sid"])
+    return tuple(statements)
+
+
+def admit_policies(policies, kind):
+    """An empty list is a known empty set; false, null and objects are not lists."""
+    if not isinstance(policies, (list, tuple)):
+        raise Unsupported("invalid " + _kind(kind).value + " policy container")
+    return tuple(admit_policy(policy, kind) for policy in policies)
 
 
 def _principal(statement, request, kind):
-    if kind == "identity":
+    if kind in ("identity", "boundary"):
         return "identity"
     principal = statement.get("Principal")
     if not isinstance(principal, dict) or len(principal) != 1:
@@ -256,29 +484,25 @@ def _principal(statement, request, kind):
     return None
 
 
-def _statements(policies, request, kind):
-    allows, denies, unknown = [], [], []
-    for policy in policies:
-        if not isinstance(policy, dict) or set(policy) - {"Version", "Statement", "Id"} or not isinstance(policy.get("Statement"), (list, dict)):
-            unknown.append("unsupported/missing policy document")
-            continue
-        for statement in many(policy["Statement"]):
-            try:
-                if not isinstance(statement, dict):
-                    raise Unsupported("statement is not an object")
-                _validate_statement(statement, kind)
-                # Validate conditions even on nonmatching statements: unsupported is never hidden.
-                condition_match = condition(statement.get("Condition", {}), request.get("context", {}))
-                grant_type = _principal(statement, request, kind)
-                action_match = any(matches(x, request["action"], True) for x in many(statement["Action"]))
-                resource_match = kind == "trust" or any(
-                    matches(x, request["resource"]) for x in many(statement["Resource"]))
-                if condition_match and grant_type and action_match and resource_match:
-                    trace = statement.get("_source", statement.get("Sid", "unnamed statement"))
-                    (allows if statement["Effect"] == "Allow" else denies).append((grant_type, trace))
-            except (Unsupported, TypeError, KeyError) as exc:
-                unknown.append(str(exc))
-    return allows, denies, unknown
+def _statements(admitted_documents, request, kind):
+    allows, denies = [], []
+    for statements in admitted_documents:
+        for statement in statements:
+            conditions = statement.get("Condition", {})
+            used = {key.lower() for tests in conditions.values() for key in tests}
+            if used & request["_unavailable_context"]:
+                raise Unsupported("INVALID_REQUEST unresolved normalized condition facts")
+            # Request-dependent checks also precede statement matching. A malformed
+            # context operand cannot be hidden behind a false action/condition.
+            condition_match = condition(conditions, request["context"])
+            grant_type = _principal(statement, request, kind)
+            action_match = any(matches(x, request["action"], True) for x in many(statement["Action"]))
+            resource_match = kind == "trust" or any(
+                matches(x, request["resource"]) for x in many(statement["Resource"]))
+            if condition_match and grant_type and action_match and resource_match:
+                trace = statement.get("_source", statement.get("Sid", "unnamed statement"))
+                (allows if statement["Effect"] == "Allow" else denies).append((grant_type, trace))
+    return allows, denies
 
 
 def evaluate(request, identities=(), boundary=None, resources=(), trust=None):
@@ -287,40 +511,55 @@ def evaluate(request, identities=(), boundary=None, resources=(), trust=None):
     Exact same-account role/session grants supported. Wildcard principals, users,
     account-root delegation and KMS resource authorization are deliberately UNKNOWN.
     """
-    if not isinstance(request.get("resource"), str) or not isinstance(request.get("action"), str):
-        return Result(Decision.UNKNOWN, ("invalid or multi-resource request",))
-    if resources or trust is not None or "principal" in request or "role_arn" in request:
+    admission, documents = [], {}
+    for kind, container in (("identity", identities), ("boundary", boundary),
+                            ("resource", resources), ("trust", trust)):
+        if container is None and kind in ("boundary", "trust"):
+            continue
         try:
-            request = request | {"_identity": request_identity(request)}
-        except Unsupported as exc:
-            return Result(Decision.UNKNOWN, (str(exc),))
-    if resources and request["action"].lower().startswith("kms:"):
-        return Result(Decision.UNKNOWN, ("KMS key policy/grant semantics unsupported",))
-    if resources:
-        caller = request["_identity"]
-        if caller.category not in ("role", "session") or request.get("resource_account") != caller.account:
-            return Result(Decision.UNKNOWN, ("same-account resource-policy context not established",))
-    ia, ideny, iu = _statements(identities, request, "identity")
-    ba, bdeny, bu = _statements(boundary or [], request, "identity")
-    ra, rdeny, ru = _statements(resources, request, "resource")
-    if trust is not None:
-        ta, td, tu = _statements(trust, request, "trust")
-        if td:
-            return Result(Decision.DENY, tuple(x[1] for x in td))
-        if tu:
-            return Result(Decision.UNKNOWN, tuple(tu))
-        return Result(Decision.ALLOW if ta else Decision.DENY,
-                      tuple(x[1] for x in ta) or ("no matching trust grant",))
-    denies = ideny + bdeny + rdeny
-    if denies:
-        return Result(Decision.DENY, tuple(x[1] for x in denies))
-    unknown = iu + bu + ru
-    if unknown:
-        return Result(Decision.UNKNOWN, tuple(unknown))
-    direct_session = any(x[0] == "session" for x in ra)
-    allowed = direct_session or ((ia or ra) and (boundary is None or ba))
-    return Result(Decision.ALLOW if allowed else Decision.DENY,
-                  tuple(x[1] for x in ia + ra) if allowed else ("implicit deny/boundary intersection",))
+            documents[kind] = admit_policies(container, kind)
+            admission.append({"document_kind": KINDS[kind].value, "admission": "SUPPORTED_AND_MODELED",
+                              "documents": len(documents[kind]),
+                              "source_statements": [[st.get("_source", st.get("Sid", "unnamed statement"))
+                                                     for st in doc] for doc in documents[kind]]})
+        except (Unsupported, TypeError, ValueError) as exc:
+            admission.append({"document_kind": KINDS[kind].value, "admission": "ADMISSION_FAILURE",
+                              "reason": str(exc)})
+    invalid = [a for a in admission if a["admission"] == "ADMISSION_FAILURE"]
+    provenance = {"policy_admission": admission, "normalized_request": None,
+                  "applicable_unknown": [], "evidence_scope": "PRIMITIVE_POLICY_PERMISSION"}
+    if invalid:
+        reasons = tuple("SEMANTIC_ADMISSION_UNKNOWN " + a["document_kind"] + ": " + a["reason"] for a in invalid)
+        provenance["applicable_unknown"] = list(reasons)
+        return Result(Decision.UNKNOWN, reasons, (provenance,))
+    try:
+        has_resources = len(documents["resource"]) != 0
+        request = normalized_request(request, identity_required=has_resources or trust is not None,
+                                     resource_policy=has_resources)
+        provenance["normalized_request"] = request["_facts"]
+        if has_resources and request["action"].lower().startswith("kms:"):
+            raise Unsupported("KMS key policy/grant semantics unsupported")
+        ia, ideny = _statements(documents["identity"], request, "identity")
+        ba, bdeny = _statements(documents.get("boundary", ()), request, "boundary")
+        ra, rdeny = _statements(documents["resource"], request, "resource")
+        if trust is not None:
+            if documents["identity"] or documents.get("boundary") or has_resources:
+                raise Unsupported("combined trust and permission authorization unsupported")
+            ta, td = _statements(documents["trust"], request, "trust")
+            return Result(Decision.DENY if td else Decision.ALLOW if ta else Decision.DENY,
+                          tuple(x[1] for x in td or ta) or ("no matching trust grant",), (provenance,))
+        denies = ideny + bdeny + rdeny
+        if denies:
+            return Result(Decision.DENY, tuple(x[1] for x in denies), (provenance,))
+        direct_session = any(x[0] == "session" for x in ra)
+        allowed = direct_session or ((ia or ra) and (boundary is None or ba))
+        return Result(Decision.ALLOW if allowed else Decision.DENY,
+                      tuple(x[1] for x in ia + ra) if allowed else ("implicit deny/boundary intersection",),
+                      (provenance,))
+    except (Unsupported, TypeError, KeyError, ValueError) as exc:
+        reason = "NORMALIZED_REQUEST_UNKNOWN " + str(exc)
+        provenance["applicable_unknown"] = [reason]
+        return Result(Decision.UNKNOWN, (reason,), (provenance,))
 
 
 def _authorize(request, capabilities, **policies):
@@ -350,10 +589,12 @@ def _authorize(request, capabilities, **policies):
         return Result(Decision.UNKNOWN, ("dependent action coverage",))
     own = evaluate(request, **policies)
     checks = [own] + [authorize(x, capabilities, **policies) for x in dependencies]
-    if any(x.decision == Decision.DENY for x in checks):
-        return Result(Decision.DENY, tuple(y for x in checks for y in x.reasons))
     if any(x.decision == Decision.UNKNOWN for x in checks):
-        return Result(Decision.UNKNOWN, tuple(y for x in checks for y in x.reasons))
+        return Result(Decision.UNKNOWN, tuple(y for x in checks for y in x.reasons),
+                      tuple(p for x in checks for p in x.provenance))
+    if any(x.decision == Decision.DENY for x in checks):
+        return Result(Decision.DENY, tuple(y for x in checks for y in x.reasons),
+                      tuple(p for x in checks for p in x.provenance))
     return own
 
 

@@ -32,6 +32,15 @@ def policy(effect="Allow", conditions=None, principal=None):
     return {"Statement": [statement]}
 
 
+def principal_policy(kind, principal):
+    """R2 identity probes use a valid envelope for each evaluated policy kind."""
+    doc = policy(principal=principal)
+    if kind == "trust":
+        doc["Statement"][0].pop("Resource")
+        doc["Statement"][0]["Action"] = "sts:AssumeRole"
+    return doc
+
+
 class ConditionAdmissionTests(unittest.TestCase):
     def test_r1_complete_operand_admission_permutations(self):
         valid = "arn:aws:s3:::bucket/*"
@@ -71,13 +80,18 @@ class IdentityAdmissionTests(unittest.TestCase):
             for kind in ("resources", "trust"):
                 for alias in (ROLE, ROLE.replace("role/caller", "role/path/caller")):
                     request = REQUEST | {"principal": principal, "role_arn": alias}
-                    self.assertEqual(evaluate(request, **{kind: [policy(principal=ROLE)]}).decision, D.UNKNOWN)
+                    if kind == "trust":
+                        request = request | {"action": "sts:AssumeRole"}
+                    self.assertEqual(evaluate(request, **{kind: [principal_policy(kind, ROLE)]}).decision, D.UNKNOWN)
 
     def test_r2_derived_and_explicit_parent_including_paths(self):
         for role in (ROLE, ROLE.replace("role/caller", "role/team/app/caller")):
             for alias in ({}, {"role_arn": role}):
                 for kind in ("resources", "trust"):
-                    self.assertEqual(evaluate(REQUEST | alias, **{kind: [policy(principal=role)]}).decision, D.ALLOW)
+                    request = REQUEST | alias
+                    if kind == "trust":
+                        request = request | {"action": "sts:AssumeRole"}
+                    self.assertEqual(evaluate(request, **{kind: [principal_policy(kind, role)]}).decision, D.ALLOW)
                 self.assertEqual(evaluate(REQUEST | alias, resources=[policy(principal=role)], boundary=[]).decision, D.DENY)
                 self.assertEqual(evaluate(REQUEST | alias, resources=[policy(principal=SESSION)], boundary=[]).decision, D.ALLOW)
                 self.assertEqual(evaluate(REQUEST | alias, resources=[policy(principal=SESSION)], boundary=[policy("Deny")]).decision, D.DENY)

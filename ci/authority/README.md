@@ -64,7 +64,9 @@ Supported: identity union, explicit deny precedence, boundary intersection, exac
 role/service/federated trust, exact same-account role/session resource grants,
 IAM star/question-mark matching, String/Arn Equals/Like, Bool/Null, set operators,
 non-set IfExists and absent keys. Combined set-operator/IfExists expressions are UNKNOWN. Session grants bypass implicit identity and
-boundary denies but not explicit denies. Same-account context must be explicit.
+boundary denies but not explicit denies. Supported resource ARNs supply their
+account; accountless S3 ARNs require an explicit source-bound account for resource
+policy questions. Contradictory supplied facts are UNKNOWN.
 
 UNKNOWN or source Unsupported: NotAction/NotResource/NotPrincipal, policy
 variables, negated/numeric/date/IP conditions, wildcard principals (including
@@ -164,14 +166,15 @@ N2 remains outstanding supported-Linux validation; the inspected docker-desktop
 WSL environment has no Bash/Git/Python. Neither is claimed passed. They are separate
 from the F1-F5 correction and require no selector redesign here.
 
-## V3 semantic-admission correction (R1â€“R6)
+## Historical V3 semantic-admission correction (R1â€“R6)
 
 V1 is `fd6e17d89a805d05fe120f95d1b6fd61f8e09b33`; V2 is
 `687a75defdb86d1ec58940443b6fa17e62be7ac9`. V3 is a separate correction
 commit on V2. This is WP1 characterization, pending independent review, not
 WP1 acceptance or evidence that E1 is secure. The spec and plan are unchanged.
 
-The current processing stages are explicit:
+V3 introduced these stages; the V4 section below supersedes its admission,
+effective-input and uncertainty behavior:
 
 1. `discovery.py` recursively discovers Terraform native/JSON files and local
    module boundaries independently of the freshness inventory. JSON and all
@@ -249,3 +252,97 @@ A closed, literal-Effect jsonencode subset proves only that these task identity
 policies contain no Deny; it does not establish their resource grants. A changed
 Deny, unsnapshotted policy or unresolved attachment preserves the primitive policy
 mutation witness but makes the stronger composed outcome UNKNOWN.
+
+
+## V4 correction boundary (A1–A5)
+
+V3 is `909637c8f57c533c374f455fa8c4695f8d4b1c3b`. V4 is one correction
+commit on V3, preserving V1/V2 and the immutable spec/plan. Executor tests are
+characterization evidence awaiting independent review, not WP1 acceptance.
+
+The processing order is discovery, source applicability, kind-specific policy
+admission, effective source/input binding, normalized request facts, primitive
+permissions, existential graph witnesses, then negative completeness analysis.
+Source adapters bind expressions before interpolating policy documents; the
+primitive evaluator admits every supplied document before matching statements.
+Neither binding nor completeness can upgrade failed semantic admission.
+
+- **A1 — policy kinds.** Identity, resource, trust and permissions-boundary
+  documents have separate closed grammars. The evaluator checks containers,
+  explicit versions, every statement/operator/operand and trust principal/action
+  compatibility. The supported explicit version is `2012-10-17`; an omitted
+  version is supported only without policy variables. Statement singleton and
+  list forms are equivalent. Empty policy lists represent a known empty set;
+  empty documents, malformed containers and empty explicit conditions are
+  rejected. `None` means no supplied boundary/trust, while an empty boundary list
+  remains a restrictive known boundary. Bool/Null accept one policy value.
+  Trust has no Resource, identity/boundary has no Principal. Unsupported valid
+  constructs and malformed constructs both yield visible semantic UNKNOWN;
+  neither supplies a primitive witness or a completeness certificate.
+- **A2 — facts.** One request model derives principal category, ARN, role-session
+  parent relationship, account, requested action/service and supported resource
+  account. Case-insensitive global principal/resource context must confirm these
+  facts. Contradictions cannot produce ALLOW or DENY. A session's ARN omits its
+  parent's IAM path: full PrincipalArn conditions require a bound role ARN;
+  account/name matching can still establish a role-principal grant. Service/OIDC
+  identities cannot receive role aliases. Unknown account families and
+  cross-account resource authorization remain unsupported. Identity-only checks
+  remain policy-scope evidence, not complete API authorization.
+- **A3 — effective inputs.** Explicit root/shared/layer input schemas classify
+  supported resolved values, fixed expectations, unsupported applicable values
+  and unrelated inputs. Supported literal GitHub owner/repository and storage
+  overrides take effect before interpolation. OIDC creation, explicit reference
+  and lookup modes are distinguished; a different issuer/account is unsupported.
+  Environment/account/region changes outside fixed fixtures fail binding. Include
+  merge controls and provider-generation changes cannot silently alter inherited
+  inputs. Shared module admission is conservative: an unresolved security input
+  invalidates that environment's shared model, rather than lazily admitting some
+  of its policies. The runner evaluates environments separately. Workload and
+  routing bindings remain independent of unrelated primitive policy scope.
+- **A4 — applicability.** Discovery records support and applicability separately.
+  Literal local module paths, including sibling/parent paths, and Terragrunt
+  dependencies establish directory reachability, without evaluating Terraform.
+  Uninvoked modules and sources exclusive to another environment do not poison
+  unrelated witnesses. Invoked JSON/overrides and unclassified root sources
+  remain applicable uncertainty. Inert uninvoked JSON outputs stay inert; an
+  invoked override of an identity output is unresolved. Module sources into
+  excluded cache directories or through symlinks/junctions are rejected. Narrow
+  local string templates establish role-name disjointness; unresolved expressions
+  are wildcards. A role disjoint from GitHub callers can still collide with a
+  workload role and taint its trust/controls.
+- **A5 — existential versus negative.** A current, admitted, grounded route proves
+  WITNESS_ALLOW even beside an unsupported alternative route. A source that can
+  alter that route's controls still makes it UNKNOWN. The closed fixture grammar
+  distinguishes route-local policy sources, subject-scoped shared controls and
+  unknown global controls. Shared controls are evaluated with every affected
+  request. Completeness requires all primitives and source mechanisms to be
+  admitted, and still binds source hashes, graph topology, subjects, mechanisms,
+  route inventory and outcome. Freshness alone proves neither validity nor
+  closure. Current repository outcomes remain PARTIAL and have no issuer.
+
+Traces include document-kind admission, normalized facts, effective input/source
+bindings, applicable uncertainty, statements, prerequisites and alternative
+routes. Definitive negative fixture results also retain their certificate.
+Structured reason codes distinguish WITNESS_ALLOW, EFFECTIVE_DENY,
+UNKNOWN_APPLICABLE_CONTROL, UNKNOWN_INCOMPLETE_PATHS, SOURCE_BINDING_UNKNOWN and
+SEMANTIC_ADMISSION_UNKNOWN. The high-risk approval witness has the same primitive
+provenance. Declared roles/services/listeners use explicit synthetic account,
+region and provider IDs; managed-policy/Lambda/ECR/release-object permissions are
+identified as policy scope where existence is not bound.
+
+The V4 test modules exercise production source adapters, request evaluators and
+source-backed graph fixtures. Mutations cover independent alternative retention,
+ALLOW/UNKNOWN/DENY transitions, semantic and binding failures, invalid/stale
+certificates, shared Deny/boundary controls and unrelated uncertainty. Earlier
+F1–F5/R1–R6 tests are retained. Their trust-positive fixtures now use valid
+kind-specific envelopes and compatible STS actions; malformed forms have separate
+UNKNOWN regressions. Positive controls still reject deny-all/all-UNKNOWN engines.
+The JSON report lists test IDs and per-module counts; generated reports remain
+outside the repository.
+
+Runtime contracts remain WP1 structural foundations; WP4 enforcement/API coverage
+is not implemented. Governance remains EXTERNAL/UNVERIFIED. No AWS or GitHub
+settings are accessed. Credential scrubbing, metadata disablement, null AWS files,
+empty PATH and socket/process/dynamic-library guards are unchanged. This remains
+an accidental-I/O guard, not a sandbox. Git Bash full selector remains
+FAILED/UNRESOLVED (cleanup); supported Linux remains UNVALIDATED.

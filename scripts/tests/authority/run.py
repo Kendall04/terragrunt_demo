@@ -62,10 +62,16 @@ def main():
     result = unittest.TextTestRunner(verbosity=2, resultclass=Recorded).run(suite)
     chains = []
     if not errors:
-        try:
-            chains = baseline(ROOT)
-        except Unsupported as exc:
-            errors.append(str(exc))
+        for environment in ("dev", "prod"):
+            try:
+                chains.extend(baseline(ROOT, (environment,)))
+            except Unsupported as exc:
+                # One invalid environment must not erase valid evidence for the
+                # other. The package still fails characterization visibly.
+                errors.append(environment + ": " + str(exc))
+                chains.append({"environment": environment, "classification": "UNVERIFIED",
+                               "reason_codes": ["SOURCE_BINDING_UNKNOWN"], "error": str(exc),
+                               "states": {}, "outcomes": {}})
     good = result.wasSuccessful() and not result.skipped and result.testsRun > 0 and not errors
     report = {
         "result": "WP1_CHARACTERIZATION_PASS" if good else "WP1_CHARACTERIZATION_FAIL",
@@ -75,6 +81,11 @@ def main():
         "scope": "repository-model reachability with fixed synthetic inputs; not executed exploits",
         "executed_tests": executed, "counts": {"executed": result.testsRun, "failures": len(result.failures),
                                                  "errors": len(result.errors), "skipped": len(result.skipped)},
+        "test_modules": {module: {"executed": sum(x.split(".")[0] == module for x in executed),
+            "failures": sum(t.id().split(".")[0] == module for t, _ in result.failures),
+            "errors": sum(t.id().split(".")[0] == module for t, _ in result.errors),
+            "skipped": sum(t.id().split(".")[0] == module for t, _ in result.skipped)}
+            for module in sorted({x.split(".")[0] for x in executed})},
         "inventory_errors": errors, "baseline": chains,
         "semantic_source_admission": semantic_inventory(ROOT),
         "external_prerequisites": "UNVERIFIED",

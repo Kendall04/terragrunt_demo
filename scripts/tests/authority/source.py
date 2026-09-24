@@ -145,6 +145,10 @@ class Adapter:
                 raise Unsupported("SOURCE_BINDING_FAILURE " + key)
         self.binding_status = "BINDING_VALIDATED"
         self.active = set()
+        # Resolve effective wrapper inputs before any policy interpolation. A
+        # later binding check cannot repair documents built from stale defaults.
+        from bindings import Bindings
+        self.module_binding = Bindings(self).github()
         self.docs, self.roles, self.resources = {}, {}, []
         self.admitted = set()
         seen = set()
@@ -220,8 +224,6 @@ class Adapter:
         for path in sorted((self.root / IAM).glob("*.tf")):
             for k, t, n, b in blocks(path.read_text())[0]:
                 self.admitted.add(declaration_id(path.relative_to(self.root).as_posix(), k, t, n))
-        from bindings import Bindings
-        self.module_binding = Bindings(self).github()
 
     def workload(self):
         from bindings import Bindings
@@ -232,11 +234,12 @@ class Adapter:
 
     def discovery(self):
         from discovery import Discovery
-        return Discovery(self.root, self.admitted, [r["name"] for r in self.roles.values()])
+        return Discovery(self.root, self.admitted, [r["name"] for r in self.roles.values()], env=self.env)
 
     def provenance(self):
         return {"environment": self.env, "synthetic_values": self.values,
                 "substitution_bindings": self.metadata["source_bindings"],
+                "effective_inputs": self.effective_inputs,
                 "module_binding": self.module_binding,
                 "admitted_declarations": sorted(self.admitted)}
 

@@ -90,8 +90,9 @@ class SemanticRegressions(unittest.TestCase):
                                     ("Service", "ecs-tasks.amazonaws.com"),
                                     ("Federated", "arn:aws:iam::111122223333:oidc-provider/token.actions.githubusercontent.com")):
             self.assertEqual(principal_form(category, principal, "trust"), "SUPPORTED_AND_MODELED")
-            doc = {"Statement": [{"Effect": "Allow", "Action": "sts:AssumeRole", "Principal": {category: principal}}]}
-            request = {"action": "sts:AssumeRole", "resource": "target", "principal": principal}
+            action = "sts:AssumeRoleWithWebIdentity" if category == "Federated" else "sts:AssumeRole"
+            doc = {"Statement": [{"Effect": "Allow", "Action": action, "Principal": {category: principal}}]}
+            request = {"action": action, "resource": "target", "principal": principal}
             self.assertEqual(evaluate(request, trust=[doc]).decision, D.ALLOW)
             other = {"AWS": "arn:aws:iam::111122223333:role/different", "Service": "lambda.amazonaws.com",
                      "Federated": "arn:aws:iam::111122223333:oidc-provider/different.example"}[category]
