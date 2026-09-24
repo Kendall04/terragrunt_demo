@@ -154,3 +154,13 @@ Evidence: [Program](../../demo-api/terragrunt-demo/Program.cs),
 
 The original simple demo is not the final backend target. Read the decision
 register before adding identity or treating database limitations as accepted.
+
+## TARGET FOUNDATION — E1 WP2A neutral security root
+
+The [WP2A security root](../infra/security/README.md) now declares a separate
+admin-only target ownership/state contract and inert request identities. Its
+closed authority source is shared by Terraform and offline acceptance. Existing
+dev/prod resources, runtime ownership and deployment paths are unchanged; legacy
+security ownership remains transitional and is not E1-secure. Protected ARN/ID
+interfaces are reserved but unavailable; ordinary lifecycle must not read or write
+security-root state. No bootstrap, migration or deployment has occurred.

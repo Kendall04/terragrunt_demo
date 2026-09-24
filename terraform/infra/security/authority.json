@@ -1,0 +1,317 @@
+{
+  "format_version": 1,
+  "classification": "TARGET_REQUIREMENT",
+  "stage": "E1_WP2A_PROTECTED_SECURITY_ROOT_FOUNDATION",
+  "security_admin": {
+    "owner": "SECURITY_ROOT_OWNED",
+    "authentication": "SEPARATELY_HELD_HUMAN_AUTHORITY",
+    "created_by_this_root": false,
+    "verification": "UNVERIFIED"
+  },
+  "backend": {
+    "owner": "SECURITY_ROOT_OWNED",
+    "bootstrap": "EXTERNAL_ADMIN_PRECONDITION",
+    "bucket_input": "E1_SECURITY_STATE_BUCKET",
+    "region_input": "E1_SECURITY_STATE_REGION",
+    "key": "e1/security/terraform.tfstate",
+    "encrypt": true,
+    "use_lockfile": true,
+    "ordinary_access": "NONE",
+    "prerequisites": [
+      "DEDICATED_ADMIN_ONLY_BUCKET",
+      "VERSIONING",
+      "PUBLIC_ACCESS_BLOCK",
+      "TLS_ONLY",
+      "ADMIN_ONLY_STATE_AND_LOCK_ACCESS",
+      "NO_ORDINARY_REMOTE_STATE_READ"
+    ]
+  },
+  "ownership": {
+    "categories": [
+      "DELIVERY_CONTROLLER_OWNED",
+      "EXTERNAL_GOVERNANCE",
+      "HIGH_RISK_LIFECYCLE_OWNED",
+      "ORDINARY_LIFECYCLE_OWNED",
+      "RECOVERY_CONTROLLER_OWNED",
+      "SECURITY_ROOT_OWNED",
+      "UNVERIFIED"
+    ],
+    "protected_classes": {
+      "artifact_and_evidence_protection": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "implementation": "DEFERRED"
+      },
+      "controller_code_and_configuration": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "implementation": "DEFERRED"
+      },
+      "controller_iam": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "implementation": "DEFERRED"
+      },
+      "kms_authority": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "implementation": "DEFERRED"
+      },
+      "oidc": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "implementation": "DEFERRED"
+      },
+      "permissions_boundaries": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "implementation": "DEFERRED"
+      },
+      "recovery_iam": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "implementation": "DEFERRED"
+      },
+      "request_identities": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "implementation": "WP2A_DECLARED_INERT"
+      },
+      "secret_metadata_and_policy": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "implementation": "DEFERRED"
+      },
+      "security_state_and_lock": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "implementation": "DEFERRED"
+      },
+      "shared_ecr_security": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "implementation": "DEFERRED"
+      },
+      "workload_iam": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "implementation": "DEFERRED"
+      }
+    },
+    "operational_classes": {
+      "network_and_platform_skeletons": "ORDINARY_LIFECYCLE_OWNED",
+      "data_and_apps_skeletons": "HIGH_RISK_LIFECYCLE_OWNED",
+      "normal_revision_count_and_forwarding": "DELIVERY_CONTROLLER_OWNED",
+      "existing_color_restore_and_bounded_repair": "RECOVERY_CONTROLLER_OWNED",
+      "github_protections": "EXTERNAL_GOVERNANCE",
+      "live_account_conformance": "UNVERIFIED"
+    }
+  },
+  "request_identities": {
+    "deploy-dev": {
+      "name": "e1-request-deploy-dev",
+      "owner": "SECURITY_ROOT_OWNED",
+      "stage": "INERT",
+      "environment": "dev",
+      "oidc_expectation": {
+        "context": "e1-dev-deploy",
+        "job_workflow_ref": "Kendall04/terragrunt_demo/.github/workflows/e1-dev-deploy.yml",
+        "commit": null,
+        "verification": "UNVERIFIED"
+      }
+    },
+    "emergency-dev": {
+      "name": "e1-request-emergency-dev",
+      "owner": "SECURITY_ROOT_OWNED",
+      "stage": "INERT",
+      "environment": "dev",
+      "oidc_expectation": {
+        "context": "e1-dev-emergency",
+        "job_workflow_ref": "Kendall04/terragrunt_demo/.github/workflows/e1-dev-emergency.yml",
+        "commit": null,
+        "verification": "UNVERIFIED"
+      }
+    },
+    "emergency-prod": {
+      "name": "e1-request-emergency-prod",
+      "owner": "SECURITY_ROOT_OWNED",
+      "stage": "INERT",
+      "environment": "prod",
+      "oidc_expectation": {
+        "context": "e1-prod-emergency",
+        "job_workflow_ref": "Kendall04/terragrunt_demo/.github/workflows/e1-prod-emergency.yml",
+        "commit": null,
+        "verification": "UNVERIFIED"
+      }
+    },
+    "infra-dev": {
+      "name": "e1-request-infra-dev",
+      "owner": "SECURITY_ROOT_OWNED",
+      "stage": "INERT",
+      "environment": "dev",
+      "oidc_expectation": {
+        "context": "e1-infra-dev",
+        "job_workflow_ref": "Kendall04/terragrunt_demo/.github/workflows/e1-infra-dev.yml",
+        "commit": null,
+        "verification": "UNVERIFIED"
+      }
+    },
+    "infra-high-risk-dev": {
+      "name": "e1-request-infra-high-risk-dev",
+      "owner": "SECURITY_ROOT_OWNED",
+      "stage": "INERT",
+      "environment": "dev",
+      "oidc_expectation": {
+        "context": "e1-infra-high-risk-dev",
+        "job_workflow_ref": "Kendall04/terragrunt_demo/.github/workflows/e1-infra-high-risk-dev.yml",
+        "commit": null,
+        "verification": "UNVERIFIED"
+      }
+    },
+    "infra-high-risk-prod": {
+      "name": "e1-request-infra-high-risk-prod",
+      "owner": "SECURITY_ROOT_OWNED",
+      "stage": "INERT",
+      "environment": "prod",
+      "oidc_expectation": {
+        "context": "e1-infra-high-risk-prod",
+        "job_workflow_ref": "Kendall04/terragrunt_demo/.github/workflows/e1-infra-high-risk-prod.yml",
+        "commit": null,
+        "verification": "UNVERIFIED"
+      }
+    },
+    "infra-prod": {
+      "name": "e1-request-infra-prod",
+      "owner": "SECURITY_ROOT_OWNED",
+      "stage": "INERT",
+      "environment": "prod",
+      "oidc_expectation": {
+        "context": "e1-infra-prod",
+        "job_workflow_ref": "Kendall04/terragrunt_demo/.github/workflows/e1-infra-prod.yml",
+        "commit": null,
+        "verification": "UNVERIFIED"
+      }
+    },
+    "plan-dev": {
+      "name": "e1-request-plan-dev",
+      "owner": "SECURITY_ROOT_OWNED",
+      "stage": "INERT",
+      "environment": "dev",
+      "oidc_expectation": {
+        "context": "e1-plan-dev",
+        "job_workflow_ref": "Kendall04/terragrunt_demo/.github/workflows/e1-plan-dev.yml",
+        "commit": null,
+        "verification": "UNVERIFIED"
+      }
+    },
+    "plan-prod": {
+      "name": "e1-request-plan-prod",
+      "owner": "SECURITY_ROOT_OWNED",
+      "stage": "INERT",
+      "environment": "prod",
+      "oidc_expectation": {
+        "context": "e1-plan-prod",
+        "job_workflow_ref": "Kendall04/terragrunt_demo/.github/workflows/e1-plan-prod.yml",
+        "commit": null,
+        "verification": "UNVERIFIED"
+      }
+    },
+    "promote-prod": {
+      "name": "e1-request-promote-prod",
+      "owner": "SECURITY_ROOT_OWNED",
+      "stage": "INERT",
+      "environment": "prod",
+      "oidc_expectation": {
+        "context": "e1-prod-promote",
+        "job_workflow_ref": "Kendall04/terragrunt_demo/.github/workflows/e1-prod-promote.yml",
+        "commit": null,
+        "verification": "UNVERIFIED"
+      }
+    },
+    "release": {
+      "name": "e1-request-release",
+      "owner": "SECURITY_ROOT_OWNED",
+      "stage": "INERT",
+      "environment": "neutral",
+      "oidc_expectation": {
+        "context": "e1-release",
+        "job_workflow_ref": "Kendall04/terragrunt_demo/.github/workflows/e1-release.yml",
+        "commit": null,
+        "verification": "UNVERIFIED"
+      }
+    }
+  },
+  "policies": {
+    "inert_trust": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Deny",
+          "Action": "sts:AssumeRole",
+          "Principal": {
+            "AWS": "${security_admin_principal_arn}"
+          }
+        }
+      ]
+    },
+    "inert_permissions": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Deny",
+          "Action": "*",
+          "Resource": "*"
+        }
+      ]
+    }
+  },
+  "governance": {
+    "owner": "EXTERNAL_GOVERNANCE",
+    "verification": "UNVERIFIED",
+    "include_claim_keys": [
+      "repo",
+      "context",
+      "job_workflow_ref"
+    ],
+    "oidc_cutover": "NOT_IMPLEMENTED"
+  },
+  "interfaces": {
+    "artifact_and_evidence_ids": {
+      "owner": "SECURITY_ROOT_OWNED",
+      "status": "UNAVAILABLE",
+      "transport": "ADMIN_PUBLISHED_ARN_ID_RECORD",
+      "secret_values": false,
+      "security_state_access": false
+    },
+    "kms_key_arns": {
+      "owner": "SECURITY_ROOT_OWNED",
+      "status": "UNAVAILABLE",
+      "transport": "ADMIN_PUBLISHED_ARN_ID_RECORD",
+      "secret_values": false,
+      "security_state_access": false
+    },
+    "qualified_controller_endpoints": {
+      "owner": "SECURITY_ROOT_OWNED",
+      "status": "UNAVAILABLE",
+      "transport": "ADMIN_PUBLISHED_ARN_ID_RECORD",
+      "secret_values": false,
+      "security_state_access": false
+    },
+    "recovery_role_arns": {
+      "owner": "SECURITY_ROOT_OWNED",
+      "status": "UNAVAILABLE",
+      "transport": "ADMIN_PUBLISHED_ARN_ID_RECORD",
+      "secret_values": false,
+      "security_state_access": false
+    },
+    "secret_metadata_arns": {
+      "owner": "SECURITY_ROOT_OWNED",
+      "status": "UNAVAILABLE",
+      "transport": "ADMIN_PUBLISHED_ARN_ID_RECORD",
+      "secret_values": false,
+      "security_state_access": false
+    },
+    "shared_ecr_ids": {
+      "owner": "SECURITY_ROOT_OWNED",
+      "status": "UNAVAILABLE",
+      "transport": "ADMIN_PUBLISHED_ARN_ID_RECORD",
+      "secret_values": false,
+      "security_state_access": false
+    },
+    "workload_role_arns": {
+      "owner": "SECURITY_ROOT_OWNED",
+      "status": "UNAVAILABLE",
+      "transport": "ADMIN_PUBLISHED_ARN_ID_RECORD",
+      "secret_values": false,
+      "security_state_access": false
+    }
+  }
+}

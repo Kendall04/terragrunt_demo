@@ -210,3 +210,17 @@ paths; builds, dependency installs and cloud commands are unnecessary.
 After changes, inspect tracked/untracked status and ensure generated files were
 not accidentally added. [Decisions/backlog](decisions-and-limitations.md) records
 missing coverage and reproducibility work without authorizing it.
+
+## E1 WP2A foundation — offline evidence
+
+The [neutral security-root foundation](../infra/security/README.md) adds a separate
+closed-source runner: `python -I -B scripts/tests/security_root/run.py --report
+<temporary-report-path>`. It uses WP1 hermetic guards and disposable mutation
+fixtures. `python -I -B scripts/tests/security_root/render.py` checks generated
+Terraform/ wrapper wiring without writes; `--write` explicitly regenerates it.
+The unchanged WP1 runner remains `python -I -B scripts/tests/authority/run.py`.
+Neither command accepts E1 or proves live controls. CURRENT authority remains
+positive/PARTIAL characterization; closed synthetic negative fixtures are not
+CURRENT or final target completeness. Run formatting checks without init; missing
+provider validation is an explicit gap, never a reason to contact AWS/download.
+Git Bash selector cleanup is still FAILED/UNRESOLVED and Linux UNVALIDATED.

@@ -5904,6 +5904,222 @@
       "coverage": "Structurally inventoried; not a complete effective-authority evaluation. Changes require review; applicable unmodeled semantics UNKNOWN.",
       "current_owner": "repository source; installed/live identity not verified",
       "necessity": "UNKNOWN"
+    },
+    "scripts/tests/security_root/model.py": {
+      "sha256": "ad4510fdd55d84d88dd2f9ab285c9de2e3995a0943511b3e488a41b0a1bdbc8c",
+      "declarations": [],
+      "signals": {
+        "credential-acquisition": [
+          117
+        ],
+        "role-input": [
+          29,
+          150,
+          163
+        ],
+        "launch-or-mutation": [
+          15,
+          63,
+          97,
+          134,
+          136,
+          143,
+          145,
+          154,
+          164,
+          165,
+          172,
+          193,
+          210,
+          218,
+          219,
+          226,
+          228
+        ],
+        "executable-dependency": [
+          173
+        ],
+        "security-control": [
+          157,
+          158,
+          161,
+          162,
+          163
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/tests/security_root/render.py": {
+      "sha256": "40648c6140048e7d88e5246568cd58e36d892e333888196bb2fb5b0b98e6a150",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          27
+        ],
+        "executable-dependency": [
+          3
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/tests/security_root/run.py": {
+      "sha256": "da3466b83e16e0d770ed2afa1dbef5ee898596bbae6540319708e1701a37da60",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          41
+        ],
+        "executable-dependency": [
+          3,
+          39,
+          42
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/tests/security_root/test_wp2a.py": {
+      "sha256": "b268bc4edccb1c4f4116b82b0f36356afd40da00074aa152322c791a0427362d",
+      "declarations": [],
+      "signals": {
+        "credential-acquisition": [
+          20,
+          24,
+          85,
+          90
+        ],
+        "role-input": [
+          133,
+          158
+        ],
+        "launch-or-mutation": [
+          32,
+          47,
+          58,
+          78,
+          83,
+          84,
+          86,
+          90,
+          91,
+          93,
+          103,
+          121,
+          125,
+          127,
+          146,
+          156,
+          158,
+          164,
+          165,
+          166,
+          168,
+          169,
+          170,
+          181,
+          188,
+          195,
+          202,
+          220,
+          221
+        ],
+        "executable-dependency": [
+          168,
+          170,
+          182
+        ],
+        "security-control": [
+          59,
+          106,
+          107,
+          150,
+          152,
+          164,
+          166,
+          167
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/infra/security/authority.json": {
+      "sha256": "c2078b698eda5f2d5c11c68f7104337523400c6433bb1b8f824caa8c012173bf",
+      "declarations": [],
+      "signals": {
+        "credential-acquisition": [
+          238
+        ],
+        "role-input": [
+          288,
+          309
+        ],
+        "launch-or-mutation": [
+          16,
+          106,
+          118,
+          130,
+          142,
+          154,
+          166,
+          178,
+          190,
+          202,
+          214,
+          226
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/infra/security/main.tf.json": {
+      "sha256": "9c25f0dfdbe919a0dfb3a53321f5445a6b0b21435b0046c13c7f890144b785a7",
+      "declarations": [],
+      "signals": {
+        "role-input": [
+          67
+        ],
+        "launch-or-mutation": [
+          2,
+          6,
+          12,
+          13,
+          39,
+          45
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/infra/security/modules/request_identities/main.tf.json": {
+      "sha256": "6620cfc8c7b348b9932d5c78f163e95d49fb26c4fbf24625085c037810838a3c",
+      "declarations": [],
+      "signals": {
+        "role-input": [
+          39
+        ],
+        "launch-or-mutation": [
+          2,
+          4,
+          5
+        ],
+        "security-control": [
+          17,
+          21,
+          29,
+          33,
+          40
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/live/security/terragrunt.hcl": {
+      "sha256": "38497b84f714e866ee5c5aa49afe54a30b9ade86afdcdb61ffa96ab736800f02",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          3
+        ],
+        "executable-dependency": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged"

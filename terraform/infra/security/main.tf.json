@@ -1,0 +1,75 @@
+{
+  "terraform": {
+    "required_version": ">= 1.10.0, < 2.0.0",
+    "backend": {
+      "s3": {
+        "key": "e1/security/terraform.tfstate",
+        "encrypt": true,
+        "use_lockfile": true
+      }
+    },
+    "required_providers": {
+      "aws": {
+        "source": "hashicorp/aws",
+        "version": "~> 5.50"
+      }
+    }
+  },
+  "variable": {
+    "aws_account_id": {
+      "type": "string",
+      "nullable": false,
+      "validation": {
+        "condition": "${can(regex(\"^[0-9]{12}$\", var.aws_account_id))}",
+        "error_message": "Supply the admin-selected account ID."
+      }
+    },
+    "aws_region": {
+      "type": "string",
+      "nullable": false,
+      "validation": {
+        "condition": "${can(regex(\"^[a-z]{2}(-[a-z]+)+-[0-9]+$\", var.aws_region))}",
+        "error_message": "Supply the admin-selected AWS region."
+      }
+    },
+    "security_admin_principal_arn": {
+      "type": "string",
+      "nullable": false,
+      "validation": {
+        "condition": "${can(regex(\"^arn:aws:iam::[0-9]{12}:(role|user)/[A-Za-z0-9+=,.@_/-]+$\", var.security_admin_principal_arn)) && split(\":\", var.security_admin_principal_arn)[4] == var.aws_account_id}",
+        "error_message": "Supply an existing separately held IAM admin principal in the selected account, never root/session/requester credentials."
+      }
+    }
+  },
+  "provider": {
+    "aws": {
+      "region": "${var.aws_region}",
+      "allowed_account_ids": [
+        "${var.aws_account_id}"
+      ]
+    }
+  },
+  "locals": {
+    "authority": "${jsondecode(templatefile(\"${path.module}/authority.json\", { security_admin_principal_arn = var.security_admin_principal_arn }))}"
+  },
+  "module": {
+    "request_identities": {
+      "source": "./modules/request_identities",
+      "authority": "${local.authority}"
+    }
+  },
+  "output": {
+    "foundation": {
+      "value": {
+        "stage": "${local.authority.stage}",
+        "authority_sha256": "${filesha256(\"${path.module}/authority.json\")}",
+        "target_accepted": false,
+        "request_role_arns": "${module.request_identities.role_arns}"
+      }
+    },
+    "protected_interface_contract": {
+      "value": "${local.authority.interfaces}",
+      "description": "Reserved ARN/ID-only publication interfaces; unavailable until later slices. Do not give consumers remote-state access."
+    }
+  }
+}

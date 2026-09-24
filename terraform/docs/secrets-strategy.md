@@ -90,3 +90,14 @@ metadata-only configuration proves the whole operational path safe.
 
 Least privilege, stricter provenance and environment independence remain targets.
 Do not invent certificate/account architectures or silently accept these gaps.
+
+## TARGET FOUNDATION — separately administered E1 security ownership
+
+[WP2A](../infra/security/README.md) introduces the neutral security-root foundation,
+with one closed target authority/ownership source and eleven inert deny-only
+request identities. Administration is an existing separately authenticated human
+prerequisite, not a role created by ordinary lifecycle. IAM/KMS/secret/storage/
+controller security and backend protections are security-admin owned; except for
+inert request roles, their implementation is deferred. Existing broad IAM remains
+unchanged, so this is transitional repository evidence, not deployed isolation or
+E1 acceptance. GitHub governance and backend controls remain UNVERIFIED.

@@ -1,0 +1,43 @@
+{
+  "terraform": {
+    "required_providers": {
+      "aws": {
+        "source": "hashicorp/aws",
+        "version": "~> 5.50"
+      }
+    }
+  },
+  "variable": {
+    "authority": {
+      "type": "any",
+      "description": "Only the closed security-root authority source may call this module."
+    }
+  },
+  "resource": {
+    "aws_iam_role": {
+      "request": {
+        "for_each": "${var.authority.request_identities}",
+        "name": "${each.value.name}",
+        "assume_role_policy": "${jsonencode(var.authority.policies.inert_trust)}",
+        "description": "WP2A inert request identity; no OIDC acquisition or operational grant.",
+        "tags": {
+          "E1Owner": "${each.value.owner}",
+          "E1Stage": "${each.value.stage}"
+        }
+      }
+    },
+    "aws_iam_role_policy": {
+      "inert": {
+        "for_each": "${var.authority.request_identities}",
+        "name": "wp2a-inert",
+        "role": "${aws_iam_role.request[each.key].id}",
+        "policy": "${jsonencode(var.authority.policies.inert_permissions)}"
+      }
+    }
+  },
+  "output": {
+    "role_arns": {
+      "value": "${{ for key, role in aws_iam_role.request : key => role.arn }}"
+    }
+  }
+}
