@@ -6,7 +6,9 @@ MODELED is issued only for declaration IDs actually consumed by an adapter.
 """
 from pathlib import Path
 import json
+import math
 import re
+from contracts import load_json
 from evaluator import Unsupported, matches
 
 IGNORED_DIRECTORIES = {".git", ".terraform", ".terragrunt-cache", "node_modules", "__pycache__"}
@@ -58,8 +60,10 @@ def declaration_id(path, kind, typ, name):
 def literal_json_outputs(document):
     """A deliberately small, reference-free JSON subset that cannot grant authority."""
     def literal(value):
-        if value is None or isinstance(value, (bool, int, float)):
+        if value is None or isinstance(value, (bool, int)):
             return True
+        if isinstance(value, float):
+            return math.isfinite(value)
         if isinstance(value, str):
             return "${" not in value and "%{" not in value
         if isinstance(value, list):
@@ -92,6 +96,8 @@ class Applicability:
         from source import blocks, attributes
         self.root, self.env = Path(root).resolve(), env
         self.edges, self.entries, self.wrapper_edges = {}, {}, {}
+        self.module_links, self.dependency_links = [], []
+        self.parsed, self.json_documents = parsed, json_documents
         self.targets, self.errors = set(), []
 
         def local_target(parent, value):
@@ -106,6 +112,7 @@ class Applicability:
                     target = local_target(parent, json.loads(attributes(body)["source"]))
                     self.edges.setdefault(parent, set()).add(target)
                     self.targets.add(target)
+                    self.module_links.append((target, parent, typ, rel))
                 except (Unsupported, ValueError, KeyError, TypeError):
                     pass  # The declaration record supplies applicable uncertainty.
         # JSON remains semantically unsupported; read only literal source edges so
@@ -115,11 +122,12 @@ class Applicability:
             modules = document.get("module", {}) if isinstance(document, dict) else {}
             if not isinstance(modules, dict):
                 continue
-            for attrs in modules.values():
+            for label, attrs in modules.items():
                 try:
                     target = local_target(parent, attrs["source"])
                     self.edges.setdefault(parent, set()).add(target)
                     self.targets.add(target)
+                    self.module_links.append((target, parent, label, rel))
                 except (Unsupported, ValueError, KeyError, TypeError):
                     pass
 
@@ -137,7 +145,7 @@ class Applicability:
                 target = local_target(parent, json.loads(sources[0]))
                 self.entries[parent]["targets"].add(target)
                 self.targets.add(target)
-                for kind, _, _, body in children:
+                for kind, label, _, body in children:
                     if kind == "dependency":
                         deps = [json.loads(attributes(blocks(body)[1])["config_path"])]
                     elif kind == "dependencies":
@@ -147,7 +155,10 @@ class Applicability:
                     else:
                         continue
                     for dependency in deps:
-                        self.wrapper_edges.setdefault(parent, set()).add(local_target(parent, dependency))
+                        dependency_target = local_target(parent, dependency)
+                        self.wrapper_edges.setdefault(parent, set()).add(dependency_target)
+                        if kind == "dependency":
+                            self.dependency_links.append((dependency_target, path, label))
             except (Unsupported, ValueError, KeyError, TypeError) as exc:
                 self.errors.append((rel, owner, str(exc)))
 
@@ -165,6 +176,50 @@ class Applicability:
         self.reached = expand(entries, self.edges)
         self.reached_wrappers = wrappers
         self.all_reached = expand(set().union(*(x["targets"] for x in self.entries.values())) if self.entries else set(), self.edges)
+
+    def output_relationships(self, source, outputs):
+        """Find collisions and potential consumers without evaluating expressions.
+
+        An ordinary, unused literal output cannot attach a control. A consumed
+        output still needs a binding consumer to prove its meaning; this small
+        JSON adapter does not substitute it into security expressions. Detect
+        whole-module references too, rather than relying on a selected attribute.
+        """
+        from source import clean
+        path = self.root / source
+        directory = path.parent
+        relationships = []
+        for rel, children in self.parsed.items():
+            if (self.root / rel).parent == directory:
+                for kind, name, _, _ in children:
+                    if kind == "output" and name in outputs:
+                        relationships.append({"kind": "DUPLICATE_OUTPUT", "source": rel, "output": name})
+        for rel, document in self.json_documents.items():
+            if rel != source and (self.root / rel).parent == directory and isinstance(document, dict):
+                other = document.get("output", {})
+                if isinstance(other, dict):
+                    for name in outputs.keys() & other.keys():
+                        relationships.append({"kind": "DUPLICATE_OUTPUT", "source": rel, "output": name})
+        def consumes(text, prefix):
+            # A literal access to another output is demonstrably disjoint. Whole
+            # objects and indexed/dynamic selection cannot establish that fact.
+            pattern = prefix + r"(?![A-Za-z0-9_])(?:\.([A-Za-z_][A-Za-z0-9_]*))?"
+            return any(match[1] is None or match[1] in outputs for match in re.finditer(pattern, clean(text)))
+
+        for target, parent, label, invocation in self.module_links:
+            if target != directory:
+                continue
+            pattern = r"\bmodule\." + re.escape(label)
+            for candidate in sorted(parent.glob("*.tf*")):
+                if consumes(candidate.read_text(), pattern):
+                    relationships.append({"kind": "POTENTIAL_MODULE_OUTPUT_CONSUMER",
+                        "source": candidate.relative_to(self.root).as_posix(), "invocation": invocation})
+        for target, wrapper, label in self.dependency_links:
+            if directory in self.entries.get(target, {}).get("targets", ()) and consumes(
+                    wrapper.read_text(), r"\bdependency\." + re.escape(label) + r"\.outputs"):
+                relationships.append({"kind": "POTENTIAL_DEPENDENCY_OUTPUT_CONSUMER",
+                    "source": wrapper.relative_to(self.root).as_posix()})
+        return relationships
 
     def classify(self, source):
         path = self.root / source
@@ -201,7 +256,7 @@ class Discovery:
                 raise Unsupported("SOURCE_ADMISSION_UNKNOWN symlink: " + rel)
             if path.name.endswith(".tf.json"):
                 try:
-                    document = json.loads(path.read_text())
+                    document = load_json(path.read_text())
                     json_documents[rel] = document
                     inert = literal_json_outputs(document)
                 except (ValueError, TypeError):
@@ -344,11 +399,19 @@ class Discovery:
                 reason="Unresolved wrapper source/dependency: " + error))
         for record in self.records:
             applicable, reason = applicability.classify(record["source"])
-            if applicable and record.get("literal_json_outputs"):
-                # Even a literal output in an invoked directory could override a
-                # dependency's identity output; only inert uninvoked JSON is exempt.
-                record.update(admission="UNSUPPORTED_APPLICABLE", affects=["*"],
-                              reason="Invoked JSON output may replace a binding dependency; no merge interpreter")
+            if record.get("literal_json_outputs"):
+                source = record["source"]
+                filename = Path(source).name
+                override = filename == "override.tf.json" or filename.endswith("_override.tf.json")
+                relationships = applicability.output_relationships(source, json_documents[source]["output"])
+                record["construct_kind"] = "LITERAL_JSON_OUTPUT"
+                record["consumer_relationships"] = relationships
+                if override or applicable and relationships:
+                    record.update(admission="UNSUPPORTED_APPLICABLE", affects=["*"],
+                        reason="JSON output override/collision or potential consumer requires binding admission")
+                else:
+                    record["reason"] = "Literal JSON outputs have no override, collision, or discovered consumer; module reachability alone adds no control"
+                record["security_relevance"] = "UNRESOLVED_CONSUMER_OR_OVERRIDE" if override or applicable and relationships else "INERT_LITERAL_OUTPUT"
             record["applicability"] = {"status": "APPLICABLE" if applicable else "NOT_APPLICABLE",
                                        "environment": env, "reason": reason}
             record["source_support"] = record["admission"]

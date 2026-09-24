@@ -115,7 +115,7 @@ class V4PolicyKindTests(unittest.TestCase):
             self.assertEqual(result.decision, D.ALLOW)
 
     def test_nonmatching_and_reordered_statements_cannot_hide_admission_failure(self):
-        malformed = policy(Action="sqs:DeleteMessage", Condition={"Bool": {"k": ["true", "false"]}})["Statement"][0]
+        malformed = policy(Action="sqs:DeleteMessage", Condition={"Bool": {"fixture:k": ["true", "false"]}})["Statement"][0]
         for effect in ("Allow", "Deny"):
             for statements in itertools.permutations([policy(effect)["Statement"][0], malformed]):
                 self.assert_admission_unknown(evaluate(REQUEST, identities=[{"Statement": list(statements)}]))

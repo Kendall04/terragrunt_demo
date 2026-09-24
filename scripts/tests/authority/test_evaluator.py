@@ -39,8 +39,8 @@ class EvaluatorTests(unittest.TestCase):
 
     def test_unsupported_constructs_visible(self):
         cases = [{"NotAction": "s3:PutObject"}, {"NotResource": "*"}, {"NotPrincipal": {"AWS": "*"}},
-                 {"Resource": "arn:aws:s3:::${aws:username}/*"}, {"Condition": {"StringNotEquals": {"k": "v"}}},
-                 {"Condition": {"NumericEquals": {"k": "1"}}}, {"Condition": {"StringEqualsIfExistsUnknown": {"k": "v"}}}]
+                 {"Resource": "arn:aws:s3:::${aws:username}/*"}, {"Condition": {"StringNotEquals": {"fixture:k": "v"}}},
+                 {"Condition": {"NumericEquals": {"fixture:k": "1"}}}, {"Condition": {"StringEqualsIfExistsUnknown": {"fixture:k": "v"}}}]
         for extra in cases:
             with self.subTest(extra=extra):
                 st = policy()["Statement"][0] | extra
@@ -61,19 +61,19 @@ class EvaluatorTests(unittest.TestCase):
                                    ("ForAllValues:ArnEquals", True), ("ForAnyValue:ArnEquals", False)):
             value = "true" if operator == "Bool" else "arn:aws:s3:::bucket/key" if "Arn" in operator else "v"
             with self.subTest(operator=operator):
-                self.assertEqual(condition({operator: {"k": value}}, {}), expected)
-        self.assertTrue(condition({"Null": {"k": "true"}}, {}))
-        self.assertFalse(condition({"Null": {"k": "false"}}, {}))
-        self.assertFalse(condition({"ForAllValues:ArnEquals": {"k": "arn:aws:s3:::bucket/key"}, "Null": {"k": "false"}}, {}))
+                self.assertEqual(condition({operator: {"fixture:k": value}}, {}), expected)
+        self.assertTrue(condition({"Null": {"fixture:k": "true"}}, {}))
+        self.assertFalse(condition({"Null": {"fixture:k": "false"}}, {}))
+        self.assertFalse(condition({"ForAllValues:ArnEquals": {"fixture:k": "arn:aws:s3:::bucket/key"}, "Null": {"fixture:k": "false"}}, {}))
 
     def test_condition_sets_and_types(self):
-        self.assertTrue(condition({"ForAnyValue:StringLike": {"k": "dev*"}}, {"k": ["prod", "dev1"]}))
-        self.assertFalse(condition({"ForAllValues:StringEquals": {"k": "dev"}}, {"k": ["dev", "prod"]}))
-        self.assertTrue(condition({"ArnLike": {"k": "arn:aws:s3:::dev/*"}}, {"k": REQUEST["resource"]}))
-        self.assertTrue(condition({"Bool": {"k": "false"}}, {"k": "false"}))
-        for test, context in (({"StringEquals": {"k": "v"}}, {"k": ["v", "w"]}),
-                              ({"Bool": {"k": "yes"}}, {"k": "yes"}),
-                              ({"NullIfExists": {"k": "true"}}, {})):
+        self.assertTrue(condition({"ForAnyValue:StringLike": {"fixture:k": "dev*"}}, {"fixture:k": ["prod", "dev1"]}))
+        self.assertFalse(condition({"ForAllValues:StringEquals": {"fixture:k": "dev"}}, {"fixture:k": ["dev", "prod"]}))
+        self.assertTrue(condition({"ArnLike": {"fixture:k": "arn:aws:s3:::dev/*"}}, {"fixture:k": REQUEST["resource"]}))
+        self.assertTrue(condition({"Bool": {"fixture:k": "false"}}, {"fixture:k": "false"}))
+        for test, context in (({"StringEquals": {"fixture:k": "v"}}, {"fixture:k": ["v", "w"]}),
+                              ({"Bool": {"fixture:k": "yes"}}, {"fixture:k": "yes"}),
+                              ({"NullIfExists": {"fixture:k": "true"}}, {})):
             with self.assertRaises(Unsupported):
                 condition(test, context)
 

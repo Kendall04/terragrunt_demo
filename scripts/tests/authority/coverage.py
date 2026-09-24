@@ -67,7 +67,7 @@ class ClosedUniverse:
                 else:
                     raise Unsupported("unmodeled fixture source")
             except (Unsupported, ValueError, TypeError) as exc:
-                self.unknown.append({"source": rel, "reason": str(exc), "scope": "GLOBAL_CONTROL"})
+                self.unknown.append({"source": rel, "reason": str(exc), "scope": "UNKNOWN_GLOBAL_CONTROL"})
             self.sources[rel] = hashlib.sha256(raw.encode()).hexdigest()
         # The fixture grammar gives a route exclusive ownership of its policy
         # inputs. Shared controls must be separate sources with explicit subjects;
@@ -76,7 +76,7 @@ class ClosedUniverse:
         control_ids = set()
         for rel, control in controls:
             try:
-                if not isinstance(control, dict) or set(control) != {"id", "subjects", "policies"}:
+                if not isinstance(control, dict) or not {"id", "subjects"} <= set(control):
                     raise Unsupported("unmodeled control shape")
                 if not isinstance(control["id"], str) or not control["id"] or control["id"] in control_ids:
                     raise Unsupported("ambiguous control identity")
@@ -87,7 +87,7 @@ class ClosedUniverse:
                 # and become a global control over unrelated callers.
                 admitted_controls.append((rel, control))
             except (Unsupported, ValueError, TypeError, KeyError) as exc:
-                self.unknown.append({"source": rel, "reason": str(exc), "scope": "GLOBAL_CONTROL"})
+                self.unknown.append({"source": rel, "reason": str(exc), "scope": "UNKNOWN_GLOBAL_CONTROL"})
         seen, consumed_controls = set(), set()
         for rel, route in routes:
             try:
@@ -98,16 +98,24 @@ class ClosedUniverse:
                 seen.add(route["id"])
                 self.subject_set(route["subjects"])
                 subject_binding = self.bind_subjects(route["subjects"], route["request"])
-                if route["mechanism"] not in self.mechanisms or route["target"] not in self.outcomes:
-                    raise Unsupported("unadmitted mechanism/subject/outcome")
+                if route["target"] not in self.outcomes:
+                    raise Unsupported("unadmitted outcome")
                 if not isinstance(route["prerequisites"], list) or not set(route["prerequisites"]) <= set(self.seeds + self.outcomes):
                     raise Unsupported("unadmitted prerequisite")
+                # Identity, selectors and ownership have their own admission.
+                # An unknown mechanism cannot discard them: in this closed
+                # language a route owns only its alternative, never another
+                # route's policy or a shared control. Unknown shared controls
+                # must be represented by a control source.
+                mechanism_admitted = isinstance(route["mechanism"], str) and route["mechanism"] in self.mechanisms
                 applicable = [(p, c) for p, c in admitted_controls if set(c["subjects"]) & set(route["subjects"])]
                 consumed_controls.update(c["id"] for _, c in applicable)
                 try:
                     self.policy_inputs(route["policies"])
                     policies = dict(route["policies"])
                     for _, control in applicable:
+                        if set(control) != {"id", "subjects", "policies"}:
+                            raise Unsupported("unmodeled subject control shape")
                         self.policy_inputs(control["policies"])
                         for kind, docs in control["policies"].items():
                             if kind in policies:
@@ -118,30 +126,49 @@ class ClosedUniverse:
                                 policies[kind] = docs
                     result = evaluate(route["request"], **policies)
                 except (Unsupported, ValueError, TypeError, KeyError) as exc:
-                    result = Result(Decision.UNKNOWN, ("SEMANTIC_ADMISSION_UNKNOWN " + str(exc),))
+                    result = Result(Decision.UNKNOWN, ("SEMANTIC_ADMISSION_UNKNOWN " + str(exc),),
+                                    ({"evidence_validity": {"ADMISSION": "UNKNOWN", "IDENTITY_FACTS": "NOT_EVALUATED"}},))
+                primitive_unknown = result.decision == Decision.UNKNOWN
                 if applicable and result.decision == Decision.UNKNOWN:
                     result = Result(Decision.UNKNOWN, ("UNKNOWN_APPLICABLE_CONTROL",) + result.reasons, result.provenance)
+                if not mechanism_admitted:
+                    result = Result(Decision.UNKNOWN, ("UNKNOWN_ROUTE_ALTERNATIVE unadmitted mechanism",) + result.reasons,
+                                    result.provenance)
                 provenance = {"source": rel, "source_hash": self.sources[rel], "route": route["id"],
                               "subjects": route["subjects"], "subject_binding": subject_binding,
+                              "mechanism_admission": "SUPPORTED" if mechanism_admitted else "UNKNOWN",
+                              "evidence_validity": {"SOURCE_BINDING": "SUPPORTED", "APPLICABILITY": "SUPPORTED"},
                               "controls": [{"source": p, "id": c["id"],
                               "source_hash": self.sources[p]} for p, c in applicable]}
+                provenance["applicable_unknown"] = []
+                if primitive_unknown:
+                    provenance["applicable_unknown"].append({
+                        "scope": "UNKNOWN_SUBJECT_CONTROL" if applicable else "UNKNOWN_ROUTE_ALTERNATIVE",
+                        "route": route["id"], "target": route["target"], "subjects": route["subjects"],
+                        "reason": "Unadmitted policy inputs on this route"})
+                if not mechanism_admitted:
+                    provenance["evidence_validity"]["ADMISSION"] = "UNKNOWN"
+                    provenance["applicable_unknown"].append({"scope": "UNKNOWN_ROUTE_ALTERNATIVE",
+                        "route": route["id"], "target": route["target"], "subjects": route["subjects"],
+                        "reason": "Unadmitted mechanism cannot establish this alternative"})
                 result = Result(result.decision, result.reasons, result.provenance + (provenance,))
                 if result.decision == Decision.UNKNOWN:
                     self.unknown.append({"source": rel, "route": route["id"], "target": route["target"],
-                                         "subjects": route["subjects"], "scope": "ROUTE_CONTROL" if applicable else "ALTERNATIVE_ROUTE",
+                                         "subjects": route["subjects"],
+                                         "scope": "UNKNOWN_SUBJECT_CONTROL" if primitive_unknown and applicable else "UNKNOWN_ROUTE_ALTERNATIVE",
                                          "reason": "Unadmitted primitive: " + str(result.reasons)})
                 self.rules.append(Rule(route["target"], tuple(route["prerequisites"]), (result,),
                                        route["id"], route["mechanism"]))
             except (Unsupported, ValueError, TypeError, KeyError) as exc:
-                self.unknown.append({"source": rel, "reason": str(exc), "scope": "GLOBAL_CONTROL"})
+                self.unknown.append({"source": rel, "reason": str(exc), "scope": "UNKNOWN_GLOBAL_CONTROL"})
         # A control with no consumer cannot certify its unsupported policy away.
         # It need not erase unrelated positive routes, but closure is not proven.
         for rel, control in admitted_controls:
             if control["id"] not in consumed_controls:
-                self.unknown.append({"source": rel, "scope": "UNCONSUMED_CONTROL",
+                self.unknown.append({"source": rel, "scope": "UNKNOWN_COMPLETENESS_ONLY",
                                      "reason": "Control has no admitted request against which to establish semantic closure"})
         if not self.subjects or not self.mechanisms or not self.outcomes:
-            self.unknown.append({"source": "universe.json", "reason": "Missing universe declaration", "scope": "GLOBAL_CONTROL"})
+            self.unknown.append({"source": "universe.json", "reason": "Missing universe declaration", "scope": "UNKNOWN_GLOBAL_CONTROL"})
         self.snapshot = fingerprint({"sources": self.sources, "unknown": self.unknown,
                                      "subjects": self.subjects, "subject_bindings": self.subject_bindings,
                                      "mechanisms": self.mechanisms})
@@ -191,11 +218,24 @@ class ClosedUniverse:
         witnesses. A malformed alternative route cannot invent such a control
         in this closed fixture language. Repository sources have no such promise.
         """
-        return [x for x in self.unknown if x["scope"] == "GLOBAL_CONTROL"]
+        return [x for x in self.unknown if x["scope"] == "UNKNOWN_GLOBAL_CONTROL"]
 
     def certificate(self, outcome):
         if self.unknown or outcome not in self.outcomes:
             raise Unsupported("Completeness unavailable: applicable UNKNOWN or undeclared outcome")
+        # A definitive result does not substitute for input validity. Every
+        # source primitive must independently carry positive admission/fact
+        # evidence, in addition to route binding and applicability admission.
+        for rule in self.rules:
+            for check in rule.checks:
+                axes = {}
+                for item in check.provenance:
+                    for axis, status in item.get("evidence_validity", {}).items():
+                        if axes.get(axis) != "UNKNOWN":
+                            axes[axis] = status
+                if check.decision == Decision.UNKNOWN or any(axes.get(axis) != "SUPPORTED" for axis in
+                        ("ADMISSION", "IDENTITY_FACTS", "SOURCE_BINDING", "APPLICABILITY")):
+                    raise Unsupported("Completeness unavailable: primitive validity dimensions are not supported")
         return Certificate(self.snapshot, graph_fingerprint(self.seeds, self.rules), outcome,
                            tuple(self.subjects), tuple(self.mechanisms), tuple(r.meaning for r in self.rules))
 
@@ -207,5 +247,9 @@ class ClosedUniverse:
                 graph_fingerprint(seeds, rules) == graph_fingerprint(fresh.seeds, fresh.rules))
 
     def validates(self, certificate, outcome, seeds, rules):
-        return (not self.unknown and isinstance(certificate, Certificate) and self.current(seeds, rules) and
-                certificate == self.certificate(outcome))
+        if self.unknown or not isinstance(certificate, Certificate) or not self.current(seeds, rules):
+            return False
+        try:
+            return certificate == self.certificate(outcome)
+        except Unsupported:
+            return False

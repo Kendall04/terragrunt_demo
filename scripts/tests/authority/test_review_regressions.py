@@ -31,45 +31,45 @@ class SemanticRegressions(unittest.TestCase):
 
     def test_arn_component_boundaries(self):
         for op in ("ArnEquals", "ArnLike"):
-            cond = {op: {"k": "arn:aws:s3:*:111122223333:*"}}
-            self.assertFalse(condition(cond, {"k": "arn:aws:s3:::bucket/x:111122223333:payload"}))
-            self.assertTrue(condition(cond, {"k": "arn:aws:s3:us-east-1:111122223333:accesspoint/name"}))
+            cond = {op: {"fixture:k": "arn:aws:s3:*:111122223333:*"}}
+            self.assertFalse(condition(cond, {"fixture:k": "arn:aws:s3:::bucket/x:111122223333:payload"}))
+            self.assertTrue(condition(cond, {"fixture:k": "arn:aws:s3:us-east-1:111122223333:accesspoint/name"}))
             with self.assertRaises(Unsupported):
-                condition(cond, {"k": "not-an-arn"})
+                condition(cond, {"fixture:k": "not-an-arn"})
 
     def test_context_keys_case_insensitive_values_preserved(self):
         for op in ("StringEquals", "StringLike"):
-            self.assertTrue(condition({op: {"AWS:SourceArn": "Value"}}, {"aws:sourcearn": "Value"}))
-            self.assertFalse(condition({op: {"AWS:SourceArn": "Value"}}, {"aws:sourcearn": "value"}))
+            self.assertTrue(condition({op: {"FIXTURE:K": "Value"}}, {"fixture:k": "Value"}))
+            self.assertFalse(condition({op: {"FIXTURE:K": "Value"}}, {"fixture:k": "value"}))
         with self.assertRaises(Unsupported):
-            condition({"StringEquals": {"k": "a"}}, {"k": "a", "K": "b"})
+            condition({"StringEquals": {"fixture:k": "a"}}, {"fixture:k": "a", "FIXTURE:K": "b"})
 
     def test_missing_empty_sets_null_and_ifexists(self):
-        for context in ({}, {"k": None}, {"k": []}, {"k": ""}, {"k": [""]}):
+        for context in ({}, {"fixture:k": None}, {"fixture:k": []}, {"fixture:k": ""}, {"fixture:k": [""]}):
             for op in ("StringEquals", "StringLike", "ArnEquals", "ArnLike", "Bool"):
                 value = "true" if op == "Bool" else "arn:aws:s3:::bucket/key" if op.startswith("Arn") else "v"
                 with self.subTest(context=context, op=op):
-                    self.assertTrue(condition({"ForAllValues:" + op: {"k": value}}, context))
-                    self.assertFalse(condition({"ForAnyValue:" + op: {"k": value}}, context))
-                    self.assertTrue(condition({"Null": {"k": "true"}}, context))
-                    self.assertFalse(condition({"Null": {"k": "false"}}, context))
+                    self.assertTrue(condition({"ForAllValues:" + op: {"fixture:k": value}}, context))
+                    self.assertFalse(condition({"ForAnyValue:" + op: {"fixture:k": value}}, context))
+                    self.assertTrue(condition({"Null": {"fixture:k": "true"}}, context))
+                    self.assertFalse(condition({"Null": {"fixture:k": "false"}}, context))
         for op in ("StringEqualsIfExists", "ArnEqualsIfExists", "BoolIfExists"):
             value = "true" if op.startswith("Bool") else "arn:aws:s3:::bucket/key" if op.startswith("Arn") else "v"
-            self.assertTrue(condition({op: {"k": value}}, {}))
-            self.assertTrue(condition({op: {"k": value}}, {"k": value}))
+            self.assertTrue(condition({op: {"fixture:k": value}}, {}))
+            self.assertTrue(condition({op: {"fixture:k": value}}, {"fixture:k": value}))
             other = "false" if op.startswith("Bool") else "arn:aws:s3:::other/key" if op.startswith("Arn") else "other"
-            self.assertFalse(condition({op: {"k": value}}, {"k": other}))
+            self.assertFalse(condition({op: {"fixture:k": value}}, {"fixture:k": other}))
         for op in ("NullIfExists", "ForAllValues:Null", "ForAnyValue:StringEqualsIfExists", "ForAllValues:ArnLikeIfExists"):
             with self.assertRaises(Unsupported):
-                condition({op: {"k": "true"}}, {})
+                condition({op: {"fixture:k": "true"}}, {})
 
     def test_multivalued_sets_positive_and_negative(self):
-        self.assertTrue(condition({"ForAllValues:StringEquals": {"k": ["a", "b"]}}, {"k": ["a", "b"]}))
-        self.assertFalse(condition({"ForAllValues:StringEquals": {"k": "a"}}, {"k": ["a", "b"]}))
-        self.assertTrue(condition({"ForAnyValue:StringEquals": {"k": "a"}}, {"k": ["a", "b"]}))
-        self.assertFalse(condition({"ForAnyValue:StringEquals": {"k": "c"}}, {"k": ["a", "b"]}))
+        self.assertTrue(condition({"ForAllValues:StringEquals": {"fixture:k": ["a", "b"]}}, {"fixture:k": ["a", "b"]}))
+        self.assertFalse(condition({"ForAllValues:StringEquals": {"fixture:k": "a"}}, {"fixture:k": ["a", "b"]}))
+        self.assertTrue(condition({"ForAnyValue:StringEquals": {"fixture:k": "a"}}, {"fixture:k": ["a", "b"]}))
+        self.assertFalse(condition({"ForAnyValue:StringEquals": {"fixture:k": "c"}}, {"fixture:k": ["a", "b"]}))
         with self.assertRaises(Unsupported):
-            condition({"ForAllValues:StringEquals": {"k": "a"}}, {"k": ["", "a"]})
+            condition({"ForAllValues:StringEquals": {"fixture:k": "a"}}, {"fixture:k": ["", "a"]})
 
     def test_unsupported_principals_never_exact_allow_or_nonmatch_deny(self):
         role = "arn:aws:iam::111122223333:role/caller"
@@ -81,7 +81,7 @@ class SemanticRegressions(unittest.TestCase):
                     request = {"principal": caller, "role_arn": role, "action": "sts:AssumeRole",
                                "resource": role, "resource_account": "111122223333"}
                     doc = {"Statement": [{"Effect": "Allow", "Action": "sts:AssumeRole", "Resource": role,
-                                          "Principal": principal, "Condition": {"StringEqualsIfExists": {"k": "v"}}}]}
+                                          "Principal": principal, "Condition": {"StringEqualsIfExists": {"fixture:k": "v"}}}]}
                     with self.subTest(principal=principal, kind=kind, caller=caller):
                         self.assertEqual(evaluate(request, **{kind: [doc]}).decision, D.UNKNOWN)
 

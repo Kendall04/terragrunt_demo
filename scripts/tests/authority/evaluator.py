@@ -59,24 +59,31 @@ def normalized_context(context):
     return result
 
 
-def arn_matches(pattern, value):
-    # The resource component may itself contain colons; the first five may not.
-    if not isinstance(pattern, str) or not isinstance(value, str):
+def admit_condition_arn(operand):
+    """CONDITION_ARN_OPERAND_ADMISSION: patterns are compared componentwise.
+
+    This intentionally does not admit policy Resource ARNs or concrete resources.
+    """
+    if not isinstance(operand, str):
         raise Unsupported("invalid ARN condition operand")
-    parts, actual = pattern.split(":", 5), value.split(":", 5)
-    for operand, components in ((pattern, parts), (value, actual)):
-        if (len(components) != 6 or components[0] != "arn" or
-                not components[1] or not components[2] or not components[5] or
-                re.search(r"\s", operand) or "${" in operand):
-            raise Unsupported("invalid ARN condition operand")
-        if (not re.fullmatch(r"[a-z0-9*?-]+", components[1]) or
-                not re.fullmatch(r"[a-z0-9*?-]+", components[2]) or
-                not re.fullmatch(r"[a-z0-9*?-]*", components[3]) or
-                (components[4] and not re.fullmatch(r"[0-9*?]+", components[4]) and not
-                 (components[1:5] == ["aws", "iam", "", "aws"] and components[5].startswith("policy/")))):
-            raise Unsupported("invalid ARN component")
-        if components[4].isdigit() and len(components[4]) != 12:
-            raise Unsupported("invalid ARN account length")
+    components = operand.split(":", 5)
+    if (len(components) != 6 or components[0] != "arn" or
+            not components[1] or not components[2] or not components[5] or
+            re.search(r"\s", operand) or "${" in operand):
+        raise Unsupported("invalid ARN condition operand")
+    if (not re.fullmatch(r"[a-z0-9*?-]+", components[1]) or
+            not re.fullmatch(r"[a-z0-9*?-]+", components[2]) or
+            not re.fullmatch(r"[a-z0-9*?-]*", components[3]) or
+            (components[4] and not re.fullmatch(r"[0-9*?]+", components[4]) and not
+             (components[1:5] == ["aws", "iam", "", "aws"] and components[5].startswith("policy/")))):
+        raise Unsupported("invalid ARN component")
+    if components[4].isdigit() and len(components[4]) != 12:
+        raise Unsupported("invalid ARN account length")
+    return components
+
+
+def arn_matches(pattern, value):
+    parts, actual = admit_condition_arn(pattern), admit_condition_arn(value)
     return all(matches(p, v) for p, v in zip(parts, actual))
 
 
@@ -131,7 +138,121 @@ def request_identity(request):
 ACCOUNT_SERVICES = {"iam", "sts", "sqs", "sns", "ecs", "ecr", "lambda", "kms",
                     "ssm", "secretsmanager", "events", "logs", "elasticloadbalancing",
                     "ec2", "dynamodb"}
-PRINCIPAL_CONTEXT = {"aws:principalarn", "aws:principalaccount", "aws:principaltype"}
+PRINCIPAL_CONTEXT = {"aws:principalarn", "aws:principalaccount", "aws:principaltype",
+                     "aws:principalisawsservice"}
+
+# This is a closed registry, not a fallback to caller dictionaries. Fixture-only
+# context is explicitly namespaced and never represents an AWS-derived fact.
+# Request context describes the modeled request, not verified external governance.
+CONTEXT_KEYS = {
+    **{key: ("DERIVED_AUTHORITATIVE", "identity") for key in PRINCIPAL_CONTEXT},
+    "aws:resourceaccount": ("DERIVED_AUTHORITATIVE", "resource"),
+    "s3:resourceaccount": ("DERIVED_AUTHORITATIVE", "resource"),
+    "aws:sourcearn": ("SUPPORTED_REQUEST_CONTEXT_WITH_VALIDATION", "arn"),
+    "aws:securetransport": ("SUPPORTED_REQUEST_CONTEXT_WITH_VALIDATION", "bool"),
+    "iam:passedtoservice": ("SUPPORTED_REQUEST_CONTEXT_WITH_VALIDATION", "service"),
+    "iam:policyarn": ("SUPPORTED_REQUEST_CONTEXT_WITH_VALIDATION", "arn"),
+    "s3:prefix": ("SUPPORTED_REQUEST_CONTEXT_WITH_VALIDATION", "scalar"),
+    "token.actions.githubusercontent.com:aud": ("SUPPORTED_REQUEST_CONTEXT_WITH_VALIDATION", "oidc"),
+    "token.actions.githubusercontent.com:sub": ("SUPPORTED_REQUEST_CONTEXT_WITH_VALIDATION", "oidc"),
+    "fixture:k": ("SUPPORTED_CALLER_CONTEXT", "fixture"),
+}
+
+
+def context_classification(key):
+    return CONTEXT_KEYS.get(key.lower(), ("UNSUPPORTED", "unmodeled"))[0]
+
+
+def admit_resource_arn(operand):
+    """POLICY_RESOURCE_ARN_ADMISSION for the explicit WP1 ARN subset.
+
+    Service and partition are literal; account/region/resource patterns are
+    admitted only in known component layouts. This does not claim universal
+    service-specific resource validation. Other layouts fail UNKNOWN.
+    """
+    if operand == "*":
+        return {"grammar": "POLICY_RESOURCE_ARN_ADMISSION", "shape": "ALL_RESOURCES"}
+    if not isinstance(operand, str):
+        raise Unsupported("POLICY_RESOURCE_ARN_ADMISSION invalid value")
+    parts = operand.split(":", 5)
+    if (len(parts) != 6 or parts[0] != "arn" or parts[1] != "aws" or
+            not re.fullmatch(r"[a-z0-9-]+", parts[2]) or not parts[5] or
+            re.search(r"\s", operand) or "${" in operand):
+        raise Unsupported("POLICY_RESOURCE_ARN_ADMISSION malformed/unsupported components")
+    _, _, service, region, account, name = parts
+    if service == "s3":
+        if region or account or not re.fullmatch(r"[a-z0-9*?][a-z0-9.*?-]*(?:/[^\s]+)?", name):
+            raise Unsupported("POLICY_RESOURCE_ARN_ADMISSION unsupported S3 layout")
+    elif service in ACCOUNT_SERVICES:
+        if service in ("iam", "sts"):
+            if region:
+                raise Unsupported("POLICY_RESOURCE_ARN_ADMISSION global-service region")
+        elif (not re.fullmatch(r"[a-z0-9*?-]+", region) or
+              not ("*" in region or "?" in region or re.fullmatch(r"[a-z]{2}(?:-[a-z]+)+-[0-9]+", region))):
+            raise Unsupported("POLICY_RESOURCE_ARN_ADMISSION regional component")
+        managed = service == "iam" and account == "aws" and name.startswith("policy/") and len(name) > 7
+        if not managed and (not re.fullmatch(r"[0-9*?]+", account) or
+                            (not any(x in account for x in "*?") and len(account) != 12)):
+            raise Unsupported("POLICY_RESOURCE_ARN_ADMISSION account component")
+    else:
+        raise Unsupported("POLICY_RESOURCE_ARN_ADMISSION unmodeled resource service/layout")
+    return {"grammar": "POLICY_RESOURCE_ARN_ADMISSION", "shape": service,
+            "partition": "aws", "region": region, "account": account, "resource": name}
+
+
+def normalize_resource_arn(resource):
+    """RUNTIME_RESOURCE_ARN_NORMALIZATION: concrete, known account layouts only.
+
+    Conditions have a separate operand grammar and policy Resource patterns have
+    a separate admission grammar. Concrete request identity never admits globs.
+    """
+    parts = resource.split(":", 5)
+    if (len(parts) != 6 or parts[0] != "arn" or parts[1] != "aws" or
+            not re.fullmatch(r"[a-z0-9-]+", parts[2]) or not parts[5] or
+            re.search(r"\s", resource) or any(x in resource for x in ("*", "?", "${"))):
+        raise Unsupported("INVALID_RESOURCE unsupported concrete ARN")
+    _, _, service, region, account, name = parts
+    if service == "s3" and not region and not account:
+        if not re.fullmatch(r"[a-z0-9][a-z0-9.-]*(?:/[^\s]+)?", name):
+            raise Unsupported("INVALID_RESOURCE unsupported S3 resource shape")
+    elif service in ACCOUNT_SERVICES:
+        if not re.fullmatch(r"[0-9]{12}", account):
+            raise Unsupported("INVALID_RESOURCE invalid encoded account")
+        if service in ("iam", "sts"):
+            if region:
+                raise Unsupported("INVALID_RESOURCE invalid global-service region")
+        elif not re.fullmatch(r"[a-z]{2}(?:-[a-z]+)+-[0-9]+", region):
+            raise Unsupported("INVALID_RESOURCE unsupported regional ARN")
+    else:
+        raise Unsupported("INVALID_RESOURCE account semantics unsupported for " + service)
+    return service, account
+
+
+def validate_request_context(key, value, identity=None):
+    classification, validator = CONTEXT_KEYS.get(key, ("UNSUPPORTED", "unmodeled"))
+    if classification == "UNSUPPORTED":
+        raise Unsupported("unsupported condition context key " + key)
+    if classification != "SUPPORTED_REQUEST_CONTEXT_WITH_VALIDATION":
+        return
+    if validator == "oidc" and (not identity or identity.category != "oidc" or
+            not identity.principal.endswith(":oidc-provider/token.actions.githubusercontent.com")):
+        raise Unsupported("unbound OIDC provider context " + key)
+    if value is None:
+        return  # Known missing request context retains Null/IfExists semantics.
+    values = many(value)
+    if len(values) != 1 or not isinstance(values[0], str):
+        raise Unsupported("invalid scalar request context " + key)
+    value = values[0]
+    if validator != "scalar" and not value:
+        raise Unsupported("empty request context " + key)
+    if validator == "bool" and value not in ("true", "false"):
+        raise Unsupported("invalid Boolean request context " + key)
+    if validator == "arn":
+        parts = admit_condition_arn(value)
+        if any(x in value for x in ("*", "?")) or parts[1] != "aws":
+            raise Unsupported("request context ARN must be concrete " + key)
+    if validator == "service" and not re.fullmatch(r"[a-z0-9.-]+\.amazonaws\.com", value):
+        raise Unsupported("invalid service request context " + key)
 
 
 def normalized_request(request, identity_required=False, resource_policy=False):
@@ -161,7 +282,7 @@ def normalized_request(request, identity_required=False, resource_policy=False):
     if identity_required or "principal" in request or "role_arn" in request:
         identity = request_identity(request)
         if identity.category in ("role", "session"):
-            derived = {"aws:principalaccount": identity.account}
+            derived = {"aws:principalaccount": identity.account, "aws:principalisawsservice": "false"}
             if identity.category == "session":
                 derived["aws:principaltype"] = "AssumedRole"
             else:
@@ -175,6 +296,9 @@ def normalized_request(request, identity_required=False, resource_policy=False):
             # Service and web-identity request context is deliberately smaller.
             # WP1 does not map provider principals to IAM role global facts.
             unavailable.update(PRINCIPAL_CONTEXT)
+            if identity.category == "service":
+                derived["aws:principalisawsservice"] = "true"
+                unavailable.remove("aws:principalisawsservice")
     else:
         unavailable.update(PRINCIPAL_CONTEXT)
     for key in PRINCIPAL_CONTEXT:
@@ -182,27 +306,13 @@ def normalized_request(request, identity_required=False, resource_policy=False):
             if key not in derived or context[key] not in (derived[key], [derived[key]]):
                 raise Unsupported("INVALID_IDENTITY contradictory/unresolved " + key)
     context.update(derived)
+    for key, value in context.items():
+        if key in CONTEXT_KEYS:
+            validate_request_context(key, value, identity)
 
     account, service = "", ""
     if resource.startswith("arn:"):
-        arn_matches(resource, resource)
-        _, partition, service, region, encoded_account, name = resource.split(":", 5)
-        if partition != "aws" or "*" in resource or "?" in resource:
-            raise Unsupported("INVALID_RESOURCE unsupported concrete ARN")
-        if service in ACCOUNT_SERVICES:
-            if not re.fullmatch(r"[0-9]{12}", encoded_account):
-                raise Unsupported("INVALID_RESOURCE invalid encoded account")
-            if service in ("iam", "sts"):
-                if region:
-                    raise Unsupported("INVALID_RESOURCE invalid global-service region")
-            elif not re.fullmatch(r"[a-z]{2}(?:-[a-z]+)+-[0-9]+", region):
-                raise Unsupported("INVALID_RESOURCE unsupported regional ARN")
-            account = encoded_account
-        elif service == "s3" and not region and not encoded_account:
-            if not re.fullmatch(r"[a-z0-9][a-z0-9.-]*(?:/[^\s]+)?", name):
-                raise Unsupported("INVALID_RESOURCE unsupported S3 resource shape")
-        elif resource_policy:
-            raise Unsupported("INVALID_RESOURCE account semantics unsupported for " + service)
+        service, account = normalize_resource_arn(resource)
     elif resource_policy:
         raise Unsupported("INVALID_RESOURCE resource-policy request requires concrete ARN")
     supplied = request.get("resource_account")
@@ -232,6 +342,7 @@ def normalized_request(request, identity_required=False, resource_policy=False):
              "principal_context": derived, "unavailable_principal_context": sorted(unavailable & PRINCIPAL_CONTEXT),
              "unavailable_resource_context": sorted(unavailable - PRINCIPAL_CONTEXT),
              "resource_context": resource_context,
+             "resource_normalization": "RUNTIME_RESOURCE_ARN_NORMALIZATION" if service else "SYMBOLIC_POLICY_SCOPE",
              "resource": resource, "resource_service": service, "resource_account": account,
              "action": action, "requested_service": action.split(":")[0].lower()}
     return request | {"_identity": identity, "context": context,
@@ -287,6 +398,8 @@ def admit_conditions(conditions):
                 raise Unsupported("invalid/duplicate condition key")
             key = key.lower()
             seen.add(key)
+            if context_classification(key) == "UNSUPPORTED":
+                raise Unsupported("unsupported condition context key " + key)
             values = many(expected)
             if not values or any(not isinstance(x, str) for x in values):
                 raise Unsupported("condition values must be nonempty string lists")
@@ -395,10 +508,7 @@ def _validate_statement(statement, kind):
         if "Resource" not in statement:
             raise Unsupported("missing Resource")
         for resource in _string_values(statement["Resource"], "Resource"):
-            if resource != "*":
-                arn_matches(resource, resource)
-                if resource.split(":", 5)[1] != "aws":
-                    raise Unsupported("unsupported resource ARN partition")
+            admit_resource_arn(resource)
     if kind in (PolicyKind.RESOURCE_POLICY, PolicyKind.TRUST_POLICY):
         category = _admit_principal(statement.get("Principal"), kind)
         if kind == PolicyKind.TRUST_POLICY:
@@ -492,6 +602,8 @@ def _statements(admitted_documents, request, kind):
             used = {key.lower() for tests in conditions.values() for key in tests}
             if used & request["_unavailable_context"]:
                 raise Unsupported("INVALID_REQUEST unresolved normalized condition facts")
+            for key in used:
+                validate_request_context(key, request["context"].get(key), request["_identity"])
             # Request-dependent checks also precede statement matching. A malformed
             # context operand cannot be hidden behind a false action/condition.
             condition_match = condition(conditions, request["context"])
@@ -520,6 +632,11 @@ def evaluate(request, identities=(), boundary=None, resources=(), trust=None):
             documents[kind] = admit_policies(container, kind)
             admission.append({"document_kind": KINDS[kind].value, "admission": "SUPPORTED_AND_MODELED",
                               "documents": len(documents[kind]),
+                              "resource_arn_admission": [admit_resource_arn(resource)
+                                  for doc in documents[kind] for st in doc for resource in many(st.get("Resource", []))],
+                              "context_key_classification": {key: context_classification(key)
+                                  for doc in documents[kind] for st in doc
+                                  for tests in st.get("Condition", {}).values() for key in tests},
                               "source_statements": [[st.get("_source", st.get("Sid", "unnamed statement"))
                                                      for st in doc] for doc in documents[kind]]})
         except (Unsupported, TypeError, ValueError) as exc:
@@ -527,6 +644,8 @@ def evaluate(request, identities=(), boundary=None, resources=(), trust=None):
                               "reason": str(exc)})
     invalid = [a for a in admission if a["admission"] == "ADMISSION_FAILURE"]
     provenance = {"policy_admission": admission, "normalized_request": None,
+                  "evidence_validity": {"ADMISSION": "UNKNOWN" if invalid else "SUPPORTED",
+                                        "IDENTITY_FACTS": "NOT_EVALUATED"},
                   "applicable_unknown": [], "evidence_scope": "PRIMITIVE_POLICY_PERMISSION"}
     if invalid:
         reasons = tuple("SEMANTIC_ADMISSION_UNKNOWN " + a["document_kind"] + ": " + a["reason"] for a in invalid)
@@ -537,6 +656,15 @@ def evaluate(request, identities=(), boundary=None, resources=(), trust=None):
         request = normalized_request(request, identity_required=has_resources or trust is not None,
                                      resource_policy=has_resources)
         provenance["normalized_request"] = request["_facts"]
+        used = {key.lower() for docs in documents.values() for doc in docs for st in doc
+                for tests in st.get("Condition", {}).values() for key in tests}
+        provenance["context_facts"] = {key: {
+            "classification": context_classification(key),
+            "origin": CONTEXT_KEYS[key][1],
+            "status": "UNAVAILABLE" if key in request["_unavailable_context"] else
+                      "PRESENT" if key in request["context"] and request["context"][key] is not None else "ABSENT",
+            "value": request["context"].get(key)} for key in sorted(used)}
+        provenance["evidence_validity"]["IDENTITY_FACTS"] = "SUPPORTED"
         if has_resources and request["action"].lower().startswith("kms:"):
             raise Unsupported("KMS key policy/grant semantics unsupported")
         ia, ideny = _statements(documents["identity"], request, "identity")
@@ -558,6 +686,7 @@ def evaluate(request, identities=(), boundary=None, resources=(), trust=None):
                       (provenance,))
     except (Unsupported, TypeError, KeyError, ValueError) as exc:
         reason = "NORMALIZED_REQUEST_UNKNOWN " + str(exc)
+        provenance["evidence_validity"]["IDENTITY_FACTS"] = "UNKNOWN"
         provenance["applicable_unknown"] = [reason]
         return Result(Decision.UNKNOWN, (reason,), (provenance,))
 

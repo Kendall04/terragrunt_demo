@@ -112,6 +112,79 @@ class Bindings:
             raise Unsupported("SOURCE_BINDING_FAILURE unsupported input object")
         return attributes(expression[1:-1])
 
+    def dependency_outputs(self, path, name, bodies, config_path):
+        """Admit only real outputs for a declared CURRENT resource relationship.
+
+        Plan/validate mocks are harmless to this relationship only when output
+        reads remain enabled and mocks cannot be selected for apply. This is a
+        source contract, not evidence that any dependency has been deployed.
+        Mock-based deployed identity and command-dependent expressions remain
+        unsupported; no Terragrunt command or state lookup is performed.
+        """
+        from source import attributes, blocks, digest
+        record = {"source": path, "sha256": digest(self.root / path),
+                  "admitted_construct": "dependency output selection", "dependency": name,
+                  "modeled_context": "CURRENT_DECLARED_RESOURCE_APPLY_RELATIONSHIP",
+                  "mode": "UNSUPPORTED_OUTPUT_SELECTION", "expressions": {}}
+        self.evidence.append(record)
+        try:
+            if len(bodies) != 1:
+                raise Unsupported("missing/ambiguous dependency")
+            nested, remainder = blocks(bodies[0])
+            if nested:
+                raise Unsupported("nested dependency output-selection control")
+            attrs = attributes(remainder)
+            record["expressions"] = attrs
+            permitted = {"config_path", "skip_outputs", "enabled", "mock_outputs",
+                         "mock_outputs_allowed_terraform_commands", "mock_outputs_merge_with_state",
+                         "mock_outputs_merge_strategy_with_state"}
+            if set(attrs) - permitted:
+                raise Unsupported("unadmitted dependency controls: " + str(sorted(set(attrs) - permitted)))
+            self.require(attrs, {"config_path": json.dumps(config_path)})
+            for key, default in (("skip_outputs", False), ("enabled", True),
+                                 ("mock_outputs_merge_with_state", False)):
+                value = json.loads(attrs.get(key, json.dumps(default)))
+                if type(value) is not bool:
+                    raise Unsupported("non-Boolean dependency control: " + key)
+                record[key] = value
+            if record["skip_outputs"]:
+                raise Unsupported("skip_outputs can select mocks or an empty output map")
+            if not record["enabled"]:
+                raise Unsupported("disabled dependency cannot establish an output identity")
+            if "mock_outputs_merge_strategy_with_state" in attrs:
+                strategy = json.loads(attrs["mock_outputs_merge_strategy_with_state"])
+                if strategy not in ("no_merge", "shallow"):
+                    raise Unsupported("unadmitted dependency mock merge strategy")
+                if "mock_outputs_merge_with_state" in attrs:
+                    raise Unsupported("competing dependency mock merge controls")
+            else:
+                strategy = "shallow" if record["mock_outputs_merge_with_state"] else "no_merge"
+            record["mock_merge_strategy"] = strategy
+            commands = json.loads(attrs.get("mock_outputs_allowed_terraform_commands", "[]"))
+            if not isinstance(commands, list) or not all(type(item) is str for item in commands):
+                raise Unsupported("unresolved dependency mock command selection")
+            if "mock_outputs" in attrs:
+                mocks = self.input_object(attrs["mock_outputs"])
+                # Values never substitute into the runtime identity. Admit only
+                # the literal scalar map needed by the current platform wrapper.
+                values = {key: json.loads(value) for key, value in mocks.items()}
+                if any(type(value) not in (str, bool, int, float) or
+                       isinstance(value, str) and ("${" in value or "%{" in value)
+                       for value in values.values()):
+                    raise Unsupported("unresolved dependency mock values")
+                if not commands or not set(commands) <= {"validate", "plan"}:
+                    raise Unsupported("mocks may supply deployed identity; only validate/plan mocks admitted")
+                record["mock_outputs"] = values
+            elif commands:
+                # These unused selectors still have a closed supported grammar.
+                if not set(commands) <= {"validate", "plan"}:
+                    raise Unsupported("unadmitted dependency mock command selection")
+            record.update(mode="REAL_DEPENDENCY_OUTPUTS", mock_commands=commands,
+                          reason="Output reads enabled; admitted mocks cannot supply apply identity; declared scalar outputs are checked separately")
+        except (Unsupported, ValueError, TypeError, KeyError) as exc:
+            record["reason"] = "SOURCE_BINDING_FAILURE UNSUPPORTED_OUTPUT_SELECTION " + name + ": " + str(exc)
+        return record
+
     def inputs(self, path, expressions, references, schema):
         """Resolve literals and exact admitted references, never execute HCL.
 
@@ -403,10 +476,11 @@ class Bindings:
         self.require(attributes(tg_inputs[1:-1]), {"env": "local.parent.locals.env", "project": "local.parent.locals.project_name",
             "aws_region": "local.parent.locals.aws_region", "cluster_arn": "dependency.platform.outputs.cluster_arn",
             "cluster_name": "dependency.platform.outputs.cluster_name"})
-        platform_dependencies = [attributes(b) for k,t,n,b in tg_blocks if k == "dependency" and t == "platform"]
-        if len(platform_dependencies) != 1:
-            raise Unsupported("SOURCE_BINDING_FAILURE platform dependency")
-        self.require(platform_dependencies[0], {"config_path": '"../../platform"'})
+        platform_dependencies = [b for k,t,n,b in tg_blocks if k == "dependency" and t == "platform" and n is None]
+        dependency_selection = self.dependency_outputs(tg.relative_to(self.root).as_posix(), "platform",
+                                                       platform_dependencies, "../../platform")
+        service_binding_error = (dependency_selection["reason"]
+                                 if dependency_selection["mode"] != "REAL_DEPENDENCY_OUTPUTS" else None)
         module = self.one(base, "module", "demo_api_blue")
         self.require(module, {"source": '"./modules/ecs_service"', "cluster_arn": "var.cluster_arn"})
         if "family" in module:
@@ -452,8 +526,11 @@ class Bindings:
         self.require(family_var, {"default": "null"})
         account, region = self.model.values["local.account_id"], self.model.values["local.aws_region"]
         result = {"family": f"arn:aws:ecs:{region}:{account}:task-definition/{name}:42",
-                  "service": f"arn:aws:ecs:{region}:{account}:service/{cluster}/{self.scalar(service['name'], child, values)}",
-                  "binding_status": "BINDING_VALIDATED", "trusts": trusts}
+                  "service": ("UNBOUND" if service_binding_error else
+                              f"arn:aws:ecs:{region}:{account}:service/{cluster}/{self.scalar(service['name'], child, values)}"),
+                  "binding_status": "PARTIAL" if service_binding_error else "BINDING_VALIDATED", "trusts": trusts,
+                  "service_binding_error": service_binding_error,
+                  "dependency_output_selection": dependency_selection}
         for key, role in (("task_role", "task_role"), ("exec_role", "execution_role")):
             self.one(child, "resource", "aws_iam_role", role)
             result[key] = "arn:aws:iam::" + account + ":role/" + self.scalar(roles[role]["name"], child, values)

@@ -19,6 +19,46 @@ sys.path.insert(0, str(HERE))
 sys.dont_write_bytecode = True
 
 
+def evidence_groups(executed, result):
+    """Report overlapping evidence families using only tests actually executed.
+
+    Group totals are not additive. Missing/skipped evidence is never reported as
+    a passed group, and each group retains IDs so a reviewer can inspect scope.
+    """
+    selectors = {
+        "resource_arn_admission": lambda t: t.startswith("test_v5_evaluator.ResourceArnV5Tests."),
+        "context_fact_registry_normalization": lambda t: t.startswith("test_v5_evaluator.ContextFactsV5Tests."),
+        "terragrunt_dependency_binding": lambda t: t.startswith("test_v5_bindings."),
+        "json_source_applicability": lambda t: t.startswith("test_v5_applicability."),
+        "route_local_uncertainty": lambda t: t.startswith("test_v5_graph."),
+        "completeness_certificate_admission": lambda t: any(x in t.lower() for x in ("certificate", "completeness")),
+        "historical_review_regressions": lambda t: t.startswith(("test_review_regressions.", "test_v3.", "test_v4_")),
+        "repository_baseline_witnesses": lambda t: t in {
+            "test_repository.RepositoryTests.test_current_baseline_chains",
+            "test_v3.SourceAdmissionTests.test_provenance_and_current_partial_positive_witness"},
+        "mutation_matrix": lambda t: t.startswith("test_v5_integration.V5MutationMatrixTests."),
+        "positive_controls": lambda t: t.startswith("test_v5_integration.V5PositiveControlTests.") or t in {
+            "test_review_regressions.CompletenessRegressions.test_positive_controls_reject_deny_all_and_all_unknown",
+            "test_contracts.ContractTests.test_oidc_formats_and_exact_synthetic_target_acquisition",
+            "test_contracts.ContractTests.test_synthetic_planning_positive_prevents_deny_all"},
+        "runtime_governance_contracts": lambda t: t.startswith("test_contracts."),
+        "hermetic_guards": lambda t: t.startswith("test_hermetic."),
+    }
+    # Subtest IDs begin with their parent test ID and must count as failures of
+    # the executed test, rather than silently disappearing from group summaries.
+    def affected(entries, ids):
+        return sum(any(test.id() == ident or test.id().startswith(ident + " (")
+                       for ident in ids) for test, _ in entries)
+    groups = {}
+    for name, selected in selectors.items():
+        ids = [test for test in executed if selected(test)]
+        counts = {"executed": len(ids), "failures": affected(result.failures, ids),
+                  "errors": affected(result.errors, ids), "skipped": affected(result.skipped, ids)}
+        groups[name] = {"status": "PASS" if ids and not any(counts[k] for k in
+            ("failures", "errors", "skipped")) else "NOT_PASSED", "counts": counts, "test_ids": ids}
+    return groups
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--report", type=Path)
@@ -86,9 +126,13 @@ def main():
             "errors": sum(t.id().split(".")[0] == module for t, _ in result.errors),
             "skipped": sum(t.id().split(".")[0] == module for t, _ in result.skipped)}
             for module in sorted({x.split(".")[0] for x in executed})},
+        "evidence_groups": evidence_groups(executed, result),
+        "evidence_group_counting": "Overlapping groups; totals are not additive. Counts are unittest methods, not subtest permutations.",
         "inventory_errors": errors, "baseline": chains,
         "semantic_source_admission": semantic_inventory(ROOT),
         "external_prerequisites": "UNVERIFIED",
+        "platform_gaps": {"git_bash_full_selector": "FAILED_UNRESOLVED_CLEANUP",
+                          "supported_linux": "UNVALIDATED"},
         "hermetic": "credential environment scrubbed; AWS files disabled; PATH empty; process/socket/dlopen audit guard active",
         "limitations": ["process-level accidental-I/O guard, not malicious-code sandbox", "only admitted policy/API semantics evaluated",
                         "inventoried UNVERIFIED surfaces and managed-policy contents remain UNKNOWN", "no target controller or cloud configuration exists"]}

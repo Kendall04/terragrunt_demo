@@ -21,7 +21,9 @@ class HermeticTests(unittest.TestCase):
         for key in ("AWS_ACCESS_KEY_ID", "AWS_WEB_IDENTITY_TOKEN_FILE", "AWS_CONTAINER_CREDENTIALS_FULL_URI", "GITHUB_TOKEN", "HTTPS_PROXY"):
             self.assertNotIn(key, os.environ)
         self.assertEqual(os.environ["AWS_EC2_METADATA_DISABLED"], "true")
+        self.assertEqual(os.environ["AWS_CONFIG_FILE"], os.devnull)
         self.assertEqual(os.environ["AWS_SHARED_CREDENTIALS_FILE"], os.devnull)
+        self.assertEqual(os.environ["PATH"], "")
 
     def test_real_aws_and_other_subprocesses_blocked(self):
         for command in (["aws", "sts", "get-caller-identity"], ["terraform", "init"], ["gh", "api", "user"]):

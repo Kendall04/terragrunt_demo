@@ -20,6 +20,42 @@ class Rule:
     mechanism: str = "repository-witness"
 
 
+VALIDITY_AXES = ("ADMISSION", "IDENTITY_FACTS", "SOURCE_BINDING", "APPLICABILITY",
+                 "ROUTE_GROUNDING", "NEGATIVE_COMPLETENESS")
+
+
+def merge_validity(items):
+    """Keep input-validity dimensions separate; a verdict never fills a gap."""
+    result = {}
+    for axis in VALIDITY_AXES[:4]:
+        supplied = [item[axis] for item in items if axis in item]
+        values = [value for value in supplied if value != "NOT_APPLICABLE"]
+        result[axis] = ("UNKNOWN" if "UNKNOWN" in values else
+                        "NOT_APPLICABLE" if supplied and not values else
+                        "NOT_EVALUATED" if not values or "NOT_EVALUATED" in values else
+                        "SUPPORTED" if all(x == "SUPPORTED" for x in values) else "UNKNOWN")
+    return result
+
+
+def check_validity(checks):
+    items = []
+    for check in checks:
+        supplied = [p["evidence_validity"] for p in check.provenance if "evidence_validity" in p]
+        items.append(merge_validity(supplied))
+    return merge_validity(items)
+
+
+def route_validity(rule, states, traces, complete=False):
+    items = ([check_validity(rule.checks)] if rule.checks else [])
+    items += [traces[p].get("evidence_validity", {}) for p in rule.prerequisites]
+    axes = merge_validity(items)
+    grounded = (all(states[p] == Decision.ALLOW for p in rule.prerequisites) and
+                all(c.decision == Decision.ALLOW for c in rule.checks))
+    axes.update({"ROUTE_GROUNDING": "SUPPORTED" if grounded else "NO_GROUNDED_WITNESS",
+                 "NEGATIVE_COMPLETENESS": "SUPPORTED" if complete else "NOT_PROVEN"})
+    return axes
+
+
 def unknown_codes(checks):
     reasons = " ".join(y for x in checks for y in x.reasons)
     codes = []
@@ -29,6 +65,8 @@ def unknown_codes(checks):
         codes.append("SEMANTIC_ADMISSION_UNKNOWN")
     if "UNKNOWN_APPLICABLE_CONTROL" in reasons:
         codes.append("UNKNOWN_APPLICABLE_CONTROL")
+    if "UNKNOWN_ROUTE_ALTERNATIVE" in reasons:
+        codes.append("UNKNOWN_ROUTE_ALTERNATIVE")
     return codes or ["UNKNOWN_INCOMPLETE_PATHS"]
 
 
@@ -54,12 +92,16 @@ def closure(seeds, rules, coverage=None, universe=None):
         traces[target] = {"coverage": claim, "reason_codes": ["EFFECTIVE_DENY" if complete else "UNKNOWN_INCOMPLETE_PATHS"],
                           "meaning": "All modeled alternatives denied" if complete else "UNKNOWN_INCOMPLETE_PATH_COVERAGE"}
     states.update({x: Decision.ALLOW for x in seeds})
-    traces.update({x: {"seed": True} for x in seeds})
+    traces.update({x: {"seed": True, "evidence_validity": {
+        **dict.fromkeys(VALIDITY_AXES[:4], "NOT_APPLICABLE"), "ROUTE_GROUNDING": "SUPPORTED",
+        "NEGATIVE_COMPLETENESS": "NOT_REQUIRED_FOR_SEED"}} for x in seeds})
     if universe is not None and not universe.current(seeds, rules):
-        return {x: Decision.UNKNOWN for x in states}, {x: {"meaning": "STALE_SOURCE_UNIVERSE", "reason_codes": ["SOURCE_BINDING_UNKNOWN"]} for x in states}
+        return {x: Decision.UNKNOWN for x in states}, {x: {"meaning": "STALE_SOURCE_UNIVERSE", "reason_codes": ["SOURCE_BINDING_UNKNOWN"],
+                "evidence_validity": {**dict.fromkeys(VALIDITY_AXES, "NOT_EVALUATED"), "SOURCE_BINDING": "UNKNOWN"}} for x in states}
     if universe is not None and universe.positive_taints():
         return {x: Decision.UNKNOWN for x in states}, {x: {"meaning": "UNKNOWN_APPLICABLE_CONTROL",
-                "reason_codes": ["UNKNOWN_APPLICABLE_CONTROL"], "applicable_unknown": universe.positive_taints()} for x in states}
+                "reason_codes": ["UNKNOWN_APPLICABLE_CONTROL"], "applicable_unknown": universe.positive_taints(),
+                "evidence_validity": {**dict.fromkeys(VALIDITY_AXES, "NOT_EVALUATED"), "APPLICABILITY": "UNKNOWN"}} for x in states}
     changed = True
     while changed:
         changed = False
@@ -89,10 +131,31 @@ def closure(seeds, rules, coverage=None, universe=None):
                 changed = True
     # Keep every final alternative, including denied paths which never raised
     # the fixed-point rank. A certificate alone is not primitive provenance.
+    # Compute witness axes in prerequisite order. Cyclic references without a
+    # grounded seed never acquire a witness merely from reporting metadata.
+    for _ in range(len(targets) + 1):
+        for target in targets:
+            trace = traces[target]
+            if trace.get("seed"):
+                continue
+            selected = next((r for r in rules if r.target == target and r.meaning == trace.get("route")), None)
+            complete = (trace.get("coverage") or {}).get("status") == "COMPLETE_FOR_CURRENT_ADMITTED_MODEL"
+            if selected:
+                trace["evidence_validity"] = route_validity(selected, states, traces, complete)
+            else:
+                checks = [c for r in rules if r.target == target for c in r.checks]
+                trace["evidence_validity"] = {**check_validity(checks),
+                    "ROUTE_GROUNDING": "CERTIFIED_NO_GROUNDED_PATH" if complete else "NO_GROUNDED_WITNESS",
+                    "NEGATIVE_COMPLETENESS": "SUPPORTED" if complete else "NOT_PROVEN"}
     for target in targets:
         traces[target]["alternatives"] = [
             {"route": rule.meaning, "mechanism": rule.mechanism,
              "prerequisites": {p: states[p].value for p in rule.prerequisites},
+             "evidence_validity": route_validity(rule, states, traces,
+                 (traces[target].get("coverage") or {}).get("status") == "COMPLETE_FOR_CURRENT_ADMITTED_MODEL"),
+             "applicable_unknown": [unknown for p in rule.prerequisites if states[p] == Decision.UNKNOWN
+                 for unknown in [{"scope": "UNKNOWN_ROUTE_PREREQUISITE", "prerequisite": p, "route": rule.meaning}]] +
+                 [unknown for c in rule.checks for p in c.provenance for unknown in p.get("applicable_unknown", [])],
              "checks": [{"decision": x.decision.value, "reasons": x.reasons,
                          "provenance": x.provenance} for x in rule.checks]}
             for rule in rules if rule.target == target]
@@ -111,6 +174,7 @@ def baseline(root, environments=("dev", "prod")):
         except Unsupported as exc:
             binding_error = str(exc)
             workload = {key: "UNBOUND" for key in ("task_role", "exec_role", "family", "service")}
+        service_binding_error = workload.get("service_binding_error")
         task_role, exec_role = workload["task_role"], workload["exec_role"]
         family, service = workload["family"], workload["service"]
         routing_error, routing = None, {}
@@ -132,7 +196,11 @@ def baseline(root, environments=("dev", "prod")):
                            "source_snapshot": source_snapshot, "policy_statements": result.reasons,
                            "applicable_unknown": taints,
                            "binding_error": extra_error, "effective_bindings_snapshot": fingerprint(model.module_binding),
-                           "binding_provenance": "provenance.identity.module_binding"},) + result.provenance
+                           "binding_provenance": "provenance.identity.module_binding",
+                           "dependency_output_selection": workload.get("dependency_output_selection")
+                               if action == "ecs:UpdateService" else None,
+                           "evidence_validity": {"SOURCE_BINDING": "UNKNOWN" if extra_error else "SUPPORTED",
+                                                 "APPLICABILITY": "UNKNOWN" if taints else "SUPPORTED"}},) + result.provenance
             if taints or extra_error:
                 return Result(Decision.UNKNOWN, tuple(["UNKNOWN_APPLICABLE_CONTROL " + r["source"] + ": " + r["reason"] for r in taints] +
                               ([extra_error] if extra_error else [])), provenance)
@@ -149,12 +217,18 @@ def baseline(root, environments=("dev", "prod")):
         execution_assume = role_trust("execution_role", exec_role)
         task_controls = workload.get("task_policy_controls", {"status": "UNKNOWN", "reason": binding_error})
         broadening = admitted(Result(Decision.ALLOW if task_controls["status"] != "UNKNOWN" else Decision.UNKNOWN,
-                                    (json.dumps(task_controls, sort_keys=True),)),
+                                    (json.dumps(task_controls, sort_keys=True),), ({
+                                        "evidence_scope": "STRUCTURAL_TASK_POLICY_CONTROL_ADMISSION",
+                                        "source": task_controls,
+                                        "evidence_validity": {"ADMISSION": "UNKNOWN" if task_controls["status"] == "UNKNOWN" else "SUPPORTED",
+                                            "IDENTITY_FACTS": "NOT_APPLICABLE"}},)),
                                "task_role", "iam:PutRolePolicy", task_role)
 
         def permission(role, action, resource, context=None, dependencies=None):
             if binding_error and (action.startswith("ecs:") or action == "iam:PassRole" or resource == "UNBOUND"):
                 return admitted(Result(Decision.UNKNOWN, (binding_error,)), role, action, resource, binding_error)
+            if service_binding_error and action == "ecs:UpdateService":
+                return admitted(Result(Decision.UNKNOWN, (service_binding_error,)), role, action, resource, service_binding_error)
             known = model.roles[role]
             if known["unknown"]:
                 return Result(Decision.UNKNOWN, tuple(known["unknown"]))
@@ -245,10 +319,11 @@ def baseline(root, environments=("dev", "prod")):
                                          "EFFECTIVE_DENY" if v == Decision.DENY else "UNKNOWN",
                                          "coverage": coverage.get(k, {"status": "COMPLETE_FOR_CURRENT_ADMITTED_MODEL", "reason": "explicit seed"})}
                                      for k, v in states.items()},
-                        "source_binding": binding_error or model.binding_status,
+                        "source_binding": binding_error or ("PARTIAL" if service_binding_error else model.binding_status),
                         "provenance": {"identity": model.provenance(), "source_snapshot": source_snapshot,
                                        "source_admission": discovery.records,
                                        "workload": workload, "routing": routing,
+                                       "service_binding_error": service_binding_error,
                                        "routing_error": routing_error,
                                        "witness_scope": "Declared role/service/listener identities with synthetic account/region/provider IDs; policy permission and trust prerequisites, not successful cloud execution",
                                        "policy_scope_only": {"managed_policy": managed,

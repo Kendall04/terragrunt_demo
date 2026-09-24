@@ -105,12 +105,12 @@ class ContractTests(unittest.TestCase):
                 self.assertIn("Kendall04@123/terragrunt_demo@456", subject)
             trust = {"Statement": [{"Effect": "Allow", "Action": "sts:AssumeRoleWithWebIdentity",
                                     "Principal": {"Federated": "arn:aws:iam::111122223333:oidc-provider/token.actions.githubusercontent.com"},
-                                    "Condition": {"StringEquals": {"sub": subject, "aud": "sts.amazonaws.com"}}}]}
+                                    "Condition": {"StringEquals": {"token.actions.githubusercontent.com:sub": subject, "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"}}}]}
             request = {"action": "sts:AssumeRoleWithWebIdentity", "resource": "synthetic-role", "principal": "arn:aws:iam::111122223333:oidc-provider/token.actions.githubusercontent.com",
-                       "context": {"sub": subject, "aud": "sts.amazonaws.com"}}
+                       "context": {"token.actions.githubusercontent.com:sub": subject, "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"}}
             self.assertEqual(evaluate(request, trust=[trust]).decision, D.ALLOW)
             for bad in (subject.replace("a" * 40, "b" * 40), "repo:Kendall04/terragrunt_demo:environment:prod"):
-                self.assertEqual(evaluate(request | {"context": {"sub": bad, "aud": "sts.amazonaws.com"}}, trust=[trust]).decision, D.DENY)
+                self.assertEqual(evaluate(request | {"context": {"token.actions.githubusercontent.com:sub": bad, "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"}}, trust=[trust]).decision, D.DENY)
         with self.assertRaises(ContractError):
             oidc_subject("o/r", "env", workflow, "main")
 

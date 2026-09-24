@@ -48,29 +48,29 @@ class ConditionAdmissionTests(unittest.TestCase):
             for values in itertools.permutations([valid, malformed, "arn:aws:s3:::other/*"]):
                 for effect in ("Allow", "Deny"):
                     with self.subTest(values=values, effect=effect):
-                        doc = policy(effect, {"ArnEquals": {"k": list(values)}})
-                        result = evaluate(REQUEST | {"context": {"k": REQUEST["resource"]}}, [policy(), doc])
+                        doc = policy(effect, {"ArnEquals": {"fixture:k": list(values)}})
+                        result = evaluate(REQUEST | {"context": {"fixture:k": REQUEST["resource"]}}, [policy(), doc])
                         self.assertEqual(result.decision, D.UNKNOWN)
 
     def test_r1_missing_key_does_not_hide_bad_structure(self):
         for op in ("ArnEquals", "ArnLike", "ArnEqualsIfExists", "ForAllValues:ArnLike", "ForAnyValue:ArnEquals"):
-            for context in ({}, {"k": []}, {"k": None}):
-                self.assertEqual(evaluate(REQUEST | {"context": context}, [policy(conditions={op: {"k": "bad"}})]).decision, D.UNKNOWN)
+            for context in ({}, {"fixture:k": []}, {"fixture:k": None}):
+                self.assertEqual(evaluate(REQUEST | {"context": context}, [policy(conditions={op: {"fixture:k": "bad"}})]).decision, D.UNKNOWN)
         for cond in ({"StringEquals": {}}, {"Bool": {}}, {"StringEquals": {"": "v"}},
-                     {"StringEquals": {3: "v"}}, {"StringEquals": {"k": [], "other": "v"}},
-                     {"StringEquals": {"k": "x", "K": "x"}}, {"ArnLike": []}, {None: {"k": "v"}}):
+                     {"StringEquals": {3: "v"}}, {"StringEquals": {"fixture:k": [], "other": "v"}},
+                     {"StringEquals": {"fixture:k": "x", "FIXTURE:K": "x"}}, {"ArnLike": []}, {None: {"fixture:k": "v"}}):
             self.assertEqual(evaluate(REQUEST, [policy(conditions=cond)]).decision, D.UNKNOWN)
 
     def test_r1_admitted_multi_value_allow_and_deny(self):
         patterns = ["arn:aws:s3:::other/*", "arn:aws:s3:::bucket/*"]
         for values in itertools.permutations(patterns):
             for op in ("ArnEquals", "ArnLike", "ForAllValues:ArnEquals", "ForAnyValue:ArnLike"):
-                cond = {op: {"K": list(values)}}
-                req = REQUEST | {"context": {"k": REQUEST["resource"]}}
+                cond = {op: {"FIXTURE:K": list(values)}}
+                req = REQUEST | {"context": {"fixture:k": REQUEST["resource"]}}
                 self.assertEqual(evaluate(req, [policy(conditions=cond)]).decision, D.ALLOW)
                 self.assertEqual(evaluate(req, [policy(), policy("Deny", cond)]).decision, D.DENY)
         with self.assertRaises(Unsupported):
-            condition({"ForAllValues:ArnEqualsIfExists": {"k": patterns}}, {})
+            condition({"ForAllValues:ArnEqualsIfExists": {"fixture:k": patterns}}, {})
 
 
 class IdentityAdmissionTests(unittest.TestCase):
