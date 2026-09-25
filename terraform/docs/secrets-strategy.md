@@ -109,3 +109,12 @@ canonical admin-only/TLS/create-only policy and exact SHA-256 artifact identitie
 SSE-S3 is not an integrity proof. No KMS resource, controller read grant or request
 permission is added; all eleven request roles remain inert. Live protections and
 installation are UNVERIFIED. No secret values are bundled or published.
+
+## TARGET FOUNDATION — inactive controller compute
+
+[WP2C](e1-controller-compute.md) adds security-root-owned compute declarations and
+execution identities with no trust Allow and deny-all permissions. No domain,
+storage, logging, StartBuild or InvokeFunction grant is added. All eleven request
+identities remain inert. Protected configuration selects future consumers; request
+data cannot choose class/project/bundle/key/version/digest. Lambda/CodeBuild
+instance maps stay empty and live compute/install/readback remain UNVERIFIED.

@@ -171,3 +171,11 @@ Provider-backed validation remains UNVERIFIED/not initialized. Git Bash selector
 cleanup remains FAILED/UNRESOLVED; supported Linux remains UNVALIDATED. Live
 bootstrap, bucket protection and installation remain UNVERIFIED. No cloud action
 or controller execution is performed by these offline tests.
+
+## Subsequent WP2C foundation
+
+[WP2C](e1-controller-compute.md) adds protected compute declarations in a separate
+module, with empty Lambda/CodeBuild instance maps and deny-only execution roles.
+The no-compute statements above describe WP2B itself. Its nine artifact identities,
+26 references, null versions, unverified installation and storage contract remain
+unchanged. Reservation resolution is still not invocation authorization.

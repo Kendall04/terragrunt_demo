@@ -226,8 +226,13 @@ class BundleTests(unittest.TestCase):
     def test_no_compute_or_operational_identity_resources(self):
         doc = validate_repository(ROOT)
         types = set()
-        for tf in wiring(doc).values():
-            types.update(tf.get("resource", {}))
+        # WP2B surfaces still contain no compute. WP2C separately owns disabled templates.
+        from compute import MODULE as COMPUTE_MODULE
+        for path, tf in wiring(doc).items():
+            if path != COMPUTE_MODULE:
+                types.update(tf.get("resource", {}))
+        self.assertFalse(doc["controller_compute"]["creation_supported"])
+        self.assertFalse(doc["controller_compute"]["operational"])
         self.assertFalse(any(t.startswith(("aws_lambda", "aws_codebuild", "aws_sqs", "aws_ecs")) for t in types))
         role_module = json.loads((ROOT / "terraform/infra/security/modules/request_identities/main.tf.json").read_text())
         self.assertEqual(set(role_module["resource"]), {"aws_iam_role", "aws_iam_role_policy"})

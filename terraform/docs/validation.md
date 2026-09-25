@@ -237,3 +237,17 @@ artifacts outside the repository; it cannot upload, install or execute them.
 Python AST/JSON parsing and check-only formatting are offline; provider-free
 Terraform expression evaluation must use disposable configuration with no backend
 or provider. Provider-backed validation remains UNVERIFIED/not initialized.
+
+## E1 WP2C foundation — offline evidence
+
+[Controller compute](e1-controller-compute.md) adds `python -I -B
+scripts/tests/controller_compute/run.py --report <temporary-report-path>`. Run the
+24-test suite alongside WP1 (236), WP2A (18), and WP2B (22). It mutates disposable
+canonical source and actual Terraform and checks fixed mappings, deny-only roles,
+closed envelopes, exact-version requirements, overrides and inactive activation.
+The existing security-root renderer checks the compute module too. Provider-free
+Terraform evaluation must use disposable configuration without providers/backend;
+check decoded authority, joined references, empty compute instance maps and the
+creation preconditions. No image download, bundle installation, AWS call or
+provider initialization is authorized by these checks. Existing platform/live gaps
+remain unchanged.

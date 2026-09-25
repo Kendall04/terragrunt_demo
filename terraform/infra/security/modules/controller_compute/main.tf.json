@@ -1,0 +1,133 @@
+{
+  "terraform": {
+    "required_providers": {
+      "aws": {
+        "source": "hashicorp/aws",
+        "version": "~> 5.50"
+      }
+    }
+  },
+  "variable": {
+    "authority": {
+      "type": "any"
+    }
+  },
+  "locals": {
+    "nodes": "${{ for key, n in var.authority.controller_compute.nodes : key => merge(n, { bundle = var.authority.control_bundles.consumer_references[n.bundle_binding] }) }}",
+    "gateways": "${{ for key, n in local.nodes : key => n if n.kind == \"gateway\" && (var.authority.controller_compute.creation_supported && n.operational && alltrue(values(n.prerequisites)) && try(n.bundle.version_id != null && n.bundle.version_id != \"\" && n.bundle.version_id != \"null\" && n.bundle.version_id != \"latest\" && n.bundle.installation == \"VERIFIED\" && n.bundle.operational && can(regex(\"@sha256:[0-9a-f]{64}$\", n.image_digest_uri)), false)) }}",
+    "projects": "${{ for key, n in local.nodes : key => n if n.kind == \"controller\" && (var.authority.controller_compute.creation_supported && n.operational && alltrue(values(n.prerequisites)) && try(n.bundle.version_id != null && n.bundle.version_id != \"\" && n.bundle.version_id != \"null\" && n.bundle.version_id != \"latest\" && n.bundle.installation == \"VERIFIED\" && n.bundle.operational && can(regex(\"@sha256:[0-9a-f]{64}$\", n.image_digest_uri)), false)) }}"
+  },
+  "resource": {
+    "terraform_data": {
+      "declaration": {
+        "for_each": "${local.nodes}",
+        "input": "${each.value}",
+        "lifecycle": {
+          "precondition": {
+            "condition": "${!var.authority.controller_compute.creation_supported && !var.authority.controller_compute.operational}",
+            "error_message": "WP2C cannot create or activate Lambda/CodeBuild instances; later reviewed installation required."
+          }
+        }
+      }
+    },
+    "aws_iam_role": {
+      "execution": {
+        "for_each": "${local.nodes}",
+        "name": "${each.value.role_name}",
+        "assume_role_policy": "${jsonencode(var.authority.controller_compute.role_trust[each.value.engine])}",
+        "description": "WP2C inert execution identity: no trust Allow, deny all AWS actions.",
+        "tags": {
+          "E1Owner": "${each.value.owner}",
+          "E1Stage": "${var.authority.controller_compute.stage}"
+        },
+        "lifecycle": {
+          "precondition": {
+            "condition": "${!var.authority.controller_compute.creation_supported && !var.authority.controller_compute.operational}",
+            "error_message": "WP2C cannot create or activate Lambda/CodeBuild instances; later reviewed installation required."
+          }
+        }
+      }
+    },
+    "aws_iam_role_policy": {
+      "inert": {
+        "for_each": "${local.nodes}",
+        "name": "wp2c-inert",
+        "role": "${aws_iam_role.execution[each.key].id}",
+        "policy": "${jsonencode(var.authority.policies.inert_permissions)}"
+      }
+    },
+    "aws_lambda_function": {
+      "gateway": {
+        "for_each": "${local.gateways}",
+        "function_name": "${each.value.name}",
+        "role": "${aws_iam_role.execution[each.key].arn}",
+        "package_type": "${var.authority.controller_compute.runtime.lambda_package_type}",
+        "image_uri": "${each.value.image_digest_uri}",
+        "publish": true,
+        "reserved_concurrent_executions": "${var.authority.controller_compute.runtime.lambda_reserved_concurrency}",
+        "environment": {
+          "variables": {
+            "E1_PROTECTED_CONFIGURATION": "${jsonencode({ node = each.value, downstream = try(local.nodes[each.value.downstream], null) })}"
+          }
+        },
+        "tags": {
+          "E1Owner": "${each.value.owner}",
+          "E1Stage": "${var.authority.controller_compute.stage}"
+        }
+      }
+    },
+    "aws_codebuild_project": {
+      "controller": {
+        "for_each": "${local.projects}",
+        "name": "${each.value.name}",
+        "service_role": "${aws_iam_role.execution[each.key].arn}",
+        "build_timeout": "${var.authority.controller_compute.runtime.codebuild_timeout_minutes}",
+        "source": {
+          "type": "${var.authority.controller_compute.runtime.codebuild_source_type}",
+          "buildspec": "${jsonencode(var.authority.controller_compute.runtime.buildspec)}"
+        },
+        "artifacts": {
+          "type": "${var.authority.controller_compute.runtime.codebuild_artifacts_type}"
+        },
+        "environment": {
+          "type": "${var.authority.controller_compute.runtime.codebuild_environment_type}",
+          "compute_type": "${var.authority.controller_compute.runtime.codebuild_compute_type}",
+          "image": "${each.value.image_digest_uri}",
+          "privileged_mode": "${var.authority.controller_compute.runtime.codebuild_privileged_mode}",
+          "environment_variable": {
+            "name": "E1_PROTECTED_CONFIGURATION",
+            "type": "PLAINTEXT",
+            "value": "${jsonencode({ node = each.value, downstream = try(local.nodes[each.value.downstream], null) })}"
+          }
+        },
+        "cache": {
+          "type": "${var.authority.controller_compute.runtime.codebuild_cache_type}"
+        },
+        "logs_config": {
+          "cloudwatch_logs": {
+            "status": "${var.authority.controller_compute.runtime.codebuild_logs_status}"
+          },
+          "s3_logs": {
+            "status": "${var.authority.controller_compute.runtime.codebuild_logs_status}"
+          }
+        },
+        "tags": {
+          "E1Owner": "${each.value.owner}",
+          "E1Stage": "${var.authority.controller_compute.stage}"
+        }
+      }
+    }
+  },
+  "output": {
+    "foundation": {
+      "value": {
+        "declared": "${var.authority.controller_compute.declared}",
+        "operational": false,
+        "live": "${var.authority.controller_compute.live}",
+        "declarations": "${local.nodes}",
+        "gateway_instances": "${keys(local.gateways)}",
+        "project_instances": "${keys(local.projects)}"
+      }
+    }
+  }
+}

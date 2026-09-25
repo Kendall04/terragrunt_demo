@@ -63,6 +63,10 @@
       "account_id": "${var.aws_account_id}",
       "region": "${var.aws_region}",
       "admin_arn": "${var.security_admin_principal_arn}"
+    },
+    "controller_compute": {
+      "source": "./modules/controller_compute",
+      "authority": "${local.authority}"
     }
   },
   "output": {
@@ -81,6 +85,10 @@
     "control_bundle_reservation": {
       "value": "${module.control_bundle_storage.reservation}",
       "description": "TARGET reservation only; no installed bundle, consumer read grant or operational controller."
+    },
+    "controller_compute_foundation": {
+      "value": "${module.controller_compute.foundation}",
+      "description": "TARGET compute declarations only; zero Lambda/CodeBuild instances, no invocation authorization."
     }
   }
 }

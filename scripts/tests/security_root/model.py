@@ -11,6 +11,7 @@ import re
 from contracts import load_json
 from evaluator import Unsupported
 import bundles
+import compute
 
 BASELINE = "c8e880b552b5782e9bca94891b75a71b45ddc113"
 AUTHORITY = "terraform/infra/security/authority.json"
@@ -49,7 +50,7 @@ def load_authority(root):
     doc = load_json((Path(root) / AUTHORITY).read_text())
     keys(doc, {"format_version", "classification", "stage", "security_admin",
                "backend", "ownership", "request_identities", "policies",
-               "governance", "interfaces", "control_bundles"}, "authority")
+               "governance", "interfaces", "control_bundles", "controller_compute"}, "authority")
     require(doc["format_version"] == 1 and doc["classification"] == "TARGET_REQUIREMENT"
             and doc["stage"] == "E1_WP2A_PROTECTED_SECURITY_ROOT_FOUNDATION", "stage")
     admin = doc["security_admin"]
@@ -75,7 +76,8 @@ def load_authority(root):
         keys(item, {"owner", "implementation"}, name)
         require(item["owner"] == "SECURITY_ROOT_OWNED", "ordinary ownership of " + name)
         implementation = ("WP2A_DECLARED_INERT" if name == "request_identities" else
-                          "WP2B_BUNDLE_FOUNDATION_ONLY" if name in {"controller_code_and_configuration", "artifact_and_evidence_protection"}
+                          "WP2C_INERT_COMPUTE_FOUNDATION" if name in {"controller_iam", "controller_code_and_configuration"}
+                          else "WP2B_BUNDLE_FOUNDATION_ONLY" if name == "artifact_and_evidence_protection"
                           else "DEFERRED")
         require(item["implementation"] == implementation, name + " implementation")
     expected_owners = {"network_and_platform_skeletons": "ORDINARY_LIFECYCLE_OWNED",
@@ -126,6 +128,7 @@ def load_authority(root):
     encoded = json.dumps(doc)
     require(encoded.count("${") == 1 and "%{" not in encoded and "$${" not in encoded, "unadmitted template mechanism")
     bundles.validate_catalog(root, doc)
+    compute.validate_compute(root, doc)
     return doc
 
 
@@ -172,9 +175,15 @@ def wiring(doc):
         "admin_arn": expression("var.security_admin_principal_arn")}
     root["output"]["control_bundle_reservation"] = {"value": expression("module.control_bundle_storage.reservation"),
         "description": "TARGET reservation only; no installed bundle, consumer read grant or operational controller."}
+    root["module"]["controller_compute"] = {
+        "source": "./modules/controller_compute", "authority": expression("local.authority")}
+    root["output"]["controller_compute_foundation"] = {
+        "value": expression("module.controller_compute.foundation"),
+        "description": "TARGET compute declarations only; zero Lambda/CodeBuild instances, no invocation authorization."}
     return {"terraform/infra/security/main.tf.json": root,
             "terraform/infra/security/modules/request_identities/main.tf.json": child,
-            bundles.MODULE: bundles.wiring(doc["control_bundles"])}
+            bundles.MODULE: bundles.wiring(doc["control_bundles"]),
+            compute.MODULE: compute.wiring()}
 
 
 def wrapper(doc):

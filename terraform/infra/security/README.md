@@ -174,3 +174,14 @@ outputs publication and privileged controllers. WP3–WP7 delivery/qualification
 runtime enforcement, protected lifecycle execution, workflow cutover and legacy
 revocation remain out of scope. No state import, live IAM change or deployment
 has occurred.
+
+## WP2C — inactive protected compute foundation
+
+The root also calls `modules/controller_compute`, described in the
+[WP2C contract](../../docs/e1-controller-compute.md). It declares 18 protected
+node records and deny-only execution roles, with zero Lambda/CodeBuild instances.
+The earlier WP2A/WP2B sections describe their bounded contributions; the added
+compute declaration is still not a deployed/operational controller plane. All
+eleven request identities, bundle reservations and external administration
+requirements remain unchanged. Run the dedicated
+`python -I -B scripts/tests/controller_compute/run.py` suite with WP1/WP2A/WP2B.

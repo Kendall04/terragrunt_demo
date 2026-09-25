@@ -172,3 +172,11 @@ versioned bundle store and canonical content-addressed reservations. Nine planne
 controller classes have fixed inactive consumer bindings. There is no controller
 compute, installed executable, live upload or request invocation. Existing
 environment roots and runtime ownership remain unchanged.
+
+## TARGET FOUNDATION — E1 WP2C controller compute
+
+[WP2C](e1-controller-compute.md) declares nine gateway and nine CodeBuild skeletons
+with fixed WP2B bundle relations, 18 deny-only execution roles and protected
+declaration records. Lambda/CodeBuild instance maps are empty: no installed image,
+executable bundle or verified VersionId exists. Request roles remain inert; no
+controller or invocation is operational. Live resources remain UNVERIFIED.

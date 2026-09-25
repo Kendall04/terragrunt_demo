@@ -43,11 +43,11 @@
       },
       "controller_code_and_configuration": {
         "owner": "SECURITY_ROOT_OWNED",
-        "implementation": "WP2B_BUNDLE_FOUNDATION_ONLY"
+        "implementation": "WP2C_INERT_COMPUTE_FOUNDATION"
       },
       "controller_iam": {
         "owner": "SECURITY_ROOT_OWNED",
-        "implementation": "DEFERRED"
+        "implementation": "WP2C_INERT_COMPUTE_FOUNDATION"
       },
       "kms_authority": {
         "owner": "SECURITY_ROOT_OWNED",
@@ -812,5 +812,542 @@
         "operational": false
       }
     }
+  },
+  "controller_compute": {
+    "stage": "E1_WP2C_PROTECTED_CONTROLLER_COMPUTE_FOUNDATION",
+    "owner": "SECURITY_ROOT_OWNED",
+    "declared": true,
+    "operational": false,
+    "live": "UNVERIFIED",
+    "creation_supported": false,
+    "classes": {
+      "request-gateway": "SKELETON_DECLARED",
+      "build": "SKELETON_DECLARED",
+      "qualification-finalizer": "RESERVED_ONLY",
+      "status": "RESERVED_ONLY",
+      "environment-lifecycle": "SKELETON_DECLARED",
+      "normal-delivery": "SKELETON_DECLARED",
+      "emergency-recovery": "SKELETON_DECLARED",
+      "cleanup-recovery": "RESERVED_ONLY",
+      "nat-recovery": "RESERVED_ONLY"
+    },
+    "nodes": {
+      "request-gateway/deploy-dev": {
+        "name": "e1-gateway-deploy-dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "gateway",
+        "engine": "LAMBDA",
+        "bundle_binding": "request-gateway/deploy-dev",
+        "request_identity": "deploy-dev",
+        "downstream": "normal-delivery/deploy-dev",
+        "role_name": "e1-gateway-deploy-dev-exec",
+        "role_class": "GATEWAY_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "request-gateway/emergency-dev": {
+        "name": "e1-gateway-emergency-dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "gateway",
+        "engine": "LAMBDA",
+        "bundle_binding": "request-gateway/emergency-dev",
+        "request_identity": "emergency-dev",
+        "downstream": "emergency-recovery/emergency-dev",
+        "role_name": "e1-gateway-emergency-dev-exec",
+        "role_class": "GATEWAY_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "request-gateway/emergency-prod": {
+        "name": "e1-gateway-emergency-prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "gateway",
+        "engine": "LAMBDA",
+        "bundle_binding": "request-gateway/emergency-prod",
+        "request_identity": "emergency-prod",
+        "downstream": "emergency-recovery/emergency-prod",
+        "role_name": "e1-gateway-emergency-prod-exec",
+        "role_class": "GATEWAY_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "request-gateway/infra-dev": {
+        "name": "e1-gateway-infra-dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "gateway",
+        "engine": "LAMBDA",
+        "bundle_binding": "request-gateway/infra-dev",
+        "request_identity": "infra-dev",
+        "downstream": "environment-lifecycle/infra-dev",
+        "role_name": "e1-gateway-infra-dev-exec",
+        "role_class": "GATEWAY_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "request-gateway/infra-high-risk-dev": {
+        "name": "e1-gateway-infra-high-risk-dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "gateway",
+        "engine": "LAMBDA",
+        "bundle_binding": "request-gateway/infra-high-risk-dev",
+        "request_identity": "infra-high-risk-dev",
+        "downstream": "environment-lifecycle/infra-high-risk-dev",
+        "role_name": "e1-gateway-infra-high-risk-dev-exec",
+        "role_class": "GATEWAY_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "request-gateway/infra-high-risk-prod": {
+        "name": "e1-gateway-infra-high-risk-prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "gateway",
+        "engine": "LAMBDA",
+        "bundle_binding": "request-gateway/infra-high-risk-prod",
+        "request_identity": "infra-high-risk-prod",
+        "downstream": "environment-lifecycle/infra-high-risk-prod",
+        "role_name": "e1-gateway-infra-high-risk-prod-exec",
+        "role_class": "GATEWAY_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "request-gateway/infra-prod": {
+        "name": "e1-gateway-infra-prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "gateway",
+        "engine": "LAMBDA",
+        "bundle_binding": "request-gateway/infra-prod",
+        "request_identity": "infra-prod",
+        "downstream": "environment-lifecycle/infra-prod",
+        "role_name": "e1-gateway-infra-prod-exec",
+        "role_class": "GATEWAY_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "request-gateway/promote-prod": {
+        "name": "e1-gateway-promote-prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "gateway",
+        "engine": "LAMBDA",
+        "bundle_binding": "request-gateway/promote-prod",
+        "request_identity": "promote-prod",
+        "downstream": "normal-delivery/promote-prod",
+        "role_name": "e1-gateway-promote-prod-exec",
+        "role_class": "GATEWAY_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "request-gateway/release": {
+        "name": "e1-gateway-release",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "gateway",
+        "engine": "LAMBDA",
+        "bundle_binding": "request-gateway/release",
+        "request_identity": "release",
+        "downstream": "build/release",
+        "role_name": "e1-gateway-release-exec",
+        "role_class": "GATEWAY_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "build/release": {
+        "name": "e1-controller-release",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "controller",
+        "engine": "CODEBUILD",
+        "bundle_binding": "build/release",
+        "request_identity": null,
+        "downstream": null,
+        "role_name": "e1-controller-release-exec",
+        "role_class": "CONTROLLER_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "environment-lifecycle/infra-dev": {
+        "name": "e1-controller-infra-dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "controller",
+        "engine": "CODEBUILD",
+        "bundle_binding": "environment-lifecycle/infra-dev",
+        "request_identity": null,
+        "downstream": null,
+        "role_name": "e1-controller-infra-dev-exec",
+        "role_class": "CONTROLLER_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "environment-lifecycle/infra-high-risk-dev": {
+        "name": "e1-controller-infra-high-risk-dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "controller",
+        "engine": "CODEBUILD",
+        "bundle_binding": "environment-lifecycle/infra-high-risk-dev",
+        "request_identity": null,
+        "downstream": null,
+        "role_name": "e1-controller-infra-high-risk-dev-exec",
+        "role_class": "CONTROLLER_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "environment-lifecycle/infra-high-risk-prod": {
+        "name": "e1-controller-infra-high-risk-prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "controller",
+        "engine": "CODEBUILD",
+        "bundle_binding": "environment-lifecycle/infra-high-risk-prod",
+        "request_identity": null,
+        "downstream": null,
+        "role_name": "e1-controller-infra-high-risk-prod-exec",
+        "role_class": "CONTROLLER_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "environment-lifecycle/infra-prod": {
+        "name": "e1-controller-infra-prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "controller",
+        "engine": "CODEBUILD",
+        "bundle_binding": "environment-lifecycle/infra-prod",
+        "request_identity": null,
+        "downstream": null,
+        "role_name": "e1-controller-infra-prod-exec",
+        "role_class": "CONTROLLER_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "normal-delivery/deploy-dev": {
+        "name": "e1-controller-deploy-dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "controller",
+        "engine": "CODEBUILD",
+        "bundle_binding": "normal-delivery/deploy-dev",
+        "request_identity": null,
+        "downstream": null,
+        "role_name": "e1-controller-deploy-dev-exec",
+        "role_class": "CONTROLLER_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "normal-delivery/promote-prod": {
+        "name": "e1-controller-promote-prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "controller",
+        "engine": "CODEBUILD",
+        "bundle_binding": "normal-delivery/promote-prod",
+        "request_identity": null,
+        "downstream": null,
+        "role_name": "e1-controller-promote-prod-exec",
+        "role_class": "CONTROLLER_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "emergency-recovery/emergency-dev": {
+        "name": "e1-controller-emergency-dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "controller",
+        "engine": "CODEBUILD",
+        "bundle_binding": "emergency-recovery/emergency-dev",
+        "request_identity": null,
+        "downstream": null,
+        "role_name": "e1-controller-emergency-dev-exec",
+        "role_class": "CONTROLLER_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "emergency-recovery/emergency-prod": {
+        "name": "e1-controller-emergency-prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "controller",
+        "engine": "CODEBUILD",
+        "bundle_binding": "emergency-recovery/emergency-prod",
+        "request_identity": null,
+        "downstream": null,
+        "role_name": "e1-controller-emergency-prod-exec",
+        "role_class": "CONTROLLER_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      }
+    },
+    "invocation": {
+      "permission": "DEFERRED_NO_STARTBUILD_OR_INVOKE",
+      "selection": "PROTECTED_CONFIGURATION_ONLY",
+      "start_build_fields": [
+        "projectName"
+      ],
+      "requester_overrides": {
+        "artifactsOverride": "FORBIDDEN",
+        "autoRetryLimitOverride": "FORBIDDEN",
+        "buildStatusConfigOverride": "FORBIDDEN",
+        "buildspecOverride": "FORBIDDEN",
+        "bundle": "FORBIDDEN",
+        "cacheOverride": "FORBIDDEN",
+        "certificateOverride": "FORBIDDEN",
+        "command": "FORBIDDEN",
+        "computeTypeOverride": "FORBIDDEN",
+        "debugSessionEnabled": "FORBIDDEN",
+        "encryptionKeyOverride": "FORBIDDEN",
+        "environmentTypeOverride": "FORBIDDEN",
+        "environmentVariablesOverride": "FORBIDDEN",
+        "fleetOverride": "FORBIDDEN",
+        "gitCloneDepthOverride": "FORBIDDEN",
+        "gitSubmodulesConfigOverride": "FORBIDDEN",
+        "hostKernelOverride": "FORBIDDEN",
+        "idempotencyToken": "FORBIDDEN",
+        "imageOverride": "FORBIDDEN",
+        "imagePullCredentialsTypeOverride": "FORBIDDEN",
+        "insecureSslOverride": "FORBIDDEN",
+        "logsConfigOverride": "FORBIDDEN",
+        "privilegedModeOverride": "FORBIDDEN",
+        "projectName": "FORBIDDEN",
+        "queuedTimeoutInMinutesOverride": "FORBIDDEN",
+        "registryCredentialOverride": "FORBIDDEN",
+        "reportBuildStatusOverride": "FORBIDDEN",
+        "script": "FORBIDDEN",
+        "secondaryArtifactsOverride": "FORBIDDEN",
+        "secondarySourcesOverride": "FORBIDDEN",
+        "secondarySourcesVersionOverride": "FORBIDDEN",
+        "serviceRoleOverride": "FORBIDDEN",
+        "sourceAuthOverride": "FORBIDDEN",
+        "sourceLocationOverride": "FORBIDDEN",
+        "sourceTypeOverride": "FORBIDDEN",
+        "sourceVersion": "FORBIDDEN",
+        "timeoutInMinutesOverride": "FORBIDDEN"
+      },
+      "envelope": {
+        "schema": "E1_WP2C_INACTIVE_V1"
+      },
+      "max_envelope_bytes": 256,
+      "unknown_fields": "REJECT"
+    },
+    "consumption": {
+      "selection": "PROTECTED_CONFIGURATION_ONLY",
+      "identity_fields": [
+        "class",
+        "consumer",
+        "sha256",
+        "key",
+        "version_id"
+      ],
+      "version": "EXACT_NON_NULL_INSTALLED_VERSION_REQUIRED",
+      "readback": "VERIFY_EXACT_BYTES_BEFORE_EXECUTION",
+      "reservation_authorizes_invocation": false,
+      "executable_format": "DEFERRED_WP2B_JSON_IS_NOT_EXECUTABLE"
+    },
+    "runtime": {
+      "overrides": {
+        "artifact_key": "FORBIDDEN",
+        "buildspec": "FORBIDDEN",
+        "cache": "FORBIDDEN",
+        "command": "FORBIDDEN",
+        "debug": "FORBIDDEN",
+        "environment_variables": "FORBIDDEN",
+        "image": "FORBIDDEN",
+        "logging": "FORBIDDEN",
+        "network": "FORBIDDEN",
+        "plugins": "FORBIDDEN",
+        "script": "FORBIDDEN",
+        "secondary_sources": "FORBIDDEN",
+        "service_role": "FORBIDDEN",
+        "source": "FORBIDDEN",
+        "source_revision": "FORBIDDEN",
+        "terraform_bundle": "FORBIDDEN",
+        "terragrunt_bundle": "FORBIDDEN"
+      },
+      "lambda_package_type": "Image",
+      "lambda_reserved_concurrency": 0,
+      "codebuild_source_type": "NO_SOURCE",
+      "codebuild_artifacts_type": "NO_ARTIFACTS",
+      "codebuild_environment_type": "LINUX_CONTAINER",
+      "codebuild_compute_type": "BUILD_GENERAL1_SMALL",
+      "codebuild_privileged_mode": false,
+      "codebuild_cache_type": "NO_CACHE",
+      "codebuild_logs_status": "DISABLED",
+      "codebuild_timeout_minutes": 5,
+      "buildspec": {
+        "version": "0.2",
+        "phases": {
+          "build": {
+            "commands": [
+              "exit 1"
+            ]
+          }
+        }
+      },
+      "entrypoint": "FAIL_CLOSED_NO_BUNDLE_EXECUTION",
+      "environment_keys": [
+        "E1_PROTECTED_CONFIGURATION"
+      ]
+    },
+    "role_trust": {
+      "LAMBDA": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Deny",
+            "Action": "sts:AssumeRole",
+            "Principal": {
+              "Service": "lambda.amazonaws.com"
+            }
+          }
+        ]
+      },
+      "CODEBUILD": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Deny",
+            "Action": "sts:AssumeRole",
+            "Principal": {
+              "Service": "codebuild.amazonaws.com"
+            }
+          }
+        ]
+      }
+    },
+    "role_permissions_source": "authority.policies.inert_permissions",
+    "future_codebuild_trust": "SERVICE_ONLY_EXACT_PROJECT_ARN_AND_ACCOUNT_REVIEW_REQUIRED"
   }
 }

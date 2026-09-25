@@ -5906,45 +5906,45 @@
       "necessity": "UNKNOWN"
     },
     "scripts/tests/security_root/model.py": {
-      "sha256": "58e76cc49d67321c01a30c592204a03a6029c2548ecd2226fd9e173e224298f0",
+      "sha256": "77287efb991298daffc84a34178622dbf500443c98c525ae7910073748f3c922",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
-          121
+          123
         ],
         "role-input": [
-          30,
-          155,
-          168
+          31,
+          158,
+          171
         ],
         "launch-or-mutation": [
-          16,
-          64,
-          101,
-          139,
-          141,
-          148,
-          150,
-          159,
-          175,
-          176,
+          17,
+          65,
+          103,
+          142,
+          144,
+          151,
+          153,
+          162,
+          183,
           184,
-          205,
-          222,
-          230,
+          193,
+          214,
           231,
-          238,
-          240
+          239,
+          240,
+          247,
+          249
         ],
         "executable-dependency": [
-          185
+          194
         ],
         "security-control": [
-          162,
-          163,
+          165,
           166,
-          167,
-          168
+          169,
+          170,
+          171
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -6041,11 +6041,13 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/authority.json": {
-      "sha256": "fdcc88c819b0af1f4d25b72991e40a80cae21b11f089d42e0a3486ec0ffd3289",
+      "sha256": "a27f4f2058a6461e7d1bc790ce4043e630c7f7ce3508a33bb3adf0a98e5c79cc",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
-          238
+          238,
+          1330,
+          1342
         ],
         "role-input": [
           288,
@@ -6068,20 +6070,25 @@
           349,
           364,
           410,
-          411
+          411,
+          1296,
+          1297
         ],
         "executable-dependency": [
-          398
+          398,
+          1228,
+          1284,
+          1313
         ]
       },
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/main.tf.json": {
-      "sha256": "b10130229b6c9e1593b1b8680403119a1843238f0e3dc7788444a6e28520faf2",
+      "sha256": "2e313cd7b82e3c353594519b938d608dcd1b1fb5354deb89feb3510e08a4ecfd",
       "declarations": [],
       "signals": {
         "role-input": [
-          74
+          78
         ],
         "launch-or-mutation": [
           2,
@@ -6140,7 +6147,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/control_bundles/test_wp2b.py": {
-      "sha256": "e39caa2e0179dc5fdb41feffa9cd24586c9ba67a71266c7f3350d4b4dccdd113",
+      "sha256": "d5d4fb52c10f445564c36ea361f808a7183f4bb9ce58c9e3638ef5d4a5ddd7cc",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -6159,7 +6166,7 @@
           172,
           185,
           186,
-          232
+          237
         ],
         "executable-dependency": [
           186,
@@ -6171,7 +6178,7 @@
           160,
           161,
           175,
-          233
+          238
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -6226,6 +6233,101 @@
         ],
         "security-control": [
           73
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/tests/controller_compute/run.py": {
+      "sha256": "a961ba42deb48e3f86317f42a020a42d0411339045710a874e91513f30ed6abf",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          29
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/tests/controller_compute/test_wp2c.py": {
+      "sha256": "fbe6f03dae83ec8e809df1c1e4332922e53f91b9083cdf2bc9f1891bdc72112d",
+      "declarations": [],
+      "signals": {
+        "credential-acquisition": [
+          170
+        ],
+        "launch-or-mutation": [
+          22,
+          42,
+          46,
+          132,
+          158,
+          160,
+          173,
+          193,
+          205,
+          209,
+          217,
+          248
+        ],
+        "executable-dependency": [
+          160,
+          175,
+          203,
+          213
+        ],
+        "security-control": [
+          164,
+          194,
+          214,
+          248,
+          251
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/tests/security_root/compute.py": {
+      "sha256": "c53fcb78ce26c5290232ea09a44f3c91251ce8892ae448dcf26383db19d3bf4b",
+      "declarations": [],
+      "signals": {
+        "credential-acquisition": [
+          106
+        ],
+        "launch-or-mutation": [
+          13,
+          188,
+          192
+        ],
+        "executable-dependency": [
+          21,
+          101
+        ],
+        "security-control": [
+          193,
+          194,
+          197,
+          198,
+          201,
+          207
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/infra/security/modules/controller_compute/main.tf.json": {
+      "sha256": "7e5092bcada234dd5fef29afd564240838db7df718e84ec0ed509f70af2f70f3",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          2,
+          4,
+          5,
+          21
+        ],
+        "security-control": [
+          33,
+          37,
+          51,
+          55,
+          63,
+          83
         ]
       },
       "semantic_status": "UNVERIFIED"
