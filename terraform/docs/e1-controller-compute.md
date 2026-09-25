@@ -1,5 +1,9 @@
 # E1 WP2C — protected controller compute foundation
 
+WP3C now extends these historical declarations with prerequisite-gated internal
+controllers and subordinate workers; see [the current implementation](e1-internal-release.md).
+The 18-node skeleton and canonical inactive state described here remain preserved.
+
 Classification: `E1_WP2C_PROTECTED_CONTROLLER_COMPUTE_FOUNDATION`.
 Baseline: `0c50721424225843bd4418562a9298d1730fef44`.
 Repository TARGET foundation only; not deployed, operational, WP2 complete or E1 secure.

@@ -19,6 +19,10 @@
     },
     "admin_arn": {
       "type": "string"
+    },
+    "runtime_readers": {
+      "type": "map(string)",
+      "default": {}
     }
   },
   "resource": {
@@ -73,7 +77,7 @@
     "aws_s3_bucket_policy": {
       "bundles": {
         "bucket": "${aws_s3_bucket.bundles.id}",
-        "policy": "${replace(replace(jsonencode(var.catalog.storage.policy), \"__BUCKET_ARN__\", aws_s3_bucket.bundles.arn), \"__ADMIN_ARN__\", var.admin_arn)}"
+        "policy": "${length(var.runtime_readers) == 0 ? replace(replace(jsonencode(var.catalog.storage.policy), \"__BUCKET_ARN__\", aws_s3_bucket.bundles.arn), \"__ADMIN_ARN__\", var.admin_arn) : jsonencode({ Version = \"2012-10-17\", Statement = [{ Sid = \"AdminMutations\", Effect = \"Deny\", Principal = \"*\", NotAction = \"s3:GetObjectVersion\", Resource = [aws_s3_bucket.bundles.arn, \"${aws_s3_bucket.bundles.arn}/*\"], Condition = { ArnNotEquals = { \"aws:PrincipalArn\" = var.admin_arn } } }, { Sid = \"ExactRuntimeReaders\", Effect = \"Deny\", Principal = \"*\", Action = \"s3:GetObjectVersion\", Resource = \"${aws_s3_bucket.bundles.arn}/*\", Condition = { ArnNotEquals = { \"aws:PrincipalArn\" = concat([var.admin_arn], values(var.runtime_readers)) } } }, { Sid = \"TLS\", Effect = \"Deny\", Principal = \"*\", Action = \"s3:*\", Resource = [aws_s3_bucket.bundles.arn, \"${aws_s3_bucket.bundles.arn}/*\"], Condition = { Bool = { \"aws:SecureTransport\" = \"false\" } } }, { Sid = \"CreateOnly\", Effect = \"Deny\", Principal = \"*\", Action = \"s3:PutObject\", Resource = \"${aws_s3_bucket.bundles.arn}/*\", Condition = { StringNotEquals = { \"s3:if-none-match\" = \"*\" } } }] })}"
       }
     }
   },

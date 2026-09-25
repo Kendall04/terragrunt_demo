@@ -10,12 +10,111 @@
   "variable": {
     "authority": {
       "type": "any"
+    },
+    "account_id": {
+      "type": "string"
+    },
+    "region": {
+      "type": "string"
+    },
+    "admin_arn": {
+      "type": "string"
+    },
+    "installations": {
+      "type": "any",
+      "default": {}
+    },
+    "runtime_approvals": {
+      "type": "any",
+      "default": {}
     }
   },
   "locals": {
     "nodes": "${{ for key, n in var.authority.controller_compute.nodes : key => merge(n, { bundle = var.authority.control_bundles.consumer_references[n.bundle_binding] }) }}",
     "gateways": "${{ for key, n in local.nodes : key => n if n.kind == \"gateway\" && (var.authority.controller_compute.creation_supported && n.operational && alltrue(values(n.prerequisites)) && try(n.bundle.version_id != null && n.bundle.version_id != \"\" && n.bundle.version_id != \"null\" && n.bundle.version_id != \"latest\" && n.bundle.installation == \"VERIFIED\" && n.bundle.operational && can(regex(\"@sha256:[0-9a-f]{64}$\", n.image_digest_uri)), false)) }}",
-    "projects": "${{ for key, n in local.nodes : key => n if n.kind == \"controller\" && (var.authority.controller_compute.creation_supported && n.operational && alltrue(values(n.prerequisites)) && try(n.bundle.version_id != null && n.bundle.version_id != \"\" && n.bundle.version_id != \"null\" && n.bundle.version_id != \"latest\" && n.bundle.installation == \"VERIFIED\" && n.bundle.operational && can(regex(\"@sha256:[0-9a-f]{64}$\", n.image_digest_uri)), false)) }}"
+    "projects": "${{ for key, n in local.nodes : key => n if n.kind == \"controller\" && (var.authority.controller_compute.creation_supported && n.operational && alltrue(values(n.prerequisites)) && try(n.bundle.version_id != null && n.bundle.version_id != \"\" && n.bundle.version_id != \"null\" && n.bundle.version_id != \"latest\" && n.bundle.installation == \"VERIFIED\" && n.bundle.operational && can(regex(\"@sha256:[0-9a-f]{64}$\", n.image_digest_uri)), false)) }}",
+    "wp3_contract": "${var.authority.internal_release}",
+    "wp3_candidates": "${{ for key, v in local.wp3_contract.selected : key => merge(v, { install = try(var.installations[key], null), runtime = try(var.runtime_approvals[key], null) }) }}",
+    "wp3_ready": "${{ for key, v in local.wp3_candidates : key => v if try(v.install.class == split(\"/\", key)[0] && v.install.consumer == split(\"/\", key)[1] && v.install.sha256 == v.bundle_digest && v.install.key == \"bundles/sha256/${v.bundle_digest}.json\" && v.install.bucket == \"e1-control-bundles-${var.account_id}-${var.region}\" && v.install.version_id != null && length(trimspace(v.install.version_id)) > 0 && v.install.version_id == trimspace(v.install.version_id) && length(v.install.version_id) <= 1024 && !contains([\"null\", \"latest\"], lower(v.install.version_id)) && v.install.installation == \"VERIFIED\" && v.install.readback == \"EXACT_VERSION_BYTES_VERIFIED\" && v.install.version_origin == \"CONDITIONAL_WRITE_RETURN\" && v.install.publisher == \"SECURITY_ADMIN_EXTERNAL_BOOTSTRAP\" && v.install.configuration == local.wp3_contract.support_sha256 && v.runtime.owner == \"SECURITY_ROOT_OWNED\" && v.runtime.approval == \"ADMIN_VERIFIED\" && v.runtime.binding == key && v.runtime.support_sha256 == local.wp3_contract.support_sha256 && can(regex(\"^${var.account_id}[.]dkr[.]ecr[.]${var.region}[.]amazonaws[.]com/e1-controller-${key == \"build/release\" ? \"build\" : replace(key, \"/\", \"-\")}@sha256:[0-9a-f]{64}$\", v.runtime.uri)), false) }}",
+    "worker_ready": "${{ for key, v in local.wp3_contract.workers : key => merge(v, { runtime = var.runtime_approvals[\"payload/${key}\"] }) if try(var.runtime_approvals[\"payload/${key}\"].owner == \"SECURITY_ROOT_OWNED\" && var.runtime_approvals[\"payload/${key}\"].approval == \"ADMIN_VERIFIED\" && var.runtime_approvals[\"payload/${key}\"].binding == \"payload/${key}\" && var.runtime_approvals[\"payload/${key}\"].role == v.role && var.runtime_approvals[\"payload/${key}\"].support_sha256 == local.wp3_contract.support_sha256 && can(regex(\"^${var.account_id}[.]dkr[.]ecr[.]${var.region}[.]amazonaws[.]com/e1-payload-${key}@sha256:[0-9a-f]{64}$\", var.runtime_approvals[\"payload/${key}\"].uri)), false) }}",
+    "wp3_active": "${{ for key, v in local.wp3_ready : key => v if key != \"build/release\" || length(local.worker_ready) == 3 }}",
+    "payloads": "${contains(keys(local.wp3_active), \"build/release\") ? local.worker_ready : {}}",
+    "wp3_lambdas": "${{ for key, v in local.wp3_active : key => v if v.engine == \"LAMBDA\" }}",
+    "wp3_build": "${{ for key, v in local.wp3_active : key => v if key == \"build/release\" }}",
+    "evidence_bucket": "${\"demo-release-artifacts-${var.account_id}\"}",
+    "exchange_bucket": "${\"e1-quarantine-${var.account_id}-${var.region}\"}",
+    "wp3_extra_roles": "${{ for key, v in local.wp3_lambdas : key => v if !contains(keys(local.nodes), key) }}",
+    "wp3_role_arns": "${merge({ for key, v in aws_iam_role.execution : key => v.arn }, { for key, v in aws_iam_role.wp3_reserved : key => v.arn })}",
+    "wp3_config": "${{ for key, v in local.wp3_active : key => jsonencode({ binding = key, account = var.account_id, region = var.region, bundle = { class = v.install.class, consumer = v.install.consumer, bucket = v.install.bucket, key = v.install.key, version_id = v.install.version_id, sha256 = v.install.sha256 }, runtime_image = v.runtime.uri, support_sha256 = local.wp3_contract.support_sha256, evidence_bucket = local.evidence_bucket, exchange_bucket = local.exchange_bucket }) }}",
+    "wp3_trust": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": "sts:AssumeRole",
+          "Principal": {
+            "Service": "lambda.amazonaws.com"
+          }
+        }
+      ]
+    },
+    "wp3_build_trust": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": "sts:AssumeRole",
+          "Principal": {
+            "Service": "codebuild.amazonaws.com"
+          },
+          "Condition": {
+            "StringEquals": {
+              "aws:SourceAccount": "${var.account_id}"
+            },
+            "ArnEquals": {
+              "aws:SourceArn": "${\"arn:aws:codebuild:${var.region}:${var.account_id}:project/e1-controller-release\"}"
+            }
+          }
+        }
+      ]
+    },
+    "wp3_policy_templates": {
+      "request-gateway/release": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Action\": [\"codebuild:StartBuild\"], \"Resource\": [\"arn:aws:codebuild:${var.region}:${var.account_id}:project/e1-controller-release\"]}, {\"Effect\": \"Allow\", \"Action\": [\"s3:PutObject\"], \"Resource\": [\"arn:aws:s3:::${local.evidence_bucket}/operations/demo-api/*\"], \"Condition\": {\"StringEquals\": {\"s3:if-none-match\": \"*\"}}}, {\"Effect\": \"Allow\", \"Action\": [\"s3:GetObject\", \"s3:GetObjectVersion\"], \"Resource\": [\"arn:aws:s3:::${local.evidence_bucket}/operations/demo-api/*\"]}, {\"Effect\": \"Allow\", \"Action\": [\"s3:GetObject\", \"s3:GetObjectVersion\"], \"Resource\": [\"arn:aws:s3:::${local.evidence_bucket}/source-approvals/demo-api/*\"]}, {\"Effect\": \"Allow\", \"Action\": [\"s3:ListBucket\"], \"Resource\": [\"arn:aws:s3:::${local.evidence_bucket}\"], \"Condition\": {\"StringLike\": {\"s3:prefix\": [\"operations/demo-api/*\", \"source-approvals/demo-api/*\"]}, \"NumericEquals\": {\"s3:max-keys\": \"1\"}}}, {\"Effect\": \"Allow\", \"Action\": [\"s3:GetObjectVersion\"], \"Resource\": [\"arn:aws:s3:::e1-control-bundles-${var.account_id}-${var.region}/__BUNDLE_KEY__\"], \"Condition\": {\"StringEquals\": {\"s3:VersionId\": \"__VERSION__\"}}}, {\"Effect\": \"Allow\", \"Action\": [\"logs:CreateLogStream\", \"logs:PutLogEvents\"], \"Resource\": [\"arn:aws:logs:${var.region}:${var.account_id}:log-group:/aws/lambda/e1-gateway-release:log-stream:*\"]}]}",
+      "build/release": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Action\": [\"codebuild:StartBuild\", \"codebuild:BatchGetBuilds\"], \"Resource\": [\"arn:aws:codebuild:${var.region}:${var.account_id}:project/e1-controller-release-payload-dotnet\", \"arn:aws:codebuild:${var.region}:${var.account_id}:project/e1-controller-release-payload-image\", \"arn:aws:codebuild:${var.region}:${var.account_id}:project/e1-controller-release-payload-probe\"]}, {\"Effect\": \"Allow\", \"Action\": [\"s3:GetObject\", \"s3:GetObjectVersion\"], \"Resource\": [\"arn:aws:s3:::${local.evidence_bucket}/operations/demo-api/*\"]}, {\"Effect\": \"Allow\", \"Action\": [\"s3:PutObject\"], \"Resource\": [\"arn:aws:s3:::${local.evidence_bucket}/attempts/demo-api/*\"], \"Condition\": {\"StringEquals\": {\"s3:if-none-match\": \"*\"}}}, {\"Effect\": \"Allow\", \"Action\": [\"s3:GetObject\", \"s3:GetObjectVersion\"], \"Resource\": [\"arn:aws:s3:::${local.evidence_bucket}/attempts/demo-api/*\"]}, {\"Effect\": \"Allow\", \"Action\": [\"s3:PutObject\"], \"Resource\": [\"arn:aws:s3:::${local.evidence_bucket}/releases/demo-api/by-digest/*\"], \"Condition\": {\"StringEquals\": {\"s3:if-none-match\": \"*\"}}}, {\"Effect\": \"Allow\", \"Action\": [\"s3:GetObject\", \"s3:GetObjectVersion\"], \"Resource\": [\"arn:aws:s3:::${local.evidence_bucket}/releases/demo-api/by-digest/*\"]}, {\"Effect\": \"Allow\", \"Action\": [\"s3:GetObject\", \"s3:GetObjectVersion\"], \"Resource\": [\"arn:aws:s3:::${local.exchange_bucket}/quarantine/demo-api/*\"]}, {\"Effect\": \"Allow\", \"Action\": [\"s3:PutObject\"], \"Resource\": [\"arn:aws:s3:::${local.exchange_bucket}/quarantine/demo-api/*\"], \"Condition\": {\"StringEquals\": {\"s3:if-none-match\": \"*\"}}}, {\"Effect\": \"Allow\", \"Action\": [\"ecr:InitiateLayerUpload\", \"ecr:UploadLayerPart\", \"ecr:CompleteLayerUpload\", \"ecr:PutImage\", \"ecr:BatchGetImage\"], \"Resource\": [\"arn:aws:ecr:${var.region}:${var.account_id}:repository/demo-shared-demo-ms\"]}, {\"Effect\": \"Allow\", \"Action\": [\"s3:ListBucket\"], \"Resource\": [\"arn:aws:s3:::${local.evidence_bucket}\"], \"Condition\": {\"StringLike\": {\"s3:prefix\": [\"operations/demo-api/*\", \"attempts/demo-api/*\"]}, \"NumericEquals\": {\"s3:max-keys\": \"1\"}}}, {\"Effect\": \"Allow\", \"Action\": [\"s3:GetObjectVersion\"], \"Resource\": [\"arn:aws:s3:::e1-control-bundles-${var.account_id}-${var.region}/__BUNDLE_KEY__\"], \"Condition\": {\"StringEquals\": {\"s3:VersionId\": \"__VERSION__\"}}}, {\"Effect\": \"Allow\", \"Action\": [\"logs:CreateLogStream\", \"logs:PutLogEvents\"], \"Resource\": [\"arn:aws:logs:${var.region}:${var.account_id}:log-group:/aws/codebuild/e1-controller-release:log-stream:*\"]}]}",
+      "qualification-finalizer/qualification": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Action\": [\"codebuild:BatchGetBuilds\"], \"Resource\": [\"arn:aws:codebuild:${var.region}:${var.account_id}:project/e1-controller-release\"]}, {\"Effect\": \"Allow\", \"Action\": [\"s3:GetObject\", \"s3:GetObjectVersion\"], \"Resource\": [\"arn:aws:s3:::${local.evidence_bucket}/operations/demo-api/*\"]}, {\"Effect\": \"Allow\", \"Action\": [\"s3:GetObject\", \"s3:GetObjectVersion\"], \"Resource\": [\"arn:aws:s3:::${local.evidence_bucket}/attempts/demo-api/*\"]}, {\"Effect\": \"Allow\", \"Action\": [\"s3:GetObjectVersion\"], \"Resource\": [\"arn:aws:s3:::${local.evidence_bucket}/releases/demo-api/by-digest/*\"]}, {\"Effect\": \"Allow\", \"Action\": [\"s3:PutObject\"], \"Resource\": [\"arn:aws:s3:::${local.evidence_bucket}/qualifications/demo-api/*\"], \"Condition\": {\"StringEquals\": {\"s3:if-none-match\": \"*\"}}}, {\"Effect\": \"Allow\", \"Action\": [\"s3:GetObject\", \"s3:GetObjectVersion\"], \"Resource\": [\"arn:aws:s3:::${local.evidence_bucket}/qualifications/demo-api/*\"]}, {\"Effect\": \"Allow\", \"Action\": [\"s3:ListBucket\"], \"Resource\": [\"arn:aws:s3:::${local.evidence_bucket}\"], \"Condition\": {\"StringLike\": {\"s3:prefix\": [\"operations/demo-api/*\", \"attempts/demo-api/*\", \"qualifications/demo-api/*\"]}, \"NumericEquals\": {\"s3:max-keys\": \"1\"}}}, {\"Effect\": \"Allow\", \"Action\": [\"s3:GetObjectVersion\"], \"Resource\": [\"arn:aws:s3:::e1-control-bundles-${var.account_id}-${var.region}/__BUNDLE_KEY__\"], \"Condition\": {\"StringEquals\": {\"s3:VersionId\": \"__VERSION__\"}}}, {\"Effect\": \"Allow\", \"Action\": [\"logs:CreateLogStream\", \"logs:PutLogEvents\"], \"Resource\": [\"arn:aws:logs:${var.region}:${var.account_id}:log-group:/aws/lambda/e1-qualification-finalizer:log-stream:*\"]}]}",
+      "status/status-neutral": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Action\": [\"s3:GetObject\", \"s3:GetObjectVersion\"], \"Resource\": [\"arn:aws:s3:::${local.evidence_bucket}/operations/demo-api/*\"]}, {\"Effect\": \"Allow\", \"Action\": [\"s3:GetObject\", \"s3:GetObjectVersion\"], \"Resource\": [\"arn:aws:s3:::${local.evidence_bucket}/attempts/demo-api/*\"]}, {\"Effect\": \"Allow\", \"Action\": [\"s3:ListBucket\"], \"Resource\": [\"arn:aws:s3:::${local.evidence_bucket}\"], \"Condition\": {\"StringLike\": {\"s3:prefix\": [\"operations/demo-api/*\", \"attempts/demo-api/*\"]}, \"NumericEquals\": {\"s3:max-keys\": \"1\"}}}, {\"Effect\": \"Allow\", \"Action\": [\"s3:GetObjectVersion\"], \"Resource\": [\"arn:aws:s3:::e1-control-bundles-${var.account_id}-${var.region}/__BUNDLE_KEY__\"], \"Condition\": {\"StringEquals\": {\"s3:VersionId\": \"__VERSION__\"}}}, {\"Effect\": \"Allow\", \"Action\": [\"logs:CreateLogStream\", \"logs:PutLogEvents\"], \"Resource\": [\"arn:aws:logs:${var.region}:${var.account_id}:log-group:/aws/lambda/e1-status-neutral:log-stream:*\"]}]}"
+    },
+    "completion": "${contains(keys(local.wp3_active), \"build/release\") && contains(keys(local.wp3_active), \"qualification-finalizer/qualification\") ? { release = true } : {}}",
+    "runtime_repositories": {
+      "e1-controller-request-gateway-release": {
+        "name": "e1-gateway-release",
+        "engine": "LAMBDA"
+      },
+      "e1-controller-build": {
+        "name": "e1-controller-release",
+        "engine": "CODEBUILD"
+      },
+      "e1-controller-qualification-finalizer-qualification": {
+        "name": "e1-qualification-finalizer",
+        "engine": "LAMBDA"
+      },
+      "e1-controller-status-status-neutral": {
+        "name": "e1-status-neutral",
+        "engine": "LAMBDA"
+      },
+      "e1-payload-dotnet": {
+        "name": "e1-controller-release-payload-dotnet",
+        "engine": "CODEBUILD"
+      },
+      "e1-payload-image": {
+        "name": "e1-controller-release-payload-image",
+        "engine": "CODEBUILD"
+      },
+      "e1-payload-probe": {
+        "name": "e1-controller-release-payload-probe",
+        "engine": "CODEBUILD"
+      }
+    }
   },
   "resource": {
     "terraform_data": {
@@ -34,7 +133,7 @@
       "execution": {
         "for_each": "${local.nodes}",
         "name": "${each.value.role_name}",
-        "assume_role_policy": "${jsonencode(var.authority.controller_compute.role_trust[each.value.engine])}",
+        "assume_role_policy": "${contains(keys(local.wp3_active), each.key) ? (each.value.engine == \"CODEBUILD\" ? jsonencode(local.wp3_build_trust) : jsonencode(local.wp3_trust)) : jsonencode(var.authority.controller_compute.role_trust[each.value.engine])}",
         "description": "WP2C inert execution identity: no trust Allow, deny all AWS actions.",
         "tags": {
           "E1Owner": "${each.value.owner}",
@@ -46,14 +145,36 @@
             "error_message": "WP2C cannot create or activate Lambda/CodeBuild instances; later reviewed installation required."
           }
         }
+      },
+      "wp3_reserved": {
+        "for_each": "${local.wp3_extra_roles}",
+        "name": "${\"${each.value.name}-exec\"}",
+        "assume_role_policy": "${jsonencode(local.wp3_trust)}"
+      },
+      "payload": {
+        "for_each": "${length(local.payloads) == 3 ? { payload = true } : {}}",
+        "name": "e1-controller-release-payload-exec",
+        "assume_role_policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Action\": \"sts:AssumeRole\", \"Principal\": {\"Service\": \"codebuild.amazonaws.com\"}, \"Condition\": {\"StringEquals\": {\"aws:SourceAccount\": \"${var.account_id}\"}, \"ArnEquals\": {\"aws:SourceArn\": [\"arn:aws:codebuild:${var.region}:${var.account_id}:project/e1-controller-release-payload-dotnet\", \"arn:aws:codebuild:${var.region}:${var.account_id}:project/e1-controller-release-payload-image\", \"arn:aws:codebuild:${var.region}:${var.account_id}:project/e1-controller-release-payload-probe\"]}}}]}"
       }
     },
     "aws_iam_role_policy": {
       "inert": {
-        "for_each": "${local.nodes}",
+        "for_each": "${{ for k,v in local.nodes : k=>v if !contains(keys(local.wp3_active),k) }}",
         "name": "wp2c-inert",
         "role": "${aws_iam_role.execution[each.key].id}",
         "policy": "${jsonencode(var.authority.policies.inert_permissions)}"
+      },
+      "wp3": {
+        "for_each": "${local.wp3_active}",
+        "name": "wp3-internal",
+        "role": "${\"${each.value.name}-exec\"}",
+        "policy": "${replace(replace(local.wp3_policy_templates[each.key], \"__BUNDLE_KEY__\", each.value.install.key), \"__VERSION__\", each.value.install.version_id)}"
+      },
+      "payload": {
+        "for_each": "${aws_iam_role.payload}",
+        "role": "${each.value.name}",
+        "name": "wp3-compromise-ceiling",
+        "policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Action\": [\"logs:CreateLogStream\", \"logs:PutLogEvents\"], \"Resource\": [\"arn:aws:logs:${var.region}:${var.account_id}:log-group:/aws/codebuild/e1-controller-release-payload-dotnet:log-stream:*\"]}, {\"Effect\": \"Allow\", \"Action\": [\"logs:CreateLogStream\", \"logs:PutLogEvents\"], \"Resource\": [\"arn:aws:logs:${var.region}:${var.account_id}:log-group:/aws/codebuild/e1-controller-release-payload-image:log-stream:*\"]}, {\"Effect\": \"Allow\", \"Action\": [\"logs:CreateLogStream\", \"logs:PutLogEvents\"], \"Resource\": [\"arn:aws:logs:${var.region}:${var.account_id}:log-group:/aws/codebuild/e1-controller-release-payload-probe:log-stream:*\"]}]}"
       }
     },
     "aws_lambda_function": {
@@ -74,6 +195,31 @@
           "E1Owner": "${each.value.owner}",
           "E1Stage": "${var.authority.controller_compute.stage}"
         }
+      },
+      "wp3": {
+        "for_each": "${local.wp3_lambdas}",
+        "function_name": "${each.value.name}",
+        "role": "${local.wp3_role_arns[each.key]}",
+        "package_type": "Image",
+        "image_uri": "${each.value.runtime.uri}",
+        "publish": true,
+        "timeout": 60,
+        "memory_size": 256,
+        "reserved_concurrent_executions": 1,
+        "image_config": {
+          "command": [
+            "runtime.handler"
+          ]
+        },
+        "environment": {
+          "variables": {
+            "E1_PROTECTED_CONFIGURATION": "${local.wp3_config[each.key]}"
+          }
+        },
+        "depends_on": [
+          "aws_cloudwatch_log_group.wp3",
+          "aws_iam_role_policy.wp3"
+        ]
       }
     },
     "aws_codebuild_project": {
@@ -115,6 +261,201 @@
           "E1Owner": "${each.value.owner}",
           "E1Stage": "${var.authority.controller_compute.stage}"
         }
+      },
+      "wp3": {
+        "for_each": "${local.wp3_build}",
+        "name": "${each.value.name}",
+        "service_role": "${local.wp3_role_arns[each.key]}",
+        "build_timeout": 60,
+        "source": {
+          "type": "NO_SOURCE",
+          "buildspec": "{\"version\": \"0.2\", \"phases\": {\"build\": {\"on-failure\": \"ABORT\", \"commands\": [\"python3 /opt/e1/scripts/internal_release/runtime.py\"]}}}"
+        },
+        "artifacts": {
+          "type": "NO_ARTIFACTS"
+        },
+        "environment": {
+          "type": "LINUX_CONTAINER",
+          "compute_type": "BUILD_GENERAL1_SMALL",
+          "image": "${each.value.runtime.uri}",
+          "image_pull_credentials_type": "CODEBUILD",
+          "privileged_mode": false,
+          "environment_variable": {
+            "name": "E1_PROTECTED_CONFIGURATION",
+            "type": "PLAINTEXT",
+            "value": "${local.wp3_config[each.key]}"
+          }
+        },
+        "cache": {
+          "type": "NO_CACHE"
+        },
+        "logs_config": {
+          "cloudwatch_logs": {
+            "status": "ENABLED",
+            "group_name": "${\"/aws/codebuild/${each.value.name}\"}"
+          },
+          "s3_logs": {
+            "status": "DISABLED"
+          }
+        },
+        "depends_on": [
+          "aws_cloudwatch_log_group.wp3"
+        ]
+      },
+      "payload": {
+        "for_each": "${local.payloads}",
+        "name": "${each.value.name}",
+        "service_role": "${aws_iam_role.payload[\"payload\"].arn}",
+        "build_timeout": 15,
+        "source": {
+          "type": "NO_SOURCE",
+          "buildspec": "${jsonencode(each.value.buildspec)}"
+        },
+        "artifacts": {
+          "type": "NO_ARTIFACTS"
+        },
+        "environment": {
+          "type": "LINUX_CONTAINER",
+          "compute_type": "BUILD_GENERAL1_SMALL",
+          "image": "${each.value.runtime.uri}",
+          "image_pull_credentials_type": "CODEBUILD",
+          "privileged_mode": "${each.value.privileged}",
+          "environment_variable": []
+        },
+        "cache": {
+          "type": "NO_CACHE"
+        },
+        "logs_config": {
+          "cloudwatch_logs": {
+            "status": "ENABLED",
+            "group_name": "${\"/aws/codebuild/${each.value.name}\"}"
+          },
+          "s3_logs": {
+            "status": "DISABLED"
+          }
+        },
+        "depends_on": [
+          "aws_cloudwatch_log_group.wp3"
+        ]
+      }
+    },
+    "aws_cloudwatch_log_group": {
+      "wp3": {
+        "for_each": "${merge({ for k,v in local.wp3_active : k => { name = \"${v.engine == \"LAMBDA\" ? \"/aws/lambda/\" : \"/aws/codebuild/\"}${v.name}\" } }, { for k,v in local.payloads : \"payload/${k}\" => { name = \"/aws/codebuild/${v.name}\" } })}",
+        "name": "${each.value.name}",
+        "retention_in_days": 14
+      }
+    },
+    "aws_s3_bucket": {
+      "quarantine": {
+        "bucket": "${local.exchange_bucket}",
+        "force_destroy": false
+      }
+    },
+    "aws_s3_bucket_versioning": {
+      "quarantine": {
+        "bucket": "${aws_s3_bucket.quarantine.id}",
+        "versioning_configuration": {
+          "status": "Enabled"
+        }
+      }
+    },
+    "aws_s3_bucket_public_access_block": {
+      "quarantine": {
+        "bucket": "${aws_s3_bucket.quarantine.id}",
+        "block_public_acls": true,
+        "ignore_public_acls": true,
+        "block_public_policy": true,
+        "restrict_public_buckets": true
+      }
+    },
+    "aws_s3_bucket_server_side_encryption_configuration": {
+      "quarantine": {
+        "bucket": "${aws_s3_bucket.quarantine.id}",
+        "rule": {
+          "apply_server_side_encryption_by_default": {
+            "sse_algorithm": "AES256"
+          }
+        }
+      }
+    },
+    "aws_s3_bucket_lifecycle_configuration": {
+      "quarantine": {
+        "bucket": "${aws_s3_bucket.quarantine.id}",
+        "rule": {
+          "id": "disposable-quarantine",
+          "status": "Enabled",
+          "filter": {
+            "prefix": "quarantine/"
+          },
+          "expiration": {
+            "days": 1
+          },
+          "noncurrent_version_expiration": {
+            "noncurrent_days": 1
+          },
+          "abort_incomplete_multipart_upload": {
+            "days_after_initiation": 1
+          }
+        }
+      }
+    },
+    "aws_s3_bucket_policy": {
+      "quarantine": {
+        "bucket": "${aws_s3_bucket.quarantine.id}",
+        "policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Sid\": \"TLS\", \"Effect\": \"Deny\", \"Principal\": \"*\", \"Action\": [\"s3:*\"], \"Resource\": [\"arn:aws:s3:::${local.exchange_bucket}\", \"arn:aws:s3:::${local.exchange_bucket}/*\"], \"Condition\": {\"Bool\": {\"aws:SecureTransport\": \"false\"}}}, {\"Sid\": \"ControllerOrAdmin\", \"Effect\": \"Deny\", \"Principal\": \"*\", \"Action\": [\"s3:*\"], \"Resource\": [\"arn:aws:s3:::${local.exchange_bucket}\", \"arn:aws:s3:::${local.exchange_bucket}/*\"], \"Condition\": {\"ArnNotEquals\": {\"aws:PrincipalArn\": [\"${var.admin_arn}\", \"arn:aws:iam::${var.account_id}:role/e1-controller-release-exec\"]}}}, {\"Sid\": \"CreateOnly\", \"Effect\": \"Deny\", \"Principal\": \"*\", \"Action\": [\"s3:PutObject\"], \"Resource\": [\"arn:aws:s3:::${local.exchange_bucket}/*\"], \"Condition\": {\"StringNotEquals\": {\"s3:if-none-match\": \"*\"}}}]}"
+      },
+      "evidence": {
+        "bucket": "${local.evidence_bucket}",
+        "policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Sid\": \"TLS\", \"Effect\": \"Deny\", \"Principal\": \"*\", \"Action\": [\"s3:*\"], \"Resource\": [\"arn:aws:s3:::${local.evidence_bucket}\", \"arn:aws:s3:::${local.evidence_bucket}/*\"], \"Condition\": {\"Bool\": {\"aws:SecureTransport\": \"false\"}}}, {\"Sid\": \"NoOrdinaryDelete\", \"Effect\": \"Deny\", \"Principal\": \"*\", \"Action\": [\"s3:DeleteObject\", \"s3:DeleteObjectVersion\"], \"Resource\": [\"arn:aws:s3:::${local.evidence_bucket}/*\"], \"Condition\": {\"ArnNotEquals\": {\"aws:PrincipalArn\": \"${var.admin_arn}\"}}}, {\"Sid\": \"ImmutableWrites\", \"Effect\": \"Deny\", \"Principal\": \"*\", \"Action\": [\"s3:PutObject\"], \"Resource\": [\"arn:aws:s3:::${local.evidence_bucket}/operations/*\", \"arn:aws:s3:::${local.evidence_bucket}/attempts/*\", \"arn:aws:s3:::${local.evidence_bucket}/releases/demo-api/by-digest/*\", \"arn:aws:s3:::${local.evidence_bucket}/qualifications/*\"], \"Condition\": {\"StringNotEquals\": {\"s3:if-none-match\": \"*\"}}}, {\"Sid\": \"Writer0\", \"Effect\": \"Deny\", \"Principal\": \"*\", \"Action\": [\"s3:PutObject\"], \"Resource\": [\"arn:aws:s3:::${local.evidence_bucket}/operations/*\"], \"Condition\": {\"ArnNotEquals\": {\"aws:PrincipalArn\": [\"${var.admin_arn}\", \"arn:aws:iam::${var.account_id}:role/e1-gateway-release-exec\"]}}}, {\"Sid\": \"Writer1\", \"Effect\": \"Deny\", \"Principal\": \"*\", \"Action\": [\"s3:PutObject\"], \"Resource\": [\"arn:aws:s3:::${local.evidence_bucket}/attempts/*\"], \"Condition\": {\"ArnNotEquals\": {\"aws:PrincipalArn\": [\"${var.admin_arn}\", \"arn:aws:iam::${var.account_id}:role/e1-controller-release-exec\"]}}}, {\"Sid\": \"Writer2\", \"Effect\": \"Deny\", \"Principal\": \"*\", \"Action\": [\"s3:PutObject\"], \"Resource\": [\"arn:aws:s3:::${local.evidence_bucket}/releases/demo-api/by-digest/*\"], \"Condition\": {\"ArnNotEquals\": {\"aws:PrincipalArn\": [\"${var.admin_arn}\", \"arn:aws:iam::${var.account_id}:role/e1-controller-release-exec\"]}}}, {\"Sid\": \"Writer3\", \"Effect\": \"Deny\", \"Principal\": \"*\", \"Action\": [\"s3:PutObject\"], \"Resource\": [\"arn:aws:s3:::${local.evidence_bucket}/qualifications/*\"], \"Condition\": {\"ArnNotEquals\": {\"aws:PrincipalArn\": [\"${var.admin_arn}\", \"arn:aws:iam::${var.account_id}:role/e1-qualification-finalizer-exec\"]}}}, {\"Sid\": \"Writer4\", \"Effect\": \"Deny\", \"Principal\": \"*\", \"Action\": [\"s3:PutObject\"], \"Resource\": [\"arn:aws:s3:::${local.evidence_bucket}/eligibility/*\"], \"Condition\": {\"ArnNotEquals\": {\"aws:PrincipalArn\": [\"${var.admin_arn}\"]}}}, {\"Sid\": \"Writer5\", \"Effect\": \"Deny\", \"Principal\": \"*\", \"Action\": [\"s3:PutObject\"], \"Resource\": [\"arn:aws:s3:::${local.evidence_bucket}/source-approvals/*\"], \"Condition\": {\"ArnNotEquals\": {\"aws:PrincipalArn\": [\"${var.admin_arn}\"]}}}]}"
+      }
+    },
+    "aws_cloudwatch_event_rule": {
+      "completion": {
+        "for_each": "${local.completion}",
+        "name": "e1-release-completion",
+        "event_pattern": "{\"source\": [\"aws.codebuild\"], \"detail-type\": [\"CodeBuild Build State Change\"], \"account\": [\"${var.account_id}\"], \"region\": [\"${var.region}\"], \"detail\": {\"project-name\": [\"e1-controller-release\"], \"build-status\": [\"SUCCEEDED\", \"FAILED\", \"STOPPED\"]}}"
+      }
+    },
+    "aws_cloudwatch_event_target": {
+      "finalizer": {
+        "for_each": "${local.completion}",
+        "rule": "${aws_cloudwatch_event_rule.completion[each.key].name}",
+        "target_id": "qualification",
+        "arn": "${aws_lambda_function.wp3[\"qualification-finalizer/qualification\"].qualified_arn}"
+      }
+    },
+    "aws_lambda_permission": {
+      "completion": {
+        "for_each": "${local.completion}",
+        "statement_id": "ExactOuterCompletion",
+        "action": "lambda:InvokeFunction",
+        "function_name": "${aws_lambda_function.wp3[\"qualification-finalizer/qualification\"].function_name}",
+        "qualifier": "${aws_lambda_function.wp3[\"qualification-finalizer/qualification\"].version}",
+        "principal": "events.amazonaws.com",
+        "source_account": "${var.account_id}",
+        "source_arn": "${aws_cloudwatch_event_rule.completion[each.key].arn}"
+      }
+    },
+    "aws_ecr_repository_policy": {
+      "probe": {
+        "repository": "demo-shared-demo-ms",
+        "policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Sid\": \"ExactProbePull\", \"Effect\": \"Allow\", \"Principal\": {\"Service\": \"codebuild.amazonaws.com\"}, \"Action\": [\"ecr:BatchCheckLayerAvailability\", \"ecr:GetDownloadUrlForLayer\", \"ecr:BatchGetImage\"], \"Condition\": {\"StringEquals\": {\"aws:SourceAccount\": \"${var.account_id}\"}, \"ArnEquals\": {\"aws:SourceArn\": \"arn:aws:codebuild:${var.region}:${var.account_id}:project/e1-controller-release-payload-probe\"}}}, {\"Sid\": \"ExclusiveContentPublisher\", \"Effect\": \"Deny\", \"Principal\": \"*\", \"Action\": [\"ecr:InitiateLayerUpload\", \"ecr:UploadLayerPart\", \"ecr:CompleteLayerUpload\", \"ecr:PutImage\"], \"Condition\": {\"ArnNotEquals\": {\"aws:PrincipalArn\": [\"${var.admin_arn}\", \"arn:aws:iam::${var.account_id}:role/e1-controller-release-exec\"]}}}, {\"Sid\": \"SeparateRepositoryAdministration\", \"Effect\": \"Deny\", \"Principal\": \"*\", \"Action\": [\"ecr:DeleteRepository\", \"ecr:DeleteRepositoryPolicy\", \"ecr:SetRepositoryPolicy\", \"ecr:PutLifecyclePolicy\", \"ecr:DeleteLifecyclePolicy\", \"ecr:BatchDeleteImage\", \"ecr:PutImageTagMutability\", \"ecr:PutImageScanningConfiguration\"], \"Condition\": {\"ArnNotEquals\": {\"aws:PrincipalArn\": \"${var.admin_arn}\"}}}]}"
+      },
+      "runtime": {
+        "for_each": "${local.runtime_repositories}",
+        "repository": "${aws_ecr_repository.runtime[each.key].name}",
+        "policy": "${jsonencode({ Version = \"2012-10-17\", Statement = [{ Effect = \"Allow\", Principal = { Service = each.value.engine == \"LAMBDA\" ? \"lambda.amazonaws.com\" : \"codebuild.amazonaws.com\" }, Action = [\"ecr:BatchGetImage\", \"ecr:GetDownloadUrlForLayer\", \"ecr:BatchCheckLayerAvailability\"], Condition = { StringEquals = { \"aws:SourceAccount\" = var.account_id }, ArnLike = { \"aws:SourceArn\" = each.value.engine == \"LAMBDA\" ? \"arn:aws:lambda:${var.region}:${var.account_id}:function:${each.value.name}\" : \"arn:aws:codebuild:${var.region}:${var.account_id}:project/${each.value.name}\" } } }] })}"
+      }
+    },
+    "aws_ecr_repository": {
+      "runtime": {
+        "for_each": "${local.runtime_repositories}",
+        "name": "${each.key}",
+        "image_tag_mutability": "IMMUTABLE",
+        "image_scanning_configuration": {
+          "scan_on_push": true
+        }
       }
     }
   },
@@ -127,6 +468,15 @@
         "declarations": "${local.nodes}",
         "gateway_instances": "${keys(local.gateways)}",
         "project_instances": "${keys(local.projects)}"
+      }
+    },
+    "internal_release": {
+      "value": {
+        "controllers": "${keys(local.wp3_active)}",
+        "workers": "${keys(local.payloads)}",
+        "external_invocations": [],
+        "bundle_readers": "${{ for k,v in local.wp3_active : k => local.wp3_role_arns[k] }}",
+        "live": "UNVERIFIED_NOT_DEPLOYED"
       }
     }
   }

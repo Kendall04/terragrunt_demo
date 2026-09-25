@@ -184,7 +184,8 @@ def wiring():
                        'try(local.nodes[each.value.downstream], null) })')
     guard = {"precondition": {"condition": ex("!var.authority.controller_compute.creation_supported && !var.authority.controller_compute.operational"),
              "error_message": "WP2C cannot create or activate Lambda/CodeBuild instances; later reviewed installation required."}}
-    return {
+    import internal
+    return internal.extend({
         "terraform": {"required_providers": {"aws": {"source": "hashicorp/aws", "version": "~> 5.50"}}},
         "variable": {"authority": {"type": "any"}},
         "locals": local,
@@ -222,4 +223,4 @@ def wiring():
             "operational": False, "live": ex("var.authority.controller_compute.live"),
             "declarations": ex("local.nodes"), "gateway_instances": ex("keys(local.gateways)"),
             "project_instances": ex("keys(local.projects)")}}},
-    }
+    })

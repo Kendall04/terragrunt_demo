@@ -14,6 +14,7 @@ import bundles
 import compute
 import ownership
 import ordinary
+import internal
 
 SUPPORT_FILES = {**ownership.RECOVERY_SOURCES, "terraform/infra/data/user_data.sh": "98b4d17937711d27244c161a35832d6f05135b59f5cb5609a5016fd19b10cd7b"}
 
@@ -26,6 +27,9 @@ SUPPORT_FILES.update({
     "scripts/build_supervision/supervisor.py": "d32304df12204160c20c0ad43c489121ee683756f7f694d1038d6c4811327c53",
     "scripts/qualification/finalizer.py": "229fa9a394169538f9158b4f1d3e8d5d4e15a0c21819ed90ac33a85eba4c7098"
 })
+
+# Explicit WP3C runtime support pins; no executable glob admission.
+SUPPORT_FILES.update({'scripts/internal_release/e1_contract.py': 'd9a401a7034ec4ef1b0cc1f2c9017d9fcfbe40dcd3c12736ef9bb6393a79c173', 'scripts/internal_release/exchange.py': '3abebea613fefa8f07a4325a1d49bd8a5332c5c9cd82ac1ac0164a9f3e697651', 'scripts/internal_release/publisher.py': 'c36be673645092b6f003a4678c755089625a82838fa9566683c831f8ecacb64d', 'scripts/internal_release/workers.py': 'e4cfc230649374aa0aafd6bffe9deb8bff1ca7e6aeeae746d9144fab4bd1bcb7', 'scripts/internal_release/adapters.py': '4357456410d36fbb1a004d08d6eb71db47149c8bea0dfa78a86ea5ecca389d34', 'scripts/internal_release/services.py': 'f5ed39fc14a8aa6814e619f16b48629fac065e39094985447e60ff7ca30fc2ca', 'scripts/internal_release/runtime.py': 'd3971fa0f3aa4d0f9e704ace400acae4bc26fda651d23e47bcb3c93a0d65d60c', 'scripts/internal_release/worker.py': '05f027ff30df883fffa2231367e03348dd4cf91a8233b8996554d9ff74cf6d2b'})
 
 BASELINE = "c8e880b552b5782e9bca94891b75a71b45ddc113"
 AUTHORITY = "terraform/infra/security/authority.json"
@@ -64,7 +68,7 @@ def load_authority(root):
     doc = load_json((Path(root) / AUTHORITY).read_text())
     keys(doc, {"format_version", "classification", "stage", "security_admin",
                "backend", "ownership", "request_identities", "policies",
-               "governance", "interfaces", "control_bundles", "controller_compute", "ownership_closure"}, "authority")
+               "governance", "interfaces", "control_bundles", "controller_compute", "ownership_closure", "internal_release"}, "authority")
     require(doc["format_version"] == 1 and doc["classification"] == "TARGET_REQUIREMENT"
             and doc["stage"] == "E1_WP2A_PROTECTED_SECURITY_ROOT_FOUNDATION", "stage")
     admin = doc["security_admin"]
@@ -145,6 +149,7 @@ def load_authority(root):
     bundles.validate_catalog(root, doc)
     compute.validate_compute(root, doc)
     ownership.validate_publications(doc)
+    internal.validate(root, doc)
     return doc
 
 
@@ -192,16 +197,25 @@ def wiring(doc):
     root["output"]["control_bundle_reservation"] = {"value": expression("module.control_bundle_storage.reservation"),
         "description": "TARGET reservation only; no installed bundle, consumer read grant or operational controller."}
     root["module"]["controller_compute"] = {
-        "source": "./modules/controller_compute", "authority": expression("local.authority")}
+        "source": "./modules/controller_compute", "authority": expression("local.authority"),
+        "account_id": expression("var.aws_account_id"), "region": expression("var.aws_region"),
+        "admin_arn": expression("var.security_admin_principal_arn"),
+        "installations": expression("local.authority.internal_release.installations"),
+        "runtime_approvals": expression("local.authority.internal_release.runtime_approvals"),
+        "depends_on": ["module.protected_resources"]}
     root["output"]["controller_compute_foundation"] = {
         "value": expression("module.controller_compute.foundation"),
         "description": "TARGET compute declarations only; zero Lambda/CodeBuild instances, no invocation authorization."}
     root["module"]["protected_resources"] = {"source": "./modules/protected_resources", "account_id": expression("var.aws_account_id"), "region": expression("var.aws_region")}
     root["output"]["protected_output_candidates"] = {"value": expression("module.protected_resources.protected_output_candidates")}
+    compute_module = compute.wiring()
+    compute_module["locals"]["evidence_bucket"] = expression('"' + doc["ownership_closure"]["resources"]["neutral/artifacts"]["name"] + '${var.account_id}"')
+    root["output"]["internal_release"] = {"value": expression("module.controller_compute.internal_release")}
+    root["module"]["control_bundle_storage"]["runtime_readers"] = expression("module.controller_compute.internal_release.bundle_readers")
     return {**ordinary.wiring(doc), **ownership.consumer_wiring(doc), ownership.MODULE: ownership.wiring(doc), "terraform/infra/security/main.tf.json": root,
             "terraform/infra/security/modules/request_identities/main.tf.json": child,
             bundles.MODULE: bundles.wiring(doc["control_bundles"]),
-            compute.MODULE: compute.wiring()}
+            compute.MODULE: compute_module}
 
 
 def wrapper(doc):

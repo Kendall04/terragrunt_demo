@@ -62,11 +62,20 @@
       "catalog": "${local.authority.control_bundles}",
       "account_id": "${var.aws_account_id}",
       "region": "${var.aws_region}",
-      "admin_arn": "${var.security_admin_principal_arn}"
+      "admin_arn": "${var.security_admin_principal_arn}",
+      "runtime_readers": "${module.controller_compute.internal_release.bundle_readers}"
     },
     "controller_compute": {
       "source": "./modules/controller_compute",
-      "authority": "${local.authority}"
+      "authority": "${local.authority}",
+      "account_id": "${var.aws_account_id}",
+      "region": "${var.aws_region}",
+      "admin_arn": "${var.security_admin_principal_arn}",
+      "installations": "${local.authority.internal_release.installations}",
+      "runtime_approvals": "${local.authority.internal_release.runtime_approvals}",
+      "depends_on": [
+        "module.protected_resources"
+      ]
     },
     "protected_resources": {
       "source": "./modules/protected_resources",
@@ -97,6 +106,9 @@
     },
     "protected_output_candidates": {
       "value": "${module.protected_resources.protected_output_candidates}"
+    },
+    "internal_release": {
+      "value": "${module.controller_compute.internal_release}"
     }
   }
 }

@@ -1,5 +1,9 @@
 # Development and validation entry points
 
+The WP3C [internal release implementation](e1-internal-release.md) adds hermetic
+adapter/authority acceptance and provider-free selective-compute fixtures.
+These never constitute live AWS isolation or deployment evidence.
+
 ## CURRENT CONTRACT — toolchain and coverage
 
 CI selects Terraform 1.13.4, Terragrunt 0.93.3 and .NET SDK 8.0.x.

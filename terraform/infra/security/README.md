@@ -1,5 +1,9 @@
 # E1 WP2A — protected security root foundation
 
+WP3C adds [internal release wiring](../../docs/e1-internal-release.md) within this
+root. Canonical installation/runtime records remain empty; no live resources or
+external request authority are claimed.
+
 Classification: `E1_WP2A_PROTECTED_SECURITY_ROOT_FOUNDATION`.
 Repository foundation only; **not deployed, not WP2 complete, not E1 secure**.
 The accepted baseline is `c8e880b552b5782e9bca94891b75a71b45ddc113`.

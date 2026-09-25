@@ -18,6 +18,12 @@ EXECUTABLE_SOURCES = {
     "qualification-finalizer": ("scripts/build_supervision/entrypoint.py", "scripts/qualification/finalizer.py",
                                "ci/schemas/e1-qualification.schema.json", "ci/schemas/release-manifest.schema.json"),
 }
+# Explicit WP3C additions; accepted build/finalizer package inputs remain unchanged.
+_WP3C = tuple("scripts/internal_release/" + name + ".py" for name in
+    ("e1_contract", "exchange", "publisher", "workers", "adapters", "services", "runtime", "worker"))
+for _class in ("request-gateway", "status"):
+    EXECUTABLE_SOURCES[_class] = EXECUTABLE_SOURCES["build"] + _WP3C
+
 MODULE = "terraform/infra/security/modules/control_bundle_storage/main.tf.json"
 OWNER = "SECURITY_ROOT_OWNED"
 # Plan sections 1, 4.1, 5.1, 6.2, 8. These constrain class admission, not IAM grants.
@@ -80,8 +86,8 @@ def artifact(root, catalog, name):
             "ownership_closure": {"resources": {k: {"name": authority["ownership_closure"]["resources"][k]["name"]}
                 for k in ("neutral/repository", "neutral/artifacts")}}}
         package["files"]["terraform/infra/security/authority.json"] = base64.b64encode(canonical(config)).decode("ascii")
-        package["executable"] = {"language": "PYTHON", "version": ">=3.10", "dependencies": "STDLIB_ONLY",
-            "entrypoint": "scripts/build_supervision/entrypoint.py:" + ("build" if name == "build" else "finalize"),
+        package["executable"] = {"language": "PYTHON", "version": ">=3.10", "dependencies": ("AWS_SDK_FROM_APPROVED_RUNTIME" if name in ("request-gateway", "status") else "STDLIB_ONLY"),
+            "entrypoint": ("scripts/internal_release/runtime.py:handler" if name in ("request-gateway", "status") else "scripts/build_supervision/entrypoint.py:" + ("build" if name == "build" else "finalize")),
             "host": "ADMIN_AUTHENTICATED_ADAPTERS_REQUIRED", "activation": False,
             "controller_image": {"owner": OWNER, "binding": name + "/" + next(iter(entry["consumers"])),
                 "uri": None, "approval": "UNVERIFIED", "requirement": "ADMIN_APPROVED_EXACT_REPOSITORY_AND_SHA256"}}
@@ -198,7 +204,7 @@ def wiring(catalog):
     bucket = ex("aws_s3_bucket.bundles.id")
     return {"terraform": {"required_providers": {"aws": {"source": "hashicorp/aws", "version": "~> 5.50"}}},
         "variable": {"catalog": {"type": "any"}, "account_id": {"type": "string"}, "region": {"type": "string"},
-                     "admin_arn": {"type": "string"}},
+                     "admin_arn": {"type": "string"}, "runtime_readers": {"type": "map(string)", "default": {}}},
         "resource": {
             "aws_s3_bucket": {"bundles": {"bucket": ex('"${var.catalog.storage.bucket_prefix}${var.account_id}-${var.region}"'),
                 "force_destroy": ex("var.catalog.storage.force_destroy"),
@@ -214,6 +220,6 @@ def wiring(catalog):
             "aws_s3_bucket_server_side_encryption_configuration": {"bundles": {"bucket": bucket,
                 "rule": {"apply_server_side_encryption_by_default": {"sse_algorithm": ex("var.catalog.storage.encryption")}}}},
             "aws_s3_bucket_policy": {"bundles": {"bucket": bucket,
-                "policy": ex('replace(replace(jsonencode(var.catalog.storage.policy), "__BUCKET_ARN__", aws_s3_bucket.bundles.arn), "__ADMIN_ARN__", var.admin_arn)')}}},
+                "policy": ex('length(var.runtime_readers) == 0 ? replace(replace(jsonencode(var.catalog.storage.policy), "__BUCKET_ARN__", aws_s3_bucket.bundles.arn), "__ADMIN_ARN__", var.admin_arn) : jsonencode({ Version = "2012-10-17", Statement = [{ Sid = "AdminMutations", Effect = "Deny", Principal = "*", NotAction = "s3:GetObjectVersion", Resource = [aws_s3_bucket.bundles.arn, "${aws_s3_bucket.bundles.arn}/*"], Condition = { ArnNotEquals = { "aws:PrincipalArn" = var.admin_arn } } }, { Sid = "ExactRuntimeReaders", Effect = "Deny", Principal = "*", Action = "s3:GetObjectVersion", Resource = "${aws_s3_bucket.bundles.arn}/*", Condition = { ArnNotEquals = { "aws:PrincipalArn" = concat([var.admin_arn], values(var.runtime_readers)) } } }, { Sid = "TLS", Effect = "Deny", Principal = "*", Action = "s3:*", Resource = [aws_s3_bucket.bundles.arn, "${aws_s3_bucket.bundles.arn}/*"], Condition = { Bool = { "aws:SecureTransport" = "false" } } }, { Sid = "CreateOnly", Effect = "Deny", Principal = "*", Action = "s3:PutObject", Resource = "${aws_s3_bucket.bundles.arn}/*", Condition = { StringNotEquals = { "s3:if-none-match" = "*" } } }] })')}}},
         "output": {"reservation": {"value": {"bucket_id": bucket, "catalog": ex("var.catalog"),
                     "operational": False, "installation": "UNVERIFIED"}}}}

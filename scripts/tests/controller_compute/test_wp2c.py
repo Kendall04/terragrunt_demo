@@ -246,7 +246,13 @@ class ComputeTests(unittest.TestCase):
 
     def test_23_fixed_templates_have_no_invocation_or_extra_permissions(self):
         tf = wiring(self.doc)[compute.MODULE]
-        self.assertEqual(set(tf["resource"]), {"terraform_data", "aws_iam_role", "aws_iam_role_policy", "aws_lambda_function", "aws_codebuild_project"})
+        # WP2 skeleton remains inert; WP3C additions have their own exact gates
+        # and acceptance matrix. Enumerate additions rather than allowing any.
+        self.assertEqual(set(tf["resource"]), {"terraform_data", "aws_iam_role", "aws_iam_role_policy", "aws_lambda_function", "aws_codebuild_project",
+            "aws_cloudwatch_log_group", "aws_s3_bucket", "aws_s3_bucket_versioning",
+            "aws_s3_bucket_public_access_block", "aws_s3_bucket_server_side_encryption_configuration",
+            "aws_s3_bucket_lifecycle_configuration", "aws_s3_bucket_policy", "aws_cloudwatch_event_rule",
+            "aws_cloudwatch_event_target", "aws_lambda_permission", "aws_ecr_repository", "aws_ecr_repository_policy"})
         self.assertEqual(tf["resource"]["aws_lambda_function"]["gateway"]["for_each"], "${local.gateways}")
         self.assertEqual(tf["resource"]["aws_codebuild_project"]["controller"]["for_each"], "${local.projects}")
         self.assertEqual(tf["resource"]["aws_iam_role_policy"]["inert"]["policy"], "${jsonencode(var.authority.policies.inert_permissions)}")

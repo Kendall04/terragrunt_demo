@@ -5906,50 +5906,51 @@
       "necessity": "UNKNOWN"
     },
     "scripts/tests/security_root/model.py": {
-      "sha256": "93ca5ea43609a7e4326a2726bd1a6030369e6d68163ef240b6cffb18e3d64a57",
+      "sha256": "941f8fe1ba5d109136a3beb21343ab821c59398f4181c0ed6599ce31d4e5c531",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
-          138
+          142
         ],
         "role-input": [
-          45,
-          174,
-          187
+          49,
+          179,
+          192
         ],
         "launch-or-mutation": [
-          18,
-          31,
-          79,
-          118,
-          158,
-          160,
-          167,
-          169,
-          178,
-          201,
-          202,
-          211,
-          232,
-          249,
-          257,
-          258,
-          267,
-          269
+          19,
+          35,
+          83,
+          122,
+          163,
+          165,
+          172,
+          174,
+          183,
+          215,
+          216,
+          225,
+          246,
+          263,
+          271,
+          272,
+          281,
+          283
         ],
         "executable-dependency": [
-          18,
-          25,
+          19,
           26,
           27,
-          212
+          28,
+          32,
+          226
         ],
         "security-control": [
-          181,
-          182,
-          185,
           186,
-          187
+          187,
+          190,
+          191,
+          192
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -6046,7 +6047,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/authority.json": {
-      "sha256": "ce633e09cdd757d03c47d7ed531cf7c7fb932460ae32268add3385b9fd323605",
+      "sha256": "fabb3c62408dd46515976d2d2792a288892a941a9f64fef453e09473555830b0",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -6125,7 +6126,12 @@
           2449,
           2450,
           2451,
-          2452
+          2452,
+          2570,
+          2576,
+          2582,
+          2628,
+          2634
         ],
         "executable-dependency": [
           398,
@@ -6143,17 +6149,28 @@
           2448,
           2449,
           2450,
-          2451
+          2451,
+          2563,
+          2564,
+          2569,
+          2575,
+          2581,
+          2599,
+          2600,
+          2608,
+          2610,
+          2627,
+          2633
         ]
       },
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/main.tf.json": {
-      "sha256": "d60a4f67bf4fee4d48080d8906d1661baf2d3d6a6bfc2ae7c74d2fd53fcffbd3",
+      "sha256": "a30f070e19f9c58c0b9ae3f6e8330e5a208dce5dc8ad641344096a66212d5dec",
       "declarations": [],
       "signals": {
         "role-input": [
-          83
+          92
         ],
         "launch-or-mutation": [
           2,
@@ -6212,7 +6229,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/control_bundles/test_wp2b.py": {
-      "sha256": "6926823b1b103a142f2579aad70a383256cab8f705fee9abe95bc4a46bc2e94e",
+      "sha256": "142c7338d00c09255ceeead9d96ffb15e9adb861cb025448deb4b260e5d17bac",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -6220,59 +6237,62 @@
           38,
           40,
           41,
-          137,
-          146,
-          157,
-          158,
-          160,
+          141,
+          150,
           161,
           162,
-          170,
-          173,
-          186,
-          187,
-          234,
-          239
+          164,
+          165,
+          166,
+          174,
+          177,
+          190,
+          191,
+          238,
+          243
         ],
         "executable-dependency": [
-          187,
-          210
+          191,
+          214
         ],
         "security-control": [
           44,
-          160,
-          161,
-          162,
-          176,
-          240
+          164,
+          165,
+          166,
+          180,
+          244
         ]
       },
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/bundles.py": {
-      "sha256": "43aad0c3a8477b5f424addcf32103f0f19a0f9fa1d47efdfab466ecea016948b",
+      "sha256": "bc8aa257e95ebcadd7c770131a3bcb993746c8c9dcd4a03216f5b4c60b3a6719",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           13,
-          21,
-          29,
-          77,
-          82,
-          159,
-          161,
-          199
+          27,
+          35,
+          83,
+          88,
+          165,
+          167,
+          205,
+          223
         ],
         "executable-dependency": [
           15,
           16,
           18,
-          28,
-          84
+          22,
+          34,
+          90,
+          223
         ],
         "security-control": [
-          154,
-          216
+          160,
+          222
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -6295,16 +6315,20 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/modules/control_bundle_storage/main.tf.json": {
-      "sha256": "7f945d122d6f441771f582173b6c7c0e6ef931e3227dd950cfe61e321ccf76e4",
+      "sha256": "b159abef5ab44109261a6ca2409b284d90d16390c8c90ebbda5b557f44a11fdd",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           2,
           4,
-          5
+          5,
+          80
+        ],
+        "executable-dependency": [
+          80
         ],
         "security-control": [
-          73
+          77
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -6320,7 +6344,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/controller_compute/test_wp2c.py": {
-      "sha256": "8410a7dd1390e994b183169f09be9f2f073d247b631d33f687a870372e3849d2",
+      "sha256": "47f7aa513cf164e78f861105661338f30d6eb5ddb321fa1bfd8501477ec3ca42",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -6338,7 +6362,7 @@
           206,
           210,
           218,
-          249
+          251
         ],
         "executable-dependency": [
           161,
@@ -6350,14 +6374,16 @@
           165,
           195,
           215,
-          249,
-          252
+          251,
+          254,
+          255,
+          258
         ]
       },
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/compute.py": {
-      "sha256": "c53fcb78ce26c5290232ea09a44f3c91251ce8892ae448dcf26383db19d3bf4b",
+      "sha256": "492bf0c431878996f3d6828d79fe3801d6147bd34af9a160d91d2295698596d2",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -6365,41 +6391,82 @@
         ],
         "launch-or-mutation": [
           13,
-          188,
-          192
+          189,
+          193
         ],
         "executable-dependency": [
           21,
           101
         ],
         "security-control": [
-          193,
           194,
-          197,
+          195,
           198,
-          201,
-          207
+          199,
+          202,
+          208
         ]
       },
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/modules/controller_compute/main.tf.json": {
-      "sha256": "7e5092bcada234dd5fef29afd564240838db7df718e84ec0ed509f70af2f70f3",
+      "sha256": "1345cb829684bf868bbf1bfe1547dd22d632d7130a360fef24cb553dd88ff56c",
       "declarations": [],
       "signals": {
+        "credential-acquisition": [
+          54,
+          66,
+          157
+        ],
+        "role-input": [
+          47,
+          202,
+          268,
+          478
+        ],
         "launch-or-mutation": [
           2,
           4,
           5,
-          21
+          72,
+          75,
+          82,
+          83,
+          84,
+          85,
+          120,
+          157,
+          177,
+          295,
+          331,
+          344,
+          406,
+          410,
+          417,
+          443,
+          448
+        ],
+        "executable-dependency": [
+          48,
+          210,
+          272
         ],
         "security-control": [
-          33,
-          37,
-          51,
-          55,
-          63,
-          83
+          47,
+          132,
+          136,
+          152,
+          157,
+          160,
+          164,
+          174,
+          184,
+          221,
+          229,
+          308,
+          403,
+          428,
+          440
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -6499,7 +6566,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/ownership.py": {
-      "sha256": "59c4937c60a2b3101c1f9bc731cdd69edb332c357b6bad2b63a60cafa2ecab0f",
+      "sha256": "a2b12365fb8228dc997c32d92b1e75f33ae6559ab3259b1db2afb5b998fd96d4",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -6569,7 +6636,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/modules/protected_resources/main.tf.json": {
-      "sha256": "289da5668597287ea4333490fcf8fd6202cdcc581d090b2deca40cd1ad8ff5d5",
+      "sha256": "50750402f3ca372da4b9c9c914691eddb94ef7c155b8d25ad200625e304debb9",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -6594,10 +6661,10 @@
         ],
         "role-input": [
           283,
-          655,
-          667,
-          847,
-          859
+          652,
+          664,
+          844,
+          856
         ],
         "launch-or-mutation": [
           2,
@@ -6692,32 +6759,32 @@
           394,
           403,
           446,
-          522,
-          547,
-          559,
-          571,
-          583,
-          595,
-          607,
-          619,
-          631,
-          643,
-          655,
-          667,
-          679,
-          739,
-          751,
-          763,
-          775,
-          787,
-          799,
-          811,
-          823,
-          835,
-          847,
-          859,
-          871,
-          955
+          519,
+          544,
+          556,
+          568,
+          580,
+          592,
+          604,
+          616,
+          628,
+          640,
+          652,
+          664,
+          676,
+          736,
+          748,
+          760,
+          772,
+          784,
+          796,
+          808,
+          820,
+          832,
+          844,
+          856,
+          868,
+          952
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -8343,10 +8410,6 @@
       "semantic_status": "UNVERIFIED"
     },
     "ci/schemas/deployment-record.schema.json": {
-      "semantic_status": "UNVERIFIED",
-      "coverage": "Bounded WP3A source contract; deployment unverified.",
-      "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
-      "necessity": "WP3A qualification",
       "sha256": "750fa93dae92dd3204bebbd503d669300a9bb89b9c7d4065c402e8ee79e6a6ac",
       "declarations": [],
       "signals": {
@@ -8356,13 +8419,13 @@
           106,
           110
         ]
-      }
-    },
-    "ci/schemas/e1-qualification.schema.json": {
+      },
       "semantic_status": "UNVERIFIED",
       "coverage": "Bounded WP3A source contract; deployment unverified.",
       "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
-      "necessity": "WP3A qualification",
+      "necessity": "WP3A qualification"
+    },
+    "ci/schemas/e1-qualification.schema.json": {
       "sha256": "79ba84dfa4bd8ca5ce4955bc4a97a888cc79a28a06c8eee43063319508a8d8d0",
       "declarations": [],
       "signals": {
@@ -8372,48 +8435,48 @@
           321,
           363
         ]
-      }
-    },
-    "ci/schemas/release-manifest.schema.json": {
+      },
       "semantic_status": "UNVERIFIED",
       "coverage": "Bounded WP3A source contract; deployment unverified.",
       "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
-      "necessity": "WP3A qualification",
+      "necessity": "WP3A qualification"
+    },
+    "ci/schemas/release-manifest.schema.json": {
       "sha256": "d2ea7d5d27e257bc68b242c1f15518384445e41fd8ce82fac122934f2a0d5ebf",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           3
         ]
-      }
-    },
-    "scripts/qualification/finalizer.py": {
+      },
       "semantic_status": "UNVERIFIED",
       "coverage": "Bounded WP3A source contract; deployment unverified.",
       "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
-      "necessity": "WP3A qualification",
+      "necessity": "WP3A qualification"
+    },
+    "scripts/qualification/finalizer.py": {
       "sha256": "229fa9a394169538f9158b4f1d3e8d5d4e15a0c21819ed90ac33a85eba4c7098",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           103
         ]
-      }
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Bounded WP3A source contract; deployment unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
+      "necessity": "WP3A qualification"
     },
     "scripts/tests/qualification/run.py": {
-      "semantic_status": "UNVERIFIED",
-      "coverage": "Bounded WP3A source contract; deployment unverified.",
-      "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
-      "necessity": "WP3A qualification",
       "sha256": "034c5b3a9180fad95f6ea9d3f8c48ab098a21bcca9ba12027f840737292e54a6",
       "declarations": [],
-      "signals": {}
-    },
-    "scripts/tests/qualification/test_finalizer.py": {
+      "signals": {},
       "semantic_status": "UNVERIFIED",
       "coverage": "Bounded WP3A source contract; deployment unverified.",
       "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
-      "necessity": "WP3A qualification",
+      "necessity": "WP3A qualification"
+    },
+    "scripts/tests/qualification/test_finalizer.py": {
       "sha256": "d62e0b38a8fa50524d4baf50db65c3651a059306d3e3cd6cdaf80ca52fd284fc",
       "declarations": [],
       "signals": {
@@ -8424,13 +8487,13 @@
         "executable-dependency": [
           23
         ]
-      }
-    },
-    "scripts/tests/qualification/test_sensitivity.py": {
+      },
       "semantic_status": "UNVERIFIED",
       "coverage": "Bounded WP3A source contract; deployment unverified.",
       "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
-      "necessity": "WP3A qualification",
+      "necessity": "WP3A qualification"
+    },
+    "scripts/tests/qualification/test_sensitivity.py": {
       "sha256": "981af66eeb0ae2e7463af36a2f0b13db06ca85bca5ba037edd0fb2cb67bac8a5",
       "declarations": [],
       "signals": {
@@ -8438,35 +8501,35 @@
           67,
           78
         ]
-      }
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Bounded WP3A source contract; deployment unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
+      "necessity": "WP3A qualification"
     },
     "ci/schemas/e1-build-attempt.schema.json": {
-      "semantic_status": "UNVERIFIED",
-      "coverage": "Bounded WP3B offline executable supervision contract; live isolation unverified.",
-      "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
-      "necessity": "WP3B build supervision",
       "sha256": "359750f4c2ab7fe25b56b9d314c961bee5f5f144b29fefbbfbae44f4a3193173",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           52
         ]
-      }
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Bounded WP3B offline executable supervision contract; live isolation unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
+      "necessity": "WP3B build supervision"
     },
     "scripts/build_supervision/entrypoint.py": {
-      "semantic_status": "UNVERIFIED",
-      "coverage": "Bounded WP3B offline executable supervision contract; live isolation unverified.",
-      "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
-      "necessity": "WP3B build supervision",
       "sha256": "eab168fddef33d9591f5d6da3d3ada819cf0c2a28cbe4f75c3584bcc0ef1e3e5",
       "declarations": [],
-      "signals": {}
-    },
-    "scripts/build_supervision/supervisor.py": {
+      "signals": {},
       "semantic_status": "UNVERIFIED",
       "coverage": "Bounded WP3B offline executable supervision contract; live isolation unverified.",
       "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
-      "necessity": "WP3B build supervision",
+      "necessity": "WP3B build supervision"
+    },
+    "scripts/build_supervision/supervisor.py": {
       "sha256": "d32304df12204160c20c0ad43c489121ee683756f7f694d1038d6c4811327c53",
       "declarations": [],
       "signals": {
@@ -8486,22 +8549,22 @@
           364,
           387
         ]
-      }
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Bounded WP3B offline executable supervision contract; live isolation unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
+      "necessity": "WP3B build supervision"
     },
     "scripts/tests/build_supervision/run.py": {
-      "semantic_status": "UNVERIFIED",
-      "coverage": "Bounded WP3B offline executable supervision contract; live isolation unverified.",
-      "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
-      "necessity": "WP3B build supervision",
       "sha256": "a838c5e649ba3fee66c1945fa7556fbff0c90ea52fc499636811925e8a566330",
       "declarations": [],
-      "signals": {}
-    },
-    "scripts/tests/build_supervision/test_sensitivity.py": {
+      "signals": {},
       "semantic_status": "UNVERIFIED",
       "coverage": "Bounded WP3B offline executable supervision contract; live isolation unverified.",
       "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
-      "necessity": "WP3B build supervision",
+      "necessity": "WP3B build supervision"
+    },
+    "scripts/tests/build_supervision/test_sensitivity.py": {
       "sha256": "bc20cbe1513e1966ff96900f2e98e9ce3dab5b17e9cd15eaee0894b7e46623d7",
       "declarations": [],
       "signals": {
@@ -8512,13 +8575,13 @@
           40,
           47
         ]
-      }
-    },
-    "scripts/tests/build_supervision/test_supervisor.py": {
+      },
       "semantic_status": "UNVERIFIED",
       "coverage": "Bounded WP3B offline executable supervision contract; live isolation unverified.",
       "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
-      "necessity": "WP3B build supervision",
+      "necessity": "WP3B build supervision"
+    },
+    "scripts/tests/build_supervision/test_supervisor.py": {
       "sha256": "6bbcc5022181fd82be6b56a3388c9339c9b93604ea43a6c51a10b4cbf2b5077f",
       "declarations": [],
       "signals": {
@@ -8552,13 +8615,13 @@
           31,
           484
         ]
-      }
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Bounded WP3B offline executable supervision contract; live isolation unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
+      "necessity": "WP3B build supervision"
     },
     "scripts/tests/build_supervision/test_packaging.py": {
-      "semantic_status": "UNVERIFIED",
-      "coverage": "Bounded WP3B offline acceptance; live execution unverified.",
-      "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
-      "necessity": "WP3B build supervision",
       "sha256": "3709665d31759f4e08d2ebe06884e63246ed90b0cd8355a26a49adebee8f2303",
       "declarations": [],
       "signals": {
@@ -8575,7 +8638,429 @@
           69,
           71
         ]
-      }
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Bounded WP3B offline acceptance; live execution unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
+      "necessity": "WP3B build supervision"
+    },
+    "scripts/internal_release/adapters.py": {
+      "sha256": "4357456410d36fbb1a004d08d6eb71db47149c8bea0dfa78a86ea5ecca389d34",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          118,
+          125
+        ],
+        "executable-dependency": [
+          169,
+          175,
+          179
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP3C repository implementation and offline fixtures; live AWS authority remains unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED internal release implementation",
+      "necessity": "WP3C bounded split-plane implementation"
+    },
+    "scripts/internal_release/Controller.Dockerfile": {
+      "sha256": "3574bfcc67ee74537b9ef8623cb09fb2360da8bf8d8c86242624f23e8673fd3d",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          2,
+          19,
+          21
+        ],
+        "executable-dependency": [
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP3C repository implementation and offline fixtures; live AWS authority remains unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED internal release implementation",
+      "necessity": "WP3C bounded split-plane implementation"
+    },
+    "scripts/internal_release/e1_contract.py": {
+      "sha256": "d9a401a7034ec4ef1b0cc1f2c9017d9fcfbe40dcd3c12736ef9bb6393a79c173",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          76,
+          77,
+          78,
+          88,
+          89
+        ],
+        "executable-dependency": [
+          68,
+          75,
+          80,
+          85,
+          90,
+          115
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP3C repository implementation and offline fixtures; live AWS authority remains unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED internal release implementation",
+      "necessity": "WP3C bounded split-plane implementation"
+    },
+    "scripts/internal_release/exchange.py": {
+      "sha256": "3abebea613fefa8f07a4325a1d49bd8a5332c5c9cd82ac1ac0164a9f3e697651",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP3C repository implementation and offline fixtures; live AWS authority remains unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED internal release implementation",
+      "necessity": "WP3C bounded split-plane implementation"
+    },
+    "scripts/internal_release/publisher.py": {
+      "sha256": "c36be673645092b6f003a4678c755089625a82838fa9566683c831f8ecacb64d",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          93
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP3C repository implementation and offline fixtures; live AWS authority remains unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED internal release implementation",
+      "necessity": "WP3C bounded split-plane implementation"
+    },
+    "scripts/internal_release/runtime.py": {
+      "sha256": "d3971fa0f3aa4d0f9e704ace400acae4bc26fda651d23e47bcb3c93a0d65d60c",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          72,
+          76,
+          77,
+          92,
+          124
+        ],
+        "executable-dependency": [
+          65,
+          66,
+          119
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP3C repository implementation and offline fixtures; live AWS authority remains unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED internal release implementation",
+      "necessity": "WP3C bounded split-plane implementation"
+    },
+    "scripts/internal_release/services.py": {
+      "sha256": "f5ed39fc14a8aa6814e619f16b48629fac065e39094985447e60ff7ca30fc2ca",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          26,
+          88,
+          94
+        ],
+        "executable-dependency": [
+          16
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP3C repository implementation and offline fixtures; live AWS authority remains unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED internal release implementation",
+      "necessity": "WP3C bounded split-plane implementation"
+    },
+    "scripts/internal_release/Worker.Dockerfile": {
+      "sha256": "1b0688d2a03e1115050589619f5104bd0e22cfd0d3d7b621a460d3e3491a57f8",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          5
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP3C repository implementation and offline fixtures; live AWS authority remains unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED internal release implementation",
+      "necessity": "WP3C bounded split-plane implementation"
+    },
+    "scripts/internal_release/worker.py": {
+      "sha256": "05f027ff30df883fffa2231367e03348dd4cf91a8233b8996554d9ff74cf6d2b",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP3C repository implementation and offline fixtures; live AWS authority remains unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED internal release implementation",
+      "necessity": "WP3C bounded split-plane implementation"
+    },
+    "scripts/internal_release/workers.py": {
+      "sha256": "e4cfc230649374aa0aafd6bffe9deb8bff1ca7e6aeeae746d9144fab4bd1bcb7",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          13,
+          30
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP3C repository implementation and offline fixtures; live AWS authority remains unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED internal release implementation",
+      "necessity": "WP3C bounded split-plane implementation"
+    },
+    "scripts/tests/internal_release/check_packages.py": {
+      "sha256": "29e87db8f719049e473f265cbe734719d716d8ae49160e815680b2bdf6b14aed",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          39,
+          44,
+          46,
+          57,
+          79
+        ],
+        "executable-dependency": [
+          37,
+          38,
+          69,
+          71,
+          74
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP3C offline fixture; live authority unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED internal release implementation",
+      "necessity": "WP3C bounded acceptance"
+    },
+    "scripts/tests/internal_release/evaluate_compute.py": {
+      "sha256": "95bbe5a88981bc2bedbab0df2222f60910c3f15601b4f2505796e0b03b804b6d",
+      "declarations": [],
+      "signals": {
+        "role-input": [
+          15
+        ],
+        "launch-or-mutation": [
+          13,
+          14,
+          20,
+          41
+        ],
+        "security-control": [
+          17
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP3C repository implementation and offline fixtures; live AWS authority remains unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED internal release implementation",
+      "necessity": "WP3C bounded split-plane implementation"
+    },
+    "scripts/tests/internal_release/run.py": {
+      "sha256": "917eea7b7728f7f7f60c54b9539efb0598759c17979dec258a33778fac87312d",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP3C repository implementation and offline fixtures; live AWS authority remains unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED internal release implementation",
+      "necessity": "WP3C bounded split-plane implementation"
+    },
+    "scripts/tests/internal_release/test_adapters.py": {
+      "sha256": "62c2ca49129251b9096b85c318374f4553929d0d64daf546c9293cbc11a43b85",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          222,
+          236,
+          241,
+          265
+        ],
+        "executable-dependency": [
+          156,
+          159,
+          161,
+          168,
+          222,
+          249,
+          279,
+          293
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP3C repository implementation and offline fixtures; live AWS authority remains unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED internal release implementation",
+      "necessity": "WP3C bounded split-plane implementation"
+    },
+    "scripts/tests/internal_release/test_authority.py": {
+      "sha256": "be62c0015146da368ff9c4e7058324c30f770654b0f5e60f87fea4ded4912308",
+      "declarations": [],
+      "signals": {
+        "credential-acquisition": [
+          59,
+          96,
+          243
+        ],
+        "role-input": [
+          83,
+          239
+        ],
+        "launch-or-mutation": [
+          50,
+          51,
+          52,
+          53,
+          54,
+          55,
+          56,
+          57,
+          58,
+          59,
+          60,
+          61,
+          62,
+          63,
+          64,
+          72,
+          74,
+          97,
+          98,
+          99,
+          108,
+          114,
+          124,
+          131,
+          136,
+          138,
+          145,
+          162,
+          163,
+          175,
+          183,
+          192,
+          207,
+          208,
+          212,
+          214,
+          216,
+          217,
+          218,
+          224
+        ],
+        "executable-dependency": [
+          81,
+          114,
+          124,
+          175,
+          230,
+          236
+        ],
+        "security-control": [
+          84,
+          93,
+          102,
+          188,
+          189,
+          190,
+          240,
+          243
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP3C repository implementation and offline fixtures; live AWS authority remains unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED internal release implementation",
+      "necessity": "WP3C bounded split-plane implementation"
+    },
+    "scripts/tests/internal_release/test_mutations.py": {
+      "sha256": "0d1e9e1780a2f1232d9f9d48355138a39c85442671956a336feaad8cba3519a4",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          39
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP3C repository implementation and offline fixtures; live AWS authority remains unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED internal release implementation",
+      "necessity": "WP3C bounded split-plane implementation"
+    },
+    "scripts/tests/security_root/internal.py": {
+      "sha256": "da7408fd5be0eda03e002e97bdafdc0d4e024faa2d6be4a14b2d78b78533a39d",
+      "declarations": [],
+      "signals": {
+        "credential-acquisition": [
+          136
+        ],
+        "role-input": [
+          133,
+          160,
+          168,
+          181,
+          258
+        ],
+        "launch-or-mutation": [
+          53,
+          54,
+          56,
+          71,
+          84,
+          87,
+          90,
+          92,
+          136,
+          140,
+          150,
+          165,
+          178,
+          199,
+          202,
+          204,
+          205,
+          207,
+          208,
+          209,
+          216,
+          217,
+          223,
+          237,
+          240,
+          245,
+          255
+        ],
+        "executable-dependency": [
+          15,
+          52,
+          134,
+          170,
+          180
+        ],
+        "security-control": [
+          133,
+          141,
+          142,
+          145,
+          146,
+          147,
+          148,
+          149,
+          159,
+          161,
+          162,
+          163,
+          172,
+          184,
+          218,
+          228,
+          246,
+          253
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP3C repository implementation and offline fixtures; live AWS authority remains unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED internal release implementation",
+      "necessity": "WP3C bounded split-plane implementation"
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged"

@@ -431,7 +431,7 @@
           "promote-prod": "prod",
           "release": "neutral"
         },
-        "sha256": "0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
+        "sha256": "2c239bbb5916e6321864c523245c3dcc0f79ed98cd619f7e728533c64a00e537",
         "engine": "LAMBDA"
       },
       "build": {
@@ -463,7 +463,7 @@
           "status-dev": "dev",
           "status-prod": "prod"
         },
-        "sha256": "10bb83de76c8eefa49c1a96e04f25b3b86bffda3573a9b3b03380b406cb20e8b",
+        "sha256": "d6b1a4c1d0633e0ab5123f46346b896b53675d845715bb82ba137863194b9e94",
         "engine": "LAMBDA"
       },
       "environment-lifecycle": {
@@ -528,10 +528,10 @@
       "request-gateway/deploy-dev": {
         "class": "request-gateway",
         "consumer": "deploy-dev",
-        "bundle_id": "sha256:0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
-        "sha256": "0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
+        "bundle_id": "sha256:2c239bbb5916e6321864c523245c3dcc0f79ed98cd619f7e728533c64a00e537",
+        "sha256": "2c239bbb5916e6321864c523245c3dcc0f79ed98cd619f7e728533c64a00e537",
         "storage": "control-bundles",
-        "key": "bundles/sha256/0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4.json",
+        "key": "bundles/sha256/2c239bbb5916e6321864c523245c3dcc0f79ed98cd619f7e728533c64a00e537.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -539,10 +539,10 @@
       "request-gateway/emergency-dev": {
         "class": "request-gateway",
         "consumer": "emergency-dev",
-        "bundle_id": "sha256:0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
-        "sha256": "0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
+        "bundle_id": "sha256:2c239bbb5916e6321864c523245c3dcc0f79ed98cd619f7e728533c64a00e537",
+        "sha256": "2c239bbb5916e6321864c523245c3dcc0f79ed98cd619f7e728533c64a00e537",
         "storage": "control-bundles",
-        "key": "bundles/sha256/0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4.json",
+        "key": "bundles/sha256/2c239bbb5916e6321864c523245c3dcc0f79ed98cd619f7e728533c64a00e537.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -550,10 +550,10 @@
       "request-gateway/emergency-prod": {
         "class": "request-gateway",
         "consumer": "emergency-prod",
-        "bundle_id": "sha256:0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
-        "sha256": "0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
+        "bundle_id": "sha256:2c239bbb5916e6321864c523245c3dcc0f79ed98cd619f7e728533c64a00e537",
+        "sha256": "2c239bbb5916e6321864c523245c3dcc0f79ed98cd619f7e728533c64a00e537",
         "storage": "control-bundles",
-        "key": "bundles/sha256/0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4.json",
+        "key": "bundles/sha256/2c239bbb5916e6321864c523245c3dcc0f79ed98cd619f7e728533c64a00e537.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -561,10 +561,10 @@
       "request-gateway/infra-dev": {
         "class": "request-gateway",
         "consumer": "infra-dev",
-        "bundle_id": "sha256:0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
-        "sha256": "0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
+        "bundle_id": "sha256:2c239bbb5916e6321864c523245c3dcc0f79ed98cd619f7e728533c64a00e537",
+        "sha256": "2c239bbb5916e6321864c523245c3dcc0f79ed98cd619f7e728533c64a00e537",
         "storage": "control-bundles",
-        "key": "bundles/sha256/0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4.json",
+        "key": "bundles/sha256/2c239bbb5916e6321864c523245c3dcc0f79ed98cd619f7e728533c64a00e537.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -572,10 +572,10 @@
       "request-gateway/infra-high-risk-dev": {
         "class": "request-gateway",
         "consumer": "infra-high-risk-dev",
-        "bundle_id": "sha256:0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
-        "sha256": "0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
+        "bundle_id": "sha256:2c239bbb5916e6321864c523245c3dcc0f79ed98cd619f7e728533c64a00e537",
+        "sha256": "2c239bbb5916e6321864c523245c3dcc0f79ed98cd619f7e728533c64a00e537",
         "storage": "control-bundles",
-        "key": "bundles/sha256/0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4.json",
+        "key": "bundles/sha256/2c239bbb5916e6321864c523245c3dcc0f79ed98cd619f7e728533c64a00e537.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -583,10 +583,10 @@
       "request-gateway/infra-high-risk-prod": {
         "class": "request-gateway",
         "consumer": "infra-high-risk-prod",
-        "bundle_id": "sha256:0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
-        "sha256": "0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
+        "bundle_id": "sha256:2c239bbb5916e6321864c523245c3dcc0f79ed98cd619f7e728533c64a00e537",
+        "sha256": "2c239bbb5916e6321864c523245c3dcc0f79ed98cd619f7e728533c64a00e537",
         "storage": "control-bundles",
-        "key": "bundles/sha256/0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4.json",
+        "key": "bundles/sha256/2c239bbb5916e6321864c523245c3dcc0f79ed98cd619f7e728533c64a00e537.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -594,10 +594,10 @@
       "request-gateway/infra-prod": {
         "class": "request-gateway",
         "consumer": "infra-prod",
-        "bundle_id": "sha256:0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
-        "sha256": "0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
+        "bundle_id": "sha256:2c239bbb5916e6321864c523245c3dcc0f79ed98cd619f7e728533c64a00e537",
+        "sha256": "2c239bbb5916e6321864c523245c3dcc0f79ed98cd619f7e728533c64a00e537",
         "storage": "control-bundles",
-        "key": "bundles/sha256/0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4.json",
+        "key": "bundles/sha256/2c239bbb5916e6321864c523245c3dcc0f79ed98cd619f7e728533c64a00e537.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -605,10 +605,10 @@
       "request-gateway/promote-prod": {
         "class": "request-gateway",
         "consumer": "promote-prod",
-        "bundle_id": "sha256:0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
-        "sha256": "0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
+        "bundle_id": "sha256:2c239bbb5916e6321864c523245c3dcc0f79ed98cd619f7e728533c64a00e537",
+        "sha256": "2c239bbb5916e6321864c523245c3dcc0f79ed98cd619f7e728533c64a00e537",
         "storage": "control-bundles",
-        "key": "bundles/sha256/0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4.json",
+        "key": "bundles/sha256/2c239bbb5916e6321864c523245c3dcc0f79ed98cd619f7e728533c64a00e537.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -616,10 +616,10 @@
       "request-gateway/release": {
         "class": "request-gateway",
         "consumer": "release",
-        "bundle_id": "sha256:0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
-        "sha256": "0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4",
+        "bundle_id": "sha256:2c239bbb5916e6321864c523245c3dcc0f79ed98cd619f7e728533c64a00e537",
+        "sha256": "2c239bbb5916e6321864c523245c3dcc0f79ed98cd619f7e728533c64a00e537",
         "storage": "control-bundles",
-        "key": "bundles/sha256/0916cf7b9f04ff153c3cee8f82a0d299108c70aa9ca2d0e93a9437b5ef651ce4.json",
+        "key": "bundles/sha256/2c239bbb5916e6321864c523245c3dcc0f79ed98cd619f7e728533c64a00e537.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -649,10 +649,10 @@
       "status/status-neutral": {
         "class": "status",
         "consumer": "status-neutral",
-        "bundle_id": "sha256:10bb83de76c8eefa49c1a96e04f25b3b86bffda3573a9b3b03380b406cb20e8b",
-        "sha256": "10bb83de76c8eefa49c1a96e04f25b3b86bffda3573a9b3b03380b406cb20e8b",
+        "bundle_id": "sha256:d6b1a4c1d0633e0ab5123f46346b896b53675d845715bb82ba137863194b9e94",
+        "sha256": "d6b1a4c1d0633e0ab5123f46346b896b53675d845715bb82ba137863194b9e94",
         "storage": "control-bundles",
-        "key": "bundles/sha256/10bb83de76c8eefa49c1a96e04f25b3b86bffda3573a9b3b03380b406cb20e8b.json",
+        "key": "bundles/sha256/d6b1a4c1d0633e0ab5123f46346b896b53675d845715bb82ba137863194b9e94.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -660,10 +660,10 @@
       "status/status-dev": {
         "class": "status",
         "consumer": "status-dev",
-        "bundle_id": "sha256:10bb83de76c8eefa49c1a96e04f25b3b86bffda3573a9b3b03380b406cb20e8b",
-        "sha256": "10bb83de76c8eefa49c1a96e04f25b3b86bffda3573a9b3b03380b406cb20e8b",
+        "bundle_id": "sha256:d6b1a4c1d0633e0ab5123f46346b896b53675d845715bb82ba137863194b9e94",
+        "sha256": "d6b1a4c1d0633e0ab5123f46346b896b53675d845715bb82ba137863194b9e94",
         "storage": "control-bundles",
-        "key": "bundles/sha256/10bb83de76c8eefa49c1a96e04f25b3b86bffda3573a9b3b03380b406cb20e8b.json",
+        "key": "bundles/sha256/d6b1a4c1d0633e0ab5123f46346b896b53675d845715bb82ba137863194b9e94.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -671,10 +671,10 @@
       "status/status-prod": {
         "class": "status",
         "consumer": "status-prod",
-        "bundle_id": "sha256:10bb83de76c8eefa49c1a96e04f25b3b86bffda3573a9b3b03380b406cb20e8b",
-        "sha256": "10bb83de76c8eefa49c1a96e04f25b3b86bffda3573a9b3b03380b406cb20e8b",
+        "bundle_id": "sha256:d6b1a4c1d0633e0ab5123f46346b896b53675d845715bb82ba137863194b9e94",
+        "sha256": "d6b1a4c1d0633e0ab5123f46346b896b53675d845715bb82ba137863194b9e94",
         "storage": "control-bundles",
-        "key": "bundles/sha256/10bb83de76c8eefa49c1a96e04f25b3b86bffda3573a9b3b03380b406cb20e8b.json",
+        "key": "bundles/sha256/d6b1a4c1d0633e0ab5123f46346b896b53675d845715bb82ba137863194b9e94.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -2522,5 +2522,132 @@
         "ordinary": []
       }
     }
+  },
+  "internal_release": {
+    "schema": "E1_WP3C_SPLIT_PLANE_V1",
+    "owner": "SECURITY_ROOT_OWNED",
+    "selected": {
+      "request-gateway/release": {
+        "name": "e1-gateway-release",
+        "engine": "LAMBDA",
+        "bundle_digest": "2c239bbb5916e6321864c523245c3dcc0f79ed98cd619f7e728533c64a00e537"
+      },
+      "build/release": {
+        "name": "e1-controller-release",
+        "engine": "CODEBUILD",
+        "bundle_digest": "ef9ce1edd5331ea6dccebfa4ea9783c40650fd6b075e87c2ce0f3c6553701ec4"
+      },
+      "qualification-finalizer/qualification": {
+        "name": "e1-qualification-finalizer",
+        "engine": "LAMBDA",
+        "bundle_digest": "0e34a5cd928e91694083a46aba1291b1526b7c1c47faaed4fe51a4ea60eb8fae"
+      },
+      "status/status-neutral": {
+        "name": "e1-status-neutral",
+        "engine": "LAMBDA",
+        "bundle_digest": "d6b1a4c1d0633e0ab5123f46346b896b53675d845715bb82ba137863194b9e94"
+      }
+    },
+    "workers": {
+      "dotnet": {
+        "name": "e1-controller-release-payload-dotnet",
+        "owner": "build/release",
+        "role": "e1-controller-release-payload-exec",
+        "privileged": false,
+        "source": "NO_SOURCE",
+        "buildspec": {
+          "version": "0.2",
+          "phases": {
+            "install": {
+              "on-failure": "ABORT",
+              "commands": [
+                "python3 /opt/e1/scripts/internal_release/worker.py source"
+              ]
+            },
+            "pre_build": {
+              "on-failure": "ABORT",
+              "commands": [
+                "dotnet restore ./demo-api/terragrunt-demo.sln"
+              ]
+            },
+            "build": {
+              "on-failure": "ABORT",
+              "commands": [
+                "dotnet build ./demo-api/terragrunt-demo.sln --configuration Release --no-restore"
+              ]
+            },
+            "post_build": {
+              "on-failure": "ABORT",
+              "commands": [
+                "dotnet test ./demo-api/terragrunt-demo.sln --configuration Release --no-build --verbosity normal"
+              ]
+            }
+          }
+        }
+      },
+      "image": {
+        "name": "e1-controller-release-payload-image",
+        "owner": "build/release",
+        "role": "e1-controller-release-payload-exec",
+        "privileged": true,
+        "source": "NO_SOURCE",
+        "buildspec": {
+          "version": "0.2",
+          "phases": {
+            "install": {
+              "on-failure": "ABORT",
+              "commands": [
+                "python3 /opt/e1/scripts/internal_release/worker.py source",
+                "mkdir -p /etc/docker; printf '%s' '{\"features\":{\"containerd-snapshotter\":true}}' > /etc/docker/daemon.json",
+                "nohup dockerd --host=unix:///var/run/docker.sock >/tmp/e1-dockerd.log 2>&1 &",
+                "i=0; until docker info >/dev/null 2>&1; do i=$((i+1)); test \"$i\" -lt 30 || exit 1; sleep 1; done"
+              ]
+            },
+            "build": {
+              "on-failure": "ABORT",
+              "commands": [
+                "docker buildx build --provenance=false --sbom=false --platform linux/amd64 --output type=oci,dest=/tmp/e1-image.tar -f demo-api/Dockerfile demo-api",
+                "python3 /opt/e1/scripts/internal_release/worker.py output"
+              ]
+            }
+          }
+        }
+      },
+      "probe": {
+        "name": "e1-controller-release-payload-probe",
+        "owner": "build/release",
+        "role": "e1-controller-release-payload-exec",
+        "privileged": false,
+        "source": "NO_SOURCE",
+        "buildspec": {
+          "version": "0.2",
+          "phases": {
+            "pre_build": {
+              "on-failure": "ABORT",
+              "commands": [
+                "out=$(dotnet /app/terragrunt-demo.dll readiness-probe --check-capability) && test \"$out\" = readiness-probe-capability=available"
+              ]
+            },
+            "build": {
+              "on-failure": "ABORT",
+              "commands": [
+                "rc=0; READINESS_PROBE_TIMEOUT_SECONDS=1 READINESS_PROBE_REQUEST_TIMEOUT_SECONDS=1 READINESS_PROBE_INTERVAL_SECONDS=1 dotnet /app/terragrunt-demo.dll readiness-probe || rc=$?; test \"$rc\" -eq 1"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "support_sha256": "a1c0174b6b2d01f088f7189f032bfe337a4e0e448cc2f3c305e6d5b5a275f91f",
+    "installations": {},
+    "runtime_approvals": {},
+    "live": "UNVERIFIED_NOT_DEPLOYED",
+    "external_invocation": [],
+    "controller_skeleton_identities": 18,
+    "subordinate_worker_identities": 1,
+    "reserved_lambda_bindings": [
+      "qualification-finalizer/qualification",
+      "status/status-neutral"
+    ]
   }
 }

@@ -1,5 +1,10 @@
 # E1 WP3B — exact-source supervision and executable packaging
 
+The accepted WP3B core/package is preserved. [WP3C](e1-internal-release.md) adds
+AWS adapters in a separate protected runtime and moves application execution to
+compromise-expected workers. The adapter-absence statements below describe the
+WP3B checkpoint; no live supervision or publication has since been performed.
+
 TARGET repository implementation, pending independent review. WP3 remains
 incomplete. No AWS adapter, process/container isolation adapter, installed runtime,
 image publication, service trust or compute activation is supplied here.

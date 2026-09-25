@@ -227,8 +227,8 @@ def wiring(doc):
             put("aws_s3_bucket_versioning", label, {"bucket": ref(key, "id"), "versioning_configuration": {"status": "Enabled"}})
             put("aws_s3_bucket_ownership_controls", label, {"bucket": ref(key, "id"), "rule": {"object_ownership": "BucketOwnerEnforced"}})
             put("aws_s3_bucket_server_side_encryption_configuration", label, {"bucket": ref(key, "id"), "rule": {"apply_server_side_encryption_by_default": {"sse_algorithm": "AES256"}}})
-            # Retention remains CURRENT-equivalent. WP3 must separate/protect qualification prefixes.
-            put("aws_s3_bucket_lifecycle_configuration", label, {"bucket": ref(key, "id"), "rule": {"id": "retain-release-history", "status": "Enabled", "filter": {"prefix": ""}, "abort_incomplete_multipart_upload": {"days_after_initiation": 7}, "noncurrent_version_expiration": {"noncurrent_days": 365}}})
+            # WP3C preserves exact neutral evidence versions. Separate quarantine expires.
+            put("aws_s3_bucket_lifecycle_configuration", label, {"bucket": ref(key, "id"), "rule": {"id": "retain-release-history", "status": "Enabled", "filter": {"prefix": ""}, "abort_incomplete_multipart_upload": {"days_after_initiation": 7}, **({} if key == "neutral/artifacts" else {"noncurrent_version_expiration": {"noncurrent_days": 365}})}})
         elif kind == "oidc":
             # AWS obtains the provider thumbprint. No TLS data-source/network lookup at generation time.
             put("aws_iam_openid_connect_provider", label, {"url": "https://" + name, "client_id_list": ["sts.amazonaws.com"], "tags": tags})

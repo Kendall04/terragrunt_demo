@@ -94,6 +94,10 @@ class BundleTests(unittest.TestCase):
             name, consumer = key.split("/")
             c["consumer_references"][key] = consumer_reference(c, name, consumer)
             self.assertNotEqual(old[key]["bundle_id"], c["consumer_references"][key]["bundle_id"])
+        # WP3C adds selected-compute references to the same catalog. The admin
+        # replacement fixture must update these too; stale references reject.
+        import internal
+        doc['internal_release'] = internal.contract(root, c)
         (root / AUTHORITY).write_text(json.dumps(doc))
         validate_repository(root)  # Explicit admin-reviewed replacement model; still inactive.
 
