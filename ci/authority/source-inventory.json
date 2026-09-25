@@ -6406,14 +6406,14 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/ownership_publication/test_wp2d.py": {
-      "sha256": "401f5af38733cc3238260ce79196feea4d3236135d89ed1f23f4e9f95c5d1e3c",
+      "sha256": "2ee2b855509092604c3fc385e773b2961b932beadb5a33de56c7e66025bec269",
       "declarations": [],
       "signals": {
         "role-input": [
           112,
-          346,
-          356,
-          357
+          347,
+          357,
+          358
         ],
         "launch-or-mutation": [
           71,
@@ -6429,20 +6429,21 @@
           137,
           138,
           189,
-          296,
-          316,
-          320,
-          341,
-          345,
-          348,
-          355,
-          358,
-          372,
-          379
+          297,
+          317,
+          321,
+          342,
+          346,
+          349,
+          356,
+          359,
+          373,
+          380
         ],
         "executable-dependency": [
           206,
-          372
+          373,
+          513
         ],
         "security-control": [
           111,
@@ -6451,9 +6452,9 @@
           116,
           212,
           213,
-          297,
-          310,
-          349
+          298,
+          311,
+          350
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -6549,11 +6550,11 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/publication.py": {
-      "sha256": "d820b5ca043b3b8dad1467cc4355d8864be7473b197440d005caa3670c7b67f0",
+      "sha256": "550ab7d87730258170e029af7d2b14fee5e8b8f83392413341e772d3949b57d6",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          88
+          90
         ]
       },
       "semantic_status": "UNVERIFIED"

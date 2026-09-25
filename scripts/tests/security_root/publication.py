@@ -23,7 +23,9 @@ class AdminChannel(ABC):
     """External admin-authenticated channel; ordinary consumers get read-only access.
 
     read_output must return the dedicated protected_output_candidates output,
-    NOT state. read_publication must fail on absent/ambiguous provenance.
+    NOT state. read_publication must raise KeyError only for an absent key, and fail on
+    ambiguous provenance. Class-installation entries may be created only by the
+    verified installer; arbitrary caller records cannot enter that namespace.
     """
     @abstractmethod
     def read_output(self):
@@ -156,23 +158,68 @@ def validate_consumer_input(doc, account, region, consumer, supplied, protected_
     return copy.deepcopy(supplied)
 
 
-def install_bundle(root, doc, account, region, controller_class, consumer, raw, storage, admin):
-    """No VersionId parameter, no approval flag and no caller-selected bucket/key.
+def _installation_context(doc, account, region, controller_class):
+    context(account, region)
+    c = doc["control_bundles"]
+    require(controller_class in c["classes"], "canonical installation class")
+    ref = bundles.reference(c, controller_class)
+    return {"schema": "E1_CLASS_INSTALLATION_V1", "owner": ownership.OWNER,
+        "class": controller_class, "sha256": ref["sha256"],
+        "bucket": c["storage"]["bucket_prefix"] + account + "-" + region,
+        "key": ref["key"], "authority_digest": ownership.authority_digest(doc["ownership_closure"]),
+        "catalog_digest": ownership.digest(c), "installation": "VERIFIED",
+        "version_origin": "CONDITIONAL_WRITE_RETURN", "readback": "EXACT_VERSION_BYTES_VERIFIED",
+        "publisher": "SECURITY_ADMIN_EXTERNAL_BOOTSTRAP"}
 
-    Authentication of the two injected ports belongs to external bootstrap.
-    The production AWS adapters are deliberately absent; fake ports are tests only.
-    Publication success is not invocation authorization or executable readiness.
+
+def installation_key(doc, account, region, controller_class):
+    # Stable lookup detects stale/conflicting installations rather than adopting
+    # an existing object or silently switching to a different published version.
+    _installation_context(doc, account, region, controller_class)
+    return "class-installations/" + account + "/" + region + "/" + controller_class
+
+
+_ABSENT = object()
+
+
+def _read_optional(admin, key):
+    # Only an explicit missing-key response means absent. Transport/auth errors
+    # propagate; they are never a reason to overwrite or reinstall.
+    try:
+        return admin.read_publication(key)
+    except KeyError:
+        return _ABSENT
+
+
+def _validate_installation(doc, account, region, controller_class, evidence):
+    fixed = _installation_context(doc, account, region, controller_class)
+    require(isinstance(evidence, dict) and set(evidence) == set(fixed) | {"version_id", "installation_id"}, "closed class installation evidence")
+    require(all(type(evidence[k]) is type(v) and evidence[k] == v for k, v in fixed.items()), "current canonical installation provenance")
+    version = evidence["version_id"]
+    require(isinstance(version, str) and 0 < len(version) <= 1024 and version.strip() == version
+            and version.lower() not in ("null", "latest") and not any(ord(x) < 32 for x in version), "installed exact VersionId")
+    require(evidence["installation_id"] == ownership.digest({k: v for k, v in evidence.items() if k != "installation_id"}), "installation identity mismatch")
+    return copy.deepcopy(evidence)
+
+
+def install_class(root, doc, account, region, controller_class, raw, storage, admin):
+    """Install once or reuse evidence read ONLY from the trusted admin channel.
+
+    No evidence document/VersionId is accepted as an argument. The channel must
+    protect the class-installations namespace against arbitrary JSON insertion;
+    installation_id is a consistency checksum, never an authentication token.
     """
     from model import validate_repository
     require(validate_repository(root) == doc, "admitted authority required")
-    context(account, region)
     require(isinstance(storage, AdminBundleStorage) and isinstance(admin, AdminChannel), "external admin adapters required")
+    fixed = _installation_context(doc, account, region, controller_class)
     c = doc["control_bundles"]
-    approved = bundles.consumer_reference(c, controller_class, consumer)
     proposal = bundles.installation_proposal(root, c, controller_class, raw)
-    require(approved["sha256"] == proposal["reference"]["sha256"], "approved class digest")
-    bucket = c["storage"]["bucket_prefix"] + account + "-" + region
-    key = approved["key"]
+    lookup = installation_key(doc, account, region, controller_class)
+    existing = _read_optional(admin, lookup)
+    if existing is not _ABSENT:
+        return _validate_installation(doc, account, region, controller_class, existing)
+    bucket, key = fixed["bucket"], fixed["key"]
     ack = storage.put_if_absent(bucket, key, raw, proposal["checksum_sha256"])
     require(isinstance(ack, dict) and set(ack) == {"bucket", "key", "version_id"}, "write receipt fields")
     version = ack["version_id"]
@@ -184,12 +231,46 @@ def install_bundle(root, doc, account, region, controller_class, consumer, raw, 
     require({k: readback[k] for k in ack} == ack, "exact-version readback identity")
     bundles.verify_artifact(root, c, controller_class, readback["bytes"])
     require(readback["bytes"] == raw, "readback approved bytes")
+    evidence = {**fixed, "version_id": version}
+    evidence["installation_id"] = ownership.digest(evidence)
+    # Atomic create-only publication: no evidence exists before verification.
+    admin.create_publication(lookup, evidence)
+    return copy.deepcopy(evidence)
+
+
+def publish_consumer(root, doc, account, region, controller_class, consumer, admin):
+    """Resolve the canonical relation through protected class evidence, not a
+    consumer record, requester-supplied installation or arbitrary version selector.
+    Class/consumer arguments are administrator operation selectors only.
+    """
+    from model import validate_repository
+    require(validate_repository(root) == doc, "admitted authority required")
+    require(isinstance(admin, AdminChannel), "external admin channel required")
+    approved = bundles.consumer_reference(doc["control_bundles"], controller_class, consumer)
+    evidence = _validate_installation(doc, account, region, controller_class,
+        admin.read_publication(installation_key(doc, account, region, controller_class)))
+    require(approved["sha256"] == evidence["sha256"] and approved["key"] == evidence["key"], "canonical consumer installation binding")
     publication_key = "installed/" + controller_class + "/" + consumer + "/" + approved["sha256"]
     result = {"schema": "E1_INSTALLED_REFERENCE_V1", "owner": ownership.OWNER,
         "class": controller_class, "consumer": consumer, "sha256": approved["sha256"],
-        "bucket": bucket, "key": key, "version_id": version, "installation": "VERIFIED",
+        "bucket": evidence["bucket"], "key": evidence["key"], "version_id": evidence["version_id"], "installation": "VERIFIED",
         "readback": "EXACT_VERSION_BYTES_VERIFIED", "operational": False,
-        "executable": False, "authority_digest": ownership.authority_digest(doc["ownership_closure"]),
+        "executable": False, "authority_digest": evidence["authority_digest"],
+        "installation_id": evidence["installation_id"], "catalog_digest": evidence["catalog_digest"],
         "publisher": "SECURITY_ADMIN_EXTERNAL_BOOTSTRAP"}
+    existing = _read_optional(admin, publication_key)
+    if existing is not _ABSENT:
+        require(existing == result, "conflicting consumer publication")
+        return copy.deepcopy(existing)
     admin.create_publication(publication_key, result)
     return copy.deepcopy(result)
+
+
+def install_bundle(root, doc, account, region, controller_class, consumer, raw, storage, admin):
+    """Convenience admin operation: validate consumer, install class once, publish.
+    Existing storage conflicts are never caught/adopted. Reuse requires protected
+    evidence from a completed exact-version installation, not object existence.
+    """
+    bundles.consumer_reference(doc["control_bundles"], controller_class, consumer)
+    install_class(root, doc, account, region, controller_class, raw, storage, admin)
+    return publish_consumer(root, doc, account, region, controller_class, consumer, admin)

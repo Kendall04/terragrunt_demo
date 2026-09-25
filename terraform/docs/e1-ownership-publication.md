@@ -114,12 +114,15 @@ in test code and disposable evaluation files, never the canonical registry.
 ## Administrator installation and exact version
 
 `install_bundle` accepts an admitted class/consumer and approved canonical bytes,
-plus trusted admin storage/publication adapters. It does not accept a VersionId,
+plus trusted admin storage/publication adapters. The V2 implementation separates
+`install_class` from `publish_consumer`, retaining `install_bundle` as the simple
+administrator operation. It does not accept a VersionId,
 bucket/key selector, approval boolean, requester identity or runtime transport.
 It derives the protected bucket/key, verifies the bytes and checksum, performs a
 conditional create, validates the returned bucket/key/non-null version, reads
 exactly that version, checks response identity and verifies bytes/digest again.
-Only then does it create the protected installed-reference publication.
+Only then does it atomically create protected class-installation evidence.
+Consumer-specific installed references are published from that protected evidence.
 
 Write conflict, missing version, wrong response key/version/bytes or any read
 failure publishes nothing. A failed read can leave an unpublished uploaded object;
@@ -190,3 +193,49 @@ The accepted compute, bundle, request-identity and wrapper templates remain
 byte-identical. The authoritative spec/plan and accepted ancestry are preserved.
 This evidence requests independent review; it does not accept WP2 or prove live
 security administration, deployment or external adapter enforcement.
+
+## WP2D V2: shared installation and bounded consumer publication
+
+Physical evidence uses `E1_CLASS_INSTALLATION_V1`: class, approved digest,
+bucket/key, write-returned VersionId, exact-byte readback, catalog/ownership
+provenance and an installation identity checksum. The protected lookup is fixed
+by account/region/class; evidence must match the current admitted catalog.
+The checksum includes the version and all evidence fields. It detects inconsistent
+records; it is **not authentication or a signature**.
+
+Only `install_class` creates that evidence after verified readback. Public APIs
+accept no evidence JSON or caller VersionId. `publish_consumer` reads evidence
+through the separately authenticated, create-only administrator channel and checks
+the exact canonical class/consumer/digest/key relation. Production adapters must
+prevent arbitrary writes to this namespace. An administrator deliberately forging
+protected storage is outside the threat model; an owner string/checksum cannot
+make an untrusted input authentic. No production AWS adapter is supplied.
+
+One class installation supports every admitted consumer, including all nine
+request gateways, without another object write or read-latest. Each consumer
+reference includes the same installation identity and exact version. Exact retries
+return the existing reference unchanged; a differing reference fails. Missing-key
+responses alone permit a first installation; read/authentication failures propagate.
+Malformed/stale evidence fails before any upload. A storage conflict without
+protected evidence remains a failure, never an adoption mechanism.
+
+Write/read/verification failure creates neither class evidence nor consumer
+references. Class-publication failure leaves no trusted evidence. If class evidence
+is already committed but consumer publication fails, an explicit retry can publish
+that consumer from the verified evidence without uploading again. Adapter atomicity
+and authentication remain external deployment requirements. Concurrent create
+conflicts fail safely and may be retried; no overwrite/replacement is performed.
+
+Installation and publication do not change canonical reservations, compute maps,
+service trusts, role grants or recovery availability. V2 changes no ownership
+configuration, extraction inventory, dependency graph or Terraform templates.
+
+V2 correction validation: WP1 236, WP2A 18, WP2B 22, WP2C 24 and expanded
+WP2D 52 passed, with zero failures/errors/skips. All 35 V1 tests remain; the
+single-publication assertion now distinguishes class evidence from consumer
+references. An additional catalog-wide check published all 26 consumers using
+nine writes and nine exact-version readbacks. Provider-free Terraform after
+multi-consumer publication still returned 18 nodes, empty gateway/project maps
+and a true creation guard. Source inventory, syntax, links, formatting and diff
+checks passed. Ownership/configuration/spec/plan files remain unchanged. These
+results are correction evidence pending independent review, not WP2 acceptance.

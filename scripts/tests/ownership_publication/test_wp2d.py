@@ -222,7 +222,8 @@ class ClosureTests(unittest.TestCase):
         result, storage, admin = self.install()
         self.assertEqual(result["version_id"], "returned-version-A")
         self.assertEqual(storage.calls[1], ("get", result["bucket"], result["key"], result["version_id"]))
-        self.assertEqual(list(admin.publications.values()), [result])
+        self.assertEqual([v for v in admin.publications.values() if v["schema"] == "E1_INSTALLED_REFERENCE_V1"], [result])
+        self.assertEqual(len(admin.publications), 2)
         self.assertFalse(result["operational"])
         self.assertFalse(result["executable"])
 
@@ -379,6 +380,190 @@ class ClosureTests(unittest.TestCase):
         (root / "terraform/modules/target/dev/data/records.json").write_text('{"available":true}')
         with self.assertRaisesRegex(ValueError, "unadmitted protected-root file"):
             validate_repository(root)
+
+
+    def test_36_shared_class_two_consumers_one_write(self):
+        storage, admin = Storage(), Admin()
+        a, _, _ = self.install(storage, admin, "normal-delivery", "deploy-dev")
+        b, _, _ = self.install(storage, admin, "normal-delivery", "promote-prod")
+        self.assertEqual(a["version_id"], b["version_id"])
+        self.assertEqual(a["installation_id"], b["installation_id"])
+        self.assertEqual([c[0] for c in storage.calls], ["put", "get"])
+        self.assertEqual(len(admin.publications), 3)
+
+    def test_37_all_gateway_consumers_share_one_installation(self):
+        storage, admin = Storage(), Admin()
+        refs = [self.install(storage, admin, "request-gateway", c)[0]
+                for c in self.doc["control_bundles"]["classes"]["request-gateway"]["consumers"]]
+        self.assertEqual(len(refs), 9)
+        self.assertEqual(len({r["installation_id"] for r in refs}), 1)
+        self.assertEqual([c[0] for c in storage.calls], ["put", "get"])
+
+    def test_38_existing_object_without_evidence_rejected(self):
+        storage, admin = Storage(), Admin()
+        self.install(storage, admin)
+        fresh = Admin()
+        with self.assertRaises(FileExistsError):
+            self.install(storage, fresh)
+        self.assertEqual(fresh.publications, {})
+        self.assertEqual(sum(c[0] == "get" for c in storage.calls), 1)
+
+    def test_39_cross_class_and_unknown_consumers_rejected(self):
+        storage, admin = Storage(), Admin()
+        self.install(storage, admin, "normal-delivery", "deploy-dev")
+        for name, consumer in (("normal-delivery", "infra-dev"), ("normal-delivery", "unknown"),
+                               ("environment-lifecycle", "deploy-dev"), ("normal-delivery", "deploy-prod")):
+            with self.assertRaises((ValueError, KeyError)):
+                pub.publish_consumer(ROOT, self.doc, ACCOUNT, REGION, name, consumer, admin)
+        self.assertEqual(len(admin.publications), 2)
+
+    def test_40_tampered_class_evidence_rejected(self):
+        storage, admin = Storage(), Admin()
+        self.install(storage, admin, "normal-delivery", "deploy-dev")
+        key = pub.installation_key(self.doc, ACCOUNT, REGION, "normal-delivery")
+        good = copy.deepcopy(admin.publications[key])
+        for field, value in (("sha256", "a" * 64), ("key", "wrong"), ("version_id", "version-B"),
+                             ("class", "build"), ("authority_digest", "b" * 64),
+                             ("catalog_digest", "c" * 64), ("readback", "UNVERIFIED"),
+                             ("publisher", "ordinary"), ("schema", "unknown")):
+            admin.publications[key] = {**good, field: value}
+            with self.assertRaises(ValueError):
+                self.install(storage, admin, "normal-delivery", "promote-prod")
+        admin.publications[key] = good
+        self.assertEqual([c[0] for c in storage.calls], ["put", "get"])
+
+    def test_41_free_json_and_consumer_record_are_not_evidence(self):
+        storage, admin = Storage(), Admin()
+        ref, _, _ = self.install(storage, admin, "normal-delivery", "deploy-dev")
+        key = pub.installation_key(self.doc, ACCOUNT, REGION, "normal-delivery")
+        for fake in ({"verified": True}, ref):
+            admin.publications[key] = fake
+            with self.assertRaises(ValueError):
+                pub.publish_consumer(ROOT, self.doc, ACCOUNT, REGION, "normal-delivery", "promote-prod", admin)
+        with self.assertRaises(ValueError):
+            pub.publish_consumer(ROOT, self.doc, ACCOUNT, REGION, "normal-delivery", "promote-prod", ref)
+
+    def test_42_stale_canonical_source_rejected(self):
+        storage, admin = Storage(), Admin()
+        self.install(storage, admin)
+        for field, value in (("sha256", "a" * 64), ("key", "other-key")):
+            root = self.fixture()
+            d = copy.deepcopy(self.doc)
+            d["control_bundles"]["consumer_references"]["build/release"][field] = value
+            (root / AUTHORITY).write_text(json.dumps(d))
+            with self.assertRaises(ValueError):
+                pub.publish_consumer(root, d, ACCOUNT, REGION, "build", "release", admin)
+
+    def test_43_same_consumer_retry_is_exact_and_no_io(self):
+        storage, admin = Storage(), Admin()
+        first, _, _ = self.install(storage, admin)
+        before = copy.deepcopy(admin.publications)
+        retry, _, _ = self.install(storage, admin)
+        self.assertEqual(first, retry)
+        self.assertEqual(before, admin.publications)
+        self.assertEqual([c[0] for c in storage.calls], ["put", "get"])
+
+    def test_44_conflicting_consumer_reference_rejected(self):
+        storage, admin = Storage(), Admin()
+        first, _, _ = self.install(storage, admin)
+        key = next(k for k in admin.publications if k.startswith("installed/"))
+        admin.publications[key] = {**first, "version_id": "different-version"}
+        with self.assertRaisesRegex(ValueError, "conflicting consumer"):
+            self.install(storage, admin)
+        self.assertEqual(admin.publications[key]["version_id"], "different-version")
+        self.assertEqual([c[0] for c in storage.calls], ["put", "get"])
+
+    def test_45_failed_verification_cannot_seed_later_consumer(self):
+        storage, admin = Storage("wrong-bytes"), Admin()
+        with self.assertRaises(ValueError):
+            self.install(storage, admin, "normal-delivery", "deploy-dev")
+        self.assertEqual(admin.publications, {})
+        storage.mode = "ok"
+        with self.assertRaises(FileExistsError):
+            self.install(storage, admin, "normal-delivery", "promote-prod")
+        self.assertEqual(admin.publications, {})
+
+    def test_46_multi_consumer_leaves_all_activation_false(self):
+        before = copy.deepcopy(self.doc)
+        for name in ("normal-delivery", "cleanup-recovery", "nat-recovery"):
+            storage, admin = Storage(), Admin()
+            for consumer in self.doc["control_bundles"]["classes"][name]["consumers"]:
+                ref, _, _ = self.install(storage, admin, name, consumer)
+                self.assertFalse(ref["operational"])
+            self.assertEqual([c[0] for c in storage.calls], ["put", "get"])
+        self.assertEqual(before, validate_repository(ROOT))
+        self.assertEqual(len(self.doc["controller_compute"]["nodes"]), 18)
+        self.assertFalse(self.doc["controller_compute"]["creation_supported"])
+        self.assertTrue(all(not r["operational"] and not r["events_enabled"] and not r["invocation_enabled"]
+                            for r in self.doc["ownership_closure"]["recovery"].values()))
+
+    def test_47_physical_install_then_explicit_consumer_publication(self):
+        storage, admin = Storage(), Admin()
+        raw = bundles.artifact(ROOT, self.doc["control_bundles"], "normal-delivery")
+        evidence = pub.install_class(ROOT, self.doc, ACCOUNT, REGION, "normal-delivery", raw, storage, admin)
+        self.assertEqual(len(admin.publications), 1)
+        for consumer in ("deploy-dev", "promote-prod"):
+            ref = pub.publish_consumer(ROOT, self.doc, ACCOUNT, REGION, "normal-delivery", consumer, admin)
+            self.assertEqual(ref["installation_id"], evidence["installation_id"])
+        self.assertEqual([c[0] for c in storage.calls], ["put", "get"])
+
+    def test_48_wrong_class_evidence_replay(self):
+        storage, admin = Storage(), Admin()
+        self.install(storage, admin, "build", "release")
+        source = pub.installation_key(self.doc, ACCOUNT, REGION, "build")
+        target = pub.installation_key(self.doc, ACCOUNT, REGION, "normal-delivery")
+        admin.publications[target] = copy.deepcopy(admin.publications[source])
+        with self.assertRaises(ValueError):
+            pub.publish_consumer(ROOT, self.doc, ACCOUNT, REGION, "normal-delivery", "deploy-dev", admin)
+
+    def test_49_publication_transport_failures_do_not_bless_consumers(self):
+        class Failing(Admin):
+            def create_publication(self, key, value):
+                raise OSError("atomic publication failure")
+        storage, admin = Storage(), Failing()
+        with self.assertRaises(OSError):
+            self.install(storage, admin)
+        self.assertEqual(admin.publications, {})
+        with self.assertRaises(KeyError):
+            pub.publish_consumer(ROOT, self.doc, ACCOUNT, REGION, "build", "release", admin)
+
+
+
+    def test_50_malformed_null_evidence_does_not_trigger_write(self):
+        storage, admin = Storage(), Admin()
+        key = pub.installation_key(self.doc, ACCOUNT, REGION, "build")
+        for value in (None, {}, [], "verified"):
+            admin.publications[key] = value
+            with self.assertRaises(ValueError):
+                self.install(storage, admin)
+        self.assertEqual(storage.calls, [])
+
+    def test_51_publication_read_error_is_not_absence(self):
+        class Unreadable(Admin):
+            def read_publication(self, key):
+                raise OSError("publication unavailable")
+        storage = Storage()
+        with self.assertRaises(OSError):
+            self.install(storage, Unreadable())
+        self.assertEqual(storage.calls, [])
+
+    def test_52_consumer_publication_retry_after_atomic_failure(self):
+        class FailConsumerOnce(Admin):
+            def __init__(self):
+                super().__init__()
+                self.fail = True
+            def create_publication(self, key, value):
+                if key.startswith("installed/") and self.fail:
+                    self.fail = False
+                    raise OSError("consumer publication failed")
+                super().create_publication(key, value)
+        storage, admin = Storage(), FailConsumerOnce()
+        with self.assertRaises(OSError):
+            self.install(storage, admin)
+        self.assertEqual(len(admin.publications), 1)
+        ref, _, _ = self.install(storage, admin)
+        self.assertEqual(ref["version_id"], "returned-version-A")
+        self.assertEqual([c[0] for c in storage.calls], ["put", "get"])
 
 
 if __name__ == "__main__":

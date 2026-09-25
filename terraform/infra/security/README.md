@@ -16,8 +16,10 @@ and external-administration boundaries below remain unchanged.
 `terraform/live/security/terragrunt.hcl` selects this root. It inherits neither
 dev nor prod configuration and has no dependency on either environment. The root
 calls `modules/request_identities` and the WP2B `modules/control_bundle_storage`.
-No workflow or existing bootstrap script
-invokes it. The existing operational dev/prod paths are unchanged.
+WP2C adds `modules/controller_compute`; WP2D adds
+`modules/protected_resources` and the [ownership/publication substrate](../../docs/e1-ownership-publication.md).
+No workflow or existing bootstrap script invokes it. The existing operational
+dev/prod paths are unchanged.
 
 The operator supplies an **existing, separately authenticated human administrative
 principal**. This root does not create an admin role, assume one from a requester,
@@ -104,9 +106,10 @@ The manifest distinguishes `SECURITY_ROOT_OWNED`, `ORDINARY_LIFECYCLE_OWNED`,
 All OIDC/IAM/trust/profile/boundary administration, KMS policy/grant authority,
 secret metadata/resource policies, shared ECR/storage/evidence protection,
 controller identities/code/configuration and security state/lock ownership point
-outward to security administration. Only inert request identities are declared
-IAM resources here. WP2B also declares bundle storage; controller-code and
-artifact-protection labels describe that foundation only. Other controls remain deferred.
+outward to security administration. WP2A declares inert request identities; WP2B
+declares bundle storage; WP2C declares inert controller identities; WP2D extracts
+workload/recovery IAM, KMS, secret metadata, ECR, artifact storage and OIDC into
+neutral TARGET ownership. Recovery execution remains disabled/reserved.
 
 Ordinary owns intended network/platform skeleton reconciliation; high-risk owns
 intended data/apps skeleton reconciliation. Normal revision/count/forwarding and
@@ -120,7 +123,9 @@ records for workload/recovery roles, KMS, secret metadata, artifact/evidence/ECR
 identities and qualified controller endpoints. They remain `UNAVAILABLE`, without
 invented resource identifiers. Later admin publication must expose only these
 sanitized records; ordinary consumers must not use `terraform_remote_state` on
-this root. Publishing/reading those records is not implemented yet.
+this root. WP2D now implements candidate output production, closed record
+validation and offline administrator publication. The live publication registry
+remains empty; no deployed identifiers or installation are claimed.
 
 ## Inert identities and deferred activation
 
@@ -168,9 +173,12 @@ dependent validate may be unavailable without downloaded plugins; do not initial
 or download for this task. Git Bash selector remains FAILED/UNRESOLVED cleanup;
 supported Linux execution remains UNVALIDATED. Windows tests do not clear either.
 
-Later slices still own backend bootstrap/protection, OIDC and workload/recovery
-security migration, permissions boundaries, controller identities/executable bundles, protected
-outputs publication and privileged controllers. WP3–WP7 delivery/qualification,
+External deployment still owns live backend bootstrap/protection and state
+inventory/migration. Repository TARGET ownership and offline publication exist;
+live AWS bootstrap, migration, installation/readback remain UNVERIFIED / NOT
+PERFORMED. Later packages own operational ceilings/boundaries, executable
+controllers, images and activation. Controller/recovery execution remains inactive.
+WP3–WP7 delivery/qualification,
 runtime enforcement, protected lifecycle execution, workflow cutover and legacy
 revocation remain out of scope. No state import, live IAM change or deployment
 has occurred.
