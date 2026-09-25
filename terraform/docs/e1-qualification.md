@@ -122,3 +122,35 @@ plus deterministic in-memory ports. Run all five accepted suites unchanged in
 meaning, canonical wiring/source inventory, syntax, local links, check-only
 Terraform/Terragrunt formatting and provider-free compute expressions. No AWS or
 dependency download is needed. Evidence is repository behavior, not AWS proof.
+
+### V2 acceptance correction
+
+The production finalizer remains byte-identical to WP3A V1; qualification authority
+was not redesigned. The correction addresses two reproduced test defects: V1's
+mutation loader rejected original-module adapter classes during setup and counted
+that error as detection; removing the all-PASS guard survived its 51 behavioral
+tests because non-PASS fixtures changed only one observation.
+
+The corrected suite has 93 behavioral cases (the original 51 plus 42 paired-check
+cases) and 17 mutation/control tests, 110 total. For each of the seven canonical
+checks, both observations report matching FAIL, SKIPPED, NOT_RUN or UNKNOWN in
+28 cases. Another 14 cases cover paired missing/null values, rejected by the
+closed schema. Original one-sided cases and positive all-PASS qualification remain.
+
+Adapters are constructed against the exact module under test. Mutation detection
+requires a completed setup, a finalizer call and the intended qualification-outcome
+assertion. Syntax, setup/type-identity and unrelated assertion failures are
+HARNESS_INVALID, never security detections. An unchanged-source run executes all
+93 behavioral cases and must survive with no failures/errors. Four deliberately
+invalid controls verify classification, separately from security mutants.
+
+Nine genuine mutations are detected: source, build ID, operation correlation,
+image digest, manifest VersionId, checksum, persisted bytes, all-PASS enforcement
+and deny-all. All 28 paired non-PASS assertions expose all-PASS guard removal.
+Two redundant removals survive honestly: project equality remains protected by
+fixed schema constants; required-field removal remains protected by check indexing
+on the exercised finalizer path. These are not counted as detections. The normal
+runner reports individual outcomes, reached cases and separate surviving/invalid
+security-mutant lists. No security-significant mutant is accepted as surviving.
+
+AWS adapters and live qualification remain deferred; WP3 remains incomplete.

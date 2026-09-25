@@ -8396,7 +8396,7 @@
       "coverage": "Bounded WP3A source contract; deployment unverified.",
       "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
       "necessity": "WP3A qualification",
-      "sha256": "e6fcb39d00a44653165cd83dd97ab15cab7e3e16d757cf3564e076c225b2eb49",
+      "sha256": "034c5b3a9180fad95f6ea9d3f8c48ab098a21bcca9ba12027f840737292e54a6",
       "declarations": [],
       "signals": {}
     },
@@ -8405,15 +8405,15 @@
       "coverage": "Bounded WP3A source contract; deployment unverified.",
       "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
       "necessity": "WP3A qualification",
-      "sha256": "570e8dd7cea101bff54aa2136e0b9d848ad7be29265599d9968ff7cea24e41b0",
+      "sha256": "d62e0b38a8fa50524d4baf50db65c3651a059306d3e3cd6cdaf80ca52fd284fc",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          18,
-          99
+          20,
+          128
         ],
         "executable-dependency": [
-          21
+          23
         ]
       }
     },
@@ -8422,11 +8422,12 @@
       "coverage": "Bounded WP3A source contract; deployment unverified.",
       "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
       "necessity": "WP3A qualification",
-      "sha256": "dc532c0d3b32600c148d51dafbff652db6fd3b4155542b25c17cb2293885c804",
+      "sha256": "981af66eeb0ae2e7463af36a2f0b13db06ca85bca5ba037edd0fb2cb67bac8a5",
       "declarations": [],
       "signals": {
         "executable-dependency": [
-          11
+          67,
+          78
         ]
       }
     }
