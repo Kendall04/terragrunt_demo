@@ -30,6 +30,9 @@ def sources(root):
             raise ValueError("source symlink requires explicit review: " + rel.as_posix())
         if not path.is_file():
             continue
+        if rel.parts[:2] == ("ci", "schemas") and path.suffix == ".json":
+            yield path
+            continue
         own_contract = rel.parts[:2] == ("ci", "authority") and path.suffix in (".json", ".md") and not path.name.endswith(".tf.json")
         own_test = rel.parts[:3] == ("scripts", "tests", "authority") and path.suffix in (".py", ".md")
         if own_contract or own_test:

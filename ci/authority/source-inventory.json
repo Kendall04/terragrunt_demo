@@ -8332,6 +8332,103 @@
         ]
       },
       "semantic_status": "UNVERIFIED"
+    },
+    "ci/schemas/deployment-record.schema.json": {
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Bounded WP3A source contract; deployment unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
+      "necessity": "WP3A qualification",
+      "sha256": "750fa93dae92dd3204bebbd503d669300a9bb89b9c7d4065c402e8ee79e6a6ac",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          3,
+          102,
+          106,
+          110
+        ]
+      }
+    },
+    "ci/schemas/e1-qualification.schema.json": {
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Bounded WP3A source contract; deployment unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
+      "necessity": "WP3A qualification",
+      "sha256": "79ba84dfa4bd8ca5ce4955bc4a97a888cc79a28a06c8eee43063319508a8d8d0",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          179,
+          241,
+          321,
+          363
+        ]
+      }
+    },
+    "ci/schemas/release-manifest.schema.json": {
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Bounded WP3A source contract; deployment unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
+      "necessity": "WP3A qualification",
+      "sha256": "d2ea7d5d27e257bc68b242c1f15518384445e41fd8ce82fac122934f2a0d5ebf",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          3
+        ]
+      }
+    },
+    "scripts/qualification/finalizer.py": {
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Bounded WP3A source contract; deployment unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
+      "necessity": "WP3A qualification",
+      "sha256": "229fa9a394169538f9158b4f1d3e8d5d4e15a0c21819ed90ac33a85eba4c7098",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          103
+        ]
+      }
+    },
+    "scripts/tests/qualification/run.py": {
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Bounded WP3A source contract; deployment unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
+      "necessity": "WP3A qualification",
+      "sha256": "e6fcb39d00a44653165cd83dd97ab15cab7e3e16d757cf3564e076c225b2eb49",
+      "declarations": [],
+      "signals": {}
+    },
+    "scripts/tests/qualification/test_finalizer.py": {
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Bounded WP3A source contract; deployment unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
+      "necessity": "WP3A qualification",
+      "sha256": "570e8dd7cea101bff54aa2136e0b9d848ad7be29265599d9968ff7cea24e41b0",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          18,
+          99
+        ],
+        "executable-dependency": [
+          21
+        ]
+      }
+    },
+    "scripts/tests/qualification/test_sensitivity.py": {
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Bounded WP3A source contract; deployment unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
+      "necessity": "WP3A qualification",
+      "sha256": "dc532c0d3b32600c148d51dafbff652db6fd3b4155542b25c17cb2293885c804",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          11
+        ]
+      }
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged"
