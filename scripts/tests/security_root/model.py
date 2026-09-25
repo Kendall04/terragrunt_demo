@@ -19,11 +19,11 @@ SUPPORT_FILES = {**ownership.RECOVERY_SOURCES, "terraform/infra/data/user_data.s
 
 # Exact executable package inputs are copied by existing disposable fixtures.
 SUPPORT_FILES.update({
-    "ci/schemas/e1-build-attempt.schema.json": "12b004c04bf1cb5fa5c10ccba43e104b06ebe471e0c543cb4b2d79ea487c4cab",
+    "ci/schemas/e1-build-attempt.schema.json": "359750f4c2ab7fe25b56b9d314c961bee5f5f144b29fefbbfbae44f4a3193173",
     "ci/schemas/e1-qualification.schema.json": "79ba84dfa4bd8ca5ce4955bc4a97a888cc79a28a06c8eee43063319508a8d8d0",
     "ci/schemas/release-manifest.schema.json": "d2ea7d5d27e257bc68b242c1f15518384445e41fd8ce82fac122934f2a0d5ebf",
     "scripts/build_supervision/entrypoint.py": "eab168fddef33d9591f5d6da3d3ada819cf0c2a28cbe4f75c3584bcc0ef1e3e5",
-    "scripts/build_supervision/supervisor.py": "ba8a27927d2c43841e68a6e9c73fe09b2b728d695a2ed6dd82fed398f85f6e55",
+    "scripts/build_supervision/supervisor.py": "d32304df12204160c20c0ad43c489121ee683756f7f694d1038d6c4811327c53",
     "scripts/qualification/finalizer.py": "229fa9a394169538f9158b4f1d3e8d5d4e15a0c21819ed90ac33a85eba4c7098"
 })
 

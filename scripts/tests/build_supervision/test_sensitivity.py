@@ -43,7 +43,7 @@ MUTATIONS = {
  'source_identity': ("require(acquired['repository'] == op['repository'] and acquired['commit'] == op['source_commit'])", 'pass', 'test_source_mismatch'),
  'repository_identity': ("require(acquired['repository'] == op['repository'] and acquired['commit'] == op['source_commit'])", 'pass', 'test_source_repository'),
  'workspace': ("require(acquired['workspace'] == workspace and str(PurePosixPath(workspace)) == workspace)", 'pass', 'test_workspace_outside'),
- 'image_context': ("workspace + '/demo-api', workspace + '/demo-api/Dockerfile'", "'/outside', '/outside/Dockerfile'", 'test_image_context'),
+ 'image_context': ("image_context + '/demo-api', image_context + '/demo-api/Dockerfile'", "'/outside', '/outside/Dockerfile'", 'test_image_context'),
  'command_substitution': ("'dotnet', 'restore', './demo-api/terragrunt-demo.sln'", "'dotnet', 'restore', './attacker.sln'", 'test_positive_fixed_pipeline'),
  'application_digest': ("uri = registry + '/' + self.repository + '@' + image['digest']", "image['digest'] = self.payload.claim; uri = registry + '/' + self.repository + '@' + image['digest']", 'test_digest_from_trusted_publisher'),
  'tag_only': ("require(type(image['digest']) is str and re.fullmatch(r'sha256:[0-9a-f]{64}', image['digest']) is not None)", 'pass', 'test_tag_only'),
@@ -53,13 +53,37 @@ MUTATIONS = {
  'manifest_readback': ("self.manifests.read_exact(self.bucket, key, receipt['version_id'])", "dict(receipt, bytes=raw, sha256=contract.checksum(raw))", 'test_manifest_read_failure'),
  'manifest_checksum': ("require(persisted['sha256'] == contract.checksum(persisted['bytes']) == manifest['sha256'])", 'pass', 'test_manifest_checksum'),
  'failed_stage_pass': ("return 'PASS' if success else 'FAIL'", "return 'PASS'", 'test_restore_failure'),
- 'fabricated_result': ("return self.terminal(attempt, common, source, checks, stage)", "return dict(common, schema='E1_SUPERVISED_RESULT_V1', state='SUCCEEDED', checks=dict.fromkeys(checks,'PASS'), image_digest='sha256:'+'0'*64, manifest={})", 'test_source_failure'),
+ 'fabricated_result': ("return self.terminal(attempt, common, source, checks, stage, classification)", "return dict(common, schema='E1_SUPERVISED_RESULT_V1', state='SUCCEEDED', checks=dict.fromkeys(checks,'PASS'), image_digest='sha256:'+'0'*64, manifest={})", 'test_source_failure'),
  'application_terminal_writer': ("contract._validate(value, schema, contract.CONTRACT)", 'pass', 'test_application_writer'),
  'untrusted_stdout': ("'runtime_contract': contract.RUNTIME, 'manifest': manifest}", "'runtime_contract': contract.RUNTIME, 'manifest': manifest, 'stdout': 'untrusted'}", 'test_positive_fixed_pipeline'),
+ 'mutable_image_context': ("image_context = (directory / 'image').as_posix()\n            materialize_source(snapshot, image_context)",
+                          "image_context = workspace", 'test_generated_output_stays_out_of_image'),
+ 'mutable_builder_input': ("self.payload.image_build(image_context, image_context + '/demo-api', image_context + '/demo-api/Dockerfile', environment(stage))",
+                          "self.payload.image_build(workspace, workspace + '/demo-api', workspace + '/demo-api/Dockerfile', environment(stage))", 'test_generated_output_stays_out_of_image'),
+ 'post_stage_integrity': ("finally:\n                    verify_execution(snapshot, workspace)",
+                         "finally:\n                    pass", 'test_integrity_dotnet_test_dockerfile'),
+ 'image_context_comparison': ("            intact(source_seal(op['repository'], source, source_tree(image_context)) == seal)\n            stage = 'image_build'",
+                              "            stage = 'image_build'", 'test_protected_context_corruption'),
+ 'extra_image_input': ("            intact(source_seal(op['repository'], source, source_tree(image_context)) == seal)\n            stage = 'image_build'",
+                       "            stage = 'image_build'", 'test_extra_image_context_input'),
+ 'terminal_prefix': ("require(all(v == 'NOT_RUN' for v in checks[prefix + (failed is not None):]))",
+                     'pass', 'test_terminal_contradictions'),
 }
 
 
 class Sensitivity(unittest.TestCase):
+    def test_unsafe_symlink_mutation(self):
+        text = source()
+        # Introduce actual link following, including disabling O_NOFOLLOW. A
+        # changed guard alone would be redundant with the regular-file check.
+        text = text.replace('info = path.lstat()', 'info = path.stat()')
+        text = text.replace("getattr(os, 'O_NOFOLLOW', 0)", '0')
+        r = evaluate(text, ['test_symlink_initial_source'])
+        r['category'] = 'SECURITY';EVIDENCE['unsafe_symlink'] = r
+        self.assertEqual(r['status'], 'DETECTED', r)
+        self.assertEqual(r['outcomes'], ['test_symlink_initial_source'])
+        self.assertEqual(r['errors'], 0)
+
     def test_unchanged(self):
         r=evaluate(source());EVIDENCE['unchanged']=r
         self.assertEqual(r['status'],'SURVIVED',r);self.assertEqual(r['errors'],0)

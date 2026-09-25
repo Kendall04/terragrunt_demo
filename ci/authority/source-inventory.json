@@ -5906,7 +5906,7 @@
       "necessity": "UNKNOWN"
     },
     "scripts/tests/security_root/model.py": {
-      "sha256": "e06164667c9a475acf9cd3c9f9c5ff58e04649170e48b3b031231ef2347e032f",
+      "sha256": "93ca5ea43609a7e4326a2726bd1a6030369e6d68163ef240b6cffb18e3d64a57",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -6046,7 +6046,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/authority.json": {
-      "sha256": "7512d3f9fd0abc9f3cd1ffa03afc564a97386fe2515b8ad3ddc391e26cfb67dc",
+      "sha256": "ce633e09cdd757d03c47d7ed531cf7c7fb932460ae32268add3385b9fd323605",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -8445,7 +8445,7 @@
       "coverage": "Bounded WP3B offline executable supervision contract; live isolation unverified.",
       "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
       "necessity": "WP3B build supervision",
-      "sha256": "12b004c04bf1cb5fa5c10ccba43e104b06ebe471e0c543cb4b2d79ea487c4cab",
+      "sha256": "359750f4c2ab7fe25b56b9d314c961bee5f5f144b29fefbbfbae44f4a3193173",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -8467,21 +8467,24 @@
       "coverage": "Bounded WP3B offline executable supervision contract; live isolation unverified.",
       "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
       "necessity": "WP3B build supervision",
-      "sha256": "ba8a27927d2c43841e68a6e9c73fe09b2b728d695a2ed6dd82fed398f85f6e55",
+      "sha256": "d32304df12204160c20c0ad43c489121ee683756f7f694d1038d6c4811327c53",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          20,
-          21,
-          22,
-          169
+          23,
+          24,
+          25,
+          116,
+          117,
+          311
         ],
         "executable-dependency": [
-          137,
-          138,
-          207,
-          215,
-          230
+          262,
+          263,
+          267,
+          350,
+          364,
+          387
         ]
       }
     },
@@ -8499,7 +8502,7 @@
       "coverage": "Bounded WP3B offline executable supervision contract; live isolation unverified.",
       "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
       "necessity": "WP3B build supervision",
-      "sha256": "d2221e8a6d1f3f072d9961fcb233930ea5f96a094d0f5941c054badd9c94a3ae",
+      "sha256": "bc20cbe1513e1966ff96900f2e98e9ce3dab5b17e9cd15eaee0894b7e46623d7",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -8516,23 +8519,38 @@
       "coverage": "Bounded WP3B offline executable supervision contract; live isolation unverified.",
       "current_owner": "SECURITY_ROOT_OWNED contract; repository tests",
       "necessity": "WP3B build supervision",
-      "sha256": "43f64b67e976c5cebf350e6e97babfe35802c3652fccdd07dd195561ace7db0f",
+      "sha256": "6bbcc5022181fd82be6b56a3388c9339c9b93604ea43a6c51a10b4cbf2b5077f",
       "declarations": [],
       "signals": {
         "role-input": [
-          22
+          23
         ],
         "launch-or-mutation": [
-          29,
-          132,
-          133,
-          134,
-          298,
-          308
+          30,
+          47,
+          48,
+          49,
+          50,
+          51,
+          147,
+          148,
+          149,
+          320,
+          330,
+          348,
+          349,
+          373,
+          400,
+          405,
+          421,
+          428,
+          511,
+          512,
+          513
         ],
         "executable-dependency": [
-          30,
-          319
+          31,
+          484
         ]
       }
     },

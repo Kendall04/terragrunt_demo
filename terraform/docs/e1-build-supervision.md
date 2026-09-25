@@ -44,11 +44,65 @@ Their Python interface identity is a configuration check, not authentication.
 The application never receives these Python objects or supervisor store handles.
 The deployment adapter must enforce that distinction independently.
 
-The source adapter acquires the exact full 40-character commit of the approved
-repository, confirms repository/commit/workspace, and seals the snapshot. Fixed
-commands and image construction must use that snapshot; build-generated files
-must not substitute image inputs. Workspace names derive from protected UUIDs.
-No live checkout or GitHub adapter is included.
+The trusted acquisition adapter exports committed `demo-api` content from the
+approved repository and full 40-character commit into a fresh core-selected
+directory. Its repository/commit/path receipt must match the protected operation.
+Exact Git acquisition remains a trusted port; no live checkout/GitHub adapter is
+included. V2 implements content preservation in the production core rather than
+accepting an adapter's opaque claim that a workspace is sealed.
+
+## V2 protected source seal and two contexts
+
+The core reads the acquired `demo-api` tree before application execution and
+retains its bytes in an immutable tuple private to the supervisor. A deterministic
+SHA-256 seal binds repository, full commit, canonical root `demo-api`, sorted
+normalized relative paths, directory/file type, normalized regular-file mode
+(0644/0755), and each file's SHA-256. It contains no absolute paths, timestamps,
+temporary names or file contents. The private bytes and seal are not copied into
+public errors, manifests or WP3A evidence.
+
+This covers the complete committed Docker context, including Dockerfile,
+`.dockerignore`, application/probe source, project/solution files, configuration,
+and committed scripts/metadata. Required Docker/project/solution inputs must exist.
+The current [Dockerfile](../../demo-api/Dockerfile) copies the project/source and
+runs its own restore and publish; it does not consume earlier test/build outputs.
+The [.dockerignore](../../demo-api/.dockerignore) excludes bin/obj. Initial exports
+containing bin/obj or Git metadata fail closed instead of adopting generated data
+as source. Limits are 10,000 nodes, 16 MiB per file and 64 MiB total retained bytes.
+
+The core creates two distinct contexts in a private per-invocation temporary root:
+
+- **Mutable execution workspace:** materialized from retained source bytes, then
+  used for fixed restore/build/test commands. After every stage, including an
+  exceptional execution outcome, the core rereads every sealed node and requires
+  equal type, mode and bytes. Changes, deletion or replacement stop the attempt
+  before image construction with `SOURCE_INTEGRITY_VIOLATION`. A successful process
+  exit does not override a failed integrity check.
+- **Protected image context:** freshly materialized from the retained bytes after
+  tests, never copied from the mutable workspace. The core enumerates the entire
+  materialized tree and recomputes the seal before calling image_build. The builder
+  receives this context and its fixed Dockerfile, not the execution workspace.
+  A second full verification after the builder returns prevents publication if
+  the builder left altered context content.
+
+Additional generated files in the execution workspace (bin/obj, extra source,
+fake manifests/probe helpers, alternate generated Dockerfiles) are permitted when
+they do not replace sealed nodes. They are never included in the retained snapshot
+or image context. An extra file in the protected image context changes its seal
+and rejects before image construction. There is no generated-image-input exception.
+
+Symlinks, Windows reparse points/junctions, regular-file hardlinks, special nodes,
+case-colliding names, absolute/traversal paths, alternate data streams and unsafe
+portable path aliases are rejected for sealed inputs. Every component is checked
+with lstat before reading; O_NOFOLLOW is additionally used where available.
+No unvalidated link is intentionally followed. An application-created extra link
+is not an image input; replacing a sealed node or ancestor with a link rejects.
+
+These are executable offline filesystem/content controls, not proof of OS-level
+immutability. The host must protect the supervisor's memory/acquisition/image
+roots from payload access and quiesce all payload descendants before returning
+from a stage. Container/process isolation and protection against concurrent hostile
+host access remain separately UNVERIFIED; WP3C is not implemented by these tests.
 
 Each application invocation receives a complete fixed environment, not an overlay
 on `os.environ`. Only fixed PATH, private HOME/cache locations, .NET settings and
@@ -71,7 +125,8 @@ Commands derive from [CI](../../.github/workflows/ci-dotnet.yml):
 1. `dotnet restore ./demo-api/terragrunt-demo.sln`
 2. `dotnet build ./demo-api/terragrunt-demo.sln --configuration Release --no-restore`
 3. `dotnet test ./demo-api/terragrunt-demo.sln --configuration Release --no-build --verbosity normal`
-4. Build using `demo-api` context and `demo-api/Dockerfile` from the sealed source.
+4. Materialize and verify the separate protected image context; build using its
+   `demo-api` and `demo-api/Dockerfile`, then reverify before publication.
 5. Publish the sealed image handle to the neutral application repository and
    obtain the trusted immutable digest receipt.
 6. Generate and publish canonical candidate bytes; confirm the returned exact
@@ -98,6 +153,16 @@ All checks start NOT_RUN. A completed unsuccessful stage becomes FAIL; skipped
 and unknown results remain non-PASS. A failed prerequisite stops later execution.
 Unexpected adapter failures use fixed public diagnostics without exception text.
 No path calls the qualification finalizer or writes eligibility.
+
+V2 terminal validation uses one closed completed-prefix table. Source failure
+requires seven NOT_RUN checks and absent observed source. Restore/build/test/
+image-build/image-publication failures require every prerequisite PASS, the current
+check non-PASS, and every later check NOT_RUN. `image_context` failure allows only
+restore/build/test PASS. Manifest write/readback failure requires the first five
+checks PASS with both probes NOT_RUN. `result_publish` failure permits all seven
+PASS, or a non-PASS probe followed only by NOT_RUN. Non-source terminal stages
+require the verified observed source. Probe failures themselves continue to use
+the unchanged failed WP3A supervised envelope, never terminal substitution.
 
 ## Publication and retry
 
@@ -171,6 +236,14 @@ failure, early/late envelope choice, canaries, immutable publication, conflict a
 retry, package determinism, package execution and separate WP3A compatibility.
 Mutation reports distinguish reached behavioral failures, redundant guards and
 invalid harness controls; unchanged source must survive.
+
+V2 adds real disposable filesystem attacks against source/Dockerfile/project/probe
+files after each dotnet stage, deletion/type changes, outside symlinks, extra image
+inputs, and context corruption. A positive generated-output trace preserves the
+sealed image bytes and qualifies through unchanged WP3A. Regression mutations
+exercise mutable-context substitution, removed post-stage verification, removed
+image-context comparison, unsafe link following, extra-input admission and terminal
+prefix checks. Setup/import failures are never behavioral detections.
 
 WP2 remains 18 nodes, empty gateway/project instance maps, creation_supported=false
 and operational=false. All 11 request identities and 18 execution identities stay

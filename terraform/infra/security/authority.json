@@ -441,7 +441,7 @@
         "consumers": {
           "release": "neutral"
         },
-        "sha256": "3d4c4dd30044ab545eddac41b0bcb26667c1a25e59426e598fb1edf7cd16230e",
+        "sha256": "ef9ce1edd5331ea6dccebfa4ea9783c40650fd6b075e87c2ce0f3c6553701ec4",
         "engine": "CODEBUILD"
       },
       "qualification-finalizer": {
@@ -627,10 +627,10 @@
       "build/release": {
         "class": "build",
         "consumer": "release",
-        "bundle_id": "sha256:3d4c4dd30044ab545eddac41b0bcb26667c1a25e59426e598fb1edf7cd16230e",
-        "sha256": "3d4c4dd30044ab545eddac41b0bcb26667c1a25e59426e598fb1edf7cd16230e",
+        "bundle_id": "sha256:ef9ce1edd5331ea6dccebfa4ea9783c40650fd6b075e87c2ce0f3c6553701ec4",
+        "sha256": "ef9ce1edd5331ea6dccebfa4ea9783c40650fd6b075e87c2ce0f3c6553701ec4",
         "storage": "control-bundles",
-        "key": "bundles/sha256/3d4c4dd30044ab545eddac41b0bcb26667c1a25e59426e598fb1edf7cd16230e.json",
+        "key": "bundles/sha256/ef9ce1edd5331ea6dccebfa4ea9783c40650fd6b075e87c2ce0f3c6553701ec4.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false

@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import sys
+import tempfile
 import unittest
 from unittest.mock import patch
 
@@ -41,9 +42,20 @@ def fixture(module):
         def __init__(self):
             self.calls = []; self.states = {}; self.source_change = {}; self.error = None
             self.environments = []; self.artifacts = []; self.claim = 'PASS qualified=true sha256:' + 'd' * 64
+            self.mutate = lambda stage, root: None
+            self.image_files = None
+            self.files = {'Dockerfile': b'COPY terragrunt-demo/ terragrunt-demo/\n',
+                '.dockerignore': b'**/bin\n**/obj\n', 'terragrunt-demo.sln': b'approved solution',
+                'terragrunt-demo/terragrunt-demo.csproj': b'approved project',
+                'terragrunt-demo/Program.cs': b'approved application',
+                'terragrunt-demo/ReadinessProbe.cs': b'approved probe'}
         def acquire(self, repository, commit, workspace):
             self.calls.append(('source', repository, commit, workspace))
             if self.error == 'source': raise OSError(CANARY)
+            for name, raw in self.files.items():
+                path = Path(workspace) / 'demo-api' / name
+                path.parent.mkdir(parents=True, exist_ok=True);path.write_bytes(raw)
+            self.mutate('source', Path(workspace))
             return dict(repository=repository, commit=commit, workspace=workspace, **{}) | self.source_change
         def outcome(self, stage):
             if self.error == stage: raise OSError(CANARY)
@@ -56,9 +68,12 @@ def fixture(module):
             self.artifacts.append(json.dumps(dict(env)) + ''.join(env.get(k, '') for k in SECRETS))
         def execute(self, stage, argv, workspace, env, image):
             self.calls.append((stage, argv, workspace, image));self.inspect_environment(env)
+            self.mutate(stage, Path(workspace))
             return self.outcome(stage)
         def image_build(self, workspace, context, dockerfile, env):
             self.calls.append(('image_build', workspace, context, dockerfile));self.inspect_environment(env)
+            self.image_files = {p.relative_to(Path(context)).as_posix(): p.read_bytes()
+                                for p in Path(context).rglob('*') if p.is_file()}
             return {'outcome': self.outcome('image_build'), 'handle': 'sealed-build-image'}
     class Images(module.Images):
         def __init__(self): self.calls = [];self.change = {};self.error = False
@@ -146,7 +161,12 @@ class Tests(unittest.TestCase):
         self.expect(set(r['checks'].values()) == {'NOT_RUN'})
     def test_source_mismatch(self):
         self.payload.source_change['commit'] = 'd' * 40
-        r = self.terminal('source');self.expect(r['observed_source_commit'] is None)
+        try:r = self.run_core()
+        except (self.module.Rejected, f.Rejected):
+            self.expect([c[0] for c in self.payload.calls] == ['source'])
+            return
+        self.expect(r['schema'] == 'E1_BUILD_ATTEMPT_TERMINAL_V1' and r['terminal_stage'] == 'source')
+        self.expect(r['observed_source_commit'] is None and [c[0] for c in self.payload.calls] == ['source'])
     def test_source_repository(self):
         self.payload.source_change['repository'] = 'attacker/repo';self.terminal('source')
     def test_workspace_outside(self):
@@ -157,8 +177,10 @@ class Tests(unittest.TestCase):
         self.expect(r['checks']['dotnet_restore'] == 'FAIL' and all(r['checks'][k] == 'NOT_RUN' for k in f.REQUIRED_CHECKS[1:]))
         self.expect(self.images.calls == [] and self.manifests.raw is None)
     def test_image_context(self):
-        self.run_core();c = next(x for x in self.payload.calls if x[0] == 'image_build');w = self.payload.calls[0][3]
-        self.expect(c[1:] == (w, w + '/demo-api', w + '/demo-api/Dockerfile'))
+        self.run_core();c = next(x for x in self.payload.calls if x[0] == 'image_build')
+        w = self.payload.calls[1][2];protected = (Path(w).parent / 'image').as_posix()
+        self.expect(c[1:] == (protected, protected + '/demo-api', protected + '/demo-api/Dockerfile'))
+        self.expect(self.payload.calls[0][3] != w != protected)
     def test_publisher_destination(self):
         self.run_core();self.expect(self.images.calls[0][2:] == ('111122223333.dkr.ecr.us-east-1.amazonaws.com','demo-shared-demo-ms'))
     def test_digest_from_trusted_publisher(self):
@@ -312,6 +334,149 @@ class Tests(unittest.TestCase):
         recovery=d['ownership_closure']['recovery'];self.assertEqual(len(recovery),8)
         self.assertTrue(all(not r['operational'] and not r['invocation_enabled'] for r in recovery.values()))
 
+    def integrity_failure(self, stage):
+        r = self.terminal(stage)
+        self.expect(r['classification'] == 'SOURCE_INTEGRITY_VIOLATION')
+        self.expect(not any(c[0] == 'image_build' for c in self.payload.calls))
+        self.expect(not self.images.calls and self.manifests.raw is None)
+        self.finalize(r, False)
+        return r
+
+    def test_generated_output_stays_out_of_image(self):
+        def mutate(stage, root):
+            if stage in ('dotnet_restore', 'dotnet_build', 'dotnet_test'):
+                for name in ('terragrunt-demo/bin/generated.dll', 'terragrunt-demo/obj/cache',
+                             'terragrunt-demo/malicious-extra-file', 'fake-manifest.json',
+                             'fake-probe-helper', 'generated/Dockerfile'):
+                    p = root / 'demo-api' / name
+                    p.parent.mkdir(parents=True, exist_ok=True);p.write_bytes(b'unapproved')
+        self.payload.mutate = mutate
+        r = self.run_core()
+        self.expect(r['state'] == 'SUCCEEDED' and self.payload.image_files == self.payload.files)
+        self.expect(self.payload.calls[1][2] != next(c[1] for c in self.payload.calls if c[0] == 'image_build'))
+        self.finalize(r, True)
+
+    def test_protected_context_corruption(self):
+        original = self.module.materialize_source
+        def corrupt(nodes, destination):
+            original(nodes, destination)
+            if Path(destination).name == 'image':
+                (Path(destination) / 'demo-api/Dockerfile').write_bytes(b'unapproved')
+        with patch.object(self.module, 'materialize_source', corrupt):
+            self.integrity_failure('image_context')
+
+    def test_extra_image_context_input(self):
+        original = self.module.materialize_source
+        def corrupt(nodes, destination):
+            original(nodes, destination)
+            if Path(destination).name == 'image':
+                (Path(destination) / 'demo-api/terragrunt-demo/extra.cs').write_bytes(b'unapproved')
+        with patch.object(self.module, 'materialize_source', corrupt):
+            self.integrity_failure('image_context')
+
+    def test_symlink_initial_source(self):
+        with tempfile.TemporaryDirectory(prefix='wp3b-outside-') as tmp:
+            outside = Path(tmp) / 'outside';outside.write_bytes(b'unapproved')
+            def mutate(stage, root):
+                if stage == 'source':
+                    p = root / 'demo-api/Dockerfile';p.unlink();p.symlink_to(outside)
+            self.payload.mutate = mutate
+            self.integrity_failure('source')
+
+    def test_symlink_after_test(self):
+        with tempfile.TemporaryDirectory(prefix='wp3b-outside-') as tmp:
+            outside = Path(tmp) / 'outside';outside.write_bytes(b'unapproved')
+            def mutate(stage, root):
+                if stage == 'dotnet_test':
+                    p = root / 'demo-api/Dockerfile';p.unlink();p.symlink_to(outside)
+            self.payload.mutate = mutate
+            self.integrity_failure('dotnet_test')
+
+    def test_hardlink_after_test(self):
+        with tempfile.TemporaryDirectory(prefix='wp3b-outside-') as tmp:
+            outside = Path(tmp) / 'outside';outside.write_bytes(b'approved application')
+            def mutate(stage, root):
+                if stage == 'dotnet_test':
+                    p = root / 'demo-api/terragrunt-demo/Program.cs';p.unlink();os.link(outside, p)
+            self.payload.mutate = mutate
+            self.integrity_failure('dotnet_test')
+
+    def test_generated_initial_export_rejected(self):
+        self.payload.files['terragrunt-demo/bin/generated.dll'] = b'unapproved'
+        self.integrity_failure('source')
+
+    def test_image_builder_mutation_stops_publication(self):
+        original = self.payload.image_build
+        def mutate(workspace, context, dockerfile, env):
+            result = original(workspace, context, dockerfile, env)
+            Path(dockerfile).write_bytes(b'unapproved')
+            return result
+        self.payload.image_build = mutate
+        r = self.terminal('image_build')
+        self.expect(r['classification'] == 'SOURCE_INTEGRITY_VIOLATION' and not self.images.calls)
+        self.finalize(r, False)
+
+    def test_deleted_source(self):
+        def mutate(stage, root):
+            if stage == 'dotnet_test':(root / 'demo-api/terragrunt-demo/Program.cs').unlink()
+        self.payload.mutate = mutate
+        self.integrity_failure('dotnet_test')
+
+    def test_changed_source_node_type(self):
+        def mutate(stage, root):
+            if stage == 'dotnet_test':
+                p = root / 'demo-api/terragrunt-demo/Program.cs';p.unlink();p.mkdir()
+        self.payload.mutate = mutate
+        self.integrity_failure('dotnet_test')
+
+    def test_safe_path_grammar(self):
+        self.invoked += 1
+        for path in ('/demo-api/x', 'demo-api/../outside', 'demo-api/C:/outside',
+                     'demo-api/a\\b', 'demo-api//x', 'demo-api/CON', 'demo-api/a.'):
+            try:self.module.source_path(path)
+            except self.module.SourceIntegrity:continue
+            raise Behavior('Unsafe source path admitted')
+
+    def test_snapshot_determinism(self):
+        with tempfile.TemporaryDirectory(prefix='wp3b-seal-') as tmp:
+            root = Path(tmp);acquired = root / 'acquired';acquired.mkdir()
+            self.payload.acquire(self.context['repository'], self.context['source_commit'], str(acquired))
+            nodes = self.module.source_tree(acquired)
+            identity = self.module.source_seal(self.context['repository'], self.context['source_commit'], nodes)
+            self.module.materialize_source(nodes, root / 'fresh')
+            self.expect(self.module.source_seal(self.context['repository'], self.context['source_commit'],
+                        self.module.source_tree(root / 'fresh')) == identity)
+            self.expect(identity != self.module.source_seal(self.context['repository'], 'b'*40, nodes))
+
+    def test_terminal_result_publication_after_probe_failure(self):
+        self.payload.states['probe_capability'] = dict(stage='probe_capability', state='COMPLETED', exit_code=3, capability=False)
+        self.records.fail_result = True
+        r = self.terminal('result_publish')
+        self.expect(r['checks']['probe_capability'] == 'FAIL' and r['checks']['probe_no_server'] == 'NOT_RUN')
+
+    def test_terminal_contradictions(self):
+        for stage, corrupt in [('source', 'dotnet_build'), ('dotnet_restore', 'dotnet_test'),
+                               ('dotnet_build', 'image_build'), ('image_build', 'image_publish'),
+                               ('image_publish', 'probe_capability'), ('manifest_publish', 'probe_capability'),
+                               ('manifest_readback', 'probe_no_server'), ('image_context', 'image_build')]:
+            self.setUp()
+            if stage in ('source', 'dotnet_restore', 'dotnet_build', 'image_build'):self.payload.error = stage
+            elif stage == 'image_publish':self.images.error = True
+            elif stage == 'manifest_publish':self.manifests.error = 'write'
+            elif stage == 'manifest_readback':self.manifests.error = 'read'
+            else:
+                with patch.object(self.module, 'materialize_source', side_effect=self.module.SourceIntegrity('bounded')):
+                    r = self.run_core()
+                # Construct the valid context-failure prefix from protected facts.
+                r['observed_source_commit'] = r['source_commit'];r['terminal_stage'] = stage
+                for k in ('dotnet_restore','dotnet_build','dotnet_test'):r['checks'][k] = 'PASS'
+            if stage != 'image_context':r = self.run_core()
+            self.module.validate_terminal(r)
+            r['checks'][corrupt] = 'PASS'
+            try:self.module.validate_terminal(r)
+            except (self.module.Rejected, f.Rejected):continue
+            raise Behavior('Contradictory terminal check prefix accepted')
+
 
 def override(key):
     def test(self):self.rejected({'operation_id':OP,key:CANARY})
@@ -333,3 +498,17 @@ def failure(stage,state):
 for stage in ('dotnet_restore','dotnet_build','dotnet_test','image_build','probe_capability','probe_no_server'):
     for state in ('COMPLETED','SKIPPED','NOT_RUN','UNKNOWN'):
         setattr(Tests,'test_failure_'+stage+'_'+state.lower(),failure(stage,state))
+
+
+def source_mutation(stage, name):
+    def test(self):
+        def mutate(current, root):
+            if current == stage:(root / 'demo-api' / name).write_bytes(b'unapproved mutation')
+        self.payload.mutate = mutate
+        self.integrity_failure(stage)
+    return test
+for stage in ('dotnet_restore', 'dotnet_build', 'dotnet_test'):
+    for label, name in [('application', 'terragrunt-demo/Program.cs'), ('dockerfile', 'Dockerfile'),
+                        ('project', 'terragrunt-demo/terragrunt-demo.csproj'),
+                        ('probe', 'terragrunt-demo/ReadinessProbe.cs')]:
+        setattr(Tests, 'test_integrity_' + stage + '_' + label, source_mutation(stage, name))

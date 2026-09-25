@@ -73,10 +73,9 @@
         "dotnet_restore",
         "dotnet_build",
         "dotnet_test",
+        "image_context",
         "image_build",
         "image_publish",
-        "probe_capability",
-        "probe_no_server",
         "manifest_publish",
         "manifest_readback",
         "result_publish"
@@ -161,7 +160,10 @@
       }
     },
     "classification": {
-      "const": "EXECUTION_OR_PUBLICATION_FAILED"
+      "enum": [
+        "EXECUTION_OR_PUBLICATION_FAILED",
+        "SOURCE_INTEGRITY_VIOLATION"
+      ]
     }
   }
 }

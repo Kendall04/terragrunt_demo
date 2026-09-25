@@ -8,9 +8,12 @@ environment alone is not an OS sandbox. Application output is never evidence.
 from abc import ABC, abstractmethod
 import copy
 import json
+import os
 from pathlib import Path, PurePosixPath
 import re
+import stat
 import sys
+import tempfile
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'scripts/qualification'))
@@ -21,12 +24,129 @@ COMMANDS = {
     'dotnet_build': ('dotnet', 'build', './demo-api/terragrunt-demo.sln', '--configuration', 'Release', '--no-restore'),
     'dotnet_test': ('dotnet', 'test', './demo-api/terragrunt-demo.sln', '--configuration', 'Release', '--no-build', '--verbosity', 'normal'),
 }
-STAGES = ('source', *contract.REQUIRED_CHECKS, 'manifest_publish', 'manifest_readback', 'result_publish')
+# Number of completed checks, and (where applicable) the failing check index.
+TERMINAL_PREFIX = {'source': (0, None), 'dotnet_restore': (0, 0),
+    'dotnet_build': (1, 1), 'dotnet_test': (2, 2), 'image_context': (3, None),
+    'image_build': (3, 3), 'image_publish': (4, 4),
+    'manifest_publish': (5, None), 'manifest_readback': (5, None),
+    'result_publish': (5, None)}
+STAGES = tuple(TERMINAL_PREFIX)
 CONTEXT_KEYS = {'operation_id', 'project', 'build_id', 'source_commit', 'account', 'region', 'repository'}
 
 
 class Rejected(ValueError):
     pass
+
+
+class SourceIntegrity(Rejected):
+    """Bounded diagnostic; never includes paths, file contents or adapter errors."""
+
+
+def intact(ok):
+    if not ok:
+        raise SourceIntegrity('SOURCE_INTEGRITY_VIOLATION')
+
+
+def source_path(relative):
+    """Portable, unambiguous relative names; no links, ADS or platform aliases."""
+    intact(type(relative) is str and len(relative) <= 1024)
+    parts = relative.split('/')
+    intact(parts[0] == 'demo-api')
+    for part in parts:
+        intact(bool(part) and part not in ('.', '..') and not part.endswith(('.', ' ')))
+        intact(not any(ord(c) < 32 or c in '\\:<>"|?*' for c in part))
+        intact(part.split('.')[0].upper() not in
+               {'CON', 'PRN', 'AUX', 'NUL', *(f'COM{i}' for i in range(1, 10)),
+                *(f'LPT{i}' for i in range(1, 10))})
+    return parts
+
+
+def source_node(root, relative):
+    """Read only after lstat of every component; reject reparse points/hardlinks.
+
+    Host adapters must quiesce payload descendants between stages and isolate
+    the supervisor and protected context. These checks are not an OS sandbox.
+    """
+    path = Path(root)
+    root_stat = path.lstat()
+    intact(stat.S_ISDIR(root_stat.st_mode) and not
+           getattr(root_stat, 'st_file_attributes', 0) & 0x400)
+    parts = source_path(relative)
+    for index, part in enumerate(parts):
+        path = path / part
+        info = path.lstat()
+        intact(not stat.S_ISLNK(info.st_mode) and not
+               getattr(info, 'st_file_attributes', 0) & 0x400)
+        if index < len(parts) - 1:
+            intact(stat.S_ISDIR(info.st_mode))
+    if stat.S_ISDIR(info.st_mode):
+        return (relative, 'directory', 0, b'')
+    intact(stat.S_ISREG(info.st_mode) and info.st_nlink == 1)
+    intact(info.st_size <= 16 * 1024 * 1024)
+    descriptor = os.open(path, os.O_RDONLY | getattr(os, 'O_BINARY', 0) | getattr(os, 'O_NOFOLLOW', 0))
+    with os.fdopen(descriptor, 'rb') as stream:
+        opened = os.fstat(stream.fileno())
+        intact((opened.st_dev, opened.st_ino) == (info.st_dev, info.st_ino))
+        raw = stream.read(16 * 1024 * 1024 + 1)
+    intact(len(raw) == info.st_size)
+    return (relative, 'file', 0o755 if info.st_mode & stat.S_IXUSR else 0o644, raw)
+
+
+def source_tree(root):
+    """Capture the committed export, not an execution tree with bin/obj output."""
+    nodes = []
+    names = set()
+    size = 0
+    def visit(relative):
+        nonlocal size
+        source_path(relative)
+        intact(relative.casefold() not in names)
+        names.add(relative.casefold())
+        intact(not set(relative.split('/')) & {'bin', 'obj', '.git'})
+        node = source_node(root, relative)
+        nodes.append(node)
+        size += len(node[3])
+        intact(len(nodes) <= 10000 and size <= 64 * 1024 * 1024)
+        if node[1] == 'directory':
+            for child in sorted((Path(root) / relative).iterdir(), key=lambda p: p.name):
+                visit(relative + '/' + child.name)
+    visit('demo-api')
+    paths = {n[0] for n in nodes if n[1] == 'file'}
+    intact({'demo-api/Dockerfile', 'demo-api/.dockerignore',
+            'demo-api/terragrunt-demo.sln',
+            'demo-api/terragrunt-demo/terragrunt-demo.csproj'} <= paths)
+    return tuple(nodes)
+
+
+def source_seal(repository, commit, nodes):
+    # Only portable metadata/digests enter the seal. Retained immutable bytes are
+    # private supervisor data and never serialized into evidence or diagnostics.
+    description = {'repository': repository, 'commit': commit, 'root': 'demo-api',
+        'nodes': [{'path': p, 'type': kind, 'mode': mode,
+                   'sha256': contract.checksum(raw) if kind == 'file' else None}
+                  for p, kind, mode, raw in nodes]}
+    return contract.checksum(contract.canonical(description))
+
+
+def materialize_source(nodes, destination):
+    """Fresh core-owned context from retained bytes, never copy the test workspace."""
+    root = Path(destination)
+    root.mkdir(exist_ok=False)
+    for relative, kind, mode, raw in nodes:
+        source_path(relative)
+        path = root / relative
+        if kind == 'directory':
+            path.mkdir(exist_ok=False)
+        else:
+            with path.open('xb') as stream:
+                stream.write(raw)
+            path.chmod(mode)
+
+
+def verify_execution(nodes, workspace):
+    # Extra output is allowed here but never adopted into the retained snapshot.
+    for expected in nodes:
+        intact(source_node(workspace, expected[0]) == expected)
 
 
 def require(ok):
@@ -59,9 +179,14 @@ class Control(ABC):
 class Payload(ABC):
     """Trusted isolation adapter, not a payload object.
 
-    acquire returns a sealed source snapshot at the requested path. All execution
-    is confined to that attempt; the immutable source used by image_build must
-    remain the acquired source (not build-generated substitutions). No supervisor
+    acquire exports only committed demo-api content for the exact repository and
+    commit at the requested path (no Git metadata or existing build outputs).
+    The core captures/seals bytes, derives a separate execution workspace, checks
+    it after every stage, and materializes/verifies a fresh image context itself.
+    execute must return only after all payload descendants have stopped. The host
+    must deny payload access to the core's memory, acquisition and image roots.
+    image_build receives only the protected context, not the execution workspace.
+    No supervisor
     objects, stores, credentials, host sockets or writable controller files are
     exposed to payloads. outcome is trusted process observation, never parsed JSON
     printed by the application. capability is trusted wrapper verification of the
@@ -73,7 +198,7 @@ class Payload(ABC):
     @abstractmethod
     def execute(self, stage, argv, workspace, env, image): ...
     @abstractmethod
-    def image_build(self, workspace, context, dockerfile, env): ...
+    def image_build(self, image_context, context, dockerfile, env): ...
 
 
 class Images(ABC):
@@ -138,6 +263,23 @@ def validate_terminal(value):
     require(observed_source is None or observed_source == value['source_commit'])
     require(value['terminal_stage'] in STAGES)
     require(value['terminal_stage'] != 'source' or observed_source is None)
+    stage = value['terminal_stage']
+    require(stage == 'source' or observed_source == value['source_commit'])
+    prefix, failed = TERMINAL_PREFIX[stage]
+    checks = [value['checks'][k] for k in contract.REQUIRED_CHECKS]
+    require(all(v == 'PASS' for v in checks[:prefix]))
+    if stage == 'result_publish':
+        # Probes already ran: either all PASS, or a failed probe followed by NOT_RUN.
+        stopped = False
+        for value_check in checks[prefix:]:
+            require(not stopped or value_check == 'NOT_RUN')
+            stopped = stopped or value_check != 'PASS'
+    else:
+        if failed is not None:
+            require(checks[failed] != 'PASS')
+        require(all(v == 'NOT_RUN' for v in checks[prefix + (failed is not None):]))
+    if value['classification'] == 'SOURCE_INTEGRITY_VIOLATION':
+        require(stage in ('source', *COMMANDS, 'image_context', 'image_build'))
     require(value['state'] == 'FAILED')
     return copy.deepcopy(value)
 
@@ -173,7 +315,8 @@ class Supervisor:
 
     def run(self, wakeup):
         try:
-            return self._run(wakeup)
+            with tempfile.TemporaryDirectory(prefix='e1-supervisor-') as directory:
+                return self._run(wakeup, Path(directory))
         except Exception:
             raise Rejected('E1_BUILD_SUPERVISION_REJECTED') from None
 
@@ -186,7 +329,7 @@ class Supervisor:
         require(self.records.read(attempt) == raw)
         return copy.deepcopy(record)
 
-    def _run(self, wakeup):
+    def _run(self, wakeup, directory):
         contract.validate('wakeup', wakeup)
         require(wakeup['operation_id'] == self.context['operation_id'])
         op = contract.validate('operation', self.control.operation(wakeup['operation_id']))
@@ -207,19 +350,33 @@ class Supervisor:
         source = None
         stage = 'source'
         try:
-            workspace = '/work/attempts/' + op['operation_id'] + '/' + op['build_id'].split(':')[1]
+            workspace = (directory / 'acquired').as_posix()
+            Path(workspace).mkdir()
             acquired = self.payload.acquire(op['repository'], op['source_commit'], workspace)
             closed(acquired, {'repository', 'commit', 'workspace'})
             require(acquired['repository'] == op['repository'] and acquired['commit'] == op['source_commit'])
             require(acquired['workspace'] == workspace and str(PurePosixPath(workspace)) == workspace)
+            snapshot = source_tree(workspace)
+            seal = source_seal(op['repository'], op['source_commit'], snapshot)
+            workspace = (directory / 'execution').as_posix()
+            materialize_source(snapshot, workspace)
+            verify_execution(snapshot, workspace)
             source = acquired['commit']
             for stage, argv in COMMANDS.items():
                 checks[stage] = 'UNKNOWN'
-                checks[stage] = observed(self.payload.execute(stage, argv, workspace, environment(stage), None), stage)
+                try:
+                    checks[stage] = observed(self.payload.execute(stage, argv, workspace, environment(stage), None), stage)
+                finally:
+                    verify_execution(snapshot, workspace)
                 require(checks[stage] == 'PASS')
+            stage = 'image_context'
+            image_context = (directory / 'image').as_posix()
+            materialize_source(snapshot, image_context)
+            intact(source_seal(op['repository'], source, source_tree(image_context)) == seal)
             stage = 'image_build'
             checks[stage] = 'UNKNOWN'
-            built = self.payload.image_build(workspace, workspace + '/demo-api', workspace + '/demo-api/Dockerfile', environment(stage))
+            built = self.payload.image_build(image_context, image_context + '/demo-api', image_context + '/demo-api/Dockerfile', environment(stage))
+            intact(source_seal(op['repository'], source, source_tree(image_context)) == seal)
             closed(built, {'outcome', 'handle'})
             checks[stage] = observed(built['outcome'], stage)
             require(checks[stage] == 'PASS')
@@ -256,10 +413,13 @@ class Supervisor:
             require(all(persisted[k] == receipt[k] for k in receipt))
             require(type(persisted['bytes']) is bytes and persisted['bytes'] == raw)
             require(persisted['sha256'] == contract.checksum(persisted['bytes']) == manifest['sha256'])
-        except Exception:
+        except Exception as exc:
             if stage in checks and checks[stage] == 'PASS':
                 checks[stage] = 'FAIL'
-            return self.terminal(attempt, common, source, checks, stage)
+            integrity_stage = stage in ('source', *COMMANDS, 'image_context', 'image_build')
+            integrity_error = isinstance(exc, (SourceIntegrity, FileNotFoundError, NotADirectoryError))
+            classification = 'SOURCE_INTEGRITY_VIOLATION' if integrity_stage and integrity_error else 'EXECUTION_OR_PUBLICATION_FAILED'
+            return self.terminal(attempt, common, source, checks, stage, classification)
         # Exact artifact identity now exists; late probe failures retain it.
         for stage in ('probe_capability', 'probe_no_server'):
             try:
@@ -286,9 +446,9 @@ class Supervisor:
                 raise Rejected('E1_BUILD_SUPERVISION_REJECTED') from None
             return self.terminal(attempt, common, source, checks, 'result_publish')
 
-    def terminal(self, attempt, common, source, checks, stage):
+    def terminal(self, attempt, common, source, checks, stage, classification='EXECUTION_OR_PUBLICATION_FAILED'):
         record = {**common, 'schema': 'E1_BUILD_ATTEMPT_TERMINAL_V1', 'writer': 'BUILD_SUPERVISOR',
                   'observed_source_commit': source, 'state': 'FAILED', 'terminal_stage': stage,
-                  'checks': checks, 'classification': 'EXECUTION_OR_PUBLICATION_FAILED'}
+                  'checks': checks, 'classification': classification}
         validate_terminal(record)
         return self.persist(attempt, record)
