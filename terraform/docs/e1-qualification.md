@@ -154,3 +154,12 @@ runner reports individual outcomes, reached cases and separate surviving/invalid
 security-mutant lists. No security-significant mutant is accepted as surviving.
 
 AWS adapters and live qualification remain deferred; WP3 remains incomplete.
+
+### WP3B repository follow-on
+
+[Build supervision and executable packaging](e1-build-supervision.md) adds a
+separate non-qualifying terminal attempt contract for failures before exact image
+and manifest identity exists. The WP3A finalizer and schema remain unchanged.
+WP3B packages these accepted bytes through the existing bundle mechanism without
+installing or activating them. Earlier WP3A packaging limitations above describe
+the WP3A checkpoint; live qualification and WP3C activation remain deferred.

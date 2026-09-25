@@ -11,6 +11,13 @@ import re
 
 STAGE = "E1_WP2B_PROTECTED_CONTROL_BUNDLE_FOUNDATION"
 SOURCE = "terraform/infra/security/bundles/NOTICE.txt"
+EXECUTABLE_SOURCES = {
+    "build": ("scripts/build_supervision/supervisor.py", "scripts/build_supervision/entrypoint.py",
+              "scripts/qualification/finalizer.py", "ci/schemas/e1-qualification.schema.json",
+              "ci/schemas/e1-build-attempt.schema.json", "ci/schemas/release-manifest.schema.json"),
+    "qualification-finalizer": ("scripts/build_supervision/entrypoint.py", "scripts/qualification/finalizer.py",
+                               "ci/schemas/e1-qualification.schema.json", "ci/schemas/release-manifest.schema.json"),
+}
 MODULE = "terraform/infra/security/modules/control_bundle_storage/main.tf.json"
 OWNER = "SECURITY_ROOT_OWNED"
 # Plan sections 1, 4.1, 5.1, 6.2, 8. These constrain class admission, not IAM grants.
@@ -54,10 +61,31 @@ def source_bytes(root):
 
 def artifact(root, catalog, name):
     entry = catalog["classes"][name]
-    return canonical({"format": catalog["format"], "class": name, "owner": entry["owner"],
+    package = {"format": catalog["format"], "class": name, "owner": entry["owner"],
                       "consumers": entry["consumers"], "engine": entry["engine"], "runtime_contract": catalog["runtime_contract"],
                       "operational": entry["operational"],
-                      "files": {SOURCE: base64.b64encode(source_bytes(root)).decode("ascii")}})
+                      "files": {SOURCE: base64.b64encode(source_bytes(root)).decode("ascii")}}
+    if name in EXECUTABLE_SOURCES:
+        for relative in EXECUTABLE_SOURCES[name]:
+            path = Path(root) / relative
+            require(path.is_file() and not path.is_symlink(), "missing/linked executable source")
+            raw = path.read_bytes().replace(b"\r\n", b"\n")
+            require(len(raw) <= 262144 and b"\x00" not in raw and b"\r" not in raw, "executable source encoding/size")
+            package["files"][relative] = base64.b64encode(raw).decode("ascii")
+        # Minimal protected runtime configuration avoids self-referential bundle hashes.
+        # It derives from the same canonical authority, never a caller override.
+        authority = json.loads((Path(root) / "terraform/infra/security/authority.json").read_text())
+        config = {"controller_compute": {"nodes": {"build/release": {
+            "name": authority["controller_compute"]["nodes"]["build/release"]["name"]}}},
+            "ownership_closure": {"resources": {k: {"name": authority["ownership_closure"]["resources"][k]["name"]}
+                for k in ("neutral/repository", "neutral/artifacts")}}}
+        package["files"]["terraform/infra/security/authority.json"] = base64.b64encode(canonical(config)).decode("ascii")
+        package["executable"] = {"language": "PYTHON", "version": ">=3.10", "dependencies": "STDLIB_ONLY",
+            "entrypoint": "scripts/build_supervision/entrypoint.py:" + ("build" if name == "build" else "finalize"),
+            "host": "ADMIN_AUTHENTICATED_ADAPTERS_REQUIRED", "activation": False,
+            "controller_image": {"owner": OWNER, "binding": name + "/" + next(iter(entry["consumers"])),
+                "uri": None, "approval": "UNVERIFIED", "requirement": "ADMIN_APPROVED_EXACT_REPOSITORY_AND_SHA256"}}
+    return canonical(package)
 
 
 def reference(catalog, name):
