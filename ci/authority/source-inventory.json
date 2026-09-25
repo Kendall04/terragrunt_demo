@@ -5906,51 +5906,53 @@
       "necessity": "UNKNOWN"
     },
     "scripts/tests/security_root/model.py": {
-      "sha256": "77287efb991298daffc84a34178622dbf500443c98c525ae7910073748f3c922",
+      "sha256": "57d97081dffa65eae8d13fd2f56408401d341c4196673ed692b58cc9c91c13ec",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
-          123
+          128
         ],
         "role-input": [
-          31,
-          158,
-          171
+          35,
+          164,
+          177
         ],
         "launch-or-mutation": [
-          17,
-          65,
-          103,
-          142,
-          144,
-          151,
-          153,
-          162,
-          183,
-          184,
-          193,
-          214,
-          231,
+          18,
+          21,
+          69,
+          108,
+          148,
+          150,
+          157,
+          159,
+          168,
+          191,
+          192,
+          201,
+          222,
           239,
-          240,
           247,
-          249
+          248,
+          257,
+          259
         ],
         "executable-dependency": [
-          194
+          18,
+          202
         ],
         "security-control": [
-          165,
-          166,
-          169,
-          170,
-          171
+          171,
+          172,
+          175,
+          176,
+          177
         ]
       },
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/render.py": {
-      "sha256": "40648c6140048e7d88e5246568cd58e36d892e333888196bb2fb5b0b98e6a150",
+      "sha256": "cfb34821f8d4b38655aa4856a71293936f36b6196912d15265505f5cf5d71534",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -5978,70 +5980,70 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/test_wp2a.py": {
-      "sha256": "7ddf90bb24381fe07efd91b4e7e95afd00d0f7a67b314cb2cf9c4850e0ad2f62",
+      "sha256": "2673b938943782e0234ac0e976ab57eb4af8594423c1578fdeca9f2f0ebd6d1a",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
-          21,
-          25,
-          86,
-          91
+          22,
+          26,
+          87,
+          92
         ],
         "role-input": [
-          134,
-          159
+          135,
+          160
         ],
         "launch-or-mutation": [
-          33,
-          48,
-          59,
-          79,
-          84,
+          34,
+          49,
+          60,
+          80,
           85,
-          87,
-          91,
+          86,
+          88,
           92,
-          94,
-          104,
-          122,
-          126,
-          128,
-          147,
-          157,
-          159,
-          165,
+          93,
+          95,
+          105,
+          123,
+          127,
+          129,
+          148,
+          158,
+          160,
           166,
           167,
-          169,
+          168,
           170,
           171,
-          182,
-          189,
-          196,
-          203,
-          221,
-          222
+          172,
+          183,
+          190,
+          197,
+          204,
+          222,
+          223
         ],
         "executable-dependency": [
-          169,
-          171,
-          183
+          170,
+          172,
+          184
         ],
         "security-control": [
-          60,
-          107,
+          61,
           108,
-          151,
-          153,
-          165,
-          167,
-          168
+          109,
+          152,
+          154,
+          166,
+          168,
+          169
         ]
       },
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/authority.json": {
-      "sha256": "a27f4f2058a6461e7d1bc790ce4043e630c7f7ce3508a33bb3adf0a98e5c79cc",
+      "sha256": "9a5baf5f2318c4d955be43872acf6fe583c65d3f68c498e454f5c01d86aa6ed6",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -6072,23 +6074,83 @@
           410,
           411,
           1296,
-          1297
+          1297,
+          1359,
+          1369,
+          1379,
+          1389,
+          1399,
+          1409,
+          1419,
+          1429,
+          1439,
+          1449,
+          1458,
+          1467,
+          1475,
+          1484,
+          1493,
+          1502,
+          1510,
+          1520,
+          1530,
+          1540,
+          1550,
+          1560,
+          1570,
+          1580,
+          1590,
+          1600,
+          1609,
+          1618,
+          1626,
+          1635,
+          1644,
+          1653,
+          1661,
+          1669,
+          1677,
+          1693,
+          1719,
+          1754,
+          1789,
+          1824,
+          1850,
+          1885,
+          1920,
+          2448,
+          2449,
+          2450,
+          2451,
+          2452
         ],
         "executable-dependency": [
           398,
           1228,
           1284,
-          1313
+          1313,
+          1700,
+          1726,
+          1761,
+          1796,
+          1831,
+          1857,
+          1892,
+          1927,
+          2448,
+          2449,
+          2450,
+          2451
         ]
       },
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/main.tf.json": {
-      "sha256": "2e313cd7b82e3c353594519b938d608dcd1b1fb5354deb89feb3510e08a4ecfd",
+      "sha256": "d60a4f67bf4fee4d48080d8906d1661baf2d3d6a6bfc2ae7c74d2fd53fcffbd3",
       "declarations": [],
       "signals": {
         "role-input": [
-          78
+          83
         ],
         "launch-or-mutation": [
           2,
@@ -6147,38 +6209,39 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/control_bundles/test_wp2b.py": {
-      "sha256": "d5d4fb52c10f445564c36ea361f808a7183f4bb9ce58c9e3638ef5d4a5ddd7cc",
+      "sha256": "6926823b1b103a142f2579aad70a383256cab8f705fee9abe95bc4a46bc2e94e",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          22,
-          37,
-          39,
+          23,
+          38,
           40,
-          136,
-          145,
-          156,
+          41,
+          137,
+          146,
           157,
-          159,
+          158,
           160,
           161,
-          169,
-          172,
-          185,
+          162,
+          170,
+          173,
           186,
-          237
+          187,
+          234,
+          239
         ],
         "executable-dependency": [
-          186,
-          209
+          187,
+          210
         ],
         "security-control": [
-          43,
-          159,
+          44,
           160,
           161,
-          175,
-          238
+          162,
+          176,
+          240
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -6248,38 +6311,38 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/controller_compute/test_wp2c.py": {
-      "sha256": "fbe6f03dae83ec8e809df1c1e4332922e53f91b9083cdf2bc9f1891bdc72112d",
+      "sha256": "8410a7dd1390e994b183169f09be9f2f073d247b631d33f687a870372e3849d2",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
-          170
+          171
         ],
         "launch-or-mutation": [
-          22,
-          42,
-          46,
-          132,
-          158,
-          160,
-          173,
-          193,
-          205,
-          209,
-          217,
-          248
+          23,
+          43,
+          47,
+          133,
+          159,
+          161,
+          174,
+          194,
+          206,
+          210,
+          218,
+          249
         ],
         "executable-dependency": [
-          160,
-          175,
-          203,
-          213
+          161,
+          176,
+          204,
+          214
         ],
         "security-control": [
-          164,
-          194,
-          214,
-          248,
-          251
+          165,
+          195,
+          215,
+          249,
+          252
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -6328,6 +6391,1943 @@
           55,
           63,
           83
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/tests/ownership_publication/run.py": {
+      "sha256": "3373212b19bce94153c1105b4d76ecbf90a818afbe516463d24e15102b8032e7",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          27
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/tests/ownership_publication/test_wp2d.py": {
+      "sha256": "401f5af38733cc3238260ce79196feea4d3236135d89ed1f23f4e9f95c5d1e3c",
+      "declarations": [],
+      "signals": {
+        "role-input": [
+          112,
+          346,
+          356,
+          357
+        ],
+        "launch-or-mutation": [
+          71,
+          72,
+          73,
+          74,
+          75,
+          76,
+          90,
+          124,
+          125,
+          130,
+          137,
+          138,
+          189,
+          296,
+          316,
+          320,
+          341,
+          345,
+          348,
+          355,
+          358,
+          372,
+          379
+        ],
+        "executable-dependency": [
+          206,
+          372
+        ],
+        "security-control": [
+          111,
+          112,
+          113,
+          116,
+          212,
+          213,
+          297,
+          310,
+          349
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/tests/security_root/ordinary.py": {
+      "sha256": "08c78aa1a8b7bc9699501793baef48b4dae460544b76bbb407991152b1c82a3d",
+      "declarations": [],
+      "signals": {
+        "role-input": [
+          44,
+          65,
+          67
+        ],
+        "launch-or-mutation": [
+          11,
+          24,
+          37,
+          85
+        ],
+        "executable-dependency": [
+          49,
+          52,
+          82
+        ],
+        "security-control": [
+          43,
+          44,
+          54,
+          55,
+          59
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/tests/security_root/ownership.py": {
+      "sha256": "59c4937c60a2b3101c1f9bc731cdd69edb332c357b6bad2b63a60cafa2ecab0f",
+      "declarations": [],
+      "signals": {
+        "credential-acquisition": [
+          196
+        ],
+        "role-input": [
+          186,
+          213
+        ],
+        "launch-or-mutation": [
+          10,
+          13,
+          14,
+          15,
+          16,
+          17,
+          45,
+          49,
+          53,
+          56,
+          57,
+          58,
+          59,
+          60,
+          71,
+          153,
+          154,
+          160,
+          163,
+          206,
+          210,
+          217,
+          242
+        ],
+        "executable-dependency": [
+          13,
+          14,
+          15,
+          16,
+          34,
+          74
+        ],
+        "security-control": [
+          186,
+          187,
+          197,
+          206,
+          211,
+          213,
+          215,
+          218,
+          223,
+          226,
+          234
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/tests/security_root/publication.py": {
+      "sha256": "d820b5ca043b3b8dad1467cc4355d8864be7473b197440d005caa3670c7b67f0",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          88
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/infra/security/modules/protected_resources/main.tf.json": {
+      "sha256": "289da5668597287ea4333490fcf8fd6202cdcc581d090b2deca40cd1ad8ff5d5",
+      "declarations": [],
+      "signals": {
+        "credential-acquisition": [
+          22,
+          30,
+          38,
+          46,
+          54,
+          62,
+          70,
+          78,
+          86,
+          94,
+          102,
+          110,
+          118,
+          126,
+          134,
+          142,
+          150,
+          158
+        ],
+        "role-input": [
+          283,
+          655,
+          667,
+          847,
+          859
+        ],
+        "launch-or-mutation": [
+          2,
+          4,
+          5,
+          168,
+          172,
+          176,
+          180,
+          184,
+          188,
+          200,
+          245,
+          325,
+          338
+        ],
+        "security-control": [
+          19,
+          22,
+          30,
+          38,
+          46,
+          54,
+          62,
+          70,
+          78,
+          86,
+          94,
+          102,
+          110,
+          118,
+          126,
+          134,
+          142,
+          150,
+          158,
+          165,
+          167,
+          168,
+          171,
+          172,
+          175,
+          176,
+          179,
+          180,
+          183,
+          184,
+          187,
+          188,
+          191,
+          194,
+          195,
+          199,
+          204,
+          209,
+          214,
+          219,
+          220,
+          224,
+          225,
+          229,
+          230,
+          234,
+          235,
+          239,
+          240,
+          244,
+          249,
+          254,
+          259,
+          264,
+          265,
+          269,
+          270,
+          274,
+          275,
+          279,
+          280,
+          283,
+          286,
+          294,
+          302,
+          310,
+          317,
+          345,
+          348,
+          352,
+          358,
+          367,
+          376,
+          385,
+          394,
+          403,
+          446,
+          522,
+          547,
+          559,
+          571,
+          583,
+          595,
+          607,
+          619,
+          631,
+          643,
+          655,
+          667,
+          679,
+          739,
+          751,
+          763,
+          775,
+          787,
+          799,
+          811,
+          823,
+          835,
+          847,
+          859,
+          871,
+          955
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/apps/main.tf.json": {
+      "sha256": "e6dba4eea262cad0cc028e56ab6de6b33eec0041d4291fc7b5aa6b96bdf58834",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          3,
+          30,
+          44
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/apps/modules/ecs_service/alarm_ecs_service.tf": {
+      "sha256": "6c84e11c611872192aca0f68a0050e082308468b8f643882bedbe57e1698101c",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_metric_alarm",
+          "name": "ecs_tasks_gap",
+          "line": 1
+        }
+      ],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/apps/modules/ecs_service/locals.tf": {
+      "sha256": "4f5adde6c88d20840bee634d064701363fa870e082dd4b5f5bf522cf53e89f95",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          19,
+          43
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/apps/modules/ecs_service/logs.tf": {
+      "sha256": "8010a2ef6659eb69194c7532213c935f4effdb97335990fee80c056cb0be873a",
+      "declarations": [
+        {
+          "kind": "data",
+          "type": "aws_region",
+          "name": "current",
+          "line": 1
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_log_group",
+          "name": "this",
+          "line": 2
+        }
+      ],
+      "signals": {
+        "launch-or-mutation": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/apps/modules/ecs_service/outputs.tf": {
+      "sha256": "e21e549b3d113401ea543f7bbc92c9175ef97bd08db9b222891ded461e68409c",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/apps/modules/ecs_service/service.tf": {
+      "sha256": "d2f062a4ef41ba2437b52f6274856e9a82104e8410b9724b1d9de0e76e1b5262",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_ecs_service",
+          "name": "this",
+          "line": 1
+        }
+      ],
+      "signals": {
+        "executable-dependency": [
+          9
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/apps/modules/ecs_service/taskdef.tf": {
+      "sha256": "6a32e787f439db8a68419b23240415f708e465b5d8dae5f991a4828a0cf7f0a7",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_ecs_task_definition",
+          "name": "this",
+          "line": 1
+        }
+      ],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/apps/modules/ecs_service/variables.tf": {
+      "sha256": "51be61413aadf4553eb3f63becd87cf2da51d8c1f50f26cda719f57e328f6553",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          92,
+          119
+        ],
+        "security-control": [
+          107,
+          113
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/apps/modules/ecs_service/versions.tf": {
+      "sha256": "c785853dd5eb368b8d57c83793a99a76e1eb31b28bd9287d6038e83571aa13f4",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ],
+        "executable-dependency": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/apps/ordinary-demo.tf": {
+      "sha256": "720345dd3eb647c77ca04e257fe821440914c39b52d2579a6909e6ea993d2362",
+      "declarations": [
+        {
+          "kind": "module",
+          "type": "demo_api_blue",
+          "name": null,
+          "line": 1
+        },
+        {
+          "kind": "module",
+          "type": "demo_api_green",
+          "name": null,
+          "line": 44
+        }
+      ],
+      "signals": {
+        "executable-dependency": [
+          2,
+          11,
+          47,
+          56
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/apps/ordinary-locals.tf": {
+      "sha256": "f5791eb29cc83f14babdc89fdd78c991bfdb998f257dca140572d9cc74696232",
+      "declarations": [
+        {
+          "kind": "data",
+          "type": "aws_caller_identity",
+          "name": "current",
+          "line": 1
+        }
+      ],
+      "signals": {
+        "launch-or-mutation": [
+          11
+        ],
+        "executable-dependency": [
+          15
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/apps/ordinary-variables.tf": {
+      "sha256": "498fcd05241e20707c5e0c6df83cb9df31955e32d30a5ee659ad69df65120357",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          34
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/apps/ordinary-versions.tf": {
+      "sha256": "0a47175c14939f1ac4e2e84d7e7c2c789dc454d653c062758016ebf8a5224a1b",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ],
+        "executable-dependency": [
+          4,
+          5
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/data/main.tf.json": {
+      "sha256": "87349da8981c84f32f1052ab3d6751db72f7058985ddff96339aaa054622c71d",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          3,
+          30,
+          44
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/data/ordinary-locals.tf": {
+      "sha256": "9d080ed0e43619c51362a9e68190821268a5c3e1dd6000cfa027a3831d8364bd",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          7
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/data/ordinary-main.tf": {
+      "sha256": "db12f909a4ba9b569131061a7032e21f7e08450b8321adb9814a4b72429a6013",
+      "declarations": [
+        {
+          "kind": "data",
+          "type": "aws_ami",
+          "name": "ubuntu_2204",
+          "line": 1
+        },
+        {
+          "kind": "resource",
+          "type": "aws_instance",
+          "name": "db",
+          "line": 22
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_metric_alarm",
+          "name": "statuscheck_failed",
+          "line": 65
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_metric_alarm",
+          "name": "cpu_credit_low",
+          "line": 89
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_metric_alarm",
+          "name": "cpu_high",
+          "line": 113
+        }
+      ],
+      "signals": {
+        "role-input": [
+          28
+        ],
+        "executable-dependency": [
+          40
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/data/ordinary-outputs.tf": {
+      "sha256": "549a7bd00a9d1273bec1b006df4c5cbe2c7178d8849dde4a00262cbc288beadb",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/data/ordinary-variables.tf": {
+      "sha256": "8db8e213d0f2f171f7cc46f9d207d5de9f0e3076933f6417fc462720d4b5554b",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/data/ordinary-versions.tf": {
+      "sha256": "c785853dd5eb368b8d57c83793a99a76e1eb31b28bd9287d6038e83571aa13f4",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ],
+        "executable-dependency": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/global/main.tf.json": {
+      "sha256": "445ac2832372b82c2431903e528b45ab8215bc268382514a7e20a84aeb3b2b33",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          3,
+          30,
+          44
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/global/modules/alb/alarms_tg.tf": {
+      "sha256": "e8bd25fafa989462a48f1acd0acc4de483d416d83a00a230e5d05a76634cf5b9",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_metric_alarm",
+          "name": "tg_blue_5xx",
+          "line": 1
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_metric_alarm",
+          "name": "tg_green_5xx",
+          "line": 24
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_metric_alarm",
+          "name": "tg_blue_latency",
+          "line": 48
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_metric_alarm",
+          "name": "tg_green_latency",
+          "line": 73
+        }
+      ],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/global/modules/alb/alb.tf": {
+      "sha256": "5839265d66ded9bf4c1469d955c6ed7ea421ccb0771c86e44ff3e1745626ac43",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_lb",
+          "name": "demo_internal_alb",
+          "line": 1
+        },
+        {
+          "kind": "resource",
+          "type": "aws_lb_listener",
+          "name": "demo_http_listener",
+          "line": 16
+        },
+        {
+          "kind": "resource",
+          "type": "aws_lb_listener_rule",
+          "name": "candidate_rule",
+          "line": 34
+        }
+      ],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/global/modules/alb/outputs.tf": {
+      "sha256": "d90552a6238f2077208d568d463964bf2d44bc15463c7689e64c07e3a4881f84",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/global/modules/alb/target_group.tf": {
+      "sha256": "ac8787c7caddba12a91257f80af7cbb824ee5dff7c44d9def613afb2287b3ec1",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_lb_target_group",
+          "name": "blue",
+          "line": 1
+        },
+        {
+          "kind": "resource",
+          "type": "aws_lb_target_group",
+          "name": "green",
+          "line": 24
+        }
+      ],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/global/modules/alb/variables.tf": {
+      "sha256": "f724006f0114faf788bee174b15e1e16037c5352167b44102f5b883fa2c7ef2b",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/global/modules/alb/versions.tf": {
+      "sha256": "c785853dd5eb368b8d57c83793a99a76e1eb31b28bd9287d6038e83571aa13f4",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ],
+        "executable-dependency": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/global/modules/vpc/locals.tf": {
+      "sha256": "466150c67d11e8424537800ba37bb5d4e31c9428021bec7669b4f5ac3005afcf",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/global/modules/vpc/outputs.tf": {
+      "sha256": "a6c3ee4ecdab35266da00fbf02fada52de2faba0b76227d68535d9ea7e67e7ab",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/global/modules/vpc/route_tables.tf": {
+      "sha256": "0236f299aa538736af886fa3d4c07c6b0cdb0b445f8ada85036f72fee4195b78",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_internet_gateway",
+          "name": "igw",
+          "line": 1
+        },
+        {
+          "kind": "resource",
+          "type": "aws_route_table",
+          "name": "public",
+          "line": 6
+        },
+        {
+          "kind": "resource",
+          "type": "aws_route",
+          "name": "public_default_igw",
+          "line": 12
+        },
+        {
+          "kind": "resource",
+          "type": "aws_route_table_association",
+          "name": "public0_assoc",
+          "line": 18
+        },
+        {
+          "kind": "resource",
+          "type": "aws_route_table_association",
+          "name": "public1_assoc",
+          "line": 24
+        },
+        {
+          "kind": "resource",
+          "type": "aws_route_table",
+          "name": "private0",
+          "line": 29
+        },
+        {
+          "kind": "resource",
+          "type": "aws_route_table_association",
+          "name": "private0_assoc",
+          "line": 35
+        },
+        {
+          "kind": "resource",
+          "type": "aws_route_table",
+          "name": "private1",
+          "line": 40
+        },
+        {
+          "kind": "resource",
+          "type": "aws_route_table_association",
+          "name": "private1_assoc",
+          "line": 45
+        }
+      ],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/global/modules/vpc/subnets.tf": {
+      "sha256": "4662a68b0a71bd33452c1c0bb6ccdf7c70859de8c6ed88d5af837328528927b9",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_subnet",
+          "name": "public0",
+          "line": 1
+        },
+        {
+          "kind": "resource",
+          "type": "aws_subnet",
+          "name": "public1",
+          "line": 9
+        },
+        {
+          "kind": "resource",
+          "type": "aws_subnet",
+          "name": "private0",
+          "line": 18
+        },
+        {
+          "kind": "resource",
+          "type": "aws_subnet",
+          "name": "private1",
+          "line": 26
+        }
+      ],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/global/modules/vpc/variables.tf": {
+      "sha256": "42c76753d1332f6ac30ebe1bf55e81a1fd7e7bc51b3f8c262a14bff134f690fa",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/global/modules/vpc/versions.tf": {
+      "sha256": "c785853dd5eb368b8d57c83793a99a76e1eb31b28bd9287d6038e83571aa13f4",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ],
+        "executable-dependency": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/global/modules/vpc/vpc.tf": {
+      "sha256": "5b504fe02f982d22dfb04d9941487158a77616cd3465e1e705589d076fe48437",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_vpc",
+          "name": "this",
+          "line": 1
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_log_group",
+          "name": "vpc_flow_logs",
+          "line": 7
+        },
+        {
+          "kind": "resource",
+          "type": "aws_flow_log",
+          "name": "vpc",
+          "line": 12
+        }
+      ],
+      "signals": {
+        "role-input": [
+          15
+        ],
+        "launch-or-mutation": [
+          8
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/global/ordinary-locals.tf": {
+      "sha256": "66e1853dd910b864dc040532bb96b26e2601469358e65c36bdf44df35691aaf6",
+      "declarations": [
+        {
+          "kind": "data",
+          "type": "aws_availability_zones",
+          "name": "available",
+          "line": 1
+        }
+      ],
+      "signals": {
+        "launch-or-mutation": [
+          11
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/global/ordinary-main.tf": {
+      "sha256": "2fd1510c57fe6ffc000bf08cca4cfa4c2eebf605c86fd1f8dbb90f0617b06022",
+      "declarations": [
+        {
+          "kind": "module",
+          "type": "vpc",
+          "name": null,
+          "line": 1
+        },
+        {
+          "kind": "module",
+          "type": "alb",
+          "name": null,
+          "line": 8
+        }
+      ],
+      "signals": {
+        "executable-dependency": [
+          2,
+          9
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/global/ordinary-outputs.tf": {
+      "sha256": "21452715057e5e229020bc50fd809bcad740aa6801ca3ad8798323290a65b717",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/global/ordinary-security_groups.tf": {
+      "sha256": "9d357ca8811ea6d00a1b003d7979560c5a021674fa2aa9063dfff1ebdccb1700",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_security_group",
+          "name": "alb_demo",
+          "line": 1
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group",
+          "name": "vpc_link",
+          "line": 8
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group",
+          "name": "nat_instance",
+          "line": 16
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group",
+          "name": "fargate_demo",
+          "line": 24
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group",
+          "name": "db_instance",
+          "line": 32
+        }
+      ],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/global/ordinary-security_rules.tf": {
+      "sha256": "40ad15f8fdc83b315f75317089a49914b98dbdae195e34511f12d9f43d1b3c35",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_security_group_rule",
+          "name": "alb_ingress_from_vpc_link",
+          "line": 1
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group_rule",
+          "name": "alb_egress_to_fargate_demo",
+          "line": 11
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group_rule",
+          "name": "vpc_link_egress_to_alb",
+          "line": 21
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group_rule",
+          "name": "nat_ingress_from_vpc",
+          "line": 32
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group_rule",
+          "name": "nat_egress_all_inet",
+          "line": 43
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group_rule",
+          "name": "db_ingress_1433_from_fargate_demo",
+          "line": 55
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group_rule",
+          "name": "db_egress_any",
+          "line": 66
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group_rule",
+          "name": "fargate_demo_ingress_from_alb",
+          "line": 76
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group_rule",
+          "name": "fargate_demo_egress_to_db",
+          "line": 88
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group_rule",
+          "name": "fargate_egress_any",
+          "line": 98
+        }
+      ],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/global/ordinary-variables.tf": {
+      "sha256": "5e6f9ae03efec65818f2114fe80a9a4bd8dc6b52b51d47b7b6b0a05f1059872f",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/global/ordinary-versions.tf": {
+      "sha256": "c785853dd5eb368b8d57c83793a99a76e1eb31b28bd9287d6038e83571aa13f4",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ],
+        "executable-dependency": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/secrets/main.tf.json": {
+      "sha256": "ef43bf55fd607085920d377c9c278c0245d237eecc302b907128d28dff354ff1",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          3,
+          30,
+          44
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/shared/main.tf.json": {
+      "sha256": "09a73f78c2e1066d07091d0702873d50923e9b7383c1d45c5c1f141c1e940739",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          3,
+          30,
+          44
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/shared/ordinary-locals.tf": {
+      "sha256": "645c31cd2524950215bbbb876092fb990c68beba90e30f30cb54d0350c43b070",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          3
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/shared/ordinary-main.tf": {
+      "sha256": "6c84c0db50c20fe53d84eda7e3d64670eea34b5726bdfb27a09448748d0189ae",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_sns_topic",
+          "name": "alerts",
+          "line": 1
+        },
+        {
+          "kind": "resource",
+          "type": "aws_sns_topic_subscription",
+          "name": "alerts_email",
+          "line": 6
+        }
+      ],
+      "signals": {
+        "launch-or-mutation": [
+          3
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/shared/ordinary-outputs.tf": {
+      "sha256": "953cda504c467c224c5a985cab57f01ac17d3cdb0cff12b91bc470546ae74e39",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/shared/ordinary-variables.tf": {
+      "sha256": "4184d9665b77cb8b05b9190e8d34eb0adb39309ed5a3a40cb41593f78e8c9396",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/dev/shared/ordinary-versions.tf": {
+      "sha256": "c785853dd5eb368b8d57c83793a99a76e1eb31b28bd9287d6038e83571aa13f4",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ],
+        "executable-dependency": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/apps/main.tf.json": {
+      "sha256": "31cd3d4ea5c5b8c98defde03608fbb9e66e0881521cbd7f0b966de5495ede9e2",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          3,
+          30,
+          44
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/apps/modules/ecs_service/alarm_ecs_service.tf": {
+      "sha256": "6c84e11c611872192aca0f68a0050e082308468b8f643882bedbe57e1698101c",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_metric_alarm",
+          "name": "ecs_tasks_gap",
+          "line": 1
+        }
+      ],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/apps/modules/ecs_service/locals.tf": {
+      "sha256": "4f5adde6c88d20840bee634d064701363fa870e082dd4b5f5bf522cf53e89f95",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          19,
+          43
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/apps/modules/ecs_service/logs.tf": {
+      "sha256": "8010a2ef6659eb69194c7532213c935f4effdb97335990fee80c056cb0be873a",
+      "declarations": [
+        {
+          "kind": "data",
+          "type": "aws_region",
+          "name": "current",
+          "line": 1
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_log_group",
+          "name": "this",
+          "line": 2
+        }
+      ],
+      "signals": {
+        "launch-or-mutation": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/apps/modules/ecs_service/outputs.tf": {
+      "sha256": "e21e549b3d113401ea543f7bbc92c9175ef97bd08db9b222891ded461e68409c",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/apps/modules/ecs_service/service.tf": {
+      "sha256": "d2f062a4ef41ba2437b52f6274856e9a82104e8410b9724b1d9de0e76e1b5262",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_ecs_service",
+          "name": "this",
+          "line": 1
+        }
+      ],
+      "signals": {
+        "executable-dependency": [
+          9
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/apps/modules/ecs_service/taskdef.tf": {
+      "sha256": "6a32e787f439db8a68419b23240415f708e465b5d8dae5f991a4828a0cf7f0a7",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_ecs_task_definition",
+          "name": "this",
+          "line": 1
+        }
+      ],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/apps/modules/ecs_service/variables.tf": {
+      "sha256": "51be61413aadf4553eb3f63becd87cf2da51d8c1f50f26cda719f57e328f6553",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          92,
+          119
+        ],
+        "security-control": [
+          107,
+          113
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/apps/modules/ecs_service/versions.tf": {
+      "sha256": "c785853dd5eb368b8d57c83793a99a76e1eb31b28bd9287d6038e83571aa13f4",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ],
+        "executable-dependency": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/apps/ordinary-demo.tf": {
+      "sha256": "8cb6c983e6a01556a1db7d16d96b8169176b507e7074455a7338e062f7bd326c",
+      "declarations": [
+        {
+          "kind": "module",
+          "type": "demo_api_blue",
+          "name": null,
+          "line": 1
+        },
+        {
+          "kind": "module",
+          "type": "demo_api_green",
+          "name": null,
+          "line": 44
+        }
+      ],
+      "signals": {
+        "executable-dependency": [
+          2,
+          11,
+          47,
+          56
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/apps/ordinary-locals.tf": {
+      "sha256": "be03c8a224dc2f9d9ff707c5903d9cfe290fe287da753cc0d393cdecb0be320e",
+      "declarations": [
+        {
+          "kind": "data",
+          "type": "aws_caller_identity",
+          "name": "current",
+          "line": 1
+        }
+      ],
+      "signals": {
+        "launch-or-mutation": [
+          11
+        ],
+        "executable-dependency": [
+          15
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/apps/ordinary-variables.tf": {
+      "sha256": "498fcd05241e20707c5e0c6df83cb9df31955e32d30a5ee659ad69df65120357",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          34
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/apps/ordinary-versions.tf": {
+      "sha256": "0a47175c14939f1ac4e2e84d7e7c2c789dc454d653c062758016ebf8a5224a1b",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ],
+        "executable-dependency": [
+          4,
+          5
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/data/main.tf.json": {
+      "sha256": "0704c147ad960310e6acaf903c0c7dde2444852eb50812c61fe79e8770e2a7fc",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          3,
+          30,
+          44
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/data/ordinary-locals.tf": {
+      "sha256": "9ffe983af0532b879d3ac0e39069f13e2312cd7b3588e42de15c62ee5db78a3c",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          7
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/data/ordinary-main.tf": {
+      "sha256": "d6296dfddf01fc36e94f15870a848b8e219c7961a32e3bd8231519cc07e82e97",
+      "declarations": [
+        {
+          "kind": "data",
+          "type": "aws_ami",
+          "name": "ubuntu_2204",
+          "line": 1
+        },
+        {
+          "kind": "resource",
+          "type": "aws_instance",
+          "name": "db",
+          "line": 22
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_metric_alarm",
+          "name": "statuscheck_failed",
+          "line": 65
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_metric_alarm",
+          "name": "cpu_credit_low",
+          "line": 89
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_metric_alarm",
+          "name": "cpu_high",
+          "line": 113
+        }
+      ],
+      "signals": {
+        "role-input": [
+          28
+        ],
+        "executable-dependency": [
+          40
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/data/ordinary-outputs.tf": {
+      "sha256": "549a7bd00a9d1273bec1b006df4c5cbe2c7178d8849dde4a00262cbc288beadb",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/data/ordinary-variables.tf": {
+      "sha256": "8db8e213d0f2f171f7cc46f9d207d5de9f0e3076933f6417fc462720d4b5554b",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/data/ordinary-versions.tf": {
+      "sha256": "c785853dd5eb368b8d57c83793a99a76e1eb31b28bd9287d6038e83571aa13f4",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ],
+        "executable-dependency": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/global/main.tf.json": {
+      "sha256": "faeeaf174199b38ec26b24ddfa6f4b074b3045ede5dbc69af1632ab5a74418bb",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          3,
+          30,
+          44
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/global/modules/alb/alarms_tg.tf": {
+      "sha256": "e8bd25fafa989462a48f1acd0acc4de483d416d83a00a230e5d05a76634cf5b9",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_metric_alarm",
+          "name": "tg_blue_5xx",
+          "line": 1
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_metric_alarm",
+          "name": "tg_green_5xx",
+          "line": 24
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_metric_alarm",
+          "name": "tg_blue_latency",
+          "line": 48
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_metric_alarm",
+          "name": "tg_green_latency",
+          "line": 73
+        }
+      ],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/global/modules/alb/alb.tf": {
+      "sha256": "5839265d66ded9bf4c1469d955c6ed7ea421ccb0771c86e44ff3e1745626ac43",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_lb",
+          "name": "demo_internal_alb",
+          "line": 1
+        },
+        {
+          "kind": "resource",
+          "type": "aws_lb_listener",
+          "name": "demo_http_listener",
+          "line": 16
+        },
+        {
+          "kind": "resource",
+          "type": "aws_lb_listener_rule",
+          "name": "candidate_rule",
+          "line": 34
+        }
+      ],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/global/modules/alb/outputs.tf": {
+      "sha256": "d90552a6238f2077208d568d463964bf2d44bc15463c7689e64c07e3a4881f84",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/global/modules/alb/target_group.tf": {
+      "sha256": "ac8787c7caddba12a91257f80af7cbb824ee5dff7c44d9def613afb2287b3ec1",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_lb_target_group",
+          "name": "blue",
+          "line": 1
+        },
+        {
+          "kind": "resource",
+          "type": "aws_lb_target_group",
+          "name": "green",
+          "line": 24
+        }
+      ],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/global/modules/alb/variables.tf": {
+      "sha256": "f724006f0114faf788bee174b15e1e16037c5352167b44102f5b883fa2c7ef2b",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/global/modules/alb/versions.tf": {
+      "sha256": "c785853dd5eb368b8d57c83793a99a76e1eb31b28bd9287d6038e83571aa13f4",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ],
+        "executable-dependency": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/global/modules/vpc/locals.tf": {
+      "sha256": "466150c67d11e8424537800ba37bb5d4e31c9428021bec7669b4f5ac3005afcf",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/global/modules/vpc/outputs.tf": {
+      "sha256": "a6c3ee4ecdab35266da00fbf02fada52de2faba0b76227d68535d9ea7e67e7ab",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/global/modules/vpc/route_tables.tf": {
+      "sha256": "0236f299aa538736af886fa3d4c07c6b0cdb0b445f8ada85036f72fee4195b78",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_internet_gateway",
+          "name": "igw",
+          "line": 1
+        },
+        {
+          "kind": "resource",
+          "type": "aws_route_table",
+          "name": "public",
+          "line": 6
+        },
+        {
+          "kind": "resource",
+          "type": "aws_route",
+          "name": "public_default_igw",
+          "line": 12
+        },
+        {
+          "kind": "resource",
+          "type": "aws_route_table_association",
+          "name": "public0_assoc",
+          "line": 18
+        },
+        {
+          "kind": "resource",
+          "type": "aws_route_table_association",
+          "name": "public1_assoc",
+          "line": 24
+        },
+        {
+          "kind": "resource",
+          "type": "aws_route_table",
+          "name": "private0",
+          "line": 29
+        },
+        {
+          "kind": "resource",
+          "type": "aws_route_table_association",
+          "name": "private0_assoc",
+          "line": 35
+        },
+        {
+          "kind": "resource",
+          "type": "aws_route_table",
+          "name": "private1",
+          "line": 40
+        },
+        {
+          "kind": "resource",
+          "type": "aws_route_table_association",
+          "name": "private1_assoc",
+          "line": 45
+        }
+      ],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/global/modules/vpc/subnets.tf": {
+      "sha256": "4662a68b0a71bd33452c1c0bb6ccdf7c70859de8c6ed88d5af837328528927b9",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_subnet",
+          "name": "public0",
+          "line": 1
+        },
+        {
+          "kind": "resource",
+          "type": "aws_subnet",
+          "name": "public1",
+          "line": 9
+        },
+        {
+          "kind": "resource",
+          "type": "aws_subnet",
+          "name": "private0",
+          "line": 18
+        },
+        {
+          "kind": "resource",
+          "type": "aws_subnet",
+          "name": "private1",
+          "line": 26
+        }
+      ],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/global/modules/vpc/variables.tf": {
+      "sha256": "42c76753d1332f6ac30ebe1bf55e81a1fd7e7bc51b3f8c262a14bff134f690fa",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/global/modules/vpc/versions.tf": {
+      "sha256": "c785853dd5eb368b8d57c83793a99a76e1eb31b28bd9287d6038e83571aa13f4",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ],
+        "executable-dependency": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/global/modules/vpc/vpc.tf": {
+      "sha256": "5b504fe02f982d22dfb04d9941487158a77616cd3465e1e705589d076fe48437",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_vpc",
+          "name": "this",
+          "line": 1
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_log_group",
+          "name": "vpc_flow_logs",
+          "line": 7
+        },
+        {
+          "kind": "resource",
+          "type": "aws_flow_log",
+          "name": "vpc",
+          "line": 12
+        }
+      ],
+      "signals": {
+        "role-input": [
+          15
+        ],
+        "launch-or-mutation": [
+          8
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/global/ordinary-locals.tf": {
+      "sha256": "50239246d893cfc1ea80394cb56c01e707e345410ae30fef4bfb1e55cf69d0f2",
+      "declarations": [
+        {
+          "kind": "data",
+          "type": "aws_availability_zones",
+          "name": "available",
+          "line": 1
+        }
+      ],
+      "signals": {
+        "launch-or-mutation": [
+          11
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/global/ordinary-main.tf": {
+      "sha256": "fdb99e628ca439787fec7e626f3d90f731f1471c26198c054a68579c1d034cf5",
+      "declarations": [
+        {
+          "kind": "module",
+          "type": "vpc",
+          "name": null,
+          "line": 1
+        },
+        {
+          "kind": "module",
+          "type": "alb",
+          "name": null,
+          "line": 8
+        }
+      ],
+      "signals": {
+        "executable-dependency": [
+          2,
+          9
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/global/ordinary-outputs.tf": {
+      "sha256": "21452715057e5e229020bc50fd809bcad740aa6801ca3ad8798323290a65b717",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/global/ordinary-security_groups.tf": {
+      "sha256": "9d357ca8811ea6d00a1b003d7979560c5a021674fa2aa9063dfff1ebdccb1700",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_security_group",
+          "name": "alb_demo",
+          "line": 1
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group",
+          "name": "vpc_link",
+          "line": 8
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group",
+          "name": "nat_instance",
+          "line": 16
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group",
+          "name": "fargate_demo",
+          "line": 24
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group",
+          "name": "db_instance",
+          "line": 32
+        }
+      ],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/global/ordinary-security_rules.tf": {
+      "sha256": "40ad15f8fdc83b315f75317089a49914b98dbdae195e34511f12d9f43d1b3c35",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_security_group_rule",
+          "name": "alb_ingress_from_vpc_link",
+          "line": 1
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group_rule",
+          "name": "alb_egress_to_fargate_demo",
+          "line": 11
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group_rule",
+          "name": "vpc_link_egress_to_alb",
+          "line": 21
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group_rule",
+          "name": "nat_ingress_from_vpc",
+          "line": 32
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group_rule",
+          "name": "nat_egress_all_inet",
+          "line": 43
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group_rule",
+          "name": "db_ingress_1433_from_fargate_demo",
+          "line": 55
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group_rule",
+          "name": "db_egress_any",
+          "line": 66
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group_rule",
+          "name": "fargate_demo_ingress_from_alb",
+          "line": 76
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group_rule",
+          "name": "fargate_demo_egress_to_db",
+          "line": 88
+        },
+        {
+          "kind": "resource",
+          "type": "aws_security_group_rule",
+          "name": "fargate_egress_any",
+          "line": 98
+        }
+      ],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/global/ordinary-variables.tf": {
+      "sha256": "5e6f9ae03efec65818f2114fe80a9a4bd8dc6b52b51d47b7b6b0a05f1059872f",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/global/ordinary-versions.tf": {
+      "sha256": "c785853dd5eb368b8d57c83793a99a76e1eb31b28bd9287d6038e83571aa13f4",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ],
+        "executable-dependency": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/secrets/main.tf.json": {
+      "sha256": "9f133a05735da8eec20ac62e1ec9472be3000a97d35b4bd215f486788592773a",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          3,
+          30,
+          44
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/shared/main.tf.json": {
+      "sha256": "6bcb8d2cdd021736646fbe4b91f01e10fb13315f4e6817d53acc4f21262da4a4",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          3,
+          30,
+          44
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/shared/ordinary-locals.tf": {
+      "sha256": "bf2dc3bf0a0e70f2d87e583a9415d752600a0d3a8a5cbdeef135588193a0cf5e",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          3
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/shared/ordinary-main.tf": {
+      "sha256": "6c84c0db50c20fe53d84eda7e3d64670eea34b5726bdfb27a09448748d0189ae",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_sns_topic",
+          "name": "alerts",
+          "line": 1
+        },
+        {
+          "kind": "resource",
+          "type": "aws_sns_topic_subscription",
+          "name": "alerts_email",
+          "line": 6
+        }
+      ],
+      "signals": {
+        "launch-or-mutation": [
+          3
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/shared/ordinary-outputs.tf": {
+      "sha256": "953cda504c467c224c5a985cab57f01ac17d3cdb0cff12b91bc470546ae74e39",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/shared/ordinary-variables.tf": {
+      "sha256": "4184d9665b77cb8b05b9190e8d34eb0adb39309ed5a3a40cb41593f78e8c9396",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/modules/target/prod/shared/ordinary-versions.tf": {
+      "sha256": "c785853dd5eb368b8d57c83793a99a76e1eb31b28bd9287d6038e83571aa13f4",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ],
+        "executable-dependency": [
+          4
         ]
       },
       "semantic_status": "UNVERIFIED"

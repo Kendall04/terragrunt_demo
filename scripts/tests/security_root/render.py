@@ -23,8 +23,8 @@ def main():
         for name, configuration in wiring(doc).items():
             path = ROOT / name
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(json.dumps(configuration, indent=2) + "\n", newline="\n")
-        (ROOT / "terraform/live/security/terragrunt.hcl").write_text(wrapper(doc), newline="\n")
+            path.write_text(configuration if isinstance(configuration, str) else json.dumps(configuration, indent=2) + "\n", newline="\n", encoding="utf-8")
+        (ROOT / "terraform/live/security/terragrunt.hcl").write_text(wrapper(doc), newline="\n", encoding="utf-8")
     validate_repository(ROOT)
     print("WP2A closed source / Terraform wiring PASS")
 

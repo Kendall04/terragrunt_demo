@@ -11,6 +11,7 @@ from coverage import ClosedUniverse
 from evaluator import Decision as D, Unsupported, evaluate
 from graph import baseline, closure
 from bundles import SOURCE
+from model import SUPPORT_FILES
 from model import (AUTHORITY, LEGACY, PROTECTED, CATEGORIES, REQUESTS, configuration_paths,
                    load_authority, rendered_policies, sha, validate_repository, wiring)
 
@@ -30,7 +31,7 @@ class FoundationTests(unittest.TestCase):
         tmp = tempfile.TemporaryDirectory(prefix="e1-wp2a-")
         self.addCleanup(tmp.cleanup)
         root = Path(tmp.name)
-        for name in configuration_paths(ROOT) | {AUTHORITY, LEGACY, "terraform/infra/security/README.md", SOURCE}:
+        for name in configuration_paths(ROOT) | set(SUPPORT_FILES) | {AUTHORITY, LEGACY, "terraform/infra/security/README.md", SOURCE}:
             dest = root / name
             dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(ROOT / name, dest)

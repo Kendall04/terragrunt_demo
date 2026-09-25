@@ -10,6 +10,7 @@ import bundles
 import compute
 from contracts import load_json
 from evaluator import evaluate, Decision
+from model import SUPPORT_FILES
 from model import AUTHORITY, LEGACY, configuration_paths, validate_repository, wiring
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -19,7 +20,7 @@ class ComputeTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.doc = validate_repository(ROOT)
-        cls.sources = configuration_paths(ROOT) | {AUTHORITY, LEGACY, bundles.SOURCE, "terraform/infra/security/README.md"}
+        cls.sources = configuration_paths(ROOT) | set(SUPPORT_FILES) | {AUTHORITY, LEGACY, bundles.SOURCE, "terraform/infra/security/README.md"}
 
     def fixture(self):
         tmp = tempfile.TemporaryDirectory(prefix="e1-wp2c-")
@@ -42,7 +43,7 @@ class ComputeTests(unittest.TestCase):
     def test_01_actual_terraform_consumes_canonical_source(self):
         generated = wiring(self.doc)
         for path, value in generated.items():
-            self.assertEqual(load_json((ROOT / path).read_text()), value)
+            self.assertEqual((ROOT / path).read_text() if isinstance(value, str) else load_json((ROOT / path).read_text()), value)
         root = generated["terraform/infra/security/main.tf.json"]
         self.assertEqual(root["module"]["controller_compute"]["authority"], "${local.authority}")
         self.assertIn("var.authority.control_bundles.consumer_references[n.bundle_binding]",

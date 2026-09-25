@@ -51,11 +51,11 @@
       },
       "kms_authority": {
         "owner": "SECURITY_ROOT_OWNED",
-        "implementation": "DEFERRED"
+        "implementation": "WP2D_EXTRACTED_DECLARATIONS"
       },
       "oidc": {
         "owner": "SECURITY_ROOT_OWNED",
-        "implementation": "DEFERRED"
+        "implementation": "WP2D_EXTRACTED_DECLARATIONS"
       },
       "permissions_boundaries": {
         "owner": "SECURITY_ROOT_OWNED",
@@ -63,7 +63,7 @@
       },
       "recovery_iam": {
         "owner": "SECURITY_ROOT_OWNED",
-        "implementation": "DEFERRED"
+        "implementation": "WP2D_EXTRACTED_DECLARATIONS"
       },
       "request_identities": {
         "owner": "SECURITY_ROOT_OWNED",
@@ -71,7 +71,7 @@
       },
       "secret_metadata_and_policy": {
         "owner": "SECURITY_ROOT_OWNED",
-        "implementation": "DEFERRED"
+        "implementation": "WP2D_EXTRACTED_DECLARATIONS"
       },
       "security_state_and_lock": {
         "owner": "SECURITY_ROOT_OWNED",
@@ -79,11 +79,11 @@
       },
       "shared_ecr_security": {
         "owner": "SECURITY_ROOT_OWNED",
-        "implementation": "DEFERRED"
+        "implementation": "WP2D_EXTRACTED_DECLARATIONS"
       },
       "workload_iam": {
         "owner": "SECURITY_ROOT_OWNED",
-        "implementation": "DEFERRED"
+        "implementation": "WP2D_EXTRACTED_DECLARATIONS"
       }
     },
     "operational_classes": {
@@ -1349,5 +1349,1178 @@
     },
     "role_permissions_source": "authority.policies.inert_permissions",
     "future_codebuild_trust": "SERVICE_ONLY_EXACT_PROJECT_ARN_AND_ACCOUNT_REVIEW_REQUIRED"
+  },
+  "ownership_closure": {
+    "stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE",
+    "resources": {
+      "dev/sql": {
+        "kind": "role",
+        "name": "demo-dev-data-sql-ec2-role",
+        "source": "terraform/infra/data/main.tf",
+        "scope": "dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/dev/sql",
+        "service": "ec2.amazonaws.com",
+        "mode": "SQL"
+      },
+      "dev/flow": {
+        "kind": "role",
+        "name": "demo-dev-vpc-flow-logs-role",
+        "source": "terraform/infra/global/modules/vpc/vpc.tf",
+        "scope": "dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/dev/flow",
+        "service": "vpc-flow-logs.amazonaws.com",
+        "mode": "FLOW"
+      },
+      "dev/nat": {
+        "kind": "role",
+        "name": "demo-dev-nat-role",
+        "source": "terraform/infra/global/modules/nat/iam_nat.tf",
+        "scope": "dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/dev/nat",
+        "service": "ec2.amazonaws.com",
+        "mode": "NAT_INSTANCE"
+      },
+      "dev/nat-recovery": {
+        "kind": "role",
+        "name": "demo-dev-lambda-nat-role",
+        "source": "terraform/infra/global/modules/nat/iam_lambda_nat.tf",
+        "scope": "dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/dev/nat-recovery",
+        "service": "lambda.amazonaws.com",
+        "mode": "INERT"
+      },
+      "dev/cleanup": {
+        "kind": "role",
+        "name": "demo-dev-scale-down-old-color-role",
+        "source": "terraform/infra/apps/fargate/iam_lambda_scale_down.tf",
+        "scope": "dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/dev/cleanup",
+        "service": "lambda.amazonaws.com",
+        "mode": "INERT"
+      },
+      "dev/blue-task": {
+        "kind": "role",
+        "name": "demo-dev-app-api-blue-task-role",
+        "source": "terraform/infra/apps/fargate/modules/ecs_service/iam.tf",
+        "scope": "dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/dev/blue-task",
+        "service": "ecs-tasks.amazonaws.com",
+        "mode": "TASK"
+      },
+      "dev/blue-exec": {
+        "kind": "role",
+        "name": "demo-dev-app-api-blue-exec-role",
+        "source": "terraform/infra/apps/fargate/modules/ecs_service/iam.tf",
+        "scope": "dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/dev/blue-exec",
+        "service": "ecs-tasks.amazonaws.com",
+        "mode": "EXEC"
+      },
+      "dev/green-task": {
+        "kind": "role",
+        "name": "demo-dev-app-api-green-task-role",
+        "source": "terraform/infra/apps/fargate/modules/ecs_service/iam.tf",
+        "scope": "dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/dev/green-task",
+        "service": "ecs-tasks.amazonaws.com",
+        "mode": "TASK"
+      },
+      "dev/green-exec": {
+        "kind": "role",
+        "name": "demo-dev-app-api-green-exec-role",
+        "source": "terraform/infra/apps/fargate/modules/ecs_service/iam.tf",
+        "scope": "dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/dev/green-exec",
+        "service": "ecs-tasks.amazonaws.com",
+        "mode": "EXEC"
+      },
+      "dev/sql-profile": {
+        "kind": "profile",
+        "name": "demo-dev-data-sql-ec2-profile",
+        "source": "terraform/infra/data/main.tf",
+        "scope": "dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/dev/sql-profile",
+        "role": "dev/sql"
+      },
+      "dev/nat-profile": {
+        "kind": "profile",
+        "name": "demo-dev-nat-instance-profile",
+        "source": "terraform/infra/global/modules/nat/iam_nat.tf",
+        "scope": "dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/dev/nat-profile",
+        "role": "dev/nat"
+      },
+      "dev/kms": {
+        "kind": "key",
+        "name": "alias/dev-kms-service",
+        "source": "terraform/infra/shared/modules/kms_key/key.tf",
+        "scope": "dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/dev/kms"
+      },
+      "dev/sa": {
+        "kind": "secret",
+        "name": "demo/dev/db/sql-sa-password",
+        "source": "terraform/infra/secrets/modules/secret_metadata/main.tf",
+        "scope": "dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/dev/sa",
+        "key": "dev/kms"
+      },
+      "dev/db-user": {
+        "kind": "secret",
+        "name": "demo/dev/db/sql-app-password",
+        "source": "terraform/infra/secrets/modules/secret_metadata/main.tf",
+        "scope": "dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/dev/db-user",
+        "key": "dev/kms"
+      },
+      "dev/connection": {
+        "kind": "secret",
+        "name": "demo/dev/app/db-connection-string",
+        "source": "terraform/infra/secrets/modules/secret_metadata/main.tf",
+        "scope": "dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/dev/connection",
+        "key": "dev/kms"
+      },
+      "dev/repository": {
+        "kind": "repository",
+        "name": "demo-dev-shared-demo-ms",
+        "source": "terraform/infra/shared/modules/ecr/main.tf",
+        "scope": "dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/dev/repository"
+      },
+      "prod/sql": {
+        "kind": "role",
+        "name": "demo-prod-data-sql-ec2-role",
+        "source": "terraform/infra/data/main.tf",
+        "scope": "prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/prod/sql",
+        "service": "ec2.amazonaws.com",
+        "mode": "SQL"
+      },
+      "prod/flow": {
+        "kind": "role",
+        "name": "demo-prod-vpc-flow-logs-role",
+        "source": "terraform/infra/global/modules/vpc/vpc.tf",
+        "scope": "prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/prod/flow",
+        "service": "vpc-flow-logs.amazonaws.com",
+        "mode": "FLOW"
+      },
+      "prod/nat": {
+        "kind": "role",
+        "name": "demo-prod-nat-role",
+        "source": "terraform/infra/global/modules/nat/iam_nat.tf",
+        "scope": "prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/prod/nat",
+        "service": "ec2.amazonaws.com",
+        "mode": "NAT_INSTANCE"
+      },
+      "prod/nat-recovery": {
+        "kind": "role",
+        "name": "demo-prod-lambda-nat-role",
+        "source": "terraform/infra/global/modules/nat/iam_lambda_nat.tf",
+        "scope": "prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/prod/nat-recovery",
+        "service": "lambda.amazonaws.com",
+        "mode": "INERT"
+      },
+      "prod/cleanup": {
+        "kind": "role",
+        "name": "demo-prod-scale-down-old-color-role",
+        "source": "terraform/infra/apps/fargate/iam_lambda_scale_down.tf",
+        "scope": "prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/prod/cleanup",
+        "service": "lambda.amazonaws.com",
+        "mode": "INERT"
+      },
+      "prod/blue-task": {
+        "kind": "role",
+        "name": "demo-prod-app-api-blue-task-role",
+        "source": "terraform/infra/apps/fargate/modules/ecs_service/iam.tf",
+        "scope": "prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/prod/blue-task",
+        "service": "ecs-tasks.amazonaws.com",
+        "mode": "TASK"
+      },
+      "prod/blue-exec": {
+        "kind": "role",
+        "name": "demo-prod-app-api-blue-exec-role",
+        "source": "terraform/infra/apps/fargate/modules/ecs_service/iam.tf",
+        "scope": "prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/prod/blue-exec",
+        "service": "ecs-tasks.amazonaws.com",
+        "mode": "EXEC"
+      },
+      "prod/green-task": {
+        "kind": "role",
+        "name": "demo-prod-app-api-green-task-role",
+        "source": "terraform/infra/apps/fargate/modules/ecs_service/iam.tf",
+        "scope": "prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/prod/green-task",
+        "service": "ecs-tasks.amazonaws.com",
+        "mode": "TASK"
+      },
+      "prod/green-exec": {
+        "kind": "role",
+        "name": "demo-prod-app-api-green-exec-role",
+        "source": "terraform/infra/apps/fargate/modules/ecs_service/iam.tf",
+        "scope": "prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/prod/green-exec",
+        "service": "ecs-tasks.amazonaws.com",
+        "mode": "EXEC"
+      },
+      "prod/sql-profile": {
+        "kind": "profile",
+        "name": "demo-prod-data-sql-ec2-profile",
+        "source": "terraform/infra/data/main.tf",
+        "scope": "prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/prod/sql-profile",
+        "role": "prod/sql"
+      },
+      "prod/nat-profile": {
+        "kind": "profile",
+        "name": "demo-prod-nat-instance-profile",
+        "source": "terraform/infra/global/modules/nat/iam_nat.tf",
+        "scope": "prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/prod/nat-profile",
+        "role": "prod/nat"
+      },
+      "prod/kms": {
+        "kind": "key",
+        "name": "alias/prod-kms-service",
+        "source": "terraform/infra/shared/modules/kms_key/key.tf",
+        "scope": "prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/prod/kms"
+      },
+      "prod/sa": {
+        "kind": "secret",
+        "name": "demo/prod/db/sql-sa-password",
+        "source": "terraform/infra/secrets/modules/secret_metadata/main.tf",
+        "scope": "prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/prod/sa",
+        "key": "prod/kms"
+      },
+      "prod/db-user": {
+        "kind": "secret",
+        "name": "demo/prod/db/sql-app-password",
+        "source": "terraform/infra/secrets/modules/secret_metadata/main.tf",
+        "scope": "prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/prod/db-user",
+        "key": "prod/kms"
+      },
+      "prod/connection": {
+        "kind": "secret",
+        "name": "demo/prod/app/db-connection-string",
+        "source": "terraform/infra/secrets/modules/secret_metadata/main.tf",
+        "scope": "prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/prod/connection",
+        "key": "prod/kms"
+      },
+      "prod/repository": {
+        "kind": "repository",
+        "name": "demo-prod-shared-demo-ms",
+        "source": "terraform/infra/shared/modules/ecr/main.tf",
+        "scope": "prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/prod/repository"
+      },
+      "neutral/repository": {
+        "kind": "repository",
+        "name": "demo-shared-demo-ms",
+        "source": "terraform/infra/shared/modules/ecr/main.tf",
+        "scope": "neutral",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/neutral/repository"
+      },
+      "neutral/artifacts": {
+        "kind": "bucket",
+        "name": "demo-release-artifacts-",
+        "source": "terraform/infra/shared/release_artifacts_bucket.tf",
+        "scope": "neutral",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/neutral/artifacts"
+      },
+      "neutral/oidc": {
+        "kind": "oidc",
+        "name": "token.actions.githubusercontent.com",
+        "source": "terraform/infra/shared/modules/iam_github/github_terragrunt_ci.tf",
+        "scope": "neutral",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/neutral/oidc"
+      }
+    },
+    "recovery": {
+      "dev/cleanup": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "scope": "dev",
+        "state": "DISABLED_RESERVED",
+        "operational": false,
+        "available": false,
+        "value": null,
+        "materialization": "WP4_OPERATIONAL_ACTIVATION",
+        "foundation": "WP2_PROTECTED_FOUNDATION",
+        "legacy_source": "terraform/infra/apps/fargate/lambda_scale_down.tf",
+        "legacy_classification": "CURRENT_TRANSITIONAL_EXCLUSION",
+        "role": "dev/cleanup",
+        "bundle": "cleanup-recovery/cleanup-dev",
+        "events_enabled": false,
+        "invocation_enabled": false,
+        "configuration": "ADMIN_INSTALLED_ONLY",
+        "user_data": null,
+        "reserved_relations": {
+          "function": "demo-dev-scale-down-old-color-lambda",
+          "rule": "demo-dev-scale-down-old-color-rule",
+          "services": [
+            "demo-dev-app-api-blue-svc",
+            "demo-dev-app-api-green-svc"
+          ]
+        }
+      },
+      "dev/nat-functions": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "scope": "dev",
+        "state": "DISABLED_RESERVED",
+        "operational": false,
+        "available": false,
+        "value": null,
+        "materialization": "WP4_OPERATIONAL_ACTIVATION",
+        "foundation": "WP2_PROTECTED_FOUNDATION",
+        "legacy_source": "terraform/infra/global/modules/nat/lambda_nat.tf",
+        "legacy_classification": "CURRENT_TRANSITIONAL_EXCLUSION",
+        "role": "dev/nat-recovery",
+        "bundle": "nat-recovery/nat-dev",
+        "events_enabled": false,
+        "invocation_enabled": false,
+        "configuration": "ADMIN_INSTALLED_ONLY",
+        "user_data": null,
+        "reserved_relations": {
+          "functions": [
+            "demo-dev-assign-eip-lambda",
+            "demo-dev-change-rt-lambda",
+            "demo-dev-disable-sdc-lambda"
+          ],
+          "rule": "demo-dev-on-ec2-running",
+          "asgs": [
+            "demo-dev-asg-nat-a",
+            "demo-dev-asg-nat-b"
+          ],
+          "profile": "dev/nat-profile",
+          "launch_templates": [
+            "demo-dev-nat-a-",
+            "demo-dev-nat-b-"
+          ]
+        }
+      },
+      "dev/nat-events": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "scope": "dev",
+        "state": "DISABLED_RESERVED",
+        "operational": false,
+        "available": false,
+        "value": null,
+        "materialization": "WP4_OPERATIONAL_ACTIVATION",
+        "foundation": "WP2_PROTECTED_FOUNDATION",
+        "legacy_source": "terraform/infra/global/modules/nat/events_nat.tf",
+        "legacy_classification": "CURRENT_TRANSITIONAL_EXCLUSION",
+        "role": "dev/nat-recovery",
+        "bundle": "nat-recovery/nat-dev",
+        "events_enabled": false,
+        "invocation_enabled": false,
+        "configuration": "ADMIN_INSTALLED_ONLY",
+        "user_data": null,
+        "reserved_relations": {
+          "functions": [
+            "demo-dev-assign-eip-lambda",
+            "demo-dev-change-rt-lambda",
+            "demo-dev-disable-sdc-lambda"
+          ],
+          "rule": "demo-dev-on-ec2-running",
+          "asgs": [
+            "demo-dev-asg-nat-a",
+            "demo-dev-asg-nat-b"
+          ],
+          "profile": "dev/nat-profile",
+          "launch_templates": [
+            "demo-dev-nat-a-",
+            "demo-dev-nat-b-"
+          ]
+        }
+      },
+      "dev/nat-launch": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "scope": "dev",
+        "state": "DISABLED_RESERVED",
+        "operational": false,
+        "available": false,
+        "value": null,
+        "materialization": "WP4_OPERATIONAL_ACTIVATION",
+        "foundation": "WP2_PROTECTED_FOUNDATION",
+        "legacy_source": "terraform/infra/global/modules/nat/launch_template.tf",
+        "legacy_classification": "CURRENT_TRANSITIONAL_EXCLUSION",
+        "role": "dev/nat",
+        "bundle": "nat-recovery/nat-dev",
+        "events_enabled": false,
+        "invocation_enabled": false,
+        "configuration": "ADMIN_INSTALLED_ONLY",
+        "user_data": "PROTECTED_NOT_ORDINARY_SELECTED",
+        "reserved_relations": {
+          "functions": [
+            "demo-dev-assign-eip-lambda",
+            "demo-dev-change-rt-lambda",
+            "demo-dev-disable-sdc-lambda"
+          ],
+          "rule": "demo-dev-on-ec2-running",
+          "asgs": [
+            "demo-dev-asg-nat-a",
+            "demo-dev-asg-nat-b"
+          ],
+          "profile": "dev/nat-profile",
+          "launch_templates": [
+            "demo-dev-nat-a-",
+            "demo-dev-nat-b-"
+          ]
+        }
+      },
+      "prod/cleanup": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "scope": "prod",
+        "state": "DISABLED_RESERVED",
+        "operational": false,
+        "available": false,
+        "value": null,
+        "materialization": "WP4_OPERATIONAL_ACTIVATION",
+        "foundation": "WP2_PROTECTED_FOUNDATION",
+        "legacy_source": "terraform/infra/apps/fargate/lambda_scale_down.tf",
+        "legacy_classification": "CURRENT_TRANSITIONAL_EXCLUSION",
+        "role": "prod/cleanup",
+        "bundle": "cleanup-recovery/cleanup-prod",
+        "events_enabled": false,
+        "invocation_enabled": false,
+        "configuration": "ADMIN_INSTALLED_ONLY",
+        "user_data": null,
+        "reserved_relations": {
+          "function": "demo-prod-scale-down-old-color-lambda",
+          "rule": "demo-prod-scale-down-old-color-rule",
+          "services": [
+            "demo-prod-app-api-blue-svc",
+            "demo-prod-app-api-green-svc"
+          ]
+        }
+      },
+      "prod/nat-functions": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "scope": "prod",
+        "state": "DISABLED_RESERVED",
+        "operational": false,
+        "available": false,
+        "value": null,
+        "materialization": "WP4_OPERATIONAL_ACTIVATION",
+        "foundation": "WP2_PROTECTED_FOUNDATION",
+        "legacy_source": "terraform/infra/global/modules/nat/lambda_nat.tf",
+        "legacy_classification": "CURRENT_TRANSITIONAL_EXCLUSION",
+        "role": "prod/nat-recovery",
+        "bundle": "nat-recovery/nat-prod",
+        "events_enabled": false,
+        "invocation_enabled": false,
+        "configuration": "ADMIN_INSTALLED_ONLY",
+        "user_data": null,
+        "reserved_relations": {
+          "functions": [
+            "demo-prod-assign-eip-lambda",
+            "demo-prod-change-rt-lambda",
+            "demo-prod-disable-sdc-lambda"
+          ],
+          "rule": "demo-prod-on-ec2-running",
+          "asgs": [
+            "demo-prod-asg-nat-a",
+            "demo-prod-asg-nat-b"
+          ],
+          "profile": "prod/nat-profile",
+          "launch_templates": [
+            "demo-prod-nat-a-",
+            "demo-prod-nat-b-"
+          ]
+        }
+      },
+      "prod/nat-events": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "scope": "prod",
+        "state": "DISABLED_RESERVED",
+        "operational": false,
+        "available": false,
+        "value": null,
+        "materialization": "WP4_OPERATIONAL_ACTIVATION",
+        "foundation": "WP2_PROTECTED_FOUNDATION",
+        "legacy_source": "terraform/infra/global/modules/nat/events_nat.tf",
+        "legacy_classification": "CURRENT_TRANSITIONAL_EXCLUSION",
+        "role": "prod/nat-recovery",
+        "bundle": "nat-recovery/nat-prod",
+        "events_enabled": false,
+        "invocation_enabled": false,
+        "configuration": "ADMIN_INSTALLED_ONLY",
+        "user_data": null,
+        "reserved_relations": {
+          "functions": [
+            "demo-prod-assign-eip-lambda",
+            "demo-prod-change-rt-lambda",
+            "demo-prod-disable-sdc-lambda"
+          ],
+          "rule": "demo-prod-on-ec2-running",
+          "asgs": [
+            "demo-prod-asg-nat-a",
+            "demo-prod-asg-nat-b"
+          ],
+          "profile": "prod/nat-profile",
+          "launch_templates": [
+            "demo-prod-nat-a-",
+            "demo-prod-nat-b-"
+          ]
+        }
+      },
+      "prod/nat-launch": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "scope": "prod",
+        "state": "DISABLED_RESERVED",
+        "operational": false,
+        "available": false,
+        "value": null,
+        "materialization": "WP4_OPERATIONAL_ACTIVATION",
+        "foundation": "WP2_PROTECTED_FOUNDATION",
+        "legacy_source": "terraform/infra/global/modules/nat/launch_template.tf",
+        "legacy_classification": "CURRENT_TRANSITIONAL_EXCLUSION",
+        "role": "prod/nat",
+        "bundle": "nat-recovery/nat-prod",
+        "events_enabled": false,
+        "invocation_enabled": false,
+        "configuration": "ADMIN_INSTALLED_ONLY",
+        "user_data": "PROTECTED_NOT_ORDINARY_SELECTED",
+        "reserved_relations": {
+          "functions": [
+            "demo-prod-assign-eip-lambda",
+            "demo-prod-change-rt-lambda",
+            "demo-prod-disable-sdc-lambda"
+          ],
+          "rule": "demo-prod-on-ec2-running",
+          "asgs": [
+            "demo-prod-asg-nat-a",
+            "demo-prod-asg-nat-b"
+          ],
+          "profile": "prod/nat-profile",
+          "launch_templates": [
+            "demo-prod-nat-a-",
+            "demo-prod-nat-b-"
+          ]
+        }
+      }
+    },
+    "consumers": {
+      "dev/shared": [
+        "dev/kms",
+        "dev/repository",
+        "neutral/repository",
+        "neutral/artifacts",
+        "neutral/oidc"
+      ],
+      "dev/data": [
+        "dev/sql-profile",
+        "dev/sa",
+        "dev/db-user",
+        "dev/kms"
+      ],
+      "dev/apps": [
+        "dev/blue-task",
+        "dev/blue-exec",
+        "dev/green-task",
+        "dev/green-exec",
+        "dev/connection",
+        "dev/kms"
+      ],
+      "dev/global": [
+        "dev/flow",
+        "dev/nat-profile"
+      ],
+      "dev/secrets": [
+        "dev/sa",
+        "dev/db-user",
+        "dev/connection",
+        "dev/kms"
+      ],
+      "prod/shared": [
+        "prod/kms",
+        "prod/repository",
+        "neutral/repository",
+        "neutral/artifacts",
+        "neutral/oidc"
+      ],
+      "prod/data": [
+        "prod/sql-profile",
+        "prod/sa",
+        "prod/db-user",
+        "prod/kms"
+      ],
+      "prod/apps": [
+        "prod/blue-task",
+        "prod/blue-exec",
+        "prod/green-task",
+        "prod/green-exec",
+        "prod/connection",
+        "prod/kms"
+      ],
+      "prod/global": [
+        "prod/flow",
+        "prod/nat-profile"
+      ],
+      "prod/secrets": [
+        "prod/sa",
+        "prod/db-user",
+        "prod/connection",
+        "prod/kms"
+      ]
+    },
+    "dependencies": {
+      "dev/sql": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/dev/sql",
+          "fixed-trust/dev/sql",
+          "fixed-permissions/dev/sql",
+          "dev/kms",
+          "dev/sa",
+          "dev/db-user"
+        ]
+      },
+      "dev/flow": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/dev/flow",
+          "fixed-trust/dev/flow",
+          "fixed-permissions/dev/flow"
+        ]
+      },
+      "dev/nat": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/dev/nat",
+          "fixed-trust/dev/nat",
+          "fixed-permissions/dev/nat"
+        ]
+      },
+      "dev/nat-recovery": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/dev/nat-recovery",
+          "fixed-trust/dev/nat-recovery",
+          "fixed-permissions/dev/nat-recovery"
+        ]
+      },
+      "dev/cleanup": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/dev/cleanup",
+          "fixed-trust/dev/cleanup",
+          "fixed-permissions/dev/cleanup"
+        ]
+      },
+      "dev/blue-task": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/dev/blue-task",
+          "fixed-trust/dev/blue-task",
+          "fixed-permissions/dev/blue-task",
+          "dev/kms"
+        ]
+      },
+      "dev/blue-exec": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/dev/blue-exec",
+          "fixed-trust/dev/blue-exec",
+          "fixed-permissions/dev/blue-exec",
+          "dev/kms",
+          "dev/connection"
+        ]
+      },
+      "dev/green-task": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/dev/green-task",
+          "fixed-trust/dev/green-task",
+          "fixed-permissions/dev/green-task",
+          "dev/kms"
+        ]
+      },
+      "dev/green-exec": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/dev/green-exec",
+          "fixed-trust/dev/green-exec",
+          "fixed-permissions/dev/green-exec",
+          "dev/kms",
+          "dev/connection"
+        ]
+      },
+      "dev/sql-profile": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/dev/sql-profile",
+          "dev/sql"
+        ]
+      },
+      "dev/nat-profile": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/dev/nat-profile",
+          "dev/nat"
+        ]
+      },
+      "dev/kms": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/dev/kms"
+        ]
+      },
+      "dev/sa": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/dev/sa",
+          "dev/kms"
+        ]
+      },
+      "dev/db-user": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/dev/db-user",
+          "dev/kms"
+        ]
+      },
+      "dev/connection": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/dev/connection",
+          "dev/kms"
+        ]
+      },
+      "dev/repository": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/dev/repository"
+        ]
+      },
+      "prod/sql": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/prod/sql",
+          "fixed-trust/prod/sql",
+          "fixed-permissions/prod/sql",
+          "prod/kms",
+          "prod/sa",
+          "prod/db-user"
+        ]
+      },
+      "prod/flow": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/prod/flow",
+          "fixed-trust/prod/flow",
+          "fixed-permissions/prod/flow"
+        ]
+      },
+      "prod/nat": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/prod/nat",
+          "fixed-trust/prod/nat",
+          "fixed-permissions/prod/nat"
+        ]
+      },
+      "prod/nat-recovery": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/prod/nat-recovery",
+          "fixed-trust/prod/nat-recovery",
+          "fixed-permissions/prod/nat-recovery"
+        ]
+      },
+      "prod/cleanup": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/prod/cleanup",
+          "fixed-trust/prod/cleanup",
+          "fixed-permissions/prod/cleanup"
+        ]
+      },
+      "prod/blue-task": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/prod/blue-task",
+          "fixed-trust/prod/blue-task",
+          "fixed-permissions/prod/blue-task",
+          "prod/kms"
+        ]
+      },
+      "prod/blue-exec": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/prod/blue-exec",
+          "fixed-trust/prod/blue-exec",
+          "fixed-permissions/prod/blue-exec",
+          "prod/kms",
+          "prod/connection"
+        ]
+      },
+      "prod/green-task": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/prod/green-task",
+          "fixed-trust/prod/green-task",
+          "fixed-permissions/prod/green-task",
+          "prod/kms"
+        ]
+      },
+      "prod/green-exec": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/prod/green-exec",
+          "fixed-trust/prod/green-exec",
+          "fixed-permissions/prod/green-exec",
+          "prod/kms",
+          "prod/connection"
+        ]
+      },
+      "prod/sql-profile": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/prod/sql-profile",
+          "prod/sql"
+        ]
+      },
+      "prod/nat-profile": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/prod/nat-profile",
+          "prod/nat"
+        ]
+      },
+      "prod/kms": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/prod/kms"
+        ]
+      },
+      "prod/sa": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/prod/sa",
+          "prod/kms"
+        ]
+      },
+      "prod/db-user": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/prod/db-user",
+          "prod/kms"
+        ]
+      },
+      "prod/connection": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/prod/connection",
+          "prod/kms"
+        ]
+      },
+      "prod/repository": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/prod/repository"
+        ]
+      },
+      "neutral/repository": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/neutral/repository"
+        ]
+      },
+      "neutral/artifacts": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/neutral/artifacts"
+        ]
+      },
+      "neutral/oidc": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/neutral/oidc"
+        ]
+      },
+      "recovery/dev/cleanup": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP4_OPERATIONAL_ACTIVATION",
+        "depends_on": [
+          "dev/cleanup",
+          "cleanup-recovery/cleanup-dev",
+          "protected-config/dev/cleanup",
+          "protected-publication/recovery/dev/cleanup"
+        ]
+      },
+      "recovery/dev/nat-functions": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP4_OPERATIONAL_ACTIVATION",
+        "depends_on": [
+          "dev/nat-recovery",
+          "nat-recovery/nat-dev",
+          "protected-config/dev/nat-functions",
+          "protected-publication/recovery/dev/nat-functions"
+        ]
+      },
+      "recovery/dev/nat-events": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP4_OPERATIONAL_ACTIVATION",
+        "depends_on": [
+          "dev/nat-recovery",
+          "nat-recovery/nat-dev",
+          "protected-config/dev/nat-events",
+          "protected-publication/recovery/dev/nat-events"
+        ]
+      },
+      "recovery/dev/nat-launch": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP4_OPERATIONAL_ACTIVATION",
+        "depends_on": [
+          "dev/nat",
+          "nat-recovery/nat-dev",
+          "protected-config/dev/nat-launch",
+          "protected-publication/recovery/dev/nat-launch"
+        ]
+      },
+      "recovery/prod/cleanup": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP4_OPERATIONAL_ACTIVATION",
+        "depends_on": [
+          "prod/cleanup",
+          "cleanup-recovery/cleanup-prod",
+          "protected-config/prod/cleanup",
+          "protected-publication/recovery/prod/cleanup"
+        ]
+      },
+      "recovery/prod/nat-functions": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP4_OPERATIONAL_ACTIVATION",
+        "depends_on": [
+          "prod/nat-recovery",
+          "nat-recovery/nat-prod",
+          "protected-config/prod/nat-functions",
+          "protected-publication/recovery/prod/nat-functions"
+        ]
+      },
+      "recovery/prod/nat-events": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP4_OPERATIONAL_ACTIVATION",
+        "depends_on": [
+          "prod/nat-recovery",
+          "nat-recovery/nat-prod",
+          "protected-config/prod/nat-events",
+          "protected-publication/recovery/prod/nat-events"
+        ]
+      },
+      "recovery/prod/nat-launch": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP4_OPERATIONAL_ACTIVATION",
+        "depends_on": [
+          "prod/nat",
+          "nat-recovery/nat-prod",
+          "protected-config/prod/nat-launch",
+          "protected-publication/recovery/prod/nat-launch"
+        ]
+      }
+    },
+    "legacy": "CURRENT_TRANSITIONAL_EXCLUSION",
+    "publication": "ADMIN_PUBLISHED_ARN_ID_RECORD",
+    "live": "UNVERIFIED",
+    "state_migration": "NOT_PERFORMED",
+    "record_schema": "E1_PROTECTED_OUTPUT_V1",
+    "installed_schema": "E1_INSTALLED_REFERENCE_V1",
+    "installation_activates_compute": false,
+    "legacy_automation": "EXCLUDED_NOT_COPIED_WP6_WP7",
+    "backend": "EXTERNAL_ADMIN_PRECONDITION",
+    "publications": {},
+    "recovery_source_identities": {
+      "terraform/infra/apps/fargate/lambda/scale_down_old_color.py": "e3cdf48ad7056068475704cf8ec7a528c571e3944d2e41ada529bddc33ab656e",
+      "terraform/infra/global/modules/nat/lambda/assign_eip.py": "ea0a2b5f8bee20d348bb805333822f27dfc47f320767e5886f3ead40167a41bd",
+      "terraform/infra/global/modules/nat/lambda/change_rt.py": "bb239c6e800f60bc07f6c7681654c435cc7e1081e083f3fc3c4c110adb3cbeab",
+      "terraform/infra/global/modules/nat/lambda/disable_sdc.py": "ab8864f9ca81e39a02aa070a708154c5d283c37815bde73628bbbc821d333a98",
+      "terraform/infra/global/modules/nat/launch_template.tf": "091c4fc897e200981f08769109036d4e84a2661be628d5f02608e1b786472691"
+    },
+    "recovery_source_use": "CURRENT_IDENTIFICATION_ONLY_NOT_APPROVED_EXECUTABLE",
+    "extraction_inventory": {
+      "shared": {
+        "security": [
+          "IAM/OIDC",
+          "KMS key/alias",
+          "ECR/repository lifecycle",
+          "release bucket/controls/lifecycle"
+        ],
+        "ordinary": [
+          "SNS alerts"
+        ],
+        "legacy_automation": "CURRENT_TRANSITIONAL_EXCLUSION"
+      },
+      "data": {
+        "security": [
+          "SQL role/trust/inline policy/managed attachment/profile"
+        ],
+        "ordinary": [
+          "SQL EC2/storage/alarms"
+        ]
+      },
+      "apps": {
+        "security": [
+          "color task/execution roles/trust/attachments",
+          "DB secret/KMS policies",
+          "cleanup role/policy",
+          "disabled cleanup code/config/invocation"
+        ],
+        "ordinary": [
+          "ECS service/logs/alarms",
+          "zero-count skeleton; WP5 execution"
+        ]
+      },
+      "global": {
+        "security": [
+          "flow-log IAM",
+          "NAT role/profile",
+          "inert NAT recovery role/policy",
+          "disabled NAT code/config/events/invocation/launch/user-data"
+        ],
+        "ordinary": [
+          "VPC/subnets/SG",
+          "NAT ASGs/EIPs",
+          "ALB/TGs",
+          "flow log/log group"
+        ]
+      },
+      "secrets": {
+        "security": [
+          "secret metadata/KMS linkage"
+        ],
+        "ordinary": []
+      },
+      "security": {
+        "security": [
+          "WP2A requests",
+          "WP2B storage",
+          "WP2C compute/roles",
+          "WP2D declarations/publication"
+        ],
+        "ordinary": []
+      },
+      "external": {
+        "security": [
+          "admin authentication",
+          "security backend/lock"
+        ],
+        "ordinary": []
+      }
+    }
   }
 }

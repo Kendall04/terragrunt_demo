@@ -8,6 +8,7 @@ import unittest
 
 from bundles import (SOURCE, MODULE, OWNER, artifact, digest, reference, consumer_reference,
                      resolve_consumer, verify_artifact, installation_proposal)
+from model import SUPPORT_FILES
 from model import AUTHORITY, LEGACY, configuration_paths, validate_repository, wiring, rendered_policies
 from evaluator import evaluate, Decision
 
@@ -19,7 +20,7 @@ class BundleTests(unittest.TestCase):
         tmp = tempfile.TemporaryDirectory(prefix="e1-wp2b-")
         self.addCleanup(tmp.cleanup)
         root = Path(tmp.name)
-        for name in configuration_paths(ROOT) | {AUTHORITY, LEGACY, SOURCE, "terraform/infra/security/README.md"}:
+        for name in configuration_paths(ROOT) | set(SUPPORT_FILES) | {AUTHORITY, LEGACY, SOURCE, "terraform/infra/security/README.md"}:
             p = root / name
             p.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(ROOT / name, p)
@@ -227,9 +228,10 @@ class BundleTests(unittest.TestCase):
         doc = validate_repository(ROOT)
         types = set()
         # WP2B surfaces still contain no compute. WP2C separately owns disabled templates.
+        # WP2D ordinary modules retain roleless ECS skeletons; its suite checks those.
         from compute import MODULE as COMPUTE_MODULE
         for path, tf in wiring(doc).items():
-            if path != COMPUTE_MODULE:
+            if path != COMPUTE_MODULE and not path.startswith("terraform/modules/target/"):
                 types.update(tf.get("resource", {}))
         self.assertFalse(doc["controller_compute"]["creation_supported"])
         self.assertFalse(doc["controller_compute"]["operational"])

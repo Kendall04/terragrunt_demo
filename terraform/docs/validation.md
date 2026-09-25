@@ -251,3 +251,13 @@ check decoded authority, joined references, empty compute instance maps and the
 creation preconditions. No image download, bundle installation, AWS call or
 provider initialization is authorized by these checks. Existing platform/live gaps
 remain unchanged.
+
+## E1 WP2D ownership and publication — TARGET
+
+[Ownership and administrator publication](e1-ownership-publication.md) documents
+the extracted neutral declarations, explicit protected consumer records, dormant
+cleanup/NAT reservations and offline exact-version installer. Existing ordinary
+roots remain CURRENT transitional exclusions; deployment/state migration has not
+occurred. WP2C compute stays inactive. Run `python -I -B
+scripts/tests/ownership_publication/run.py` alongside all accepted suites.
+This is repository evidence pending independent review, not deployed enforcement.

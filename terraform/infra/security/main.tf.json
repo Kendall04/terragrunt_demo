@@ -67,6 +67,11 @@
     "controller_compute": {
       "source": "./modules/controller_compute",
       "authority": "${local.authority}"
+    },
+    "protected_resources": {
+      "source": "./modules/protected_resources",
+      "account_id": "${var.aws_account_id}",
+      "region": "${var.aws_region}"
     }
   },
   "output": {
@@ -89,6 +94,9 @@
     "controller_compute_foundation": {
       "value": "${module.controller_compute.foundation}",
       "description": "TARGET compute declarations only; zero Lambda/CodeBuild instances, no invocation authorization."
+    },
+    "protected_output_candidates": {
+      "value": "${module.protected_resources.protected_output_candidates}"
     }
   }
 }

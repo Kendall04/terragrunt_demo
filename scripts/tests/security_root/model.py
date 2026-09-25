@@ -12,6 +12,10 @@ from contracts import load_json
 from evaluator import Unsupported
 import bundles
 import compute
+import ownership
+import ordinary
+
+SUPPORT_FILES = {**ownership.RECOVERY_SOURCES, "terraform/infra/data/user_data.sh": "98b4d17937711d27244c161a35832d6f05135b59f5cb5609a5016fd19b10cd7b"}
 
 BASELINE = "c8e880b552b5782e9bca94891b75a71b45ddc113"
 AUTHORITY = "terraform/infra/security/authority.json"
@@ -50,7 +54,7 @@ def load_authority(root):
     doc = load_json((Path(root) / AUTHORITY).read_text())
     keys(doc, {"format_version", "classification", "stage", "security_admin",
                "backend", "ownership", "request_identities", "policies",
-               "governance", "interfaces", "control_bundles", "controller_compute"}, "authority")
+               "governance", "interfaces", "control_bundles", "controller_compute", "ownership_closure"}, "authority")
     require(doc["format_version"] == 1 and doc["classification"] == "TARGET_REQUIREMENT"
             and doc["stage"] == "E1_WP2A_PROTECTED_SECURITY_ROOT_FOUNDATION", "stage")
     admin = doc["security_admin"]
@@ -78,6 +82,7 @@ def load_authority(root):
         implementation = ("WP2A_DECLARED_INERT" if name == "request_identities" else
                           "WP2C_INERT_COMPUTE_FOUNDATION" if name in {"controller_iam", "controller_code_and_configuration"}
                           else "WP2B_BUNDLE_FOUNDATION_ONLY" if name == "artifact_and_evidence_protection"
+                          else "WP2D_EXTRACTED_DECLARATIONS" if name in {"kms_authority", "oidc", "recovery_iam", "secret_metadata_and_policy", "shared_ecr_security", "workload_iam"}
                           else "DEFERRED")
         require(item["implementation"] == implementation, name + " implementation")
     expected_owners = {"network_and_platform_skeletons": "ORDINARY_LIFECYCLE_OWNED",
@@ -129,6 +134,7 @@ def load_authority(root):
     require(encoded.count("${") == 1 and "%{" not in encoded and "$${" not in encoded, "unadmitted template mechanism")
     bundles.validate_catalog(root, doc)
     compute.validate_compute(root, doc)
+    ownership.validate_publications(doc)
     return doc
 
 
@@ -180,7 +186,9 @@ def wiring(doc):
     root["output"]["controller_compute_foundation"] = {
         "value": expression("module.controller_compute.foundation"),
         "description": "TARGET compute declarations only; zero Lambda/CodeBuild instances, no invocation authorization."}
-    return {"terraform/infra/security/main.tf.json": root,
+    root["module"]["protected_resources"] = {"source": "./modules/protected_resources", "account_id": expression("var.aws_account_id"), "region": expression("var.aws_region")}
+    root["output"]["protected_output_candidates"] = {"value": expression("module.protected_resources.protected_output_candidates")}
+    return {**ordinary.wiring(doc), **ownership.consumer_wiring(doc), ownership.MODULE: ownership.wiring(doc), "terraform/infra/security/main.tf.json": root,
             "terraform/infra/security/modules/request_identities/main.tf.json": child,
             bundles.MODULE: bundles.wiring(doc["control_bundles"]),
             compute.MODULE: compute.wiring()}
@@ -233,14 +241,16 @@ def validate_repository(root):
     for name, digest in legacy["sources"].items():
         require(sha((root / name).read_bytes()) == digest, "competing/changed legacy source " + name)
     for name, configuration in expected.items():
-        require(load_json((root / name).read_text()) == configuration, "target wiring drift " + name)
+        require(((root / name).read_text() if isinstance(configuration, str) else load_json((root / name).read_text())) == configuration, "target wiring drift " + name)
     require((root / wrapper_path).read_text() == wrapper(doc), "security wrapper drift")
     # Non-IaC payloads under the protected roots are closed too.
     permitted = set(expected) | {AUTHORITY, "terraform/infra/security/README.md", wrapper_path, bundles.SOURCE}
-    for directory in (root / "terraform/infra/security", root / "terraform/live/security"):
+    for directory in (root / "terraform/infra/security", root / "terraform/live/security", root / "terraform/modules/target"):
         for path in directory.rglob("*"):
             if path.is_file():
                 require(path.relative_to(root).as_posix() in permitted, "unadmitted protected-root file")
+    for name, expected_digest in SUPPORT_FILES.items():
+        require((root / name).is_file() and sha((root / name).read_bytes()) == expected_digest, "protected source dependency drift " + name)
     return doc
 
 
