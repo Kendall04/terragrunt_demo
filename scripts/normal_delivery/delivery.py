@@ -14,6 +14,19 @@ from scripts.normal_delivery.e3 import Gate
 class Uncertain(Exception): pass
 
 
+class JournalError(Exception):
+    def __init__(self, key): self.key = key
+
+
+class Absent(Exception): pass
+
+
+class EvidenceWrite(JournalError): pass
+
+
+STAGES = ('register', 'drain', 'attach', 'start', 'switch', 'candidate', 'cleanup')
+
+
 class Records(ABC):
     """Environment/controller-owned, conditional-create immutable objects.
 
@@ -89,16 +102,14 @@ class Delivery:
             a.require(a.canonical(value) == observed['bytes'])
             return value
         except Exception:
-            # An unreadable journal cannot establish absence of a prior effect.
-            # This remains true on retry, before effect reconciliation is reached.
-            raise Uncertain('protected evidence unreadable') from None
+            raise JournalError(key) from None
 
     def put(self, key, value):
         raw = a.canonical(value)
         try: self.records.create(self.env + '/' + key, raw)
         except Exception: pass  # An acknowledgement, including an error, is not evidence.
         observed = self.read(key)
-        if observed is None: raise Uncertain('evidence write not established')
+        if observed is None: raise EvidenceWrite(key)
         a.exact(observed, value, 'persisted')
         return copy.deepcopy(observed)
 
@@ -176,19 +187,100 @@ class Delivery:
     def observe_effect(self, op, stage, token, request, possible):
         try:
             observation = self.runtime.effect(token, op['deadline'])
-            self.check_effect(observation, token, request)
-            if observation['state'] == 'APPLIED':
-                if stage == 'register':
-                    a.keys(observation['result'], ('task_definition_arn',))
-                    a.match(r'arn:aws:ecs:' + self.auth.region + ':' + self.auth.account
-                            + ':task-definition/' + op['intent']['task']['family']
-                            + r':[1-9][0-9]*', observation['result']['task_definition_arn'])
-                else:
-                    a.exact(observation['result'], request, 'observed effect')
+            self.validate_effect(op, stage, observation, token, request)
             return observation
         except Exception:
             if possible: raise Uncertain('mutation effect unprovable') from None
             raise
+
+    def validate_effect(self, op, stage, observation, token, request):
+        self.check_effect(observation, token, request)
+        if observation['state'] == 'APPLIED':
+            if stage == 'register':
+                a.keys(observation['result'], ('task_definition_arn',))
+                a.match(r'arn:aws:ecs:' + self.auth.region + ':' + self.auth.account
+                        + ':task-definition/' + op['intent']['task']['family']
+                        + r':[1-9][0-9]*', observation['result']['task_definition_arn'])
+            else:
+                a.exact(observation['result'], request, 'observed effect')
+
+    def stage_request(self, op, stage):
+        i = op['intent']
+        service = dict(cluster=i['service']['cluster'], service=i['service']['service'])
+        if stage == 'register': return i['task']
+        if stage == 'drain': return dict(service, desiredCount=0)
+        if stage in ('attach', 'start'):
+            registration = self.stored_effect(op, 'register')
+            a.require(registration is not None and registration['state'] == 'APPLIED')
+            return dict(service, taskDefinition=registration['result']['task_definition_arn'],
+                        desiredCount=0 if stage == 'attach' else i['service']['desiredCount'])
+        if stage == 'switch': return dict(listener=i['routing']['listener_arn'], target=op['target'])
+        if stage == 'candidate': return dict(rule=i['routing']['candidate_rule_arn'], target=op['active_target'])
+        a.require(stage == 'cleanup')
+        return dict(environment=self.env, cluster=service['cluster'], service=op['active_service'])
+
+    def stage_plan(self, op, stage):
+        key = op['operation_id'] + '/' + stage
+        plan = self.read(key + '/plan')
+        fields = ('token', 'request', 'intent_sha256')
+        extra = ('expected_state',) if stage in ('drain', 'attach', 'start') else (('activation_sha256',) if stage == 'switch' else ())
+        a.keys(plan, fields + extra)
+        a.exact(plan['token'], self.env + '/' + key, 'plan token')
+        a.exact(plan['intent_sha256'], op['intent']['intent_sha256'], 'plan intent')
+        a.exact(plan['request'], self.stage_request(op, stage), 'plan request')
+        attempt = self.read(key + '/attempt')
+        a.exact(attempt, dict(token=plan['token'], plan_sha256=a.sha(a.canonical(plan))), 'attempt plan')
+        return plan
+
+    def stored_effect(self, op, stage):
+        key = op['operation_id'] + '/' + stage
+        # A separately retained reconciliation never overwrites damaged evidence.
+        for suffix in ('reconciled', 'observed'):
+            value = self.read(key + '/' + suffix)
+            if value is not None:
+                plan = self.stage_plan(op, stage)
+                self.validate_effect(op, stage, value, plan['token'], plan['request'])
+                return value
+        return None
+
+    def reconcile(self, op):
+        # Read-only effect recovery has its own bounded budget; this does not
+        # extend the immutable deadline for E3 or any subsequent mutation.
+        for stage in STAGES:
+            key = op['operation_id'] + '/' + stage
+            try:
+                if self.records.read(self.env + '/' + key + '/attempt') is None: continue
+                plan = self.stage_plan(op, stage)
+                try: observed = self.stored_effect(op, stage)
+                except Exception: observed = None
+                if observed is None or observed['state'] == 'UNKNOWN':
+                    now = self.runtime.now()
+                    a.require(type(now) is int and now > 0)
+                    observed = self.runtime.effect(plan['token'], now + 30)
+                    self.validate_effect(op, stage, observed, plan['token'], plan['request'])
+                    if observed['state'] == 'UNKNOWN': raise Uncertain('unresolved prior effect')
+                    self.put(key + '/reconciled', observed)
+                if observed['state'] == 'ABSENT': raise Absent()
+            except Absent: raise
+            except Exception: raise Uncertain('prior effect reconciliation unproved') from None
+
+    def receipt_effects(self, op, effects):
+        a.keys(effects, STAGES)
+        for stage in STAGES:
+            plan = self.stage_plan(op, stage)
+            self.validate_effect(op, stage, effects[stage], plan['token'], plan['request'])
+            a.require(effects[stage]['state'] == 'APPLIED')
+            a.exact(effects[stage], self.stored_effect(op, stage), 'receipt effect')
+
+    def journal_uncertain(self, operation, key):
+        # Only durable attempt provenance can make decoding failure ambiguous.
+        parts = key.split('/')
+        stages = (parts[1],) if len(parts) > 1 and parts[1] in STAGES else STAGES
+        try:
+            return any(self.records.read(self.env + '/' + operation + '/' + stage + '/attempt')
+                       is not None for stage in stages)
+        except Exception:
+            return True  # Attempt provenance itself is unavailable, not absent.
 
     def effect(self, op, stage, request, mutate=True, preparation=None, activation_sha256=None):
         """Write-ahead token; never repeat an ambiguous mutation on retry."""
@@ -205,14 +297,22 @@ class Delivery:
                 activation_sha256 = retained['activation_sha256']
             plan['activation_sha256'] = activation_sha256
             proof = self.activation(op, activation_sha256)
-        if retained is not None: a.exact(retained, plan, 'immutable stage plan')
-        observation = self.observe_effect(op, stage, token, request, retained is not None)
+        if retained is not None:
+            a.exact(retained, plan, 'immutable stage plan')
+            # A plan without an attempt cannot have invoked this V3 runtime.
+            # Preserve no-resend, but do not manufacture effect uncertainty.
+            a.require(self.read(key + '/attempt') is not None)
+        observation = self.stored_effect(op, stage)
+        if observation is None:
+            observation = self.observe_effect(op, stage, token, request, retained is not None)
         if observation['state'] != 'APPLIED':
             if retained is not None or observation['state'] != 'ABSENT' or not mutate:
                 raise Uncertain('mutation may already have happened')
             self.bounded(op)
             self.current(op)
+            self.preparing_stage = stage
             self.put(key + '/plan', plan)
+            self.put(key + '/attempt', dict(token=token, plan_sha256=a.sha(a.canonical(plan))))
             if stage in ('drain', 'attach', 'start'):
                 self.guard_preparation(op, stage, request, plan['expected_state'])
             if stage == 'switch':
@@ -223,6 +323,7 @@ class Delivery:
                 for field in ('cohort', 'deployment'):
                     a.exact(final[field], proof['e3']['context'][field], 'last switch observation')
                 self.bounded(op)
+            self.preparing_stage = None
             try: getattr(self.runtime, stage)(token, copy.deepcopy(request), op['deadline'])
             except Exception: pass
             observation = self.observe_effect(op, stage, token, request, True)
@@ -230,7 +331,8 @@ class Delivery:
         else:
             # An unplanned effect cannot be adopted from another operation.
             a.require(retained is not None)
-        try: self.put(key + '/observed', observation)
+        try:
+            if self.read(key + '/reconciled') is None: self.put(key + '/observed', observation)
         except Exception: raise Uncertain('mutation evidence persistence unproved') from None
         return copy.deepcopy(observation['result'])
 
@@ -337,30 +439,41 @@ class Delivery:
     def run(self, operation, raw):
         """Only bounded identity + closed release/count/history inputs; no AWS args."""
         op = None
+        self.preparing_stage = None
         try:
             op = self.accept(operation, raw)
+            self.reconcile(op)
             prior = self.read(operation + '/success')
             if prior is not None:
                 # Return historical completion only, never authorize another switch.
                 a.exact(prior['intent'], op['intent'], 'completed intent')
+                self.receipt_effects(op, prior['effects'])
+                a.exact(prior['activation'], self.activation(op, prior['activation_sha256']), 'receipt proof')
+                a.exact(prior['activation_sha256'], self.read(operation + '/switch/plan')['activation_sha256'], 'receipt selection')
                 return prior
             self.current(op)
             self.bounded(op)
             return self.deliver(op)
         except Exception as error:
             status = 'UNCERTAIN' if isinstance(error, Uncertain) else 'FAILURE'
+            if isinstance(error, JournalError) and self.preparing_stage is None and self.journal_uncertain(operation, error.key):
+                status = 'UNCERTAIN'
+            if isinstance(error, EvidenceWrite) and self.journal_uncertain(operation, operation):
+                status = 'UNCERTAIN'
             if op is not None:
-                # Any planned switch may have happened; a later failure cannot
+                # Any attempted switch may have happened; a later failure cannot
                 # promise that old traffic was preserved.
                 try:
-                    if self.read(operation + '/switch/plan') is not None: status = 'UNCERTAIN'
+                    if (not isinstance(error, Absent) and self.preparing_stage != 'switch'
+                            and self.records.read(self.env + '/' + operation + '/switch/attempt') is not None):
+                        status = 'UNCERTAIN'
                 except Exception: status = 'UNCERTAIN'
             result = dict(schema='E1_DELIVERY_OUTCOME_V1', operation_id=operation,
                           environment=self.env, status=status, code='DELIVERY_NOT_CONFIRMED')
             if op is not None:
                 result['intent_sha256'] = op['intent']['intent_sha256']
                 try: self.put(operation + '/outcomes/' + a.sha(a.canonical(result)), result)
-                except Exception: result['status'] = 'UNCERTAIN'
+                except Exception: pass  # Outcome storage cannot invent a runtime effect.
             return result
 
     def deliver(self, op):
@@ -382,7 +495,10 @@ class Delivery:
                     ('attach', dict(service, desiredCount=0, taskDefinition=revision), 0, revision),
                     ('start', dict(service, desiredCount=i['service']['desiredCount'], taskDefinition=revision),
                      i['service']['desiredCount'], revision)):
-                if self.read(operation + '/' + stage + '/observed') is not None: continue
+                retained_effect = self.stored_effect(op, stage)
+                if retained_effect is not None:
+                    a.require(retained_effect['state'] == 'APPLIED')
+                    continue
                 planned = self.read(operation + '/' + stage + '/plan') is not None
                 s = None
                 if not planned:
@@ -446,9 +562,8 @@ class Delivery:
         receipt = dict(schema='E1_DELIVERY_RECEIPT_V1', status='SUCCESS', environment=self.env,
                        operation_id=operation, action=op['action'], history=op['history'], intent=i,
                        registration=checked, activation=proof, activation_sha256=switch_plan['activation_sha256'], final=final,
-                       effects={stage: self.read(operation + '/' + stage + '/observed')
-                                for stage in ('register', 'drain', 'attach', 'start', 'switch', 'candidate', 'cleanup')})
-        a.require(all(receipt['effects'].values()))
+                       effects={stage: self.stored_effect(op, stage) for stage in STAGES})
+        self.receipt_effects(op, receipt['effects'])
         return self.put(operation + '/success', receipt)
 
 

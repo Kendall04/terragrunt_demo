@@ -257,8 +257,9 @@ class Corrections(unittest.TestCase):
         self.assertEqual(self.world.state['running'], 2)
         self.assertNotIn('e3', self.stages())
         calls = copy.deepcopy(self.world.calls)
-        self.assertEqual(self.run_delivery()['status'], 'UNCERTAIN')
-        self.assertEqual(self.world.calls, calls)
+        # Independent APPLIED readback can repair the unavailable original slot.
+        self.assertEqual(self.run_delivery()['status'], 'SUCCESS')
+        self.assertEqual(self.stages().count('start'), 1)
         self.records.read = read; self.world.on_mutation = None
         self.assertEqual(self.run_delivery()['status'], 'SUCCESS')
         self.assertEqual(self.stages().count('start'), 1)

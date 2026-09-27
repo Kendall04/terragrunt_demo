@@ -3,7 +3,10 @@
 This is a provider-free production state machine, pending independent review.
 V1 is preserved at `0f1b8327a3a72dbd80a8057105c2b90e9480dfc5`; V2 corrects the
 independent review's F1 preparation window, F2 proof retry conflict and F3
-unverifiable mutation-effect classification. Neither checkpoint is integrated.
+unverifiable mutation-effect classification. V2 is preserved at
+`31d7467fe1accc6e96d4c236f5dfa370c589f645`. V3 corrects the remaining F3 review
+findings: R1 early retry rejection, R2 structurally corrupt stored observations,
+and R3 pre-mutation corruption classification. These checkpoints are not integrated.
 It consumes the accepted [WP4A contract](e1-wp4a-normal-delivery.md) and the unchanged
 [E3 gate](../../scripts/ecs-readiness-gate.sh). It adds no IAM, SDK client, compute,
 public endpoint or deployed authority. [E1 plan](../../specs/iam-hardening/plan.md)
@@ -102,8 +105,17 @@ protected evidence conventions. There is no mutable generic database or current
 pointer that grants authority. Namespace/writer protection, deletion protection
 and storage-currentness enforcement remain future adapter obligations.
 
-Each stage has `<operation>/<stage>/plan` and `/observed`. A mutation is sent at
-most once by a single operation runner after its plan is recorded. Returned API
+Each stage has `<operation>/<stage>/plan`, `/attempt`, and `/observed`. A mutation
+is sent at most once by a single operation runner. The immutable attempt record
+contains the exact environment/operation/stage token and SHA-256 of the canonical
+stage plan. Both plan and attempt must be durably read back before the runtime
+call. Attempt persistence precedes the fresh preparation/switch guards, preserving
+F1's no-storage-I/O boundary after the last observation. A crash between attempt
+persistence and the call is conservatively possibly attempted. A guard rejection
+in the running process is known to precede the call. A plan without an attempt
+cannot have invoked the V3 runtime and is terminal without resend. These offline
+checkpoints have no deployed journals; V3 does not migrate V1/V2 journals lacking
+attempt provenance. Returned API
 acknowledgements are ignored. `Runtime.effect` must return APPLIED only from
 independent exact operation attribution and resource observation; ABSENT and
 UNKNOWN carry no result. Matching names, tags, latest revisions, or matching
@@ -130,18 +142,38 @@ proofs coexist without overwriting prior evidence. The new switch plan selects
 the proof used by that attempt. Once a switch plan exists, reconciliation uses
 only its selected proof and never sends a second blind listener mutation.
 
-A retry observes before doing anything else. Proven existing registration is
-reused without duplicate revisions; completed preparation is not reapplied.
-An existing plan with no proven effect stays UNCERTAIN and is not resent, even
-if an adapter says ABSENT: the process may have died just before/after the call.
-This deliberately sacrifices automatic recovery of that narrow window. A new
-authorized operation or later explicitly designed recovery is needed.
+After loading the immutable operation, retry reconciles attempted stages in
+stage order before current authorization/deadline rejection or later mutations.
+Stored effects require the same validator as fresh runtime effects: closed schema,
+exact environment/operation/stage token, immutable request hash, supported state,
+and exact stage result. Registration requires the intended family/account/region
+revision ARN; preparation requests derive their revision from validated registration.
+Plans must match the operation's intent and stage request, and attempt hashes must
+match the plans. Canonical JSON syntax or a non-null object is never sufficient.
+
+Missing, malformed, or UNKNOWN observations require fresh authoritative effect
+readback. Read-only reconciliation uses a separate 30-second budget per stage,
+including after the operation deadline expires; it never extends the original
+1800-second budget for E3 or future mutations. Unavailable provenance, failed
+validation, or UNKNOWN remains UNCERTAIN with no later mutation. APPLIED is
+retained before authorization/deadline checks for progression. Thus a revoked or
+expired operation can return FAILURE while truthfully retaining an APPLIED start.
+Validated ABSENT is retained and yields terminal FAILURE, with no automatic resend.
+This refines V2's conservative ABSENT outcome while preserving its no-resend policy.
+
+A recovered terminal effect is conditionally written to the fixed immutable
+`/reconciled` slot; damaged `/observed` bytes are never overwritten. The reconciled
+slot is validated before reuse and takes precedence. If it is itself corrupt or
+cannot be persisted exactly, the operation remains UNCERTAIN. Valid existing
+APPLIED observations are reusable without another mutation. Receipts, including
+completed-success retries, validate all seven effects against their exact stage
+plans; arbitrary journal objects cannot enter a successful receipt.
 
 An ambiguous listener call is never repeated. Reconciliation can finish the
 remaining candidate-rule/cleanup/receipt steps only when the exact prior switch
 effect and retained activation proof are established, authorization remains
 current, and the same revision/cohort is observed. Retry never extends the
-original deadline. A completed success retry returns historical evidence without
+original mutation/E3 deadline. A completed success retry returns historical evidence without
 mutating anything; that historical return does not assert current eligibility.
 
 There is one protected runner per operation. No cross-operation lock, fencing
@@ -162,19 +194,21 @@ The full intent carries release/source/digest, exact manifest identity,
 eligibility/configuration/membership versions and hashes. No secret values enter
 these records. Effects and immutable plans expose reconciliation history.
 
-`E1_DELIVERY_OUTCOME_V1` distinguishes FAILURE from UNCERTAIN. Missing observation
-after a mutation or any failure after a switch plan is conservatively UNCERTAIN.
-Effect transport errors, malformed/incomplete envelopes, wrong operation/request
-identity or contradictory results are UNCERTAIN after a mutation attempt or
-when reconciling an existing plan. Failed persistence/readback of observed-effect
-evidence is also UNCERTAIN. No later stage runs until an exact effect is proven.
-Unreadable or malformed journal records remain UNCERTAIN, including on retry:
-they cannot establish absence of a prior effect before reconciliation is reached.
-With no prior plan or attempted mutation, invalid effect evidence or a failed
-preparation guard remains FAILURE. A plan alone is not proof of an applied effect;
-the existing conservative no-resend policy for unresolved plans is unchanged.
-Failures before switch never generate successful receipts. If evidence storage
-itself is unavailable, the returned uncertain result cannot be claimed persisted.
+`E1_DELIVERY_OUTCOME_V1` distinguishes FAILURE from UNCERTAIN. Unproven effects
+after a mutation attempt remain UNCERTAIN. Effect transport errors, malformed
+schemas, wrong correlation or contradictory results cannot establish an effect.
+Decoding errors carry the affected journal key; classification consults stage
+attempt provenance rather than treating every parse error as uncertainty.
+Corruption of initial intent or preparation evidence before the runtime boundary
+is FAILURE. Once a stage may have run, its unreadable evidence requires
+reconciliation and cannot authorize a repeated call. Failures after a possibly
+applied switch remain conservatively UNCERTAIN, except validated ABSENT.
+
+Failed outcome persistence does not manufacture runtime uncertainty; a returned
+outcome cannot be claimed durably recorded unless its write was verified. Failed
+post-call effect persistence remains UNCERTAIN. Storage failures after earlier
+runtime side effects retain conservative non-success behavior. Known pre-call
+guard rejection remains FAILURE. Failures before switch never generate success.
 Switch, rule update, schedule and receipt writes are not transactional. The
 listener may already have changed when a later step fails; no automatic rollback
 or invented success hides this window.
@@ -191,7 +225,7 @@ unavailable history rejects. It cannot invoke emergency recovery.
 
 ## Acceptance and deferred work
 
-Run `python -I -B scripts/tests/delivery/run.py` (69 tests in V2) alongside all 665 accepted
+Run `python -I -B scripts/tests/delivery/run.py` (90 tests in V3; 69 in V2) alongside all 665 accepted
 WP1-WP4A tests. Fixtures exercise production sequencing with protected runtime,
 storage and process doubles; they are not deployed AWS evidence. Ten behavioral
 mutants cover authorization, registration readback, candidate identity, E3
@@ -207,6 +241,14 @@ remove fresh preparation authorization, restore a single activation-proof slot,
 or misclassify unproven effects as FAILURE. Unchanged controls must pass. The
 original E3 identity mutant is detected when invalid evidence is admitted even
 though V2's independent activation-proof check also prevents switching.
+
+V3 adds 21 tests (755 total with WP1-WP4A), including three focused behavioral
+mutants for early authorization before reconciliation, trusting non-null observed
+objects, and universal decode-error uncertainty. They use passing unchanged
+controls and reject behavioral assertion failures, not syntax/import/setup errors.
+The prior post-call storage test now permits validated independent APPLIED recovery
+through `/reconciled`; the prior ABSENT switch test expects terminal FAILURE while
+still asserting exactly one switch attempt. No automatic resend is introduced.
 
 WP4A-N1 is closed by [model_consistency.py](../../scripts/normal_delivery/model_consistency.py):
 required, forbidden and return-only classifications must be coherent with the

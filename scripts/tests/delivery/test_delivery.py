@@ -160,7 +160,8 @@ class DeliveryTests(unittest.TestCase):
         self.world.fail.add('switch')
         self.assertEqual(self.run_delivery()['status'],'UNCERTAIN')
         self.world.fail.clear()
-        self.assertEqual(self.run_delivery()['status'],'UNCERTAIN');self.assertEqual(self.stages().count('switch'),1)
+        # Authoritative ABSENT is retained and terminal; never resend.
+        self.assertEqual(self.run_delivery()['status'],'FAILURE');self.assertEqual(self.stages().count('switch'),1)
     def test_cleanup_failure_after_switch_is_uncertain(self):
         self.world.fail.add('cleanup');result=self.run_delivery()
         self.assertEqual(result['status'],'UNCERTAIN');self.assertIn('switch',self.stages())
