@@ -9145,6 +9145,112 @@
       "coverage": "WP4A repository authorization and offline fixtures; installed/live authority unverified.",
       "current_owner": "SECURITY_ROOT_OWNED normal delivery contract",
       "necessity": "WP4A closed normal-delivery authorization"
+    },
+    "scripts/normal_delivery/delivery.py": {
+      "sha256": "8042115a5bb261070a37079536c4a0e242062176e3b0c8eab927d2370033fae5",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          130,
+          137
+        ],
+        "executable-dependency": [
+          318
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP4B provider-free production sequencing and protected-port fixtures; installed/live authority unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED normal delivery contract",
+      "necessity": "WP4B protected normal delivery, promotion and history rollback"
+    },
+    "scripts/normal_delivery/e3-evidence.sh": {
+      "sha256": "1a7631e154e7b43ead5bf45ca9b895eaec78a124663eabc065ec5f29d63255b7",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          8,
+          9
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP4B provider-free production sequencing and protected-port fixtures; installed/live authority unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED normal delivery contract",
+      "necessity": "WP4B protected normal delivery, promotion and history rollback"
+    },
+    "scripts/normal_delivery/e3.py": {
+      "sha256": "f83c77b27559adef37553dca373afdee6e866d487ef9e7ad16c54c3971a1a61d",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          34,
+          35
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP4B provider-free production sequencing and protected-port fixtures; installed/live authority unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED normal delivery contract",
+      "necessity": "WP4B protected normal delivery, promotion and history rollback"
+    },
+    "scripts/normal_delivery/model_consistency.py": {
+      "sha256": "056bb0d5151c17e70818a3b172e96b65f39f67be933592a832e5fed7556bab5b",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP4B provider-free production sequencing and protected-port fixtures; installed/live authority unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED normal delivery contract",
+      "necessity": "WP4B protected normal delivery, promotion and history rollback"
+    },
+    "scripts/tests/delivery/fixtures.py": {
+      "sha256": "34f085a300545b1326592672827af46ef1177cc4028aaec97f1feac9ec2ebd4e",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          62
+        ],
+        "executable-dependency": [
+          83,
+          84
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP4B provider-free production sequencing and protected-port fixtures; installed/live authority unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED normal delivery contract",
+      "necessity": "WP4B protected normal delivery, promotion and history rollback"
+    },
+    "scripts/tests/delivery/run.py": {
+      "sha256": "3f2589348f96af0e30099a32c97babc468c95a1a7925d918ce2b4b083414a89a",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          1,
+          16
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP4B provider-free production sequencing and protected-port fixtures; installed/live authority unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED normal delivery contract",
+      "necessity": "WP4B protected normal delivery, promotion and history rollback"
+    },
+    "scripts/tests/delivery/test_delivery.py": {
+      "sha256": "c00166787e8aaf54d8e87c489533f76073ca4f21c498b61e6bc817665b64904f",
+      "declarations": [],
+      "signals": {
+        "role-input": [
+          196
+        ],
+        "executable-dependency": [
+          199,
+          246,
+          247,
+          305,
+          314,
+          317
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP4B provider-free production sequencing and protected-port fixtures; installed/live authority unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED normal delivery contract",
+      "necessity": "WP4B protected normal delivery, promotion and history rollback"
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged"
