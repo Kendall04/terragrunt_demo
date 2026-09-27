@@ -20,6 +20,11 @@ CodeBuild projects run the application-controlled work:
 | image | e1-controller-release-payload-image | true | BUILD exports OCI and conditionally uploads it |
 | probe | e1-controller-release-payload-probe | false | PRE_BUILD capability; BUILD expected no-server failure |
 
+A mapped check contributes PASS only when its exact project/build phase succeeds
+and that subordinate build's authoritative terminal status is `SUCCEEDED`.
+A later terminal failure, including during FINALIZING, makes earlier successful
+worker phases non-PASS for qualification.
+
 The worker service role is `e1-controller-release-payload-exec`. Its complete
 positive authority is `logs:CreateLogStream` and `logs:PutLogEvents` in the three
 precreated worker log groups. Workers share this low-value logging authority.

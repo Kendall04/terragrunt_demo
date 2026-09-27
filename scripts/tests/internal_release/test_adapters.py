@@ -111,7 +111,7 @@ def observation(project, failed=None):
 
 
 class CodeBuild:
-    def __init__(self,s3=None):self.calls=[];self.s3=s3;self.failed={}
+    def __init__(self,s3=None):self.calls=[];self.s3=s3;self.failed={};self.terminals={}
     def start_build(self,**kw):
         self.calls.append(kw)
         if kw['projectName']==c.WORKERS['image'] and self.s3:
@@ -121,7 +121,12 @@ class CodeBuild:
                     self.s3.put_object(**cap['Params'],Body=archive()[0])
         return {'build':{'id':kw['projectName']+':'+UUID,'projectName':kw['projectName']}}
     def batch_get_builds(self,ids):
-        return observation(ids[0].split(':')[0],self.failed.get(ids[0].split(':')[0]))
+        project=ids[0].split(':')[0]
+        response=observation(project,self.failed.get(project))
+        if project in self.terminals:
+            build=response['builds'][0];build['buildStatus']=self.terminals[project]
+            next(p for p in build['phases'] if p['phaseType']=='FINALIZING')['phaseStatus']=self.terminals[project]
+        return response
 
 
 class Adapters(unittest.TestCase):
@@ -142,6 +147,31 @@ class Adapters(unittest.TestCase):
                 next(p for p in response['builds'][0]['phases'] if p['phaseType']==phase)['phaseStatus']=failure
                 got=c.observe(response,c.WORKERS[kind]+':'+UUID,c.WORKERS[kind],stage)
                 self.assertEqual(got['exit_code'],0 if stage=='probe_no_server' else 1)
+
+    def test_terminal_worker_status_cannot_pass_mapped_phase(self):
+        for kind,project in c.WORKERS.items():
+            for terminal in ('FAILED','FAULT','TIMED_OUT','STOPPED'):
+                response=observation(project)
+                build=response['builds'][0];build['buildStatus']=terminal
+                next(p for p in build['phases'] if p['phaseType']=='FINALIZING')['phaseStatus']=terminal
+                build.update(stdout='PASS',qualified=True,digest='sha256:'+'a'*64)
+                for stage in c.PHASES:
+                    if (kind=='dotnet' and stage.startswith('dotnet')) or (kind=='image' and stage=='image_build') or (kind=='probe' and stage.startswith('probe')):
+                        with self.subTest(worker=kind,terminal=terminal,stage=stage):
+                            got=c.observe(response,project+':'+UUID,project,stage)
+                            self.assertEqual((got['state'],got['exit_code']),('UNKNOWN',None))
+
+    def test_terminal_success_does_not_override_failed_or_missing_phase(self):
+        project=c.WORKERS['probe']
+        response=observation(project,'BUILD');response['builds'][0]['buildStatus']='SUCCEEDED'
+        self.assertNotEqual(c.observe(response,project+':'+UUID,project,'probe_no_server')['exit_code'],1)
+        response=observation(project)
+        response['builds'][0]['phases']=[p for p in response['builds'][0]['phases'] if p['phaseType']!='BUILD']
+        self.assertEqual(c.observe(response,project+':'+UUID,project,'probe_no_server')['state'],'UNKNOWN')
+        for terminal in (None,'IN_PROGRESS','UNRECOGNIZED'):
+            response=observation(project);response['builds'][0]['buildStatus']=terminal
+            with self.subTest(terminal=terminal),self.assertRaises(c.Rejected):
+                c.observe(response,project+':'+UUID,project,'probe_no_server')
 
     def test_missing_duplicate_wrong_identity(self):
         project=c.WORKERS['dotnet'];response=observation(project)
@@ -269,9 +299,10 @@ class Adapters(unittest.TestCase):
         s3=S3();ops=a.Store(s3,'protected','operations/demo-api/');records=a.Records(a.Store(s3,'protected','attempts/demo-api/'))
         self.assertEqual(services.status({'operation_id':OP},ops,records),{'operation_id':OP,'state':'UNKNOWN'})
 
-    def test_full_split_trace_qualifies_through_unchanged_core(self, failures=None):
+    def test_full_split_trace_qualifies_through_unchanged_core(self, failures=None, terminals=None):
         s3=S3();cb=CodeBuild(s3);ops=a.Store(s3,'protected','operations/demo-api/')
         cb.failed=failures or {}
+        cb.terminals=terminals or {}
         with patch('services.uuid.uuid4',return_value=OP):
             services.Gateway(cb,ops,ACCOUNT,REGION,lambda _:True).release({'source_commit':'a'*40})
         control=a.Control(ops);op=control.operation(OP)
@@ -292,13 +323,14 @@ class Adapters(unittest.TestCase):
         manifests=a.Manifests(s3,'demo-release-artifacts-'+ACCOUNT)
         image=a.Images(ECR(),payload,REGISTRY,'demo-shared-demo-ms')
         result=a.supervisor.Supervisor(context,control,payload,image,manifests,records).run({'operation_id':OP})
-        if failures:
-            if c.WORKERS['probe'] in failures:
+        if failures or terminals:
+            if c.WORKERS['probe'] in (failures or terminals):
                 self.assertEqual(result['schema'],'E1_SUPERVISED_RESULT_V1',result)
                 self.assertEqual(result['state'],'FAILED',result)
             else:
                 self.assertEqual(result['schema'],'E1_BUILD_ATTEMPT_TERMINAL_V1',result)
                 self.assertEqual(image.ecr.calls,[])
+            self.assertEqual(services.status({'operation_id':OP},ops,records)['state'],'FAILED')
             evidence=services.Evidence(cb,ops,records,manifests)
             qualifications=services.Qualifications(a.Store(s3,'demo-release-artifacts-'+ACCOUNT,''))
             with self.assertRaises(a.finalizer.Rejected):
@@ -323,3 +355,8 @@ class Adapters(unittest.TestCase):
                               (c.WORKERS['probe'],'PRE_BUILD'),(c.WORKERS['probe'],'BUILD')):
             with self.subTest(project=project,phase=phase):
                 self.test_full_split_trace_qualifies_through_unchanged_core({project:phase})
+
+    def test_terminal_stop_after_successful_phases_cannot_qualify(self):
+        for project in (c.WORKERS['probe'],c.WORKERS['dotnet'],c.WORKERS['image']):
+            with self.subTest(project=project,terminal='STOPPED'):
+                self.test_full_split_trace_qualifies_through_unchanged_core(terminals={project:'STOPPED'})

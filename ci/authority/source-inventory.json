@@ -5906,7 +5906,7 @@
       "necessity": "UNKNOWN"
     },
     "scripts/tests/security_root/model.py": {
-      "sha256": "941f8fe1ba5d109136a3beb21343ab821c59398f4181c0ed6599ce31d4e5c531",
+      "sha256": "fd9def3c2bc3c951abd7ce4ae9f952d72258da27c78892269b1210adeabd87c3",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -6047,7 +6047,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/authority.json": {
-      "sha256": "fabb3c62408dd46515976d2d2792a288892a941a9f64fef453e09473555830b0",
+      "sha256": "3a6e6a7ebb6b166884fcb9fe83b3ee4cdccd771df06cfd2765edf16d063c7fcd",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -8691,7 +8691,7 @@
       "necessity": "WP3C bounded split-plane implementation"
     },
     "scripts/internal_release/e1_contract.py": {
-      "sha256": "d9a401a7034ec4ef1b0cc1f2c9017d9fcfbe40dcd3c12736ef9bb6393a79c173",
+      "sha256": "9928b0bab7808a666de767a6d2e17614c4a540249deb7f333c7ab751a4aa39e4",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -8869,24 +8869,24 @@
       "necessity": "WP3C bounded split-plane implementation"
     },
     "scripts/tests/internal_release/test_adapters.py": {
-      "sha256": "62c2ca49129251b9096b85c318374f4553929d0d64daf546c9293cbc11a43b85",
+      "sha256": "f619b1250de731320b17b920bb55d72b00023a9cde74d114e957157e4038f5a7",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          222,
-          236,
-          241,
-          265
+          252,
+          266,
+          271,
+          295
         ],
         "executable-dependency": [
-          156,
-          159,
-          161,
-          168,
-          222,
-          249,
+          186,
+          189,
+          191,
+          198,
+          252,
           279,
-          293
+          310,
+          324
         ]
       },
       "semantic_status": "UNVERIFIED",
@@ -8974,11 +8974,11 @@
       "necessity": "WP3C bounded split-plane implementation"
     },
     "scripts/tests/internal_release/test_mutations.py": {
-      "sha256": "0d1e9e1780a2f1232d9f9d48355138a39c85442671956a336feaad8cba3519a4",
+      "sha256": "d12bc6ed073eed19dbc7f8ad8443b04ca9bf08e0c4481651082d944d6df8b2eb",
       "declarations": [],
       "signals": {
         "executable-dependency": [
-          39
+          40
         ]
       },
       "semantic_status": "UNVERIFIED",

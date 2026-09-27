@@ -94,7 +94,7 @@ def observe(response, expected_id, project, stage):
     """AWS response, never stdout. Return a WP3B process observation.
 
     Correlation is to the ID returned by the controller's own StartBuild call.
-    Terminal failed builds may have successful completed prerequisite phases.
+    A mapped phase contributes success only if the worker build also succeeds.
     """
     build_id(expected_id, project)
     require(not response.get('buildsNotFound') and len(response.get('builds', [])) == 1)
@@ -117,7 +117,10 @@ def observe(response, expected_id, project, stage):
                             if ORDER.index(p) < ORDER.index(wanted)]
             require(all(any(x['phaseType'] == p and x.get('phaseStatus') == 'SUCCEEDED'
                             for x in phases) for p in predecessors))
-            state, code = 'COMPLETED', (1 if stage == 'probe_no_server' else 0)
+            # A successful phase in a failed/stopped worker is not a completed
+            # qualification check, even if failure happened in a later phase.
+            if b.get('buildStatus') == 'SUCCEEDED':
+                state, code = 'COMPLETED', (1 if stage == 'probe_no_server' else 0)
         elif status in ('FAILED', 'FAULT', 'TIMED_OUT', 'STOPPED'):
             state, code = 'COMPLETED', (0 if stage == 'probe_no_server' else 1)
     return {'stage': stage, 'state': state, 'exit_code': code,
