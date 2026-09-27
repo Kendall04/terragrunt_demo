@@ -9147,15 +9147,16 @@
       "necessity": "WP4A closed normal-delivery authorization"
     },
     "scripts/normal_delivery/delivery.py": {
-      "sha256": "8042115a5bb261070a37079536c4a0e242062176e3b0c8eab927d2370033fae5",
+      "sha256": "f71a2f05cd59bb3deb718a6367f167c210d435a70f10e97c57942246e9f8aa01",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          130,
-          137
+          135,
+          142,
+          183
         ],
         "executable-dependency": [
-          318
+          249
         ]
       },
       "semantic_status": "UNVERIFIED",
@@ -9232,7 +9233,7 @@
       "necessity": "WP4B protected normal delivery, promotion and history rollback"
     },
     "scripts/tests/delivery/test_delivery.py": {
-      "sha256": "c00166787e8aaf54d8e87c489533f76073ca4f21c498b61e6bc817665b64904f",
+      "sha256": "d61fb3ccffcfb2720d8876cc3325242d9b0f24cddad9946864290ef0d28aa83b",
       "declarations": [],
       "signals": {
         "role-input": [
@@ -9245,6 +9246,23 @@
           305,
           314,
           317
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP4B provider-free production sequencing and protected-port fixtures; installed/live authority unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED normal delivery contract",
+      "necessity": "WP4B protected normal delivery, promotion and history rollback"
+    },
+    "scripts/tests/delivery/test_corrections.py": {
+      "sha256": "117690dc16ff6a6a877d2ba8e7bc07e83861cadf3002eb26b3264c058806dfa4",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          70,
+          81
+        ],
+        "executable-dependency": [
+          290
         ]
       },
       "semantic_status": "UNVERIFIED",

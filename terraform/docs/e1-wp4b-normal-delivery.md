@@ -1,6 +1,9 @@
 # E1 WP4B - protected normal delivery
 
 This is a provider-free production state machine, pending independent review.
+V1 is preserved at `0f1b8327a3a72dbd80a8057105c2b90e9480dfc5`; V2 corrects the
+independent review's F1 preparation window, F2 proof retry conflict and F3
+unverifiable mutation-effect classification. Neither checkpoint is integrated.
 It consumes the accepted [WP4A contract](e1-wp4a-normal-delivery.md) and the unchanged
 [E3 gate](../../scripts/ecs-readiness-gate.sh). It adds no IAM, SDK client, compute,
 public endpoint or deployed authority. [E1 plan](../../specs/iam-hardening/plan.md)
@@ -43,10 +46,18 @@ groups, and all selected service settings are closed against WP4A.
    and verify no running/pending tasks. Attach the verified revision at zero.
 5. Start exactly the authorized replicas. Observe exact service/revision/count,
    full cohort and deployment identity; retain the startup observation.
+   Each drain/attach/start plan retains its expected state. After persisting the
+   plan, reauthorize through WP4A and freshly observe the inactive candidate.
+   Require the same service, routes, revision, counts, cohort, deployment and
+   closed settings, excluding only observation time. Drain may stop the old
+   inactive revision; attach requires zero tasks/counts; start requires the
+   verified new revision at zero. Check the deadline immediately before calling
+   the bounded mutation, with no intervening storage write.
 6. Run the accepted E3 gate under its existing bounded process supervisor. E3
    owns all per-replica probe, digest, target-health and stability decisions.
 7. Reauthorize through WP4A and reobserve service/revision/cohort/deployment and
-   listener/candidate targets. Write the activation evidence and switch plan;
+   listener/candidate targets. Write immutable content-addressed activation
+   evidence and a switch plan naming that exact proof;
    reauthorize and reobserve once more immediately before the listener call.
 8. Switch only the retained listener to the retained candidate target. Observe
    exact operation attribution and resulting listener/service/cohort identity.
@@ -99,6 +110,26 @@ UNKNOWN carry no result. Matching names, tags, latest revisions, or matching
 resource state without operation attribution are insufficient. In particular,
 registration ambiguity must never be resolved by arbitrarily choosing a revision.
 
+Preparation plans include `expected_state`; their fresh post-plan guard rejects
+authorization or topology changes during plan-storage I/O. Observation timestamps
+may advance without changing that state. This closes the avoidable F1 window,
+not the final non-atomic observation-to-mutation race.
+
+Activation proofs live at `<operation>/activations/<sha256>`, where the hash is
+of the actual canonical proof bytes. Each proof explicitly binds operation,
+environment, immutable intent, verified registration, startup, E3 and pre-switch
+observations. The switch plan's `activation_sha256` selects one exact proof;
+there is no mutable latest-proof pointer. Loading checks its byte hash and its
+agreement with the retained operation, registration, startup cohort/deployment
+and persisted exact E3 evidence. A different operation/revision/cohort cannot
+substitute. Exact duplicate proofs are idempotent.
+
+If activation evidence persists but switch-plan persistence fails, a retry reruns
+E3 and current observations for the same intent/candidate. Fresh timestamped
+proofs coexist without overwriting prior evidence. The new switch plan selects
+the proof used by that attempt. Once a switch plan exists, reconciliation uses
+only its selected proof and never sends a second blind listener mutation.
+
 A retry observes before doing anything else. Proven existing registration is
 reused without duplicate revisions; completed preparation is not reapplied.
 An existing plan with no proven effect stays UNCERTAIN and is not resent, even
@@ -125,13 +156,23 @@ cleanup safety redesign and arbitrary post-switch recovery remain WP4C/E4 work.
 the journal also retains the context and transcript hash.
 `E1_DELIVERY_RECEIPT_V1` contains SUCCESS, environment, operation/action/history,
 the complete WP4A intent, verified registration identity, startup/E3/pre-switch
-proof, final observed state, and all seven operation-linked mutation observations.
+proof and its `activation_sha256`, final observed state, and all seven
+operation-linked mutation observations.
 The full intent carries release/source/digest, exact manifest identity,
 eligibility/configuration/membership versions and hashes. No secret values enter
 these records. Effects and immutable plans expose reconciliation history.
 
 `E1_DELIVERY_OUTCOME_V1` distinguishes FAILURE from UNCERTAIN. Missing observation
 after a mutation or any failure after a switch plan is conservatively UNCERTAIN.
+Effect transport errors, malformed/incomplete envelopes, wrong operation/request
+identity or contradictory results are UNCERTAIN after a mutation attempt or
+when reconciling an existing plan. Failed persistence/readback of observed-effect
+evidence is also UNCERTAIN. No later stage runs until an exact effect is proven.
+Unreadable or malformed journal records remain UNCERTAIN, including on retry:
+they cannot establish absence of a prior effect before reconciliation is reached.
+With no prior plan or attempted mutation, invalid effect evidence or a failed
+preparation guard remains FAILURE. A plan alone is not proof of an applied effect;
+the existing conservative no-resend policy for unresolved plans is unchanged.
 Failures before switch never generate successful receipts. If evidence storage
 itself is unavailable, the returned uncertain result cannot be claimed persisted.
 Switch, rule update, schedule and receipt writes are not transactional. The
@@ -150,7 +191,7 @@ unavailable history rejects. It cannot invoke emergency recovery.
 
 ## Acceptance and deferred work
 
-Run `python -I -B scripts/tests/delivery/run.py` alongside all 665 accepted
+Run `python -I -B scripts/tests/delivery/run.py` (69 tests in V2) alongside all 665 accepted
 WP1-WP4A tests. Fixtures exercise production sequencing with protected runtime,
 storage and process doubles; they are not deployed AWS evidence. Ten behavioral
 mutants cover authorization, registration readback, candidate identity, E3
@@ -158,6 +199,14 @@ failure/context, revalidation, early switching, ambiguous acknowledgement,
 prod prerequisites and historical eligibility. Syntax/setup errors are not
 counted as detections. Deterministic independent receipts and package compatibility
 are checked without modifying the WP2 catalog or accepted WP3 package digests.
+Twenty added correction tests include the original routing/revocation startup
+counterexamples, stage-specific drift across preparation, advancing-clock proof
+retry, proof substitution, and malformed-effect reconciliation for all seven
+mutation stages. Four additional behavioral mutants remove preparation checks,
+remove fresh preparation authorization, restore a single activation-proof slot,
+or misclassify unproven effects as FAILURE. Unchanged controls must pass. The
+original E3 identity mutant is detected when invalid evidence is admitted even
+though V2's independent activation-proof check also prevents switching.
 
 WP4A-N1 is closed by [model_consistency.py](../../scripts/normal_delivery/model_consistency.py):
 required, forbidden and return-only classifications must be coherent with the

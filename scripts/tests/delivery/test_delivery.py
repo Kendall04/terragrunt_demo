@@ -320,8 +320,8 @@ class MutationTests(unittest.TestCase):
                     stack.enter_context(patch.object(d.Delivery,'deliver',namespace['deliver']))
                 elif name=='ambiguous_ack':
                     original=c.effect
-                    def ack(op,stage,request,mutate=True):
-                        try:return original(op,stage,request,mutate)
+                    def ack(op,stage,request,mutate=True,**kwargs):
+                        try:return original(op,stage,request,mutate,**kwargs)
                         except d.Uncertain:
                             if stage=='switch':return request
                             raise
@@ -332,6 +332,12 @@ class MutationTests(unittest.TestCase):
             self.assertNotIn('candidate',[x[0] for x in w.calls])
         elif name=='readback':self.assertNotIn('start',[x[0] for x in w.calls])
         elif name=='candidate':self.assertEqual(w.calls,[])
+        elif name=='e3_identity':
+            # V2 also checks the selected proof before switching. The original
+            # Gate mutant must still be caught at admission of invalid evidence,
+            # even when that independent later guard prevents activation.
+            self.assertFalse(any('/e3/' in key for key in r.data))
+            self.assertNotIn('switch',[x[0] for x in w.calls])
         else:self.assertNotIn('switch',[x[0] for x in w.calls])
 
 

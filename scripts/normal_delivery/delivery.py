@@ -80,13 +80,18 @@ class Delivery:
         self.env = a.ENDPOINTS[authorizer.endpoint]
 
     def read(self, key):
-        observed = self.records.read(self.env + '/' + key)
-        if observed is None: return None
-        a.keys(observed, ('version_id', 'bytes'))
-        a.version(observed['version_id'])
-        value = a.decode(observed['bytes'])
-        a.require(a.canonical(value) == observed['bytes'])
-        return value
+        try:
+            observed = self.records.read(self.env + '/' + key)
+            if observed is None: return None
+            a.keys(observed, ('version_id', 'bytes'))
+            a.version(observed['version_id'])
+            value = a.decode(observed['bytes'])
+            a.require(a.canonical(value) == observed['bytes'])
+            return value
+        except Exception:
+            # An unreadable journal cannot establish absence of a prior effect.
+            # This remains true on retry, before effect reconciliation is reached.
+            raise Uncertain('protected evidence unreadable') from None
 
     def put(self, key, value):
         raw = a.canonical(value)
@@ -150,24 +155,67 @@ class Delivery:
         a.require(snapshot['pending'] == 0 and snapshot['running'] == count
                   and len(snapshot['cohort']) == count)
 
-    def effect(self, op, stage, request, mutate=True):
+    def preparation_state(self, snapshot):
+        # Observation time is evidence, not a state precondition.
+        return {k: v for k, v in snapshot.items() if k != 'observed_at'}
+
+    def guard_preparation(self, op, stage, request, expected):
+        self.current(op)
+        fresh = self.snapshot(op); self.routes(op, fresh)
+        a.exact(self.preparation_state(fresh), expected, 'preparation precondition')
+        if stage == 'attach':
+            a.require(fresh['running'] == fresh['pending'] == fresh['desired'] == 0
+                      and not fresh['cohort'])
+        elif stage == 'start':
+            self.prepared(op, fresh, request['taskDefinition'], 0)
+        # Drain may stop an old revision, but only the exact inactive state seen
+        # when planning. Attach requires that drained state; start requires the
+        # independently registered revision at zero. No storage I/O follows.
+        self.bounded(op)
+
+    def observe_effect(self, op, stage, token, request, possible):
+        try:
+            observation = self.runtime.effect(token, op['deadline'])
+            self.check_effect(observation, token, request)
+            if observation['state'] == 'APPLIED':
+                if stage == 'register':
+                    a.keys(observation['result'], ('task_definition_arn',))
+                    a.match(r'arn:aws:ecs:' + self.auth.region + ':' + self.auth.account
+                            + ':task-definition/' + op['intent']['task']['family']
+                            + r':[1-9][0-9]*', observation['result']['task_definition_arn'])
+                else:
+                    a.exact(observation['result'], request, 'observed effect')
+            return observation
+        except Exception:
+            if possible: raise Uncertain('mutation effect unprovable') from None
+            raise
+
+    def effect(self, op, stage, request, mutate=True, preparation=None, activation_sha256=None):
         """Write-ahead token; never repeat an ambiguous mutation on retry."""
         key = op['operation_id'] + '/' + stage
         token = self.env + '/' + key
         plan = dict(token=token, request=copy.deepcopy(request), intent_sha256=op['intent']['intent_sha256'])
         retained = self.read(key + '/plan')
+        if stage in ('drain', 'attach', 'start'):
+            plan['expected_state'] = (retained['expected_state'] if retained is not None
+                                      else self.preparation_state(preparation))
+        if stage == 'switch':
+            if activation_sha256 is None:
+                a.require(retained is not None)
+                activation_sha256 = retained['activation_sha256']
+            plan['activation_sha256'] = activation_sha256
+            proof = self.activation(op, activation_sha256)
         if retained is not None: a.exact(retained, plan, 'immutable stage plan')
-        observation = self.runtime.effect(token, op['deadline'])
-        self.check_effect(observation, token, request)
+        observation = self.observe_effect(op, stage, token, request, retained is not None)
         if observation['state'] != 'APPLIED':
             if retained is not None or observation['state'] != 'ABSENT' or not mutate:
                 raise Uncertain('mutation may already have happened')
             self.bounded(op)
             self.current(op)
             self.put(key + '/plan', plan)
+            if stage in ('drain', 'attach', 'start'):
+                self.guard_preparation(op, stage, request, plan['expected_state'])
             if stage == 'switch':
-                proof = self.read(op['operation_id'] + '/activation')
-                a.require(proof is not None)
                 self.current(op)
                 final = self.snapshot(op); self.routes(op, final)
                 self.prepared(op, final, proof['registration']['task_definition_arn'],
@@ -177,15 +225,13 @@ class Delivery:
                 self.bounded(op)
             try: getattr(self.runtime, stage)(token, copy.deepcopy(request), op['deadline'])
             except Exception: pass
-            try: observation = self.runtime.effect(token, op['deadline'])
-            except Exception: raise Uncertain('mutation observation unavailable') from None
-            self.check_effect(observation, token, request)
+            observation = self.observe_effect(op, stage, token, request, True)
             if observation['state'] != 'APPLIED': raise Uncertain('mutation not observed')
         else:
             # An unplanned effect cannot be adopted from another operation.
             a.require(retained is not None)
-        if stage != 'register': a.exact(observation['result'], request, 'observed effect')
-        self.put(key + '/observed', observation)
+        try: self.put(key + '/observed', observation)
+        except Exception: raise Uncertain('mutation evidence persistence unproved') from None
         return copy.deepcopy(observation['result'])
 
     def check_effect(self, value, token, request):
@@ -195,6 +241,49 @@ class Delivery:
         if value['state'] == 'APPLIED':
             a.exact(value['request_sha256'], a.sha(a.canonical(request)), 'effect request')
         else: a.require(value['result'] is None and value['request_sha256'] is None)
+
+    def e3_context(self, op, revision, startup):
+        i = op['intent']
+        return dict(operation_id=op['operation_id'], environment=self.env, region=self.auth.region,
+            cluster=i['service']['cluster'], service=i['service']['service'], revision=revision,
+            image=i['task']['containerDefinitions'][0]['image'], app=i['task']['containerDefinitions'][0]['name'],
+            probe=i['task']['containerDefinitions'][1]['name'], target=op['target'],
+            listener=i['routing']['listener_arn'], rule=i['routing']['candidate_rule_arn'],
+            active_target=op['active_target'], replicas=i['service']['desiredCount'],
+            started=op['started'], deadline=op['deadline'], cohort=startup['cohort'], deployment=startup['deployment'])
+
+    def activation_key(self, op, digest):
+        a.match(r'[0-9a-f]{64}', digest)
+        return op['operation_id'] + '/activations/' + digest
+
+    def activation(self, op, digest):
+        """Resolve the exact immutable proof named by the switch plan, never latest."""
+        proof = self.read(self.activation_key(op, digest))
+        a.require(proof is not None)
+        a.exact(a.sha(a.canonical(proof)), digest, 'activation bytes')
+        a.keys(proof, ('operation_id', 'environment', 'startup', 'e3', 'pre_switch',
+                       'intent_sha256', 'registration'))
+        for field in ('operation_id', 'environment'):
+            a.exact(proof[field], op[field], 'activation.' + field)
+        a.exact(proof['intent_sha256'], op['intent']['intent_sha256'], 'activation intent')
+        registered = self.read(op['operation_id'] + '/registered')
+        startup = self.read(op['operation_id'] + '/startup')
+        a.require(registered is not None and startup is not None)
+        a.exact(proof['registration'], registered, 'activation registration')
+        for field in ('cohort', 'deployment', 'task_definition', 'service_snapshot'):
+            a.exact(proof['startup'][field], startup[field], 'activation startup')
+        context = self.e3_context(op, registered['task_definition_arn'], startup)
+        evidence = proof['e3']
+        a.exact(evidence['context'], context, 'activation E3 context')
+        a.exact(evidence['observation']['context_sha256'], a.sha(a.canonical(context)), 'activation E3 identity')
+        a.exact(evidence['observation']['cohort'], context['cohort'], 'activation E3 cohort')
+        a.exact(self.read(op['operation_id'] + '/e3/' + a.sha(a.canonical(evidence))),
+                evidence, 'persisted E3 evidence')
+        final = proof['pre_switch']; self.routes(op, final)
+        self.prepared(op, final, registered['task_definition_arn'], context['replicas'])
+        for field in ('cohort', 'deployment'):
+            a.exact(final[field], context[field], 'activation pre-switch')
+        return proof
 
     def accept(self, operation, raw):
         identity(operation)
@@ -294,12 +383,14 @@ class Delivery:
                     ('start', dict(service, desiredCount=i['service']['desiredCount'], taskDefinition=revision),
                      i['service']['desiredCount'], revision)):
                 if self.read(operation + '/' + stage + '/observed') is not None: continue
-                s = self.snapshot(op); self.routes(op, s)
                 planned = self.read(operation + '/' + stage + '/plan') is not None
-                if stage == 'attach' and not planned:
-                    a.require(s['running'] == s['pending'] == s['desired'] == 0 and not s['cohort'])
-                if stage == 'start' and not planned: self.prepared(op, s, revision, 0)
-                result = self.effect(op, stage, request)
+                s = None
+                if not planned:
+                    s = self.snapshot(op); self.routes(op, s)
+                    if stage == 'attach':
+                        a.require(s['running'] == s['pending'] == s['desired'] == 0 and not s['cohort'])
+                    if stage == 'start': self.prepared(op, s, revision, 0)
+                result = self.effect(op, stage, request, preparation=s)
                 a.exact(result, request, 'mutation result')
                 s = self.snapshot(op); self.routes(op, s)
                 if selected: self.prepared(op, s, selected, count)
@@ -313,13 +404,7 @@ class Delivery:
                 for field in ('cohort', 'deployment', 'task_definition', 'service_snapshot'):
                     a.exact(startup[field], retained_startup[field], 'retained startup.' + field)
             self.auth.validate_readback(i, a.canonical(dict(taskDefinition=a.decode(task), service=startup['service_snapshot'])))
-            context = dict(operation_id=operation, environment=self.env, region=self.auth.region,
-                cluster=service['cluster'], service=service['service'], revision=revision,
-                image=i['task']['containerDefinitions'][0]['image'], app=i['task']['containerDefinitions'][0]['name'],
-                probe=i['task']['containerDefinitions'][1]['name'], target=op['target'],
-                listener=i['routing']['listener_arn'], rule=i['routing']['candidate_rule_arn'],
-                active_target=op['active_target'], replicas=i['service']['desiredCount'],
-                started=op['started'], deadline=op['deadline'], cohort=startup['cohort'], deployment=startup['deployment'])
+            context = self.e3_context(op, revision, startup)
             # Rerun E3 on every pre-switch retry; stored readiness is not authority.
             evidence = self.gate.run(context, self.bounded(op))
             self.put(operation + '/e3/' + a.sha(a.canonical(evidence)), evidence)
@@ -330,17 +415,18 @@ class Delivery:
             a.exact(final['deployment'], context['deployment'], 'final deployment')
             self.auth.validate_readback(i, a.canonical(dict(taskDefinition=a.decode(task), service=final['service_snapshot'])))
             self.bounded(op)
-            proof = dict(startup=startup, e3=evidence, pre_switch=final,
+            proof = dict(operation_id=operation, environment=self.env,
+                         startup=startup, e3=evidence, pre_switch=final,
                          intent_sha256=i['intent_sha256'], registration=checked)
-            self.put(operation + '/activation', proof)
-            self.effect(op, 'switch', switch_request)
+            proof_sha256 = a.sha(a.canonical(proof))
+            self.put(self.activation_key(op, proof_sha256), proof)
+            self.effect(op, 'switch', switch_request, activation_sha256=proof_sha256)
         else:
             # Never repeat a listener write whose ACK is ambiguous. A retry can
             # finish only if exact operation-linked switch effect is established.
             self.effect(op, 'switch', switch_request, mutate=False)
-        proof = self.read(operation + '/activation')
-        a.require(proof is not None)
-        a.exact(proof['intent_sha256'], i['intent_sha256'], 'activation intent')
+        switch_plan = self.read(operation + '/switch/plan')
+        proof = self.activation(op, switch_plan['activation_sha256'])
         s = self.snapshot(op)
         a.exact(s['normal_target'], op['target'], 'switched listener')
         self.prepared(op, s, revision, i['service']['desiredCount'])
@@ -359,7 +445,7 @@ class Delivery:
         self.current(op)
         receipt = dict(schema='E1_DELIVERY_RECEIPT_V1', status='SUCCESS', environment=self.env,
                        operation_id=operation, action=op['action'], history=op['history'], intent=i,
-                       registration=checked, activation=proof, final=final,
+                       registration=checked, activation=proof, activation_sha256=switch_plan['activation_sha256'], final=final,
                        effects={stage: self.read(operation + '/' + stage + '/observed')
                                 for stage in ('register', 'drain', 'attach', 'start', 'switch', 'candidate', 'cleanup')})
         a.require(all(receipt['effects'].values()))
