@@ -1,0 +1,102 @@
+{
+  "schema": "E1_WP4A_ECS_MODEL_V1",
+  "source": "Repository-supported task template, service skeleton and reviewed runtime-fields.json; not a claim to model all ECS APIs",
+  "task_required": {
+    "family": "ENVIRONMENT_CONFIGURATION",
+    "networkMode": "SECURITY_ROOT_OWNED",
+    "requiresCompatibilities": "SECURITY_ROOT_OWNED",
+    "cpu": "SECURITY_ROOT_OWNED",
+    "memory": "SECURITY_ROOT_OWNED",
+    "executionRoleArn": "ENVIRONMENT_CONFIGURATION",
+    "taskRoleArn": "ENVIRONMENT_CONFIGURATION",
+    "runtimePlatform": "SECURITY_ROOT_OWNED",
+    "containerDefinitions": "MIXED_CLOSED_CONTAINER_MODEL"
+  },
+  "container_required": {
+    "app": {
+      "name": "ENVIRONMENT_CONFIGURATION",
+      "image": "QUALIFIED_RELEASE_DERIVED",
+      "essential": "SECURITY_ROOT_OWNED",
+      "portMappings": "SECURITY_ROOT_OWNED",
+      "environment": "ENVIRONMENT_CONFIGURATION",
+      "secrets": "ENVIRONMENT_CONFIGURATION",
+      "logConfiguration": "ENVIRONMENT_CONFIGURATION"
+    },
+    "probe": {
+      "name": "ENVIRONMENT_CONFIGURATION",
+      "image": "QUALIFIED_RELEASE_DERIVED",
+      "essential": "SECURITY_ROOT_OWNED",
+      "command": "SECURITY_ROOT_OWNED",
+      "logConfiguration": "ENVIRONMENT_CONFIGURATION"
+    }
+  },
+  "service_required": [
+    "cluster", "service", "enableExecuteCommand", "launchType",
+    "schedulingStrategy", "propagateTags", "deploymentController",
+    "deploymentConfiguration", "capacityProviderStrategy",
+    "healthCheckGracePeriodSeconds", "enableECSManagedTags",
+    "platformVersion", "networkConfiguration", "loadBalancers"
+  ],
+  "service_ownership": {
+    "cluster": "ENVIRONMENT_CONFIGURATION",
+    "service": "ENVIRONMENT_CONFIGURATION",
+    "enableExecuteCommand": "SECURITY_ROOT_OWNED",
+    "launchType": "SECURITY_ROOT_OWNED",
+    "schedulingStrategy": "SECURITY_ROOT_OWNED",
+    "propagateTags": "SECURITY_ROOT_OWNED",
+    "deploymentController": "SECURITY_ROOT_OWNED",
+    "deploymentConfiguration": "SECURITY_ROOT_OWNED",
+    "capacityProviderStrategy": "SECURITY_ROOT_OWNED",
+    "healthCheckGracePeriodSeconds": "SECURITY_ROOT_OWNED",
+    "enableECSManagedTags": "SECURITY_ROOT_OWNED",
+    "platformVersion": "ENVIRONMENT_CONFIGURATION",
+    "networkConfiguration": "ENVIRONMENT_CONFIGURATION",
+    "loadBalancers": "ENVIRONMENT_CONFIGURATION",
+    "desiredCount": "BOUNDED_NON_SECURITY_DYNAMIC",
+    "taskDefinition": "RETURN_ONLY_AUTHORIZED_REVISION"
+  },
+  "task_return_only": [
+    "taskDefinitionArn", "revision", "status", "registeredAt", "registeredBy",
+    "compatibilities", "requiresAttributes", "deregisteredAt"
+  ],
+  "service_return_only": [],
+  "task_defaults": {
+    "volumes": [[]],
+    "placementConstraints": [[]],
+    "tags": [[]]
+  },
+  "container_defaults": {
+    "entryPoint": [[]],
+    "portMappings": [[]],
+    "environment": [[]],
+    "secrets": [[]],
+    "mountPoints": [[]],
+    "volumesFrom": [[]],
+    "environmentFiles": [[]],
+    "dependsOn": [[]],
+    "privileged": [false],
+    "readonlyRootFilesystem": [false],
+    "interactive": [false],
+    "pseudoTerminal": [false]
+  },
+  "forbidden_task": [
+    "proxyConfiguration", "inferenceAccelerators", "ephemeralStorage",
+    "enableFaultInjection", "pidMode", "ipcMode"
+  ],
+  "forbidden_container": [
+    "repositoryCredentials", "resourceRequirements", "firelensConfiguration",
+    "credentialSpecs", "linuxParameters", "user", "workingDirectory",
+    "dockerSecurityOptions", "ulimits", "systemControls", "disableNetworking",
+    "links", "hostname", "extraHosts", "dnsServers", "dnsSearchDomains",
+    "dockerLabels", "healthCheck", "restartPolicy", "startTimeout",
+    "stopTimeout", "versionConsistency", "cpu", "memory",
+    "memoryReservation", "gpuIds"
+  ],
+  "forbidden_service": [
+    "serviceConnectConfiguration", "serviceRegistries", "volumeConfigurations",
+    "vpcLatticeConfigurations", "forceNewDeployment", "placementConstraints",
+    "placementStrategy", "lifecycleHooks", "availabilityZoneRebalancing"
+  ],
+  "unknown_field": "REJECT",
+  "response_defaults": "Only the explicit empty/false values listed above are normalized; all other fields reject"
+}

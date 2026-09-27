@@ -9061,6 +9061,84 @@
       "coverage": "WP3C repository implementation and offline fixtures; live AWS authority remains unverified.",
       "current_owner": "SECURITY_ROOT_OWNED internal release implementation",
       "necessity": "WP3C bounded split-plane implementation"
+    },
+    "scripts/normal_delivery/authorization.py": {
+      "sha256": "3f63a7e50892a07c3ec2b3b7e5d0218514276f2cd6cf1a9f1a6914dd6969c834",
+      "declarations": [],
+      "signals": {
+        "role-input": [
+          253
+        ],
+        "launch-or-mutation": [
+          140,
+          143,
+          145,
+          146,
+          148,
+          153,
+          176,
+          325,
+          397,
+          402
+        ],
+        "executable-dependency": [
+          255,
+          256
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP4A repository authorization and offline fixtures; installed/live authority unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED normal delivery contract",
+      "necessity": "WP4A closed normal-delivery authorization"
+    },
+    "scripts/tests/normal_delivery/run.py": {
+      "sha256": "b98ab19df63cd2a504f1144149e27f39c03365ce164ce6558f198718ad4559da",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          1,
+          16
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP4A repository authorization and offline fixtures; installed/live authority unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED normal delivery contract",
+      "necessity": "WP4A closed normal-delivery authorization"
+    },
+    "scripts/tests/normal_delivery/test_authorization.py": {
+      "sha256": "0cdb918b2b3318c807060acedae0a7331353d93593fed56d4aba755397576cfa",
+      "declarations": [],
+      "signals": {
+        "role-input": [
+          159,
+          172,
+          208,
+          223,
+          224
+        ],
+        "launch-or-mutation": [
+          24,
+          25,
+          29,
+          31,
+          33,
+          36,
+          51,
+          57,
+          68,
+          119,
+          208
+        ],
+        "executable-dependency": [
+          59,
+          232,
+          283
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP4A repository authorization and offline fixtures; installed/live authority unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED normal delivery contract",
+      "necessity": "WP4A closed normal-delivery authorization"
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged"
