@@ -84,6 +84,10 @@ class Facts(ABC):
     environment: admin-installed endpoint-only namespace, envelope
       {endpoint, version_id, bytes}; authenticated config/bootstrap evidence.
       color is controller-selected through protected operation state, not caller.
+    membership: CURRENT admin-only environment resource universe, independently
+      published from environment configuration; envelope {environment, version_id,
+      bytes}. Exact color/position identities, never inferred from binding claims,
+      tags or names. Adapter must authenticate membership ownership and environment.
     artifact: authoritative exact repository/digest lookup, no tag fallback.
     promotion: dev-controller activation receipt + independently authenticated
       prod approval context. Both exact protected reads, never request booleans.
@@ -99,6 +103,8 @@ class Facts(ABC):
     def eligibility_current(self, release_id): raise NotImplementedError
     @abstractmethod
     def environment(self, endpoint): raise NotImplementedError
+    @abstractmethod
+    def membership(self, environment): raise NotImplementedError
     @abstractmethod
     def artifact(self, repository, digest): raise NotImplementedError
     @abstractmethod
@@ -246,9 +252,72 @@ def promotion(facts, q, uri):
             for field in observed}
 
 
+
+def resource_positions(config):
+    """All WP4A resource identities, retaining semantic positions."""
+    service = config['service']
+    return dict(roles=copy.deepcopy(config['roles']), secret_arn=config['secret_arn'],
+                kms_key_arn=config['kms_key_arn'], log_group=config['log_group'],
+                cluster=service['cluster'], service=service['service'],
+                subnets=sorted(service['networkConfiguration']['awsvpcConfiguration']['subnets']),
+                security_groups=sorted(service['networkConfiguration']['awsvpcConfiguration']['securityGroups']),
+                target_group=service['loadBalancers'][0]['targetGroupArn'],
+                listener=config['listener_arn'], candidate_rule=config['candidate_rule_arn'])
+
+
+def validate_membership(observed, config):
+    env = config['environment']
+    record = envelope(observed, 'environment', env)
+    keys(record, ('schema', 'writer', 'environment', 'account', 'region', 'colors'))
+    require(record['schema'] == 'E1_ENVIRONMENT_RESOURCES_V1'
+            and record['writer'] == 'SECURITY_ADMIN'
+            and record['environment'] == env and record['account'] == config['account']
+            and record['region'] == config['region'])
+    keys(record['colors'], ('blue', 'green'))
+    # Validate every color, not only the selected member; reject ambiguous sets.
+    for color, resources in record['colors'].items():
+        expected_keys = resource_positions(config)
+        keys(resources, expected_keys)
+        keys(resources['roles'], ('task', 'execution'))
+        for field in ('subnets', 'security_groups'):
+            items = resources[field]
+            require(type(items) is list and 1 <= len(items) <= 16
+                    and all(type(item) is str for item in items)
+                    and len(set(items)) == len(items))
+        for field in set(resources) - {'roles', 'subnets', 'security_groups'}:
+            require(type(resources[field]) is str and bool(resources[field]))
+        require(all(type(v) is str and bool(v) for v in resources['roles'].values()))
+        require(resources['roles']['task'] != resources['roles']['execution'])
+    selected = copy.deepcopy(record['colors'][config['color']])
+    for field in ('subnets', 'security_groups'): selected[field].sort()
+    exact(resource_positions(config), selected, 'membership')
+    return dict(version_id=observed['version_id'], sha256=sha(observed['bytes']))
+
+
+def validate_task_model(task, config=None, image_uri=None):
+    """One recursive model for placeholder template and fully bound output."""
+    values = {}
+    if config is not None:
+        family = 'demo-' + config['environment'] + '-app-api-' + config['color']
+        values = dict(family=family, probe=family + '-readiness-probe',
+                      task_role=config['roles']['task'], execution_role=config['roles']['execution'],
+                      image=image_uri, AWS_REGION=config['region'], APP_ENV=config['environment'],
+                      DEPLOYMENT=config['color'], KMS_KEY_ID=config['kms_key_arn'],
+                      secret=config['secret_arn'], logs=config['log_group'])
+    def resolve(node):
+        if type(node) is dict:
+            if set(node) == {'$binding'}:
+                return values[node['$binding']] if config is not None else ''
+            return {key: resolve(value) for key, value in node.items()}
+        if type(node) is list: return [resolve(value) for value in node]
+        return node
+    exact(task, resolve(MODEL['canonical_task']), 'canonical_task')
+
+
 def runtime(config, image_uri, replicas):
     env, color = config['environment'], config['color']
     family = 'demo-' + env + '-app-api-' + color
+    validate_task_model(TEMPLATE)
     task = copy.deepcopy(TEMPLATE)
     task.update(family=family, taskRoleArn=config['roles']['task'], executionRoleArn=config['roles']['execution'])
     app, probe = task['containerDefinitions']
@@ -281,6 +350,7 @@ class Authorizer:
             observed = self.facts.environment(self.endpoint)
             config = binding(envelope(observed, 'endpoint', self.endpoint), self.endpoint, self.account, self.region)
             require(caller['replicas'] <= config['max_replicas'])
+            membership = validate_membership(self.facts.membership(config['environment']), config)
             q, uri = qualified(self.facts, caller['release_id'], self.account, self.region)
             eligible = self.facts.eligibility_current(q['release_id'])
             record = wp3.validate_eligibility(envelope(eligible, 'release_id', q['release_id']), q['release_id'])
@@ -291,8 +361,10 @@ class Authorizer:
             exact(available, expected, 'artifact')
             prerequisite = promotion(self.facts, q, uri) if self.endpoint == 'promote-prod' else None
             task, service = runtime(config, uri, caller['replicas'])
+            validate_task_model(task, config, uri)
             intent = dict(schema='E1_AUTHORIZED_RUNTIME_INTENT_V1', endpoint=self.endpoint,
                           environment=config['environment'], color=config['color'], release=q,
+                          membership=membership,
                           qualification_sha256=sha(canonical(q)), eligibility=dict(version_id=eligible['version_id'],
                           sha256=sha(eligible['bytes'])), binding=dict(version_id=observed['version_id'],
                           sha256=sha(observed['bytes'])), promotion=prerequisite, task=task, service=service,

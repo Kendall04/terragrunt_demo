@@ -31,11 +31,20 @@
     }
   },
   "service_required": [
-    "cluster", "service", "enableExecuteCommand", "launchType",
-    "schedulingStrategy", "propagateTags", "deploymentController",
-    "deploymentConfiguration", "capacityProviderStrategy",
-    "healthCheckGracePeriodSeconds", "enableECSManagedTags",
-    "platformVersion", "networkConfiguration", "loadBalancers"
+    "cluster",
+    "service",
+    "enableExecuteCommand",
+    "launchType",
+    "schedulingStrategy",
+    "propagateTags",
+    "deploymentController",
+    "deploymentConfiguration",
+    "capacityProviderStrategy",
+    "healthCheckGracePeriodSeconds",
+    "enableECSManagedTags",
+    "platformVersion",
+    "networkConfiguration",
+    "loadBalancers"
   ],
   "service_ownership": {
     "cluster": "ENVIRONMENT_CONFIGURATION",
@@ -56,47 +65,224 @@
     "taskDefinition": "RETURN_ONLY_AUTHORIZED_REVISION"
   },
   "task_return_only": [
-    "taskDefinitionArn", "revision", "status", "registeredAt", "registeredBy",
-    "compatibilities", "requiresAttributes", "deregisteredAt"
+    "taskDefinitionArn",
+    "revision",
+    "status",
+    "registeredAt",
+    "registeredBy",
+    "compatibilities",
+    "requiresAttributes",
+    "deregisteredAt"
   ],
   "service_return_only": [],
   "task_defaults": {
-    "volumes": [[]],
-    "placementConstraints": [[]],
-    "tags": [[]]
+    "volumes": [
+      []
+    ],
+    "placementConstraints": [
+      []
+    ],
+    "tags": [
+      []
+    ]
   },
   "container_defaults": {
-    "entryPoint": [[]],
-    "portMappings": [[]],
-    "environment": [[]],
-    "secrets": [[]],
-    "mountPoints": [[]],
-    "volumesFrom": [[]],
-    "environmentFiles": [[]],
-    "dependsOn": [[]],
-    "privileged": [false],
-    "readonlyRootFilesystem": [false],
-    "interactive": [false],
-    "pseudoTerminal": [false]
+    "entryPoint": [
+      []
+    ],
+    "portMappings": [
+      []
+    ],
+    "environment": [
+      []
+    ],
+    "secrets": [
+      []
+    ],
+    "mountPoints": [
+      []
+    ],
+    "volumesFrom": [
+      []
+    ],
+    "environmentFiles": [
+      []
+    ],
+    "dependsOn": [
+      []
+    ],
+    "privileged": [
+      false
+    ],
+    "readonlyRootFilesystem": [
+      false
+    ],
+    "interactive": [
+      false
+    ],
+    "pseudoTerminal": [
+      false
+    ]
   },
   "forbidden_task": [
-    "proxyConfiguration", "inferenceAccelerators", "ephemeralStorage",
-    "enableFaultInjection", "pidMode", "ipcMode"
+    "proxyConfiguration",
+    "inferenceAccelerators",
+    "ephemeralStorage",
+    "enableFaultInjection",
+    "pidMode",
+    "ipcMode"
   ],
   "forbidden_container": [
-    "repositoryCredentials", "resourceRequirements", "firelensConfiguration",
-    "credentialSpecs", "linuxParameters", "user", "workingDirectory",
-    "dockerSecurityOptions", "ulimits", "systemControls", "disableNetworking",
-    "links", "hostname", "extraHosts", "dnsServers", "dnsSearchDomains",
-    "dockerLabels", "healthCheck", "restartPolicy", "startTimeout",
-    "stopTimeout", "versionConsistency", "cpu", "memory",
-    "memoryReservation", "gpuIds"
+    "repositoryCredentials",
+    "resourceRequirements",
+    "firelensConfiguration",
+    "credentialSpecs",
+    "linuxParameters",
+    "user",
+    "workingDirectory",
+    "dockerSecurityOptions",
+    "ulimits",
+    "systemControls",
+    "disableNetworking",
+    "links",
+    "hostname",
+    "extraHosts",
+    "dnsServers",
+    "dnsSearchDomains",
+    "dockerLabels",
+    "healthCheck",
+    "restartPolicy",
+    "startTimeout",
+    "stopTimeout",
+    "versionConsistency",
+    "cpu",
+    "memory",
+    "memoryReservation",
+    "gpuIds"
   ],
   "forbidden_service": [
-    "serviceConnectConfiguration", "serviceRegistries", "volumeConfigurations",
-    "vpcLatticeConfigurations", "forceNewDeployment", "placementConstraints",
-    "placementStrategy", "lifecycleHooks", "availabilityZoneRebalancing"
+    "serviceConnectConfiguration",
+    "serviceRegistries",
+    "volumeConfigurations",
+    "vpcLatticeConfigurations",
+    "forceNewDeployment",
+    "placementConstraints",
+    "placementStrategy",
+    "lifecycleHooks",
+    "availabilityZoneRebalancing"
   ],
   "unknown_field": "REJECT",
-  "response_defaults": "Only the explicit empty/false values listed above are normalized; all other fields reject"
+  "response_defaults": "Only the explicit empty/false values listed above are normalized; all other fields reject",
+  "canonical_task": {
+    "family": {
+      "$binding": "family"
+    },
+    "networkMode": "awsvpc",
+    "requiresCompatibilities": [
+      "FARGATE"
+    ],
+    "cpu": "256",
+    "memory": "512",
+    "executionRoleArn": {
+      "$binding": "execution_role"
+    },
+    "taskRoleArn": {
+      "$binding": "task_role"
+    },
+    "runtimePlatform": {
+      "cpuArchitecture": "X86_64",
+      "operatingSystemFamily": "LINUX"
+    },
+    "containerDefinitions": [
+      {
+        "name": {
+          "$binding": "family"
+        },
+        "image": {
+          "$binding": "image"
+        },
+        "essential": true,
+        "portMappings": [
+          {
+            "containerPort": 8080,
+            "protocol": "tcp"
+          }
+        ],
+        "environment": [
+          {
+            "name": "AWS_REGION",
+            "value": {
+              "$binding": "AWS_REGION"
+            }
+          },
+          {
+            "name": "APP_ENV",
+            "value": {
+              "$binding": "APP_ENV"
+            }
+          },
+          {
+            "name": "DEPLOYMENT",
+            "value": {
+              "$binding": "DEPLOYMENT"
+            }
+          },
+          {
+            "name": "KMS_KEY_ID",
+            "value": {
+              "$binding": "KMS_KEY_ID"
+            }
+          }
+        ],
+        "secrets": [
+          {
+            "name": "DB_CONN_STRING",
+            "valueFrom": {
+              "$binding": "secret"
+            }
+          }
+        ],
+        "logConfiguration": {
+          "logDriver": "awslogs",
+          "options": {
+            "awslogs-group": {
+              "$binding": "logs"
+            },
+            "awslogs-region": {
+              "$binding": "AWS_REGION"
+            },
+            "awslogs-stream-prefix": {
+              "$binding": "family"
+            }
+          }
+        }
+      },
+      {
+        "name": {
+          "$binding": "probe"
+        },
+        "image": {
+          "$binding": "image"
+        },
+        "essential": false,
+        "command": [
+          "readiness-probe"
+        ],
+        "logConfiguration": {
+          "logDriver": "awslogs",
+          "options": {
+            "awslogs-group": {
+              "$binding": "logs"
+            },
+            "awslogs-region": {
+              "$binding": "AWS_REGION"
+            },
+            "awslogs-stream-prefix": {
+              "$binding": "probe"
+            }
+          }
+        }
+      }
+    ]
+  }
 }

@@ -81,3 +81,44 @@ WP4B owns delivery state machine and E3 orchestration; WP4C owns emergency,
 cleanup and NAT; WP4D owns exact authority/materialization. WP5 owns lifecycle,
 WP6 request cutover, WP7 legacy retirement. Current/live platform gaps remain
 unverified as documented in [validation](validation.md).
+
+## V2 correction — independent membership and executable model
+
+V1 remains checkpoint `9cc59275d64ecd675aa7bb5d24e328c761becff7`.
+V2 changes only the offline authorization contract, its model and fixtures.
+
+`Facts.membership(environment)` reads a separate CURRENT admin-owned resource
+universe. It must not synthesize membership from the configuration being checked.
+The existing installed-bundle consumer references do not contain this resource
+universe; this port defines its future adapter obligation without live discovery.
+The authenticated envelope contains environment, observed storage VersionId and
+canonical bytes. The closed record is `E1_ENVIRONMENT_RESOURCES_V1`, writer
+`SECURITY_ADMIN`, exact environment/account/region and exactly blue/green maps.
+Each map contains exact task/execution roles, secret ARN, KMS key ARN, log group,
+cluster, service, subnet set, security-group set, target group, listener and
+candidate rule. Semantic positions remain distinct. Network lists are nonempty,
+unique and compared as sets by sorting; additional resources are not admitted.
+Sharing between colors is allowed where explicitly installed (for example KMS);
+cross-environment ownership must be authenticated by the independent admin port.
+Names, tags and ARN shapes do not establish membership. The caller has no
+membership input. The intent binds membership bytes by hash and storage version;
+readback reauthorization re-reads them. Publication/ownership enforcement is
+deferred to protected installation, not added as AWS authority here.
+
+The model's `canonical_task` is the executable recursive contract: literal
+values define constants, and `$binding` leaves identify exact semantic positions.
+One resolver and strict recursive comparator validate both stages. Before
+construction, the template must equal the model with empty placeholder values.
+After construction, and before emitting an intent, the task must equal that same
+model resolved from qualified image identity and validated protected bindings.
+Unknown fields, types, list cardinality and absent-by-contract fields reject.
+The template cannot change this vocabulary or legitimize itself through readback.
+Existing normalized readback comparison remains mandatory and unchanged.
+
+The 20-test suite includes both directions of KMS/subnet/security-group
+substitution, malformed/wrong-environment membership, role-position ambiguity,
+caller membership injection, 15 incompatible template cases and independent
+post-construction corruption. Two additional behavioral guard mutants demonstrate
+that bypassing membership or model validation admits the corresponding attack;
+unchanged controls reject them and valid dev/prod/readback controls still pass.
+All fixtures are synthetic protected-port evidence, not deployed resources.

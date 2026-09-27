@@ -23,7 +23,7 @@ def make_binding(env, color='blue'):
     family = 'demo-' + env + '-app-api-' + color
     role = 'arn:aws:iam::' + ACCOUNT + ':role/' + family
     elb = 'arn:aws:elasticloadbalancing:' + REGION + ':' + ACCOUNT + ':'
-    return dict(schema='E1_DELIVERY_BINDING_V1', environment=env, color=color,
+    result = dict(schema='E1_DELIVERY_BINDING_V1', environment=env, color=color,
                 account=ACCOUNT, region=REGION, runtime_contract=f.RUNTIME,
                 max_replicas=3, roles=dict(task=role + '-task-role', execution=role + '-exec-role'),
                 secret_arn='arn:aws:secretsmanager:' + REGION + ':' + ACCOUNT
@@ -49,6 +49,13 @@ def make_binding(env, color='blue'):
                     'family': family, 'networkMode': 'awsvpc', 'requiresCompatibilities': ['FARGATE'],
                     'cpu': '256', 'memory': '512', 'containerDefinitions': [
                         {'name': family, 'image': 'public.ecr.aws/docker/library/nginx:stable', 'essential': True}]}})
+
+
+    if env == 'prod':
+        result['kms_key_arn'] = result['kms_key_arn'].replace('12345678-1234-1234-1234-123456789abc', 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa')
+        result['service']['networkConfiguration']['awsvpcConfiguration'].update(
+            subnets=['subnet-99999999', 'subnet-88888888'], securityGroups=['sg-99999999'])
+    return result
 
 
 class Fixture(a.Facts):
@@ -78,6 +85,11 @@ class Fixture(a.Facts):
                       state='ELIGIBLE', version_id='eligibility-version-A')
         self.e_env = lambda: dict(release_id=q['release_id'], version_id=self.e['version_id'], bytes=f.canonical(self.e))
         self.bindings = {key: make_binding(env) for key, env in a.ENDPOINTS.items()}
+        # Independent snapshots: later configuration changes cannot rewrite membership.
+        self.members = {env: dict(schema='E1_ENVIRONMENT_RESOURCES_V1', writer='SECURITY_ADMIN',
+                        environment=env, account=ACCOUNT, region=REGION,
+                        colors={color: a.resource_positions(make_binding(env, color))
+                                for color in ('blue', 'green')}) for env in ('dev', 'prod')}
         self.receipt = self.protected('E1_DEV_ACTIVATION_RECEIPT_V1', 'NORMAL_DELIVERY_DEV', outcome='ACTIVATED')
         self.approval = self.protected('E1_PROD_APPROVAL_CONTEXT_V1', 'PROTECTED_PROD_APPROVAL', consumer='promote-prod')
         self.available = dict(account=ACCOUNT, region=REGION, repository=REPOSITORY, digest=DIGEST, available=True)
@@ -104,6 +116,11 @@ class Fixture(a.Facts):
     def environment(self, endpoint):
         self.calls.append(('environment', endpoint))
         return dict(endpoint=endpoint, version_id='binding-' + endpoint, bytes=f.canonical(self.bindings[endpoint]))
+
+    def membership(self, environment):
+        self.calls.append(('membership', environment))
+        return dict(environment=environment, version_id='membership-' + environment,
+                    bytes=a.canonical(self.members[environment]))
 
     def artifact(self, repository, digest):
         self.calls.append(('artifact', repository, digest)); return copy.deepcopy(self.available)
@@ -317,6 +334,91 @@ class Tests(unittest.TestCase):
         self.assertEqual(set(a.TEMPLATE), set(model['task_required']))
         self.assertEqual(set(a.TEMPLATE['containerDefinitions'][0]), set(model['container_required']['app']))
         self.assertEqual(set(a.TEMPLATE['containerDefinitions'][1]), set(model['container_required']['probe']))
+
+    def test_membership_cross_environment_and_positions(self):
+        for endpoint, opposite in (('deploy-dev', 'prod'), ('promote-prod', 'dev')):
+            for field in ('kms_key_arn', 'subnets', 'securityGroups'):
+                with self.subTest(endpoint=endpoint, field=field):
+                    self.setUp()
+                    config = self.facts.bindings[endpoint]
+                    other = make_binding(opposite)
+                    if field == 'kms_key_arn': config[field] = other[field]
+                    else:
+                        config['service']['networkConfiguration']['awsvpcConfiguration'][field] = (
+                            other['service']['networkConfiguration']['awsvpcConfiguration'][field])
+                    self.reject(core=a.Authorizer(endpoint, ACCOUNT, REGION, self.facts))
+        self.setUp()
+        resources = self.facts.members['dev']['colors']['blue']
+        resources['roles']['task'], resources['roles']['execution'] = resources['roles']['execution'], resources['roles']['task']
+        self.reject()
+
+    def test_membership_closed_record_and_caller_boundary(self):
+        cases = [
+            lambda m: m.update(environment='prod'),
+            lambda m: m.update(writer='CALLER'),
+            lambda m: m.update(extra=True),
+            lambda m: m['colors']['blue'].pop('kms_key_arn'),
+            lambda m: m['colors']['blue'].update(kms_key_arn='absent'),
+            lambda m: m['colors']['blue']['subnets'].append(m['colors']['blue']['subnets'][0]),
+            lambda m: m['colors']['green'].update(extra=[]),
+            lambda m: m['colors']['blue'].update(security_groups=None),
+        ]
+        for mutate in cases:
+            with self.subTest(mutate=mutate):
+                self.setUp(); mutate(self.facts.members['dev']); self.reject()
+        self.setUp()
+        self.reject(raw=a.canonical(dict(release_id=self.facts.q['release_id'], replicas=2,
+                                        membership=self.facts.members['dev'])))
+        self.facts.membership = lambda env: None
+        self.reject()
+
+    def test_template_model_rejects_forbidden_and_structural_changes(self):
+        changes = [
+            lambda t: t['containerDefinitions'][0].update(entryPoint=['sh']),
+            lambda t: t['containerDefinitions'][0].update(command=['echo']),
+            lambda t: t['containerDefinitions'][0].update(dockerLabels={'x': 'y'}),
+            lambda t: t['containerDefinitions'][0]['logConfiguration'].update(unknown={}),
+            lambda t: t.update(unknownTask=[]),
+            lambda t: t['containerDefinitions'][0].update(linuxParameters={'capabilities': {'add': ['ALL']}}),
+            lambda t: t['containerDefinitions'].append(copy.deepcopy(t['containerDefinitions'][0])),
+            lambda t: t['containerDefinitions'].pop(),
+            lambda t: t['containerDefinitions'].__setitem__(1, copy.deepcopy(t['containerDefinitions'][0])),
+            lambda t: t['containerDefinitions'][0]['environment'].append({'name': 'EXTRA', 'value': ''}),
+            lambda t: t['containerDefinitions'][0]['secrets'].append({'name': 'EXTRA', 'valueFrom': ''}),
+            lambda t: t['containerDefinitions'][0]['portMappings'].append({'containerPort': 999}),
+            lambda t: t['containerDefinitions'][0]['logConfiguration']['options'].update(extra=''),
+            lambda t: t.update(runtimePlatform=[]),
+            lambda t: t.update(cpu=256),
+        ]
+        for mutate in changes:
+            with self.subTest(mutate=mutate):
+                template = copy.deepcopy(a.TEMPLATE); mutate(template)
+                with patch.object(a, 'TEMPLATE', template): self.reject()
+
+    def test_final_constructed_model_is_independently_checked(self):
+        original = a.runtime
+        def corrupt(*args):
+            task, service = original(*args)
+            task['containerDefinitions'][0]['command'] = ['echo']
+            return task, service
+        with patch.object(a, 'runtime', corrupt): self.reject()
+
+    def test_v2_behavioral_guard_mutants(self):
+        # Unchanged controls authorize and read back, not syntax/setup failures.
+        intent = self.intent()
+        self.core.validate_readback(intent, a.canonical(response(intent)))
+        self.facts.bindings['deploy-dev']['kms_key_arn'] = make_binding('prod')['kms_key_arn']
+        self.reject()
+        with patch.object(a, 'validate_membership', return_value={}):
+            self.assertEqual(self.intent()['task']['containerDefinitions'][0]['environment'][3]['value'],
+                             make_binding('prod')['kms_key_arn'])
+        self.setUp()
+        template = copy.deepcopy(a.TEMPLATE)
+        template['containerDefinitions'][0]['command'] = ['echo']
+        with patch.object(a, 'TEMPLATE', template):
+            self.reject()
+            with patch.object(a, 'validate_task_model', return_value=None):
+                self.assertEqual(self.intent()['task']['containerDefinitions'][0]['command'], ['echo'])
 
     def test_behavioral_mutants_remove_single_field_guard(self):
         """Four valid behavioral mutants; no syntax/import/setup detection counted."""

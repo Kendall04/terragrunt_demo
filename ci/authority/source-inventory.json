@@ -9063,27 +9063,28 @@
       "necessity": "WP3C bounded split-plane implementation"
     },
     "scripts/normal_delivery/authorization.py": {
-      "sha256": "3f63a7e50892a07c3ec2b3b7e5d0218514276f2cd6cf1a9f1a6914dd6969c834",
+      "sha256": "5da787e3c77267a0d125b38895528d0c203aa40115d1e70e8c3686da20ef433b",
       "declarations": [],
       "signals": {
         "role-input": [
-          253
+          322
         ],
         "launch-or-mutation": [
-          140,
-          143,
-          145,
           146,
-          148,
-          153,
-          176,
-          325,
+          149,
+          151,
+          152,
+          154,
+          159,
+          182,
           397,
-          402
+          469,
+          474
         ],
         "executable-dependency": [
-          255,
-          256
+          304,
+          324,
+          325
         ]
       },
       "semantic_status": "UNVERIFIED",
@@ -9106,15 +9107,15 @@
       "necessity": "WP4A closed normal-delivery authorization"
     },
     "scripts/tests/normal_delivery/test_authorization.py": {
-      "sha256": "0cdb918b2b3318c807060acedae0a7331353d93593fed56d4aba755397576cfa",
+      "sha256": "3e37c6d1ee5f7004bbc792c36b282d2f0bb7ccd69c8a7c60aaae8e7ec77a6d23",
       "declarations": [],
       "signals": {
         "role-input": [
-          159,
-          172,
-          208,
-          223,
-          224
+          176,
+          189,
+          225,
+          240,
+          241
         ],
         "launch-or-mutation": [
           24,
@@ -9124,15 +9125,20 @@
           33,
           36,
           51,
-          57,
-          68,
-          119,
-          208
+          64,
+          75,
+          136,
+          225
         ],
         "executable-dependency": [
-          59,
-          232,
-          283
+          66,
+          249,
+          300,
+          377,
+          378,
+          402,
+          417,
+          421
         ]
       },
       "semantic_status": "UNVERIFIED",
