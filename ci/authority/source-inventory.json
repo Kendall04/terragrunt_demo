@@ -9147,16 +9147,16 @@
       "necessity": "WP4A closed normal-delivery authorization"
     },
     "scripts/normal_delivery/delivery.py": {
-      "sha256": "bd06f081cf136bbade339b73216a7ad9311d7321c44d2ed329b22690a2a031f9",
+      "sha256": "be2578643c17bb4f7213117573ed3376fdf9803325ac3b3e04f20bbccbc9674f",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          146,
-          153,
-          201
+          147,
+          154,
+          202
         ],
         "executable-dependency": [
-          351
+          352
         ]
       },
       "semantic_status": "UNVERIFIED",
@@ -9271,11 +9271,12 @@
       "necessity": "WP4B protected normal delivery, promotion and history rollback"
     },
     "scripts/tests/delivery/test_f3.py": {
-      "sha256": "343c66ba078db5edea66dc453d5e040f4e1ac467f0c63a3feee929907f9b8dda",
+      "sha256": "1cb757d7e368c10aa0d5770fab508fd86b5493eaf742433d578e26ad5cc5ce7b",
       "declarations": [],
       "signals": {
         "executable-dependency": [
-          238
+          305,
+          327
         ]
       },
       "semantic_status": "UNVERIFIED",

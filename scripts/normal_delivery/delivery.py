@@ -92,7 +92,7 @@ class Delivery:
         self.auth, self.runtime, self.records, self.gate = authorizer, runtime, records, gate
         self.env = a.ENDPOINTS[authorizer.endpoint]
 
-    def read(self, key):
+    def read(self, key, object_required=False):
         try:
             observed = self.records.read(self.env + '/' + key)
             if observed is None: return None
@@ -100,6 +100,7 @@ class Delivery:
             a.version(observed['version_id'])
             value = a.decode(observed['bytes'])
             a.require(a.canonical(value) == observed['bytes'])
+            if object_required: a.require(type(value) is dict)
             return value
         except Exception:
             raise JournalError(key) from None
@@ -387,6 +388,52 @@ class Delivery:
             a.exact(final[field], context[field], 'activation pre-switch')
         return proof
 
+    def retained_operation(self, operation):
+        """Validate protected evidence before comparing any caller retry fields.
+
+        Invalid structure has the same attempt-aware classification as unreadable
+        bytes. This does not reauthorize or reconstruct the retained operation.
+        """
+        key = operation + '/intent'
+        retained = self.read(key, object_required=True)
+        if retained is None: return None
+        try:
+            a.keys(retained, ('schema', 'operation_id', 'environment', 'action',
+                'request', 'history', 'intent', 'started', 'deadline', 'active_color',
+                'active_service', 'active_target', 'target', 'initial'))
+            a.require(retained['schema'] == 'E1_DELIVERY_OPERATION_V1')
+            a.exact(retained['operation_id'], operation, 'stored operation')
+            a.exact(retained['environment'], self.env, 'stored environment')
+            a.require(retained['action'] in ('deliver', 'rollback-release'))
+            a.request(a.canonical(retained['request']))
+            if retained['action'] == 'deliver':
+                a.require(retained['history'] is None)
+            else:
+                a.keys(retained['history'], ('operation_id', 'sha256'))
+                identity(retained['history']['operation_id'])
+                a.match(r'[0-9a-f]{64}', retained['history']['sha256'])
+            a.require(type(retained['started']) is int and retained['started'] > 0
+                      and type(retained['deadline']) is int
+                      and retained['deadline'] == retained['started'] + 1800)
+            a.require(retained['active_color'] in ('blue', 'green'))
+            for field in ('active_service', 'active_target', 'target'):
+                a.require(type(retained[field]) is str and bool(retained[field]))
+            a.require(type(retained['initial']) is dict)
+            intent = retained['intent']
+            a.keys(intent, ('schema', 'endpoint', 'environment', 'color', 'release',
+                'membership', 'qualification_sha256', 'eligibility', 'binding',
+                'promotion', 'task', 'service', 'routing', 'intent_sha256'))
+            a.require(intent['schema'] == 'E1_AUTHORIZED_RUNTIME_INTENT_V1')
+            a.exact(intent['environment'], self.env, 'stored intent environment')
+            a.exact(intent['endpoint'], self.auth.endpoint, 'stored intent endpoint')
+            for field in ('release', 'membership', 'eligibility', 'binding', 'task', 'service', 'routing'):
+                a.require(type(intent[field]) is dict)
+            a.exact(intent['intent_sha256'], a.sha(a.canonical(
+                {k: v for k, v in intent.items() if k != 'intent_sha256'})), 'stored intent hash')
+        except Exception:
+            raise JournalError(key) from None
+        return retained
+
     def accept(self, operation, raw):
         identity(operation)
         model_consistency()
@@ -408,7 +455,7 @@ class Delivery:
         request.pop('action')
         request['release_id'] = release
         a.request(a.canonical(request))
-        retained = self.read(operation + '/intent')
+        retained = self.retained_operation(operation)
         if retained is not None:
             a.exact(retained['request'], request, 'retry request')
             a.exact(retained['history'], history, 'retry history')

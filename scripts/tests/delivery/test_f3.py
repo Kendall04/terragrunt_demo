@@ -224,6 +224,95 @@ class F3(unittest.TestCase):
         self.halted()
 
 
+class RetainedOperationTests(unittest.TestCase):
+    def exercise(self, stage=None, damage='object'):
+        f, auth, r, w, p, c, raw = setup()
+        if stage is None:
+            c.accept(OP, raw)
+            self.assertFalse(any(k.endswith('/attempt') for k in r.data))
+        else:
+            w.on_mutation = lambda world, current: world.hidden.add(current) if current == stage else None
+            self.assertEqual(c.run(OP, raw)['status'], 'UNCERTAIN')
+            self.assertIn('dev/' + OP + '/' + stage + '/attempt', r.data)
+        key = 'dev/' + OP + '/intent'
+        value = a.decode(r.data[key])
+        if damage == 'object': value = {'corrupt': True}
+        elif damage == 'null': value = None
+        elif damage == 'list': value = []
+        elif damage == 'history': value.pop('history')
+        elif damage == 'nested': value['intent'].pop('service')
+        r.data[key] = b'{' if damage == 'json' else a.canonical(value)
+        before = copy.deepcopy(w.calls)
+        reads = []
+        read = r.read
+        def tracked(key):
+            reads.append(key)
+            return read(key)
+        r.read = tracked
+        # No valid context can be recovered from this object. Neither fresh
+        # authorization nor runtime reconciliation may reconstruct it.
+        with patch.object(auth, 'authorize', side_effect=AssertionError('unexpected authorization')) as authorize, \
+             patch.object(w, 'effect', side_effect=AssertionError('unexpected effect lookup')) as effect:
+            result = c.run(OP, raw)
+        authorize.assert_not_called(); effect.assert_not_called()
+        self.assertEqual(result['status'], 'UNCERTAIN' if stage else 'FAILURE')
+        self.assertTrue(any(k.endswith('/attempt') for k in reads))
+        self.assertEqual(w.calls, before)
+        self.assertNotIn('dev/' + OP + '/success', r.data)
+        if stage:
+            self.assertEqual(sum(s == stage for s, _ in w.calls), 1)
+        else:
+            self.assertEqual(w.calls, [])
+        if stage == 'start':
+            self.assertEqual(p.calls, [])
+            self.assertFalse(any(s == 'switch' for s, _ in w.calls))
+
+    def test_structure_before_attempt_is_failure(self):
+        for damage in ('object', 'null', 'list'):
+            with self.subTest(damage=damage): self.exercise(damage=damage)
+
+    def test_structure_after_start_is_uncertain(self):
+        for damage in ('object', 'null', 'list'):
+            with self.subTest(damage=damage): self.exercise('start', damage)
+
+    def test_structure_after_switch_is_uncertain(self):
+        for damage in ('object', 'null', 'list'):
+            with self.subTest(damage=damage): self.exercise('switch', damage)
+
+    def test_missing_history_retains_attempt_classification(self):
+        for stage in (None, 'start', 'switch'):
+            with self.subTest(stage=stage): self.exercise(stage, 'history')
+
+    def test_nested_intent_corruption_retains_attempt_classification(self):
+        for stage in (None, 'start', 'switch'):
+            with self.subTest(stage=stage): self.exercise(stage, 'nested')
+
+    def test_invalid_json_retains_attempt_classification(self):
+        for stage in (None, 'start', 'switch'):
+            with self.subTest(stage=stage): self.exercise(stage, 'json')
+
+    def test_valid_operation_retry_mismatch_remains_request_rejection(self):
+        f, auth, r, w, p, c, raw = setup()
+        c.accept(OP, raw)
+        request = a.decode(raw); request['replicas'] = 1
+        with patch.object(c, 'journal_uncertain') as classifier:
+            self.assertEqual(c.run(OP, a.canonical(request))['status'], 'FAILURE')
+        classifier.assert_not_called()
+        self.assertEqual(w.calls, [])
+
+    def test_structural_classification_behavioral_mutant(self):
+        method = d.Delivery.retained_operation
+        source = textwrap.dedent(inspect.getsource(method))
+        target = 'raise JournalError(key) from None'
+        if source.count(target) != 1: raise RuntimeError('HARNESS_INVALID: mutation location')
+        namespace = dict(method.__globals__)
+        exec(compile(source.replace(target, 'raise a.Rejected() from None'),
+                     '<retained-operation-mutant>', 'exec'), namespace)
+        self.exercise('start')
+        with patch.object(d.Delivery, method.__name__, namespace[method.__name__]):
+            with self.assertRaises(AssertionError): self.exercise('start')
+
+
 class F3Mutants(unittest.TestCase):
     def test_three_behavioral_mutants(self):
         cases = (

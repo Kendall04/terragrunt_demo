@@ -6,7 +6,9 @@ independent review's F1 preparation window, F2 proof retry conflict and F3
 unverifiable mutation-effect classification. V2 is preserved at
 `31d7467fe1accc6e96d4c236f5dfa370c589f645`. V3 corrects the remaining F3 review
 findings: R1 early retry rejection, R2 structurally corrupt stored observations,
-and R3 pre-mutation corruption classification. These checkpoints are not integrated.
+and R3 pre-mutation corruption classification. V3 is preserved at
+`9854f3a9e4ed46861b64b65b77b19df1cc4730a8`. V4 corrects the remaining structural
+retained-operation corruption classification gap. These checkpoints are not integrated.
 It consumes the accepted [WP4A contract](e1-wp4a-normal-delivery.md) and the unchanged
 [E3 gate](../../scripts/ecs-readiness-gate.sh). It adds no IAM, SDK client, compute,
 public endpoint or deployed authority. [E1 plan](../../specs/iam-hardening/plan.md)
@@ -204,6 +206,18 @@ is FAILURE. Once a stage may have run, its unreadable evidence requires
 reconciliation and cannot authorize a repeated call. Failures after a possibly
 applied switch remain conservatively UNCERTAIN, except validated ABSENT.
 
+V4 validates the persisted operation's closed structure, retained request/history,
+identity, timing fields and embedded intent integrity before comparing it with
+the caller's retry request. Invalid protected structure raises the same keyed
+journal error as invalid JSON. The existing classifier consults attempt records
+under the installed environment and validated operation ID, without accepting
+fields from the corrupt object. No attempt means FAILURE; possible prior attempt
+means UNCERTAIN. Unavailable attempt evidence remains conservatively UNCERTAIN.
+No missing operation fields are reconstructed from caller data, and no effect
+lookup or later mutation runs when the operation cannot be safely loaded.
+Matching a structurally valid operation against a different retry request remains
+a separate request rejection, not a journal-structure error.
+
 Failed outcome persistence does not manufacture runtime uncertainty; a returned
 outcome cannot be claimed durably recorded unless its write was verified. Failed
 post-call effect persistence remains UNCERTAIN. Storage failures after earlier
@@ -225,7 +239,7 @@ unavailable history rejects. It cannot invoke emergency recovery.
 
 ## Acceptance and deferred work
 
-Run `python -I -B scripts/tests/delivery/run.py` (90 tests in V3; 69 in V2) alongside all 665 accepted
+Run `python -I -B scripts/tests/delivery/run.py` (98 tests in V4; 90 in V3; 69 in V2) alongside all 665 accepted
 WP1-WP4A tests. Fixtures exercise production sequencing with protected runtime,
 storage and process doubles; they are not deployed AWS evidence. Ten behavioral
 mutants cover authorization, registration readback, candidate identity, E3
@@ -249,6 +263,13 @@ controls and reject behavioral assertion failures, not syntax/import/setup error
 The prior post-call storage test now permits validated independent APPLIED recovery
 through `/reconciled`; the prior ABSENT switch test expects terminal FAILURE while
 still asserting exactly one switch attempt. No automatic resend is introduced.
+
+V4 adds eight tests (763 total with WP1-WP4A): pre-attempt structural corruption,
+unresolved start and switch corruption, missing history, nested intent corruption,
+invalid JSON on both sides of the attempt boundary, separate retry mismatch
+classification, and one behavioral mutant that restores definite FAILURE for
+structurally corrupt attempted operations. The unchanged control passes; the
+mutant must fail a behavioral assertion. All 17 earlier mutants remain in place.
 
 WP4A-N1 is closed by [model_consistency.py](../../scripts/normal_delivery/model_consistency.py):
 required, forbidden and return-only classifications must be coherent with the
