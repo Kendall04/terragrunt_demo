@@ -9283,6 +9283,108 @@
       "coverage": "WP4B provider-free production sequencing and protected-port fixtures; installed/live authority unverified.",
       "current_owner": "SECURITY_ROOT_OWNED normal delivery contract",
       "necessity": "WP4B protected normal delivery, promotion and history rollback"
+    },
+    "scripts/recovery/application.py": {
+      "sha256": "c23c66a2157931fb89560ba53dbe737a852d74ca6c1f6e35a53840ad02997af0",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP4C provider-free bounded recovery contracts and hermetic tests; live authority unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED recovery contract",
+      "necessity": "WP4C emergency, inactive cleanup and existing NAT recovery boundaries"
+    },
+    "scripts/recovery/journal.py": {
+      "sha256": "48c1948d00da00d13faf63685053d31b088dcb581b2c5f40e3ee2efcb624dea0",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP4C provider-free bounded recovery contracts and hermetic tests; live authority unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED recovery contract",
+      "necessity": "WP4C emergency, inactive cleanup and existing NAT recovery boundaries"
+    },
+    "scripts/recovery/nat.py": {
+      "sha256": "b0aa7fb01dd1c470925126514bc82fc2139f244368434c57eda8f1488c3efb27",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          14,
+          54
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP4C provider-free bounded recovery contracts and hermetic tests; live authority unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED recovery contract",
+      "necessity": "WP4C emergency, inactive cleanup and existing NAT recovery boundaries"
+    },
+    "scripts/recovery/ports.py": {
+      "sha256": "49126c26d891648a29f7e63090c9a3a9bfbb32ffc066be961484b26a9cb47ce5",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP4C provider-free bounded recovery contracts and hermetic tests; live authority unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED recovery contract",
+      "necessity": "WP4C emergency, inactive cleanup and existing NAT recovery boundaries"
+    },
+    "scripts/tests/recovery/fixtures.py": {
+      "sha256": "c797edf8ceab70ad068eaeae578ba13a8b845ace5665dc21ba5bb0eee48eb465",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          82
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP4C provider-free bounded recovery contracts and hermetic tests; live authority unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED recovery contract",
+      "necessity": "WP4C emergency, inactive cleanup and existing NAT recovery boundaries"
+    },
+    "scripts/tests/recovery/run.py": {
+      "sha256": "b80a9039fc609dbf389e46db85f85e755c3a1a998d7a35f0123ddbd63abd5965",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          15
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP4C provider-free bounded recovery contracts and hermetic tests; live authority unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED recovery contract",
+      "necessity": "WP4C emergency, inactive cleanup and existing NAT recovery boundaries"
+    },
+    "scripts/tests/recovery/test_evidence.py": {
+      "sha256": "b7fd6145f512ed1312139cc794b77d9f9a400ab3c4c896215b3b873d67c2fd80",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP4C provider-free bounded recovery contracts and hermetic tests; live authority unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED recovery contract",
+      "necessity": "WP4C emergency, inactive cleanup and existing NAT recovery boundaries"
+    },
+    "scripts/tests/recovery/test_mutants.py": {
+      "sha256": "00ce0ab428d940dc14806f4c093d92f753a949e9aec2d4830c6aac98a183f622",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          16
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP4C provider-free bounded recovery contracts and hermetic tests; live authority unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED recovery contract",
+      "necessity": "WP4C emergency, inactive cleanup and existing NAT recovery boundaries"
+    },
+    "scripts/tests/recovery/test_recovery.py": {
+      "sha256": "2fd4118b82b196abc424d2946b594829f55dfbf89dd5fc299144dd977f2e3078",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          268
+        ]
+      },
+      "semantic_status": "UNVERIFIED",
+      "coverage": "WP4C provider-free bounded recovery contracts and hermetic tests; live authority unverified.",
+      "current_owner": "SECURITY_ROOT_OWNED recovery contract",
+      "necessity": "WP4C emergency, inactive cleanup and existing NAT recovery boundaries"
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged"
