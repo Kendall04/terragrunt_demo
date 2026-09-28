@@ -61,9 +61,12 @@ authorization and exact topology/state guards precede the external call:
    that count; no unnecessary restart or registration occurs.
 2. Observe the exact revision stable, desired=running=historical count, pending=0,
    and one healthy target per required running task. Targets bind service,
-   revision, target group, operation and environment; duplicate, foreign, missing,
-   stale or unhealthy evidence rejects. The adapter must prove task membership and
-   completed unmixed ECS deployment, not just return a `stable` caller flag.
+   revision, target group, operation and environment. Target IDs must be exact,
+   nonblank, unpadded strings; duplicate, foreign, missing, stale or unhealthy
+   evidence rejects. This provider-free check does not prove AWS task membership:
+   the WP4D/live adapter must prove each target belongs to the exact running tasks
+   and target group, and establish a completed unmixed ECS deployment rather than
+   return a `stable` caller flag.
 3. Freshly reauthorize and reobserve health/topology immediately before normal
    listener flip. Flip only to that protected candidate target.
 4. Swap the exact candidate rule to the formerly active target, then schedule the

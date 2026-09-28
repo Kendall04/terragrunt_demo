@@ -9285,7 +9285,7 @@
       "necessity": "WP4B protected normal delivery, promotion and history rollback"
     },
     "scripts/recovery/application.py": {
-      "sha256": "c23c66a2157931fb89560ba53dbe737a852d74ca6c1f6e35a53840ad02997af0",
+      "sha256": "7000917d89d174a861608710e3a3e8e6c46e260007af742bd8c05f39997d7f07",
       "declarations": [],
       "signals": {},
       "semantic_status": "UNVERIFIED",
@@ -9361,7 +9361,7 @@
       "necessity": "WP4C emergency, inactive cleanup and existing NAT recovery boundaries"
     },
     "scripts/tests/recovery/test_mutants.py": {
-      "sha256": "00ce0ab428d940dc14806f4c093d92f753a949e9aec2d4830c6aac98a183f622",
+      "sha256": "95ca34c55c01495503173688bb2eac2da8e1732e47ccd46cd56154c22e027d87",
       "declarations": [],
       "signals": {
         "executable-dependency": [
@@ -9374,11 +9374,11 @@
       "necessity": "WP4C emergency, inactive cleanup and existing NAT recovery boundaries"
     },
     "scripts/tests/recovery/test_recovery.py": {
-      "sha256": "2fd4118b82b196abc424d2946b594829f55dfbf89dd5fc299144dd977f2e3078",
+      "sha256": "8965c6b6f6923595c6257e877ce2197aa871f705661fbc40cef04c9b77a259ec",
       "declarations": [],
       "signals": {
         "executable-dependency": [
-          268
+          301
         ]
       },
       "semantic_status": "UNVERIFIED",

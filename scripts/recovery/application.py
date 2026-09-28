@@ -183,8 +183,13 @@ class Emergency(Application):
             seen = set()
             for target in svc['targets']:
                 a.keys(target, ('id', 'state', 'revision', 'service', 'target_group', 'operation', 'environment'))
-                a.require(type(target['id']) is str and target['id'] not in seen)
-                seen.add(target['id'])
+                target_id = target['id']
+                a.require(type(target_id) is str)
+                canonical_id = target_id.strip()
+                a.require(bool(canonical_id))
+                # Keep the exact adapter identity; do not silently merge padded IDs.
+                a.require(target_id == canonical_id and canonical_id not in seen)
+                seen.add(canonical_id)
                 a.exact(target['state'], 'healthy', 'target health')
                 for key, expected in dict(revision=value['revision'], service=svc['service'],
                         target_group=value['config']['colors'][value['color']]['target_group'],

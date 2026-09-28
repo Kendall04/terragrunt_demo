@@ -8,12 +8,16 @@ from scripts.tests.recovery.fixtures import application, nat, OP, NEXT
 class EmergencyTests(unittest.TestCase):
     def test_zero_capacity(self):
         c, r, records, f = application()
-        self.assertEqual(c.run(NEXT, b'{}')['status'], 'SUCCESS')
+        result = c.run(NEXT, b'{}')
+        self.assertEqual(result['status'], 'SUCCESS')
+        self.assertEqual([t['id'] for t in result['final']['recovered']['targets']], ['target-0', 'target-1'])
         self.assertEqual([x[0] for x in r.calls], ['scale', 'switch', 'candidate', 'schedule'])
 
     def test_running(self):
         c, r, records, f = application(running=2)
-        self.assertEqual(c.run(NEXT, b'{}')['status'], 'SUCCESS')
+        result = c.run(NEXT, b'{}')
+        self.assertEqual(result['status'], 'SUCCESS')
+        self.assertEqual([t['id'] for t in result['final']['recovered']['targets']], ['target-0', 'target-1'])
         self.assertEqual([x[0] for x in r.calls], ['switch', 'candidate', 'schedule'])
 
     def test_prod(self):
@@ -68,6 +72,35 @@ class EmergencyTests(unittest.TestCase):
             r.state['services']['blue']['targets'] = targets
             self.assertEqual(c.run(NEXT, b'{}')['status'], 'FAILURE')
             self.assertEqual(r.calls, [])
+
+    def test_blank_target_identity(self):
+        for running in (0, 2):
+            for target_id in ('', ' ', '\t', '\n'):
+                with self.subTest(running=running, target_id=repr(target_id)):
+                    c, r, records, f = application(running=running)
+                    observe = r.observe
+                    def malformed(operation, deadline):
+                        snapshot = observe(operation, deadline)
+                        targets = snapshot['services']['blue']['targets']
+                        if targets: targets[0]['id'] = target_id
+                        return snapshot
+                    r.observe = malformed
+                    result = c.run(NEXT, b'{}')
+                    self.assertEqual(result['status'], 'FAILURE')
+                    self.assertNotIn('switch', [stage for stage, _ in r.calls])
+                    self.assertNotEqual(result['status'], 'SUCCESS')
+
+    def test_target_identity_normalization_collision(self):
+        for ids in (('target-0', ' target-0 '), ('target-0', 'target-0 '),
+                    ('target-0', 'target-0')):
+            with self.subTest(ids=ids):
+                c, r, records, f = application(running=2)
+                targets = r.observe(NEXT, 1030)['services']['blue']['targets']
+                for target, target_id in zip(targets, ids): target['id'] = target_id
+                r.state['services']['blue']['targets'] = targets
+                result = c.run(NEXT, b'{}')
+                self.assertEqual(result['status'], 'FAILURE')
+                self.assertNotIn('switch', [stage for stage, _ in r.calls])
 
     def test_revoked_after_scale(self):
         c, r, records, f = application()
