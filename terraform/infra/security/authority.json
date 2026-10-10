@@ -2828,5 +2828,490 @@
     "environment_bindings": {},
     "external_invocation": [],
     "live": "UNVERIFIED_NOT_DEPLOYED"
+  },
+  "wp5": {
+    "schema": "E1_WP5_LIFECYCLE_V1",
+    "owner": "SECURITY_ROOT_OWNED",
+    "selected": {
+      "request-gateway/infra-dev": {
+        "name": "e1-gateway-infra-dev",
+        "role": "e1-gateway-infra-dev-exec",
+        "environment": "dev",
+        "engine": "LAMBDA",
+        "required_inputs": {
+          "shared": [
+            "account_id",
+            "alert_email",
+            "protected_inputs",
+            "region"
+          ],
+          "secrets": [
+            "account_id",
+            "protected_inputs",
+            "region"
+          ],
+          "global": [
+            "account_id",
+            "alerts_topic_arn",
+            "protected_inputs",
+            "region"
+          ],
+          "data": [
+            "account_id",
+            "alerts_topic_arn",
+            "db_instance_sg_id",
+            "private_subnet_ids",
+            "protected_inputs",
+            "protected_sql_ami",
+            "region"
+          ],
+          "platform": [
+            "account_id",
+            "region"
+          ],
+          "apps": [
+            "account_id",
+            "alb_listener_arn",
+            "alerts_topic_arn",
+            "cluster_arn",
+            "cluster_name",
+            "demo_blue_tg_arn",
+            "demo_green_tg_arn",
+            "demo_sg_id",
+            "private_subnet_ids",
+            "protected_inputs",
+            "region"
+          ],
+          "edge": [
+            "account_id",
+            "alb_listener_arn",
+            "private_subnet_ids",
+            "region",
+            "vpc_link_sg_id"
+          ]
+        },
+        "package_sha256": "8f6c347a0ad938e2f8730584c32f5db57a690c3adf89e4eef537b43a1e588ce9"
+      },
+      "environment-lifecycle/infra-dev": {
+        "name": "e1-controller-infra-dev",
+        "role": "e1-controller-infra-dev-exec",
+        "environment": "dev",
+        "engine": "CODEBUILD",
+        "required_inputs": {
+          "shared": [
+            "account_id",
+            "alert_email",
+            "protected_inputs",
+            "region"
+          ],
+          "secrets": [
+            "account_id",
+            "protected_inputs",
+            "region"
+          ],
+          "global": [
+            "account_id",
+            "alerts_topic_arn",
+            "protected_inputs",
+            "region"
+          ],
+          "data": [
+            "account_id",
+            "alerts_topic_arn",
+            "db_instance_sg_id",
+            "private_subnet_ids",
+            "protected_inputs",
+            "protected_sql_ami",
+            "region"
+          ],
+          "platform": [
+            "account_id",
+            "region"
+          ],
+          "apps": [
+            "account_id",
+            "alb_listener_arn",
+            "alerts_topic_arn",
+            "cluster_arn",
+            "cluster_name",
+            "demo_blue_tg_arn",
+            "demo_green_tg_arn",
+            "demo_sg_id",
+            "private_subnet_ids",
+            "protected_inputs",
+            "region"
+          ],
+          "edge": [
+            "account_id",
+            "alb_listener_arn",
+            "private_subnet_ids",
+            "region",
+            "vpc_link_sg_id"
+          ]
+        },
+        "package_sha256": "221ec35aeb1d4ca3dd3fc9e5bd150e36e71fb73a6d420babd6d57f22a00b8eed"
+      },
+      "request-gateway/infra-prod": {
+        "name": "e1-gateway-infra-prod",
+        "role": "e1-gateway-infra-prod-exec",
+        "environment": "prod",
+        "engine": "LAMBDA",
+        "required_inputs": {
+          "shared": [
+            "account_id",
+            "alert_email",
+            "protected_inputs",
+            "region"
+          ],
+          "secrets": [
+            "account_id",
+            "protected_inputs",
+            "region"
+          ],
+          "global": [
+            "account_id",
+            "alerts_topic_arn",
+            "protected_inputs",
+            "region"
+          ],
+          "data": [
+            "account_id",
+            "alerts_topic_arn",
+            "db_instance_sg_id",
+            "private_subnet_ids",
+            "protected_inputs",
+            "protected_sql_ami",
+            "region"
+          ],
+          "platform": [
+            "account_id",
+            "region"
+          ],
+          "apps": [
+            "account_id",
+            "alb_listener_arn",
+            "alerts_topic_arn",
+            "cluster_arn",
+            "cluster_name",
+            "demo_blue_tg_arn",
+            "demo_green_tg_arn",
+            "demo_sg_id",
+            "private_subnet_ids",
+            "protected_inputs",
+            "region"
+          ],
+          "edge": [
+            "account_id",
+            "alb_listener_arn",
+            "private_subnet_ids",
+            "region",
+            "vpc_link_sg_id"
+          ]
+        },
+        "package_sha256": "3c32c8624ae2b2aa4c1703a4b3b8154246e5cac0222861b97b4c738fd4463824"
+      },
+      "environment-lifecycle/infra-prod": {
+        "name": "e1-controller-infra-prod",
+        "role": "e1-controller-infra-prod-exec",
+        "environment": "prod",
+        "engine": "CODEBUILD",
+        "required_inputs": {
+          "shared": [
+            "account_id",
+            "alert_email",
+            "protected_inputs",
+            "region"
+          ],
+          "secrets": [
+            "account_id",
+            "protected_inputs",
+            "region"
+          ],
+          "global": [
+            "account_id",
+            "alerts_topic_arn",
+            "protected_inputs",
+            "region"
+          ],
+          "data": [
+            "account_id",
+            "alerts_topic_arn",
+            "db_instance_sg_id",
+            "private_subnet_ids",
+            "protected_inputs",
+            "protected_sql_ami",
+            "region"
+          ],
+          "platform": [
+            "account_id",
+            "region"
+          ],
+          "apps": [
+            "account_id",
+            "alb_listener_arn",
+            "alerts_topic_arn",
+            "cluster_arn",
+            "cluster_name",
+            "demo_blue_tg_arn",
+            "demo_green_tg_arn",
+            "demo_sg_id",
+            "private_subnet_ids",
+            "protected_inputs",
+            "region"
+          ],
+          "edge": [
+            "account_id",
+            "alb_listener_arn",
+            "private_subnet_ids",
+            "region",
+            "vpc_link_sg_id"
+          ]
+        },
+        "package_sha256": "612c7b7907756aa3955ad2feb8adc74d31f92c828c5ef1b76c71179d256bdd39"
+      },
+      "request-gateway/infra-high-risk-dev": {
+        "name": "e1-gateway-infra-high-risk-dev",
+        "role": "e1-gateway-infra-high-risk-dev-exec",
+        "environment": "dev",
+        "engine": "LAMBDA",
+        "required_inputs": {
+          "shared": [
+            "account_id",
+            "alert_email",
+            "protected_inputs",
+            "region"
+          ],
+          "secrets": [
+            "account_id",
+            "protected_inputs",
+            "region"
+          ],
+          "global": [
+            "account_id",
+            "alerts_topic_arn",
+            "protected_inputs",
+            "region"
+          ],
+          "data": [
+            "account_id",
+            "alerts_topic_arn",
+            "db_instance_sg_id",
+            "private_subnet_ids",
+            "protected_inputs",
+            "protected_sql_ami",
+            "region"
+          ],
+          "platform": [
+            "account_id",
+            "region"
+          ],
+          "apps": [
+            "account_id",
+            "alb_listener_arn",
+            "alerts_topic_arn",
+            "cluster_arn",
+            "cluster_name",
+            "demo_blue_tg_arn",
+            "demo_green_tg_arn",
+            "demo_sg_id",
+            "private_subnet_ids",
+            "protected_inputs",
+            "region"
+          ],
+          "edge": [
+            "account_id",
+            "alb_listener_arn",
+            "private_subnet_ids",
+            "region",
+            "vpc_link_sg_id"
+          ]
+        },
+        "package_sha256": "c0d47a3abb362b0ac1bcb29f20834376116989cca876e07c60277c2bff3c0c8e"
+      },
+      "environment-lifecycle/infra-high-risk-dev": {
+        "name": "e1-controller-infra-high-risk-dev",
+        "role": "e1-controller-infra-high-risk-dev-exec",
+        "environment": "dev",
+        "engine": "CODEBUILD",
+        "required_inputs": {
+          "shared": [
+            "account_id",
+            "alert_email",
+            "protected_inputs",
+            "region"
+          ],
+          "secrets": [
+            "account_id",
+            "protected_inputs",
+            "region"
+          ],
+          "global": [
+            "account_id",
+            "alerts_topic_arn",
+            "protected_inputs",
+            "region"
+          ],
+          "data": [
+            "account_id",
+            "alerts_topic_arn",
+            "db_instance_sg_id",
+            "private_subnet_ids",
+            "protected_inputs",
+            "protected_sql_ami",
+            "region"
+          ],
+          "platform": [
+            "account_id",
+            "region"
+          ],
+          "apps": [
+            "account_id",
+            "alb_listener_arn",
+            "alerts_topic_arn",
+            "cluster_arn",
+            "cluster_name",
+            "demo_blue_tg_arn",
+            "demo_green_tg_arn",
+            "demo_sg_id",
+            "private_subnet_ids",
+            "protected_inputs",
+            "region"
+          ],
+          "edge": [
+            "account_id",
+            "alb_listener_arn",
+            "private_subnet_ids",
+            "region",
+            "vpc_link_sg_id"
+          ]
+        },
+        "package_sha256": "5e120c01adb5a4934544eaae05f7a7f27f94b208e07688607d6247e0d77363f7"
+      },
+      "request-gateway/infra-high-risk-prod": {
+        "name": "e1-gateway-infra-high-risk-prod",
+        "role": "e1-gateway-infra-high-risk-prod-exec",
+        "environment": "prod",
+        "engine": "LAMBDA",
+        "required_inputs": {
+          "shared": [
+            "account_id",
+            "alert_email",
+            "protected_inputs",
+            "region"
+          ],
+          "secrets": [
+            "account_id",
+            "protected_inputs",
+            "region"
+          ],
+          "global": [
+            "account_id",
+            "alerts_topic_arn",
+            "protected_inputs",
+            "region"
+          ],
+          "data": [
+            "account_id",
+            "alerts_topic_arn",
+            "db_instance_sg_id",
+            "private_subnet_ids",
+            "protected_inputs",
+            "protected_sql_ami",
+            "region"
+          ],
+          "platform": [
+            "account_id",
+            "region"
+          ],
+          "apps": [
+            "account_id",
+            "alb_listener_arn",
+            "alerts_topic_arn",
+            "cluster_arn",
+            "cluster_name",
+            "demo_blue_tg_arn",
+            "demo_green_tg_arn",
+            "demo_sg_id",
+            "private_subnet_ids",
+            "protected_inputs",
+            "region"
+          ],
+          "edge": [
+            "account_id",
+            "alb_listener_arn",
+            "private_subnet_ids",
+            "region",
+            "vpc_link_sg_id"
+          ]
+        },
+        "package_sha256": "d0d866046e8b267fddea6c0125f1b60a6fbbb40ebd56879452cf3143376642c2"
+      },
+      "environment-lifecycle/infra-high-risk-prod": {
+        "name": "e1-controller-infra-high-risk-prod",
+        "role": "e1-controller-infra-high-risk-prod-exec",
+        "environment": "prod",
+        "engine": "CODEBUILD",
+        "required_inputs": {
+          "shared": [
+            "account_id",
+            "alert_email",
+            "protected_inputs",
+            "region"
+          ],
+          "secrets": [
+            "account_id",
+            "protected_inputs",
+            "region"
+          ],
+          "global": [
+            "account_id",
+            "alerts_topic_arn",
+            "protected_inputs",
+            "region"
+          ],
+          "data": [
+            "account_id",
+            "alerts_topic_arn",
+            "db_instance_sg_id",
+            "private_subnet_ids",
+            "protected_inputs",
+            "protected_sql_ami",
+            "region"
+          ],
+          "platform": [
+            "account_id",
+            "region"
+          ],
+          "apps": [
+            "account_id",
+            "alb_listener_arn",
+            "alerts_topic_arn",
+            "cluster_arn",
+            "cluster_name",
+            "demo_blue_tg_arn",
+            "demo_green_tg_arn",
+            "demo_sg_id",
+            "private_subnet_ids",
+            "protected_inputs",
+            "region"
+          ],
+          "edge": [
+            "account_id",
+            "alb_listener_arn",
+            "private_subnet_ids",
+            "region",
+            "vpc_link_sg_id"
+          ]
+        },
+        "package_sha256": "ed9215897d73b5809b8698dd52e468d967b1edb6ea418fccbfc7d39a3549e0ef"
+      }
+    },
+    "installations": {},
+    "runtime_approvals": {},
+    "environment_bindings": {},
+    "active_contracts": {},
+    "nat_launch_inputs": {},
+    "external_invocation": [],
+    "live": "UNVERIFIED_NOT_DEPLOYED"
   }
 }

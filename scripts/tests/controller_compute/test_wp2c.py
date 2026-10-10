@@ -252,7 +252,7 @@ class ComputeTests(unittest.TestCase):
             "aws_cloudwatch_log_group", "aws_s3_bucket", "aws_s3_bucket_versioning",
             "aws_s3_bucket_public_access_block", "aws_s3_bucket_server_side_encryption_configuration",
             "aws_s3_bucket_lifecycle_configuration", "aws_s3_bucket_policy", "aws_cloudwatch_event_rule",
-        "aws_cloudwatch_event_target", "aws_lambda_permission", "aws_lambda_alias", "aws_ecr_repository", "aws_ecr_repository_policy"})
+        "aws_cloudwatch_event_target", "aws_lambda_permission", "aws_lambda_alias", "aws_ecr_repository", "aws_ecr_repository_policy", "aws_iam_policy", "aws_iam_role_policy_attachment"})
         self.assertEqual(tf["resource"]["aws_lambda_function"]["gateway"]["for_each"], "${local.gateways}")
         self.assertEqual(tf["resource"]["aws_codebuild_project"]["controller"]["for_each"], "${local.projects}")
         self.assertEqual(tf["resource"]["aws_iam_role_policy"]["inert"]["policy"], "${jsonencode(var.authority.policies.inert_permissions)}")

@@ -8,6 +8,10 @@ WP4D adds [exact IAM and selective materialization](../../docs/e1-wp4d-iam-mater
 for the accepted delivery/recovery contracts. Its installation and environment
 maps also remain empty, so no WP4D compute or external request grant is active.
 
+WP5 adds [protected environment lifecycle](../../docs/e1-protected-environment-lifecycle.md)
+using the eight existing ordinary/high-risk reservations. Installation, approval
+and environment-binding registries remain empty; lifecycle compute stays inactive.
+
 Classification: `E1_WP2A_PROTECTED_SECURITY_ROOT_FOUNDATION`.
 Repository foundation only; **not deployed, not WP2 complete, not E1 secure**.
 The accepted baseline is `c8e880b552b5782e9bca94891b75a71b45ddc113`.

@@ -43,5 +43,13 @@
     "protected_inputs": {
       "value": "${terraform_data.protected_input.output}"
     }
+  },
+  "terraform": {
+    "backend": {
+      "s3": {
+        "encrypt": true,
+        "use_lockfile": true
+      }
+    }
   }
 }

@@ -268,6 +268,14 @@ This is repository evidence pending independent review, not deployed enforcement
 
 ## E1 WP4D — offline candidate checks
 
+WP5 checks are described in
+[protected environment lifecycle](e1-protected-environment-lifecycle.md).
+Run `python -I -B scripts/tests/lifecycle/run.py` for the focused hermetic suite
+and `python -I -B scripts/tests/lifecycle/check_static.py` for actual Terraform
+gate/policy/trust and IAM size evaluation in a disposable provider-free root.
+The checker runs only console/validate without providers/backend. It does not
+initialize actual lifecycle roots or execute the runtime's live init path.
+
 [WP4D materialization](e1-wp4d-iam-materialization.md) adds the hermetic
 `python -I -B scripts/tests/wp4d/run.py` entry point. It checks action/resource/
 condition combinations, import/schema closure, exact installation readback,

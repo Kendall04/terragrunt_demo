@@ -1,0 +1,33 @@
+"""Deterministic WP5 packages and exact-version installation readback."""
+import base64
+import json
+from pathlib import Path
+
+from . import contract as c
+
+
+def verify(s3, reference, destination):
+    c.keys(reference, ('bucket', 'key', 'version_id', 'sha256', 'binding', 'source_commit'), 'package reference')
+    c.require(reference['key'] == 'bundles/sha256/' + reference['sha256'] + '.json', 'content-addressed key')
+    version = reference['version_id']
+    c.require(type(version) is str and version.strip() == version and version.lower() not in ('', 'null', 'latest'), 'exact version')
+    response = s3.get_object(Bucket=reference['bucket'], Key=reference['key'], VersionId=version)
+    raw = response['Body'].read(16777217)
+    c.require(len(raw) <= 16777216 and response.get('VersionId') == version and c.digest(raw) == reference['sha256'], 'exact readback bytes')
+    package = json.loads(raw)
+    c.keys(package, ('schema', 'binding', 'reservation', 'files'), 'closed package')
+    c.require(package['schema'] == 'E1_WP5_PACKAGE_V1' and package['binding'] == reference['binding'], 'package binding')
+    root = Path(destination).resolve()
+    c.require(type(package['files']) is dict and bool(package['files']), 'package files')
+    for name, encoded in package['files'].items():
+        c.require(type(name) is str and all(part not in ('', '.', '..') and ':' not in part and '\\' not in part for part in name.split('/')), 'package path')
+        target = root.joinpath(*name.split('/'))
+        c.require(root in target.parents, 'package containment')
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with target.open('xb') as stream:stream.write(base64.b64decode(encoded, validate=True))
+    # Privileged bootstrap must itself be the exact code inside the verified
+    # package. An image with unrelated entrypoint bytes cannot borrow its hash.
+    for name in ('contract.py', 'controller.py', 'packages.py', 'runtime.py'):
+        source = Path(__file__).with_name(name).read_bytes().replace(b'\r\n', b'\n')
+        c.require((root/'scripts/lifecycle'/name).read_bytes() == source, 'installed bootstrap byte identity')
+    return reference

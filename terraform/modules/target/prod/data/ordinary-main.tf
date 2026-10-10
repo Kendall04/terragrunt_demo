@@ -1,27 +1,5 @@
-data "aws_ami" "ubuntu_2204" {
-  most_recent = true
-  owners      = ["099720109477"] # Canonical
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
-  }
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-  filter {
-    name   = "architecture"
-    values = ["x86_64"]
-  }
-  filter {
-    name   = "root-device-type"
-    values = ["ebs"]
-  }
-}
-
 resource "aws_instance" "db" {
-  ami                         = data.aws_ami.ubuntu_2204.id
+  ami                         = var.protected_sql_ami
   instance_type               = var.instance_type
   subnet_id                   = var.private_subnet_ids[0]
   vpc_security_group_ids      = [var.db_instance_sg_id]
@@ -62,7 +40,6 @@ resource "aws_instance" "db" {
     ignore_changes = [ami]
   }
 }
-
 resource "aws_cloudwatch_metric_alarm" "statuscheck_failed" {
   count               = var.enable_alarms ? 1 : 0
   alarm_name          = "${local.name}-statuscheck-failed"
@@ -86,7 +63,6 @@ resource "aws_cloudwatch_metric_alarm" "statuscheck_failed" {
 
   tags = local.tags
 }
-
 resource "aws_cloudwatch_metric_alarm" "cpu_credit_low" {
   count               = var.enable_alarms ? 1 : 0
   alarm_name          = "${local.name}-cpucredit-low"

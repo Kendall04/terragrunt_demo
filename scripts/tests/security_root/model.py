@@ -16,6 +16,7 @@ import ownership
 import ordinary
 import internal
 import wp4d
+import wp5
 
 SUPPORT_FILES = {**ownership.RECOVERY_SOURCES, "terraform/infra/data/user_data.sh": "98b4d17937711d27244c161a35832d6f05135b59f5cb5609a5016fd19b10cd7b"}
 
@@ -36,6 +37,8 @@ SUPPORT_FILES.update({'scripts/internal_release/e1_contract.py': '9928b0bab7808a
 # package digests in authority.json still detect any changed source bytes.
 SUPPORT_FILES.update({name: hashlib.sha256((wp4d.ROOT / name).read_bytes().replace(b"\r\n", b"\n")).hexdigest()
                       for name in set().union(*(wp4d.package_sources(key) for key in wp4d.RESERVED))})
+SUPPORT_FILES.update({name: sha for name in wp5.SOURCES for sha in
+                     [hashlib.sha256((wp5.ROOT/name).read_bytes().replace(b'\r\n',b'\n')).hexdigest()]})
 
 BASELINE = "c8e880b552b5782e9bca94891b75a71b45ddc113"
 AUTHORITY = "terraform/infra/security/authority.json"
@@ -74,7 +77,7 @@ def load_authority(root):
     doc = load_json((Path(root) / AUTHORITY).read_text())
     keys(doc, {"format_version", "classification", "stage", "security_admin",
                "backend", "ownership", "request_identities", "policies",
-               "governance", "interfaces", "control_bundles", "controller_compute", "ownership_closure", "internal_release", "wp4d"}, "authority")
+               "governance", "interfaces", "control_bundles", "controller_compute", "ownership_closure", "internal_release", "wp4d", "wp5"}, "authority")
     require(doc["format_version"] == 1 and doc["classification"] == "TARGET_REQUIREMENT"
             and doc["stage"] == "E1_WP2A_PROTECTED_SECURITY_ROOT_FOUNDATION", "stage")
     admin = doc["security_admin"]
@@ -157,6 +160,7 @@ def load_authority(root):
     ownership.validate_publications(doc)
     internal.validate(root, doc)
     wp4d.validate(root, doc)
+    wp5.validate(root, doc)
     return doc
 
 
@@ -220,10 +224,14 @@ def wiring(doc):
     root["output"]["protected_output_candidates"] = {"value": expression("module.protected_resources.protected_output_candidates")}
     compute_module = compute.wiring()
     wp4d.extend(compute_module)
+    wp5.extend(compute_module)
+    for key in ('installations','runtime_approvals','environment_bindings'):
+        root['module']['controller_compute']['wp5_'+key]=expression('local.authority.wp5.'+key)
     compute_module["locals"]["evidence_bucket"] = expression('"' + doc["ownership_closure"]["resources"]["neutral/artifacts"]["name"] + '${var.account_id}"')
     root["output"]["internal_release"] = {"value": expression("module.controller_compute.internal_release")}
     root["output"]["wp4d"] = {"value": expression("module.controller_compute.wp4d")}
-    root["module"]["control_bundle_storage"]["runtime_readers"] = expression("merge(module.controller_compute.internal_release.bundle_readers, module.controller_compute.wp4d.bundle_readers)")
+    root['output']['wp5']={'value':expression('module.controller_compute.wp5')}
+    root["module"]["control_bundle_storage"]["runtime_readers"] = expression("merge(module.controller_compute.internal_release.bundle_readers, module.controller_compute.wp4d.bundle_readers, module.controller_compute.wp5.bundle_readers)")
     ordinary_wiring = ordinary.wiring(doc)
     # WP4A's accepted target-group identity must be creatable by the extracted
     # greenfield skeleton. Legacy files remain pinned for WP7 retirement.
@@ -232,7 +240,13 @@ def wiring(doc):
         for color in ("blue", "green"):
             ordinary_wiring[path] = ordinary_wiring[path].replace(
                 '${var.name}-' + color + '-tg', 'demo-' + env + '-' + color)
-    return {**ordinary_wiring, **ownership.consumer_wiring(doc), ownership.MODULE: ownership.wiring(doc), "terraform/infra/security/main.tf.json": root,
+    targets={**ordinary_wiring,**ownership.consumer_wiring(doc),**wp5.configuration(doc)}
+    wp5.target_overlay(targets)
+    root['module']['lifecycle_foundations']={'source':'./modules/lifecycle_foundations','account_id':expression('var.aws_account_id'),
+        'region':expression('var.aws_region'),'admin_arn':expression('var.security_admin_principal_arn'),
+        'nat_launch_inputs':expression('local.authority.wp5.nat_launch_inputs')}
+    return {**targets, 'terraform/infra/security/modules/lifecycle_foundations/main.tf.json':wp5.foundations(),
+            ownership.MODULE: ownership.wiring(doc), "terraform/infra/security/main.tf.json": root,
             "terraform/infra/security/modules/request_identities/main.tf.json": child,
             bundles.MODULE: bundles.wiring(doc["control_bundles"]),
             compute.MODULE: compute_module}

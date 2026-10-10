@@ -63,7 +63,7 @@
       "account_id": "${var.aws_account_id}",
       "region": "${var.aws_region}",
       "admin_arn": "${var.security_admin_principal_arn}",
-      "runtime_readers": "${merge(module.controller_compute.internal_release.bundle_readers, module.controller_compute.wp4d.bundle_readers)}"
+      "runtime_readers": "${merge(module.controller_compute.internal_release.bundle_readers, module.controller_compute.wp4d.bundle_readers, module.controller_compute.wp5.bundle_readers)}"
     },
     "controller_compute": {
       "source": "./modules/controller_compute",
@@ -78,12 +78,22 @@
       "wp4d_environment_bindings": "${local.authority.wp4d.environment_bindings}",
       "depends_on": [
         "module.protected_resources"
-      ]
+      ],
+      "wp5_installations": "${local.authority.wp5.installations}",
+      "wp5_runtime_approvals": "${local.authority.wp5.runtime_approvals}",
+      "wp5_environment_bindings": "${local.authority.wp5.environment_bindings}"
     },
     "protected_resources": {
       "source": "./modules/protected_resources",
       "account_id": "${var.aws_account_id}",
       "region": "${var.aws_region}"
+    },
+    "lifecycle_foundations": {
+      "source": "./modules/lifecycle_foundations",
+      "account_id": "${var.aws_account_id}",
+      "region": "${var.aws_region}",
+      "admin_arn": "${var.security_admin_principal_arn}",
+      "nat_launch_inputs": "${local.authority.wp5.nat_launch_inputs}"
     }
   },
   "output": {
@@ -115,6 +125,9 @@
     },
     "wp4d": {
       "value": "${module.controller_compute.wp4d}"
+    },
+    "wp5": {
+      "value": "${module.controller_compute.wp5}"
     }
   }
 }

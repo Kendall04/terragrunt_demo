@@ -49,3 +49,5 @@ variable "alerts_topic_arn" {
   type        = string
   description = "SNS topic ARN for alarm notifications"
 }
+
+variable "protected_sql_ami" { type = string }

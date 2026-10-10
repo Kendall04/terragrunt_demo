@@ -122,7 +122,12 @@ class ClosureTests(unittest.TestCase):
         self.assertTrue(all(r["owner"] == own.OWNER for r in c["resources"].values()))
         for path, tf in wiring(self.doc).items():
             if path.startswith("terraform/modules/target/") and not isinstance(tf, str):
-                self.assertEqual(set(tf["resource"]), {"terraform_data"})
+                # WP5 adds ordinary NAT skeletons and provider/backend-only roots.
+                # Protected IAM/key/secret ownership must still stay in security root.
+                if path.endswith("/global/wp5-nat.tf.json"):
+                    self.assertEqual(set(tf["resource"]), {"aws_eip", "aws_autoscaling_group"})
+                else:
+                    self.assertLessEqual(set(tf.get("resource", {})), {"terraform_data"})
 
     def test_03_current_is_excluded_not_second_owner(self):
         legacy = json.loads((ROOT / LEGACY).read_text())
@@ -372,7 +377,7 @@ class ClosureTests(unittest.TestCase):
         root = self.fixture()
         path = root / "terraform/infra/data/user_data.sh"
         path.write_text("caller-controlled script")
-        with self.assertRaisesRegex(ValueError, "protected source dependency drift"):
+        with self.assertRaisesRegex(ValueError, "protected source dependency drift|WP5_SOURCE_ADMISSION_FAILURE"):
             validate_repository(root)
 
     def test_35_no_ordinary_publication_file(self):

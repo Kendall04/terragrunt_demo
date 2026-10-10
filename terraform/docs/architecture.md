@@ -157,6 +157,10 @@ register before adding identity or treating database limitations as accepted.
 
 ## TARGET FOUNDATION — E1 WP2A neutral security root
 
+The [WP5 protected lifecycle candidate](e1-protected-environment-lifecycle.md)
+connects these foundations to all seven environment layers. Compute and protected
+NAT installation gates remain inactive without genuine evidence.
+
 The [WP2A security root](../infra/security/README.md) now declares a separate
 admin-only target ownership/state contract and inert request identities. Its
 closed authority source is shared by Terraform and offline acceptance. Existing

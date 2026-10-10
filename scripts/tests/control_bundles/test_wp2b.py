@@ -102,6 +102,8 @@ class BundleTests(unittest.TestCase):
         # reviewed replacement must refresh those fixed references as well.
         import wp4d
         doc['wp4d'] = wp4d.contract(root, doc)
+        import wp5
+        doc['wp5'] = wp5.contract(root, doc)
         (root / AUTHORITY).write_text(json.dumps(doc))
         validate_repository(root)  # Explicit admin-reviewed replacement model; still inactive.
 
