@@ -5906,51 +5906,52 @@
       "necessity": "UNKNOWN"
     },
     "scripts/tests/security_root/model.py": {
-      "sha256": "fd9def3c2bc3c951abd7ce4ae9f952d72258da27c78892269b1210adeabd87c3",
+      "sha256": "57ba94528c63975f9ac04668f78b3a49b2799f74063fe716fae6ee210411a908",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
-          142
+          148
         ],
         "role-input": [
-          49,
-          179,
-          192
+          55,
+          186,
+          199
         ],
         "launch-or-mutation": [
-          19,
-          35,
-          83,
-          122,
-          163,
-          165,
+          20,
+          41,
+          89,
+          128,
+          170,
           172,
-          174,
-          183,
-          215,
-          216,
-          225,
-          246,
-          263,
-          271,
-          272,
-          281,
-          283
+          179,
+          181,
+          190,
+          231,
+          235,
+          236,
+          245,
+          266,
+          283,
+          291,
+          292,
+          301,
+          303
         ],
         "executable-dependency": [
-          19,
-          26,
+          20,
           27,
           28,
-          32,
-          226
+          29,
+          33,
+          246
         ],
         "security-control": [
-          186,
-          187,
-          190,
-          191,
-          192
+          193,
+          194,
+          197,
+          198,
+          199
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -6047,7 +6048,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/authority.json": {
-      "sha256": "3a6e6a7ebb6b166884fcb9fe83b3ee4cdccd771df06cfd2765edf16d063c7fcd",
+      "sha256": "dcbc27f56b16ce42f1cd7c9816c29589d99ecc1f49c01d2d9daab3d2ade7df5b",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -6166,11 +6167,11 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/main.tf.json": {
-      "sha256": "a30f070e19f9c58c0b9ae3f6e8330e5a208dce5dc8ad641344096a66212d5dec",
+      "sha256": "92732f9a4087b19097cecc65ce7ed99fa5d5e06179ed7a53c52a4bacab60b894",
       "declarations": [],
       "signals": {
         "role-input": [
-          92
+          95
         ],
         "launch-or-mutation": [
           2,
@@ -6229,7 +6230,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/control_bundles/test_wp2b.py": {
-      "sha256": "142c7338d00c09255ceeead9d96ffb15e9adb861cb025448deb4b260e5d17bac",
+      "sha256": "ceacfb1aebf206cf6e89cf8631ff513469df70393447fed54bc4392f9687856c",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -6237,31 +6238,31 @@
           38,
           40,
           41,
-          141,
-          150,
-          161,
-          162,
-          164,
+          145,
+          154,
           165,
           166,
-          174,
-          177,
-          190,
-          191,
-          238,
-          243
+          168,
+          169,
+          170,
+          178,
+          181,
+          194,
+          195,
+          242,
+          247
         ],
         "executable-dependency": [
-          191,
-          214
+          195,
+          218
         ],
         "security-control": [
           44,
-          164,
-          165,
-          166,
-          180,
-          244
+          168,
+          169,
+          170,
+          184,
+          248
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -6344,7 +6345,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/controller_compute/test_wp2c.py": {
-      "sha256": "47f7aa513cf164e78f861105661338f30d6eb5ddb321fa1bfd8501477ec3ca42",
+      "sha256": "945a7e249bd92efbc9d5099ec3ebe6c38086650045245fe1fede514696c080c7",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -6410,63 +6411,105 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/modules/controller_compute/main.tf.json": {
-      "sha256": "1345cb829684bf868bbf1bfe1547dd22d632d7130a360fef24cb553dd88ff56c",
+      "sha256": "1241f6a85fcd2526ba0316bd5bf1d695615720d14b342ab8a6aeae754ffc3f20",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
-          54,
           66,
-          157
+          78,
+          189,
+          210,
+          215
         ],
         "role-input": [
-          47,
-          202,
-          268,
-          478
+          59,
+          266,
+          357,
+          706
         ],
         "launch-or-mutation": [
           2,
           4,
           5,
-          72,
-          75,
-          82,
-          83,
           84,
-          85,
-          120,
+          87,
+          94,
+          95,
+          96,
+          97,
+          132,
+          148,
+          149,
+          150,
+          151,
+          152,
+          153,
+          154,
+          155,
+          156,
           157,
-          177,
-          295,
-          331,
-          344,
-          406,
-          410,
-          417,
-          443,
-          448
+          158,
+          159,
+          160,
+          161,
+          162,
+          163,
+          167,
+          168,
+          173,
+          189,
+          210,
+          215,
+          235,
+          241,
+          384,
+          420,
+          460,
+          474,
+          480,
+          574,
+          578,
+          583,
+          590,
+          595,
+          631,
+          650,
+          655,
+          660,
+          713
         ],
         "executable-dependency": [
-          48,
-          210,
-          272
+          60,
+          132,
+          165,
+          274,
+          299,
+          361,
+          437,
+          583,
+          595
         ],
         "security-control": [
-          47,
-          132,
-          136,
-          152,
-          157,
-          160,
-          164,
-          174,
-          184,
-          221,
-          229,
-          308,
-          403,
-          428,
-          440
+          59,
+          185,
+          189,
+          205,
+          210,
+          215,
+          218,
+          222,
+          232,
+          248,
+          285,
+          291,
+          310,
+          318,
+          397,
+          433,
+          468,
+          571,
+          612,
+          647
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -7151,7 +7194,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/modules/target/dev/global/modules/alb/target_group.tf": {
-      "sha256": "ac8787c7caddba12a91257f80af7cbb824ee5dff7c44d9def613afb2287b3ec1",
+      "sha256": "988a16d1694484c5d3958e3aa12b5cc28d4935a15253202e8b4617b5de6c5240",
       "declarations": [
         {
           "kind": "resource",
@@ -7961,7 +8004,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/modules/target/prod/global/modules/alb/target_group.tf": {
-      "sha256": "ac8787c7caddba12a91257f80af7cbb824ee5dff7c44d9def613afb2287b3ec1",
+      "sha256": "859ed8a23f630835056d781176f8bc6102b9322778511b911e3462ce78cc8de4",
       "declarations": [
         {
           "kind": "resource",
@@ -9385,6 +9428,348 @@
       "coverage": "WP4C provider-free bounded recovery contracts and hermetic tests; live authority unverified.",
       "current_owner": "SECURITY_ROOT_OWNED recovery contract",
       "necessity": "WP4C emergency, inactive cleanup and existing NAT recovery boundaries"
+    },
+    "scripts/tests/security_root/pack_wp4d.py": {
+      "sha256": "8cfb82c17adea4738ad156c24364e362b5e1c25a472e94823ed2d0d629c7d701",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          3,
+          4
+        ]
+      },
+      "semantic_status": "CURRENT_FACT",
+      "coverage": "WP4D provider-free target contract; AWS installation remains unverified.",
+      "current_owner": "WP4D reviewed source; installed/live identity not verified",
+      "necessity": "TARGET_REQUIRED"
+    },
+    "scripts/tests/security_root/wp4d.py": {
+      "sha256": "c0a35d4e0171b1c8be3798dc9cf2afc8db8f16e20d88cb7bf49aeccc61503eee",
+      "declarations": [],
+      "signals": {
+        "credential-acquisition": [
+          606,
+          609
+        ],
+        "launch-or-mutation": [
+          51,
+          274,
+          275,
+          276,
+          279,
+          282,
+          283,
+          288,
+          299,
+          300,
+          324,
+          325,
+          355,
+          358,
+          423,
+          425,
+          426,
+          441,
+          442,
+          448,
+          451,
+          487,
+          488,
+          496,
+          553,
+          554,
+          555,
+          556,
+          557,
+          559,
+          567,
+          588,
+          606,
+          609,
+          618,
+          645,
+          664,
+          665,
+          668,
+          673,
+          675,
+          683,
+          688,
+          708,
+          710
+        ],
+        "executable-dependency": [
+          35,
+          36,
+          37,
+          38,
+          39,
+          46,
+          47,
+          50,
+          51,
+          55,
+          56,
+          57,
+          99,
+          180,
+          217,
+          591,
+          604,
+          625,
+          636,
+          668,
+          688
+        ],
+        "security-control": [
+          607,
+          609,
+          610,
+          611,
+          612,
+          614,
+          622,
+          627,
+          634,
+          647,
+          666,
+          669,
+          676,
+          677,
+          694,
+          705
+        ]
+      },
+      "semantic_status": "CURRENT_FACT",
+      "coverage": "WP4D provider-free target contract; AWS installation remains unverified.",
+      "current_owner": "WP4D reviewed source; installed/live identity not verified",
+      "necessity": "TARGET_REQUIRED"
+    },
+    "scripts/tests/wp4d/check_static.py": {
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; WP4D model evidence is not live effective-authority proof.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "WP4D exact protected controller materialization",
+      "sha256": "4ab758212451f4336a6fc286f623981cabe48f63eb90502100fe5d52aa7496a9",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          23,
+          24,
+          26,
+          27,
+          58,
+          72,
+          75,
+          84,
+          85,
+          87
+        ],
+        "security-control": [
+          31,
+          32
+        ]
+      }
+    },
+    "scripts/tests/wp4d/run.py": {
+      "sha256": "1fb19320550a2480ffd7c1cba1584bc16cb296ab58185ae0ff4ff5c33ce6493b",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          16
+        ]
+      },
+      "semantic_status": "CURRENT_FACT",
+      "coverage": "WP4D provider-free target contract; AWS installation remains unverified.",
+      "current_owner": "WP4D reviewed source; installed/live identity not verified",
+      "necessity": "TARGET_REQUIRED"
+    },
+    "scripts/tests/wp4d/test_runtime.py": {
+      "semantic_status": "UNVERIFIED",
+      "coverage": "Structurally inventoried; WP4D model evidence is not live effective-authority proof.",
+      "current_owner": "repository source; installed/live identity not verified",
+      "necessity": "WP4D exact protected controller materialization",
+      "sha256": "7ba4b1a232a3128426eac52bb4f8521850cbaba20c88ca6b01df9aa3c4d95079",
+      "declarations": [],
+      "signals": {
+        "credential-acquisition": [
+          170
+        ],
+        "launch-or-mutation": [
+          28,
+          54,
+          82,
+          100,
+          134,
+          135,
+          136,
+          147,
+          148,
+          149,
+          151,
+          152,
+          164,
+          166,
+          181,
+          199,
+          219,
+          221
+        ],
+        "executable-dependency": [
+          30,
+          33,
+          55,
+          62,
+          71,
+          76,
+          79,
+          108,
+          176,
+          179,
+          207,
+          210
+        ]
+      }
+    },
+    "scripts/tests/wp4d/test_wp4d.py": {
+      "sha256": "55f4409ea5d174539f035aa51321312d9f8afe616f4cd77a51f3090c24ba7c36",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          26,
+          35,
+          36,
+          44,
+          48,
+          105,
+          106,
+          107,
+          116,
+          117,
+          146,
+          153,
+          160,
+          174,
+          212,
+          215,
+          217,
+          220,
+          226,
+          256,
+          267,
+          287,
+          295,
+          312,
+          323,
+          411,
+          412,
+          441,
+          473,
+          474,
+          477,
+          478,
+          479,
+          480,
+          481,
+          482,
+          485
+        ],
+        "executable-dependency": [
+          120,
+          263,
+          264,
+          317,
+          410
+        ],
+        "security-control": [
+          301,
+          302,
+          303,
+          304,
+          307
+        ]
+      },
+      "semantic_status": "CURRENT_FACT",
+      "coverage": "WP4D provider-free target contract; AWS installation remains unverified.",
+      "current_owner": "WP4D reviewed source; installed/live identity not verified",
+      "necessity": "TARGET_REQUIRED"
+    },
+    "scripts/wp4d/adapters.py": {
+      "sha256": "d80cb811b26d54f9e1444d18cd5a2214ef592a587b2157396c2b1873a85b7bfd",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "CURRENT_FACT",
+      "coverage": "WP4D provider-free target contract; AWS installation remains unverified.",
+      "current_owner": "WP4D reviewed source; installed/live identity not verified",
+      "necessity": "TARGET_REQUIRED"
+    },
+    "scripts/wp4d/aws_runtime.py": {
+      "sha256": "18e704eb6f1002fc058828c1867e844364096a67661cd19435af2d65150fb075",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "CURRENT_FACT",
+      "coverage": "WP4D provider-free target contract; AWS installation remains unverified.",
+      "current_owner": "WP4D reviewed source; installed/live identity not verified",
+      "necessity": "TARGET_REQUIRED"
+    },
+    "scripts/wp4d/gateway.py": {
+      "sha256": "aed8a94814a08127142e60cd589e4c6621a94c070d5ac133e2270a77cbaea5f6",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "CURRENT_FACT",
+      "coverage": "WP4D provider-free target contract; AWS installation remains unverified.",
+      "current_owner": "WP4D reviewed source; installed/live identity not verified",
+      "necessity": "TARGET_REQUIRED"
+    },
+    "scripts/wp4d/installed.py": {
+      "sha256": "b89eca8c636d374f1aed76c20f525e1e5c1c307c4ae3c4ba019d8609ac00b704",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          33
+        ]
+      },
+      "semantic_status": "CURRENT_FACT",
+      "coverage": "WP4D provider-free target contract; AWS installation remains unverified.",
+      "current_owner": "WP4D reviewed source; installed/live identity not verified",
+      "necessity": "TARGET_REQUIRED"
+    },
+    "scripts/wp4d/nat_resolver.py": {
+      "sha256": "04c419bedf5627c5e8832dbb439f9e70340fea04d9f1fad72c25de224f1d692e",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          86,
+          87,
+          92,
+          93,
+          94,
+          95
+        ]
+      },
+      "semantic_status": "CURRENT_FACT",
+      "coverage": "WP4D provider-free target contract; AWS installation remains unverified.",
+      "current_owner": "WP4D reviewed source; installed/live identity not verified",
+      "necessity": "TARGET_REQUIRED"
+    },
+    "scripts/wp4d/runtime.py": {
+      "sha256": "50e5f262a619aeffbf40c940fb2d72ea252ab197cb8fcd85dfc01debceb0e269",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          72,
+          77,
+          207,
+          211
+        ],
+        "executable-dependency": [
+          40
+        ]
+      },
+      "semantic_status": "CURRENT_FACT",
+      "coverage": "WP4D provider-free target contract; AWS installation remains unverified.",
+      "current_owner": "WP4D reviewed source; installed/live identity not verified",
+      "necessity": "TARGET_REQUIRED"
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged"

@@ -265,3 +265,22 @@ roots remain CURRENT transitional exclusions; deployment/state migration has not
 occurred. WP2C compute stays inactive. Run `python -I -B
 scripts/tests/ownership_publication/run.py` alongside all accepted suites.
 This is repository evidence pending independent review, not deployed enforcement.
+
+## E1 WP4D — offline candidate checks
+
+[WP4D materialization](e1-wp4d-iam-materialization.md) adds the hermetic
+`python -I -B scripts/tests/wp4d/run.py` entry point. It checks action/resource/
+condition combinations, import/schema closure, exact installation readback,
+protected entrypoint construction, warm package loading and live-membership
+adapter rejection using doubles. Run all eleven existing WP1–WP4C Python entry
+points alongside it; passing fixtures do not prove live IAM or AWS membership.
+
+`python -I -B scripts/tests/wp4d/check_static.py` uses installed Terraform
+console/validate in a disposable configuration containing only variables and
+locals. It evaluates the actual generated WP4D gates/policies/trusts for empty,
+fully synthetic and invalid prerequisite maps. It has no backend/provider,
+initialization, credential discovery, AWS operation or dependency installation.
+It does not validate AWS provider resource schemas. Check generated wiring with
+`scripts/tests/security_root/render.py`, inventory freshness, Python/JSON parsing,
+`terraform fmt -check -recursive terraform/`, local documentation links and
+`git diff --check`. Store reports/packages outside the repository.

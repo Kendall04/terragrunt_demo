@@ -98,6 +98,10 @@ class BundleTests(unittest.TestCase):
         # replacement fixture must update these too; stale references reject.
         import internal
         doc['internal_release'] = internal.contract(root, c)
+        # WP4D packages also bind the reservation identity. An explicitly
+        # reviewed replacement must refresh those fixed references as well.
+        import wp4d
+        doc['wp4d'] = wp4d.contract(root, doc)
         (root / AUTHORITY).write_text(json.dumps(doc))
         validate_repository(root)  # Explicit admin-reviewed replacement model; still inactive.
 

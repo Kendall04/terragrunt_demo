@@ -4,6 +4,10 @@ WP3C adds [internal release wiring](../../docs/e1-internal-release.md) within th
 root. Canonical installation/runtime records remain empty; no live resources or
 external request authority are claimed.
 
+WP4D adds [exact IAM and selective materialization](../../docs/e1-wp4d-iam-materialization.md)
+for the accepted delivery/recovery contracts. Its installation and environment
+maps also remain empty, so no WP4D compute or external request grant is active.
+
 Classification: `E1_WP2A_PROTECTED_SECURITY_ROOT_FOUNDATION`.
 Repository foundation only; **not deployed, not WP2 complete, not E1 secure**.
 The accepted baseline is `c8e880b552b5782e9bca94891b75a71b45ddc113`.

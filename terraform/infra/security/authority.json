@@ -2649,5 +2649,184 @@
       "qualification-finalizer/qualification",
       "status/status-neutral"
     ]
+  },
+  "wp4d": {
+    "schema": "E1_WP4D_MATERIALIZATION_V1",
+    "owner": "SECURITY_ROOT_OWNED",
+    "selected": {
+      "request-gateway/deploy-dev": {
+        "name": "e1-gateway-deploy-dev",
+        "role": "e1-gateway-deploy-dev-exec",
+        "engine": "LAMBDA",
+        "environment": "dev",
+        "reservation": "request-gateway/deploy-dev",
+        "package_sha256": "bcd7ea43093aef204587dcebba3963939ccbf75368c6ee98320f02389f4de704",
+        "dependencies": [
+          "normal-delivery/deploy-dev",
+          "cleanup-recovery/cleanup-dev"
+        ]
+      },
+      "request-gateway/promote-prod": {
+        "name": "e1-gateway-promote-prod",
+        "role": "e1-gateway-promote-prod-exec",
+        "engine": "LAMBDA",
+        "environment": "prod",
+        "reservation": "request-gateway/promote-prod",
+        "package_sha256": "be1e509dc88bee7ccdc1dd615507797b32bc9061eadbc57ea6616a37f93060ab",
+        "dependencies": [
+          "normal-delivery/promote-prod",
+          "cleanup-recovery/cleanup-prod"
+        ]
+      },
+      "request-gateway/emergency-dev": {
+        "name": "e1-gateway-emergency-dev",
+        "role": "e1-gateway-emergency-dev-exec",
+        "engine": "LAMBDA",
+        "environment": "dev",
+        "reservation": "request-gateway/emergency-dev",
+        "package_sha256": "70499d50407d8552458a231406b5b59e74bef40811dcf0ab82da558704e0f960",
+        "dependencies": [
+          "emergency-recovery/emergency-dev",
+          "cleanup-recovery/cleanup-dev"
+        ]
+      },
+      "request-gateway/emergency-prod": {
+        "name": "e1-gateway-emergency-prod",
+        "role": "e1-gateway-emergency-prod-exec",
+        "engine": "LAMBDA",
+        "environment": "prod",
+        "reservation": "request-gateway/emergency-prod",
+        "package_sha256": "57bd3f554e9bb5d7aee497c2c501e28218a0b591e49301fe8548a16eff2bc4d3",
+        "dependencies": [
+          "emergency-recovery/emergency-prod",
+          "cleanup-recovery/cleanup-prod"
+        ]
+      },
+      "normal-delivery/deploy-dev": {
+        "name": "e1-controller-deploy-dev",
+        "role": "e1-controller-deploy-dev-exec",
+        "engine": "CODEBUILD",
+        "environment": "dev",
+        "reservation": "normal-delivery/deploy-dev",
+        "package_sha256": "8ae02a44d0f871472147e6aaf8ba3283a1630114b1652c90c5e6adf5813b273b",
+        "dependencies": [
+          "request-gateway/deploy-dev",
+          "cleanup-recovery/cleanup-dev"
+        ]
+      },
+      "normal-delivery/promote-prod": {
+        "name": "e1-controller-promote-prod",
+        "role": "e1-controller-promote-prod-exec",
+        "engine": "CODEBUILD",
+        "environment": "prod",
+        "reservation": "normal-delivery/promote-prod",
+        "package_sha256": "b5f6a58160f6aa77dfa03f754532dde427fd5a62a4e3012ea7553d5ffd24b48a",
+        "dependencies": [
+          "request-gateway/promote-prod",
+          "cleanup-recovery/cleanup-prod"
+        ]
+      },
+      "emergency-recovery/emergency-dev": {
+        "name": "e1-controller-emergency-dev",
+        "role": "e1-controller-emergency-dev-exec",
+        "engine": "CODEBUILD",
+        "environment": "dev",
+        "reservation": "emergency-recovery/emergency-dev",
+        "package_sha256": "09878516ce07f885365dffb55639a9a8d2359625345469df3c303b8d1feb02a7",
+        "dependencies": [
+          "request-gateway/emergency-dev",
+          "cleanup-recovery/cleanup-dev"
+        ]
+      },
+      "emergency-recovery/emergency-prod": {
+        "name": "e1-controller-emergency-prod",
+        "role": "e1-controller-emergency-prod-exec",
+        "engine": "CODEBUILD",
+        "environment": "prod",
+        "reservation": "emergency-recovery/emergency-prod",
+        "package_sha256": "045cf56025ffa535bdaf64dd915fe5f088b7b6688946241d977543f678336990",
+        "dependencies": [
+          "request-gateway/emergency-prod",
+          "cleanup-recovery/cleanup-prod"
+        ]
+      },
+      "cleanup-recovery/cleanup-dev": {
+        "name": "e1-cleanup-recovery-cleanup-dev",
+        "role": "e1-cleanup-recovery-cleanup-dev-exec",
+        "engine": "LAMBDA",
+        "environment": "dev",
+        "reservation": "cleanup-recovery/cleanup-dev",
+        "package_sha256": "a7720ab450393b6601b50448c0566d6c5f054beeee8a48b43880e4d41d17ed4d",
+        "dependencies": []
+      },
+      "cleanup-recovery/cleanup-prod": {
+        "name": "e1-cleanup-recovery-cleanup-prod",
+        "role": "e1-cleanup-recovery-cleanup-prod-exec",
+        "engine": "LAMBDA",
+        "environment": "prod",
+        "reservation": "cleanup-recovery/cleanup-prod",
+        "package_sha256": "f3cf014d93eeba85e7b5f45b3217b71e77c425066fd1bbf51196cade03b6070f",
+        "dependencies": []
+      },
+      "nat-recovery/nat-dev/assign_eip": {
+        "name": "e1-nat-recovery-nat-dev-assign-eip",
+        "role": "e1-nat-recovery-nat-dev-assign-eip-exec",
+        "engine": "LAMBDA",
+        "environment": "dev",
+        "reservation": "nat-recovery/nat-dev",
+        "package_sha256": "f27fcc2169827ae708e9cef2220dd5260616af583051fbf9758f7b2acb87129d",
+        "dependencies": []
+      },
+      "nat-recovery/nat-dev/change_rt": {
+        "name": "e1-nat-recovery-nat-dev-change-rt",
+        "role": "e1-nat-recovery-nat-dev-change-rt-exec",
+        "engine": "LAMBDA",
+        "environment": "dev",
+        "reservation": "nat-recovery/nat-dev",
+        "package_sha256": "022a53f7ef502cc6f04888abb13c8ed8a09b8619e537e3efa504dba30ae031c2",
+        "dependencies": []
+      },
+      "nat-recovery/nat-dev/disable_sdc": {
+        "name": "e1-nat-recovery-nat-dev-disable-sdc",
+        "role": "e1-nat-recovery-nat-dev-disable-sdc-exec",
+        "engine": "LAMBDA",
+        "environment": "dev",
+        "reservation": "nat-recovery/nat-dev",
+        "package_sha256": "6bf0a450fefcd95cb63d004a7e8fba5b7079a45148ebefaed28ed209d49808c3",
+        "dependencies": []
+      },
+      "nat-recovery/nat-prod/assign_eip": {
+        "name": "e1-nat-recovery-nat-prod-assign-eip",
+        "role": "e1-nat-recovery-nat-prod-assign-eip-exec",
+        "engine": "LAMBDA",
+        "environment": "prod",
+        "reservation": "nat-recovery/nat-prod",
+        "package_sha256": "3255287c5f3eae18e80e885c74b30adb9ceedf14996c42ecda33ece624607d49",
+        "dependencies": []
+      },
+      "nat-recovery/nat-prod/change_rt": {
+        "name": "e1-nat-recovery-nat-prod-change-rt",
+        "role": "e1-nat-recovery-nat-prod-change-rt-exec",
+        "engine": "LAMBDA",
+        "environment": "prod",
+        "reservation": "nat-recovery/nat-prod",
+        "package_sha256": "19c8adc35c9aa27b17f513d7a2ec0437e166444876ee8b9e7e8a1209120df4b9",
+        "dependencies": []
+      },
+      "nat-recovery/nat-prod/disable_sdc": {
+        "name": "e1-nat-recovery-nat-prod-disable-sdc",
+        "role": "e1-nat-recovery-nat-prod-disable-sdc-exec",
+        "engine": "LAMBDA",
+        "environment": "prod",
+        "reservation": "nat-recovery/nat-prod",
+        "package_sha256": "dabfec530e35ecf8d788cdda5b1d44a1085d86d96f6524503e01344618811a41",
+        "dependencies": []
+      }
+    },
+    "installations": {},
+    "runtime_approvals": {},
+    "environment_bindings": {},
+    "external_invocation": [],
+    "live": "UNVERIFIED_NOT_DEPLOYED"
   }
 }

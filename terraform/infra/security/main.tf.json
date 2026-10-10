@@ -63,7 +63,7 @@
       "account_id": "${var.aws_account_id}",
       "region": "${var.aws_region}",
       "admin_arn": "${var.security_admin_principal_arn}",
-      "runtime_readers": "${module.controller_compute.internal_release.bundle_readers}"
+      "runtime_readers": "${merge(module.controller_compute.internal_release.bundle_readers, module.controller_compute.wp4d.bundle_readers)}"
     },
     "controller_compute": {
       "source": "./modules/controller_compute",
@@ -73,6 +73,9 @@
       "admin_arn": "${var.security_admin_principal_arn}",
       "installations": "${local.authority.internal_release.installations}",
       "runtime_approvals": "${local.authority.internal_release.runtime_approvals}",
+      "wp4d_installations": "${local.authority.wp4d.installations}",
+      "wp4d_runtime_approvals": "${local.authority.wp4d.runtime_approvals}",
+      "wp4d_environment_bindings": "${local.authority.wp4d.environment_bindings}",
       "depends_on": [
         "module.protected_resources"
       ]
@@ -109,6 +112,9 @@
     },
     "internal_release": {
       "value": "${module.controller_compute.internal_release}"
+    },
+    "wp4d": {
+      "value": "${module.controller_compute.wp4d}"
     }
   }
 }

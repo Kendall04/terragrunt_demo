@@ -15,6 +15,7 @@ import compute
 import ownership
 import ordinary
 import internal
+import wp4d
 
 SUPPORT_FILES = {**ownership.RECOVERY_SOURCES, "terraform/infra/data/user_data.sh": "98b4d17937711d27244c161a35832d6f05135b59f5cb5609a5016fd19b10cd7b"}
 
@@ -30,6 +31,11 @@ SUPPORT_FILES.update({
 
 # Explicit WP3C runtime support pins; no executable glob admission.
 SUPPORT_FILES.update({'scripts/internal_release/e1_contract.py': '9928b0bab7808a666de767a6d2e17614c4a540249deb7f333c7ab751a4aa39e4', 'scripts/internal_release/exchange.py': '3abebea613fefa8f07a4325a1d49bd8a5332c5c9cd82ac1ac0164a9f3e697651', 'scripts/internal_release/publisher.py': 'c36be673645092b6f003a4678c755089625a82838fa9566683c831f8ecacb64d', 'scripts/internal_release/workers.py': 'e4cfc230649374aa0aafd6bffe9deb8bff1ca7e6aeeae746d9144fab4bd1bcb7', 'scripts/internal_release/adapters.py': '4357456410d36fbb1a004d08d6eb71db47149c8bea0dfa78a86ea5ecca389d34', 'scripts/internal_release/services.py': 'f5ed39fc14a8aa6814e619f16b48629fac065e39094985447e60ff7ca30fc2ca', 'scripts/internal_release/runtime.py': 'd3971fa0f3aa4d0f9e704ace400acae4bc26fda651d23e47bcb3c93a0d65d60c', 'scripts/internal_release/worker.py': '05f027ff30df883fffa2231367e03348dd4cf91a8233b8996554d9ff74cf6d2b'})
+
+# Existing WP2 disposable fixtures must copy the new package inputs. The fixed
+# package digests in authority.json still detect any changed source bytes.
+SUPPORT_FILES.update({name: hashlib.sha256((wp4d.ROOT / name).read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+                      for name in set().union(*(wp4d.package_sources(key) for key in wp4d.RESERVED))})
 
 BASELINE = "c8e880b552b5782e9bca94891b75a71b45ddc113"
 AUTHORITY = "terraform/infra/security/authority.json"
@@ -68,7 +74,7 @@ def load_authority(root):
     doc = load_json((Path(root) / AUTHORITY).read_text())
     keys(doc, {"format_version", "classification", "stage", "security_admin",
                "backend", "ownership", "request_identities", "policies",
-               "governance", "interfaces", "control_bundles", "controller_compute", "ownership_closure", "internal_release"}, "authority")
+               "governance", "interfaces", "control_bundles", "controller_compute", "ownership_closure", "internal_release", "wp4d"}, "authority")
     require(doc["format_version"] == 1 and doc["classification"] == "TARGET_REQUIREMENT"
             and doc["stage"] == "E1_WP2A_PROTECTED_SECURITY_ROOT_FOUNDATION", "stage")
     admin = doc["security_admin"]
@@ -150,6 +156,7 @@ def load_authority(root):
     compute.validate_compute(root, doc)
     ownership.validate_publications(doc)
     internal.validate(root, doc)
+    wp4d.validate(root, doc)
     return doc
 
 
@@ -202,6 +209,9 @@ def wiring(doc):
         "admin_arn": expression("var.security_admin_principal_arn"),
         "installations": expression("local.authority.internal_release.installations"),
         "runtime_approvals": expression("local.authority.internal_release.runtime_approvals"),
+        "wp4d_installations": expression("local.authority.wp4d.installations"),
+        "wp4d_runtime_approvals": expression("local.authority.wp4d.runtime_approvals"),
+        "wp4d_environment_bindings": expression("local.authority.wp4d.environment_bindings"),
         "depends_on": ["module.protected_resources"]}
     root["output"]["controller_compute_foundation"] = {
         "value": expression("module.controller_compute.foundation"),
@@ -209,10 +219,20 @@ def wiring(doc):
     root["module"]["protected_resources"] = {"source": "./modules/protected_resources", "account_id": expression("var.aws_account_id"), "region": expression("var.aws_region")}
     root["output"]["protected_output_candidates"] = {"value": expression("module.protected_resources.protected_output_candidates")}
     compute_module = compute.wiring()
+    wp4d.extend(compute_module)
     compute_module["locals"]["evidence_bucket"] = expression('"' + doc["ownership_closure"]["resources"]["neutral/artifacts"]["name"] + '${var.account_id}"')
     root["output"]["internal_release"] = {"value": expression("module.controller_compute.internal_release")}
-    root["module"]["control_bundle_storage"]["runtime_readers"] = expression("module.controller_compute.internal_release.bundle_readers")
-    return {**ordinary.wiring(doc), **ownership.consumer_wiring(doc), ownership.MODULE: ownership.wiring(doc), "terraform/infra/security/main.tf.json": root,
+    root["output"]["wp4d"] = {"value": expression("module.controller_compute.wp4d")}
+    root["module"]["control_bundle_storage"]["runtime_readers"] = expression("merge(module.controller_compute.internal_release.bundle_readers, module.controller_compute.wp4d.bundle_readers)")
+    ordinary_wiring = ordinary.wiring(doc)
+    # WP4A's accepted target-group identity must be creatable by the extracted
+    # greenfield skeleton. Legacy files remain pinned for WP7 retirement.
+    for env in ("dev", "prod"):
+        path = "terraform/modules/target/" + env + "/global/modules/alb/target_group.tf"
+        for color in ("blue", "green"):
+            ordinary_wiring[path] = ordinary_wiring[path].replace(
+                '${var.name}-' + color + '-tg', 'demo-' + env + '-' + color)
+    return {**ordinary_wiring, **ownership.consumer_wiring(doc), ownership.MODULE: ownership.wiring(doc), "terraform/infra/security/main.tf.json": root,
             "terraform/infra/security/modules/request_identities/main.tf.json": child,
             bundles.MODULE: bundles.wiring(doc["control_bundles"]),
             compute.MODULE: compute_module}
