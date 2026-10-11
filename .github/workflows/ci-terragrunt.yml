@@ -32,7 +32,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
 
       - name: Validate inputs
         shell: bash
@@ -47,11 +47,8 @@ jobs:
               ;;
           esac
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.13.4
-          terraform_wrapper: false
+      - name: Install verified infrastructure tools
+        run: python3 -I -B .github/scripts/ci/install-tools.py terraform terragrunt tflint tfsec
 
       - name: Final E1 repository acceptance
         if: inputs.run_acceptance
@@ -59,29 +56,11 @@ jobs:
         run: |
           python3 -I -B scripts/tests/final_acceptance/gate.py --report-dir "$RUNNER_TEMP/e1-acceptance"
 
-      - name: Install Terragrunt
-        run: |
-          set -euo pipefail
-          TG_VERSION="0.93.3"
-          curl -L "https://github.com/gruntwork-io/terragrunt/releases/download/v${TG_VERSION}/terragrunt_linux_amd64" -o terragrunt
-          chmod +x terragrunt
-          sudo mv terragrunt /usr/local/bin/terragrunt
-
-      - name: Setup TFLint
-        uses: terraform-linters/setup-tflint@v4
-
       - name: Run TFLint
         run: |
           set -euo pipefail
           tflint --version
           tflint --recursive
-
-      - name: Install tfsec
-        run: |
-          set -euo pipefail
-          curl -L "https://github.com/aquasecurity/tfsec/releases/latest/download/tfsec-linux-amd64" -o tfsec
-          chmod +x tfsec
-          sudo mv tfsec /usr/local/bin
 
       - name: Run tfsec
         run: tfsec --no-color . --minimum-severity=MEDIUM

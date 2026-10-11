@@ -256,6 +256,11 @@ def wiring(doc):
     foundations=wp5.foundations()
     wp6.extend(root,child,compute_module,foundations,doc)
     return {**targets, 'terraform/infra/security/modules/lifecycle_foundations/main.tf.json':foundations,
+            # Only AWS is required here. Reuse its reviewed block verbatim;
+            # no provider initialization/download or new checksum is implied.
+            'terraform/infra/security/.terraform.lock.hcl':
+                retired.source(ordinary.ROOT, 'terraform/live/dev/shared/.terraform.lock.hcl').read_text().split(
+                    'provider "registry.terraform.io/hashicorp/tls"', 1)[0].rstrip() + '\n',
             ownership.MODULE: ownership.wiring(doc), "terraform/infra/security/main.tf.json": root,
             "terraform/infra/security/modules/request_identities/main.tf.json": child,
             bundles.MODULE: bundles.wiring(doc["control_bundles"]),

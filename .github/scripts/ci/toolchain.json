@@ -1,0 +1,86 @@
+{
+  "schema": "E14B_CI_TOOLCHAIN_V1",
+  "verified_on": "2026-10-11",
+  "platform": "linux_amd64",
+  "verification_method": "Official upstream versioned HTTPS checksum manifests or GitHub release asset digest; checked-in SHA-256 is the installation trust anchor. No independent signature verification claimed.",
+  "tools": {
+    "terraform": {
+      "version": "1.13.4",
+      "url": "https://releases.hashicorp.com/terraform/1.13.4/terraform_1.13.4_linux_amd64.zip",
+      "sha256": "98aa516201e948306698efd9954ab4cc0d1227c2578ba56245898b5f679e590b",
+      "format": "zip", "member": "terraform",
+      "verification": "UPSTREAM_CHECKSUM_MANIFEST",
+      "evidence_url": "https://releases.hashicorp.com/terraform/1.13.4/terraform_1.13.4_SHA256SUMS"
+    },
+    "terragrunt": {
+      "version": "0.93.3",
+      "url": "https://github.com/gruntwork-io/terragrunt/releases/download/v0.93.3/terragrunt_linux_amd64",
+      "sha256": "017c0417dd6d4bedac830766cc16ea52d8a02d02ca2452bc80b581ed0a993775",
+      "format": "binary", "verification": "UPSTREAM_CHECKSUM_MANIFEST",
+      "evidence_url": "https://github.com/gruntwork-io/terragrunt/releases/download/v0.93.3/SHA256SUMS"
+    },
+    "tflint": {
+      "version": "0.64.0",
+      "url": "https://github.com/terraform-linters/tflint/releases/download/v0.64.0/tflint_linux_amd64.zip",
+      "sha256": "cca9d13e2e1d7a2c627af60ff899a3c9b74212899416aeb96ec764d2ef954537",
+      "format": "zip", "member": "tflint",
+      "verification": "UPSTREAM_CHECKSUM_MANIFEST",
+      "evidence_url": "https://github.com/terraform-linters/tflint/releases/download/v0.64.0/checksums.txt"
+    },
+    "tfsec": {
+      "version": "1.28.14",
+      "url": "https://github.com/aquasecurity/tfsec/releases/download/v1.28.14/tfsec_1.28.14_linux_amd64.tar.gz",
+      "sha256": "329ae7f67f2f1813ebe08de498719ea7003c75d3ca24bb0b038369062508008e",
+      "format": "tar.gz", "member": "tfsec",
+      "verification": "UPSTREAM_CHECKSUM_MANIFEST",
+      "evidence_url": "https://github.com/aquasecurity/tfsec/releases/download/v1.28.14/tfsec_1.28.14_checksums.txt"
+    },
+    "actionlint": {
+      "version": "1.7.12",
+      "url": "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz",
+      "sha256": "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8",
+      "format": "tar.gz", "member": "actionlint",
+      "verification": "UPSTREAM_CHECKSUM_MANIFEST",
+      "evidence_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_checksums.txt"
+    },
+    "shellcheck": {
+      "version": "0.11.0",
+      "url": "https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.linux.x86_64.tar.gz",
+      "sha256": "b7af85e41cc99489dcc21d66c6d5f3685138f06d34651e6d34b42ec6d54fe6f6",
+      "format": "tar.gz", "member": "shellcheck-v0.11.0/shellcheck",
+      "verification": "UPSTREAM_RELEASE_ASSET_DIGEST",
+      "evidence_url": "https://api.github.com/repos/koalaman/shellcheck/releases/tags/v0.11.0"
+    }
+  },
+  "actions": {
+    "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803": "v6",
+    "actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683": "v4.2.2",
+    "hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd": "v3",
+    "actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9": "v4",
+    "actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830": "v4",
+    "docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f": "v3",
+    "docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25": "v5"
+  },
+  "action_verification_method": "GET https://api.github.com/repos/{owner}/{repo}/git/ref/tags/{tag}; dereference annotated tag objects to commit. All recorded references resolved to commit objects.",
+  "deferred_actions": {
+    "dorny/paths-filter@v4": {
+      "status": "MUTABLE_REFERENCE_RETAINED",
+      "observed_commit": "ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d",
+      "reason": "cd-scope.yml is an accepted WP6 authority source; defer changing its protected source/approval identities to a separate reviewed contract update. This reference remains mutable."
+    }
+  },
+  "provider_platforms": {
+    "aws": {
+      "version": "5.100.0",
+      "evidence_url": "https://releases.hashicorp.com/terraform-provider-aws/5.100.0/terraform-provider-aws_5.100.0_SHA256SUMS",
+      "linux_amd64": "1589a2266af699cbd5d80737a0fe02e54ec9cf2ca54e7e00ac51c7359056f274",
+      "windows_amd64": "9f8b909d3ec50ade83c8062290378b1ec553edef6a447c56dadc01a99f4eaa93"
+    },
+    "tls": {
+      "version": "4.3.0",
+      "evidence_url": "https://releases.hashicorp.com/terraform-provider-tls/4.3.0/terraform-provider-tls_4.3.0_SHA256SUMS",
+      "linux_amd64": "60b347abcb56f45d97c56f14d895069cd15a83993f199777f571b79fea3642ee",
+      "windows_amd64": "da510d22f0c6d71ad19a76406f106b782448f512375787ecfabb338ed1e311a7"
+    }
+  }
+}

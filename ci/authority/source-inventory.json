@@ -434,6 +434,23 @@
       "signals": {},
       "semantic_status": "UNVERIFIED"
     },
+    ".github/scripts/ci/install-tools.py": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "e094108000fa3f6124b7b1be18498a8f607c866b4ecbee4e516369981d2a2978",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          20,
+          27,
+          28,
+          29,
+          30,
+          33,
+          47,
+          58
+        ]
+      }
+    },
     ".github/scripts/ci/select-checks.py": {
       "sha256": "8ffd2cfb545701e1eec792b78d3060c8363e2b03bb4f4ff449859fca0d6222cc",
       "declarations": [],
@@ -502,6 +519,28 @@
         ]
       },
       "semantic_status": "UNVERIFIED"
+    },
+    ".github/scripts/ci/toolchain.json": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "1f144c2a89c459cb3e9ecc1e090dbe18ba8419e61de8658dc7adb3c60078385c",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          7,
+          9,
+          11,
+          13,
+          15,
+          17,
+          20,
+          24,
+          28,
+          58,
+          73,
+          75,
+          81
+        ]
+      }
     },
     ".github/workflows/cd-demo-api.yml": {
       "sha256": "7ce62fcf6f03b6de4fdc864a54b4f9c2285a2d791accbe4b2265e79773c1452d",
@@ -589,7 +628,7 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/ci-cd-safety.yml": {
-      "sha256": "dd38814794201ea86d390cbdbf4d9d1e703536fb57d49e857b4db611f2ef9edf",
+      "sha256": "d06a6a1a795870ad4723fab9f4f5852acb7afc1029bef9c4e4d4d65a87e9f5ed",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -609,67 +648,62 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/ci-dotnet.yml": {
-      "sha256": "d11c3285da8af1e99bdaea719bed6dce11368929551c43b1244bef7faf7bc6f9",
+      "sha256": "6bd3da5e80600cbd5ec7858a6d7ba76485a633f45d99d2966a1490c7e44e153d",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          38,
-          41,
           44,
-          77,
-          79
+          47,
+          50,
+          85,
+          87
         ],
         "executable-dependency": [
           22,
-          25,
-          30,
-          50,
-          53,
+          31,
+          36,
           56,
-          64
+          59,
+          64,
+          72
         ]
       },
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/ci-repo-hygiene.yml": {
-      "sha256": "9699dc8118812e4f9a95b10e813624c5183c8c4631c772de40b8694e05862e58",
+      "sha256": "a312a145159331b7ebf9932c2ddafbbd513aefef9537508dc3ddac45b9209318",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          36,
-          44,
-          71,
-          116,
-          117,
-          118,
-          134,
-          135,
-          136,
-          164,
-          166,
-          171,
-          172,
-          173,
-          176,
-          179
+          22,
+          34,
+          37,
+          64,
+          109,
+          110,
+          111,
+          127,
+          128,
+          129,
+          157,
+          160
         ],
         "executable-dependency": [
           16,
-          19,
-          33,
+          22,
+          31,
+          37,
           44,
-          51,
-          70,
-          82,
-          83,
-          85,
-          99,
-          105,
-          121,
-          123,
-          145,
-          147,
-          164
+          63,
+          75,
+          76,
+          78,
+          92,
+          98,
+          114,
+          116,
+          138,
+          140
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -691,43 +725,35 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/ci-terragrunt.yml": {
-      "sha256": "7e5845efe594ed3c9a26ad74927a15c518ef09424b4d9115bcef5d959d76a3de",
+      "sha256": "2c09b9c205353fbfc4f96e057a5161afb828bd7de15f88438198f9827d11f90d",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           51,
-          53,
-          54,
-          66,
-          67,
-          68,
-          71,
-          90,
-          93
+          69,
+          72
         ],
         "executable-dependency": [
           35,
           51,
-          60,
-          71
+          57
         ]
       },
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/ci.yml": {
-      "sha256": "207f503a2877650bcc360587b56bdbe8fc1c479ac068a64faaf5fd024f191b67",
+      "sha256": "d7907b95b690c42784ace4ad06361675ffd647a4311691205ee2324d72fc409f",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           81,
-          83,
-          84,
-          118
+          114
         ],
         "executable-dependency": [
           58,
-          89,
-          173
+          81,
+          85,
+          169
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -990,6 +1016,12 @@
         ]
       },
       "semantic_status": "UNVERIFIED"
+    },
+    "global.json": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "0a15550b7b496f0eb8ea6e405da955cf264bf519fb0fb60dd8a7e25967bbca5d",
+      "declarations": [],
+      "signals": {}
     },
     "scripts/alb-route-target.jq": {
       "sha256": "70071f6215840ddfc7e42caf0011b9879ec0ce671007957df044cb50874dfa31",
@@ -1740,7 +1772,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/control_bundles/test_wp2b.py": {
-      "sha256": "23d14222dd5003dce495a3966f1090e65f4acba2d2477642a8bdaa02b05e43c8",
+      "sha256": "dce1d930cbb5b1bd09ea1b6a85abc92bda10c683553f0e1177d152da6c01a6d9",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -1760,7 +1792,9 @@
           196,
           197,
           244,
-          249
+          246,
+          249,
+          254
         ],
         "executable-dependency": [
           197,
@@ -1772,7 +1806,7 @@
           171,
           172,
           186,
-          250
+          255
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -2519,6 +2553,58 @@
       },
       "semantic_status": "UNVERIFIED"
     },
+    "scripts/tests/reproducibility/test_reproducibility.py": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "b7e3c86be6495c845f09946ccf0b3be0681f9ea2b459c448a2a77f1c3da5b088",
+      "declarations": [],
+      "signals": {
+        "credential-acquisition": [
+          172
+        ],
+        "launch-or-mutation": [
+          41,
+          46,
+          50,
+          51,
+          52,
+          65,
+          67,
+          68,
+          73,
+          81,
+          86,
+          89,
+          113,
+          114,
+          119,
+          124,
+          126,
+          127,
+          131,
+          132,
+          146,
+          147,
+          153,
+          169,
+          171,
+          186
+        ],
+        "executable-dependency": [
+          24,
+          25,
+          31,
+          116,
+          119,
+          121,
+          150,
+          153,
+          157,
+          167,
+          195,
+          198
+        ]
+      }
+    },
     "scripts/tests/run-offline-readiness-tests.sh": {
       "sha256": "b4d4b0b2b90cbebfaca535d25953cc7506ef95a61c0f8ad8d8a033b1cc045f40",
       "declarations": [],
@@ -2667,7 +2753,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/model.py": {
-      "sha256": "4550554db0393841e2cb10c34483370a479717cba03fcf4ceb5c01e103a74a5b",
+      "sha256": "dfee2bc5a40e608c1228e2a440dabe5013e7e177867732de16150774eab1747c",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -2690,15 +2776,18 @@
           202,
           247,
           258,
-          259,
-          260,
-          269,
-          290,
-          307,
-          315,
-          316,
-          325,
-          327
+          261,
+          262,
+          263,
+          264,
+          265,
+          274,
+          295,
+          312,
+          320,
+          321,
+          330,
+          332
         ],
         "executable-dependency": [
           23,
@@ -2706,7 +2795,7 @@
           33,
           34,
           38,
-          270
+          275
         ],
         "security-control": [
           205,
@@ -3814,6 +3903,17 @@
         ]
       },
       "semantic_status": "UNVERIFIED"
+    },
+    "terraform/infra/security/.terraform.lock.hcl": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "5f6ef854d6bf8c37eaf074f4bd7a5f2ecfff589bbe7204edb5b85e687f744bd6",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ]
+      }
     },
     "terraform/infra/security/authority.json": {
       "sha256": "dd6296ff875f1352032d9f6c33de164a52887f839aff8c39439ebc55b98ff29f",

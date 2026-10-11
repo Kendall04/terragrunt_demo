@@ -50,7 +50,9 @@ The index, manifest and config digests are recorded in
 
 These fix the base contents, including OS layers. They do not establish bit-for-bit
 application build reproducibility: NuGet/transitive resolution, SDK selection in
-host CI, actions/tools and incomplete infrastructure locks remain separate work.
+host CI, actions/tools and infrastructure locks are addressed by the bounded
+[E14-B contract](e14b-toolchain-reproducibility.md); its remaining gaps still limit
+overall reproducibility.
 
 ## Intentional update procedure
 
