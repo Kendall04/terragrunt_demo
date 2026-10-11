@@ -336,46 +336,46 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/scripts/cd/tests/test-safety-mutations.sh": {
-      "sha256": "c994b97b0d0e7be04b9bcbdfc17363903e7869f615eba3e0a2b2793efdf30e84",
+      "sha256": "d27612ff44ad260a238977bcd49d77018c7aa589b57378218c2a4215f5fd4726",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           27,
-          46
+          47
         ],
         "executable-dependency": [
           27,
           33,
-          36,
           37,
-          41,
-          46,
-          47
+          38,
+          42,
+          47,
+          48
         ]
       },
       "semantic_status": "UNVERIFIED"
     },
     ".github/scripts/cd/tests/test-safety-workflow.sh": {
-      "sha256": "23a432ceeaf80c0ea77d13da58ffc8c0e7944d9704b7262e60ead09a0271ec35",
+      "sha256": "92ffb3b80367b5a6adb809107deac73e72d842c97d5903e8d7c98d747156ca6f",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          83
+          84
         ],
         "executable-dependency": [
-          17,
           18,
           19,
-          35,
-          88,
-          90,
-          93
+          20,
+          36,
+          89,
+          91,
+          94
         ]
       },
       "semantic_status": "UNVERIFIED"
     },
     ".github/scripts/cd/tests/test-select-safety-tests.sh": {
-      "sha256": "07a667793ca9e09e7e3dfb8858a451a0c53bdd154dfd8cce84fe556ad43f3ce4",
+      "sha256": "97337a4b24abe9e95dc21c86decce6ba8d34f71f552e4eac4bd638fcc1af8e88",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -3238,7 +3238,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/test-ecs-readiness-gate.sh": {
-      "sha256": "b79751007ce8bcf5cfc77a084f542478a993d8f1897c0302f46e037fea123c24",
+      "sha256": "6837b0e548dab02080a3ba01f0db02f00b7e282c7548954ede6578963cb05938",
       "declarations": [],
       "signals": {
         "role-input": [

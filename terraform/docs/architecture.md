@@ -136,7 +136,8 @@ The [E14-A container contract](e14-container-hardening.md) pins both .NET 8
 base images to verified Linux/x86-64 manifests and explicitly runs the application
 and packaged readiness probe as UID 1654. HTTP 8080, `/app`, the framework-dependent
 DLL entrypoint and ECS environment/secret semantics are preserved. Deterministic
-checks and host startup pass; Linux container execution remains unverified.
+checks, host startup and isolated Linux container execution pass; live Fargate
+execution remains unverified. See the linked batch integration evidence.
 
 | Interface | Behavior |
 | --- | --- |

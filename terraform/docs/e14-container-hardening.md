@@ -139,3 +139,34 @@ unverified. Agent 2's pagination files/test project are untouched. Architecture,
 validation and backlog documentation overlap with Agents 1/2; combine the distinct
 E14 paragraphs/row change during integration, and preserve each agent's source
 inventory entries. No other branch was edited.
+
+## Batch1 integrated Linux evidence — 2026-10-11
+
+The combined E11/E10/E7/E14-A source tree
+`690ffa7ea9672dd67a16ef1731b3cf9a236b7887` was transferred as versioned current
+files only to a new isolated directory on the existing codex-vm. Its complete Git
+tree and archive SHA-256 were checked before execution; existing VM repositories
+were untouched. This supersedes the candidate's unavailable-container limitation.
+
+With the preinstalled Linux Docker engine, the actual digest-pinned Dockerfile
+built successfully. The resulting local image
+`sha256:5c211ea567765a9c40493c8f1b4eb681c6980bd511efb7944b3873f5a3248c42`
+reported runtime user 1654. Isolated `--network none` execution verified UID/GID
+1654, readable published binaries/configuration, non-writable `/app`, and writable
+`/tmp` and `/home/app`. The packaged probe capability passed, and the probe failed
+with exit 1 within its configured bounds when no readiness server existed.
+Production startup returned HTTP 200 from `/health` on container port 8080 with
+migrations disabled and a synthetic unused DB connection. No dependency endpoint,
+DB/KMS call, credentials, privileged container, deployment or registry push was
+used. Temporary containers were removed.
+
+The combined application restored, built and published on Windows and Linux;
+all 99 tests passed on each host, including 38 pagination and 21 container cases,
+with zero failures or skips. Both builds had zero warnings/errors. Windows
+Production published startup and the packaged probe capability also passed.
+Linux used the preinstalled .NET SDK 8.0.422; Windows used its installed SDK.
+
+These checks close the local Linux container permission/startup gap. Live
+ECS/Fargate, SQL/KMS integration, alarm delivery and full E14 reproducibility
+remain separate, unverified work. The image identity above describes that tested
+application build; it is not release qualification or compute activation evidence.

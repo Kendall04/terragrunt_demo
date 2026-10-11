@@ -33,6 +33,7 @@ cp "$scratch/golden" "$golden"
 expect_failure test-detect-scope.sh 'canonical outputs mismatch'
 
 copy_case scope-output-name
+# shellcheck disable=SC2016 # Mutate literal source text, not the current shell value.
 sed -i 's/echo "target_env=${TARGET_ENV}"/echo "removed_target_env=${TARGET_ENV}"/' "$case_dir/.github/scripts/cd/detect-scope.sh"
 expect_failure test-detect-scope.sh 'missing scalar output: target_env'
 
