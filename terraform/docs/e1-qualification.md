@@ -1,5 +1,9 @@
 # E1 WP3A — qualification contract and protected finalizer
 
+WP7 milestone disposition: the stage narrative below records its accepted package.
+Legacy overlap is now retired; see [final E1 repository contract](e1-final-acceptance.md).
+Installation/governance/live evidence remains unverified and compute stays inactive.
+
 TARGET repository logic only. AWS compute, trust, permissions and live qualification
 remain inactive/unverified. WP3 is not complete. This implements plan sections
 [5.1, 7 and 10.3](../../specs/iam-hardening/plan.md#7-qualification-and-environment-evidence)

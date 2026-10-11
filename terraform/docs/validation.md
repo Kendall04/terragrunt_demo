@@ -314,3 +314,20 @@ accesses AWS. Admin-channel and installation projections are synthetic fixtures,
 not genuine approval/readback or operational proof. Supported-host fresh Linux
 E3, provider-backed schema checks, live IAM/GitHub conformance and membership
 remain unverified. Keep reports and extracted packages outside the repository.
+
+## E1 WP7 — final repository acceptance gate
+
+Run `python -I -B scripts/tests/final_acceptance/gate.py --report-dir
+<outside-repo-directory>` using preinstalled Python/Git/Terraform. It requires all
+959 accepted regressions plus the focused WP7 suite, exact generated Terraform and
+workflow wiring, inventory, packages, provider-free WP4D/WP5/WP6 static checks,
+parsing, current KDD links, approved-contract hashes, check-only Terraform format
+and diff whitespace. Reports identify exact content/revision/dirty status and AC
+families; missing/skipped/failed evidence cannot pass. No init/provider/backend,
+AWS access, dependency download or activation occurs. Static CI runs this gate.
+
+WP1's old positive bypass witnesses now characterize inert historical source in
+disposable fixtures. They must not be interpreted as final TARGET permissions.
+See [WP7 acceptance and live limits](e1-final-acceptance.md). Optional preinstalled
+Linux checks use `scripts/tests/final_acceptance/check_linux.py` for YAML/Bash
+syntax and the existing E3 entry points; unavailable dependencies are explicit.

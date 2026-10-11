@@ -13,7 +13,7 @@ using the eight existing ordinary/high-risk reservations. Installation, approval
 and environment-binding registries remain empty; lifecycle compute stays inactive.
 
 Classification: `E1_WP2A_PROTECTED_SECURITY_ROOT_FOUNDATION`.
-Repository foundation only; **not deployed, not WP2 complete, not E1 secure**.
+Historical WP2A stage classification. WP7 completes [repository E1 acceptance](../../docs/e1-final-acceptance.md); **not deployed or operationally active**.
 The accepted baseline is `c8e880b552b5782e9bca94891b75a71b45ddc113`.
 The immutable [spec](../../../specs/iam-hardening/spec.md) and
 [plan section 6](../../../specs/iam-hardening/plan.md#61-security-root) govern it.

@@ -780,5 +780,6 @@
     }
   ],
   "unmodeled_surface_rule": "source-inventory UNVERIFIED entries retain UNKNOWN necessity; not implicitly authorized or unnecessary",
-  "target_permissions": "NOT_IMPLEMENTED"
+  "target_permissions": "NOT_IMPLEMENTED",
+  "wp7_disposition": "HISTORICAL_PRE_E1_CHARACTERIZATION_ONLY; final authority is security_root/model.py closed generated TARGET plus final_acceptance gate"
 }

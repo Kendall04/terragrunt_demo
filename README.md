@@ -16,9 +16,12 @@ Fargate tasks. Blue and green services run the same .NET 8 text API. KMS encrypt
 text stored in SQL Server Express on private EC2. Two NAT instances provide
 per-AZ egress and event-driven replacement recovery.
 
-Terraform owns infrastructure skeletons; deployment tooling owns task revisions,
-counts and traffic. Images use digests. S3 manifests are versioned, not write-once.
-Rollback exists but has not been comprehensively tested or proven.
+The final E1 model separates protected security administration, qualified release,
+delivery/recovery and environment lifecycle. Terraform owns skeletons; protected
+delivery owns task revisions/counts and traffic. Images use qualified digests.
+All external request identities and WP4D/WP5 compute remain inactive. Repository
+acceptance is separate from unverified AWS installation and operational behavior.
+See [final E1 acceptance](terraform/docs/e1-final-acceptance.md).
 
 ## Durable knowledge map
 
@@ -39,7 +42,9 @@ accepted decisions, targets, unresolved questions and historical material.
 ## Layout and historical evidence
 
 - `demo-api/`: application, migrations, tests, Dockerfile and task template.
-- `terraform/infra/` and `terraform/live/{dev,prod}/`: modules and composition.
+- `terraform/infra/security/`, `terraform/live/security/`: protected security root.
+- `terraform/modules/target/{dev,prod}/`: fixed protected lifecycle layer modules.
+- `ci/authority/retired/`: inert historical source text, never deployable roots.
 - `.github/`: workflows, actions, CD classification and fixtures.
 - `scripts/`: bootstrap, deployment, artifact and state-audit helpers.
 - `ci/schemas/`: release/deployment contracts.

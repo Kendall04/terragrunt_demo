@@ -1,5 +1,9 @@
 # E1 WP4B - protected normal delivery
 
+WP7 milestone disposition: the stage narrative below records its accepted package.
+Legacy overlap is now retired; see [final E1 repository contract](e1-final-acceptance.md).
+Installation/governance/live evidence remains unverified and compute stays inactive.
+
 This is a provider-free production state machine, pending independent review.
 V1 is preserved at `0f1b8327a3a72dbd80a8057105c2b90e9480dfc5`; V2 corrects the
 independent review's F1 preparation window, F2 proof retry conflict and F3

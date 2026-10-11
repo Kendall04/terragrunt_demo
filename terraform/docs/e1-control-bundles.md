@@ -1,5 +1,9 @@
 # E1 WP2B — protected control-bundle foundation
 
+WP7 milestone disposition: the stage narrative below records its accepted package.
+Legacy overlap is now retired; see [final E1 repository contract](e1-final-acceptance.md).
+Installation/governance/live evidence remains unverified and compute stays inactive.
+
 Classification: `E1_WP2B_PROTECTED_CONTROL_BUNDLE_FOUNDATION`.
 TARGET repository foundation only. No uploaded bundle, installed controller,
 active consumer, verified backend or completed WP2/E1 security is claimed.

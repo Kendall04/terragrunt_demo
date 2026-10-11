@@ -101,7 +101,13 @@ def main():
     for name in ("specs/iam-hardening/spec.md", "specs/iam-hardening/plan.md"):
         files[name] = hashlib.sha256((ROOT / name).read_bytes()).hexdigest()
     errors = verify(ROOT)
+    from history import source_root
+    historical_context = source_root(ROOT)
+    historical_root = historical_context.__enter__()
     suite = unittest.defaultTestLoader.discover(str(HERE), pattern="test_*.py")
+    for module in list(sys.modules.values()):
+        if module is not sys.modules[__name__] and getattr(module, "ROOT", None) == ROOT and str(getattr(module, "__file__", "")).startswith(str(HERE)):
+            module.ROOT = historical_root
     class Recorded(unittest.TextTestResult):
         def startTest(self, test):
             executed.append(test.id())
@@ -112,7 +118,7 @@ def main():
     if not errors:
         for environment in ("dev", "prod"):
             try:
-                chains.extend(baseline(ROOT, (environment,)))
+                chains.extend(baseline(historical_root, (environment,)))
             except Unsupported as exc:
                 # One invalid environment must not erase valid evidence for the
                 # other. The package still fails characterization visibly.
@@ -126,7 +132,7 @@ def main():
         "e1_acceptance": "NOT_EVALUATED_NOT_SECURE",
         "identity": identity, "evaluated_file_sha256": files,
         "evaluated_content_digest": hashlib.sha256(json.dumps(files, sort_keys=True).encode()).hexdigest(),
-        "scope": "repository-model reachability with fixed synthetic inputs; not executed exploits",
+        "scope": "HISTORICAL_PRE_E1_CHARACTERIZATION: inert text expanded in disposable fixtures; never final TARGET authority",
         "executed_tests": executed, "counts": {"executed": result.testsRun, "failures": len(result.failures),
                                                  "errors": len(result.errors), "skipped": len(result.skipped)},
         "test_modules": {module: {"executed": sum(x.split(".")[0] == module for x in executed),
@@ -137,7 +143,7 @@ def main():
         "evidence_groups": evidence_groups(executed, result),
         "evidence_group_counting": "Overlapping groups; totals are not additive. Counts are unittest methods, not subtest permutations.",
         "inventory_errors": errors, "baseline": chains,
-        "semantic_source_admission": semantic_inventory(ROOT),
+        "semantic_source_admission": semantic_inventory(historical_root),
         "external_prerequisites": "UNVERIFIED",
         "platform_gaps": {"git_bash_full_selector": "FAILED_UNRESOLVED_CLEANUP",
                           "supported_linux": "UNVALIDATED"},
@@ -147,6 +153,7 @@ def main():
     if args.report:
         args.report.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({k: report[k] for k in ("result", "e1_acceptance", "identity", "evaluated_content_digest", "counts", "inventory_errors")}, indent=2))
+    historical_context.__exit__(None, None, None)
     return 0 if good else 1
 
 

@@ -1,5 +1,9 @@
 # E1 WP3B — exact-source supervision and executable packaging
 
+WP7 milestone disposition: the stage narrative below records its accepted package.
+Legacy overlap is now retired; see [final E1 repository contract](e1-final-acceptance.md).
+Installation/governance/live evidence remains unverified and compute stays inactive.
+
 The accepted WP3B core/package is preserved. [WP3C](e1-internal-release.md) adds
 AWS adapters in a separate protected runtime and moves application execution to
 compromise-expected workers. The adapter-absence statements below describe the

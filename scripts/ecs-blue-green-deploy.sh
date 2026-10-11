@@ -593,26 +593,7 @@ write_outputs() {
 }
 
 main() {
-  parse_args "$@"
-  require_command aws
-  require_command jq
-  require_command python3
-  export AWS_MAX_ATTEMPTS=3
-  export AWS_RETRY_MODE=standard
-  export AWS_PAGER=""
-  set_aws_args
-  resolve_account_id
-  validate_args
-  preflight_resources
-  detect_blue_green_state
-  resolve_db_secret_id
-  stop_inactive_service
-  register_rendered_task_definition
-  attach_task_definition_to_inactive_service
-  promote_inactive_color
-  schedule_old_color_scale_down
-  write_outputs
-  log "Blue/green deployment completed. New active color: $INACTIVE_COLOR"
+  die "E1_LEGACY_PATH_RETIRED: use protected normal delivery or emergency recovery."
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then

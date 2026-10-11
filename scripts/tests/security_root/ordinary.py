@@ -1,11 +1,12 @@
-"""Fixed extraction of ordinary TARGET configuration from pinned CURRENT files.
+"""Fixed extraction of ordinary TARGET configuration from pinned retired text.
 
-No generic HCL interpretation: only top-level blocks in these exact legacy files
-are selected. The parent admission verifies their immutable legacy digests first.
-No workflow invokes these TARGET roots; protected lifecycle execution remains WP5.
+No generic HCL interpretation: only reviewed blocks in these inert data inputs
+are selected. Parent admission verifies immutable digests and forbids restored
+legacy roots. Only protected WP5 lifecycle selects the resulting TARGET modules.
 """
 from pathlib import Path
 import re
+import retired
 
 ROOT = Path(__file__).resolve().parents[3]
 BLOCK = re.compile(r'(?m)^(resource|data|module|variable|output|locals|terraform)\b[^\n]*')
@@ -22,8 +23,7 @@ def wiring(doc):
     for env in ("dev", "prod"):
         for layer, source in (("shared", "shared"), ("data", "data"), ("apps", "apps/fargate"), ("global", "global")):
             base = ROOT / "terraform/infra" / source
-            for path in sorted(base.rglob("*.tf")):
-                rel = path.relative_to(base).as_posix()
+            for rel, path in retired.sources(ROOT, "terraform/infra/" + source):
                 # These declarations are now exclusively neutral-owned. Recovery
                 # behavior is reserved, not copied as an executable target.
                 if layer == "shared" and (rel.startswith("modules/") or rel == "release_artifacts_bucket.tf"):

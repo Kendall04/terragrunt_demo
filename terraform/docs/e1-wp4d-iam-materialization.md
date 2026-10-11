@@ -1,5 +1,9 @@
 # E1 WP4D: exact protected controller materialization
 
+WP7 milestone disposition: the stage narrative below records its accepted package.
+Legacy overlap is now retired; see [final E1 repository contract](e1-final-acceptance.md).
+Installation/governance/live evidence remains unverified and compute stays inactive.
+
 Classification: WP4D implementation candidate on
 `codex/e1-wp4d-iam-materialization`, based on integrated
 `400e1d12cec99372057ad5058d7c779dcf2e6893`. Acceptance and integration remain

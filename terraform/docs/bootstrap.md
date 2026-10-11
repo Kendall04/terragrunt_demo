@@ -13,59 +13,45 @@ objectives remain open; do not assume enterprise redundancy requirements.
 Read [decisions](decisions-and-limitations.md) and [validation](validation.md)
 before using any operational command.
 
-## CURRENT CONTRACT — reconstruction sequence
+## CURRENT CONTRACT — protected greenfield reconstruction
 
-The Bash wrappers require an AWS-authenticated operator, Terraform, Terragrunt,
-jq and ripgrep; app deployment additionally needs Docker.
-Project name is fixed to demo. Defaults use dev/us-east-1 and the local
-terraform-lab profile; --use-instance-role selects the default credential chain.
-Ensure the credential chain actually targets the intended identity.
+WP7 retires the legacy roots and direct local bootstrap/deploy entry points.
+[bootstrap.sh](../../ci/authority/retired/scripts/bootstrap.sh.txt), [deploy.sh](../../ci/authority/retired/scripts/deploy.sh.txt)
+and the standalone blue/green entry fail before credential discovery or AWS calls.
+They cannot initialize the retired topology or select broader fallback authority.
+Use the accepted [lifecycle](e1-protected-environment-lifecycle.md),
+[installation](e1-ownership-publication.md) and [workflow](e1-protected-workflows.md)
+contracts for future separately authorized reconstruction:
 
-[bootstrap.sh](../../scripts/bootstrap.sh) full-dev-bootstrap executes:
+1. The separately authenticated administrator establishes the neutral security
+   root, protected state/control storage and workload identities. Ordinary
+   lifecycle and GitHub jobs cannot install or update this authority.
+2. The administrator installs exact reviewed packages and images, records genuine
+   version/readback/membership evidence and publishes the protected bindings.
+   Missing prerequisites keep compute inactive.
+3. The administrator writes SQL password values outside Terraform through the
+   explicit [secret bootstrap](../../scripts/bootstrap-db-secrets.sh), then the
+   authorized lifecycle controller reconciles fixed environment layers in order.
+   Connection-string publication follows the genuine DB binding. No graph-wide
+   operation substitutes for these interleaved metadata/value steps.
+4. The protected release controller and independent finalizer qualify an approved
+   immutable release. Dev delivery and independent prod approval use their own
+   bounded gateways; history rollback uses current eligibility.
 
-1. Validate inputs and initialize backend resources.
-2. Apply shared, then secrets metadata.
-3. Write SQL password secret values outside Terraform.
-4. Apply global networking, then data.
-5. Write the DB connection-string secret using the DB host.
-6. Apply platform; stop before apps/fargate and edge.
+These are represented authorization paths, not a claim that installation or a
+live bootstrap run succeeded. All eleven external identities, sixteen WP4D and
+eight WP5 bindings remain inactive. No historical AWS migration/session revocation
+is required or claimed for this empty account.
 
-Do not replace this with graph-wide apply: the graph cannot represent secret
-value writes between layers. full-dev-bootstrap is dev-only and rejects
---plan-only. Individual apply-* --plan-only operations still initialize/read AWS;
-they are not offline checks.
+## CURRENT CONTRACT — protected state
 
-[deploy.sh](../../scripts/deploy.sh) full-dev-deploy runs base bootstrap first,
-then builds/selects an image, resolves its digest, reconciles the app skeleton,
-and invokes blue/green deployment. deploy-app assumes the base already exists.
---include-edge adds edge; --smoke-test waits for active service/target health and
-calls /ready. Without --include-edge the public API layer is separate.
-
-Example invocation shape, **for a separately authorized deployment only**:
-
-```bash
-scripts/deploy.sh full-dev-deploy --env dev --region us-east-1 --profile terraform-lab --include-edge --smoke-test
-```
-
-For an instance/default-chain operation, use --use-instance-role and ensure an
-inherited named AWS_PROFILE does not select unintended credentials.
-Do not infer permission to clear/change local configuration from this example.
-Prod wrapper operations require --confirm-prod; full dev commands are not prod
-bootstrap. Review current workflow support in [deployment](deployment.md).
-
-## CURRENT CONTRACT — remote state
-
-Bootstrap configures S3 versioning, AES256 default encryption, public-access
-blocking and bucket-owner-enforced ownership. It installs a TLS-only policy when
-no policy exists; an existing policy is left unchanged and needs review.
-DynamoDB supplies locking. Wrappers export TF_STATE_BUCKET and TF_STATE_TABLE
-with account-qualified defaults.
-
-Raw roots have different fallback names and environment overrides. Check directory,
-TG_ENV, region, identity and backend together before any initialization. Layer
-state keys alone do not separate environments. Backend creation is an imperative
-bootstrap responsibility, not proof that state exists now.
-Evidence: [bootstrap script](../../scripts/bootstrap.sh), [root](../live/dev/root.hcl).
+The neutral [security root](../infra/security/README.md) has a distinct admin-only
+backend. Protected lifecycle state has separate environment buckets and fixed
+`e1/lifecycle/<env>/<layer>/terraform.tfstate` keys with S3 lockfiles. Only the
+installed lifecycle binding selects backend/resource inputs. Public plan identities
+read nonsensitive own-environment state; ordinary requesters cannot write state,
+read security state or administer buckets/policies. Legacy TG_ENV/profile/backend
+fallbacks no longer select an operational root. Live backend creation is unverified.
 
 ## CURRENT CONTRACT — observability and recovery limits
 
@@ -78,9 +64,9 @@ Known defects: ECS task-count alarms use AWS/ECS rather than the Container
 Insights namespace; NAT ASGs do not configure collection of the group metrics
 their alarms require. Missing data is treated as non-breaching. Alarm existence
 is not evidence of operational coverage.
-Evidence: [ECS alarm](../infra/apps/fargate/modules/ecs_service/alarm_ecs_service.tf),
-[NAT alarms](../infra/global/modules/nat/alarms_nat.tf),
-[ASGs](../infra/global/modules/nat/autoscaling_group.tf).
+Evidence: [ECS alarm](../modules/target/dev/apps/modules/ecs_service/alarm_ecs_service.tf),
+[NAT alarms](../../ci/authority/retired/terraform/infra/global/modules/nat/alarms_nat.tf.txt),
+[ASGs](../../ci/authority/retired/terraform/infra/global/modules/nat/autoscaling_group.tf.txt).
 
 NAT recovery performs three independent launch-event actions, without configured
 DLQ or forwarding probe. EC2 health does not prove NAT function. AMI changes are
@@ -91,7 +77,7 @@ SQL bootstrap waits for secret availability, installs packages from public
 repositories, then uses a fixed wait before SQL setup. SSM access is configured
 for the DB. No repository-defined SQL backup/restore or separate persistent data
 volume exists. Root storage is deleted on termination.
-Evidence: [data](../infra/data/main.tf), [user data](../infra/data/user_data.sh).
+Evidence: [data](../modules/target/dev/data/ordinary-main.tf), [user data](../infra/data/user_data.sh).
 
 If future deployment fails, runtime traffic, service revision, candidate rule,
 cleanup schedule and S3 current record may disagree. Inspect verified evidence
@@ -117,3 +103,6 @@ Recovery objectives, safe destructive-test boundaries, alert responses, capacity
 patching and budgets need later decisions. Historical teardown snippets are not
 a safe operating procedure; no current data should be assumed disposable merely
 because this is a demo.
+
+[WP7 final acceptance and installation limits](e1-final-acceptance.md) records the
+retirement and provider-free evidence; no old root is an installation option.

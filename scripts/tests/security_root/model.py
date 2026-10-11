@@ -1,7 +1,7 @@
 """WP2A closed target source and fixed Terraform wiring. No HCL interpretation.
 
-Only the reviewed templates below are target mechanisms. The legacy snapshot is
-an explicit transitional exclusion, never an accepted target authority universe.
+Only the reviewed templates below are TARGET mechanisms. WP7 retires the legacy
+configuration paths; immutable text data preserves extraction/provenance only.
 """
 import hashlib
 import json
@@ -18,8 +18,11 @@ import internal
 import wp4d
 import wp5
 import wp6
+import retired
 
-SUPPORT_FILES = {**ownership.RECOVERY_SOURCES, "terraform/infra/data/user_data.sh": "98b4d17937711d27244c161a35832d6f05135b59f5cb5609a5016fd19b10cd7b"}
+SUPPORT_FILES = {**{k:v for k,v in ownership.RECOVERY_SOURCES.items() if not k.endswith(".tf")}, "terraform/infra/data/user_data.sh": "98b4d17937711d27244c161a35832d6f05135b59f5cb5609a5016fd19b10cd7b"}
+
+SUPPORT_FILES.update({retired.archived(k): v for k,v in json.loads((ordinary.ROOT / retired.MANIFEST).read_text())["sources"].items()})
 
 # Exact executable package inputs are copied by existing disposable fixtures.
 SUPPORT_FILES.update({
@@ -278,8 +281,8 @@ inputs = {
 def configuration_paths(root):
     """Closed repo IaC surface, including alternate roots and wrapper inputs.
 
-    Cache contents aren't target mechanisms: all admitted module/source paths are
-    fixed templates or exact legacy bytes, so none can redirect into a cache.
+    Cache contents aren't TARGET mechanisms. All admitted configuration is fixed
+    generated wiring; retired bytes exist only as explicitly pinned inert text.
     """
     found = set()
     for path in Path(root).rglob("*"):
@@ -302,9 +305,9 @@ def validate_repository(root):
     require(legacy["baseline"] == BASELINE and legacy["classification"] == "TRANSITIONAL_LEGACY_NOT_TARGET_ACCEPTED", "legacy classification")
     expected = wiring(doc)
     wrapper_path = "terraform/live/security/terragrunt.hcl"
-    require(configuration_paths(root) == set(legacy["sources"]) | set(expected) | {wrapper_path}, "unadmitted/missing IaC surface")
+    require(configuration_paths(root) == set(expected) | {wrapper_path}, "unadmitted/missing IaC surface")
     for name, digest in legacy["sources"].items():
-        require(sha((root / name).read_bytes()) == digest, "competing/changed legacy source " + name)
+        require(not (root / name).exists() and sha(retired.source(root, name).read_bytes()) == digest, "restored/changed retired source " + name)
     for name, configuration in expected.items():
         require(((root / name).read_text() if isinstance(configuration, str) else load_json((root / name).read_text())) == configuration, "target wiring drift " + name)
     require((root / wrapper_path).read_text() == wrapper(doc), "security wrapper drift")

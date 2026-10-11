@@ -163,6 +163,12 @@ def closure(seeds, rules, coverage=None, universe=None):
 
 
 def baseline(root, environments=("dev", "prod")):
+    from history import source_root
+    with source_root(root) as historical:
+        return historical_baseline(historical, environments)
+
+
+def historical_baseline(root, environments=("dev", "prod")):
     contexts = {env: Adapter(root, env) for env in environments}
     capabilities = json.loads((root / "ci/authority/capabilities.json").read_text())["actions"]
     records = []

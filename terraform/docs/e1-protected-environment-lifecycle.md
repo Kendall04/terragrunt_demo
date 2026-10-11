@@ -1,5 +1,9 @@
 # E1 WP5 protected environment lifecycle — implementation candidate
 
+WP7 milestone disposition: the stage narrative below records its accepted package.
+Legacy overlap is now retired; see [final E1 repository contract](e1-final-acceptance.md).
+Installation/governance/live evidence remains unverified and compute stays inactive.
+
 Starting revision: `66857ed70b21e56798720fd060434b7434db1f99`.
 This implements [approved plan section 6.2](../../specs/iam-hardening/plan.md#62-legitimate-lifecycle-through-protected-terraform-execution).
 It is an offline repository candidate, not an integrated acceptance or an AWS

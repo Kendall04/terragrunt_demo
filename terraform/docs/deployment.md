@@ -4,7 +4,7 @@ Read [architecture](architecture.md) for ownership and [validation](validation.m
 for command effects. This describes checked-in behavior, not proven deployment
 results. No AWS infrastructure currently exists (owner reconciliation 2026-09-18).
 
-## CURRENT CONTRACT - protected workflow candidate
+## CURRENT CONTRACT — final E1 protected workflows
 
 [WP6 protected workflows](e1-protected-workflows.md) connects the accepted
 WP2-WP5 contracts through eleven dedicated reusable entries and exact OIDC
@@ -38,20 +38,22 @@ branch/ruleset/reviewer restrictions and bypass exceptions remain externally
 unverified. No merge-queue or live governance enforcement is claimed.
 
 Legacy role-secret acquisition, app-CD/TG_CD fallback and direct workflow mutation
-have been removed. Frozen Terraform roles, composite actions and local helpers
-still exist for WP7 retirement. They are not part of the new workflow invocation
-path or an instruction to install the old authority in this empty account.
+are removed. WP7 retires the frozen broad Terraform roles/live roots and composite
+actions. Local bootstrap/deploy wrappers and the standalone blue/green main reject
+before AWS. Legitimate operations use the protected endpoints or explicit separately
+authenticated security administration. See [final acceptance](e1-final-acceptance.md).
 
-## Retained legacy helper behavior - not the protected workflow path
+## Historical helper observations — not operational authority
 
-The following detailed helper observations describe retained local/legacy source.
-The authoritative protected qualification/delivery/recovery contracts are in
-[WP3 internal release](e1-internal-release.md),
-[WP4D materialization](e1-wp4d-iam-materialization.md) and
-[WP5 lifecycle](e1-protected-environment-lifecycle.md). No live AWS behavior has
-been verified. Broader helper retirement/final acceptance belongs to WP7.
+The details below preserve accepted E3 behavior and historical artifact semantics.
+They do not authorize the retired standalone deploy path or optimistic quality
+defaults. The operational contracts are [qualified release](e1-internal-release.md),
+[normal delivery](e1-wp4b-normal-delivery.md), [bounded recovery](e1-wp4c-bounded-recovery.md)
+and [lifecycle](e1-protected-environment-lifecycle.md). Current eligibility, closed
+runtime/role authorization before startup, protected dev activation and independent
+prod approval are mandatory. No historical manifest alone qualifies content.
 
-## Retained helper artifact and traffic lifecycle
+## Historical helper artifact and traffic lifecycle
 
 1. Release build publishes an ECR image and resolves its immutable digest.
 2. The manifest records source SHA/run identity, image fields and quality fields.
@@ -142,10 +144,10 @@ Evidence: [release renderer](../../scripts/render-release-manifest.sh),
 [validator](../../scripts/validate-release-manifest.sh),
 [publisher](../../scripts/publish-release-manifest-s3.sh),
 [record writer](../../scripts/write-deployment-record-s3.sh),
-[schemas](../../ci/schemas), [ECR lifecycle](../infra/shared/modules/ecr/main.tf),
+[schemas](../../ci/schemas), [ECR lifecycle](../../ci/authority/retired/terraform/infra/shared/modules/ecr/main.tf.txt),
 [deployment script](../../scripts/ecs-blue-green-deploy.sh).
 
-## Retained helper health and failure boundaries
+## Accepted E3 health and failure boundaries
 
 ALB checks /health, which remains liveness only. Dependency checks live at /ready
 (and /health/ready); KMS readiness tests Encrypt only. Task-local `/ready` evidence
@@ -175,7 +177,7 @@ The cleanup Lambda independently reads current listener state and stops the
 inactive service if the active service has running/desired tasks. It does not
 prove dependency health or bind the action to the originating release generation.
 
-Evidence: [ALB health](../infra/global/modules/alb/variables.tf),
+Evidence: [ALB health](../../ci/authority/retired/terraform/infra/global/modules/alb/variables.tf.txt),
 [health implementation](../../demo-api/terragrunt-demo/Program.cs),
 [dev deploy](../../.github/workflows/deploy-dev.yml),
 [cleanup Lambda](../infra/apps/fargate/lambda/scale_down_old_color.py).

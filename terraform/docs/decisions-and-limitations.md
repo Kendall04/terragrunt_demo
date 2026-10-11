@@ -109,15 +109,25 @@ These non-blocking improvements do not reopen the completed readiness feature:
 - Expand post-switch fault-injection coverage for scheduling and deployment
   output/history failure paths.
 
-Evidence: [IAM](../infra/shared/modules/iam_github),
+Evidence: [IAM](../infra/security/modules/request_identities),
 [deploy script](../../scripts/ecs-blue-green-deploy.sh),
 [cleanup](../infra/apps/fargate/lambda/scale_down_old_color.py),
-[ECS alarm](../infra/apps/fargate/modules/ecs_service/alarm_ecs_service.tf),
-[NAT ASGs](../infra/global/modules/nat/autoscaling_group.tf),
-[ECR](../infra/shared/modules/ecr/main.tf),
+[ECS alarm](../modules/target/dev/apps/modules/ecs_service/alarm_ecs_service.tf),
+[NAT ASGs](../../ci/authority/retired/terraform/infra/global/modules/nat/autoscaling_group.tf.txt),
+[ECR](../../ci/authority/retired/terraform/infra/shared/modules/ecr/main.tf.txt),
 [manifest renderer](../../scripts/render-release-manifest.sh),
 [CI](../../.github/workflows/ci.yml), [fixtures](../../.github/scripts/cd/tests).
 
 Managed NAT, canaries and more services are alternatives, not approved requirements.
 Historical RDS recommendations are superseded by D4. Remaining backlog items are
 not selected or authorized by completion of the CD safety spec.
+
+## E1 WP7 repository disposition
+
+[Final E1 acceptance](e1-final-acceptance.md) retires broad legacy GitHub roles,
+default-sub trust/PassRole/fallback paths and old roots/actions/wrappers. Neutral
+protected authority replaces dev-owned security dependencies; the wider production
+operational-independence target is still distinct. All external identities and
+WP4D/WP5 compute stay inactive. No deployment, installation, migration or external
+governance is claimed. Existing durability, concurrency, compensation, observability
+and reproducibility backlog remains outside E1; no further E1 work package is added.

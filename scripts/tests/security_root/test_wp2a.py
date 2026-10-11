@@ -180,14 +180,14 @@ class FoundationTests(unittest.TestCase):
 
     def test_legacy_cannot_silently_become_target_owner_or_consumer(self):
         root = self.fixture()
-        path = root / "terraform/infra/shared/main.tf"
+        path = root / "ci/authority/retired/terraform/infra/shared/main.tf.txt"
         path.write_text(path.read_text() + '\nmodule "security" {\n source = "../security"\n}\n')
         with self.assertRaises(Unsupported):
             validate_repository(root)
         # A mere inventory refresh cannot bless the new owner.
         path = root / LEGACY
         legacy = load_json(path.read_text())
-        legacy["sources"]["terraform/infra/shared/main.tf"] = sha((root / "terraform/infra/shared/main.tf").read_bytes())
+        legacy["sources"]["terraform/infra/shared/main.tf"] = sha((root / "ci/authority/retired/terraform/infra/shared/main.tf.txt").read_bytes())
         path.write_text(json.dumps(legacy))
         with self.assertRaises(Unsupported):
             validate_repository(root)

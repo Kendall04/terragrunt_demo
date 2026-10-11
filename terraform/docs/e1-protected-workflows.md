@@ -1,5 +1,9 @@
 # E1 WP6 — protected GitHub/OIDC request integration
 
+WP7 milestone disposition: the stage narrative below records its accepted package.
+Legacy overlap is now retired; see [final E1 repository contract](e1-final-acceptance.md).
+Installation/governance/live evidence remains unverified and compute stays inactive.
+
 Starting revision: `d5d1ecc2e803ebee0226ae17d5f2f1db34b27113`.
 Implementation candidate; not integrated, deployed or operationally installed.
 The approved [E1 specification](../../specs/iam-hardening/spec.md) and

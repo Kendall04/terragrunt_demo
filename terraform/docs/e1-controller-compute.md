@@ -1,5 +1,9 @@
 # E1 WP2C — protected controller compute foundation
 
+WP7 milestone disposition: the stage narrative below records its accepted package.
+Legacy overlap is now retired; see [final E1 repository contract](e1-final-acceptance.md).
+Installation/governance/live evidence remains unverified and compute stays inactive.
+
 WP3C now extends these historical declarations with prerequisite-gated internal
 controllers and subordinate workers; see [the current implementation](e1-internal-release.md).
 The 18-node skeleton and canonical inactive state described here remain preserved.

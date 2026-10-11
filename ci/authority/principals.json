@@ -352,5 +352,6 @@
         "Actual principal/account authority unverified; no current AWS identity invented"
       ]
     }
-  ]
+  ],
+  "wp7_disposition": "HISTORICAL_PRE_E1_CHARACTERIZATION_ONLY; final authority is security_root/model.py closed generated TARGET plus final_acceptance gate"
 }

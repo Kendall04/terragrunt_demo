@@ -7,7 +7,10 @@ python -I -B scripts/tests/authority/run.py --report <temporary-report-path>
 ```
 
 No dependencies are installed. Success means `WP1_CHARACTERIZATION_PASS`, not
-E1 acceptance. The current repository is expected to violate E1. Reports contain
+E1 acceptance. WP7 expands immutable retired source text into disposable fixtures to retain pre-E1
+bypass regressions. Those witnesses are historical, never final TARGET authority.
+[Final E1 acceptance](../../terraform/docs/e1-final-acceptance.md) evaluates the
+closed resulting security-root, protected lifecycle and workflow model. Reports contain
 executed test IDs, results, source hashes, Git revision/tree, dirty status and
 baseline path witnesses. Store generated reports outside the repository.
 

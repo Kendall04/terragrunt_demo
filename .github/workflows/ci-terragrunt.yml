@@ -46,6 +46,12 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.13.4
+          terraform_wrapper: false
+
+      - name: Final E1 repository acceptance
+        shell: bash
+        run: |
+          python3 -I -B scripts/tests/final_acceptance/gate.py --report-dir "$RUNNER_TEMP/e1-acceptance"
 
       - name: Install Terragrunt
         run: |

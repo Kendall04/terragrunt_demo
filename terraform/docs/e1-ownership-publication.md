@@ -1,5 +1,9 @@
 # E1 WP2D — protected ownership and administrator publication closure
 
+WP7 milestone disposition: the stage narrative below records its accepted package.
+Legacy overlap is now retired; see [final E1 repository contract](e1-final-acceptance.md).
+Installation/governance/live evidence remains unverified and compute stays inactive.
+
 Baseline: `447db478a76e72cfa5eeb5d8ccc29472ca7c1f00`.
 Repository TARGET implementation, pending independent review. No live deployment,
 state migration, installation, provider validation or completed E1 claim.

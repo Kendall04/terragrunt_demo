@@ -11,6 +11,7 @@ import bundles
 import ordinary
 import ownership
 import wp5_iam
+import retired
 
 ROOT = Path(__file__).resolve().parents[3]
 OWNER = 'SECURITY_ROOT_OWNED'
@@ -39,8 +40,7 @@ def configuration(doc):
     for env in ('dev', 'prod'):
         for layer in ('platform', 'edge'):
             base = ROOT/'terraform/infra'/layer
-            for path in sorted(base.rglob('*.tf')):
-                relative = path.relative_to(base).as_posix()
+            for relative, path in retired.sources(ROOT, 'terraform/infra/'+layer):
                 text = path.read_text(encoding='utf-8')
                 text = '\n'.join(line for line in text.splitlines() if not line.lstrip().startswith('#'))+'\n'
                 text = text.replace('var.env', '"'+env+'"').replace('var.project', '"demo"')
@@ -54,7 +54,7 @@ def configuration(doc):
                 'provider': {'aws': {'region':'${var.region}', 'allowed_account_ids':['${var.account_id}']}},
                 'variable': {'account_id':{'type':'string','nullable':False},'region':{'type':'string','nullable':False}}}
         # Reuse actual reviewed provider checksums. No downloaded/generated lock.
-        lock = (ROOT/'terraform/live/dev/shared/.terraform.lock.hcl').read_text()
+        lock = retired.source(ROOT, 'terraform/live/dev/shared/.terraform.lock.hcl').read_text()
         for layer in LAYERS:
             result[f'terraform/modules/target/{env}/{layer}/.terraform.lock.hcl'] = lock
     return result
@@ -92,7 +92,7 @@ def target_overlay(wiring):
         nat=wiring[root+'global/wp5-nat.tf.json']
         nat['output']={'nat_eip_allocation_ids':{'value':'${{for key,v in aws_eip.wp5_nat:key=>v.allocation_id}}'},
             'nat_asg_names':{'value':'${{for key,v in aws_autoscaling_group.wp5_nat:key=>v.name}}'}}
-        alarms=(ROOT/'terraform/infra/global/modules/nat/alarms_nat.tf').read_text(encoding='utf-8')
+        alarms=retired.source(ROOT, 'terraform/infra/global/modules/nat/alarms_nat.tf').read_text(encoding='utf-8')
         alarms='\n'.join(line for line in alarms.splitlines() if not line.lstrip().startswith('#'))+'\n'
         alarms=alarms.replace('var.name','local.name').replace('var.tags','local.tags')
         for side in ('a','b'):
@@ -371,7 +371,7 @@ def extend(tf):
 def foundations():
     """Admin-owned nonsensitive lifecycle state, never ordinary bucket control."""
     ex=lambda source:'${'+source+'}'
-    source=(ROOT/'terraform/infra/global/modules/nat/launch_template.tf').read_text(encoding='utf-8')
+    source=retired.source(ROOT, 'terraform/infra/global/modules/nat/launch_template.tf').read_text(encoding='utf-8')
     userdata=re.search(r'nat_userdata = <<-EOT\n(.*?)\n  EOT',source,re.S).group(1)
     userdata='\n'.join(line[4:] for line in userdata.splitlines())+'\n'
     tf={'terraform':{'required_providers':{'aws':{'source':'hashicorp/aws','version':'~> 5.50'}}},

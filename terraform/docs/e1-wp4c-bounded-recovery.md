@@ -1,5 +1,9 @@
 # E1 WP4C — bounded recovery contracts
 
+WP7 milestone disposition: the stage narrative below records its accepted package.
+Legacy overlap is now retired; see [final E1 repository contract](e1-final-acceptance.md).
+Installation/governance/live evidence remains unverified and compute stays inactive.
+
 ## CURRENT CONTRACT — provider-free, not integrated
 
 WP4C supplies protected domain controllers and closed adapter contracts only.
@@ -113,7 +117,7 @@ The approved launch specification pins the resolved AMI, launch-template ID and
 numeric version, user-data SHA-256, instance profile/role, one security group,
 instance type, metadata token policy, public-IP/delete-on-termination settings
 and protected tags. Subnet/AZ/VPC are explicit membership fields. This derives
-from the repository's [launch template](../infra/global/modules/nat/launch_template.tf):
+from the repository's [launch template](../../ci/authority/retired/terraform/infra/global/modules/nat/launch_template.tf.txt):
 `t3.micro`, required metadata tokens, public interface, one SG, and existing NAT
 user data. The current Terraform `$Latest`/AMI resolution must be resolved and
 pinned by protected publication before this controller accepts an operation.

@@ -1,5 +1,9 @@
 # E1 WP3C internal release implementation
 
+WP7 milestone disposition: the stage narrative below records its accepted package.
+Legacy overlap is now retired; see [final E1 repository contract](e1-final-acceptance.md).
+Installation/governance/live evidence remains unverified and compute stays inactive.
+
 This repository checkpoint implements the human-authorized split trust plane.
 It is pending independent review and integration. WP3 is not complete.
 The immutable [spec](../../specs/iam-hardening/spec.md) and
