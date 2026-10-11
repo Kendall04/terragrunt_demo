@@ -172,3 +172,12 @@ authority exists in this greenfield slice. Any historical migration prose in the
 plan is inert/deferred. WP4A-N2's invalid documentation byte is untouched. Fresh
 Linux E3 and AWS/provider-backed realization remain unverified, separately from
 these provider-free contracts. WP4D remains pending.
+
+## E13 reliability extension
+
+[E13](e13-nat-reliability.md) preserves the three mutations and immutable journal
+semantics above, adding bounded EventBridge/Lambda failure destinations and a
+read-only check after source/destination recovery. Bootstrap completion and exact
+EIP/active-route/flag evidence are separate from private-subnet forwarding proof.
+The earlier absence of DLQ/AMI procedure describes the WP4C milestone; it does
+not describe the extended TARGET. No new failover or general EC2 authority exists.

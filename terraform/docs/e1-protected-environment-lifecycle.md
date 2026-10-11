@@ -116,7 +116,7 @@ verification. Required root inputs derive from installed source; missing inputs 
 replaced backend/account/region deny compute.
 
 Global can create two EIP foundations before NAT activation. Admin-owned NAT launch
-templates preserve original fixed iptables user data/profile and accept only exact
+templates preserve reviewed fixed iptables user data/profile and accept only exact
 verified network/AMI inputs. Outputs are unverified candidates, not installations.
 ASGs require integer template versions and verified installation of all three WP4
 handlers with exact runtime membership. No `$Latest`, caller user data, template
@@ -152,3 +152,13 @@ review cycle or architecture decision was introduced.
 WP6 owns GitHub/OIDC workflow cutover/external activation. WP7 owns legacy retirement
 and final acceptance. WP5 is not integrated; E1 is not complete. Live IAM/provider
 execution, installation, membership and fresh Linux E3 remain unverified.
+
+## E13 administrator maintenance extension
+
+[E13](e13-nat-reliability.md) supersedes the original extracted NAT bootstrap
+bytes with a fixed completion marker and readback checks. Exact AMI, integer
+launch version and user-data hash remain administrator owned. Routine reconcile
+still rejects launch-binding changes. Patch approval preserves network/profile/SG
+and configuration identity and requires separately observed versions plus an
+explicit single-AZ maintenance window; no caller or recovery-role launch control
+is added. Live rollout and end-to-end forwarding remain unverified.

@@ -15,6 +15,7 @@ import tempfile
 HERE = Path(__file__).resolve().parent
 sys.path[:0] = [str(HERE), str(HERE.parent/'security_root'), str(HERE.parents[2]),
                str(HERE.parent/'authority')]
+from terraform_console import decode as console_json
 import wp4d
 from test_wp4d import installed_projection, ACCOUNT, REGION
 
@@ -59,7 +60,7 @@ def main():
                                     text=True, capture_output=True, cwd=directory, env=environment, timeout=30)
             if result.returncode:
                 raise AssertionError(name+': '+result.stderr)
-            observed = json.loads(json.loads(result.stdout))
+            observed = console_json(result.stdout)
             assert observed['active'] == wp4d.creation_supported(authority, i, r, b, ACCOUNT, REGION), name
             for binding in observed['active']:
                 selected = authority['wp4d']['selected'][binding]

@@ -19,9 +19,9 @@ control and verified external enforcement are distinct evidence.
 
 ## Knowledge-driven change workflow
 
-Baseline → owner reconciliation → durable knowledge → agent map → selection of
-one improvement → durable spec → technical planning → implementation → review
-against that spec → selective post-review knowledge capture.
+Baseline â†’ owner reconciliation â†’ durable knowledge â†’ agent map â†’ selection of
+one improvement â†’ durable spec â†’ technical planning â†’ implementation â†’ review
+against that spec â†’ selective post-review knowledge capture.
 Before selecting an improvement, review its current contract, constraints and
 open questions together. Later specs should state outcomes, non-goals and
 acceptance evidence independently of a technical plan. Update current-contract
@@ -48,7 +48,7 @@ but that state was destroyed; no forensics/cleanup is required for deleted state
 Future deployment is reconstruction. Treat live state as ephemeral unless captured
 later through verified evidence. This is dated owner evidence, not an AWS audit.
 
-## Targets — not current guarantees
+## Targets â€” not current guarantees
 
 - **Production MUST NOT depend operationally on development-owned resources.**
   Existing dev/shared ownership violates this target; migration mechanism is open.
@@ -85,22 +85,22 @@ mean low importance. Scope/dependencies below do not authorize implementation.
 | --- | --- | --- | --- |
 | B1 High IAM | Broad infrastructure APIs; shared normal/high-risk policy; prod-created high-risk role trusts dev-infra-approval | Medium-large; environment authority decision; high lockout/apply risk | Clarify boundary first |
 | B2 High delivery | Distinct deploy/rollback concurrency groups; cleanup not bound to release generation | Medium; mutation ownership; medium-high outage risk | Narrow concurrency contract may fit |
-| B3 High readiness — completed | Per-task one-shot readiness gate precedes promotion; the bounded ECS/ALB observation model and historical rather than continuous readiness are explicit | Preserve exact cohort/digest/target evidence, bounded failure, unchanged `/health`, fail-closed external evidence handling and immediate final revalidation | [Durable spec](../../specs/deployment-readiness-promotion/spec.md), [plan](../../specs/deployment-readiness-promotion/plan.md) and [reviewed evidence](validation.md#deployment-readiness-promotion--reviewed-evidence) complete the feature; optional hardening below is separate |
+| B3 High readiness â€” completed | Per-task one-shot readiness gate precedes promotion; the bounded ECS/ALB observation model and historical rather than continuous readiness are explicit | Preserve exact cohort/digest/target evidence, bounded failure, unchanged `/health`, fail-closed external evidence handling and immediate final revalidation | [Durable spec](../../specs/deployment-readiness-promotion/spec.md), [plan](../../specs/deployment-readiness-promotion/plan.md) and [reviewed evidence](validation.md#deployment-readiness-promotion--reviewed-evidence) complete the feature; optional hardening below is separate |
 | B4 High recovery | Separate listener/rule/schedule/record operations permit partial success | Medium-large; rollback/concurrency contract; high risk | Isolate one failure scenario first |
 | B5 High data durability | Termination-deleted root disk; no repository backup/restore; startup migrations under db_owner | Large overall; D4/D5 and recovery objectives; high data/schema risk | IMPORTANT, DEFERRED until deployed AWS near program end; no deep design now |
 | B6 High conditional API security | Public writes and plaintext reads | Medium; domain/data policy first; high compatibility risk | Auth follows backend expansion |
-| B7 High observability — configuration corrected | [E7](e7-cloudwatch-alarms.md) fixes active dev/prod ECS namespace, NAT collection and gauge missing-data behavior; real metric/notification delivery remains unverified | Preserve bounded dimensions, protected ownership and sparse-error policy; no observability redesign | Provider-free repository evidence; live AWS validation remains separate |
+| B7 High observability â€” configuration corrected | [E7](e7-cloudwatch-alarms.md) fixes active dev/prod ECS namespace, NAT collection and gauge missing-data behavior; real metric/notification delivery remains unverified | Preserve bounded dimensions, protected ownership and sparse-error policy; no observability redesign | Provider-free repository evidence; live AWS validation remains separate |
 | B8 Medium artifacts | Overwriteable S3 manifests; ECR retains only 15 images regardless of tag | Medium; identity/idempotency/rollback horizon; medium publishing/cost risk | Narrow publication contract may fit |
 | B9 Medium provenance | Renderer defaults tests/build to passed without exact test-result binding | Medium; qualifying evidence; medium release-blocking risk | Good bounded candidate |
-| B10 Medium backend — partially completed | Direct-KMS plaintext-size boundary completed with REVIEW_PASS; pagination offset overflow/ties corrected with local provider/query and HTTP tests; dependency error behavior remains unresolved | Preserve the reviewed [application/data contract](architecture.md#current-contract--application-and-data) and [validation coverage](validation.md#existing-test-meaning-and-gaps); larger-payload support remains a separate future design decision | [Text-size boundary](../../specs/kms-text-boundary/spec.md) complete; pagination does not snapshot concurrent writes; dependency errors remain separate work |
-| B11 Medium testing — repository CI selection completed | CD fixture enforcement and E1 acceptance selection cover protected implementation/contracts/TARGET wiring; CD shell helpers now receive syntax/hygiene checks | Preserve [E11 selection/result boundaries](validation.md#current-contract--e11-ci-selection-and-enforcement) and existing app/readiness/CD Safety suites; live behavior remains separate | Required-status-check enforcement remains external and unconfigured/unverified |
+| B10 Medium backend â€” partially completed | Direct-KMS plaintext-size boundary completed with REVIEW_PASS; pagination offset overflow/ties corrected with local provider/query and HTTP tests; dependency error behavior remains unresolved | Preserve the reviewed [application/data contract](architecture.md#current-contract--application-and-data) and [validation coverage](validation.md#existing-test-meaning-and-gaps); larger-payload support remains a separate future design decision | [Text-size boundary](../../specs/kms-text-boundary/spec.md) complete; pagination does not snapshot concurrent writes; dependency errors remain separate work |
+| B11 Medium testing â€” repository CI selection completed | CD fixture enforcement and E1 acceptance selection cover protected implementation/contracts/TARGET wiring; CD shell helpers now receive syntax/hygiene checks | Preserve [E11 selection/result boundaries](validation.md#current-contract--e11-ci-selection-and-enforcement) and existing app/readiness/CD Safety suites; live behavior remains separate | Required-status-check enforcement remains external and unconfigured/unverified |
 | B12 Medium IaC CI | PR plans target dev; prod high-risk CD unsupported; reviewed plan not saved for apply | Medium; prod/governance model; medium-high risk | One routing contract may fit |
-| B13 Medium NAT | Independent recovery, no DLQ/forwarding probe; ignored AMI updates | Medium; NAT/patch policy; medium-high egress risk | Offline Lambda behavior first; live recovery later |
+| B13 Medium NAT â€” bounded implementation | [E13](e13-nat-reliability.md) adds separate delivery/execution failure queues, bounded retries, exact bootstrap/network evidence and administrator AMI replacement approval; live forwarding remains unverified | Preserve three protected duties, pinned launch identity and single-AZ maintenance ownership; no new failover system | Offline controller/Terraform evidence; genuine AMI rollout, forwarding and notification proof deferred |
 | B14 Medium reproducibility/DX - PARTIALLY_RESOLVED | [E14-A](e14-container-hardening.md) retains verified .NET 8 image bases/non-root UID 1654. [E14-B](e14b-toolchain-reproducibility.md) verifies standalone CI tool hashes, pins CI action commits/host SDK and closes security-root lock coverage; all 14 TARGET locks remain unchanged. Runner/jq, BuildKit, NuGet, protected scope action and live installation evidence remain | Medium; deliberate reviewed pin/provider/base update procedure; medium compatibility risk | Bounded application and infrastructure/CI inputs; overall reproducibility remains partial |
 | B15 Medium operations/cost | No verified alerts, restore drills, SLOs, business probes, tracing or budgets | Medium; explicit expectations; variable runtime/cost risk | Define useful evidence before tooling |
 | B16 Medium knowledge | Historical docs/code comments remain non-authoritative; maintain current docs as behavior evolves | Small ongoing; low risk | Continuing maintenance |
 
-### Optional readiness hardening — outside completed B3
+### Optional readiness hardening â€” outside completed B3
 
 These non-blocking improvements do not reopen the completed readiness feature:
 

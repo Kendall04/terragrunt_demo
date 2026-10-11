@@ -41,6 +41,8 @@ CRITERIA = {
     'AC16': SUITES,
 }
 CHECKS = (
+    ('nat_reliability', ('python', '-I', '-B', 'scripts/tests/nat/run.py')),
+    ('nat_static', ('python', '-I', '-B', 'scripts/tests/nat/check_static.py')),
     ('generated_security', ('python', '-I', '-B', 'scripts/tests/security_root/render.py')),
     ('generated_workflows', ('python', '-I', '-B', 'scripts/workflow_requests/render.py')),
     ('knowledge', ('python', '-I', '-B', 'scripts/tests/final_acceptance/check_knowledge.py')),

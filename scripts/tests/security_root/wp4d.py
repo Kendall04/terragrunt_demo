@@ -55,6 +55,7 @@ SUPPORT = (
     "scripts/wp4d/runtime.py", "scripts/wp4d/adapters.py",
     "scripts/wp4d/gateway.py", "scripts/wp4d/installed.py",
     "scripts/wp4d/aws_runtime.py", "scripts/wp4d/nat_resolver.py",
+    "scripts/nat/reliability.py",
 )
 
 
@@ -440,6 +441,10 @@ def policy(binding, resources, account, region, version_id):
                   {"StringEquals": {"ec2:Attribute": "sourceDestCheck",
                                     "aws:ResourceTag/Environment": env,
                                     "aws:ResourceTag/Role": "nat"}})
+        allow(("sqs:SendMessage",), [f"arn:aws:sqs:{region}:{account}:e1-wp4-{env}-nat-execution-failed"])
+        if action == "disable_sdc":
+            allow(("ec2:GetConsoleOutput",), [arn("ec2", "instance", "*")],
+                  {"StringEquals": {"aws:ResourceTag/Environment": env, "aws:ResourceTag/Role": "nat"}})
         own = f"recovery/{env}/recovery/{action}/"
         read(bucket, own)
         write(bucket, own)
@@ -690,7 +695,56 @@ def extend(tf):
         "for_each": ex('{ for k,v in local.wp4d_gateways : k => v if startswith(k, "nat-recovery/") && contains(keys(local.wp4d_nat_events), v.environment) }'),
         "rule": ex("aws_cloudwatch_event_rule.wp4d_nat[each.value.environment].name"),
         "target_id": ex('replace(each.key, "/", "-")'),
-        "arn": ex("aws_lambda_function.wp4d[each.key].qualified_arn")}
+        "arn": ex("aws_lambda_function.wp4d[each.key].qualified_arn"),
+        "input_transformer": {
+            "input_paths": {"id": "$.id", "account": "$.account", "region": "$.region", "time": "$.time",
+                            "asg": "$.detail.AutoScalingGroupName", "instance": "$.detail.EC2InstanceId"},
+            "input_template": '{"id":<id>,"account":<account>,"region":<region>,"time":<time>,"source":"aws.autoscaling","detail-type":"EC2 Instance Launch Successful","detail":{"AutoScalingGroupName":<asg>,"EC2InstanceId":<instance>}}'}}
+    # E13: EventBridge acceptance and Lambda execution are separate failures.
+    resources["aws_cloudwatch_event_target"]["wp4d_nat"].update({
+        "retry_policy": {"maximum_event_age_in_seconds": 900, "maximum_retry_attempts": 3},
+        "dead_letter_config": {"arn": ex('aws_sqs_queue.nat_delivery_failed[each.value.environment].arn')},
+        "depends_on": ["aws_sqs_queue_policy.nat_failures"]})
+    resources["aws_lambda_function_event_invoke_config"] = {"wp4d_nat": {
+        "for_each": ex('aws_cloudwatch_event_target.wp4d_nat'),
+        "function_name": ex('aws_lambda_function.wp4d[each.key].function_name'),
+        "qualifier": ex('aws_lambda_function.wp4d[each.key].version'),
+        "maximum_event_age_in_seconds": 900, "maximum_retry_attempts": 1,
+        "destination_config": {"on_failure": {"destination": ex('aws_sqs_queue.nat_execution_failed[local.wp4d_active[each.key].environment].arn')}}}}
+    resources["aws_sqs_queue"] = {"nat_" + kind + "_failed": {
+        "for_each": ex('local.wp4d_nat_events'),
+        "name": ex('"e1-wp4-${each.key}-nat-' + kind + '-failed"'),
+        "message_retention_seconds": 1209600, "sqs_managed_sse_enabled": True,
+        "tags": {"E1Owner": OWNER, "Environment": ex('each.key')},
+        "lifecycle": {"prevent_destroy": True}}
+        for kind in ("delivery", "execution")}
+    local["nat_failure_queues"] = ex('merge({for env,q in aws_sqs_queue.nat_delivery_failed : "${env}/delivery" => {environment=env,arn=q.arn,url=q.url,name=q.name,kind="delivery"}}, {for env,q in aws_sqs_queue.nat_execution_failed : "${env}/execution" => {environment=env,arn=q.arn,url=q.url,name=q.name,kind="execution"}})')
+    resources["aws_sqs_queue_policy"] = {"nat_failures": {
+        "for_each": ex('local.nat_failure_queues'), "queue_url": ex('each.value.url'),
+        "policy": ex('jsonencode({Version="2012-10-17", Statement=concat([{Sid="TLS", Effect="Deny", Principal="*", Action="sqs:*", Resource=each.value.arn, Condition={Bool={"aws:SecureTransport"="false"}}}, {Sid="AdminReadDrain", Effect="Allow", Principal={AWS=var.admin_arn}, Action=["sqs:ReceiveMessage","sqs:DeleteMessage","sqs:ChangeMessageVisibility","sqs:GetQueueAttributes"], Resource=each.value.arn}, {Sid="OnlyAdminDrain", Effect="Deny", Principal="*", Action=["sqs:ReceiveMessage","sqs:DeleteMessage","sqs:PurgeQueue","sqs:ChangeMessageVisibility"], Resource=each.value.arn, Condition={ArnNotEquals={"aws:PrincipalArn"=var.admin_arn}}}], each.value.kind=="delivery" ? [{Sid="ExactRule", Effect="Allow", Principal={Service="events.amazonaws.com"}, Action="sqs:SendMessage", Resource=each.value.arn, Condition={ArnEquals={"aws:SourceArn"=aws_cloudwatch_event_rule.wp4d_nat[each.value.environment].arn}, StringEquals={"aws:SourceAccount"=var.account_id}}}] : [], each.value.kind=="execution" ? [{Sid="ExactExecutionRoles", Effect="Allow", Principal={AWS=[for k,v in local.wp4d_active : "arn:aws:iam::${var.account_id}:role/${v.role}" if startswith(k,"nat-recovery/") && v.environment==each.value.environment]}, Action="sqs:SendMessage", Resource=each.value.arn}] : [])})')}}
+    # Reuse fixed existing environment SNS topics without owning their policies.
+    resources.setdefault("aws_cloudwatch_metric_alarm", {})["nat_failure_queue"] = {
+        "for_each": ex('local.nat_failure_queues'), "alarm_name": ex('"e1-wp4-${replace(each.key,"/","-")}-nat-failures"'),
+        "namespace": "AWS/SQS", "metric_name": "ApproximateNumberOfMessagesVisible",
+        "dimensions": {"QueueName": ex('each.value.name')}, "statistic": "Maximum",
+        "period": 60, "evaluation_periods": 1, "threshold": 0,
+        "comparison_operator": "GreaterThanThreshold", "treat_missing_data": "missing",
+        "alarm_actions": [ex('"arn:aws:sns:${var.region}:${var.account_id}:demo-${each.value.environment}-alerts"')]}
+    resources["aws_cloudwatch_metric_alarm"]["nat_async_delivery"] = {
+        "for_each": ex('aws_cloudwatch_event_target.wp4d_nat'),
+        "alarm_name": ex('"e1-${replace(each.key,"/","-")}-destination-failed"'),
+        "namespace": "AWS/Lambda", "metric_name": "DestinationDeliveryFailures",
+        "dimensions": {"FunctionName": ex('aws_lambda_function.wp4d[each.key].function_name')},
+        "statistic": "Sum", "period": 60, "evaluation_periods": 1, "threshold": 0,
+        "comparison_operator": "GreaterThanThreshold", "treat_missing_data": "notBreaching",
+        "alarm_actions": [ex('"arn:aws:sns:${var.region}:${var.account_id}:demo-${local.wp4d_active[each.key].environment}-alerts"')]}
+    resources["aws_cloudwatch_metric_alarm"]["nat_event_dlq_delivery"] = {
+        "for_each": ex('local.wp4d_nat_events'), "alarm_name": ex('"e1-wp4-${each.key}-nat-dlq-delivery-failed"'),
+        "namespace": "AWS/Events", "metric_name": "InvocationsFailedToBeSentToDlq",
+        "dimensions": {"RuleName": ex('aws_cloudwatch_event_rule.wp4d_nat[each.key].name')},
+        "statistic": "Sum", "period": 60, "evaluation_periods": 1, "threshold": 0,
+        "comparison_operator": "GreaterThanThreshold", "treat_missing_data": "notBreaching",
+        "alarm_actions": [ex('"arn:aws:sns:${var.region}:${var.account_id}:demo-${each.key}-alerts"')]}
     resources["aws_lambda_permission"]["wp4d_nat"] = {
         "for_each": ex("aws_cloudwatch_event_target.wp4d_nat"),
         "statement_id": "ExactNatLaunchRule", "action": "lambda:InvokeFunction",

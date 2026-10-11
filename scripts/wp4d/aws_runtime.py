@@ -489,13 +489,14 @@ class Application(Effects, ApplicationRuntime):
 
 class Nat(Effects, NatRuntime):
     """Action-specific EC2 transport; protected resolver supplies exact membership."""
-    def __init__(self, ec2, autoscaling, iam, records, resolver, action, operation, selector_asg):
+    def __init__(self, ec2, autoscaling, iam, records, resolver, action, operation, selector_asg, expected_instance=None):
         super().__init__(records)
         require(action in ("assign_eip", "change_rt", "disable_sdc"))
         self.ec2, self.autoscaling, self.iam, self.resolver, self.action = ec2, autoscaling, iam, resolver, action
         self.operation = operation
         require(type(selector_asg) is str and selector_asg in {slot["asg"] for slot in resolver.slots})
         self.selector_asg = selector_asg
+        self.expected_instance = expected_instance
 
     def context(self, action, deadline):
         require(action == self.action and self.now() < deadline)
@@ -508,7 +509,9 @@ class Nat(Effects, NatRuntime):
             value = a.decode(retained["bytes"])
             selected = value["body"]["domain"]["membership"]["asg"]
             require(selected == self.selector_asg)
-        return self.resolver.observe(self.ec2, self.autoscaling, self.iam, action, self.now(), selected)
+        state = self.resolver.observe(self.ec2, self.autoscaling, self.iam, action, self.now(), selected)
+        require(self.expected_instance is None or state["membership"]["instance"] == self.expected_instance)
+        return state
 
     def mutate(self, stage, token, request, deadline):
         require(stage == self.action and self.now() < deadline)

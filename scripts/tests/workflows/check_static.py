@@ -12,6 +12,7 @@ import tempfile
 HERE=Path(__file__).resolve().parent
 sys.path[:0]=[str(HERE),str(HERE.parent/'security_root'),str(HERE.parent/'authority'),str(HERE.parents[2]),str(HERE.parent/'wp4d')]
 import model
+from terraform_console import decode as console_json
 import wp6
 from test_workflows import DOC,ROOT,ACCOUNT,REGION,projection
 
@@ -62,7 +63,7 @@ def main():
             path=Path(directory)/'main.tf.json';path.write_text(json.dumps(dict(variable=variables,locals=generated['locals'])))
             result=subprocess.run([terraform,'console','-no-color'],input=expression+'\n',capture_output=True,text=True,cwd=directory,env=env,timeout=30)
             if result.returncode:raise AssertionError(name+': '+result.stderr)
-            actual=json.loads(json.loads(result.stdout))
+            actual=console_json(result.stdout)
             records=(mutant or admitted)['wp6']['approvals']
             expected=sorted(k for k,v in records.items() if v==admitted['wp6']['approvals'].get(k) and wp6.ready(k,v,ACCOUNT,REGION,None if k.startswith('plan-') else observed.get('request-gateway/'+k),DOC['wp6']['source_sha256']))
             assert actual['active']==expected,(name,actual['active'],expected)
@@ -91,7 +92,7 @@ def main():
             # wp4/state already jsonencode strings; decode only the final outputs.
             result=subprocess.run([terraform,'console','-no-color'],input=expression+'\n',capture_output=True,text=True,cwd=directory,env=env,timeout=30)
             assert result.returncode==0,result.stderr
-            policies=json.loads(json.loads(result.stdout))
+            policies=console_json(result.stdout)
             delivery='deploy-dev' if environment=='dev' else 'promote-prod'
             for identity in (delivery,'emergency-'+environment):
                 role=f'arn:aws:iam::{ACCOUNT}:role/e1-request-{identity}'

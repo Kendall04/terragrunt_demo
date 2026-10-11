@@ -20,7 +20,8 @@ BINDINGS = tuple(kind + '/' + consumer for consumer in
                  ('infra-dev', 'infra-prod', 'infra-high-risk-dev', 'infra-high-risk-prod')
                  for kind in ('request-gateway', 'environment-lifecycle'))
 SOURCES = ('scripts/lifecycle/contract.py', 'scripts/lifecycle/controller.py',
-           'scripts/lifecycle/packages.py', 'scripts/lifecycle/runtime.py')
+           'scripts/lifecycle/packages.py', 'scripts/lifecycle/runtime.py',
+           'scripts/nat/user_data.sh')
 
 
 def canonical(value):
@@ -396,9 +397,7 @@ def extend(tf):
 def foundations():
     """Admin-owned nonsensitive lifecycle state, never ordinary bucket control."""
     ex=lambda source:'${'+source+'}'
-    source=retired.source(ROOT, 'terraform/infra/global/modules/nat/launch_template.tf').read_text(encoding='utf-8')
-    userdata=re.search(r'nat_userdata = <<-EOT\n(.*?)\n  EOT',source,re.S).group(1)
-    userdata='\n'.join(line[4:] for line in userdata.splitlines())+'\n'
+    userdata=(ROOT/'scripts/nat/user_data.sh').read_text(encoding='utf-8')
     tf={'terraform':{'required_providers':{'aws':{'source':'hashicorp/aws','version':'~> 5.50'}}},
         'variable':{'account_id':{'type':'string'},'region':{'type':'string'},'admin_arn':{'type':'string'},
             'nat_launch_inputs':{'type':'any','default':{}}},
