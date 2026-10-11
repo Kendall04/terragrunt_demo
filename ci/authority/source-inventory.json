@@ -434,6 +434,75 @@
       "signals": {},
       "semantic_status": "UNVERIFIED"
     },
+    ".github/scripts/ci/select-checks.py": {
+      "sha256": "8ffd2cfb545701e1eec792b78d3060c8363e2b03bb4f4ff449859fca0d6222cc",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          15,
+          16,
+          17,
+          18,
+          20,
+          40,
+          42,
+          44,
+          49,
+          61,
+          65
+        ],
+        "executable-dependency": [
+          19,
+          20,
+          21,
+          49
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    ".github/scripts/ci/tests/test_ci_selection.py": {
+      "sha256": "3f904490fc696da1915570ce450a89c899aa69019afb979651d56f19d99458fb",
+      "declarations": [],
+      "signals": {
+        "credential-acquisition": [
+          305
+        ],
+        "role-input": [
+          305
+        ],
+        "launch-or-mutation": [
+          111,
+          115,
+          156,
+          159,
+          245,
+          282,
+          297,
+          305
+        ],
+        "executable-dependency": [
+          13,
+          79,
+          84,
+          98,
+          129,
+          132,
+          138,
+          162,
+          183,
+          224,
+          259,
+          262,
+          266,
+          267,
+          270,
+          291,
+          296,
+          299
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
     ".github/workflows/cd-demo-api.yml": {
       "sha256": "7ce62fcf6f03b6de4fdc864a54b4f9c2285a2d791accbe4b2265e79773c1452d",
       "declarations": [],
@@ -893,6 +962,20 @@
       },
       "semantic_status": "UNVERIFIED"
     },
+    "demo-api/deploy/task-definition.template.json": {
+      "sha256": "c6097b3446e267ee4a9b51ae498a952520f771f4a87faf7536ecaa1c2d561644",
+      "declarations": [],
+      "signals": {
+        "role-input": [
+          9,
+          10
+        ],
+        "executable-dependency": [
+          63
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
     "demo-api/Dockerfile": {
       "sha256": "509e75b7aeb3a51b9596ea4f43debb394b8d94c52eb64a1d57ae066b2a4000db",
       "declarations": [],
@@ -904,20 +987,6 @@
           26,
           29,
           44
-        ]
-      },
-      "semantic_status": "UNVERIFIED"
-    },
-    "demo-api/deploy/task-definition.template.json": {
-      "sha256": "c6097b3446e267ee4a9b51ae498a952520f771f4a87faf7536ecaa1c2d561644",
-      "declarations": [],
-      "signals": {
-        "role-input": [
-          9,
-          10
-        ],
-        "executable-dependency": [
-          63
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -1147,6 +1216,22 @@
       },
       "semantic_status": "UNVERIFIED"
     },
+    "scripts/internal_release/adapters.py": {
+      "sha256": "4357456410d36fbb1a004d08d6eb71db47149c8bea0dfa78a86ea5ecca389d34",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          118,
+          125
+        ],
+        "executable-dependency": [
+          169,
+          175,
+          179
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
     "scripts/internal_release/Controller.Dockerfile": {
       "sha256": "3574bfcc67ee74537b9ef8623cb09fb2360da8bf8d8c86242624f23e8673fd3d",
       "declarations": [],
@@ -1167,32 +1252,6 @@
           13,
           14,
           15
-        ]
-      },
-      "semantic_status": "UNVERIFIED"
-    },
-    "scripts/internal_release/Worker.Dockerfile": {
-      "sha256": "1b0688d2a03e1115050589619f5104bd0e22cfd0d3d7b621a460d3e3491a57f8",
-      "declarations": [],
-      "signals": {
-        "executable-dependency": [
-          5
-        ]
-      },
-      "semantic_status": "UNVERIFIED"
-    },
-    "scripts/internal_release/adapters.py": {
-      "sha256": "4357456410d36fbb1a004d08d6eb71db47149c8bea0dfa78a86ea5ecca389d34",
-      "declarations": [],
-      "signals": {
-        "launch-or-mutation": [
-          118,
-          125
-        ],
-        "executable-dependency": [
-          169,
-          175,
-          179
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -1265,6 +1324,16 @@
         ],
         "executable-dependency": [
           16
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/internal_release/Worker.Dockerfile": {
+      "sha256": "1b0688d2a03e1115050589619f5104bd0e22cfd0d3d7b621a460d3e3491a57f8",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          5
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -6773,75 +6842,6 @@
         ],
         "executable-dependency": [
           4
-        ]
-      },
-      "semantic_status": "UNVERIFIED"
-    },
-    ".github/scripts/ci/select-checks.py": {
-      "sha256": "8ffd2cfb545701e1eec792b78d3060c8363e2b03bb4f4ff449859fca0d6222cc",
-      "declarations": [],
-      "signals": {
-        "launch-or-mutation": [
-          15,
-          16,
-          17,
-          18,
-          20,
-          40,
-          42,
-          44,
-          49,
-          61,
-          65
-        ],
-        "executable-dependency": [
-          19,
-          20,
-          21,
-          49
-        ]
-      },
-      "semantic_status": "UNVERIFIED"
-    },
-    ".github/scripts/ci/tests/test_ci_selection.py": {
-      "sha256": "3f904490fc696da1915570ce450a89c899aa69019afb979651d56f19d99458fb",
-      "declarations": [],
-      "signals": {
-        "credential-acquisition": [
-          305
-        ],
-        "role-input": [
-          305
-        ],
-        "launch-or-mutation": [
-          111,
-          115,
-          156,
-          159,
-          245,
-          282,
-          297,
-          305
-        ],
-        "executable-dependency": [
-          13,
-          79,
-          84,
-          98,
-          129,
-          132,
-          138,
-          162,
-          183,
-          224,
-          259,
-          262,
-          266,
-          267,
-          270,
-          291,
-          296,
-          299
         ]
       },
       "semantic_status": "UNVERIFIED"
