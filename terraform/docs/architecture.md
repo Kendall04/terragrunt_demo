@@ -135,7 +135,7 @@ Evidence: [app skeleton](../modules/target/dev/apps/ordinary-demo.tf),
 | Interface | Behavior |
 | --- | --- |
 | POST /text | Reject blank input, then plaintext over 4096 UTF-8 bytes; KMS-encrypt accepted bytes; persist base64 ciphertext; return plaintext DTO |
-| GET /text | Read/decrypt page; default 50, maximum 100; ten concurrent decrypts per request |
+| GET /text | Read/decrypt page ordered by CreatedAt descending, then unique Id descending; default 50, maximum 100; ten concurrent decrypts per request |
 | /health, /health/live | Process liveness only |
 | /ready, /health/ready | DB connectivity/pending migrations and KMS Encrypt |
 | Swagger | Development environment only |
@@ -147,8 +147,17 @@ No business queues or separate encryption service exist. One decryption failure
 fails the request. The symmetric direct-KMS wrapper accepts at most 4096 UTF-8
 bytes and rejects larger plaintext before calling KMS. POST returns HTTP 400
 with the string `Text must not exceed 4096 UTF-8 bytes.`; blank-input validation
-still takes precedence. Larger payload support, pagination overflow/tie ordering
-and dependency error contracts remain limitations.
+still takes precedence. GET rejects page numbers below 1 and page sizes outside
+1–100 with the existing HTTP 400 string errors. Offsets are calculated with widened
+arithmetic; `(page - 1) * pageSize` above `int.MaxValue` returns HTTP 400 with the
+string `Page is too large for the requested PageSize.` before repository/decryption
+work. Representable pages beyond the result set return an empty HTTP 200 array.
+Internal handler/repository calls retain lower-bound normalization (handler size
+also caps at 100) and throw `ArgumentOutOfRangeException` for unrepresentable
+offsets. Unique ordering prevents timestamp ties from moving records between
+pages for an unchanged dataset; offset pagination does not provide a snapshot
+across concurrent inserts/deletes. Larger payload support and dependency error
+contracts remain limitations.
 
 DB_CONN_STRING is required outside Development; Development may use configured
 fallback. KMS_KEY_ID selects encryption; SDK credentials use the runtime chain.
