@@ -62,7 +62,10 @@ permanent accepted invariant. No VPC endpoints are configured.
 Two t3.micro NAT ASGs each maintain one instance. User data configures forwarding
 and masquerading. Three independent ASG launch-success targets associate an EIP,
 update a route and disable source/destination checks. This is per-AZ replacement
-recovery, not cross-AZ failover or verified packet-forwarding health.
+recovery. [E13](e13-nat-reliability.md) separately contains EventBridge delivery
+and Lambda execution failures, verifies exact network/bootstrap evidence and keeps
+private-subnet egress explicitly unverified pending genuine traffic observations.
+There is no cross-AZ failover or continuous packet-forwarding health algorithm.
 
 Evidence: [global](../modules/target/dev/global),
 [edge](../modules/target/dev/edge),

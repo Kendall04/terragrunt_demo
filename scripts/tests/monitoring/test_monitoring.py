@@ -220,11 +220,13 @@ class Monitoring(unittest.TestCase):
 
     def test_protected_security_contracts_unchanged_except_package_digests(self):
         doc = copy.deepcopy(DOC)
-        for value in doc["wp5"]["selected"].values():
-            value.pop("package_sha256")
-        # Baseline cc223d8 entire authority, excluding only refreshed WP5 packages.
+        for kind in ("wp4d", "wp5"):
+            for value in doc[kind]["selected"].values():
+                value.pop("package_sha256")
+        # Integrated 72141a7 authority, excluding only source-derived WP4D/WP5 hashes.
+        # Their exact current values are independently checked by model.validate_repository.
         self.assertEqual(hashlib.sha256(json.dumps(doc, sort_keys=True).encode()).hexdigest(),
-                         "fe1a092a5a71fed609c985275de388644198c0b656e0d1451e77ce7561af6fc7")
+                         "588f99a5cdfe3ef9c01b6577fa9f2d94d6f879f597737a07b31925a4b328d0f7")
         self.assertEqual(doc["wp6"]["approvals"], {})
         for kind in ("wp4d", "wp5"):
             for field in ("installations", "runtime_approvals", "environment_bindings"):

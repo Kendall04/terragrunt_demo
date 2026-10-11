@@ -193,13 +193,39 @@ def _nat(clients, config, operation, event):
     from scripts.wp4d.aws_runtime import Nat as Transport
     from scripts.wp4d.nat_resolver import Resolver
     action = config["binding"].rsplit("/", 1)[1]
-    asg = event.get("detail", {}).get("AutoScalingGroupName")
-    require(type(asg) is str and asg in {slot["asg"] for slot in config["nat_slots"]})
+    from scripts.nat.reliability import launch_event, verify, checksum
+    from scripts.normal_delivery import authorization as a
+    asg, instance = launch_event(event, config)
     records = Objects(clients["s3"], config["evidence_bucket"], "recovery/")
     runtime = Transport(clients["ec2"], clients["autoscaling"], clients["iam"], records,
-                        Resolver(config["environment"], config["nat_slots"]), action, operation, asg)
+                        Resolver(config["environment"], config["nat_slots"]), action, operation, asg, instance)
     result = Controller(config["environment"], action, records, runtime).run(operation, b"{}\n")
-    return {"operation": operation, "status": result["status"]}
+    # A normal return would silently discard FAILURE/UNCERTAIN async events.
+    require(result["status"] == "SUCCESS")
+    if action == "disable_sdc":
+        try:
+            readiness = verify(clients["ec2"], lambda: runtime.context(action, runtime.now() + 30), instance)
+        except Exception:
+            # Persist only a fixed diagnostic code, never console output or SDK errors.
+            failure = {"schema": "E13_NAT_READINESS_V1", "event_id": event["id"],
+                       "operation": operation, "instance": instance, "observed_at": runtime.now(),
+                       "bootstrap_and_network": "UNVERIFIED", "private_subnet_egress": "UNVERIFIED_LIVE_PROOF_REQUIRED"}
+            raw = a.canonical(failure)
+            key = config["environment"] + "/recovery/" + action + "/" + operation + "/readiness-failures/" + checksum(failure)
+            retained = records.read(key)
+            if retained is None:
+                records.create(key, raw)
+            else:
+                require(retained["bytes"] == raw)
+            raise ValueError("E13_NAT_READINESS_UNVERIFIED") from None
+        raw = a.canonical(readiness)
+        key = config["environment"] + "/recovery/" + action + "/" + operation + "/readiness/" + checksum(readiness)
+        retained = records.read(key)
+        if retained is None:
+            records.create(key, raw)
+        else:
+            require(retained["bytes"] == raw)
+    return {"operation": operation, "status": "SUCCESS", "forwarding": "LIVE_PROOF_REQUIRED"}
 
 
 def invoke(event):

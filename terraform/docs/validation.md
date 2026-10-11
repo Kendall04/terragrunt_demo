@@ -419,3 +419,15 @@ renderer, source-inventory, lifecycle static, local-link and check-only Terrafor
 format checks too. No provider initialization, AWS operation or dependency
 installation is required; metric delivery and live alarm/SNS behavior remain
 unverified.
+
+## E13 — provider-free NAT reliability
+
+Run `python -I -B scripts/tests/nat/run.py` for hermetic controller, event,
+readiness, replacement-approval and generated-source checks. Run
+`python -I -B scripts/tests/nat/check_static.py` for actual generated retry,
+qualified destination, queue policy and alert expression evaluation in a disposable
+provider-free Terraform root. Both run inside the existing final acceptance gate;
+the accepted 983 E1/WP tests retain their counts. Run E7 monitoring regressions too.
+The [runbook](e13-nat-reliability.md) separates configuration/bootstrap evidence
+from unverified live forwarding, AMI compatibility, failure containment and
+notification/rollout proof. No init, provider, AWS or installation is authorized.

@@ -10,6 +10,7 @@ import tempfile
 
 HERE=Path(__file__).resolve().parent
 sys.path[:0]=[str(HERE),str(HERE.parent/'security_root'),str(HERE.parent/'authority'),str(HERE.parents[2]),str(HERE.parent/'wp4d')]
+from terraform_console import decode as console_json
 import wp5
 import wp5_iam
 from test_lifecycle import DOC,ACCOUNT,REGION,projection
@@ -45,7 +46,7 @@ def main():
             path.write_text(json.dumps(dict(variable=variables,locals=locals_)),encoding='utf-8')
             result=subprocess.run([terraform,'console','-no-color'],input=expression+'\n',capture_output=True,text=True,cwd=directory,env=env,timeout=30)
             if result.returncode:raise AssertionError(name+': '+result.stderr)
-            try:actual=json.loads(json.loads(result.stdout))
+            try:actual=console_json(result.stdout)
             except json.JSONDecodeError:
                 raise AssertionError((name,result.stdout[:300],result.stderr[-3000:]))
             assert all(len(chunk['policy'])<=6144 for chunk in actual['chunks'].values()),'IAM managed policy size'

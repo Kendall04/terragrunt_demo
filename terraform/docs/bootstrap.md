@@ -109,3 +109,12 @@ because this is a demo.
 
 [WP7 final acceptance and installation limits](e1-final-acceptance.md) records the
 retirement and provider-free evidence; no old root is an installation option.
+
+## E13 NAT recovery and administrator maintenance
+
+Use the [E13 runbook](e13-nat-reliability.md) for separate EventBridge/Lambda
+failure containment, exact launch-time bootstrap/network evidence, DLQ triage and
+administrator-approved AMI/template replacement. Three narrow mutation journals
+and a completed bootstrap do not prove private-subnet egress. Genuine forwarding,
+queue/destination behavior, SNS/KMS notification and single-AZ rollout/rollback
+remain live prerequisites; routine lifecycle cannot update ASG launch identity.
