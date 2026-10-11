@@ -89,7 +89,7 @@ mean low importance. Scope/dependencies below do not authorize implementation.
 | B4 High recovery | Separate listener/rule/schedule/record operations permit partial success | Medium-large; rollback/concurrency contract; high risk | Isolate one failure scenario first |
 | B5 High data durability | Termination-deleted root disk; no repository backup/restore; startup migrations under db_owner | Large overall; D4/D5 and recovery objectives; high data/schema risk | IMPORTANT, DEFERRED until deployed AWS near program end; no deep design now |
 | B6 High conditional API security | Public writes and plaintext reads | Medium; domain/data policy first; high compatibility risk | Auth follows backend expansion |
-| B7 High observability | ECS task-count namespace mismatch; NAT metrics not enabled; missing data non-breaching | Small-medium; metric/missing-data contract; low-medium noise risk | Strong first candidate: one alarm family |
+| B7 High observability — configuration corrected | [E7](e7-cloudwatch-alarms.md) fixes active dev/prod ECS namespace, NAT collection and gauge missing-data behavior; real metric/notification delivery remains unverified | Preserve bounded dimensions, protected ownership and sparse-error policy; no observability redesign | Provider-free repository evidence; live AWS validation remains separate |
 | B8 Medium artifacts | Overwriteable S3 manifests; ECR retains only 15 images regardless of tag | Medium; identity/idempotency/rollback horizon; medium publishing/cost risk | Narrow publication contract may fit |
 | B9 Medium provenance | Renderer defaults tests/build to passed without exact test-result binding | Medium; qualifying evidence; medium release-blocking risk | Good bounded candidate |
 | B10 Medium backend — partially completed | Direct-KMS plaintext-size boundary completed with REVIEW_PASS; pagination offset overflow/ties corrected with local provider/query and HTTP tests; dependency error behavior remains unresolved | Preserve the reviewed [application/data contract](architecture.md#current-contract--application-and-data) and [validation coverage](validation.md#existing-test-meaning-and-gaps); larger-payload support remains a separate future design decision | [Text-size boundary](../../specs/kms-text-boundary/spec.md) complete; pagination does not snapshot concurrent writes; dependency errors remain separate work |
@@ -113,7 +113,7 @@ Evidence: [IAM](../infra/security/modules/request_identities),
 [deploy script](../../scripts/ecs-blue-green-deploy.sh),
 [cleanup](../infra/apps/fargate/lambda/scale_down_old_color.py),
 [ECS alarm](../modules/target/dev/apps/modules/ecs_service/alarm_ecs_service.tf),
-[NAT ASGs](../../ci/authority/retired/terraform/infra/global/modules/nat/autoscaling_group.tf.txt),
+[NAT ASGs](../modules/target/dev/global/wp5-nat.tf.json),
 [ECR](../../ci/authority/retired/terraform/infra/shared/modules/ecr/main.tf.txt),
 [manifest renderer](../../scripts/render-release-manifest.sh),
 [CI](../../.github/workflows/ci.yml), [fixtures](../../.github/scripts/cd/tests).

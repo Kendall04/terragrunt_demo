@@ -7,7 +7,7 @@ resource "aws_cloudwatch_metric_alarm" "nat_a_inservice_low" {
   period              = 60
   threshold           = 1
   statistic           = "Minimum"
-  treat_missing_data  = "notBreaching"
+  treat_missing_data  = "missing"
 
   namespace   = "AWS/AutoScaling"
   metric_name = "GroupInServiceInstances"
@@ -27,7 +27,7 @@ resource "aws_cloudwatch_metric_alarm" "nat_a_capacity_gap" {
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = 2
   threshold           = 0
-  treat_missing_data  = "notBreaching"
+  treat_missing_data  = "missing"
 
   metric_query {
     id          = "desired"
@@ -59,7 +59,7 @@ resource "aws_cloudwatch_metric_alarm" "nat_a_capacity_gap" {
 
   metric_query {
     id          = "gap"
-    expression  = "desired - inservice"
+    expression  = "IF((FILL(desired, -1) >= 0) AND (FILL(inservice, -1) >= 0), desired - inservice)"
     label       = "CapacityGap"
     return_data = true
   }

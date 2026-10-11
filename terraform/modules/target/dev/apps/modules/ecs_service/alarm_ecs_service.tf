@@ -8,14 +8,14 @@ resource "aws_cloudwatch_metric_alarm" "ecs_tasks_gap" {
   threshold           = 0
   evaluation_periods  = 2
   datapoints_to_alarm = 2
-  treat_missing_data  = "notBreaching"
+  treat_missing_data  = "missing"
 
   metric_query {
     id          = "m_running"
     return_data = false
 
     metric {
-      namespace   = "AWS/ECS"
+      namespace   = "ECS/ContainerInsights"
       metric_name = "RunningTaskCount"
       stat        = "Average"
       period      = 60
@@ -32,7 +32,7 @@ resource "aws_cloudwatch_metric_alarm" "ecs_tasks_gap" {
     return_data = false
 
     metric {
-      namespace   = "AWS/ECS"
+      namespace   = "ECS/ContainerInsights"
       metric_name = "DesiredTaskCount"
       stat        = "Average"
       period      = 60
@@ -46,7 +46,7 @@ resource "aws_cloudwatch_metric_alarm" "ecs_tasks_gap" {
 
   metric_query {
     id          = "e_gap"
-    expression  = "m_desired - m_running"
+    expression  = "IF((FILL(m_desired, -1) >= 0) AND (FILL(m_running, -1) >= 0), m_desired - m_running)"
     label       = "DesiredMinusRunning"
     return_data = true
   }

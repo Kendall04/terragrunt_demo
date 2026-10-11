@@ -137,6 +137,10 @@ def policy(binding, account, region, resources, package, version):
                     'aws:RequestTag/Environment':env,'aws:RequestTag/Project':'demo'}})
             if service=='autoscaling':
                 allow(['autoscaling:CreateOrUpdateTags'],create_arns,{'StringEquals':{'aws:RequestTag/Environment':env}})
+                # Provider metric reconciliation is restricted to the two fixed
+                # NAT names and environment tag, including first creation.
+                allow(['autoscaling:EnableMetricsCollection','autoscaling:DisableMetricsCollection'],
+                      create_arns,{'StringEquals':{'autoscaling:ResourceTag/Environment':env}})
             if kind=='aws_cloudwatch_log_group':allow(['logs:CreateLogGroup'],[arn+':*' for arn in create_arns],condition)
             if service=='ec2' and kind not in ('aws_flow_log','aws_instance'):
                 allow(['ec2:CreateTags'],create_arns,{'StringEquals':{'ec2:CreateAction':list(create),

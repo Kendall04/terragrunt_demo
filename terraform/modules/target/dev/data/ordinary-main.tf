@@ -79,7 +79,7 @@ resource "aws_cloudwatch_metric_alarm" "cpu_credit_low" {
   }
 
   alarm_description  = "Low CPU credits for T instance"
-  treat_missing_data = "notBreaching"
+  treat_missing_data = "missing"
 
   alarm_actions = [var.alerts_topic_arn]
   ok_actions    = [var.alerts_topic_arn]

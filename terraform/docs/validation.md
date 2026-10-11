@@ -407,3 +407,15 @@ disposable fixtures. They must not be interpreted as final TARGET permissions.
 See [WP7 acceptance and live limits](e1-final-acceptance.md). Optional preinstalled
 Linux checks use `scripts/tests/final_acceptance/check_linux.py` for YAML/Bash
 syntax and the existing E3 entry points; unavailable dependencies are explicit.
+
+## E7 — provider-free CloudWatch alarm configuration
+
+Run `python -I -B scripts/tests/monitoring/run.py` for the focused hermetic suite.
+[The monitoring contract](e7-cloudwatch-alarms.md) records corrected ECS/NAT
+metrics, dimensions/collection, gauge missing-data behavior, sparse 5xx exceptions
+and guarded capacity math. Tests preserve dev/prod generation, alarm inventory,
+protected ownership and bounded IAM. Run applicable existing E1 acceptance,
+renderer, source-inventory, lifecycle static, local-link and check-only Terraform
+format checks too. No provider initialization, AWS operation or dependency
+installation is required; metric delivery and live alarm/SNS behavior remain
+unverified.

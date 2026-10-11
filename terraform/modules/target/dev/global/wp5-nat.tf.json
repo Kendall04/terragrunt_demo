@@ -31,6 +31,11 @@
         "vpc_zone_identifier": [
           "${each.value.subnet}"
         ],
+        "enabled_metrics": [
+          "GroupDesiredCapacity",
+          "GroupInServiceInstances"
+        ],
+        "metrics_granularity": "1Minute",
         "launch_template": {
           "id": "${each.value.id}",
           "version": "${tostring(each.value.version)}"

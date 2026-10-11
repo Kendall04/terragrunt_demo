@@ -83,6 +83,8 @@ def target_overlay(wiring):
                 'aws_autoscaling_group': {'wp5_nat': {'for_each':'${var.protected_nat_launch}',
                     'name':'${"demo-'+env+'-asg-nat-${each.key}"}', 'min_size':1,'max_size':1,'desired_capacity':1,
                     'vpc_zone_identifier':['${each.value.subnet}'],
+                    'enabled_metrics':['GroupDesiredCapacity','GroupInServiceInstances'],
+                    'metrics_granularity':'1Minute',
                     'launch_template':{'id':'${each.value.id}','version':'${tostring(each.value.version)}'},
                     'tag':[{'key':'Environment','value':env,'propagate_at_launch':True},
                            {'key':'Group','value':'${each.key}','propagate_at_launch':True},
@@ -100,6 +102,29 @@ def target_overlay(wiring):
             block=block.replace('var.enable_alarms ? 1 : 0','contains(keys(var.protected_nat_launch), "'+side+'") ? 1 : 0')
             block=block.replace('aws_autoscaling_group.nat_'+side+'.name','aws_autoscaling_group.wp5_nat["'+side+'"].name')
             wiring[root+'global/wp5-nat-alarms-'+side+'.tf']=block
+        # E7 corrects active TARGET output only; frozen retired text stays inert.
+        ecs = root+'apps/modules/ecs_service/alarm_ecs_service.tf'
+        wiring[ecs] = wiring[ecs].replace('"AWS/ECS"', '"ECS/ContainerInsights"')
+        wiring[ecs] = wiring[ecs].replace('m_desired - m_running',
+            'IF((FILL(m_desired, -1) >= 0) AND (FILL(m_running, -1) >= 0), m_desired - m_running)')
+        for side in ('a', 'b'):
+            name = root+'global/wp5-nat-alarms-'+side+'.tf'
+            wiring[name] = wiring[name].replace('desired - inservice',
+                'IF((FILL(desired, -1) >= 0) AND (FILL(inservice, -1) >= 0), desired - inservice)')
+        # Gauge absence is unknown, including intentionally inactive colors.
+        # Sparse ALB 5xx events keep notBreaching; latency has no such evidence.
+        for name in (ecs, root+'data/ordinary-main.tf',
+                     root+'global/wp5-nat-alarms-a.tf', root+'global/wp5-nat-alarms-b.tf'):
+            wiring[name] = wiring[name].replace('"notBreaching"', '"missing"')
+        name = root+'global/modules/alb/alarms_tg.tf'
+        starts = list(ordinary.BLOCK.finditer(wiring[name]))
+        blocks = []
+        for index, match in enumerate(starts):
+            block = wiring[name][match.start():starts[index+1].start() if index+1<len(starts) else len(wiring[name])]
+            if match.group().endswith('_latency" {'):
+                block = block.replace('"notBreaching"', '"missing"')
+            blocks.append(block)
+        wiring[name] = ''.join(blocks)
         # Keep zero-count, role-free bootstrap and delivery-owned ignore_changes.
         for layer in LAYERS:
             name = root+layer+'/main.tf.json'
