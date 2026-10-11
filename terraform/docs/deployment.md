@@ -153,6 +153,16 @@ Evidence: [release renderer](../../scripts/render-release-manifest.sh),
 [schemas](../../ci/schemas), [ECR lifecycle](../../ci/authority/retired/terraform/infra/shared/modules/ecr/main.tf.txt),
 [deployment script](../../scripts/ecs-blue-green-deploy.sh).
 
+## CURRENT CONTRACT — E2 mutation ownership
+
+[Environment mutation arbitration](e2-environment-mutation.md) now coordinates
+protected normal delivery/promotion/rollback, emergency, cleanup and conflicting
+WP5 lifecycle operations. The later concurrency/cleanup paragraphs describe
+historical pre-E1 algorithms, not current mutation authority. S3 ownership spans
+all mutation calls and history publication; cleanup needs its originating schedule
+generation. Interruption/uncertainty retains a non-expiring hold. This is offline
+repository evidence; no infrastructure is deployed.
+
 ## Accepted E3 health and failure boundaries
 
 ALB checks /health, which remains liveness only. Dependency checks live at /ready

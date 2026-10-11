@@ -52,6 +52,7 @@ E3 = (
     "scripts/alb-route-target.jq",
 )
 SUPPORT = (
+    "scripts/environment_mutation.py",
     "scripts/wp4d/runtime.py", "scripts/wp4d/adapters.py",
     "scripts/wp4d/gateway.py", "scripts/wp4d/installed.py",
     "scripts/wp4d/aws_runtime.py", "scripts/wp4d/nat_resolver.py",
@@ -448,6 +449,12 @@ def policy(binding, resources, account, region, version_id):
         own = f"recovery/{env}/recovery/{action}/"
         read(bucket, own)
         write(bucket, own)
+    if binding.startswith(("normal-delivery/", "emergency-recovery/", "cleanup-recovery/")):
+        coordination = s3(bucket, f"arbitration/{env}/application.json")
+        allow(("s3:GetObject",), [coordination])
+        allow(("s3:PutObject",), [coordination], {"Null": {"s3:if-match": "false"}})
+        read(bucket, f"arbitration/{env}/terminals/{binding}/")
+        write(bucket, f"arbitration/{env}/terminals/{binding}/")
     allow(("s3:GetObjectVersion",), [s3(bundle_bucket, package_key)],
           {"StringEquals": {"s3:VersionId": version_id}})
     group = "/aws/lambda/" if engine == "LAMBDA" else "/aws/codebuild/"
@@ -671,6 +678,16 @@ def extend(tf):
     resources["aws_s3_bucket_policy"]["wp4d"] = {
         "for_each": ex("local.wp4d_buckets"), "bucket": ex("aws_s3_bucket.wp4d[each.key].id"),
         "policy": ex('jsonencode({ Version = "2012-10-17", Statement = [{ Sid = "TLS", Effect = "Deny", Principal = "*", Action = "s3:*", Resource = [aws_s3_bucket.wp4d[each.key].arn, "${aws_s3_bucket.wp4d[each.key].arn}/*"], Condition = { Bool = { "aws:SecureTransport" = "false" } } }, { Sid = "Readers", Effect = "Deny", Principal = "*", Action = ["s3:GetObject", "s3:GetObjectVersion", "s3:ListBucket"], Resource = [aws_s3_bucket.wp4d[each.key].arn, "${aws_s3_bucket.wp4d[each.key].arn}/*"], Condition = { ArnNotEquals = { "aws:PrincipalArn" = local.wp4d_bucket_readers[each.key] } } }, { Sid = "Writers", Effect = "Deny", Principal = "*", Action = "s3:PutObject", Resource = "${aws_s3_bucket.wp4d[each.key].arn}/*", Condition = { ArnNotEquals = { "aws:PrincipalArn" = local.wp4d_bucket_writers[each.key] } } }, { Sid = "NoNonAdminDelete", Effect = "Deny", Principal = "*", Action = ["s3:DeleteObject", "s3:DeleteObjectVersion"], Resource = "${aws_s3_bucket.wp4d[each.key].arn}/*", Condition = { ArnNotEquals = { "aws:PrincipalArn" = var.admin_arn } } }, { Sid = "ImmutableEvidence", Effect = "Deny", Principal = "*", Action = "s3:PutObject", Resource = ["${aws_s3_bucket.wp4d[each.key].arn}/delivery/*", "${aws_s3_bucket.wp4d[each.key].arn}/recovery/*", "${aws_s3_bucket.wp4d[each.key].arn}/gateway/*", "${aws_s3_bucket.wp4d[each.key].arn}/activations/*"], Condition = { StringNotEquals = { "s3:if-none-match" = "*" } } }] })')}
+    # WP5 receives only arbitration objects, never delivery/recovery/history.
+    local["e2_lifecycle_writers"] = ex('{ for env in ["dev", "prod"] : env => [for suffix in ["infra-${env}", "infra-high-risk-${env}"] : "arn:aws:iam::${var.account_id}:role/e1-controller-${suffix}-exec"] }')
+    policy_source = resources["aws_s3_bucket_policy"]["wp4d"]["policy"]
+    policy_source = policy_source.replace('local.wp4d_bucket_readers[each.key]', 'concat(local.wp4d_bucket_readers[each.key], local.e2_lifecycle_writers[each.key])')
+    policy_source = policy_source.replace('local.wp4d_bucket_writers[each.key]', 'concat(local.wp4d_bucket_writers[each.key], local.e2_lifecycle_writers[each.key])')
+    extra = ', { Sid = "E2LifecycleOnlyCoordination", Effect = "Deny", Principal = "*", Action = ["s3:GetObject", "s3:GetObjectVersion", "s3:PutObject", "s3:ListBucket"], NotResource = "${aws_s3_bucket.wp4d[each.key].arn}/arbitration/${each.key}/*", Condition = { ArnEquals = { "aws:PrincipalArn" = local.e2_lifecycle_writers[each.key] } } }, { Sid = "E2ConditionalUpdates", Effect = "Deny", Principal = "*", Action = "s3:PutObject", Resource = "${aws_s3_bucket.wp4d[each.key].arn}/arbitration/*", Condition = { Null = { "s3:if-match" = "true", "s3:if-none-match" = "true" } } }'
+    resources["aws_s3_bucket_policy"]["wp4d"]["policy"] = policy_source.replace('}] })', '}' + extra + '] })')
+    source = resources["aws_s3_bucket_policy"]["wp4d"]["policy"]
+    extra = ', { Sid = "E2ImmutableTerminals", Effect = "Deny", Principal = "*", Action = "s3:PutObject", Resource = "${aws_s3_bucket.wp4d[each.key].arn}/arbitration/${each.key}/terminals/*", Condition = { StringNotEquals = { "s3:if-none-match" = "*" } } }'
+    resources["aws_s3_bucket_policy"]["wp4d"]["policy"] = source.replace('} ] })', '}' + extra + '] })') if '} ] })' in source else source.replace('}] })', '}' + extra + '] })')
     evidence_policy = json.loads(resources['aws_s3_bucket_policy']['evidence']['policy'])
     evidence_policy['Statement'].append({
         'Sid': 'WP4ProtectedConfiguration', 'Effect': 'Deny', 'Principal': '*',

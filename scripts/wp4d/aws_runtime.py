@@ -16,6 +16,7 @@ from scripts.normal_delivery import authorization as a
 from scripts.normal_delivery import delivery as d
 from scripts.normal_delivery.e3 import Process
 from scripts.recovery.ports import ApplicationRuntime, NatRuntime
+from scripts.environment_mutation import scheduled_target, mutation_deadline
 
 
 def require(ok):
@@ -233,6 +234,7 @@ class Delivery(Effects, d.Runtime):
         return a.canonical(json_readback(task))
 
     def register(self, token, request, deadline):
+        mutation_deadline(deadline, self.ecs, self.elb, self.events)
         require(self.now() < deadline and request["family"] in {
             "demo-" + self.config["environment"] + "-app-api-" + color
             for color in ("blue", "green")})
@@ -243,6 +245,7 @@ class Delivery(Effects, d.Runtime):
                         lambda: a.decode(self.read_task(revision, deadline))["taskDefinitionArn"] == revision)
 
     def _service_update(self, token, request, deadline):
+        mutation_deadline(deadline, self.ecs, self.elb, self.events)
         require(self.now() < deadline)
         self.ecs.update_service(**copy.deepcopy(request))
         self.remembered(token, request, request,
@@ -262,18 +265,21 @@ class Delivery(Effects, d.Runtime):
     def start(self, token, request, deadline): self._service_update(token, request, deadline)
 
     def switch(self, token, request, deadline):
+        mutation_deadline(deadline, self.ecs, self.elb, self.events)
         require(self.now() < deadline and request["listener"] == self.config["colors"]["blue"]["listener"])
         self.elb.modify_listener(ListenerArn=request["listener"],
                                  DefaultActions=[{"Type": "forward", "TargetGroupArn": request["target"]}])
         self.remembered(token, request, request, lambda: self.observer.routes()[0] == request["target"])
 
     def candidate(self, token, request, deadline):
+        mutation_deadline(deadline, self.ecs, self.elb, self.events)
         require(self.now() < deadline and request["rule"] == self.config["colors"]["blue"]["candidate_rule"])
         self.elb.modify_rule(RuleArn=request["rule"],
                              Actions=[{"Type": "forward", "TargetGroupArn": request["target"]}])
         self.remembered(token, request, request, lambda: self.observer.routes()[1] == request["target"])
 
     def cleanup(self, token, request, deadline):
+        mutation_deadline(deadline, self.ecs, self.elb, self.events)
         require(self.now() < deadline and request["environment"] == self.config["environment"])
         schedule = self.config["cleanup"]
         require(any(request["cluster"] == m["cluster"] and request["service"] == m["service"]
@@ -290,8 +296,9 @@ class Delivery(Effects, d.Runtime):
     def _schedule_matches(self, schedule, target):
         rule = self.events.describe_rule(Name=schedule["rule"])
         targets = self.events.list_targets_by_rule(Rule=schedule["rule"]).get("Targets", [])
+        expected = scheduled_target(self.events, target)
         return (rule.get("ScheduleExpression") == schedule["expression"] and
-                len(targets) == 1 and all(targets[0].get(k) == v for k, v in target.items()))
+                len(targets) == 1 and all(targets[0].get(k) == v for k, v in expected.items()))
 
     def verify_saved(self, token, request, result, deadline):
         stage = token.rsplit("/", 1)[-1]
@@ -384,6 +391,7 @@ class Application(Effects, ApplicationRuntime):
                 "services": services}
 
     def mutate(self, stage, token, request, deadline):
+        mutation_deadline(deadline, self.ecs, self.elb, self.events)
         require(self.now() < deadline)
         colors = self.fixed["colors"]
         if stage in ("scale", "scale_zero"):
@@ -427,7 +435,7 @@ class Application(Effects, ApplicationRuntime):
                 rule = self.events.describe_rule(Name=schedule["rule"])
                 targets = self.events.list_targets_by_rule(Rule=schedule["rule"]).get("Targets", [])
                 return (rule.get("ScheduleExpression") == schedule["expression"] and
-                        len(targets) == 1 and all(targets[0].get(k) == v for k, v in target.items()))
+                        len(targets) == 1 and all(targets[0].get(k) == v for k, v in scheduled_target(self.events, target).items()))
         elif stage == "remove_target":
             require(request == {"Rule": self.fixed["cleanup"]["rule"], "Ids": ["scale-down"]})
             response = self.events.remove_targets(**request)
@@ -473,7 +481,7 @@ class Application(Effects, ApplicationRuntime):
             return (request["environment"] == self.fixed["environment"] and
                     request["rule"] == schedule["rule"] and request["target_id"] == "scale-down" and
                     rule.get("ScheduleExpression") == schedule["expression"] and
-                    len(targets) == 1 and all(targets[0].get(k) == v for k, v in target.items()))
+                    len(targets) == 1 and all(targets[0].get(k) == v for k, v in scheduled_target(self.events, target).items()))
         if stage == "remove_target":
             require(request == {"Rule": schedule["rule"], "Ids": ["scale-down"]})
             return not self.events.list_targets_by_rule(Rule=schedule["rule"]).get("Targets", [])

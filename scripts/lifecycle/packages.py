@@ -30,4 +30,7 @@ def verify(s3, reference, destination):
     for name in ('contract.py', 'controller.py', 'packages.py', 'runtime.py'):
         source = Path(__file__).with_name(name).read_bytes().replace(b'\r\n', b'\n')
         c.require((root/'scripts/lifecycle'/name).read_bytes() == source, 'installed bootstrap byte identity')
+    source = Path(__file__).parents[1]/'environment_mutation.py'
+    c.require((root/'scripts/environment_mutation.py').read_bytes() ==
+              source.read_bytes().replace(b'\r\n',b'\n'), 'installed arbitration byte identity')
     return reference
