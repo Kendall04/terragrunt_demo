@@ -60,13 +60,16 @@ Container Insights, ALB target 5xx/latency alarms, DB status/CPU/credit alarms a
 NAT capacity alarms routed to SNS email. Subscription confirmation and delivery
 have not been verified. No deployed signal is currently assumed.
 
-Known defects: ECS task-count alarms use AWS/ECS rather than the Container
-Insights namespace; NAT ASGs do not configure collection of the group metrics
-their alarms require. Missing data is treated as non-breaching. Alarm existence
-is not evidence of operational coverage.
+[E7 configuration](e7-cloudwatch-alarms.md) corrects active dev/prod task counts
+to `ECS/ContainerInsights` with cluster/service dimensions and explicitly enables
+NAT ASG desired/InService metrics at one-minute granularity. Capacity math drops
+samples when either operand is missing. Gauge alarms use `missing` so sustained
+absence is unknown; sparse ALB 5xx events retain `notBreaching`. Existing SNS
+ALARM/OK actions remain; insufficient-data notifications are not configured.
+Alarm existence is not evidence of metric publication or operational coverage.
 Evidence: [ECS alarm](../modules/target/dev/apps/modules/ecs_service/alarm_ecs_service.tf),
-[NAT alarms](../../ci/authority/retired/terraform/infra/global/modules/nat/alarms_nat.tf.txt),
-[ASGs](../../ci/authority/retired/terraform/infra/global/modules/nat/autoscaling_group.tf.txt).
+[NAT alarms](../modules/target/dev/global/wp5-nat-alarms-a.tf),
+[ASGs](../modules/target/dev/global/wp5-nat.tf.json).
 
 NAT recovery performs three independent launch-event actions, without configured
 DLQ or forwarding probe. EC2 health does not prove NAT function. AMI changes are

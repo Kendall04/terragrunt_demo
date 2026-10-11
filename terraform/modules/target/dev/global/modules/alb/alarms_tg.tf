@@ -67,7 +67,7 @@ resource "aws_cloudwatch_metric_alarm" "tg_blue_latency" {
   alarm_actions = [var.alerts_topic_arn]
   ok_actions    = [var.alerts_topic_arn]
 
-  treat_missing_data = "notBreaching"
+  treat_missing_data = "missing"
   tags               = merge(var.tags, { Deployment = "Blue" })
 }
 
@@ -91,6 +91,6 @@ resource "aws_cloudwatch_metric_alarm" "tg_green_latency" {
   alarm_actions = [var.alerts_topic_arn]
   ok_actions    = [var.alerts_topic_arn]
 
-  treat_missing_data = "notBreaching"
+  treat_missing_data = "missing"
   tags               = merge(var.tags, { Deployment = "Green" })
 }
