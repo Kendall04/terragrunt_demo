@@ -80,15 +80,76 @@ built image. These are deterministic contract checks, not live Fargate evidence.
 
 CD fixture tests exercise scope/layer/gate behavior through the dedicated
 [CD safety workflow](../../.github/workflows/ci-cd-safety.yml), described below.
-Hygiene checks top-level scripts and artifact examples, not the complete CD
-helper/test tree. It parses schema JSON and uses hand-written
-validators; that is not exhaustive JSON Schema conformance testing.
-No Lambda unit tests or comprehensive deployed rollback evidence were found.
+Hygiene checks top-level scripts, readiness fixtures and the CD helper/test shell
+tree. It parses schema JSON and uses hand-written validators; that is not exhaustive
+JSON Schema conformance testing. Protected E1 controller/recovery fixtures exist;
+comprehensive deployed rollback evidence remains absent.
+
+## CURRENT CONTRACT — E11 CI selection and enforcement
+
+[CI orchestration](../../.github/workflows/ci.yml) starts for PRs targeting
+`develop`/`main` (including retargeting edits) and all branch pushes, without event
+path filters. It checks out the exact event SHA with complete history and runs
+[focused selection tests](../../.github/scripts/ci/tests/test_ci_selection.py)
+before the [selector](../../.github/scripts/ci/select-checks.py).
+
+The selector inspects complete push history, or both the PR merge-base/head diff
+and the exact base/tested-merge diff. Renames are deletion plus addition; unknown
+paths, shallow/missing history, ambiguous merges, unsupported file types and
+malformed observations select every validation job. Checkout identity mismatch
+fails selection. Failed/missing selection causes the job conditions to attempt
+all gates, and cannot pass the final unconditional `CI Validation` result.
+
+| Change family | Selected existing validation |
+| --- | --- |
+| Protected scripts, schemas, authority inputs and specs | E1 acceptance and hygiene; readiness helpers additionally select app CI |
+| Terraform roots/modules, including TARGET and security | E1 acceptance, hygiene and infrastructure static checks |
+| Application source | App CI, including .NET, Docker and readiness fixtures |
+| Application Docker/deploy inputs | App CI, E1 acceptance and hygiene |
+| CI orchestration/selector, unknown workflow or composite action | All validation jobs |
+| Known workflow changes | E1 acceptance/hygiene plus their affected app or infrastructure job |
+| Current KDD/guidance | E1 acceptance and hygiene |
+| Explicit historical narratives/diagram PNGs | Hygiene; no blanket expensive validation |
+
+E1 acceptance is independently selected in the orchestrator. Infrastructure
+static CI retains acceptance by default for standalone callers; the orchestrator
+sets `run_acceptance: false` because its separate job executes the same gate once.
+No E1 suites or acceptance criteria are replaced. `CI Validation` requires actual
+successful selected job results and explicitly skipped unselected jobs; failed,
+cancelled, skipped or missing required execution cannot count as acceptance.
+CD Safety remains a separate unconditional check with its own conservative
+selector and actual-process result enforcement, now also covering main pushes.
+
+The hygiene workflow applies Bash syntax and ShellCheck to
+`.github/scripts/cd/*.sh` and `.github/scripts/cd/tests/*.sh` as well as its existing
+script inputs. No AWS credentials, OIDC, provider initialization or deployment is
+introduced by E11. GitHub required-check/branch-protection configuration is
+external and remains unverified. Local tooling availability is reported separately.
+
+Focused command (Git/Python only, writes disposable Git fixtures):
+
+```text
+python -I -B -m unittest discover -s .github/scripts/ci/tests -v
+```
+
+Local E11 validation: 33 focused tests passed. The current .NET source was rebuilt
+without restore and all 40 tests passed (environment-only EventLog suppression).
+The complete E1 gate passed all 983 tests (959 regressions plus 24 WP7 tests),
+AC1-AC16 and all nine static checks, with no failures, errors or skips.
+Inventory, Python/JSON parsing and inactive 0/11, 0/16 and 0/8 activation maps
+also passed. This is provider-free repository evidence, not live installation.
+Native Ubuntu parsed 27 workflows and checked five local reusable references;
+33 shell syntax checks, the existing CD selector/result fixtures and all five
+process-supervision tests passed from normalized disposable source copies.
+`jq`, ShellCheck and actionlint were unavailable locally: the three jq-dependent
+CD suites and full fresh Linux E3 were not rerun, and lint success is not claimed.
+Their existing CI execution remains configured; no tooling was installed.
+One bounded E11 self-check found no scope, authority or activation change.
 
 ## CD safety enforcement — reviewed contract
 
 `CI - CD Safety` exposes the unconditional `CD Safety Validation` job for PRs
-targeting develop/main (including retargeting edits) and pushes to develop.
+targeting develop/main (including retargeting edits) and pushes to develop/main.
 It has no event path filter, deployment invocation or AWS dependency. It checks
 the exact event checkout, runs selector/result self-tests, then executes all
 three scope/layer/gate suites when selected. Each process exit is recorded;

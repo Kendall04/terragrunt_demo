@@ -43,6 +43,12 @@ actions. Local bootstrap/deploy wrappers and the standalone blue/green main reje
 before AWS. Legitimate operations use the protected endpoints or explicit separately
 authenticated security administration. See [final acceptance](e1-final-acceptance.md).
 
+[E11 CI selection and enforcement](validation.md#current-contract--e11-ci-selection-and-enforcement)
+starts validation on PRs and branch pushes, selects gates from complete event
+history and requires actual selected job success. CD Safety covers PRs and
+develop/main pushes independently. External required-check settings remain
+unverified. No CI result grants deployment authority.
+
 ## Historical helper observations — not operational authority
 
 The details below preserve accepted E3 behavior and historical artifact semantics.

@@ -38,7 +38,7 @@ reset_history() {
 }
 expect() {
   local label="$1" expected="$2" event="$3" base="$4" head="$5" tested="$6" target="${7:-develop}" status=0
-  GITHUB_EVENT_NAME="$event" GITHUB_BASE_REF="$target" GITHUB_REF=refs/heads/develop \
+  GITHUB_EVENT_NAME="$event" GITHUB_BASE_REF="$target" GITHUB_REF="refs/heads/$target" \
     GITHUB_SHA="$tested" SAFETY_BASE_SHA="$base" SAFETY_HEAD_SHA="$head" \
     GITHUB_OUTPUT="$scratch/outputs" bash "$SELECTOR" > "$scratch/result" 2>&1 || status=$?
   if [[ $expected == FAIL ]]; then
@@ -93,6 +93,15 @@ for path in README.md terraform/docs/guide.md terraform/docs/diagrams/example.pn
   head="$(git rev-parse HEAD)"
   expect "ordinary deletion: $path" EXEMPT push "$before" "$head" "$head"
 done
+
+reset_history
+change scripts/main-protected.sh
+head="$(git rev-parse HEAD)"
+expect main-push-relevant RUN push "$seed" "$head" "$head" main
+reset_history
+change README.md
+head="$(git rev-parse HEAD)"
+expect main-push-proven-exemption EXEMPT push "$seed" "$head" "$head" main
 
 reset_history
 change scripts/relevant.sh
