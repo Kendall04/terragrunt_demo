@@ -124,23 +124,11 @@ jobs:
       target_env: dev
       aws_region: us-east-1
 
-  infra-pr-plan:
-    name: Infra PR Plan
-    needs:
-      - detect-changes
-      - infra-static
-    if: >-
-      ${{
-        github.event_name == 'pull_request' &&
-        needs.detect-changes.outputs.infra == 'true'
-      }}
-    permissions:
-      contents: read
-      id-token: write
-      pull-requests: write
-    uses: ./.github/workflows/ci-terragrunt-plan.yml
-    with:
-      target_env: dev
-      aws_region: us-east-1
-      pr_number: ${{ github.event.pull_request.number }}
-    secrets: inherit
+  infra-pr-diagnostics:
+    name: PR infrastructure diagnostics (static only, no OIDC)
+    needs: [detect-changes, infra-static]
+    if: ${{ github.event_name == 'pull_request' && needs.detect-changes.outputs.infra == 'true' }}
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - run: echo "Static diagnostics completed. Remote plans require an approved pinned read-only entry on develop/main." >> "$GITHUB_STEP_SUMMARY"

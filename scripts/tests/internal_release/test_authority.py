@@ -194,14 +194,20 @@ class Authority(unittest.TestCase):
             for st in policy['Statement']:
                 if st['Effect']!='Deny':continue
                 assert st['Principal']=='*'
-                if not any(match(a.lower(),action.lower()) for a in st['Action']):continue
-                if not any(match(r,resource) for r in st.get('Resource',['*'])):continue
+                actions=st.get('Action',st.get('NotAction'))
+                actions=actions if isinstance(actions,list) else [actions]
+                matches=any(match(a.lower(),action.lower()) for a in actions)
+                if matches==('NotAction' in st):continue
+                resources=st.get('Resource',st.get('NotResource',['*']))
+                resources=resources if isinstance(resources,list) else [resources]
+                matches=any(match(r,resource) for r in resources)
+                if matches==('NotResource' in st):continue
                 conditions=[]
                 for operator,values in st.get('Condition',{}).items():
-                    assert operator in ('ArnNotEquals','StringNotEquals','Bool')
+                    assert operator in ('ArnNotEquals','StringNotEquals','Bool','ArnLike')
                     for key,value in values.items():
                         candidates=value if isinstance(value,list) else [value]
-                        conditions.append(context.get(key) not in candidates if operator.endswith('NotEquals') else context.get(key) in candidates)
+                        conditions.append(any(match(pattern,context.get(key,'')) for pattern in candidates) if operator=='ArnLike' else (context.get(key) not in candidates if operator.endswith('NotEquals') else context.get(key) in candidates))
                 if all(conditions):return True
             return False
         roles={binding:f'arn:aws:iam::{ACCOUNT}:role/{value[0]}-exec' for binding,value in c.CONTROLLERS.items()}

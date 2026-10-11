@@ -42,25 +42,29 @@ Evidence: [data IAM](../infra/data/main.tf),
 [app IAM](../infra/apps/fargate/demo.tf),
 [KMS](../infra/shared/modules/kms_key/key.tf).
 
-## CURRENT CONTRACT — identity boundaries and limitations
+## CURRENT CONTRACT - protected workflow candidate and retained IAM
 
-GitHub authentication uses OIDC environment-shaped subjects. Branch/reviewer
-restrictions must be externally configured; checked-in workflows do not prove
-them. Desired protected main/PR/check/approval governance is a TARGET.
+[WP6 protected workflows](e1-protected-workflows.md) supplies exact environment,
+repository, audience and immutable reusable-entry OIDC trust templates. All eleven
+request identities remain deny-only until genuine protected installation and
+G1-G9 conformance are supplied. Internal execution roles retain service-only trust,
+exact PassRole/resource boundaries and no external OIDC acquisition. Ordinary
+infra callers cannot administer security; delivery/recovery cannot administer
+lifecycle, qualifications, eligibility, code installation or IAM.
 
-CI has ReadOnlyAccess plus explicit secret/parameter-read and decrypt denies.
-Infrastructure CD also denies direct secret access and selected GitHub-role
-mutation, but grants broad infrastructure APIs including EC2/ECS/Lambda/KMS.
-Normal and high-risk CD share that permission policy. The high-risk role is
-declared for both environments with a dev-infra-approval trust subject.
-These are hardening concerns, not demonstrated least-privilege isolation.
-An explicit direct-secret-read deny does not by itself prevent indirect access
-through mutable workloads.
+Workflows now use only pinned closed requests or a separate read-only plan identity.
+They expose no legacy AWS-role secrets, static keys, role chaining, app-CD/TG_CD
+fallback or direct ECS/ALB/infra mutation. Sanitized result readers cannot write
+protected evidence/configuration; protected object policies deny internal reads.
+External environment branch/reviewer controls remain unverified.
 
-Evidence: [IAM locals](../infra/shared/modules/iam_github/locals.tf),
-[CI role](../infra/shared/modules/iam_github/github_terragrunt_ci.tf),
-[CD roles](../infra/shared/modules/iam_github/github_terragrunt_cd.tf),
-[delivery roles](../infra/shared/modules/iam_github/github_delivery_split.tf).
+Frozen [legacy IAM locals](../infra/shared/modules/iam_github/locals.tf),
+[CI/CD roles](../infra/shared/modules/iam_github/github_terragrunt_cd.tf) and
+[delivery roles](../infra/shared/modules/iam_github/github_delivery_split.tf)
+retain their broad authority characterization for WP7 final retirement. The new
+workflows no longer invoke them. No legacy AWS installation exists to migrate,
+revoke or preserve, and no such live action has occurred. Offline checks establish
+repository boundaries, not deployed least privilege or absence of external grants.
 
 ## CURRENT CONTRACT versus security decisions
 

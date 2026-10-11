@@ -1,114 +1,52 @@
-name: CD - Demo API Blue/Green Rollback
-
-on:
-  # Manual rollback from the GitHub Actions UI
-  workflow_dispatch:
-    inputs:
-      deploy_env:
-        description: "Environment to roll back"
-        type: choice
-        required: true
-        default: dev
-        options:
-          - dev
-          - prod
-
-permissions:
-  contents: read
-  id-token: write
-
-concurrency:
-  group: cd-demo-api-${{ inputs.deploy_env }}
-  cancel-in-progress: false
-
-jobs:
-  cd-rollback:
-    name: Blue/Green Rollback
-    runs-on: ubuntu-latest
-
-    environment:
-      name: ${{ inputs.deploy_env }}
-
-    env:
-      AWS_REGION: us-east-1
-      TG_ENV: ${{ inputs.deploy_env }}
-
-    steps:
-      # 1) Checkout repo (for local composite actions)
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Validate environment (TG_ENV)
-        shell: bash
-        run: |
-          set -euo pipefail
-          case "${TG_ENV}" in
-            dev|prod) ;;
-            *)
-              echo "Unknown TG_ENV=${TG_ENV}"
-              exit 1
-              ;;
-          esac
-
-      # 2) AWS login via OIDC (rollback role)
-      - name: AWS Login via OIDC
-        uses: ./.github/actions/aws-oidc
-        with:
-          role_arn: ${{ secrets.AWS_ROLE_APP_ROLLBACK }}
-          aws_region: ${{ env.AWS_REGION }}
-          role_session_name: "rollback-cd"
-
-      # 4) Resolve backend (TF state, ACCOUNT_ID)
-      - name: Resolve Terraform backend
-        id: backend
-        uses: ./.github/actions/resolve-backend
-
-      - name: Show resolved env and backend
-        run: |
-          echo "TG_ENV          : ${TG_ENV}"
-          echo "AWS_REGION      : ${AWS_REGION}"
-          echo "Backend         : resolved (masked)"
-
-      - name: Write emergency rollback warning
-        shell: bash
-        run: |
-          set -euo pipefail
-          {
-            echo "## Emergency blue/green color flip rollback"
-            echo
-            echo "This workflow only flips traffic to the inactive color."
-            echo "Prefer rollback-manifest.yml for audited rollback to a selected S3 release manifest."
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      # 5) Resolve deploy resources (cluster, services, ALB, TGs, Lambda)
-      - name: Resolve deploy resources
-        id: deploy-env
-        uses: ./.github/actions/resolve-demo-api-resources
-        with:
-          deploy_env: ${{ inputs.deploy_env }}
-          alb_listener_dev: ${{ vars.ALB_LISTENER_DEV }}
-          alb_listener_prod: ${{ vars.ALB_LISTENER_PROD }}
-          alb_candidate_rule_dev: ${{ vars.ALB_CANDIDATE_RULE_DEV }}
-          alb_candidate_rule_prod: ${{ vars.ALB_CANDIDATE_RULE_PROD }}
-          tg_blue_dev: ${{ vars.TG_BLUE_DEV }}
-          tg_blue_prod: ${{ vars.TG_BLUE_PROD }}
-          tg_green_dev: ${{ vars.TG_GREEN_DEV }}
-          tg_green_prod: ${{ vars.TG_GREEN_PROD }}
-          scale_down_lambda_dev: ${{ vars.SCALE_DOWN_LAMBDA_DEV }}
-          scale_down_lambda_prod: ${{ vars.SCALE_DOWN_LAMBDA_PROD }}
-
-      # 6) Blue/Green rollback switch (promote the other color)
-      - name: ECS Blue/Green rollback switch
-        uses: ./.github/actions/ecs-blue-green
-        with:
-          cluster: ${{ env.ECS_CLUSTER }}
-          blue-service: ${{ env.ECS_SERVICE_BLUE }}
-          green-service: ${{ env.ECS_SERVICE_GREEN }}
-          listener-arn: ${{ env.ALB_LISTENER_ARN }}
-          candidate-rule-arn: ${{ env.ALB_CANDIDATE_RULE_ARN }}
-          tg-blue-arn: ${{ env.TG_BLUE_ARN }}
-          tg-green-arn: ${{ env.TG_GREEN_ARN }}
-          desired-count: "1"
-          drain-delay-minutes: "5"
-          event-rule-name: ${{ env.SCALE_DOWN_RULE_NAME }}
-          lambda-arn: ${{ env.SCALE_DOWN_LAMBDA_ARN }}
+{
+  "name": "Emergency Recovery",
+  "on": {
+    "workflow_dispatch": {
+      "inputs": {
+        "environment": {
+          "type": "string",
+          "required": true,
+          "description": "dev or prod; selects disjoint fixed entry jobs."
+        }
+      }
+    },
+    "workflow_call": {
+      "inputs": {
+        "environment": {
+          "type": "string",
+          "required": true,
+          "description": "dev or prod; selects disjoint fixed entry jobs."
+        }
+      }
+    }
+  },
+  "permissions": {
+    "contents": "read"
+  },
+  "concurrency": {
+    "group": "e1-Emergency-Recovery-${{ github.ref }}",
+    "cancel-in-progress": false
+  },
+  "jobs": {
+    "dev": {
+      "runs-on": "ubuntu-latest",
+      "permissions": {},
+      "steps": [
+        {
+          "run": "echo \"::error::E1 emergency-dev is inactive: no verified immutable workflow pin, installation and governance binding.\"; exit 1"
+        }
+      ],
+      "if": "${{ inputs.environment == 'dev' && github.ref == 'refs/heads/develop' && github.event_name == 'workflow_dispatch' }}"
+    },
+    "prod": {
+      "runs-on": "ubuntu-latest",
+      "permissions": {},
+      "steps": [
+        {
+          "run": "echo \"::error::E1 emergency-prod is inactive: no verified immutable workflow pin, installation and governance binding.\"; exit 1"
+        }
+      ],
+      "if": "${{ inputs.environment == 'prod' && github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' }}"
+    }
+  }
+}

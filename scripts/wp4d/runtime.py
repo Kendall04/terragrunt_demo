@@ -143,6 +143,15 @@ def _normal(clients, config):
                 publication.create(key, a.canonical(activation))
                 retained = publication.read(key)
             require(retained is not None and retained["bytes"] == a.canonical(activation))
+    public = {"operation_id": operation, "state": result["status"], "release_id": None, "source_commit": None}
+    key = config["environment"] + "/" + operation + "/public.json"
+    try:
+        records.create(key, a.canonical(public))
+    except Exception as error:
+        if getattr(error, "response", {}).get("Error", {}).get("Code") != "PreconditionFailed":
+            raise
+    retained = records.read(key)
+    require(retained is not None and retained["bytes"] == a.canonical(public))
     return {"operation": operation, "status": result["status"]}
 
 
@@ -165,6 +174,16 @@ def _application(clients, config, operation, cleanup=False):
     else:
         auth = a.Authorizer(_fact_config(config)["endpoint"], config["account"], config["region"], facts)
         result = Emergency(auth, records, runtime).run(operation, b"{}\n")
+    if not cleanup:
+        public = {"operation_id": operation, "state": result["status"], "release_id": None, "source_commit": None}
+        key = config["environment"] + "/recovery/emergency/" + operation + "/public.json"
+        try:
+            records.create(key, a.canonical(public))
+        except Exception as error:
+            if getattr(error, "response", {}).get("Error", {}).get("Code") != "PreconditionFailed":
+                raise
+        retained = records.read(key)
+        require(retained is not None and retained["bytes"] == a.canonical(public))
     return {"operation": operation, "status": result["status"]}
 
 

@@ -4,74 +4,54 @@ Read [architecture](architecture.md) for ownership and [validation](validation.m
 for command effects. This describes checked-in behavior, not proven deployment
 results. No AWS infrastructure currently exists (owner reconciliation 2026-09-18).
 
-## CURRENT CONTRACT — entry points
+## CURRENT CONTRACT - protected workflow candidate
 
-| Entry point | Behavior |
+[WP6 protected workflows](e1-protected-workflows.md) connects the accepted
+WP2-WP5 contracts through eleven dedicated reusable entries and exact OIDC
+request identities. Canonical approvals/installations are absent: every public
+AWS request path currently fails closed. No deployment or OIDC cutover occurred.
+
+| Entry point | Protected request path |
 | --- | --- |
-| ci.yml | Path-selected checks on working-branch pushes and PRs to develop/main |
-| ci-cd-safety.yml | Independent CD Safety Validation job on PRs to develop/main and develop pushes; conservative selection, offline scope/layer/gate tests and explicit outcome checks |
-| ci-dotnet.yml | Restore/build/test and Docker build |
-| ci-terragrunt.yml | TFLint, tfsec and format checks; no remote plan |
-| ci-terragrunt-plan.yml | AWS-backed initialization/validation/plan; PR caller currently passes dev even for main-target PRs |
-| ci-terragrunt-manual.yml | Static checks; optional remote plan for selected dev or prod |
-| cd.yml | Develop safe-layer applies, high-risk approval flow and app delivery; main emits manual-promotion notices |
-| cd-terragrunt.yml | Manual layer plan/apply; dev data/apps use protected-environment-shaped high-risk path; prod data/apps explicitly rejected |
-| release-build.yml → deploy-dev.yml | Build/publish image and manifest, then deploy existing manifest to dev |
-| promote-prod.yml | Manual existing-manifest promotion; normally requires matching dev deployment record; emergency override exists |
-| rollback-manifest.yml | Redeploy selected manifest and record rollback |
-| cd-rollback.yml | Emergency color flip; does not update S3 manifest history/current pointer |
-| scripts/deploy.sh | Local bootstrap/deploy wrapper; not equivalent to audited manifest workflow |
+| ci.yml / ci-terragrunt.yml | Static PR/source diagnostics without AWS credentials |
+| ci-terragrunt-plan.yml / ci-terragrunt-manual.yml | Approved immutable-source read-only plan-dev / plan-prod |
+| cd.yml / cd-scope.yml | Existing conservative classification; ordered lifecycle requests; read-only infra-ready before dev release/delivery |
+| cd-terragrunt.yml | Fixed ordinary or approved high-risk dev/prod lifecycle gateway |
+| release-build.yml | Approved develop source; finalizer-qualified release ID |
+| cd-demo-api.yml / deploy-dev.yml | Dev qualified delivery through deploy-dev |
+| promote-prod.yml | Independent manual main promotion of an existing qualified release |
+| rollback-manifest.yml | Same environment's normal gateway, protected history UUID |
+| cd-rollback.yml | Separate manual existing-content emergency gateway |
+| ci-cd-safety.yml | Existing independent no-AWS safety validation/check identity |
 
-Evidence: [workflows](../../.github/workflows),
-[scope resolver](../../.github/scripts/cd/resolve-terragrunt-layers.sh),
-[gate](../../.github/scripts/cd/validate-infra-gate.sh).
+All mutation paths use protected endpoint requests. Callers cannot choose an IAM
+role, resource ARN, backend, image, task definition, approval override or security
+configuration. Dedicated entries hardcode their environment; protected source,
+installation and G1-G9 observations gate immutable caller pins. Public operation
+inputs and sanitized completion are documented in the WP6 contract. Dev success
+never grants prod credentials or substitutes for independent production approval.
 
-The [CD safety check](../../.github/workflows/ci-cd-safety.yml) has passed independent
-review of all 12 spec criteria. Its entry points, selection/history contract and
-review/remote evidence are recorded in [validation](validation.md#cd-safety-enforcement--reviewed-contract).
-It detects regressions on develop without changing CD ordering or adding a new
-deployment dependency. The observed GitHub check identity is `CD Safety Validation`.
-Required-status-check enforcement remains external and unconfigured/unverified:
-configure main to require this check from the expected GitHub Actions source.
-Required/missing-check enforcement, bypass exceptions, fork approval policy and
-any actual merge-queue usage must be checked externally before claiming governance
-is enforced. No merge-queue compatibility is claimed by this implementation.
+The existing scope classifier remains conservative: root/unmapped changes block
+application delivery. High-risk lifecycle needs the exact WP5 operation-ID/hash
+approval as well as its GitHub environment approval. Required GitHub checks,
+branch/ruleset/reviewer restrictions and bypass exceptions remain externally
+unverified. No merge-queue or live governance enforcement is claimed.
 
-Develop change classification orders safe layers shared, secrets, global,
-platform, edge. Nested module changes and root/unmapped paths are critical/manual;
-data and apps/fargate are managed high-risk layers. The orchestrator can plan
-and apply those through dev-infra-approval after safe work succeeds. Critical
-paths block app delivery rather than silently skipping required infrastructure.
+Legacy role-secret acquisition, app-CD/TG_CD fallback and direct workflow mutation
+have been removed. Frozen Terraform roles, composite actions and local helpers
+still exist for WP7 retirement. They are not part of the new workflow invocation
+path or an instruction to install the old authority in this empty account.
 
-The approval job requires DEV_INFRA_APPROVAL_GATE_CONFIGURED=true. This variable
-does not prove required reviewers exist. Approved high-risk work is replanned and
-applied, not applied from a saved reviewed plan. Generic manual applies are
-layer-scoped, not graph-wide. Prod high-risk support is intentionally absent in
-the current workflow; do not describe all prod layers as supported.
+## Retained legacy helper behavior - not the protected workflow path
 
-## CURRENT CONTRACT — identity and resource configuration
+The following detailed helper observations describe retained local/legacy source.
+The authoritative protected qualification/delivery/recovery contracts are in
+[WP3 internal release](e1-internal-release.md),
+[WP4D materialization](e1-wp4d-iam-materialization.md) and
+[WP5 lifecycle](e1-protected-environment-lifecycle.md). No live AWS behavior has
+been verified. Broader helper retirement/final acceptance belongs to WP7.
 
-OIDC replaces static AWS pipeline credentials. Trust subjects are environment
-shaped; external GitHub branch/reviewer protections remain unverified.
-Read [security](secrets-strategy.md) before changing role selection.
-
-Current role inputs include AWS_ROLE_TG_CI, AWS_ROLE_TG_CD,
-AWS_ROLE_TG_CD_HIGH_RISK, AWS_ROLE_RELEASE_BUILD, AWS_ROLE_DEV_DEPLOY,
-AWS_ROLE_PROD_PROMOTE and AWS_ROLE_APP_ROLLBACK. Some build/deploy/promotion paths
-retain legacy AWS_ROLE_APP_CD fallbacks; manifest rollback refuses that fallback.
-The orchestrated high-risk apply has a TG_CD fallback, whereas manual high-risk
-delivery requires its dedicated role. Do not assume these migration allowances
-are deployed or endorsed as the final boundary.
-
-Resource resolution uses ALB_LISTENER_<ENV>, ALB_CANDIDATE_RULE_<ENV>,
-TG_BLUE_<ENV>, TG_GREEN_<ENV>, SCALE_DOWN_LAMBDA_<ENV>, DB_SECRET_ARN_<ENV>
-and optional SMOKE_TEST_URL_<ENV>. Consult
-[resource resolver](../../.github/actions/resolve-demo-api-resources/action.yml),
-[artifact resolver](../../.github/actions/resolve-demo-api-artifact-resources/action.yml)
-and [backend resolver](../../.github/actions/resolve-backend/action.yml) for exact
-defaults and validation. Do not copy real resource/credential values into docs.
-
-## CURRENT CONTRACT — artifact and traffic lifecycle
+## Retained helper artifact and traffic lifecycle
 
 1. Release build publishes an ECR image and resolves its immutable digest.
 2. The manifest records source SHA/run identity, image fields and quality fields.
@@ -165,7 +145,7 @@ Evidence: [release renderer](../../scripts/render-release-manifest.sh),
 [schemas](../../ci/schemas), [ECR lifecycle](../infra/shared/modules/ecr/main.tf),
 [deployment script](../../scripts/ecs-blue-green-deploy.sh).
 
-## CURRENT CONTRACT — health and failure boundaries
+## Retained helper health and failure boundaries
 
 ALB checks /health, which remains liveness only. Dependency checks live at /ready
 (and /health/ready); KMS readiness tests Encrypt only. Task-local `/ready` evidence

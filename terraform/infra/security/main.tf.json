@@ -55,7 +55,10 @@
   "module": {
     "request_identities": {
       "source": "./modules/request_identities",
-      "authority": "${local.authority}"
+      "authority": "${local.authority}",
+      "account_id": "${var.aws_account_id}",
+      "region": "${var.aws_region}",
+      "endpoints": "${module.controller_compute.wp6_endpoints}"
     },
     "control_bundle_storage": {
       "source": "./modules/control_bundle_storage",
@@ -128,6 +131,9 @@
     },
     "wp5": {
       "value": "${module.controller_compute.wp5}"
+    },
+    "wp6": {
+      "value": "${module.request_identities.wp6}"
     }
   }
 }

@@ -431,7 +431,7 @@
           "promote-prod": "prod",
           "release": "neutral"
         },
-        "sha256": "e5c34a7fdd53ececfca3912d297b1cdc8b2a50f92686b7cf722af2a3f5fa8f70",
+        "sha256": "792a67db8f5bda0f97569a82a05f095418def6a7379dcaa54203201d654dec4f",
         "engine": "LAMBDA"
       },
       "build": {
@@ -463,7 +463,7 @@
           "status-dev": "dev",
           "status-prod": "prod"
         },
-        "sha256": "bb628909fb72c83cb7d32683257f63eaf58c3715036c7e6987169f7f511d4b5b",
+        "sha256": "60c0cd23933479a0935ccbba399f78086e303defe6bbaaae7607d5e8b23650fa",
         "engine": "LAMBDA"
       },
       "environment-lifecycle": {
@@ -528,10 +528,10 @@
       "request-gateway/deploy-dev": {
         "class": "request-gateway",
         "consumer": "deploy-dev",
-        "bundle_id": "sha256:e5c34a7fdd53ececfca3912d297b1cdc8b2a50f92686b7cf722af2a3f5fa8f70",
-        "sha256": "e5c34a7fdd53ececfca3912d297b1cdc8b2a50f92686b7cf722af2a3f5fa8f70",
+        "bundle_id": "sha256:792a67db8f5bda0f97569a82a05f095418def6a7379dcaa54203201d654dec4f",
+        "sha256": "792a67db8f5bda0f97569a82a05f095418def6a7379dcaa54203201d654dec4f",
         "storage": "control-bundles",
-        "key": "bundles/sha256/e5c34a7fdd53ececfca3912d297b1cdc8b2a50f92686b7cf722af2a3f5fa8f70.json",
+        "key": "bundles/sha256/792a67db8f5bda0f97569a82a05f095418def6a7379dcaa54203201d654dec4f.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -539,10 +539,10 @@
       "request-gateway/emergency-dev": {
         "class": "request-gateway",
         "consumer": "emergency-dev",
-        "bundle_id": "sha256:e5c34a7fdd53ececfca3912d297b1cdc8b2a50f92686b7cf722af2a3f5fa8f70",
-        "sha256": "e5c34a7fdd53ececfca3912d297b1cdc8b2a50f92686b7cf722af2a3f5fa8f70",
+        "bundle_id": "sha256:792a67db8f5bda0f97569a82a05f095418def6a7379dcaa54203201d654dec4f",
+        "sha256": "792a67db8f5bda0f97569a82a05f095418def6a7379dcaa54203201d654dec4f",
         "storage": "control-bundles",
-        "key": "bundles/sha256/e5c34a7fdd53ececfca3912d297b1cdc8b2a50f92686b7cf722af2a3f5fa8f70.json",
+        "key": "bundles/sha256/792a67db8f5bda0f97569a82a05f095418def6a7379dcaa54203201d654dec4f.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -550,10 +550,10 @@
       "request-gateway/emergency-prod": {
         "class": "request-gateway",
         "consumer": "emergency-prod",
-        "bundle_id": "sha256:e5c34a7fdd53ececfca3912d297b1cdc8b2a50f92686b7cf722af2a3f5fa8f70",
-        "sha256": "e5c34a7fdd53ececfca3912d297b1cdc8b2a50f92686b7cf722af2a3f5fa8f70",
+        "bundle_id": "sha256:792a67db8f5bda0f97569a82a05f095418def6a7379dcaa54203201d654dec4f",
+        "sha256": "792a67db8f5bda0f97569a82a05f095418def6a7379dcaa54203201d654dec4f",
         "storage": "control-bundles",
-        "key": "bundles/sha256/e5c34a7fdd53ececfca3912d297b1cdc8b2a50f92686b7cf722af2a3f5fa8f70.json",
+        "key": "bundles/sha256/792a67db8f5bda0f97569a82a05f095418def6a7379dcaa54203201d654dec4f.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -561,10 +561,10 @@
       "request-gateway/infra-dev": {
         "class": "request-gateway",
         "consumer": "infra-dev",
-        "bundle_id": "sha256:e5c34a7fdd53ececfca3912d297b1cdc8b2a50f92686b7cf722af2a3f5fa8f70",
-        "sha256": "e5c34a7fdd53ececfca3912d297b1cdc8b2a50f92686b7cf722af2a3f5fa8f70",
+        "bundle_id": "sha256:792a67db8f5bda0f97569a82a05f095418def6a7379dcaa54203201d654dec4f",
+        "sha256": "792a67db8f5bda0f97569a82a05f095418def6a7379dcaa54203201d654dec4f",
         "storage": "control-bundles",
-        "key": "bundles/sha256/e5c34a7fdd53ececfca3912d297b1cdc8b2a50f92686b7cf722af2a3f5fa8f70.json",
+        "key": "bundles/sha256/792a67db8f5bda0f97569a82a05f095418def6a7379dcaa54203201d654dec4f.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -572,10 +572,10 @@
       "request-gateway/infra-high-risk-dev": {
         "class": "request-gateway",
         "consumer": "infra-high-risk-dev",
-        "bundle_id": "sha256:e5c34a7fdd53ececfca3912d297b1cdc8b2a50f92686b7cf722af2a3f5fa8f70",
-        "sha256": "e5c34a7fdd53ececfca3912d297b1cdc8b2a50f92686b7cf722af2a3f5fa8f70",
+        "bundle_id": "sha256:792a67db8f5bda0f97569a82a05f095418def6a7379dcaa54203201d654dec4f",
+        "sha256": "792a67db8f5bda0f97569a82a05f095418def6a7379dcaa54203201d654dec4f",
         "storage": "control-bundles",
-        "key": "bundles/sha256/e5c34a7fdd53ececfca3912d297b1cdc8b2a50f92686b7cf722af2a3f5fa8f70.json",
+        "key": "bundles/sha256/792a67db8f5bda0f97569a82a05f095418def6a7379dcaa54203201d654dec4f.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -583,10 +583,10 @@
       "request-gateway/infra-high-risk-prod": {
         "class": "request-gateway",
         "consumer": "infra-high-risk-prod",
-        "bundle_id": "sha256:e5c34a7fdd53ececfca3912d297b1cdc8b2a50f92686b7cf722af2a3f5fa8f70",
-        "sha256": "e5c34a7fdd53ececfca3912d297b1cdc8b2a50f92686b7cf722af2a3f5fa8f70",
+        "bundle_id": "sha256:792a67db8f5bda0f97569a82a05f095418def6a7379dcaa54203201d654dec4f",
+        "sha256": "792a67db8f5bda0f97569a82a05f095418def6a7379dcaa54203201d654dec4f",
         "storage": "control-bundles",
-        "key": "bundles/sha256/e5c34a7fdd53ececfca3912d297b1cdc8b2a50f92686b7cf722af2a3f5fa8f70.json",
+        "key": "bundles/sha256/792a67db8f5bda0f97569a82a05f095418def6a7379dcaa54203201d654dec4f.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -594,10 +594,10 @@
       "request-gateway/infra-prod": {
         "class": "request-gateway",
         "consumer": "infra-prod",
-        "bundle_id": "sha256:e5c34a7fdd53ececfca3912d297b1cdc8b2a50f92686b7cf722af2a3f5fa8f70",
-        "sha256": "e5c34a7fdd53ececfca3912d297b1cdc8b2a50f92686b7cf722af2a3f5fa8f70",
+        "bundle_id": "sha256:792a67db8f5bda0f97569a82a05f095418def6a7379dcaa54203201d654dec4f",
+        "sha256": "792a67db8f5bda0f97569a82a05f095418def6a7379dcaa54203201d654dec4f",
         "storage": "control-bundles",
-        "key": "bundles/sha256/e5c34a7fdd53ececfca3912d297b1cdc8b2a50f92686b7cf722af2a3f5fa8f70.json",
+        "key": "bundles/sha256/792a67db8f5bda0f97569a82a05f095418def6a7379dcaa54203201d654dec4f.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -605,10 +605,10 @@
       "request-gateway/promote-prod": {
         "class": "request-gateway",
         "consumer": "promote-prod",
-        "bundle_id": "sha256:e5c34a7fdd53ececfca3912d297b1cdc8b2a50f92686b7cf722af2a3f5fa8f70",
-        "sha256": "e5c34a7fdd53ececfca3912d297b1cdc8b2a50f92686b7cf722af2a3f5fa8f70",
+        "bundle_id": "sha256:792a67db8f5bda0f97569a82a05f095418def6a7379dcaa54203201d654dec4f",
+        "sha256": "792a67db8f5bda0f97569a82a05f095418def6a7379dcaa54203201d654dec4f",
         "storage": "control-bundles",
-        "key": "bundles/sha256/e5c34a7fdd53ececfca3912d297b1cdc8b2a50f92686b7cf722af2a3f5fa8f70.json",
+        "key": "bundles/sha256/792a67db8f5bda0f97569a82a05f095418def6a7379dcaa54203201d654dec4f.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -616,10 +616,10 @@
       "request-gateway/release": {
         "class": "request-gateway",
         "consumer": "release",
-        "bundle_id": "sha256:e5c34a7fdd53ececfca3912d297b1cdc8b2a50f92686b7cf722af2a3f5fa8f70",
-        "sha256": "e5c34a7fdd53ececfca3912d297b1cdc8b2a50f92686b7cf722af2a3f5fa8f70",
+        "bundle_id": "sha256:792a67db8f5bda0f97569a82a05f095418def6a7379dcaa54203201d654dec4f",
+        "sha256": "792a67db8f5bda0f97569a82a05f095418def6a7379dcaa54203201d654dec4f",
         "storage": "control-bundles",
-        "key": "bundles/sha256/e5c34a7fdd53ececfca3912d297b1cdc8b2a50f92686b7cf722af2a3f5fa8f70.json",
+        "key": "bundles/sha256/792a67db8f5bda0f97569a82a05f095418def6a7379dcaa54203201d654dec4f.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -649,10 +649,10 @@
       "status/status-neutral": {
         "class": "status",
         "consumer": "status-neutral",
-        "bundle_id": "sha256:bb628909fb72c83cb7d32683257f63eaf58c3715036c7e6987169f7f511d4b5b",
-        "sha256": "bb628909fb72c83cb7d32683257f63eaf58c3715036c7e6987169f7f511d4b5b",
+        "bundle_id": "sha256:60c0cd23933479a0935ccbba399f78086e303defe6bbaaae7607d5e8b23650fa",
+        "sha256": "60c0cd23933479a0935ccbba399f78086e303defe6bbaaae7607d5e8b23650fa",
         "storage": "control-bundles",
-        "key": "bundles/sha256/bb628909fb72c83cb7d32683257f63eaf58c3715036c7e6987169f7f511d4b5b.json",
+        "key": "bundles/sha256/60c0cd23933479a0935ccbba399f78086e303defe6bbaaae7607d5e8b23650fa.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -660,10 +660,10 @@
       "status/status-dev": {
         "class": "status",
         "consumer": "status-dev",
-        "bundle_id": "sha256:bb628909fb72c83cb7d32683257f63eaf58c3715036c7e6987169f7f511d4b5b",
-        "sha256": "bb628909fb72c83cb7d32683257f63eaf58c3715036c7e6987169f7f511d4b5b",
+        "bundle_id": "sha256:60c0cd23933479a0935ccbba399f78086e303defe6bbaaae7607d5e8b23650fa",
+        "sha256": "60c0cd23933479a0935ccbba399f78086e303defe6bbaaae7607d5e8b23650fa",
         "storage": "control-bundles",
-        "key": "bundles/sha256/bb628909fb72c83cb7d32683257f63eaf58c3715036c7e6987169f7f511d4b5b.json",
+        "key": "bundles/sha256/60c0cd23933479a0935ccbba399f78086e303defe6bbaaae7607d5e8b23650fa.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -671,10 +671,10 @@
       "status/status-prod": {
         "class": "status",
         "consumer": "status-prod",
-        "bundle_id": "sha256:bb628909fb72c83cb7d32683257f63eaf58c3715036c7e6987169f7f511d4b5b",
-        "sha256": "bb628909fb72c83cb7d32683257f63eaf58c3715036c7e6987169f7f511d4b5b",
+        "bundle_id": "sha256:60c0cd23933479a0935ccbba399f78086e303defe6bbaaae7607d5e8b23650fa",
+        "sha256": "60c0cd23933479a0935ccbba399f78086e303defe6bbaaae7607d5e8b23650fa",
         "storage": "control-bundles",
-        "key": "bundles/sha256/bb628909fb72c83cb7d32683257f63eaf58c3715036c7e6987169f7f511d4b5b.json",
+        "key": "bundles/sha256/60c0cd23933479a0935ccbba399f78086e303defe6bbaaae7607d5e8b23650fa.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -2530,7 +2530,7 @@
       "request-gateway/release": {
         "name": "e1-gateway-release",
         "engine": "LAMBDA",
-        "bundle_digest": "e5c34a7fdd53ececfca3912d297b1cdc8b2a50f92686b7cf722af2a3f5fa8f70"
+        "bundle_digest": "792a67db8f5bda0f97569a82a05f095418def6a7379dcaa54203201d654dec4f"
       },
       "build/release": {
         "name": "e1-controller-release",
@@ -2545,7 +2545,7 @@
       "status/status-neutral": {
         "name": "e1-status-neutral",
         "engine": "LAMBDA",
-        "bundle_digest": "bb628909fb72c83cb7d32683257f63eaf58c3715036c7e6987169f7f511d4b5b"
+        "bundle_digest": "60c0cd23933479a0935ccbba399f78086e303defe6bbaaae7607d5e8b23650fa"
       }
     },
     "workers": {
@@ -2638,7 +2638,7 @@
         }
       }
     },
-    "support_sha256": "8d917edc8ecb4f11a9d79ae4a5fcf88a053fa3c7105fbb1a69d38b3b4c44914e",
+    "support_sha256": "16aaf048b63c322b151ee9a183b597481eccf9d12bbe3e544eb93e67bb4821eb",
     "installations": {},
     "runtime_approvals": {},
     "live": "UNVERIFIED_NOT_DEPLOYED",
@@ -2660,7 +2660,7 @@
         "engine": "LAMBDA",
         "environment": "dev",
         "reservation": "request-gateway/deploy-dev",
-        "package_sha256": "bcd7ea43093aef204587dcebba3963939ccbf75368c6ee98320f02389f4de704",
+        "package_sha256": "f5eb3afc59c4c4d043a7fcea27cf51ff330a505666a46ddc1520d55aa5e4a081",
         "dependencies": [
           "normal-delivery/deploy-dev",
           "cleanup-recovery/cleanup-dev"
@@ -2672,7 +2672,7 @@
         "engine": "LAMBDA",
         "environment": "prod",
         "reservation": "request-gateway/promote-prod",
-        "package_sha256": "be1e509dc88bee7ccdc1dd615507797b32bc9061eadbc57ea6616a37f93060ab",
+        "package_sha256": "a95671808d39c77ae46840c250acf867bc47eb1c9e1578de382788b5d5a7ea96",
         "dependencies": [
           "normal-delivery/promote-prod",
           "cleanup-recovery/cleanup-prod"
@@ -2684,7 +2684,7 @@
         "engine": "LAMBDA",
         "environment": "dev",
         "reservation": "request-gateway/emergency-dev",
-        "package_sha256": "70499d50407d8552458a231406b5b59e74bef40811dcf0ab82da558704e0f960",
+        "package_sha256": "5953bc25f3e123d63d183ad75c1935f37d18797fd6a51ba80ee121b84b0034ea",
         "dependencies": [
           "emergency-recovery/emergency-dev",
           "cleanup-recovery/cleanup-dev"
@@ -2696,7 +2696,7 @@
         "engine": "LAMBDA",
         "environment": "prod",
         "reservation": "request-gateway/emergency-prod",
-        "package_sha256": "57bd3f554e9bb5d7aee497c2c501e28218a0b591e49301fe8548a16eff2bc4d3",
+        "package_sha256": "983196c92d3231cb9b091ea8163b93ceef190cbba1684e473f46078bccc74fa6",
         "dependencies": [
           "emergency-recovery/emergency-prod",
           "cleanup-recovery/cleanup-prod"
@@ -2708,7 +2708,7 @@
         "engine": "CODEBUILD",
         "environment": "dev",
         "reservation": "normal-delivery/deploy-dev",
-        "package_sha256": "8ae02a44d0f871472147e6aaf8ba3283a1630114b1652c90c5e6adf5813b273b",
+        "package_sha256": "a23ee0b29cb0e424c6ce49cb0f290623c0efe38b950e94e78869ff17ff62a31f",
         "dependencies": [
           "request-gateway/deploy-dev",
           "cleanup-recovery/cleanup-dev"
@@ -2720,7 +2720,7 @@
         "engine": "CODEBUILD",
         "environment": "prod",
         "reservation": "normal-delivery/promote-prod",
-        "package_sha256": "b5f6a58160f6aa77dfa03f754532dde427fd5a62a4e3012ea7553d5ffd24b48a",
+        "package_sha256": "05450a564ab9bef6549f01d3cc14fdf14cc8bd7cc52587f9c365fc493ea67530",
         "dependencies": [
           "request-gateway/promote-prod",
           "cleanup-recovery/cleanup-prod"
@@ -2732,7 +2732,7 @@
         "engine": "CODEBUILD",
         "environment": "dev",
         "reservation": "emergency-recovery/emergency-dev",
-        "package_sha256": "09878516ce07f885365dffb55639a9a8d2359625345469df3c303b8d1feb02a7",
+        "package_sha256": "e2a198578132308a930ce3a46891e790a771e037cf05b238d5ca278afa1bab16",
         "dependencies": [
           "request-gateway/emergency-dev",
           "cleanup-recovery/cleanup-dev"
@@ -2744,7 +2744,7 @@
         "engine": "CODEBUILD",
         "environment": "prod",
         "reservation": "emergency-recovery/emergency-prod",
-        "package_sha256": "045cf56025ffa535bdaf64dd915fe5f088b7b6688946241d977543f678336990",
+        "package_sha256": "c400a95ae309ede3ecc66d94f49332069f35b076999370c79d26c3a222b504c1",
         "dependencies": [
           "request-gateway/emergency-prod",
           "cleanup-recovery/cleanup-prod"
@@ -2756,7 +2756,7 @@
         "engine": "LAMBDA",
         "environment": "dev",
         "reservation": "cleanup-recovery/cleanup-dev",
-        "package_sha256": "a7720ab450393b6601b50448c0566d6c5f054beeee8a48b43880e4d41d17ed4d",
+        "package_sha256": "ae9d2f84920a3a13648fa9873538f84a9a7be1fd191af711f26e06026c6eec11",
         "dependencies": []
       },
       "cleanup-recovery/cleanup-prod": {
@@ -2765,7 +2765,7 @@
         "engine": "LAMBDA",
         "environment": "prod",
         "reservation": "cleanup-recovery/cleanup-prod",
-        "package_sha256": "f3cf014d93eeba85e7b5f45b3217b71e77c425066fd1bbf51196cade03b6070f",
+        "package_sha256": "1c9907d921398edb7f6f514f27fd9495f43b2b5d591c49a80057f9093f5b767a",
         "dependencies": []
       },
       "nat-recovery/nat-dev/assign_eip": {
@@ -2774,7 +2774,7 @@
         "engine": "LAMBDA",
         "environment": "dev",
         "reservation": "nat-recovery/nat-dev",
-        "package_sha256": "f27fcc2169827ae708e9cef2220dd5260616af583051fbf9758f7b2acb87129d",
+        "package_sha256": "e8f81cf1740ff8119d557a993658888eac7a67bcdbfe1005dead8c3a3294c8c6",
         "dependencies": []
       },
       "nat-recovery/nat-dev/change_rt": {
@@ -2783,7 +2783,7 @@
         "engine": "LAMBDA",
         "environment": "dev",
         "reservation": "nat-recovery/nat-dev",
-        "package_sha256": "022a53f7ef502cc6f04888abb13c8ed8a09b8619e537e3efa504dba30ae031c2",
+        "package_sha256": "04f7001efecbf03d7061247841e4255a85adbd3f860b0685f9f13845588159c3",
         "dependencies": []
       },
       "nat-recovery/nat-dev/disable_sdc": {
@@ -2792,7 +2792,7 @@
         "engine": "LAMBDA",
         "environment": "dev",
         "reservation": "nat-recovery/nat-dev",
-        "package_sha256": "6bf0a450fefcd95cb63d004a7e8fba5b7079a45148ebefaed28ed209d49808c3",
+        "package_sha256": "4a09c0decc75dcaed98a6e7c1a3adb82ce18130364e9deda60c13d37fda4c46c",
         "dependencies": []
       },
       "nat-recovery/nat-prod/assign_eip": {
@@ -2801,7 +2801,7 @@
         "engine": "LAMBDA",
         "environment": "prod",
         "reservation": "nat-recovery/nat-prod",
-        "package_sha256": "3255287c5f3eae18e80e885c74b30adb9ceedf14996c42ecda33ece624607d49",
+        "package_sha256": "8e1b756302d0ae809a582fd2c7d0992ec402244f299b7667d9c4df242efec2f8",
         "dependencies": []
       },
       "nat-recovery/nat-prod/change_rt": {
@@ -2810,7 +2810,7 @@
         "engine": "LAMBDA",
         "environment": "prod",
         "reservation": "nat-recovery/nat-prod",
-        "package_sha256": "19c8adc35c9aa27b17f513d7a2ec0437e166444876ee8b9e7e8a1209120df4b9",
+        "package_sha256": "90cc963052e60d078640e941934edc6e299c3bc96a2d97f95d2cac2ba5f3f99c",
         "dependencies": []
       },
       "nat-recovery/nat-prod/disable_sdc": {
@@ -2819,7 +2819,7 @@
         "engine": "LAMBDA",
         "environment": "prod",
         "reservation": "nat-recovery/nat-prod",
-        "package_sha256": "dabfec530e35ecf8d788cdda5b1d44a1085d86d96f6524503e01344618811a41",
+        "package_sha256": "fb810376bf88df6341992f6918db86d2fd3c741527f24fdfa3dc3cbdb3ca3522",
         "dependencies": []
       }
     },
@@ -2890,7 +2890,7 @@
             "vpc_link_sg_id"
           ]
         },
-        "package_sha256": "8f6c347a0ad938e2f8730584c32f5db57a690c3adf89e4eef537b43a1e588ce9"
+        "package_sha256": "e975fd2d6777a395e50609b5171581f2caf94b3eaac50094f11a60df64d1f98c"
       },
       "environment-lifecycle/infra-dev": {
         "name": "e1-controller-infra-dev",
@@ -2949,7 +2949,7 @@
             "vpc_link_sg_id"
           ]
         },
-        "package_sha256": "221ec35aeb1d4ca3dd3fc9e5bd150e36e71fb73a6d420babd6d57f22a00b8eed"
+        "package_sha256": "86e2a0470373e37df8595c395798fa3aba52197a8f0bcfbb1f41dcdf2e613f6c"
       },
       "request-gateway/infra-prod": {
         "name": "e1-gateway-infra-prod",
@@ -3008,7 +3008,7 @@
             "vpc_link_sg_id"
           ]
         },
-        "package_sha256": "3c32c8624ae2b2aa4c1703a4b3b8154246e5cac0222861b97b4c738fd4463824"
+        "package_sha256": "00ba31b079670e1deac38358fa40d386de9557e73d9e5e7d8bf7dbf385389787"
       },
       "environment-lifecycle/infra-prod": {
         "name": "e1-controller-infra-prod",
@@ -3067,7 +3067,7 @@
             "vpc_link_sg_id"
           ]
         },
-        "package_sha256": "612c7b7907756aa3955ad2feb8adc74d31f92c828c5ef1b76c71179d256bdd39"
+        "package_sha256": "4c7c95dd28134f45b1a0b920f15a64be38fe299e525d3fc2062c8cc5c6770879"
       },
       "request-gateway/infra-high-risk-dev": {
         "name": "e1-gateway-infra-high-risk-dev",
@@ -3126,7 +3126,7 @@
             "vpc_link_sg_id"
           ]
         },
-        "package_sha256": "c0d47a3abb362b0ac1bcb29f20834376116989cca876e07c60277c2bff3c0c8e"
+        "package_sha256": "be64edf13f7fd9a2e3e06bf1afcf1f574099f0a9a9b9edc6295f74dabd3a7828"
       },
       "environment-lifecycle/infra-high-risk-dev": {
         "name": "e1-controller-infra-high-risk-dev",
@@ -3185,7 +3185,7 @@
             "vpc_link_sg_id"
           ]
         },
-        "package_sha256": "5e120c01adb5a4934544eaae05f7a7f27f94b208e07688607d6247e0d77363f7"
+        "package_sha256": "ea4653f0b5462b26ff76264a9d8944297c95d1c6b8062a70ddb77ef30eafdb13"
       },
       "request-gateway/infra-high-risk-prod": {
         "name": "e1-gateway-infra-high-risk-prod",
@@ -3244,7 +3244,7 @@
             "vpc_link_sg_id"
           ]
         },
-        "package_sha256": "d0d866046e8b267fddea6c0125f1b60a6fbbb40ebd56879452cf3143376642c2"
+        "package_sha256": "41068f115be401f03d6adff0486f512b28230f593dd3651ba419d8f9be9495cd"
       },
       "environment-lifecycle/infra-high-risk-prod": {
         "name": "e1-controller-infra-high-risk-prod",
@@ -3303,7 +3303,7 @@
             "vpc_link_sg_id"
           ]
         },
-        "package_sha256": "ed9215897d73b5809b8698dd52e468d967b1edb6ea418fccbfc7d39a3549e0ef"
+        "package_sha256": "97eeaded04501349a5c61bbb78ce86d656a92ea870c2fe94b239e0e38162bdac"
       }
     },
     "installations": {},
@@ -3313,5 +3313,148 @@
     "nat_launch_inputs": {},
     "external_invocation": [],
     "live": "UNVERIFIED_NOT_DEPLOYED"
+  },
+  "wp6": {
+    "schema": "E1_WP6_PROTECTED_REQUESTS_V1",
+    "owner": "SECURITY_ROOT_OWNED",
+    "repository": "Kendall04/terragrunt_demo",
+    "audience": "sts.amazonaws.com",
+    "selected": {
+      "plan-dev": {
+        "name": "e1-request-plan-dev",
+        "environment": "dev",
+        "context": "e1-plan-dev",
+        "workflow": "Kendall04/terragrunt_demo/.github/workflows/e1-plan-dev.yml",
+        "ref": "refs/heads/develop",
+        "kind": "PLAN_READ_ONLY",
+        "gateway": null,
+        "human_approval": false
+      },
+      "plan-prod": {
+        "name": "e1-request-plan-prod",
+        "environment": "prod",
+        "context": "e1-plan-prod",
+        "workflow": "Kendall04/terragrunt_demo/.github/workflows/e1-plan-prod.yml",
+        "ref": "refs/heads/main",
+        "kind": "PLAN_READ_ONLY",
+        "gateway": null,
+        "human_approval": false
+      },
+      "infra-dev": {
+        "name": "e1-request-infra-dev",
+        "environment": "dev",
+        "context": "e1-infra-dev",
+        "workflow": "Kendall04/terragrunt_demo/.github/workflows/e1-infra-dev.yml",
+        "ref": "refs/heads/develop",
+        "kind": "GATEWAY_REQUEST",
+        "gateway": "e1-gateway-infra-dev",
+        "human_approval": false
+      },
+      "infra-prod": {
+        "name": "e1-request-infra-prod",
+        "environment": "prod",
+        "context": "e1-infra-prod",
+        "workflow": "Kendall04/terragrunt_demo/.github/workflows/e1-infra-prod.yml",
+        "ref": "refs/heads/main",
+        "kind": "GATEWAY_REQUEST",
+        "gateway": "e1-gateway-infra-prod",
+        "human_approval": false
+      },
+      "infra-high-risk-dev": {
+        "name": "e1-request-infra-high-risk-dev",
+        "environment": "dev",
+        "context": "e1-infra-high-risk-dev",
+        "workflow": "Kendall04/terragrunt_demo/.github/workflows/e1-infra-high-risk-dev.yml",
+        "ref": "refs/heads/develop",
+        "kind": "GATEWAY_REQUEST",
+        "gateway": "e1-gateway-infra-high-risk-dev",
+        "human_approval": true
+      },
+      "infra-high-risk-prod": {
+        "name": "e1-request-infra-high-risk-prod",
+        "environment": "prod",
+        "context": "e1-infra-high-risk-prod",
+        "workflow": "Kendall04/terragrunt_demo/.github/workflows/e1-infra-high-risk-prod.yml",
+        "ref": "refs/heads/main",
+        "kind": "GATEWAY_REQUEST",
+        "gateway": "e1-gateway-infra-high-risk-prod",
+        "human_approval": true
+      },
+      "release": {
+        "name": "e1-request-release",
+        "environment": "neutral",
+        "context": "e1-release",
+        "workflow": "Kendall04/terragrunt_demo/.github/workflows/e1-release.yml",
+        "ref": "refs/heads/develop",
+        "kind": "GATEWAY_REQUEST",
+        "gateway": "e1-gateway-release",
+        "human_approval": false
+      },
+      "deploy-dev": {
+        "name": "e1-request-deploy-dev",
+        "environment": "dev",
+        "context": "e1-dev-deploy",
+        "workflow": "Kendall04/terragrunt_demo/.github/workflows/e1-dev-deploy.yml",
+        "ref": "refs/heads/develop",
+        "kind": "GATEWAY_REQUEST",
+        "gateway": "e1-gateway-deploy-dev",
+        "human_approval": false
+      },
+      "promote-prod": {
+        "name": "e1-request-promote-prod",
+        "environment": "prod",
+        "context": "e1-prod-promote",
+        "workflow": "Kendall04/terragrunt_demo/.github/workflows/e1-prod-promote.yml",
+        "ref": "refs/heads/main",
+        "kind": "GATEWAY_REQUEST",
+        "gateway": "e1-gateway-promote-prod",
+        "human_approval": true
+      },
+      "emergency-dev": {
+        "name": "e1-request-emergency-dev",
+        "environment": "dev",
+        "context": "e1-dev-emergency",
+        "workflow": "Kendall04/terragrunt_demo/.github/workflows/e1-dev-emergency.yml",
+        "ref": "refs/heads/develop",
+        "kind": "GATEWAY_REQUEST",
+        "gateway": "e1-gateway-emergency-dev",
+        "human_approval": true
+      },
+      "emergency-prod": {
+        "name": "e1-request-emergency-prod",
+        "environment": "prod",
+        "context": "e1-prod-emergency",
+        "workflow": "Kendall04/terragrunt_demo/.github/workflows/e1-prod-emergency.yml",
+        "ref": "refs/heads/main",
+        "kind": "GATEWAY_REQUEST",
+        "gateway": "e1-gateway-emergency-prod",
+        "human_approval": true
+      }
+    },
+    "source_sha256": {
+      "ci/authority/governance.json": "97d1ba5258e937627e6c048360be76a582c6e49fc95124a8e355e9ec5ec940e0",
+      "scripts/workflow_requests/contract.py": "c69368c01e5eced55fb33c55ed7592cee1799ba77a6b6765a16bf2fc40338fc7",
+      "scripts/workflow_requests/client.py": "898414be092fbbf99c472869cdf33c4642f71d3d7fa4dd48ec60148d12c5e3da",
+      "scripts/workflow_requests/render.py": "68bbe212d68f848f5b444b4355282a785da32506f9c937f39b4d4e356b464491",
+      ".github/workflows/cd-scope.yml": "eb77443dcd775afaadba8a8adb68c58db55b96ddc3955ea5acd3c1ae5f96d5dd",
+      "scripts/lifecycle/contract.py": "a15c4083aaa8f2eb72580075cb324c59ae90cea79c50909e618f4d808b3ab582",
+      "scripts/wp4d/gateway.py": "aed8a94814a08127142e60cd589e4c6621a94c070d5ac133e2270a77cbaea5f6",
+      "scripts/normal_delivery/delivery.py": "be2578643c17bb4f7213117573ed3376fdf9803325ac3b3e04f20bbccbc9674f",
+      "scripts/normal_delivery/authorization.py": "5da787e3c77267a0d125b38895528d0c203aa40115d1e70e8c3686da20ef433b",
+      ".github/workflows/e1-plan-dev.yml": "f129eea900b574cd2ff0ee7bd4f46a9f23922097a7f1c83790b43f6849f33dcf",
+      ".github/workflows/e1-plan-prod.yml": "3cf7b5ad619ae5b43becc719a00d15587cffe7081f48aceba044bf0b1b8fe18a",
+      ".github/workflows/e1-infra-dev.yml": "2088086cba8c1d9a5aa74b0509dccf675d0c507c3dc91d2cd63fd68364cbe227",
+      ".github/workflows/e1-infra-prod.yml": "cfe6b1f6a02e80ee1aa706d41ff23da646316846e23b259b57b1dc43e4a572e9",
+      ".github/workflows/e1-infra-high-risk-dev.yml": "b4c28c746e3070110076948da146266f7d64d80a7338e23ed6df0784ebde837d",
+      ".github/workflows/e1-infra-high-risk-prod.yml": "bbd044b6eb1232d9b3bbe34f0e7d3fbcec7f2a582165bc6bb6104d4b7360119b",
+      ".github/workflows/e1-release.yml": "03bae05bfd5b85d8be0a3fbce31c4eb814c43ba5e415e953727f948072508337",
+      ".github/workflows/e1-dev-deploy.yml": "8d4e6bdd74ff74d3ec2cf16df06810df21c114a2f58adf121c73ededffa004da",
+      ".github/workflows/e1-prod-promote.yml": "e1d020e1a71c1d320b6b13e6b91610843cfaffc84227464593a4c335b9c14b0c",
+      ".github/workflows/e1-dev-emergency.yml": "a6b497e7f21795dfe665a44807ef77dd4854775e5f24d204d1b874385a66d88e",
+      ".github/workflows/e1-prod-emergency.yml": "5314136503db6c93119f14c05a33534df646e0284b6a2c6809837b99ab266823"
+    },
+    "approvals": {},
+    "live": "UNVERIFIED_NOT_DEPLOYED",
+    "legacy_retirement": "WP7"
   }
 }

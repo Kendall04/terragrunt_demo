@@ -155,6 +155,15 @@ Evidence: [Program](../../demo-api/terragrunt-demo/Program.cs),
 The original simple demo is not the final backend target. Read the decision
 register before adding identity or treating database limitations as accepted.
 
+## WP6 protected workflow candidate
+
+[Protected workflows](e1-protected-workflows.md) connects the accepted security,
+qualification, delivery/recovery and lifecycle contracts through eleven disjoint
+request identities. Canonical workflow pins/approval/installations remain absent;
+no external identity or WP4D/WP5 compute is active. No GitHub administration role,
+new delivery algorithm, AWS installation or migration is introduced. WP7 retains
+legacy retirement and final acceptance.
+
 ## TARGET FOUNDATION — E1 WP2A neutral security root
 
 The [WP5 protected lifecycle candidate](e1-protected-environment-lifecycle.md)

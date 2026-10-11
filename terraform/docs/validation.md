@@ -292,3 +292,25 @@ It does not validate AWS provider resource schemas. Check generated wiring with
 `scripts/tests/security_root/render.py`, inventory freshness, Python/JSON parsing,
 `terraform fmt -check -recursive terraform/`, local documentation links and
 `git diff --check`. Store reports/packages outside the repository.
+
+
+## E1 WP6 - protected workflow candidate
+
+[WP6](e1-protected-workflows.md) adds `python -I -B scripts/tests/workflows/run.py`
+(61 hermetic tests) and `python -I -B scripts/tests/workflows/check_static.py`
+(actual generated Terraform gate/trust/policy and public bucket isolation).
+Run the thirteen existing WP1-WP5 suites too: the accepted baseline is 898 tests.
+`python -I -B scripts/workflow_requests/render.py` checks deterministic fixed
+workflows; `--write` regenerates only the admitted source-driven caller/entry files.
+The generated `.yml` files use JSON, a YAML subset, so stdlib JSON parsing also
+checks their YAML syntax. Inline Python and fixed Actions schema/pins are checked
+by the focused suite. Static CI and the retained scope job have no AWS permission.
+
+Use the existing security-root renderer, source inventory, Python/JSON parsing,
+WP3 extracted-package checker, WP4D/WP5 static checks, check-only Terraform format,
+local documentation links and `git diff --check`. Neither new checker initializes
+providers, runs the runtime client's live plan path, obtains a GitHub token or
+accesses AWS. Admin-channel and installation projections are synthetic fixtures,
+not genuine approval/readback or operational proof. Supported-host fresh Linux
+E3, provider-backed schema checks, live IAM/GitHub conformance and membership
+remain unverified. Keep reports and extracted packages outside the repository.

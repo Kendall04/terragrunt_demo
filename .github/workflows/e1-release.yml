@@ -1,0 +1,77 @@
+{
+  "name": "E1 protected release",
+  "on": {
+    "workflow_call": {
+      "inputs": {
+        "request": {
+          "type": "string",
+          "required": true,
+          "description": "Closed operation JSON; never AWS resource or credential inputs."
+        }
+      },
+      "outputs": {
+        "operation_id": {
+          "value": "${{ jobs.request.outputs.operation_id }}"
+        },
+        "release_id": {
+          "value": "${{ jobs.request.outputs.release_id }}"
+        },
+        "state": {
+          "value": "${{ jobs.request.outputs.state }}"
+        }
+      }
+    }
+  },
+  "permissions": {
+    "contents": "read",
+    "id-token": "write"
+  },
+  "jobs": {
+    "request": {
+      "runs-on": "ubuntu-latest",
+      "timeout-minutes": 40,
+      "environment": "e1-release",
+      "outputs": {
+        "operation_id": "${{ steps.request.outputs.operation_id }}",
+        "release_id": "${{ steps.request.outputs.release_id }}",
+        "state": "${{ steps.request.outputs.state }}"
+      },
+      "env": {
+        "E1_IDENTITY": "release",
+        "E1_REQUEST_CONFIGURATION": "${{ vars.E1_REQUEST_CONFIGURATION }}",
+        "E1_REQUEST": "${{ inputs.request }}"
+      },
+      "steps": [
+        {
+          "name": "Require protected installation and governance",
+          "id": "installation",
+          "shell": "bash",
+          "run": "python3 -I -B - <<'PY'\nimport base64,json,os,re,urllib.request\ntry:\n    raw=os.environ['E1_REQUEST_CONFIGURATION']\n    assert len(raw.encode())<=65536\n    v=json.loads(raw)\n    assert v['active'] is True and v['governance']=='ADMIN_VERIFIED_G1_G9'\n    assert v['identity']=='release' and os.environ['GITHUB_REPOSITORY']=='Kendall04/terragrunt_demo'\n    assert os.environ['GITHUB_REF']=='refs/heads/develop'\n    assert os.environ['GITHUB_EVENT_NAME'] in ('push','workflow_dispatch','workflow_call')\n    assert re.fullmatch('[0-9a-f]{40}',v['workflow_commit']) and v['workflow_commit']!='0'*40\n    endpoint=os.environ['ACTIONS_ID_TOKEN_REQUEST_URL']\n    req=urllib.request.Request(endpoint+('&' if '?' in endpoint else '?')+'audience=sts.amazonaws.com',headers={'Authorization':'Bearer '+os.environ['ACTIONS_ID_TOKEN_REQUEST_TOKEN']})\n    with urllib.request.urlopen(req,timeout=10) as response:token=json.loads(response.read(32769))['value']\n    claims=json.loads(base64.urlsafe_b64decode(token.split('.')[1]+'==='))\n    expected='Kendall04/terragrunt_demo/.github/workflows/e1-release.yml@'+v['workflow_commit']\n    assert claims['aud']=='sts.amazonaws.com' and claims['job_workflow_ref']==expected\n    assert claims['sub']=='repo:Kendall04/terragrunt_demo:environment:e1-release:job_workflow_ref:'+expected\n    with open(os.environ['GITHUB_OUTPUT'],'a') as f:f.write('commit='+v['workflow_commit']+'\\n')\nexcept Exception:raise SystemExit('E1_INSTALLATION_OR_GOVERNANCE_MISSING') from None\nPY"
+        },
+        {
+          "name": "Checkout only approved controller source",
+          "uses": "actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+          "with": {
+            "repository": "Kendall04/terragrunt_demo",
+            "ref": "${{ steps.installation.outputs.commit }}",
+            "persist-credentials": false
+          }
+        },
+        {
+          "name": "Verify checkout identity",
+          "shell": "bash",
+          "env": {
+            "EXPECTED_COMMIT": "${{ steps.installation.outputs.commit }}"
+          },
+          "run": "test \"$(git rev-parse HEAD)\" = \"$EXPECTED_COMMIT\""
+        },
+        {
+          "name": "Closed protected request and observed completion",
+          "id": "request",
+          "shell": "bash",
+          "run": "python3 -I -B scripts/workflow_requests/client.py release"
+        }
+      ]
+    }
+  }
+}

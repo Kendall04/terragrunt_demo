@@ -96,8 +96,15 @@ def invoke(event):
         if c['binding'] == 'qualification-finalizer/qualification':
             evidence = Evidence(codebuild, operations, records, manifests)
             qualifications = Qualifications(Store(s3, c['evidence_bucket'], ''))
-            return finalizer.Finalizer(c['account'], c['region'], evidence, qualifications).finalize(
+            record = finalizer.Finalizer(c['account'], c['region'], evidence, qualifications).finalize(
                 wakeup(event, operations, c['account'], c['region']))
+            public = {'operation_id':record['operation_id'],'state':'SUCCESS',
+                      'release_id':record['release_id'],'source_commit':record['source_commit']}
+            store = Store(s3,c['evidence_bucket'],'qualifications/demo-api/operations/')
+            key = record['operation_id']+'/public.json'
+            if store.read(key) is None:store.create(key,canonical(public))
+            require(store.read(key)==canonical(public))
+            return record
         require(event is None)
         outer = os.environ['CODEBUILD_BUILD_ID']
         from e1_contract import build_id

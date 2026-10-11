@@ -183,7 +183,19 @@ class Completion(unittest.TestCase):
             config = {k: 'protected' for k in ('account', 'region', 'environment', 'admin_bucket',
                        'evidence_bucket', 'dev_evidence_bucket', 'repository', 'binding')}
             config.update(environment='dev', account=ACCOUNT, region=REGION, resources=resources)
+            class Missing(Exception):
+                response = {'Error': {'Code': 'NoSuchKey'}}
+            class S3:
+                def __init__(self): self.values = {}
+                def get_object(self, **kw):
+                    if kw['Key'] not in self.values: raise Missing()
+                    return {'VersionId':'SYNTHETIC_OFFLINE_VERSION','Body':io.BytesIO(self.values[kw['Key']])}
+                def put_object(self, **kw):
+                    assert kw['IfNoneMatch'] == '*' and kw['Key'] not in self.values
+                    self.values[kw['Key']] = kw['Body']
+            store = S3()
             clients = dict.fromkeys(('ecs', 'elbv2', 'events', 's3', 'ecr'))
+            clients['s3'] = store
             with patch.object(runtime, '_wakeup', return_value=('operation', {})), \
                     patch.object(d.Delivery, 'run', return_value={'status': 'FAILURE'}):
                 config['binding'] = 'normal-delivery/deploy-dev'
@@ -194,6 +206,9 @@ class Completion(unittest.TestCase):
                     patch.object(Emergency, 'run', return_value={'status': 'FAILURE'}):
                 self.assertEqual(runtime._application(clients, config, 'operation', True)['status'], 'FAILURE')
                 self.assertEqual(runtime._application(clients, config, 'operation')['status'], 'FAILURE')
+            self.assertEqual(set(store.values),{'delivery/dev/operation/public.json','recovery/dev/recovery/emergency/operation/public.json'})
+            for raw in store.values.values():
+                self.assertEqual(json.loads(raw),{'operation_id':'operation','state':'FAILURE','release_id':None,'source_commit':None})
 
     def test_warm_bootstrap_reloads_only_verified_package_modules(self):
         authority = json.loads((ROOT/'terraform/infra/security/authority.json').read_text())

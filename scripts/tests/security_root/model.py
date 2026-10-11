@@ -17,6 +17,7 @@ import ordinary
 import internal
 import wp4d
 import wp5
+import wp6
 
 SUPPORT_FILES = {**ownership.RECOVERY_SOURCES, "terraform/infra/data/user_data.sh": "98b4d17937711d27244c161a35832d6f05135b59f5cb5609a5016fd19b10cd7b"}
 
@@ -31,7 +32,7 @@ SUPPORT_FILES.update({
 })
 
 # Explicit WP3C runtime support pins; no executable glob admission.
-SUPPORT_FILES.update({'scripts/internal_release/e1_contract.py': '9928b0bab7808a666de767a6d2e17614c4a540249deb7f333c7ab751a4aa39e4', 'scripts/internal_release/exchange.py': '3abebea613fefa8f07a4325a1d49bd8a5332c5c9cd82ac1ac0164a9f3e697651', 'scripts/internal_release/publisher.py': 'c36be673645092b6f003a4678c755089625a82838fa9566683c831f8ecacb64d', 'scripts/internal_release/workers.py': 'e4cfc230649374aa0aafd6bffe9deb8bff1ca7e6aeeae746d9144fab4bd1bcb7', 'scripts/internal_release/adapters.py': '4357456410d36fbb1a004d08d6eb71db47149c8bea0dfa78a86ea5ecca389d34', 'scripts/internal_release/services.py': 'f5ed39fc14a8aa6814e619f16b48629fac065e39094985447e60ff7ca30fc2ca', 'scripts/internal_release/runtime.py': 'd3971fa0f3aa4d0f9e704ace400acae4bc26fda651d23e47bcb3c93a0d65d60c', 'scripts/internal_release/worker.py': '05f027ff30df883fffa2231367e03348dd4cf91a8233b8996554d9ff74cf6d2b'})
+SUPPORT_FILES.update({'scripts/internal_release/e1_contract.py': '9928b0bab7808a666de767a6d2e17614c4a540249deb7f333c7ab751a4aa39e4', 'scripts/internal_release/exchange.py': '3abebea613fefa8f07a4325a1d49bd8a5332c5c9cd82ac1ac0164a9f3e697651', 'scripts/internal_release/publisher.py': 'c36be673645092b6f003a4678c755089625a82838fa9566683c831f8ecacb64d', 'scripts/internal_release/workers.py': 'e4cfc230649374aa0aafd6bffe9deb8bff1ca7e6aeeae746d9144fab4bd1bcb7', 'scripts/internal_release/adapters.py': '4357456410d36fbb1a004d08d6eb71db47149c8bea0dfa78a86ea5ecca389d34', 'scripts/internal_release/services.py': 'f5ed39fc14a8aa6814e619f16b48629fac065e39094985447e60ff7ca30fc2ca', 'scripts/internal_release/runtime.py': 'fbd0d478f8c956dbe03ac9d48463110977ac9b8cccf4705b551ee31a4de7b0e2', 'scripts/internal_release/worker.py': '05f027ff30df883fffa2231367e03348dd4cf91a8233b8996554d9ff74cf6d2b'})
 
 # Existing WP2 disposable fixtures must copy the new package inputs. The fixed
 # package digests in authority.json still detect any changed source bytes.
@@ -39,6 +40,9 @@ SUPPORT_FILES.update({name: hashlib.sha256((wp4d.ROOT / name).read_bytes().repla
                       for name in set().union(*(wp4d.package_sources(key) for key in wp4d.RESERVED))})
 SUPPORT_FILES.update({name: sha for name in wp5.SOURCES for sha in
                      [hashlib.sha256((wp5.ROOT/name).read_bytes().replace(b'\r\n',b'\n')).hexdigest()]})
+
+SUPPORT_FILES.update({name: sha for name in wp6.SOURCES for sha in
+                     [hashlib.sha256((wp6.ROOT/name).read_bytes().replace(b'\r\n',b'\n')).hexdigest()]})
 
 BASELINE = "c8e880b552b5782e9bca94891b75a71b45ddc113"
 AUTHORITY = "terraform/infra/security/authority.json"
@@ -77,7 +81,7 @@ def load_authority(root):
     doc = load_json((Path(root) / AUTHORITY).read_text())
     keys(doc, {"format_version", "classification", "stage", "security_admin",
                "backend", "ownership", "request_identities", "policies",
-               "governance", "interfaces", "control_bundles", "controller_compute", "ownership_closure", "internal_release", "wp4d", "wp5"}, "authority")
+               "governance", "interfaces", "control_bundles", "controller_compute", "ownership_closure", "internal_release", "wp4d", "wp5", "wp6"}, "authority")
     require(doc["format_version"] == 1 and doc["classification"] == "TARGET_REQUIREMENT"
             and doc["stage"] == "E1_WP2A_PROTECTED_SECURITY_ROOT_FOUNDATION", "stage")
     admin = doc["security_admin"]
@@ -161,6 +165,7 @@ def load_authority(root):
     internal.validate(root, doc)
     wp4d.validate(root, doc)
     wp5.validate(root, doc)
+    wp6.validate(root, doc)
     return doc
 
 
@@ -245,7 +250,9 @@ def wiring(doc):
     root['module']['lifecycle_foundations']={'source':'./modules/lifecycle_foundations','account_id':expression('var.aws_account_id'),
         'region':expression('var.aws_region'),'admin_arn':expression('var.security_admin_principal_arn'),
         'nat_launch_inputs':expression('local.authority.wp5.nat_launch_inputs')}
-    return {**targets, 'terraform/infra/security/modules/lifecycle_foundations/main.tf.json':wp5.foundations(),
+    foundations=wp5.foundations()
+    wp6.extend(root,child,compute_module,foundations,doc)
+    return {**targets, 'terraform/infra/security/modules/lifecycle_foundations/main.tf.json':foundations,
             ownership.MODULE: ownership.wiring(doc), "terraform/infra/security/main.tf.json": root,
             "terraform/infra/security/modules/request_identities/main.tf.json": child,
             bundles.MODULE: bundles.wiring(doc["control_bundles"]),

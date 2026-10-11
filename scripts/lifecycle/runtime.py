@@ -161,7 +161,14 @@ def execute(event, configuration, clients_):
         package=Packages(clients_['s3'],directory)
         engine=Terraform(directory,clients_['ecs'],protected)
         records=Records(clients_['s3'],bucket,'operations/'+binding+'/')
-        return Controller(binding,protected,package,engine,records).run(request)
+        result=Controller(binding,protected,package,engine,records).run(request)
+        public={'operation_id':request['operation_id'],'state':result['state'],'release_id':None,'source_commit':None}
+        key=request['operation_id']+'/public'
+        try:records.put(key,public)
+        except Exception as error:
+            if getattr(error,'response',{}).get('Error',{}).get('Code')!='PreconditionFailed':raise
+        c.require(records.get(key)==public,'exact public completion persistence')
+        return result
 
 
 def handler(event,context):

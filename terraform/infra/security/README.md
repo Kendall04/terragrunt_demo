@@ -157,6 +157,20 @@ responsibility/environment identities. Workflow paths are reserved contracts, no
 installed workflows; commit pins are null/unbound and GitHub verification is
 UNVERIFIED. No OIDC cutover or external setting is performed.
 
+## WP6 protected workflow candidate
+
+[Protected workflow integration](../../docs/e1-protected-workflows.md) extends the
+same eleven reservations with exact, conditional OIDC request grants. The canonical
+approval registry is empty; all request identities and WP4D/WP5 compute remain
+inactive. Positive trust/permissions require admin-admitted immutable source and
+G1-G9 observations plus actual installed numeric gateway endpoints (or exact
+read-only plan bindings). Callers cannot supply those records. No AWS/GitHub
+configuration, installation, migration or operational cutover occurred. Legacy
+source retirement and final acceptance remain WP7 responsibilities.
+
+The older foundation sections below describe their original bounded contributions,
+not current deployment evidence or the latest implementation status.
+
 ## Evidence limits and offline checks
 
 Run from the repository root with installed Python, without AWS credentials:

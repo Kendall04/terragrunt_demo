@@ -1,92 +1,54 @@
-name: CD - Demo API
-
-on:
-  workflow_call:
-    inputs:
-      aws_region:
-        required: false
-        type: string
-        default: us-east-1
-      deploy_env:
-        required: true
-        type: string
-
-permissions:
-  actions: read
-  contents: read
-  id-token: write
-
-concurrency:
-  group: cd-demo-api-${{ inputs.deploy_env }}
-  cancel-in-progress: false
-
-jobs:
-  validate-inputs:
-    name: Validate CD target
-    runs-on: ubuntu-latest
-    steps:
-      - name: Validate deployment environment
-        shell: bash
-        env:
-          TG_ENV: ${{ inputs.deploy_env }}
-        run: |
-          set -euo pipefail
-          case "$TG_ENV" in
-            dev|prod) ;;
-            *)
-              echo "::error::Unsupported deploy_env=${TG_ENV}. Supported values: dev, prod."
-              exit 1
-              ;;
-          esac
-
-  release-build:
-    name: Release Build
-    needs: validate-inputs
-    if: ${{ inputs.deploy_env == 'dev' }}
-    permissions:
-      contents: read
-      id-token: write
-    uses: ./.github/workflows/release-build.yml
-    secrets: inherit
-    with:
-      aws_region: ${{ inputs.aws_region }}
-      deploy_env: dev
-      app_name: demo-api
-
-  deploy-dev:
-    name: Deploy Dev From Manifest
-    needs:
-      - validate-inputs
-      - release-build
-    if: ${{ inputs.deploy_env == 'dev' }}
-    permissions:
-      actions: read
-      contents: read
-      id-token: write
-    uses: ./.github/workflows/deploy-dev.yml
-    secrets: inherit
-    with:
-      aws_region: ${{ inputs.aws_region }}
-      deploy_env: dev
-      release_artifact_name: ${{ needs.release-build.outputs.release_artifact_name }}
-      expected_git_sha: ${{ needs.release-build.outputs.git_sha }}
-      expected_image_digest: ${{ needs.release-build.outputs.image_digest }}
-
-  prod-promotion-notice:
-    name: Prod Promotion Notice
-    needs: validate-inputs
-    if: ${{ inputs.deploy_env == 'prod' }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Write prod promotion notice
-        shell: bash
-        run: |
-          set -euo pipefail
-          {
-            echo "## Demo API prod promotion"
-            echo
-            echo "Prod rebuild/deploy is intentionally disabled in the app CD compatibility workflow."
-            echo "Use the manual promote-prod workflow with an existing S3 release manifest."
-            echo
-            echo "No Docker image was built, no ECR push was performed, and no prod ECS deploy was attempted."
-          } >> "$GITHUB_STEP_SUMMARY"
+{
+  "name": "Application CD",
+  "on": {
+    "workflow_dispatch": {
+      "inputs": {}
+    },
+    "workflow_call": {
+      "inputs": {}
+    }
+  },
+  "permissions": {
+    "contents": "read"
+  },
+  "concurrency": {
+    "group": "e1-Application-CD-${{ github.ref }}",
+    "cancel-in-progress": false
+  },
+  "jobs": {
+    "infra-ready": {
+      "runs-on": "ubuntu-latest",
+      "permissions": {},
+      "steps": [
+        {
+          "run": "echo \"::error::E1 plan-dev is inactive: no verified immutable workflow pin, installation and governance binding.\"; exit 1"
+        }
+      ],
+      "if": "${{ github.ref == 'refs/heads/develop' }}"
+    },
+    "release": {
+      "runs-on": "ubuntu-latest",
+      "permissions": {},
+      "steps": [
+        {
+          "run": "echo \"::error::E1 release is inactive: no verified immutable workflow pin, installation and governance binding.\"; exit 1"
+        }
+      ],
+      "needs": [
+        "infra-ready"
+      ]
+    },
+    "deploy": {
+      "runs-on": "ubuntu-latest",
+      "permissions": {},
+      "steps": [
+        {
+          "run": "echo \"::error::E1 deploy-dev is inactive: no verified immutable workflow pin, installation and governance binding.\"; exit 1"
+        }
+      ],
+      "needs": [
+        "release"
+      ]
+    }
+  }
+}
