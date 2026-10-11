@@ -57,6 +57,15 @@ broadening integration tests.
 
 [Text handler tests](../../demo-api/terragrunt-demo.Tests/TextHandlersTests.cs)
 verify encryption/persistence/decryption/pagination using doubles.
+[Pagination tests](../../demo-api/terragrunt-demo.Tests/TextPaginationTests.cs)
+execute the actual repository and GET handler/controller against an in-memory
+SQLite relational database. They cover normal and consecutive pages, tied
+CreatedAt timestamps with unique Id ordering, lower-bound internal normalization,
+HTTP validation/defaults, representable offset boundaries and overflow rejection
+before repository/connection work. Production EF SQL Server translation is checked
+through the actual repository with connection opening and command execution
+suppressed; it is not live SQL Server execution, migration or performance evidence.
+Stable-page assertions use an unchanged dataset, not concurrent-write snapshots.
 [KMS wrapper tests](../../demo-api/terragrunt-demo.Tests/KmsEncryptionServiceTests.cs)
 and [text endpoint tests](../../demo-api/terragrunt-demo.Tests/TextEndpointTests.cs)
 cover the 4095/4096/4097 UTF-8 byte boundaries with ASCII and multibyte input,

@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using terragrunt_demo.Dtos;
+using terragrunt_demo.Features.Texts;
 using terragrunt_demo.Features.Texts.Commands;
 using terragrunt_demo.Features.Texts.Queries;
 using terragrunt_demo.Services;
@@ -56,6 +57,9 @@ namespace terragrunt_demo.Controllers
                 return BadRequest("Page must be greater than 0.");
             if (pageSize < 1 || pageSize > maxPageSize)
                 return BadRequest($"PageSize must be between 1 and {maxPageSize}.");
+
+            if (!TextPagination.TryGetOffset(page, pageSize, out _))
+                return BadRequest(TextPagination.OffsetError);
 
             var query = new GetAllTextsQuery(page, pageSize);
             var result = await _mediator.Send(query, cancellationToken);
