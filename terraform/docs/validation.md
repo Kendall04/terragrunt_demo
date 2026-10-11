@@ -446,3 +446,11 @@ See [E2 contract and evidence](e2-environment-mutation.md).
 Final E2 local gate: 983 accepted E1/WP tests plus 41 E2 tests passed, with
 AC1–AC16, all ten static checks, inventory and parsing; no failures/errors/skips.
 The evidence is provider-free repository validation, not AWS installation.
+
+## Batch 2 combined integration evidence
+
+[Combined reconciliation and validation](batch2-integration.md) records preserved
+E2/E13/E14-B contracts, actual lint debt comparisons and local tooling gaps.
+The full jq-dependent CD/E3 suites and exact pinned SDK/container execution remain
+unverified on this host; independent candidate or earlier Batch 1 results are not
+a substitute for fresh combined acceptance.
