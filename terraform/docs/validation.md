@@ -9,7 +9,8 @@ These never constitute live AWS isolation or deployment evidence.
 CI selects Terraform 1.13.4, Terragrunt 0.93.3 and .NET SDK 8.0.x.
 Terraform modules generally permit >=1.9 and AWS provider ~>5.50.
 Five dev layer provider locks are tracked; dev edge/apps and prod locks are
-absent. Docker bases use mutable 8.0 tags. tfsec downloads latest; action tags
+absent. [E14-A](e14-container-hardening.md) pins application Docker bases to
+verified .NET 8 Linux/amd64 digests and uses UID 1654. tfsec downloads latest; action tags
 and downloads are not a fully pinned/checksummed toolchain.
 
 These are current selections, not a guarantee other versions work or a requirement
@@ -54,6 +55,11 @@ migrations and replace healthy readiness checks; inspect configuration before
 broadening integration tests.
 
 ## Existing test meaning and gaps
+
+[E14-A container tests](../../demo-api/terragrunt-demo.Tests/ContainerContractTests.cs)
+run in the existing .NET suite and deterministically reject base/user/port/publish
+contract regressions. [Evidence and a bounded Linux smoke recipe](e14-container-hardening.md)
+distinguish passing host application checks from unavailable Docker execution.
 
 [Text handler tests](../../demo-api/terragrunt-demo.Tests/TextHandlersTests.cs)
 verify encryption/persistence/decryption/pagination using doubles.
