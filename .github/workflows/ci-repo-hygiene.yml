@@ -28,13 +28,13 @@ jobs:
       - name: Bash syntax
         run: |
           set -euo pipefail
-          for file in scripts/*.sh scripts/tests/*.sh .github/scripts/cd/*.sh .github/scripts/cd/tests/*.sh; do
+          for file in scripts/*.sh scripts/tests/*.sh scripts/nat/*.sh .github/scripts/cd/*.sh .github/scripts/cd/tests/*.sh; do
             bash -n "$file"
           done
           bash -n scripts/tests/fake-readiness-aws
 
       - name: Shellcheck
-        run: shellcheck scripts/*.sh scripts/tests/*.sh .github/scripts/cd/*.sh .github/scripts/cd/tests/*.sh scripts/tests/fake-readiness-aws
+        run: shellcheck scripts/*.sh scripts/tests/*.sh scripts/nat/*.sh .github/scripts/cd/*.sh .github/scripts/cd/tests/*.sh scripts/tests/fake-readiness-aws
 
       - name: Validate Demo API task definition and readiness gate
         shell: bash

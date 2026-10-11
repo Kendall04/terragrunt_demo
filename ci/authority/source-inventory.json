@@ -671,7 +671,7 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/ci-repo-hygiene.yml": {
-      "sha256": "a312a145159331b7ebf9932c2ddafbbd513aefef9537508dc3ddac45b9209318",
+      "sha256": "6099a093c2bd3e3657d88433f9c3ff84d5892694831b90542b165cccb5daba19",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -1996,7 +1996,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/final_acceptance/check_knowledge.py": {
-      "sha256": "929f0acc0c8a2c1dc2b3c018ddc48272eaecf269ef04f1cd10787ddc2d548f8f",
+      "sha256": "958c4598fdd982c7899b45030f3acf9823c2a0c6d950e2e269663a140f2125a0",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -2004,7 +2004,8 @@
           9,
           10,
           11,
-          31
+          12,
+          32
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -2384,7 +2385,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/monitoring/test_monitoring.py": {
-      "sha256": "5a55f61769474521b70ca596073c632f883b4abbd6397283a5b44bf54c538390",
+      "sha256": "094e89f3b9e3a8eb082ecde34cbfba6eacf24cd3f42fbb209790d882a63b1031",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -2398,7 +2399,9 @@
           182,
           185,
           207,
-          210
+          210,
+          218,
+          220
         ],
         "executable-dependency": [
           41

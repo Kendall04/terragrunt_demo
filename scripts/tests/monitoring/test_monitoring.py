@@ -213,7 +213,22 @@ class Monitoring(unittest.TestCase):
                     self.assertFalse(permits(policy, action, arn, {"autoscaling:ResourceTag/Environment": "other"}))
                     for bad in (arn + "-other", arn.replace("-nat-a", "-nat-c"), arn.replace("123456789012", "999999999999"), arn.replace("us-east-1", "us-west-2"), arn.replace("demo-" + env, "demo-other")):
                         self.assertFalse(permits(policy, action, bad, {"autoscaling:ResourceTag/Environment": env}))
-            policies[key] = {**policy, "Statement": [s for s in policy["Statement"] if not METRIC_ACTIONS & set(s["Action"])]}
+            # E2 adds exact coordination grants independently of E7 metrics.
+            # Assert their complete tuples before projecting the pre-E2 policy.
+            e2_resources = [f"arn:aws:s3:::e1-wp4-{env}-123456789012-us-east-1/arbitration/{env}/{part}"
+                            for part in ("application.json", "secrets.json", "shared.json")]
+            e2_terminal = f"arn:aws:s3:::e1-wp4-{env}-123456789012-us-east-1/arbitration/{env}/terminals/{key}/*"
+            e2 = [s for s in policy["Statement"] if any("/arbitration/" in r for r in s["Resource"])]
+            expected_e2 = [] if key.startswith("request-gateway/") else [
+                {"Effect": "Allow", "Action": ["s3:GetObject"], "Resource": e2_resources},
+                {"Effect": "Allow", "Action": ["s3:PutObject"], "Resource": e2_resources,
+                 "Condition": {"Null": {"s3:if-match": "false"}}},
+                {"Effect": "Allow", "Action": ["s3:GetObject"], "Resource": [e2_terminal]},
+                {"Effect": "Allow", "Action": ["s3:PutObject"], "Resource": [e2_terminal],
+                 "Condition": {"StringEquals": {"s3:if-none-match": "*"}}}]
+            self.assertEqual(e2, expected_e2)
+            policies[key] = {**policy, "Statement": [s for s in policy["Statement"]
+                             if not METRIC_ACTIONS & set(s["Action"]) and s not in e2]}
         # Baseline cc223d8 policies: no other action/resource/condition changed.
         self.assertEqual(hashlib.sha256(json.dumps(policies, sort_keys=True).encode()).hexdigest(),
                          "26ca1c7ae15602e3f7fa1a5eda1c83ddfe54263bc0664d4781ee3bea03db9c0a")
