@@ -419,3 +419,16 @@ renderer, source-inventory, lifecycle static, local-link and check-only Terrafor
 format checks too. No provider initialization, AWS operation or dependency
 installation is required; metric delivery and live alarm/SNS behavior remain
 unverified.
+
+## E2 environment mutation arbitration
+
+Run python -I -B scripts/tests/mutation/run.py for the focused hermetic suite and
+python -I -B scripts/tests/mutation/check_static.py for actual generated bucket
+barriers in a disposable provider-free Terraform configuration. The existing
+final acceptance gate retains all 983 E1/WP tests and adds E2 separately;
+no initialization, provider, AWS, dependency installation or activation occurs.
+See [E2 contract and evidence](e2-environment-mutation.md).
+
+Final E2 local gate: 983 accepted E1/WP tests plus 41 E2 tests passed, with
+AC1–AC16, all ten static checks, inventory and parsing; no failures/errors/skips.
+The evidence is provider-free repository validation, not AWS installation.

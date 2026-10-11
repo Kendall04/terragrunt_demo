@@ -116,13 +116,33 @@ def _wakeup(clients, config):
     return operation, intent["request"]
 
 
+def _authority(clients, config, operation, request, cleanup=None):
+    from scripts.environment_mutation import Store, Authority
+    return Authority(Store(clients["s3"], config["evidence_bucket"], config["environment"]),
+                     config["binding"], operation, request, cleanup=cleanup)
+
+
+def _guarded(clients, authority):
+    from scripts.environment_mutation import Client
+    return dict(clients, **{name: Client(clients[name], name, authority)
+                           for name in ("ecs", "elbv2", "events")})
+
+
 def _normal(clients, config):
+    from scripts.environment_mutation import execute
+    operation, request = _wakeup(clients, config)
+    owner = _authority(clients, config, operation, request)
+    result = execute(owner, lambda grant: _normal_owned(
+        _guarded(clients, grant), config, operation, request, grant))
+    return {"operation": operation, "status": result["status"]}
+
+
+def _normal_owned(clients, config, operation, request, authority):
     from scripts.normal_delivery import authorization as a
     from scripts.normal_delivery import delivery as d
     from scripts.normal_delivery.e3 import Gate
     from scripts.wp4d.adapters import Facts, Objects, History
     from scripts.wp4d.aws_runtime import Delivery, BoundedProcess
-    operation, request = _wakeup(clients, config)
     records = Objects(clients["s3"], config["evidence_bucket"], "delivery/")
     facts = Facts(clients["s3"], clients["ecr"], _fact_config(config))
     endpoint = config["binding"].split("/", 1)[1]
@@ -132,8 +152,8 @@ def _normal(clients, config):
     result = d.Delivery(authorizer, runtime, records, Gate(BoundedProcess())).run(
         operation, a.canonical(request))
     if result["status"] == "SUCCESS":
-        History(clients["s3"], config["evidence_bucket"],
-                config["environment"]).publish(result, records)
+        authority.call(History(clients["s3"], config["evidence_bucket"],
+                config["environment"]).publish, result, records)
         if config["environment"] == "dev":
             activation = d.dev_prerequisite(result)
             publication = Objects(clients["s3"], config["evidence_bucket"], "activations/by-release/")
@@ -155,7 +175,17 @@ def _normal(clients, config):
     return {"operation": operation, "status": result["status"]}
 
 
-def _application(clients, config, operation, cleanup=False):
+def _application(clients, config, operation, cleanup=False, evidence=None):
+    require(config["binding"] == ("cleanup-recovery/cleanup-" if cleanup else
+                                 "emergency-recovery/emergency-") + config["environment"])
+    from scripts.environment_mutation import execute
+    owner = _authority(clients, config, operation, {}, evidence if cleanup else None)
+    result = execute(owner, lambda grant: _application_owned(
+        _guarded(clients, grant), config, operation, cleanup))
+    return {"operation": operation, "status": result["status"]}
+
+
+def _application_owned(clients, config, operation, cleanup=False):
     from scripts.normal_delivery import authorization as a
     from scripts.recovery.application import Emergency, Cleanup
     from scripts.wp4d.adapters import Facts, RecoveryObjects, History
@@ -225,7 +255,10 @@ def invoke(event):
         if binding.startswith("cleanup-recovery/"):
             require(event.get("source") == "aws.events" and
                     event.get("detail-type") == "Scheduled Event")
-            return _application(clients, config, _operation_id(event, config, True), True)
+            require(event.get("resources") == ["arn:aws:events:" + config["region"] + ":" +
+                    config["account"] + ":rule/" + config["resources"]["cleanup"]["rule"]])
+            return _application(clients, config, _operation_id(event, config, True), True,
+                                event.get("e2"))
         if binding.startswith("nat-recovery/"):
             require(event.get("source") == "aws.autoscaling")
             return _nat(clients, config, _operation_id(event, config, True), event)

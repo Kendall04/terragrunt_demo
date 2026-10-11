@@ -84,7 +84,7 @@ def main():
             bucket=f'arn:aws:s3:::e1-wp4-{environment}-{ACCOUNT}-{REGION}'
             sb=f'arn:aws:s3:::e1-lifecycle-{environment}-{ACCOUNT}-{REGION}'
             variables={k:{'default':v} for k,v in dict(account_id=ACCOUNT,region=REGION,admin_arn=f'arn:aws:iam::{ACCOUNT}:role/security-admin',environment=environment,bucket=bucket,state_bucket=sb).items()}
-            locals_={name:value for name,value in compute['locals'].items() if name in ('wp4d_bucket_readers','wp4d_bucket_writers','evidence_bucket')}
+            locals_={name:value for name,value in compute['locals'].items() if name in ('wp4d_bucket_readers','wp4d_bucket_writers','e2_lifecycle_writers','evidence_bucket')}
             locals_.update(wp4d_active={},wp4=wp4,state=state,evidence=compute['resource']['aws_s3_bucket_policy']['evidence']['policy'])
             path.write_text(json.dumps(dict(variable=variables,locals=locals_)))
             expression='jsonencode({wp4=jsondecode(local.wp4),state=jsondecode(local.state),evidence=jsondecode(local.evidence)})'

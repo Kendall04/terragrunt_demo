@@ -20,7 +20,7 @@ BINDINGS = tuple(kind + '/' + consumer for consumer in
                  ('infra-dev', 'infra-prod', 'infra-high-risk-dev', 'infra-high-risk-prod')
                  for kind in ('request-gateway', 'environment-lifecycle'))
 SOURCES = ('scripts/lifecycle/contract.py', 'scripts/lifecycle/controller.py',
-           'scripts/lifecycle/packages.py', 'scripts/lifecycle/runtime.py')
+           'scripts/lifecycle/packages.py', 'scripts/lifecycle/runtime.py', 'scripts/environment_mutation.py')
 
 
 def canonical(value):

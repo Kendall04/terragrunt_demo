@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[3]
 DOCUMENTS = ('README.md', 'AGENTS.md', 'terraform/AGENTS.md', 'terraform/infra/security/README.md',
              'terraform/docs/architecture.md', 'terraform/docs/deployment.md', 'terraform/docs/bootstrap.md',
              'terraform/docs/secrets-strategy.md', 'terraform/docs/decisions-and-limitations.md',
-             'terraform/docs/validation.md', 'terraform/docs/e1-final-acceptance.md')
+             'terraform/docs/validation.md', 'terraform/docs/e2-environment-mutation.md', 'terraform/docs/e1-final-acceptance.md')
 
 
 def check(root):

@@ -30,6 +30,11 @@ authenticated human authority without a GitHub role or automatic fallback.
 | Environment edge | API Gateway/VPC Link |
 | Qualified delivery/recovery | Task revisions/counts, ALB forwarding and bounded existing-content repair |
 
+[E2 ownership](e2-environment-mutation.md) uses conditional protected S3 heads
+per environment/conflict domain across delivery/recovery and conflicting lifecycle.
+Shared alerts and metadata-only consumption remain independent; status/plans
+gain no mutation authority. There is no lease takeover after interruption.
+
 Lifecycle state uses fixed environment buckets/keys and S3 lockfiles. It never
 reads security state. Protected controllers select layers, membership, backend
 and bindings; public callers cannot supply arbitrary Terraform or redefine roles.

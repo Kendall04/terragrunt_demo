@@ -20,6 +20,7 @@ ROOT = Path(__file__).resolve().parents[3]
 SUITES = ('authority', 'security_root', 'control_bundles', 'controller_compute',
           'ownership_publication', 'build_supervision', 'qualification', 'internal_release',
           'normal_delivery', 'delivery', 'recovery', 'wp4d', 'lifecycle', 'workflows', 'final_acceptance')
+ADDITIONAL_SUITES = ("mutation",)
 # Every criterion includes positive, negative and actual-source admission evidence;
 # WP7 composes the resulting relationships and eliminates historical overlap.
 CRITERIA = {
@@ -38,13 +39,14 @@ CRITERIA = {
     'AC13': ('authority', 'security_root', 'controller_compute', 'internal_release', 'wp4d', 'workflows', 'final_acceptance'),
     'AC14': ('normal_delivery', 'delivery', 'final_acceptance'),
     'AC15': ('ownership_publication', 'delivery', 'lifecycle', 'final_acceptance'),
-    'AC16': SUITES,
+    'AC16': SUITES + ADDITIONAL_SUITES,
 }
 CHECKS = (
     ('generated_security', ('python', '-I', '-B', 'scripts/tests/security_root/render.py')),
     ('generated_workflows', ('python', '-I', '-B', 'scripts/workflow_requests/render.py')),
     ('knowledge', ('python', '-I', '-B', 'scripts/tests/final_acceptance/check_knowledge.py')),
     ('extracted_packages', ('python', '-I', '-B', 'scripts/tests/internal_release/check_packages.py')),
+    ('e2_static', ('python', '-I', '-B', 'scripts/tests/mutation/check_static.py')),
     ('wp4d_static', ('python', '-I', '-B', 'scripts/tests/wp4d/check_static.py')),
     ('wp5_static', ('python', '-I', '-B', 'scripts/tests/lifecycle/check_static.py')),
     ('wp6_static', ('python', '-I', '-B', 'scripts/tests/workflows/check_static.py')),
@@ -93,7 +95,7 @@ def main():
         text = raw.decode('utf-8', errors='replace')
         record = dict(status='PASS' if code == 0 else 'FAIL', exit=code,
                       log_sha256=hashlib.sha256(raw).hexdigest())
-        if name in SUITES:
+        if name in SUITES + ADDITIONAL_SUITES:
             counts = re.findall(r'^Ran (\d+) tests?', text, re.M)
             # unittest prints a test docstring on the following line before its
             # outcome. The method ID still appears once on its own first line.
@@ -106,7 +108,7 @@ def main():
     records = {}
     # Independent processes retain isolated hermetic guards and disposable files.
     with ThreadPoolExecutor(max_workers=4) as pool:
-        futures = [pool.submit(execute, name, ('python', '-I', '-B', f'scripts/tests/{name}/run.py')) for name in SUITES]
+        futures = [pool.submit(execute, name, ('python', '-I', '-B', f'scripts/tests/{name}/run.py')) for name in SUITES + ADDITIONAL_SUITES]
         for future in as_completed(futures):
             name, record = future.result()
             records[name] = record
@@ -142,6 +144,7 @@ def main():
                   identity=identity, evaluated_sha256=hashes, content_digest=hashlib.sha256(json.dumps(hashes, sort_keys=True).encode()).hexdigest(),
                   criteria=criteria, checks=records, regression_count=regression, wp7_count=records['final_acceptance'].get('executed', 0),
                   errors=errors, parsing=parsing, final_authority_inventory=final_authority,
+                  e2_count=records['mutation'].get('executed', 0),
                   external_prerequisites='UNVERIFIED_NOT_DEPLOYED',
                   native_linux_e3='SEPARATE_EVIDENCE_REQUIRED', activation={'request_identities': '0/11', 'wp4d': '0/16', 'wp5': '0/8'},
                   limitations=['WP1 historical characterization is extractor regression, not final TARGET evidence',

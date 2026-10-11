@@ -58,7 +58,7 @@ class Completion(unittest.TestCase):
         for binding, (env, _) in wp4d.RESERVED.items():
             p = policy(binding)
             for statement in p['Statement']:
-                if statement['Action'] == ['s3:PutObject'] and statement.get('Condition'):
+                if statement['Action'] == ['s3:PutObject'] and statement.get('Condition') == {'StringEquals': {'s3:if-none-match': '*'}}:
                     resource = statement['Resource'][0].replace('*', 'immutable.json')
                     self.assertTrue(permits(p, 's3:PutObject', resource, {'s3:if-none-match':'*'}))
                     self.assertFalse(permits(p, 's3:PutObject', resource))
@@ -183,20 +183,16 @@ class Completion(unittest.TestCase):
             config = {k: 'protected' for k in ('account', 'region', 'environment', 'admin_bucket',
                        'evidence_bucket', 'dev_evidence_bucket', 'repository', 'binding')}
             config.update(environment='dev', account=ACCOUNT, region=REGION, resources=resources)
-            class Missing(Exception):
-                response = {'Error': {'Code': 'NoSuchKey'}}
-            class S3:
-                def __init__(self): self.values = {}
-                def get_object(self, **kw):
-                    if kw['Key'] not in self.values: raise Missing()
-                    return {'VersionId':'SYNTHETIC_OFFLINE_VERSION','Body':io.BytesIO(self.values[kw['Key']])}
-                def put_object(self, **kw):
-                    assert kw['IfNoneMatch'] == '*' and kw['Key'] not in self.values
-                    self.values[kw['Key']] = kw['Body']
-            store = S3()
+            spec_store = importlib.util.spec_from_file_location('e2_test_storage', ROOT/'scripts/tests/mutation/test_mutation.py')
+            storage_module = importlib.util.module_from_spec(spec_store); spec_store.loader.exec_module(storage_module)
+            store = storage_module.S3()
+            from scripts.environment_mutation import Store, Authority
+            owner_store = Store(store, config['evidence_bucket'], 'dev')
+            owner_store.initialize()
+            operation = '11111111-2222-3333-4444-555555555555'
             clients = dict.fromkeys(('ecs', 'elbv2', 'events', 's3', 'ecr'))
             clients['s3'] = store
-            with patch.object(runtime, '_wakeup', return_value=('operation', {})), \
+            with patch.object(runtime, '_wakeup', return_value=(operation, {})), \
                     patch.object(d.Delivery, 'run', return_value={'status': 'FAILURE'}):
                 config['binding'] = 'normal-delivery/deploy-dev'
                 self.assertEqual(runtime._normal(clients, config)['status'], 'FAILURE')
@@ -204,11 +200,15 @@ class Completion(unittest.TestCase):
                     'environment': 'dev', 'version_id': 'exact', 'bytes': a.canonical({'colors': resources['colors']})}), \
                     patch.object(Cleanup, 'run', return_value={'status': 'FAILURE'}), \
                     patch.object(Emergency, 'run', return_value={'status': 'FAILURE'}):
-                self.assertEqual(runtime._application(clients, config, 'operation', True)['status'], 'FAILURE')
-                self.assertEqual(runtime._application(clients, config, 'operation')['status'], 'FAILURE')
-            self.assertEqual(set(store.values),{'delivery/dev/operation/public.json','recovery/dev/recovery/emergency/operation/public.json'})
-            for raw in store.values.values():
-                self.assertEqual(json.loads(raw),{'operation_id':'operation','state':'FAILURE','release_id':None,'source_commit':None})
+                config['binding'] = 'cleanup-recovery/cleanup-dev'
+                self.assertEqual(runtime._application(clients, config, operation, True)['status'], 'UNCERTAIN')
+                config['binding'] = 'emergency-recovery/emergency-dev'
+                self.assertEqual(runtime._application(clients, config, operation)['status'], 'FAILURE')
+            public = {key:raw for (bucket,key),(raw,version) in store.values.items() if key.endswith('/public.json')}
+            self.assertEqual(set(public),{'delivery/dev/'+operation+'/public.json',
+                                         'recovery/dev/recovery/emergency/'+operation+'/public.json'})
+            for raw in public.values():
+                self.assertEqual(json.loads(raw),{'operation_id':operation,'state':'FAILURE','release_id':None,'source_commit':None})
 
     def test_warm_bootstrap_reloads_only_verified_package_modules(self):
         authority = json.loads((ROOT/'terraform/infra/security/authority.json').read_text())

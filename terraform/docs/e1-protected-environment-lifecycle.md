@@ -49,8 +49,8 @@ teardown at zero, separate create, then qualified normal delivery. Authoritative
 ECS observations require the exact cluster/two services and complete running/pending
 task listings; only exact ECS MISSING observations establish absence. Nonzero,
 partial, ambiguous or wrong-environment observations reject. Lost mutation/readback
-acknowledgements retain UNKNOWN; retrying a UUID cannot apply again. E2 concurrency
-arbitration remains separate.
+acknowledgements retain UNKNOWN; retrying a UUID cannot apply again. The [E2 arbitration adapter](e2-environment-mutation.md) now holds environment
+mutation ownership through this existing plan/apply/readback contract.
 
 ## IAM and protected inputs
 

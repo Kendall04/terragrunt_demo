@@ -15,6 +15,7 @@ import time
 from scripts.lifecycle import contract as c
 from scripts.lifecycle import packages
 from scripts.lifecycle.controller import Controller
+from scripts.environment_mutation import Store, Authority, execute as arbitrate, domain
 
 
 class Records:
@@ -40,7 +41,9 @@ class Packages:
 
 
 class Terraform:
-    def __init__(self,root,ecs,protected):self.root,self.ecs,self.protected=Path(root),ecs,protected
+    def __init__(self,root,ecs,protected,authority=None):
+        self.root,self.ecs,self.protected=Path(root),ecs,protected
+        self.authority=authority
     def prepare(self,reference,layer,parameters):
         self.directory=self.root/layer['root'];self.layer=layer
         c.require(self.directory.is_relative_to(self.root) and self.directory.is_dir(),'installed working directory')
@@ -54,6 +57,11 @@ class Terraform:
         self.call(['init','-input=false','-lockfile=readonly',
                    *['-backend-config='+key+'='+value for key,value in layer['backend'].items()]])
     def call(self,args):
+        if args[:1] == ['apply']:
+            c.require(type(self.authority) is Authority, 'E2 mutation authority required')
+            return self.authority.call(self._call,args)
+        return self._call(args)
+    def _call(self,args):
         result=subprocess.run(['/opt/e1/bin/terraform',*args],cwd=self.directory,env=self.environment,
                               stdin=subprocess.DEVNULL,capture_output=True,timeout=900)
         c.require(result.returncode==0,'Terraform command failed; output withheld')
@@ -159,9 +167,22 @@ def execute(event, configuration, clients_):
     c.require(request is not None,'protected build-to-operation mapping')
     with tempfile.TemporaryDirectory(prefix='wp5-') as directory:
         package=Packages(clients_['s3'],directory)
-        engine=Terraform(directory,clients_['ecs'],protected)
         records=Records(clients_['s3'],bucket,'operations/'+binding+'/')
-        result=Controller(binding,protected,package,engine,records).run(request)
+        def run_owned(owner=None):
+            engine=Terraform(directory,clients_['ecs'],protected,owner)
+            return Controller(binding,protected,package,engine,records).run(request)
+        value=c.request(binding,request)
+        retained=records.read(value['operation_id'])
+        if retained is not None:
+            c.require(retained['request_sha256']==c.digest(c.canonical(value)), 'retry changed request')
+            result=retained
+        elif value['operation']=='plan':
+            result=run_owned()
+        else:
+            coordination_bucket=f'e1-wp4-{environment}-{configuration["account"]}-{configuration["region"]}'
+            owner=Authority(Store(clients_['s3'],coordination_bucket,environment,domain(binding,value['layer'])),
+                            binding,value['operation_id'],value,layer=value['layer'])
+            result=arbitrate(owner,run_owned,state_key='state')
         public={'operation_id':request['operation_id'],'state':result['state'],'release_id':None,'source_commit':None}
         key=request['operation_id']+'/public'
         try:records.put(key,public)

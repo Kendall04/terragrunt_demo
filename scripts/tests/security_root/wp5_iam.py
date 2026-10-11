@@ -198,6 +198,14 @@ def policy(binding, account, region, resources, package, version):
     # Binding/admin approval reads; never permission to install/change them.
     configs=[binding]+(['environment-lifecycle/'+binding.split('/')[1]] if binding.startswith('request-gateway/') else [])
     allow(['s3:GetObject'],[f'arn:aws:s3:::demo-release-artifacts-{account}/lifecycle/{name}/current.json' for name in configs])
+    if binding.startswith('environment-lifecycle/'):
+        coordination=[f'arn:aws:s3:::e1-wp4-{env}-{account}-{region}/arbitration/{env}/{selected}.json'
+                      for selected in ('application','shared','secrets')]
+        allow(['s3:GetObject'],coordination)
+        allow(['s3:PutObject'],coordination,{'Null':{'s3:if-match':'false'}})
+        terminal=f'arn:aws:s3:::e1-wp4-{env}-{account}-{region}/arbitration/{env}/terminals/{binding}/*'
+        allow(['s3:GetObject'],[terminal])
+        allow(['s3:PutObject'],[terminal],{'StringEquals':{'s3:if-none-match':'*'}})
     own='operations/'+binding+'/'
     allow(['s3:GetObject'],[f'arn:aws:s3:::{bucket}/{own}*'])
     allow(['s3:PutObject'],[f'arn:aws:s3:::{bucket}/{own}*'],{'StringEquals':{'s3:if-none-match':'*'}})
