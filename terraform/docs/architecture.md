@@ -132,6 +132,12 @@ Evidence: [app skeleton](../modules/target/dev/apps/ordinary-demo.tf),
 
 ## CURRENT CONTRACT — application and data
 
+The [E14-A container contract](e14-container-hardening.md) pins both .NET 8
+base images to verified Linux/x86-64 manifests and explicitly runs the application
+and packaged readiness probe as UID 1654. HTTP 8080, `/app`, the framework-dependent
+DLL entrypoint and ECS environment/secret semantics are preserved. Deterministic
+checks and host startup pass; Linux container execution remains unverified.
+
 | Interface | Behavior |
 | --- | --- |
 | POST /text | Reject blank input, then plaintext over 4096 UTF-8 bytes; KMS-encrypt accepted bytes; persist base64 ciphertext; return plaintext DTO |

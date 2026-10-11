@@ -1,0 +1,25 @@
+{
+  "verifiedOn": "2026-10-11",
+  "method": "docker buildx imagetools inspect against public Microsoft Container Registry; selected manifest and .Image configuration inspected by digest",
+  "platform": "linux/amd64",
+  "appUid": 1654,
+  "bases": {
+    "base": {
+      "tag": "mcr.microsoft.com/dotnet/aspnet:8.0",
+      "indexDigest": "sha256:a3cd573ac05cf88ca496e3309cb7f7c44aa16664352d1ee41eda93154f50cdbf",
+      "manifestDigest": "sha256:9a432d3500734557e5fecea0336bf274c85de15aa55505a2dafe06e44f0cd024",
+      "configDigest": "sha256:aad466e0df1b339b12926b11c474201c0ca4667fc64c2c06785e8d05c99e16fe",
+      "dotnetVersion": "8.0.31",
+      "aspnetVersion": "8.0.31"
+    },
+    "build": {
+      "tag": "mcr.microsoft.com/dotnet/sdk:8.0",
+      "indexDigest": "sha256:ec9c0a0dc5f60adc2065762050638dd5ed5facfc53716d4580a42d86027c8e80",
+      "manifestDigest": "sha256:e1d5584f7c7f45439449054292acadf4f71730034507186497bab3d539a5a9b7",
+      "configDigest": "sha256:c5bcf9f0e2df23208ec60ac34765efbd402c66c993df20f84f469e1917a64ef9",
+      "dotnetVersion": "8.0.31",
+      "aspnetVersion": "8.0.31",
+      "sdkVersion": "8.0.425"
+    }
+  }
+}

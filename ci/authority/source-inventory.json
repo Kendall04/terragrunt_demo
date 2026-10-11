@@ -908,15 +908,16 @@
       "semantic_status": "UNVERIFIED"
     },
     "demo-api/Dockerfile": {
-      "sha256": "a2c91491a2650cace1e83acc1e8ffbf367d8bd95ebe19e18669441ea341aac66",
+      "sha256": "509e75b7aeb3a51b9596ea4f43debb394b8d94c52eb64a1d57ae066b2a4000db",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          18,
-          21,
-          24,
-          27,
-          40
+          4,
+          20,
+          23,
+          26,
+          29,
+          44
         ]
       },
       "semantic_status": "UNVERIFIED"
