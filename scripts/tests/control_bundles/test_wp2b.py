@@ -241,6 +241,11 @@ class BundleTests(unittest.TestCase):
         # WP2D ordinary modules retain roleless ECS skeletons; its suite checks those.
         from compute import MODULE as COMPUTE_MODULE
         for path, tf in wiring(doc).items():
+            if path == "terraform/infra/security/.terraform.lock.hcl":
+                self.assertIsInstance(tf, str)
+                self.assertIn('provider "registry.terraform.io/hashicorp/aws"', tf)
+                self.assertNotRegex(tf, r'(?m)^\s*(resource|module|data)\s')
+                continue
             if path != COMPUTE_MODULE and not path.startswith("terraform/modules/target/"):
                 types.update(tf.get("resource", {}))
         self.assertFalse(doc["controller_compute"]["creation_supported"])

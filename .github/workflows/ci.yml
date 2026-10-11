@@ -37,7 +37,7 @@
       "steps": [
         {
           "name": "Checkout exact event revision",
-          "uses": "actions/checkout@v6",
+          "uses": "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
           "with": {
             "ref": "${{ github.sha }}",
             "persist-credentials": false,
@@ -70,19 +70,15 @@
       "steps": [
         {
           "name": "Checkout exact event revision",
-          "uses": "actions/checkout@v6",
+          "uses": "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
           "with": {
             "ref": "${{ github.sha }}",
             "persist-credentials": false
           }
         },
         {
-          "name": "Setup Terraform",
-          "uses": "hashicorp/setup-terraform@v3",
-          "with": {
-            "terraform_version": "1.13.4",
-            "terraform_wrapper": false
-          }
+          "name": "Install verified Terraform",
+          "run": "python3 -I -B .github/scripts/ci/install-tools.py terraform"
         },
         {
           "name": "Final E1 repository acceptance",
@@ -154,7 +150,7 @@
       "steps": [
         {
           "name": "Checkout exact event revision",
-          "uses": "actions/checkout@v6",
+          "uses": "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
           "with": {
             "ref": "${{ github.sha }}",
             "persist-credentials": false

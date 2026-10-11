@@ -6,12 +6,14 @@ These never constitute live AWS isolation or deployment evidence.
 
 ## CURRENT CONTRACT — toolchain and coverage
 
-CI selects Terraform 1.13.4, Terragrunt 0.93.3 and .NET SDK 8.0.x.
-Terraform modules generally permit >=1.9 and AWS provider ~>5.50.
-Five dev layer provider locks are tracked; dev edge/apps and prod locks are
-absent. [E14-A](e14-container-hardening.md) pins application Docker bases to
-verified .NET 8 Linux/amd64 digests and uses UID 1654. tfsec downloads latest; action tags
-and downloads are not a fully pinned/checksummed toolchain.
+CI selects Terraform 1.13.4, Terragrunt 0.93.3 and exact .NET SDK 8.0.425.
+All 14 TARGET environment/layer roots have tracked locks; the neutral security
+root now has an AWS-only lock. They retain AWS 5.100.0 (~>5.50); TARGET locks
+also retain TLS 4.3.0. [E14-B](e14b-toolchain-reproducibility.md) records verified
+standalone tool checksums, immutable CI action identities, platform/hash coverage
+and the intentional update procedure. [E14-A](e14-container-hardening.md) retains
+verified .NET 8 Linux/amd64 image digests and UID 1654. Runner inputs, jq, BuildKit,
+NuGet and protected runtime installation evidence remain reproducibility gaps.
 
 These are current selections, not a guarantee other versions work or a requirement
 to install/update tools automatically. Scripts assume Bash/Linux-style tooling;

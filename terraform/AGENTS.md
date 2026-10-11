@@ -15,7 +15,9 @@ Read [architecture](docs/architecture.md) for layer/state/network ownership,
   Production independence is required as a target; do not choose single/multi-account
   implementation without resolving the decision.
 - Do not hand-edit generated provider/backend files, caches, state or Lambda ZIPs.
-  Provider lock coverage is incomplete; changes require deliberate review.
+  The 14 TARGET roots and neutral security root have tracked provider locks;
+  [E14-B](docs/e14b-toolchain-reproducibility.md) defines their coverage and update
+  limits. Changes require deliberate review, not incidental initialization.
 - Mocks for plan/validate are not deployment evidence. Init/validate/plan may write
   caches/locks/generated files and contact AWS. Check-only formatting requires
   explicit check flags; no AWS operation is implied by a validation request.
