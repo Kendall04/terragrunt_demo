@@ -3,6 +3,11 @@ name: CI - Terragrunt Static
 on:
   workflow_call:
     inputs:
+      run_acceptance:
+        description: "Run E1 acceptance for standalone callers; orchestrator runs it once separately."
+        required: false
+        type: boolean
+        default: true
       target_env:
         description: "Environment label used for static validation context."
         required: false
@@ -49,6 +54,7 @@ jobs:
           terraform_wrapper: false
 
       - name: Final E1 repository acceptance
+        if: inputs.run_acceptance
         shell: bash
         run: |
           python3 -I -B scripts/tests/final_acceptance/gate.py --report-dir "$RUNNER_TEMP/e1-acceptance"
