@@ -52,6 +52,8 @@ E3 = (
     "scripts/alb-route-target.jq",
 )
 SUPPORT = (
+    'scripts/nat/closure.py', 'scripts/nat/native.py', 'scripts/nat/scope.py',
+    'scripts/lifecycle/contract.py',
     "scripts/environment_mutation.py",
     "scripts/wp4d/runtime.py", "scripts/wp4d/adapters.py",
     "scripts/wp4d/gateway.py", "scripts/wp4d/installed.py",

@@ -33,7 +33,7 @@ def verify(s3, reference, destination):
     source = Path(__file__).parents[1]/'environment_mutation.py'
     c.require((root/'scripts/environment_mutation.py').read_bytes() ==
               source.read_bytes().replace(b'\r\n',b'\n'), 'installed arbitration byte identity')
-    for name in ('scripts/nat/quiescence.py', 'scripts/recovery/nat.py',
+    for name in ('scripts/nat/quiescence.py', 'scripts/nat/closure.py', 'scripts/nat/native.py', 'scripts/nat/scope.py', 'scripts/recovery/nat.py',
                  'scripts/recovery/journal.py', 'scripts/recovery/ports.py',
                  'scripts/wp4d/nat_resolver.py', 'scripts/normal_delivery/authorization.py',
                  'scripts/normal_delivery/delivery.py', 'scripts/normal_delivery/e3.py',

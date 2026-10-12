@@ -340,12 +340,13 @@ class Boundaries(Base):
             self.engine._call(['apply','-input=false','wp5.tfplan'])
         self.assertEqual(process.call_count,1);self.assertIsNone(self.journal.read('decision'))
         self.setup_case();self.p['environment']='prod';self.denied(self.load)
-    def test_authority_unchanged_except_derived_wp5_hashes(self):
+    def test_authority_unchanged_except_derived_package_hashes(self):
         import hashlib
         authority=copy.deepcopy(DOC)
-        for item in authority['wp5']['selected'].values():del item['package_sha256']
+        for group in ('wp4d','wp5'):
+            for item in authority[group]['selected'].values():del item['package_sha256']
         self.assertEqual(hashlib.sha256(json.dumps(authority,sort_keys=True,separators=(',',':')).encode()).hexdigest(),
-            'aa3664cbfc2dd5748a823f69dcc0565f4c2ccb7c89b1f7dda518d7b4fb2fc6de')
+            '7a2a26aa8cbaf40411c8b7d4ebedcf1c53bc2492ce9a92a5cbdbe3142dac40ca')
         for kind in ('wp4d','wp5'):
             for field in ('installations','runtime_approvals','environment_bindings'):self.assertEqual(DOC[kind][field],{})
         self.assertEqual(DOC['wp6']['approvals'],{})

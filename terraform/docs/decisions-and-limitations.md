@@ -206,3 +206,12 @@ ECS drain, sealed terminal cohort handoff and residual completion checks.
 Complete installed DOWN remains PARTIALLY_READY and denied: NAT executor/effect
 closure, authentic ECS closure, whole-operation preparation and exhaustive
 residual installation remain required. No IAM/activation or live AWS evidence.
+
+
+## E15-H trusted NAT source increment
+
+[E15-H](e15h-nat-trusted-closure.md) selects one bounded CAS admission coordinator,
+adds cooperative E13 dispatch/seal accounting and native ASG read contracts under
+the original E15-G owner. Installed authentication, callable-version coverage and
+remote finality remain unproved; networking and complete DOWN still fail closed.
+No IAM policy, active binding or AWS resource is installed by this increment.

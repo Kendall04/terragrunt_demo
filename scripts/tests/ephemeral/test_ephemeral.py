@@ -276,11 +276,12 @@ class Ephemeral(unittest.TestCase):
         protected['operation_approvals'][value['operation_id']]=dict(request_sha256=c.digest(c.canonical(value)),environment='dev')
         with self.assertRaises(ValueError):c.authorize(binding,value,protected,reference)
 
-    def test_authority_unchanged_except_eight_wp5_package_hashes(self):
+    def test_authority_unchanged_except_derived_package_hashes(self):
         authority=copy.deepcopy(DOC)
-        for item in authority['wp5']['selected'].values():del item['package_sha256']
+        for group in ('wp4d','wp5'):
+            for item in authority[group]['selected'].values():del item['package_sha256']
         self.assertEqual(hashlib.sha256(json.dumps(authority,sort_keys=True,separators=(',',':')).encode()).hexdigest(),
-                         'aa3664cbfc2dd5748a823f69dcc0565f4c2ccb7c89b1f7dda518d7b4fb2fc6de')
+                         '7a2a26aa8cbaf40411c8b7d4ebedcf1c53bc2492ce9a92a5cbdbe3142dac40ca')
 
     def test_implicit_resources_and_external_backend_require_residual_review(self):
         rows=lab.declarations()

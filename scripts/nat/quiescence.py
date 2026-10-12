@@ -15,34 +15,7 @@ from scripts.recovery.nat import ACTIONS, MEMBERSHIP, Nat
 from scripts.wp4d.nat_resolver import Resolver
 
 
-VERBS = {'assign_eip': ('associate_address',),
-         'change_rt': ('create_route', 'replace_route'),
-         'disable_sdc': ('modify_instance_attribute',)}
-READS = ('describe_instances', 'describe_network_interfaces', 'describe_addresses',
-         'describe_route_tables', 'describe_launch_template_versions',
-         'describe_instance_attribute', 'get_console_output')
-
-
-def slots(config):
-    """Use administrator-installed two-slot membership, never event metadata."""
-    c.require(config['environment'] == 'dev', 'DEV NAT only')
-    account, region = config['account'], config['region']
-    c.require(type(account) is str and re.fullmatch('[0-9]{12}', account), 'account')
-    c.require(type(region) is str and re.fullmatch('[a-z]{2}(?:-[a-z]+)+-[0-9]', region), 'region')
-    value = copy.deepcopy(config['nat_slots'])
-    Resolver('dev', value)  # existing two-slot uniqueness contract
-    c.require(len({s['subnet'] for s in value}) == 2, 'distinct NAT subnets')
-    for s in value:
-        c.keys(s, ('environment', 'account', 'region', 'vpc', 'subnet', 'az', 'asg',
-                   'eip', 'route_table', 'spec'), 'protected NAT slot')
-        c.require(s['account'] == account and s['region'] == region and
-                  s['spec']['tags'].get('Environment') == 'dev' and
-                  s['spec']['tags'].get('Role') == 'nat', 'DEV membership')
-        c.require(s['spec']['role'] == f'arn:aws:iam::{account}:role/demo-dev-nat-role' and
-                  s['spec']['instance_profile'] ==
-                  f'arn:aws:iam::{account}:instance-profile/demo-dev-nat-instance-profile', 'DEV profile')
-    return value
-
+from scripts.nat.scope import slots, VERBS, READS
 
 class FencedEC2:
     """Dormant wrapper for the actual WP4D Nat transport's EC2 client.
@@ -181,7 +154,7 @@ class Quiescence:
     unknown; diagnostics append immutable content-addressed observations. No
     SUCCESS/READY is representable under the current settlement architecture.
     """
-    def __init__(self, authority, request, protected, nat_config, records, observation, now=time.time, operation=None):
+    def __init__(self, authority, request, protected, nat_config, records, observation, now=time.time, operation=None, closure=None):
         self.scope = dev_down.scope(request, protected)
         c.require(self.scope['layer'] == 'global', 'NAT networking teardown stage only')
         self.members = slots(nat_config)
@@ -208,6 +181,11 @@ class Quiescence:
         authority._check()
         self.authority, self.records, self.observation, self.now = authority, records, observation, now
         self.owner = copy.deepcopy(authority.value)
+        from scripts.nat.closure import Coordinator
+        c.require(closure is None or (type(closure) is Coordinator and closure.e2 is authority.store and
+                  closure.selected['configuration_sha256'] == self.nat_configuration_sha256),
+                  'separate exact protected NAT closure')
+        self.closure, self.operation = closure, operation
         self.key = self.scope['operation_id'] + '/nat-quiescence'
 
     def check(self):
@@ -261,4 +239,16 @@ class Quiescence:
         installation/live proof, not a Boolean in an Observation implementation.
         """
         self.inspect()
+        if self.closure is not None:
+            operation_sha256 = c.digest(c.canonical(self.operation.manifest)) if self.operation is not None else self.scope['request_sha256']
+            report = self.closure.inspect(self.authority, self.scope, operation_sha256)
+            report.update(scope=self.scope, state='UNKNOWN', execution_authorized=False)
+            key = self.key + '/trusted-closure/' + c.digest(c.canonical(report))
+            retained = self.records.read(key)
+            if retained is None:
+                try: self.records.create(key, report)
+                except Exception: pass
+                retained = self.records.read(key)
+            c.require(retained == report, 'durable trusted closure diagnostic')
+            self.check()
         c.require(False, 'E15F_NAT_EXECUTOR_AND_ISSUED_EFFECT_SETTLEMENT_REQUIRED')

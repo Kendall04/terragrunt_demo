@@ -628,3 +628,12 @@ Static finding identity/multiplicity remains exactly inherited 24/46. See E15-G
 for report paths, the single bounded repair, missing native Linux/lint tooling
 and explicit installed/live limitations. No executable source changed after this
 successful gate; results/link/whitespace documentation checks follow separately.
+
+
+## E15-H trusted NAT source increment
+
+[E15-H](e15h-nat-trusted-closure.md) selects one bounded CAS admission coordinator,
+adds cooperative E13 dispatch/seal accounting and native ASG read contracts under
+the original E15-G owner. Installed authentication, callable-version coverage and
+remote finality remain unproved; networking and complete DOWN still fail closed.
+No IAM policy, active binding or AWS resource is installed by this increment.
