@@ -600,3 +600,12 @@ late-effect barriers and durable denied teardown. No live adapter, package/IAM
 activation or shared acceptance/source-inventory regeneration is supplied here;
 combined integration must reconcile admission. Existing E13/E2/R/E4/E15/B/C/D and
 E1 acceptance regressions remain required. No AWS/provider initialization is allowed.
+
+## E15-E/F combined provider-free validation
+
+Run `python -I -B scripts/tests/combined_quiescence/run.py` plus both ECS/NAT
+feature suites and the original final acceptance gate from the integrated tree.
+[Combined contract](e15ef-combined-quiescence.md) records exact repository/live
+limits, inventory/package reconciliation and required original regression checks.
+No AWS, provider initialization, installation or timing-based settlement proof is
+authorized. Standalone feature agents did not complete full E1 acceptance.

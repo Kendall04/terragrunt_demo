@@ -15,6 +15,9 @@ DOCUMENTS = ('README.md', 'AGENTS.md', 'terraform/AGENTS.md', 'terraform/infra/s
              'terraform/docs/e15b-dev-down.md',
              'terraform/docs/e15c-exact-destroy-approval.md',
              'terraform/docs/e15d-administrative-handoff.md',
+             'terraform/docs/e15e-ecs-quiescence.md',
+             'terraform/docs/e15f-nat-quiescence.md',
+             'terraform/docs/e15ef-combined-quiescence.md',
              'terraform/docs/e2r-owner-recovery.md',
              'terraform/docs/e13-nat-reliability.md', 'terraform/docs/e14b-toolchain-reproducibility.md', 'terraform/docs/e1-final-acceptance.md')
 

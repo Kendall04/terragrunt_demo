@@ -27,10 +27,20 @@ def verify(s3, reference, destination):
         with target.open('xb') as stream:stream.write(base64.b64decode(encoded, validate=True))
     # Privileged bootstrap must itself be the exact code inside the verified
     # package. An image with unrelated entrypoint bytes cannot borrow its hash.
-    for name in ('contract.py', 'controller.py', 'packages.py', 'runtime.py', 'dev_down.py', 'exact_destroy.py', 'handoff.py'):
+    for name in ('contract.py', 'controller.py', 'packages.py', 'runtime.py', 'dev_down.py', 'exact_destroy.py', 'handoff.py', 'ecs_quiescence.py', 'quiescence.py'):
         source = Path(__file__).with_name(name).read_bytes().replace(b'\r\n', b'\n')
         c.require((root/'scripts/lifecycle'/name).read_bytes() == source, 'installed bootstrap byte identity')
     source = Path(__file__).parents[1]/'environment_mutation.py'
     c.require((root/'scripts/environment_mutation.py').read_bytes() ==
               source.read_bytes().replace(b'\r\n',b'\n'), 'installed arbitration byte identity')
+    for name in ('scripts/nat/quiescence.py', 'scripts/recovery/nat.py',
+                 'scripts/recovery/journal.py', 'scripts/recovery/ports.py',
+                 'scripts/wp4d/nat_resolver.py', 'scripts/normal_delivery/authorization.py',
+                 'scripts/normal_delivery/delivery.py', 'scripts/normal_delivery/e3.py',
+                 'scripts/normal_delivery/model_consistency.py', 'scripts/qualification/finalizer.py',
+                 'ci/authority/normal-delivery-model.json', 'ci/schemas/release-manifest.schema.json',
+                 'ci/schemas/e1-qualification.schema.json', 'demo-api/deploy/task-definition.template.json'):
+        source = Path(__file__).resolve().parents[2] / name
+        c.require((root/name).read_bytes() == source.read_bytes().replace(b'\r\n', b'\n'),
+                  'installed combined dependency byte identity')
     return reference

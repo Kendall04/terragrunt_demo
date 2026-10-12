@@ -271,3 +271,11 @@ One bounded self-acceptance checked scope, original E2 ownership, immutable
 attempts, live/remembered STOPPED requirements, controller failure cases,
 installation denial, unchanged authority and continued DOWN/EXECUTE denial.
 No live quietness, installation or full DOWN success is inferred from these tests.
+
+## Combined integration follow-up
+
+[The E15-E/F contract](e15ef-combined-quiescence.md) supersedes the standalone
+unwired/package-admission disposition. Protected runtime composition is now
+registered; installed closure, whole-operation stage handoff and remote effect
+settlement remain denied. Standalone validation results above retain their dates
+and are not combined acceptance evidence.

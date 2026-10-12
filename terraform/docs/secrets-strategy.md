@@ -107,3 +107,11 @@ approved immutable runtime image and current environment membership are required
 for installation. Caller flags cannot activate compute. Eleven request identities,
 sixteen WP4D and eight WP5 bindings stay inactive. Repository acceptance does not
 verify live IAM/provider behavior, external grants, GitHub settings or bootstrap.
+
+## E15-E/F combined DEV quiescence boundary
+
+[Combined contract and remaining decisions](e15ef-combined-quiescence.md) wires
+separate ECS/NAT guards into protected WP5/E15-D, with immutable UNKNOWN evidence
+and the original E2 hold. Whole-operation ownership/stage order, terminal ECS
+cluster handoff, installed authenticated adapters and issued-effect settlement
+remain unavailable. Complete DOWN stays denied; no IAM or activation is added.

@@ -350,3 +350,11 @@ admission fence and durable UNKNOWN diagnostic under the exact WP5/E2 owner.
 It demonstrates late dispatched effects and keeps networking teardown denied;
 controller installation, ASG/service inhibition and exhaustive executor/effect
 settlement remain separate prerequisites. It does not enable DOWN/EXECUTE.
+
+## E15-E/F combined DEV quiescence boundary
+
+[Combined contract and remaining decisions](e15ef-combined-quiescence.md) wires
+separate ECS/NAT guards into protected WP5/E15-D, with immutable UNKNOWN evidence
+and the original E2 hold. Whole-operation ownership/stage order, terminal ECS
+cluster handoff, installed authenticated adapters and issued-effect settlement
+remain unavailable. Complete DOWN stays denied; no IAM or activation is added.

@@ -278,3 +278,11 @@ small links/status additions in `e15-ephemeral-lifecycle.md`, `validation.md` an
 `decisions-and-limitations.md`. No shared executable integration files changed.
 The safe repository parts are READY_IN_REPOSITORY; the full NAT shutdown is
 PARTIALLY_READY, REQUIRES_OWNER_DECISION and REQUIRES_LIVE_AWS_VALIDATION.
+
+## Combined integration follow-up
+
+[The E15-E/F contract](e15ef-combined-quiescence.md) supersedes the standalone
+unwired/package-admission disposition. Protected runtime composition is now
+registered; installed closure, whole-operation stage handoff and remote effect
+settlement remain denied. Standalone validation results above retain their dates
+and are not combined acceptance evidence.

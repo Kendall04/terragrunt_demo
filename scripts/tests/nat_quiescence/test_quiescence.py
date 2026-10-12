@@ -309,7 +309,12 @@ class Contract(unittest.TestCase):
         for kind in ('wp4d','wp5'):
             for field in ('installations','runtime_approvals','environment_bindings'):self.assertEqual(authority[kind][field],{})
         self.assertNotIn('quiescence', (ROOT/'scripts/wp4d/runtime.py').read_text())
-        self.assertNotIn('quiescence', (ROOT/'scripts/lifecycle/runtime.py').read_text())
+        # Combined integration now wires WP5, while installation still denies.
+        from scripts.lifecycle.runtime import Terraform
+        engine = Terraform(ROOT, None, dict(environment='dev'))
+        with self.assertRaisesRegex(ValueError, 'concrete administrative handoff'), patch('scripts.lifecycle.runtime.subprocess.run') as process:
+            engine.require_combined_quiescence('pre-dispatch')
+        process.assert_not_called()
         self.assertIn('DOWN/EXECUTE unavailable', (ROOT/'scripts/ephemeral_lab.py').read_text())
 
     def test_missing_wp5_nat_membership_blocks(self):

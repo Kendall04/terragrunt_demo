@@ -245,7 +245,10 @@ class Handoff(x.ProtectedPlanChannel):
 
     def require_down_quiescence(self, value, protected, authority):
         self.scope(value, protected);self.session(False)
-        raise ValueError('E15D_DOWN_BLOCKED: ECS controller closure and NAT issued-effect settlement uninstalled')
+        engine = getattr(self, 'engine', None)
+        c.require(engine is not None and getattr(engine, 'authority', None) is authority,
+                  'same original E2 owner at handoff')
+        return self.engine.require_combined_quiescence('pre-dispatch')
 
     def publish_prepared(self, preparation, expires_at, now):
         """Internal protected preparation integration; no public planning route.

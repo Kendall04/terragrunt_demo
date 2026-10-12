@@ -190,3 +190,11 @@ and durable original-WP5/E2 UNKNOWN diagnostics. Checked or dispatched EC2 calls
 independent ASG service actions and async retries lack exhaustive finality evidence.
 Networking teardown stays blocked pending an owner-approved settlement mechanism,
 protected installation and live validation; no new IAM/activation or force unlock.
+
+## E15-E/F combined DEV quiescence boundary
+
+[Combined contract and remaining decisions](e15ef-combined-quiescence.md) wires
+separate ECS/NAT guards into protected WP5/E15-D, with immutable UNKNOWN evidence
+and the original E2 hold. Whole-operation ownership/stage order, terminal ECS
+cluster handoff, installed authenticated adapters and issued-effect settlement
+remain unavailable. Complete DOWN stays denied; no IAM or activation is added.

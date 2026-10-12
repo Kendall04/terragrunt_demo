@@ -162,3 +162,11 @@ still rejects launch-binding changes. Patch approval preserves network/profile/S
 and configuration identity and requires separately observed versions plus an
 explicit single-AZ maintenance window; no caller or recovery-role launch control
 is added. Live rollout and end-to-end forwarding remain unverified.
+
+## E15-E/F combined DEV quiescence boundary
+
+[Combined contract and remaining decisions](e15ef-combined-quiescence.md) wires
+separate ECS/NAT guards into protected WP5/E15-D, with immutable UNKNOWN evidence
+and the original E2 hold. Whole-operation ownership/stage order, terminal ECS
+cluster handoff, installed authenticated adapters and issued-effect settlement
+remain unavailable. Complete DOWN stays denied; no IAM or activation is added.

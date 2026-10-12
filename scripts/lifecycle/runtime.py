@@ -13,7 +13,7 @@ import tempfile
 import time
 
 from scripts.lifecycle import contract as c
-from scripts.lifecycle import packages, handoff
+from scripts.lifecycle import packages, handoff, quiescence
 from scripts.lifecycle.controller import Controller
 from scripts.lifecycle.dev_down import check_data_consent
 from scripts.lifecycle.exact_destroy import Execution as ExactDestroyExecution
@@ -105,6 +105,27 @@ class Terraform:
         c.require(result.returncode==0,'Terraform command failed; output withheld')
         c.require(len(result.stdout)<=16777216,'bounded Terraform output')
         return result.stdout
+    def require_combined_quiescence(self, phase):
+        c.require(type(self.exact_destroy) is ExactDestroyExecution and
+                  type(self.exact_destroy.channel) is handoff.Handoff,
+                  'concrete administrative handoff required for combined teardown')
+        channel = self.exact_destroy.channel
+        channel.scope(self.request, self.protected);channel.session(False)
+        guard = getattr(self, 'down_quiescence', None)
+        if guard is None:
+            records = Records(channel.storage.s3, self.request_backend_bucket(),
+                              'operations/' + self.protected['binding'] + '/')
+            guard = quiescence.installed(self, channel, self.authority, records,
+                                         self.exact_destroy.clock)
+            self.down_quiescence = guard
+        c.require(type(guard) is quiescence.Guard and guard.value == self.request
+                  and guard.protected == self.protected and guard.authority is self.authority,
+                  'current exact protected combined guard')
+        return guard.require(self.request['layer'], phase)
+
+    def request_backend_bucket(self):
+        return self.protected['layers'][self.request['layer']]['backend']['bucket']
+
     def destroy_context(self):
         variables = self.directory / 'wp5.auto.tfvars.json'
         c.require(not variables.is_symlink() and variables.is_file(), 'exact variables file')
@@ -200,6 +221,8 @@ class Terraform:
                 and x.get('change', {}).get('actions') == ['no-op'] for x in changes),
                 'teardown readback contradictory changes')
             c.quiescent(self.observe(self.protected['environment']), self.protected['environment'])
+            if self.protected['environment'] == 'dev':
+                self.require_combined_quiescence('post-readback')
             return True
         return (readback.get('format_version') == '1.2' and not readback.get('errored') and
                 'resource_changes' in readback and not readback.get('resource_drift') and

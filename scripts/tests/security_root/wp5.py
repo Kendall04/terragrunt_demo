@@ -22,7 +22,15 @@ BINDINGS = tuple(kind + '/' + consumer for consumer in
 SOURCES = ('scripts/lifecycle/contract.py', 'scripts/lifecycle/controller.py',
            'scripts/lifecycle/packages.py', 'scripts/lifecycle/runtime.py',
            'scripts/lifecycle/dev_down.py', 'scripts/lifecycle/exact_destroy.py', 'scripts/lifecycle/handoff.py',
-           'scripts/nat/user_data.sh', 'scripts/environment_mutation.py')
+           'scripts/nat/user_data.sh', 'scripts/environment_mutation.py',
+           'scripts/lifecycle/ecs_quiescence.py', 'scripts/lifecycle/quiescence.py',
+           'scripts/nat/quiescence.py', 'scripts/recovery/nat.py',
+           'scripts/recovery/journal.py', 'scripts/recovery/ports.py',
+           'scripts/wp4d/nat_resolver.py', 'scripts/normal_delivery/authorization.py',
+           'scripts/normal_delivery/delivery.py', 'scripts/normal_delivery/e3.py',
+           'scripts/normal_delivery/model_consistency.py', 'scripts/qualification/finalizer.py',
+           'ci/authority/normal-delivery-model.json', 'ci/schemas/release-manifest.schema.json',
+           'ci/schemas/e1-qualification.schema.json', 'demo-api/deploy/task-definition.template.json')
 
 
 def canonical(value):

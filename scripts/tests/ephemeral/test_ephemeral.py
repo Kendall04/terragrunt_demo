@@ -231,7 +231,9 @@ class Ephemeral(unittest.TestCase):
         return engine
 
     def test_actual_runtime_requires_empty_state_and_post_destroy_quiescence(self):
-        self.assertTrue(self.engine(readback()).verify('a'*64,{},'teardown'))
+        # Empty state is necessary; protected combined quietness is still absent.
+        with self.assertRaisesRegex(ValueError, 'concrete administrative handoff'):
+            self.engine(readback()).verify('a'*64,{},'teardown')
         with self.assertRaises(ValueError):
             self.engine(readback(dict(resources=[dict(mode='managed')]))).verify('a'*64,{},'teardown')
         q=quiescent();q['services'][next(iter(q['services']))]['running']=1
@@ -291,9 +293,10 @@ class Ephemeral(unittest.TestCase):
         result=self.report('residual',notes=value)
         self.assertIn('INCOMPLETE_RESIDUAL_EVIDENCE',result['gates'])
 
-    def test_empty_plan_missing_changes_allowed_only_for_complete_teardown(self):
+    def test_empty_plan_missing_changes_still_requires_protected_quiescence(self):
         value=readback();del value['resource_changes']
-        self.assertTrue(self.engine(value).verify('a'*64,{},'teardown'))
+        with self.assertRaisesRegex(ValueError, 'concrete administrative handoff'):
+            self.engine(value).verify('a'*64,{},'teardown')
         self.assertFalse(self.engine(value).verify('a'*64,{},'reconcile'))
         for key,bad in (('complete',False),('complete',None),('errored',True),('format_version','2.0')):
             self.assertFalse(self.engine({**value,key:bad}).verify('a'*64,{},'teardown'))

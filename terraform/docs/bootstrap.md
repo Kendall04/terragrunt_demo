@@ -130,3 +130,11 @@ administrator-approved AMI/template replacement. Three narrow mutation journals
 and a completed bootstrap do not prove private-subnet egress. Genuine forwarding,
 queue/destination behavior, SNS/KMS notification and single-AZ rollout/rollback
 remain live prerequisites; routine lifecycle cannot update ASG launch identity.
+
+## E15-E/F combined DEV quiescence boundary
+
+[Combined contract and remaining decisions](e15ef-combined-quiescence.md) wires
+separate ECS/NAT guards into protected WP5/E15-D, with immutable UNKNOWN evidence
+and the original E2 hold. Whole-operation ownership/stage order, terminal ECS
+cluster handoff, installed authenticated adapters and issued-effect settlement
+remain unavailable. Complete DOWN stays denied; no IAM or activation is added.

@@ -250,3 +250,11 @@ full gate; these result paragraphs were added afterward and checked separately.
 No live SDK client or fixture installation activated AWS authority. The concrete
 adapter is repository code, not live session/storage enforcement or teardown
 proof; E15-D remains partial until the named installation/owner/live gates close.
+
+## Combined integration follow-up
+
+[The E15-E/F contract](e15ef-combined-quiescence.md) supersedes the standalone
+unwired/package-admission disposition. Protected runtime composition is now
+registered; installed closure, whole-operation stage handoff and remote effect
+settlement remain denied. Standalone validation results above retain their dates
+and are not combined acceptance evidence.
