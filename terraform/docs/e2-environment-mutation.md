@@ -87,6 +87,12 @@ head, infer termination from elapsed time, or release while an AWS call/provider
 may still run. Administrative repair and general compensation remain separately
 authorized operational work, not simulated controller safety.
 
+[E2-R diagnosis/runbook](e2r-owner-recovery.md) demonstrates that a head CAS
+cannot revoke a send after its last ownership check or cancel in-flight effects.
+The current implementation cannot verify exact executor termination and remote
+quiescence. Its read-only diagnostic therefore never authorizes administrative
+release; interrupted-owner recovery remains BLOCKED.
+
 Missing/corrupt heads, wrong identity, unavailable reads/CAS, unknown effects or
 stale schedule evidence fail closed. E2 admission failure reports UNCERTAIN
 (WP4) or UNKNOWN (WP5), never SUCCESS. Historical status queries are distinct

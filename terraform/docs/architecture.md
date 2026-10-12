@@ -37,6 +37,9 @@ gain no mutation authority. There is no lease takeover after interruption.
 [E4 bounded continuation](e4-post-switch-recovery.md) reconciles one post-switch
 evidence-persistence failure inside the still-owning delivery invocation; it adds
 no compensation or interrupted-owner takeover.
+[E2-R diagnostics](e2r-owner-recovery.md) retain that hold: S3 generation fencing
+cannot stop an already checked/issued downstream call, and authenticated executor
+termination plus remote quiescence is not currently verifiable.
 
 Lifecycle state uses fixed environment buckets/keys and S3 lockfiles. It never
 reads security state. Protected controllers select layers, membership, backend

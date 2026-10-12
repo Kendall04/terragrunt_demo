@@ -175,6 +175,9 @@ aws --region "$E4_REGION" ecs list-tasks --cluster "$E4_CLUSTER" --service-name 
    SDK/provider calls), reconcile all immutable attempts/effects and current AWS
    reality, and explicitly authorize administrative repair/release under E2.
    No repository command implements that prerequisite; elapsed time is insufficient.
+   [E2-R](e2r-owner-recovery.md) now provides head diagnostics and deterministic
+   fencing counterexamples; verified termination/remote quiescence still cannot
+   be established by the repository, so administrative release remains blocked.
 7. **Restoration boundary:** E4 performs none. After independently satisfying the
    E2 administrative prerequisite, existing protected emergency recovery can be
    considered only if the inactive color has its actual prior SUCCESS history,

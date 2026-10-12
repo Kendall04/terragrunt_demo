@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[3]
 SUITES = ('authority', 'security_root', 'control_bundles', 'controller_compute',
           'ownership_publication', 'build_supervision', 'qualification', 'internal_release',
           'normal_delivery', 'delivery', 'recovery', 'wp4d', 'lifecycle', 'workflows', 'final_acceptance')
-ADDITIONAL_SUITES = ("mutation", "post_switch")
+ADDITIONAL_SUITES = ("mutation", "post_switch", "owner_recovery")
 # Every criterion includes positive, negative and actual-source admission evidence;
 # WP7 composes the resulting relationships and eliminates historical overlap.
 CRITERIA = {
@@ -148,6 +148,7 @@ def main():
                   errors=errors, parsing=parsing, final_authority_inventory=final_authority,
                   e2_count=records['mutation'].get('executed', 0),
                   e4_count=records['post_switch'].get('executed', 0),
+                  e2r_count=records['owner_recovery'].get('executed', 0),
                   external_prerequisites='UNVERIFIED_NOT_DEPLOYED',
                   native_linux_e3='SEPARATE_EVIDENCE_REQUIRED', activation={'request_identities': '0/11', 'wp4d': '0/16', 'wp5': '0/8'},
                   limitations=['WP1 historical characterization is extractor regression, not final TARGET evidence',

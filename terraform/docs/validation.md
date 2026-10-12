@@ -489,3 +489,36 @@ or dependencies were changed. Native E3, live installation, SDK attribution,
 IAM/S3 CAS and ECS/ALB/EventBridge behavior remain unverified here. Application,
 E7, E11 and E14-B suites were not rerun because their implementations are unchanged;
 accepted baseline results are not presented as fresh E4 execution.
+
+## E2-R interrupted-owner diagnostics
+
+Run `python -I -B scripts/tests/owner_recovery/run.py` for hermetic interruption,
+fencing counterexamples and read-only diagnostic tests. The existing final gate
+requires this separate suite without replacing the 983 E1/WP, 41 E2 or 28 E4
+tests. E13's 40-test check and all existing provider-free static checks remain.
+The [runbook](e2r-owner-recovery.md) records why general administrative recovery
+cannot yet prove executor termination/remote quiescence. Unsafe head changes in
+two tests are confined to an in-memory double and demonstrate delayed old effects;
+they never authorize a production unlock or simulate proven administrative recovery.
+No installed package, IAM/trust/PassRole, Terraform source, activation or E2/E4
+runtime change is introduced. Source inventory, Python/JSON parsing, local KDD
+links, package/generator integrity and `git diff --check` are required as usual.
+
+Final E2-R source gate returned `E1_REPOSITORY_ACCEPTANCE_PASS`: 959 accepted
+regressions + 24 WP7 = **983 E1/WP tests**, independently **41 E2**, **28 E4**,
+**23 E2-R**, and **40 E13** tests passed with no failures, errors or skips.
+AC1–AC16 and all 12 additional checks passed, including actual provider-free
+E2/WP4D/WP5/WP6 IAM/trust/PassRole expressions, NAT configuration, generated
+security/workflow wiring, deterministic packages, immutable approved contracts,
+KDD links, Terraform format and whitespace. Inventory/parsing passed for
+152 Python, 48 JSON and 22 generated YAML files; activation remains 0/11, 0/16
+and 0/8. One bounded acceptance self-check confirmed original E2/E4/runtime and
+authority/package inputs are unchanged, diagnostics cannot write/recover, and no
+positive administrative recovery is claimed. Reports outside the worktree bind
+precommit source/dirty identity at baseline `ea05ce4fd05f5dda7487438d84e4d0501a314e03`.
+This result paragraph was added afterward and checked separately; no executable
+source changed after the gate. No AWS, provider initialization, deployment,
+dependency installation, push or merge occurred. Native Linux E3 was not rerun
+because its implementation and shell inputs are unchanged. Live authentication,
+executor termination/neutralization, remote-effect settlement, S3 CAS/IAM and
+ECS/ALB/EventBridge behavior remain unverified; administrative recovery is BLOCKED.

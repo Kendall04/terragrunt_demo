@@ -9,6 +9,9 @@ continuation after a listener switch with failed evidence persistence. Fresh
 operation-linked readback and current authorization are mandatory; blocked
 partial deployments remain UNCERTAIN with E2 ownership retained. Later publication
 failures and interrupted workers still require separately authorized diagnosis.
+[E2-R](e2r-owner-recovery.md) adds read-only ownership diagnostics while retaining
+ACTIVE holds. Administrative release remains blocked without verified exact
+executor termination and settlement of all potentially issued effects.
 
 ## CURRENT CONTRACT — final E1 protected workflows
 

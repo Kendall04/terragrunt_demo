@@ -1996,7 +1996,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/final_acceptance/check_knowledge.py": {
-      "sha256": "54f3357e188dcf479a9fe7e654bf5286b25180ad57242e80df91e8e4de32fa25",
+      "sha256": "33133692a4ceab6e1ea17de72ebdd711a175402a3271f51e3fd81ae6ba5c34fd",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -2006,7 +2006,8 @@
           11,
           12,
           13,
-          33
+          14,
+          34
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -2054,7 +2055,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/final_acceptance/gate.py": {
-      "sha256": "37a5a58cf1f2f62ab214804c0ffae831cf1895e9cfd20416d1812e062b097b45",
+      "sha256": "d659bb762644af709cce050251ff581c69ae4942ddc564ab9c32e9e17fa7f90f",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -7232,6 +7233,28 @@
     "scripts/tests/post_switch/test_post_switch.py": {
       "semantic_status": "UNVERIFIED",
       "sha256": "3312184069f2c25e83d1ef908199e144799fc2009ec70f2278c3d5e60817a746",
+      "declarations": [],
+      "signals": {}
+    },
+    "scripts/owner_recovery.py": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "c395656853464823562c45e9e2df7478e0c21f879c7d132c6b8bf6b910ccae08",
+      "declarations": [],
+      "signals": {}
+    },
+    "scripts/tests/owner_recovery/run.py": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "63010cbfcf1618b0f9d54288981d4076557c55c2a6d8cf8fa233986e9f964334",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          13
+        ]
+      }
+    },
+    "scripts/tests/owner_recovery/test_owner_recovery.py": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "e1b131df9f8e47f99db60e642b8d2dd9695fba10a08e1afd817ce6db52ae981e",
       "declarations": [],
       "signals": {}
     }

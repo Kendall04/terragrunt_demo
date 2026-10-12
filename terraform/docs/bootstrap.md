@@ -13,6 +13,10 @@ objectives remain open; do not assume enterprise redundancy requirements.
 Read [decisions](decisions-and-limitations.md) and [validation](validation.md)
 before using any operational command.
 
+[E2-R interrupted-owner runbook](e2r-owner-recovery.md#operator-runbook) supplies
+read-only head diagnosis. It identifies the missing executor-termination and
+remote-quiescence guarantees; no administrative release command is implemented.
+
 ## CURRENT CONTRACT — protected greenfield reconstruction
 
 WP7 retires the legacy roots and direct local bootstrap/deploy entry points.
