@@ -182,3 +182,11 @@ storage reads/denies and the existing-role/preparation route need accepted prote
 installation; no IAM/trust/PassRole or compute activation is added. ECS/NAT
 settlement and E2-R/E4 uncertainty still deny complete DOWN. Live identity/S3/IAM/
 Terraform proof remains unverified; budget/alert decisions remain pending.
+
+## E15-F — NAT quiescence (partial)
+
+[E15-F](e15f-nat-quiescence.md) implements a dormant exact-DEV EC2 admission fence
+and durable original-WP5/E2 UNKNOWN diagnostics. Checked or dispatched EC2 calls,
+independent ASG service actions and async retries lack exhaustive finality evidence.
+Networking teardown stays blocked pending an owner-approved settlement mechanism,
+protected installation and live validation; no new IAM/activation or force unlock.
