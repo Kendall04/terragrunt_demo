@@ -42,6 +42,7 @@ CRITERIA = {
     'AC16': SUITES + ADDITIONAL_SUITES,
 }
 CHECKS = (
+    ('administrative_handoff', ('python', '-I', '-B', 'scripts/tests/handoff/run.py')),
     ('exact_destroy', ('python', '-I', '-B', 'scripts/tests/exact_destroy/run.py')),
     ('dev_down', ('python', '-I', '-B', 'scripts/tests/dev_down/run.py')),
     ('ephemeral_plan_shape', ('python', '-I', '-B', 'scripts/tests/ephemeral/check_plan_shape.py')),

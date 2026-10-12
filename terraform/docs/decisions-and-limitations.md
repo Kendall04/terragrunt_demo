@@ -171,3 +171,14 @@ administrative/artifact/state/quiescence adapter is installed; approval-prefix
 access and cross-invocation preparation integration need narrow accepted authority
 before activation. No IAM/PassRole or new CLI authority is granted. ECS/NAT closure,
 E2-R/E4 uncertainty and genuine live proof remain independent DOWN blockers.
+
+## E15-D — administrative handoff (partial)
+
+[E15-D](e15d-administrative-handoff.md) adds concrete SDK session verification,
+private exact-version artifact publication/readback and immutable operation-scoped
+approval selection, wired to WP5/E15-C. Missing pinned administrative installation
+blocks; no self-declared identity or fixture activates authority. Required narrow
+storage reads/denies and the existing-role/preparation route need accepted protected
+installation; no IAM/trust/PassRole or compute activation is added. ECS/NAT
+settlement and E2-R/E4 uncertainty still deny complete DOWN. Live identity/S3/IAM/
+Terraform proof remains unverified; budget/alert decisions remain pending.

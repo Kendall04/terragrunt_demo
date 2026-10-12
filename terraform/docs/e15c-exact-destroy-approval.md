@@ -271,3 +271,11 @@ bind precommit source content at the stated baseline. Native E3/app tests and
 unchanged shell suites were not rerun because this increment does not affect them.
 No synthetic trusted port is live authentication, service atomicity, installation,
 quiescence or successful AWS teardown evidence. Overall E15-C remains partial.
+
+## E15-D continuation
+
+[E15-D](e15d-administrative-handoff.md) adds a concrete installed SDK session/private
+storage/selection adapter and runtime wiring. The adapter absence described above
+records E15-C's milestone. Protected installation/permission/preparation-route
+acceptance and real AWS evidence remain unverified; ECS/NAT quietness always denies
+DOWN. E15-C's exact approval schema, single-use journal and safety gates are reused.

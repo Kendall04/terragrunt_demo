@@ -13,7 +13,7 @@ import tempfile
 import time
 
 from scripts.lifecycle import contract as c
-from scripts.lifecycle import packages
+from scripts.lifecycle import packages, handoff
 from scripts.lifecycle.controller import Controller
 from scripts.lifecycle.dev_down import check_data_consent
 from scripts.lifecycle.exact_destroy import Execution as ExactDestroyExecution
@@ -213,7 +213,7 @@ def clients(region):
     from botocore.config import Config
     return {name:boto3.client(name,region_name=region,config=Config(connect_timeout=3,read_timeout=5,
         retries={'total_max_attempts':1},**({'signature_version':'s3v4'} if name=='s3' else {})))
-        for name in ('s3','codebuild','ecs')}
+        for name in ('s3','codebuild','ecs','sts')}
 
 
 def execute(event, configuration, clients_):
@@ -266,6 +266,8 @@ def execute(event, configuration, clients_):
         records=Records(clients_['s3'],bucket,'operations/'+binding+'/')
         def run_owned(owner=None):
             engine=Terraform(directory,clients_['ecs'],protected,owner,request=request)
+            if protected['environment'] == 'dev' and request['operation'] == 'teardown':
+                engine.exact_destroy=handoff.executor(engine,clients_['s3'],clients_.get('sts'),lambda:int(time.time()))
             return Controller(binding,protected,package,engine,records).run(request)
         value=c.request(binding,request)
         retained=records.read(value['operation_id'])
@@ -286,6 +288,35 @@ def execute(event, configuration, clients_):
             if getattr(error,'response',{}).get('Error',{}).get('Code')!='PreconditionFailed':raise
         c.require(records.get(key)==public,'exact public completion persistence')
         return result
+
+
+
+def approve_destroy(value, configuration, clients_, confirmations, issued_at, expires_at, now):
+    """Internal independently authenticated administrative API, NOT handler/CLI.
+
+    The same admitted bootstrap/package/current config chain is used. No public
+    gateway, workflow or controller may invoke this as administrative authority.
+    Missing installation/session/storage/readbacks raises without approval.
+    """
+    c.keys(configuration, ('binding', 'account', 'region', 'package'), 'installed admin bootstrap')
+    c.require(configuration['binding'] == handoff.x.BINDING, 'DEV high-risk administrative scope')
+    response=clients_['s3'].get_object(Bucket='demo-release-artifacts-'+configuration['account'],
+        Key='lifecycle/'+configuration['binding']+'/current.json', ExpectedBucketOwner=configuration['account'])
+    raw=response['Body'].read(1048577)
+    c.require(0 < len(raw) <= 1048576, 'bounded protected admin configuration')
+    protected=json.loads(raw)
+    reference=configuration['package']
+    c.require(protected['account']==configuration['account'] and protected['region']==configuration['region']
+              and reference==protected['installations'].get(value['revision'])
+              and reference['binding']==configuration['binding'], 'current exact admin bootstrap package')
+    with tempfile.TemporaryDirectory(prefix='wp5-admin-') as directory:
+        engine=Terraform(directory,clients_['ecs'],protected,request=value)
+        channel=handoff.Handoff(clients_['s3'],clients_.get('sts'),protected,value,engine)
+        channel.authenticate_admin()
+        installed=packages.verify(clients_['s3'],reference,Path(directory))
+        _, layer=c.authorize(configuration['binding'],value,protected,installed)
+        engine.prepare(reference,layer,value['parameters'])
+        return handoff.x.issue(channel,value,protected,confirmations,issued_at,expires_at,now)
 
 
 def handler(event,context):

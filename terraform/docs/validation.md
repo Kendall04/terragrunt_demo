@@ -574,3 +574,20 @@ activation: 0/11, 0/16, 0/8. Installed Ubuntu lint reproduced the exact inherite
 24 TFLint warnings and 46 tfsec findings, with no differences. See the linked
 E15-C results for scope and remaining live/authority prerequisites. No executable
 source changed after the gate; these result paragraphs were checked separately.
+
+## E15-D — provider-free administrative handoff
+
+Run `python -I -B scripts/tests/handoff/run.py` for 50 hermetic actual adapter/runtime
+boundary tests. The full E1 gate includes it without changing 983 E1/WP or AC1–AC16.
+[Contract/runbook](e15d-administrative-handoff.md) separates concrete SDK code from
+uninstalled storage/session authority and real service proof. E15-C/B, E15, E2/R/
+E4, E8/E13, package/inventory/generation/IAM/activation, parsing/KDD/format and
+whitespace regressions remain required. No AWS, provider init or activation occurs.
+
+E15-D full acceptance passed 983 E1/WP, AC1–AC16, E2 41/E2-R 23/E4 28 and all
+18 additional checks (E15-D 50, E15-C 46, E15-B 42, E15 30, E8 18, E13 40).
+Independent E11 33/E7 8/E14-B 19 passed. Parsing covered 167 Python/50 JSON/22
+YAML; activation stays 0/11, 0/16, 0/8. Ubuntu lint exactly reproduced inherited
+24 TFLint warnings and 46 tfsec findings, with no differences. See the linked
+results for scope and pending installation/owner/live gates. No executable source
+changed after the gate; these result paragraphs were checked separately.

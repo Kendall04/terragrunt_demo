@@ -1495,8 +1495,25 @@
       },
       "semantic_status": "UNVERIFIED"
     },
+    "scripts/lifecycle/handoff.py": {
+      "sha256": "ff2890c1731bb673450102aadac46d75f62eb2db18909d29991eb6707b32da87",
+      "declarations": [],
+      "signals": {
+        "role-input": [
+          148
+        ],
+        "launch-or-mutation": [
+          34,
+          103,
+          139,
+          141,
+          143
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
     "scripts/lifecycle/packages.py": {
-      "sha256": "b436114621306246dde780e4dd6024c70f721a4444ce1685a8759a11a36d60bf",
+      "sha256": "c0f7825218526cd4d7f2f45aaeec8b28ebea7d0f7a63eeae4b13b45736a913fa",
       "declarations": [],
       "signals": {
         "executable-dependency": [
@@ -1509,7 +1526,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/lifecycle/runtime.py": {
-      "sha256": "68bc43c978e38d6ff99e2d1787454c7d9cd102bbc02bcd228e6827521b8731ad",
+      "sha256": "4559120ccdd0a88e00d825fea3ce61b29622462b54651141b67ff9e40fc28ff8",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -2212,7 +2229,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/final_acceptance/check_knowledge.py": {
-      "sha256": "a78e692c724a6af645aafbf5b719c98cec4b672dbb76751f75e386a6d3e5c91a",
+      "sha256": "e18adca1da78c2cbbf09ce8094670a79c088b0e4596bfaf0bf1d7a74e937057e",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -2227,7 +2244,8 @@
           16,
           17,
           18,
-          38
+          19,
+          39
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -2275,12 +2293,12 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/final_acceptance/gate.py": {
-      "sha256": "410582bb82235175f202b374c2d574ca82ca0729cdb19b075bf468936cd693c0",
+      "sha256": "56c0174b3eeaa6cd1c301f349eccbb3f04a5d8631360b246b171aec8f6bb1ae6",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          60,
-          138
+          61,
+          139
         ],
         "executable-dependency": [
           3,
@@ -2299,7 +2317,8 @@
           57,
           58,
           59,
-          118
+          60,
+          119
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -2356,6 +2375,38 @@
         "security-control": [
           162,
           200
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/tests/handoff/run.py": {
+      "sha256": "9e47e0581c2b94be84cca48c5c90c4c2c8d326b9fb06a4895622236b4ff26bc4",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          14
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/tests/handoff/test_handoff.py": {
+      "sha256": "402c603adadc4fd3cf30fced0ca5dea637494f66d293363167615b8d5f19ff06",
+      "declarations": [],
+      "signals": {
+        "role-input": [
+          192,
+          196
+        ],
+        "launch-or-mutation": [
+          69,
+          78,
+          160,
+          199,
+          219,
+          339
+        ],
+        "security-control": [
+          317
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -3679,7 +3730,7 @@
       "semantic_status": "CURRENT_FACT"
     },
     "scripts/tests/security_root/wp5.py": {
-      "sha256": "d949860424d6ff58a661d4d40f1049a6bcfc84bc0aecdbf41e047c1835486094",
+      "sha256": "6875a89f81b97932fb243daf650906677afd0f7567897e0442c094dde9c7eff9",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -4475,7 +4526,7 @@
       }
     },
     "terraform/infra/security/authority.json": {
-      "sha256": "60519bd8e8347f9e2bee1ecc252a24446deca6fc183fac3fabde5114be95a263",
+      "sha256": "da3c6e9e3dbb6d32e11ac0b79aedad642b9580dc2e63727b2695225c388c6c13",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
