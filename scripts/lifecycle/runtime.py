@@ -16,6 +16,7 @@ from scripts.lifecycle import contract as c
 from scripts.lifecycle import packages
 from scripts.lifecycle.controller import Controller
 from scripts.lifecycle.dev_down import check_data_consent
+from scripts.lifecycle.exact_destroy import Execution as ExactDestroyExecution
 from scripts.environment_mutation import Store, Authority, execute as arbitrate, domain
 
 def teardown_readback(readback):
@@ -64,9 +65,10 @@ class Packages:
 
 
 class Terraform:
-    def __init__(self,root,ecs,protected,authority=None,request=None):
+    def __init__(self,root,ecs,protected,authority=None,request=None,exact_destroy=None):
         self.root,self.ecs,self.protected=Path(root),ecs,protected
         self.authority=authority
+        self.exact_destroy=exact_destroy
         self.request=json.loads(c.canonical(request)) if request is not None else None
     def prepare(self,reference,layer,parameters):
         self.directory=self.root/layer['root'];self.layer=layer
@@ -95,6 +97,9 @@ class Terraform:
                           and self.request.get('operation') == 'teardown'
                           and self.layer == self.protected['layers']['data'], 'exact DEV data request at dispatch')
                 check_data_consent(self.request, self.protected, int(time.time()))
+            if self.protected['environment'] == 'dev':
+                c.require(type(self.exact_destroy) is ExactDestroyExecution, 'protected exact destroy approval handoff not installed')
+                self.exact_destroy.before_dispatch(self)
         result=subprocess.run(['/opt/e1/bin/terraform',*args],cwd=self.directory,env=self.environment,
                               stdin=subprocess.DEVNULL,capture_output=True,timeout=900)
         c.require(result.returncode==0,'Terraform command failed; output withheld')
@@ -127,6 +132,9 @@ class Terraform:
     def plan(self,destroy=False):
         self.destroy = destroy
         self.destroy_seal = None
+        if destroy and self.protected['environment'] == 'dev' and self.exact_destroy is not None:
+            c.require(type(self.exact_destroy) is ExactDestroyExecution, 'installed exact approval executor')
+            return self.exact_destroy.load(self)
         self.call(['plan','-input=false','-out=wp5.tfplan',*(['-destroy'] if destroy else [])])
         before = self.binary_plan_digest() if destroy else None
         plan = json.loads(self.call(['show','-json','wp5.tfplan']))

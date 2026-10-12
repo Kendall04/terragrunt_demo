@@ -33,6 +33,10 @@ class Controller:
         plan_hash = c.validate_plan(value, layer, plan, observation, self.protected['environment'])
         result = {'request_sha256': c.digest(c.canonical(value)), 'plan_sha256': plan_hash,
                   'operation_id': key, 'state': 'PLANNED' if value['operation'] == 'plan' else 'UNKNOWN'}
+        exact = getattr(self.engine, 'exact_destroy', None)
+        if exact is not None and exact.loaded is not None:
+            result['exact_destroy_approval'] = exact.loaded['reference']
+            result['binary_sha256'] = self.engine.destroy_seal['binary_sha256']
         # Retain the intent before mutation. A lost acknowledgement is UNKNOWN
         # and a repeated UUID cannot cause a second apply. E2 locking is separate.
         self.records.create(key, result)

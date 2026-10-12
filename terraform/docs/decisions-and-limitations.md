@@ -160,3 +160,14 @@ and local review/drafting without new IAM or execution authority. Full DOWN stay
 denied pending ECS mutation-source closure, NAT executor/issued-effect settlement
 and protected exact reviewed-plan approval consumption. E2-R/E4 uncertainty is
 never bypassed. Budget/alert values and recipients remain owner decisions.
+
+## E15-C — exact reviewed destroy approval (partial)
+
+[E15-C](e15c-exact-destroy-approval.md) adds exact E15-B evidence/administrative
+channel validation, S3 conditional single-use decision and attempted substages in
+WP5's journal, and saved-artifact integration/final checks. Generic DEV runtime
+destroy now rejects an absent installed exact-plan handoff. No concrete trusted
+administrative/artifact/state/quiescence adapter is installed; approval-prefix
+access and cross-invocation preparation integration need narrow accepted authority
+before activation. No IAM/PassRole or new CLI authority is granted. ECS/NAT closure,
+E2-R/E4 uncertainty and genuine live proof remain independent DOWN blockers.

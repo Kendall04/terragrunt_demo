@@ -272,3 +272,9 @@ and checked separately; no executable source changed after acceptance. Unchanged
 .NET/application and E3 shell suites were not rerun. No local fixture establishes
 real AWS teardown, current resource absence, secure approval acquisition or future
 retention/quiescence. Full DOWN remains PARTIALLY_READY.
+
+Current continuation: [E15-C](e15c-exact-destroy-approval.md) implements the narrow
+exact evidence/approval contract, immutable consumption/attempt journal and saved
+binary executor integration. Its trusted publication/acquisition adapters are
+still absent; the default DEV runtime rejects missing exact handoff. Full
+DOWN/EXECUTE remains denied, and ECS/NAT quiescence is not supplied by approval.

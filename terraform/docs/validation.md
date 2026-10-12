@@ -555,3 +555,22 @@ fresh ECS snapshots and blocker witnesses from protected approval, controller
 closure and genuine live teardown. Existing E15/E2/E2-R/E4/E13/E8 regressions,
 source admission, packages, generation, IAM/trust/PassRole and inactive installation
 checks remain required. No AWS or Terraform provider initialization is permitted.
+
+## E15-C — provider-free exact destroy approval
+
+Run `python -I -B scripts/tests/exact_destroy/run.py` for 46 hermetic tests of
+actual WP5 approval/journal/E2/runtime boundaries. The E1 gate includes this
+additional check, preserving 983 E1/WP and AC1–AC16 requirements. The
+[contract](e15c-exact-destroy-approval.md) distinguishes synthetic trusted ports
+from authentic administrative context, real conditional S3 semantics and installed
+single-use execution. E15-B/E15/E2/E2-R/E4/E13/E8, package/source/generation/IAM,
+inactive installation, parsing/KDD/format and whitespace checks remain required.
+No AWS/provider/state operation or activation is allowed by these tests.
+
+E15-C acceptance passed 983 E1/WP tests, AC1–AC16, E2 41, E2-R 23, E4 28,
+all 17 additional gate checks (including E15-C 46/E15-B 42/E15 30/E8 18/E13 40),
+and independent E11 33/E14-B 19. Parsing: 164 Python, 50 JSON, 22 generated YAML;
+activation: 0/11, 0/16, 0/8. Installed Ubuntu lint reproduced the exact inherited
+24 TFLint warnings and 46 tfsec findings, with no differences. See the linked
+E15-C results for scope and remaining live/authority prerequisites. No executable
+source changed after the gate; these result paragraphs were checked separately.
