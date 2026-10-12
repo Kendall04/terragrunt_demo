@@ -15,6 +15,7 @@ import time
 from scripts.lifecycle import contract as c
 from scripts.lifecycle import packages
 from scripts.lifecycle.controller import Controller
+from scripts.lifecycle.dev_down import check_data_consent
 from scripts.environment_mutation import Store, Authority, execute as arbitrate, domain
 
 def teardown_readback(readback):
@@ -63,9 +64,10 @@ class Packages:
 
 
 class Terraform:
-    def __init__(self,root,ecs,protected,authority=None):
+    def __init__(self,root,ecs,protected,authority=None,request=None):
         self.root,self.ecs,self.protected=Path(root),ecs,protected
         self.authority=authority
+        self.request=json.loads(c.canonical(request)) if request is not None else None
     def prepare(self,reference,layer,parameters):
         self.directory=self.root/layer['root'];self.layer=layer
         c.require(self.directory.is_relative_to(self.root) and self.directory.is_dir(),'installed working directory')
@@ -74,7 +76,8 @@ class Terraform:
         c.require(not any('password' in k.lower() or k.lower() in ('secret_value','connection_string') for k in variables),'no secret values in Terraform')
         (self.directory/'wp5.auto.tfvars.json').write_bytes(c.canonical(variables))
         self.environment={k:v for k,v in os.environ.items() if not k.startswith(('TF_','TERRAGRUNT','GIT_','GH_','LD_','DYLD_')) and k not in ('BASH_ENV','ENV','AWS_PROFILE','AWS_DEFAULT_PROFILE','AWS_SHARED_CREDENTIALS_FILE','AWS_CONFIG_FILE')}
-        self.environment.update(TF_IN_AUTOMATION='1',TF_INPUT='0',TF_CLI_CONFIG_FILE=str(self.root/'terraformrc'),CHECKPOINT_DISABLE='1')
+        self.reference = json.loads(c.canonical(reference))
+        self.environment.update(TF_WORKSPACE='default',TF_IN_AUTOMATION='1',TF_INPUT='0',TF_CLI_CONFIG_FILE=str(self.root/'terraformrc'),CHECKPOINT_DISABLE='1')
         (self.root/'terraformrc').write_text('provider_installation { filesystem_mirror { path = "/opt/e1/provider-mirror" } }\n')
         self.call(['init','-input=false','-lockfile=readonly',
                    *['-backend-config='+key+'='+value for key,value in layer['backend'].items()]])
@@ -84,14 +87,54 @@ class Terraform:
             return self.authority.call(self._call,args)
         return self._call(args)
     def _call(self,args):
+        if args[:1] == ['apply'] and getattr(self, 'destroy', False):
+            self.check_destroy_seal()
+            c.quiescent(self.observe(self.protected['environment']), self.protected['environment'])
+            if self.protected['environment'] == 'dev' and self.layer['root'] == 'terraform/modules/target/dev/data':
+                c.require(type(self.request) is dict and self.request.get('layer') == 'data'
+                          and self.request.get('operation') == 'teardown'
+                          and self.layer == self.protected['layers']['data'], 'exact DEV data request at dispatch')
+                check_data_consent(self.request, self.protected, int(time.time()))
         result=subprocess.run(['/opt/e1/bin/terraform',*args],cwd=self.directory,env=self.environment,
                               stdin=subprocess.DEVNULL,capture_output=True,timeout=900)
         c.require(result.returncode==0,'Terraform command failed; output withheld')
         c.require(len(result.stdout)<=16777216,'bounded Terraform output')
         return result.stdout
+    def destroy_context(self):
+        variables = self.directory / 'wp5.auto.tfvars.json'
+        c.require(not variables.is_symlink() and variables.is_file(), 'exact variables file')
+        c.require(self.environment.get('TF_WORKSPACE') == 'default', 'fixed workspace')
+        workspace = self.directory / '.terraform' / 'environment'
+        c.require(not workspace.exists() or (not workspace.is_symlink() and workspace.is_file()
+                  and workspace.read_text().strip() == 'default'), 'no alternate workspace')
+        return c.digest(c.canonical(dict(reference=self.reference, layer=self.layer,
+            configuration=self.protected, variables_sha256=c.digest(variables.read_bytes()), workspace='default')))
+
+    def binary_plan_digest(self):
+        path = self.directory / 'wp5.tfplan'
+        c.require(not path.is_symlink() and path.is_file() and 0 < path.stat().st_size <= 16777216,
+                  'bounded regular saved plan')
+        raw = path.read_bytes()
+        c.require(0 < len(raw) <= 16777216, 'bounded saved plan bytes')
+        return c.digest(raw)
+
+    def check_destroy_seal(self):
+        c.require(getattr(self, 'destroy_seal', None) is not None, 'saved destroy seal required')
+        c.require(self.binary_plan_digest() == self.destroy_seal['binary_sha256']
+                  and self.destroy_context() == self.destroy_seal['context_sha256'],
+                  'saved binary or prepared context changed')
+
     def plan(self,destroy=False):
+        self.destroy = destroy
+        self.destroy_seal = None
         self.call(['plan','-input=false','-out=wp5.tfplan',*(['-destroy'] if destroy else [])])
-        return json.loads(self.call(['show','-json','wp5.tfplan']))
+        before = self.binary_plan_digest() if destroy else None
+        plan = json.loads(self.call(['show','-json','wp5.tfplan']))
+        if destroy:
+            c.require(before == self.binary_plan_digest(), 'binary changed during JSON inspection')
+            self.destroy_seal = dict(binary_sha256=before, json_sha256=c.digest(c.canonical(plan)),
+                                     context_sha256=self.destroy_context())
+        return plan
     def observe(self,environment):
         cluster=self.protected['layers']['apps']['variables']['cluster_arn']
         names=['demo-'+environment+'-app-api-'+color+'-svc' for color in ('blue','green')]
@@ -122,8 +165,15 @@ class Terraform:
             c.require(not next_token,'complete bounded live task listing')
         return {'environment':environment,'services':services,'tasks':tasks,'complete':True}
     def apply(self,plan_hash):
-        # A saved binary plan is never replaceable by caller paths or arguments.
+        # Both JSON semantics and exact binary/prepared context must survive.
+        # This same-invocation seal is not an administrator review handoff.
+        if getattr(self, 'destroy', False):
+            self.check_destroy_seal()
+            c.require(plan_hash == self.destroy_seal['json_sha256'], 'exact selected JSON plan')
         c.require(c.digest(c.canonical(json.loads(self.call(['show','-json','wp5.tfplan']))))==plan_hash,'saved plan changed')
+        if getattr(self, 'destroy', False):
+            self.check_destroy_seal()
+            c.quiescent(self.observe(self.protected['environment']), self.protected['environment'])
         self.call(['apply','-input=false','wp5.tfplan'])
     def verify(self,plan_hash,layer,operation):
         self.call(['plan','-refresh-only','-input=false','-out=wp5-readback.tfplan'])
@@ -207,7 +257,7 @@ def execute(event, configuration, clients_):
         package=Packages(clients_['s3'],directory)
         records=Records(clients_['s3'],bucket,'operations/'+binding+'/')
         def run_owned(owner=None):
-            engine=Terraform(directory,clients_['ecs'],protected,owner)
+            engine=Terraform(directory,clients_['ecs'],protected,owner,request=request)
             return Controller(binding,protected,package,engine,records).run(request)
         value=c.request(binding,request)
         retained=records.read(value['operation_id'])

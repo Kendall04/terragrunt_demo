@@ -12,6 +12,7 @@ DOCUMENTS = ('README.md', 'AGENTS.md', 'terraform/AGENTS.md', 'terraform/infra/s
              'terraform/docs/e4-post-switch-recovery.md',
              'terraform/docs/e8-rollback-image-retention.md',
              'terraform/docs/e15-ephemeral-lifecycle.md',
+             'terraform/docs/e15b-dev-down.md',
              'terraform/docs/e2r-owner-recovery.md',
              'terraform/docs/e13-nat-reliability.md', 'terraform/docs/e14b-toolchain-reproducibility.md', 'terraform/docs/e1-final-acceptance.md')
 

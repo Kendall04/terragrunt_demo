@@ -1,6 +1,6 @@
 # E15 — DEV ephemeral lifecycle and teardown readiness
 
-CURRENT repository increment; no AWS operations, including reads, were performed.
+Original E15 repository increment; no AWS operations, including reads, were performed.
 Initial main: `01f802b65d89d30c936feae438a147a234b9845d`. Work takes place on
 `codex/e15-ephemeral-lifecycle` in the existing batch1 checkout, without new
 worktrees or clones. **A complete live UP/DOWN cycle is not ready or proven.**
@@ -57,7 +57,8 @@ alternative authority. No parallel Terraform execution path is introduced.
 | Complete DEV UP from genuine retained installation | PARTIALLY_READY; REQUIRES_LIVE_AWS_VALIDATION |
 | Stop active tasks, retire NAT execution and bind a reviewed destroy plan | REQUIRES_OWNER_DECISION; PARTIALLY_READY |
 | Interrupted E2/E4 owner handoff | PARTIALLY_READY diagnostics; administrative release remains blocked |
-| Monthly budget/alert parameters and SQL disposal vs preservation | REQUIRES_OWNER_DECISION |
+| Monthly budget/alert parameters | REQUIRES_OWNER_DECISION |
+| Exclusive DEV SQL disposal with explicit confirmations | Approved owner policy; see [E15-B](e15b-dev-down.md) |
 | Actual DOWN completion, residual absence and billing | REQUIRES_LIVE_AWS_VALIDATION |
 
 ## Ownership and dependency graph
@@ -303,7 +304,7 @@ independent confirmations, E2/E4 holds/interruption, missing/corrupt notes, part
 managed state, safe retained retry, implicit residues, ECR persistence, budget
 parameters and unchanged authority/inactive maps.
 
-Remaining owner decisions: explicit SQL disposal/preservation policy; log export
+Remaining owner decisions after [E15-B](e15b-dev-down.md): log export
 needs; monthly budget/actual/forecast thresholds/recipients/scope; bounded active
 service quiescence, destroy-preview approval binding and admin NAT/executor
 settlement procedure; notification identity correction. These gates cannot be
@@ -335,3 +336,9 @@ installation or deployment occurred. Reports reside outside the repository in
 `e15-final-acceptance`, `e15-lint` and `e15-local-reports` under the local temporary
 directory. The unchanged .NET application suite was not rerun; its prior 99-test
 baseline is not claimed as fresh E15 execution. No mock establishes live teardown.
+
+Current continuation: [E15-B](e15b-dev-down.md) records the approved exclusive DEV
+SQL loss policy and protected per-operation confirmations, local artifact review,
+same-invocation binary/context seal and fresh pre-apply ECS readbacks. Earlier SQL
+policy gaps above describe the original E15 assessment. ECS closure, NAT settlement
+and protected reviewed-plan handoff remain blockers; DOWN/EXECUTE remains denied.

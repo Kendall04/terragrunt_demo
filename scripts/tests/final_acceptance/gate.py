@@ -42,6 +42,7 @@ CRITERIA = {
     'AC16': SUITES + ADDITIONAL_SUITES,
 }
 CHECKS = (
+    ('dev_down', ('python', '-I', '-B', 'scripts/tests/dev_down/run.py')),
     ('ephemeral_plan_shape', ('python', '-I', '-B', 'scripts/tests/ephemeral/check_plan_shape.py')),
     ('ephemeral_lifecycle', ('python', '-I', '-B', 'scripts/tests/ephemeral/run.py')),
     ('image_retention', ('python', '-I', '-B', 'scripts/tests/retention/run.py')),

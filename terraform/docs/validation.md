@@ -544,3 +544,14 @@ dependency installation, push or merge occurred. Native Linux E3 was not rerun
 because its implementation and shell inputs are unchanged. Live authentication,
 executor termination/neutralization, remote-effect settlement, S3 CAS/IAM and
 ECS/ALB/EventBridge behavior remain unverified; administrative recovery is BLOCKED.
+
+## E15-B — provider-free DEV DOWN boundaries
+
+Run `python -I -B scripts/tests/dev_down/run.py` for 42 hermetic tests of the actual
+WP5 consent/runtime/E2/NAT and local operator boundaries. The existing E1 gate
+includes this additional check without replacing 983 E1/WP or AC1–AC16 evidence.
+[Contract and runbook](e15b-dev-down.md) distinguish offline artifact consistency,
+fresh ECS snapshots and blocker witnesses from protected approval, controller
+closure and genuine live teardown. Existing E15/E2/E2-R/E4/E13/E8 regressions,
+source admission, packages, generation, IAM/trust/PassRole and inactive installation
+checks remain required. No AWS or Terraform provider initialization is permitted.

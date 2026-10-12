@@ -10,11 +10,13 @@ import json
 from pathlib import Path
 import re
 import sys
+import time
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from scripts.lifecycle import contract as c
 from scripts import environment_mutation as e
+from scripts.lifecycle import dev_down as down
 
 UP = c.LAYERS
 RETAINED_LAYERS = ('shared', 'secrets')
@@ -195,11 +197,12 @@ def assess_notes(notes, account, region, rows):
         if operation['state'] in ('ACTIVE', 'UNKNOWN', 'UNCERTAIN'):
             blockers.append('UNRESOLVED_' + operation['state'])
     require(type(notes['resources']) is dict and set(notes['resources']) <= {r['key'] for r in rows}, 'known declaration notes only')
-    require(all(value in ('PRESENT', 'ABSENT', 'UNKNOWN', 'PARTIAL') for value in notes['resources'].values()), 'known resource observation')
+    require(all(value in ('PRESENT', 'ABSENT', 'UNKNOWN', 'PARTIAL', 'UNKNOWN_OWNERSHIP') for value in notes['resources'].values()), 'known resource observation')
     residual = [dict(key=r['key'], reported=notes['resources'].get(r['key'], 'UNKNOWN'),
         treatment=r['treatment'], cost_dimension=r['cost_dimension']) for r in rows
         if r['treatment'] == 'RETAIN' or notes['resources'].get(r['key']) != 'ABSENT']
-    if any(r['reported'] in ('UNKNOWN', 'PARTIAL') for r in residual): blockers.append('INCOMPLETE_RESIDUAL_EVIDENCE')
+    if any(r['reported'] in ('UNKNOWN', 'PARTIAL', 'UNKNOWN_OWNERSHIP') for r in residual): blockers.append('INCOMPLETE_RESIDUAL_EVIDENCE')
+    if any(r['reported'] == 'UNKNOWN_OWNERSHIP' for r in residual): blockers.append('UNPROVEN_RESOURCE_OWNERSHIP')
     if any(r['reported'] == 'PRESENT' and r['treatment'] != 'RETAIN' for r in residual): blockers.append('DEV_RESOURCES_REMAIN')
     return dict(provenance='UNTRUSTED_LOCAL_NOTES', blockers=sorted(set(blockers)), residual=residual,
                 aws_verified=False, execution_authorized=False)
@@ -208,7 +211,7 @@ def assess_notes(notes, account, region, rows):
 def report(action, account, region, environment='dev', notes=None, budget_config=None,
            confirm_dev=False, confirm_sql_loss=False, sql_policy='UNDECIDED', root=ROOT):
     context(environment, account, region)
-    require(action in ('status', 'up-prepare', 'down-preview', 'verify', 'residual', 'down-execute'), 'known action')
+    require(action in ('status', 'up-prepare', 'down-preview', 'verify', 'residual', 'down-execute', 'down-review'), 'known action')
     require(action != 'down-execute', 'DOWN/EXECUTE unavailable: no active-color quiescence/NAT retirement authority')
     require(type(confirm_dev) is bool and type(confirm_sql_loss) is bool, 'separate confirmations')
     require(sql_policy in ('UNDECIDED', 'DISPOSABLE', 'PRESERVE'), 'explicit SQL policy')
@@ -231,6 +234,8 @@ def report(action, account, region, environment='dev', notes=None, budget_config
     return dict(schema='E15_LOCAL_REVIEW_V1', environment='dev', account=account, region=region,
         classification='PARTIALLY_READY', source='REPOSITORY_DECLARATIONS_NOT_LIVE_STATE',
         execution_authorized=False, aws_verified=False, action=action,
+        owner_dev_sql_policy=down.POLICY, backup_required_for_dev_down=False,
+        data_consent_gate='WP5 admin-owned per-operation dev-sql-loss consent; CLI booleans never satisfy it',
         up_order=UP, down_order=DOWN, retained_layers=RETAINED_LAYERS, dependencies=DEPENDENCIES,
         protected_backend=dict(bucket=f'e1-lifecycle-dev-{account}-{region}',
             keys=[f'e1/lifecycle/dev/{layer}/terraform.tfstate' for layer in UP], deletion_permitted=False),
@@ -244,7 +249,7 @@ def report(action, account, region, environment='dev', notes=None, budget_config
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=('status','up-prepare','down-preview','verify','residual','down-execute'))
+    parser.add_argument('action', choices=('status','up-prepare','down-preview','verify','residual','down-execute','down-review'))
     parser.add_argument('--environment', default='dev')
     parser.add_argument('--account', required=True)
     parser.add_argument('--region', required=True)
@@ -253,10 +258,38 @@ def main(argv=None):
     parser.add_argument('--confirm-dev-destruction', action='store_true')
     parser.add_argument('--confirm-sql-data-loss', action='store_true')
     parser.add_argument('--sql-policy', choices=('UNDECIDED','DISPOSABLE','PRESERVE'), default='UNDECIDED')
+    parser.add_argument('--review-context', type=Path)
+    parser.add_argument('--plan-binary', type=Path)
+    parser.add_argument('--plan-json', type=Path)
+    parser.add_argument('--destroy-ack')
+    parser.add_argument('--sql-loss-ack')
+    parser.add_argument('--issued-at', type=int)
+    parser.add_argument('--expires-at', type=int)
     args = parser.parse_args(argv)
     notes = decode(args.notes.read_text(encoding='utf-8')) if args.notes else None
     value = report(args.action, args.account, args.region, args.environment, notes,
         decode(args.budget_config.read_text(encoding='utf-8')), args.confirm_dev_destruction, args.confirm_sql_data_loss, args.sql_policy)
+    if args.action == 'down-review':
+        require(args.review_context is not None and args.plan_binary is not None and args.plan_json is not None,
+                'binary, JSON and context required; summary alone is insufficient')
+        envelope = decode(args.review_context.read_text(encoding='utf-8'))
+        c.keys(envelope, ('request', 'protected', 'review_context'), 'local destroy context')
+        require(envelope['protected']['account'] == args.account and envelope['protected']['region'] == args.region,
+                'review identity matches displayed environment')
+        require(args.plan_binary.is_file() and not args.plan_binary.is_symlink()
+                and 0 < args.plan_binary.stat().st_size <= 16777216, 'bounded private binary')
+        reviewed = down.review(envelope['request'], envelope['protected'], args.plan_binary.read_bytes(),
+            decode(args.plan_json.read_text(encoding='utf-8')), envelope['review_context'], int(time.time()))
+        if any(x is not None for x in (args.destroy_ack, args.sql_loss_ack, args.issued_at, args.expires_at)):
+            consent = dict(schema='E15B_DEV_CONSENT_V1',scope_sha256=reviewed['scope']['scope_sha256'],
+                issued_at=args.issued_at,expires_at=args.expires_at,destroy_ack=args.destroy_ack,sql_loss_ack=args.sql_loss_ack)
+            down.confirm(reviewed['scope'], consent, int(time.time()))
+            value['consent_draft'] = consent
+            value['consent_provenance'] = 'LOCAL_DRAFT_NOT_PROTECTED_APPROVAL'
+        value['destroy_review'] = reviewed
+    elif any(x is not None for x in (args.review_context, args.plan_binary, args.plan_json,
+                                    args.destroy_ack, args.sql_loss_ack, args.issued_at, args.expires_at)):
+        require(False, 'review arguments require down-review')
     print(json.dumps(value, indent=2))
     # Successful exit means local report rendered, never UP/DOWN completed.
     return 0

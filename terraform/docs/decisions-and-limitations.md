@@ -142,8 +142,21 @@ teardown SUCCESS. No AWS operation or activation occurred. Shared/secrets,
 security-root, backend/state/evidence/ECR remain retained; storage is not bounded
 and DOWN is not promised to cost zero.
 
-Owner decisions remain: monthly budget/alerts, separate SQL disposal/preservation,
+Owner decisions remain: monthly budget/alerts, log preservation,
 active-color quiescence authority, exact destroy-preview approval binding, bounded
 admin NAT/executor settlement and the existing E13/shared SNS identity mismatch.
 Interrupted E2/E4 owners cannot be taken over. E5 durability is not selected here;
 no automatic data/image cleanup or budget-driven shutdown is authorized.
+
+## E15-B — explicit disposable DEV data; DOWN still partial
+
+The owner approves permanent loss of SQL Server data exclusively belonging to
+terragrunt_demo DEV during DOWN, with distinct current resource-destruction and
+SQL-loss confirmations. No backup or snapshot is required. This excludes PROD,
+shared data, other projects, state and protected reconstruction/audit evidence.
+[The E15-B contract](e15b-dev-down.md) implements additional DEV data-layer WP5
+consent, exact same-invocation saved-plan integrity and fresh ECS observations,
+and local review/drafting without new IAM or execution authority. Full DOWN stays
+denied pending ECS mutation-source closure, NAT executor/issued-effect settlement
+and protected exact reviewed-plan approval consumption. E2-R/E4 uncertainty is
+never bypassed. Budget/alert values and recipients remain owner decisions.

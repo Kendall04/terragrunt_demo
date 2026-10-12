@@ -21,6 +21,7 @@ BINDINGS = tuple(kind + '/' + consumer for consumer in
                  for kind in ('request-gateway', 'environment-lifecycle'))
 SOURCES = ('scripts/lifecycle/contract.py', 'scripts/lifecycle/controller.py',
            'scripts/lifecycle/packages.py', 'scripts/lifecycle/runtime.py',
+           'scripts/lifecycle/dev_down.py',
            'scripts/nat/user_data.sh', 'scripts/environment_mutation.py')
 
 
