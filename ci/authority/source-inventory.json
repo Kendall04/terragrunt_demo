@@ -1535,16 +1535,16 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/normal_delivery/delivery.py": {
-      "sha256": "be2578643c17bb4f7213117573ed3376fdf9803325ac3b3e04f20bbccbc9674f",
+      "sha256": "32ecec29f0a103c9d26e7733dbc85887061fa37d973dfc9e9efd69815a12f7fd",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           147,
           154,
-          202
+          220
         ],
         "executable-dependency": [
-          352
+          372
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -1996,7 +1996,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/final_acceptance/check_knowledge.py": {
-      "sha256": "958c4598fdd982c7899b45030f3acf9823c2a0c6d950e2e269663a140f2125a0",
+      "sha256": "54f3357e188dcf479a9fe7e654bf5286b25180ad57242e80df91e8e4de32fa25",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -2005,7 +2005,8 @@
           10,
           11,
           12,
-          32
+          13,
+          33
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -2053,7 +2054,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/final_acceptance/gate.py": {
-      "sha256": "ab0b37c249772093ee08a45680fd8923dc92fadbf7204195feafbfde5d557075",
+      "sha256": "37a5a58cf1f2f62ab214804c0ffae831cf1895e9cfd20416d1812e062b097b45",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -2451,7 +2452,7 @@
     },
     "scripts/tests/mutation/test_mutation.py": {
       "semantic_status": "UNVERIFIED",
-      "sha256": "b624bd156bf174f63747cbd15e3dfc9ba923478a0765908abd449ef7db1f8627",
+      "sha256": "a3dbf5c8275f8a6ca0f79fc7463841f6f550ff590b65ac4ad3ae841a84f31f72",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -4007,7 +4008,7 @@
       "semantic_status": "CURRENT_FACT"
     },
     "scripts/wp4d/aws_runtime.py": {
-      "sha256": "1cabfb2491cb1bf8130ffefcd8760903514701f493c112bb1ef4098b7769ff83",
+      "sha256": "e754040c3c489f6afe68bdc08cd535a0928d3735711b5c6f2a2bde1ad96179f3",
       "declarations": [],
       "signals": {},
       "semantic_status": "CURRENT_FACT"
@@ -4044,7 +4045,7 @@
       "semantic_status": "CURRENT_FACT"
     },
     "scripts/wp4d/runtime.py": {
-      "sha256": "e73ed2617ecc622d46ad9d35f724cb3d8a04cff897dd2fbf62355872c6792f67",
+      "sha256": "bdec67b1b2c0e69e2f840e2d69d03662e7ae8bdadcc81b4ae7b1e12515badfab",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -4177,7 +4178,7 @@
       }
     },
     "terraform/infra/security/authority.json": {
-      "sha256": "69549f92d3ee2acaa9a07f81a882a44bdc11c31e9d232ad83b8f05f8977d5170",
+      "sha256": "88d172c86db2c9642e6d9b30979780bc660f668d01e37a8ae63f0143b2dbbb93",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -7217,6 +7218,22 @@
         ]
       },
       "semantic_status": "UNVERIFIED"
+    },
+    "scripts/tests/post_switch/run.py": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "e4307568fe96086d4143318d8b0209e80ff04988eb5f77f7120d85bf75e7eee2",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          13
+        ]
+      }
+    },
+    "scripts/tests/post_switch/test_post_switch.py": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "3312184069f2c25e83d1ef908199e144799fc2009ec70f2278c3d5e60817a746",
+      "declarations": [],
+      "signals": {}
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged"

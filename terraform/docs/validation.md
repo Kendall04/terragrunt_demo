@@ -454,3 +454,38 @@ E2/E13/E14-B contracts, actual lint debt comparisons and local tooling gaps.
 The full jq-dependent CD/E3 suites and exact pinned SDK/container execution remain
 unverified on this host; independent candidate or earlier Batch 1 results are not
 a substitute for fresh combined acceptance.
+
+## E4 bounded post-switch recovery
+
+[The selected scenario and operator runbook](e4-post-switch-recovery.md) cover
+one failed switch-evidence write under a still-live E2 owner. Run
+`python -I -B scripts/tests/post_switch/run.py` for the focused hermetic suite.
+The existing full final-acceptance gate now includes this separate suite without
+changing the required 959 accepted regressions plus 24 WP7 tests or E2 criteria.
+Tests use actual delivery journals/controllers and E2 grants with deterministic
+faults/interleavings, no sleeps, credentials, SDK network calls or provider init.
+
+The focused E4 suite passed all 28 tests with no failures, errors or skips.
+Affected suites passed 98 delivery, 53 recovery, 33 WP4D and 41 E2 tests.
+The full source gate returned E1_REPOSITORY_ACCEPTANCE_PASS: 959 accepted
+regressions plus 24 WP7 = 983 E1/WP tests, independently 41 E2 and 28 E4 tests,
+AC1–AC16 and all 12 additional checks passed. The E13 check also passed its
+40 tests. Inventory/package/source admission, 149 Python/48 JSON/22 generated
+YAML parses, generated wiring, approved immutable E1 hashes, provider-free IAM/
+trust/PassRole and installation checks, Terraform format and whitespace passed.
+No failures/errors/skips occurred; activation remains 0/11, 0/16 and 0/8.
+Reports are outside the worktree and identify precommit source/dirty identity;
+this validation-result paragraph was added afterward and checked separately.
+The runbook's two Bash diagnostic blocks passed syntax-only checks using existing
+Git Bash; those AWS commands were never executed. Exact E1 authorization, E2
+primitive and E3 source bytes remain unchanged after line-ending normalization.
+One bounded requirements self-check confirmed original grant/request identity,
+fresh post-switch readbacks/post-plan guards, no attempted-stage resend, no
+takeover/compensation API and truthful blocked outcomes.
+
+No native Linux rerun is claimed: existing `codex-vm` SSH failed host-key
+verification and WSL enumeration returned E_ACCESSDENIED. No host trust, tooling
+or dependencies were changed. Native E3, live installation, SDK attribution,
+IAM/S3 CAS and ECS/ALB/EventBridge behavior remain unverified here. Application,
+E7, E11 and E14-B suites were not rerun because their implementations are unchanged;
+accepted baseline results are not presented as fresh E4 execution.

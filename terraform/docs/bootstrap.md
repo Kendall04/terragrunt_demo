@@ -86,6 +86,9 @@ If future deployment fails, runtime traffic, service revision, candidate rule,
 cleanup schedule and S3 current record may disagree. Inspect verified evidence
 before choosing recovery; a failed workflow is not proof no traffic moved.
 No tested automatic rollback or restore runbook is claimed here.
+The provider-free [E4 runbook](e4-post-switch-recovery.md) now covers one bounded
+post-switch continuation and read-only diagnostics. It does not prove live restore
+or provide an administrative unlock/resume command.
 
 ## TARGET / UNRESOLVED — future operational evidence
 

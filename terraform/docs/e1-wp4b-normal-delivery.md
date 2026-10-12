@@ -4,6 +4,11 @@ WP7 milestone disposition: the stage narrative below records its accepted packag
 Legacy overlap is now retired; see [final E1 repository contract](e1-final-acceptance.md).
 Installation/governance/live evidence remains unverified and compute stays inactive.
 
+Current E2 arbitration and [E4 continuation](e4-post-switch-recovery.md) supersede
+the milestone's below-described lack of cross-operation ownership. E4 adds fresh
+post-plan guards for candidate/cleanup and one same-invocation post-switch recovery
+pass; the seven immutable stages, no-resend policy and E3 remain unchanged.
+
 This is a provider-free production state machine, pending independent review.
 V1 is preserved at `0f1b8327a3a72dbd80a8057105c2b90e9480dfc5`; V2 corrects the
 independent review's F1 preparation window, F2 proof retry conflict and F3

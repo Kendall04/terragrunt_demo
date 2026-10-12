@@ -2660,7 +2660,7 @@
         "engine": "LAMBDA",
         "environment": "dev",
         "reservation": "request-gateway/deploy-dev",
-        "package_sha256": "2d3d902c978b2d51c33f8ff54452db95aade4cb0da515d124dfc57232cc181c6",
+        "package_sha256": "849728332d0ca3f12f338c7a1eb2f6ebee8006294d0c79232c7acf165901e746",
         "dependencies": [
           "normal-delivery/deploy-dev",
           "cleanup-recovery/cleanup-dev"
@@ -2672,7 +2672,7 @@
         "engine": "LAMBDA",
         "environment": "prod",
         "reservation": "request-gateway/promote-prod",
-        "package_sha256": "c58e2975290d651c277ca8f36127699680f7c70f95b6873da3b7107f784a2cd4",
+        "package_sha256": "19ee5b4d91f53a6c59839ef33d63ac0f0bc683109262b3f2d258da970e4618db",
         "dependencies": [
           "normal-delivery/promote-prod",
           "cleanup-recovery/cleanup-prod"
@@ -2684,7 +2684,7 @@
         "engine": "LAMBDA",
         "environment": "dev",
         "reservation": "request-gateway/emergency-dev",
-        "package_sha256": "321ba85d5d2c7539d0683e41a81d6e4d0cccfa4df3439e16a20ea1a20f0ac24c",
+        "package_sha256": "ef2498a5f1e43419a446123763dd63fdd480872dce30e3de0470329f26e41b13",
         "dependencies": [
           "emergency-recovery/emergency-dev",
           "cleanup-recovery/cleanup-dev"
@@ -2696,7 +2696,7 @@
         "engine": "LAMBDA",
         "environment": "prod",
         "reservation": "request-gateway/emergency-prod",
-        "package_sha256": "3e43ee4900c5130ad43526ff04b032f2e7ee880fa282da7af520b24b1c0f6413",
+        "package_sha256": "c4e99def38d5ef5f18df79c35071f2bda8de82a280f6c798e1697f3f9c9a54a1",
         "dependencies": [
           "emergency-recovery/emergency-prod",
           "cleanup-recovery/cleanup-prod"
@@ -2708,7 +2708,7 @@
         "engine": "CODEBUILD",
         "environment": "dev",
         "reservation": "normal-delivery/deploy-dev",
-        "package_sha256": "ebbca36998244ef13e2a24a92d5e8a539283eb0455dc96d1fac44ceab45c476c",
+        "package_sha256": "467649c3941814fb4ab2a54d002899c8e7b93b9fe328ba1c12bac5e29c7d2a3f",
         "dependencies": [
           "request-gateway/deploy-dev",
           "cleanup-recovery/cleanup-dev"
@@ -2720,7 +2720,7 @@
         "engine": "CODEBUILD",
         "environment": "prod",
         "reservation": "normal-delivery/promote-prod",
-        "package_sha256": "ad6b4bb0ddd8766d05b129381a710e0880ca1d69656d6f4abaa95efb02f38895",
+        "package_sha256": "80c066536303b2a8060e1f042fe0af60564594abe9e3d43317c7d6a9fdde2cd4",
         "dependencies": [
           "request-gateway/promote-prod",
           "cleanup-recovery/cleanup-prod"
@@ -2732,7 +2732,7 @@
         "engine": "CODEBUILD",
         "environment": "dev",
         "reservation": "emergency-recovery/emergency-dev",
-        "package_sha256": "709a5fd91e76c13bd2280fd8da193388f704a812c0647e634767c9f182a73a23",
+        "package_sha256": "bf1006779d8e742f5ad5f21b8add32f8912acee630996c0217b169649b8ac34d",
         "dependencies": [
           "request-gateway/emergency-dev",
           "cleanup-recovery/cleanup-dev"
@@ -2744,7 +2744,7 @@
         "engine": "CODEBUILD",
         "environment": "prod",
         "reservation": "emergency-recovery/emergency-prod",
-        "package_sha256": "2eebd337d2741a7cee7b8fa65d80b9e07e01d0dedbf084174a96dc847bce87ca",
+        "package_sha256": "4143063ab366f112b8117ac4a0195e1d5e5143513ca5f3b31895c42011f0b66a",
         "dependencies": [
           "request-gateway/emergency-prod",
           "cleanup-recovery/cleanup-prod"
@@ -2756,7 +2756,7 @@
         "engine": "LAMBDA",
         "environment": "dev",
         "reservation": "cleanup-recovery/cleanup-dev",
-        "package_sha256": "2b2d82d746d7eb6e6a2a63361ea0ae435383980cd66f71fe9f36a41327bc4c98",
+        "package_sha256": "46c58a643ccb68b16fd3c4b45289aeec01fa865301ab1616b373a0382d695ed3",
         "dependencies": []
       },
       "cleanup-recovery/cleanup-prod": {
@@ -2765,7 +2765,7 @@
         "engine": "LAMBDA",
         "environment": "prod",
         "reservation": "cleanup-recovery/cleanup-prod",
-        "package_sha256": "4b361d4f8ba6ded0a59149d94242955e694c39fd6cab92cd7af0711939f59833",
+        "package_sha256": "7fbe0c9918faee2231efad8a66a48281ff344d2ebd7711e2a3a0447aa45c7dba",
         "dependencies": []
       },
       "nat-recovery/nat-dev/assign_eip": {
@@ -2774,7 +2774,7 @@
         "engine": "LAMBDA",
         "environment": "dev",
         "reservation": "nat-recovery/nat-dev",
-        "package_sha256": "30bad29a9eb5951131905a09eacab38268876506f9332b20008310550fa52fff",
+        "package_sha256": "7419b0e2573d75f2052339c8d03597803e782af6108e2fa0b9c7b6c7277c9e80",
         "dependencies": []
       },
       "nat-recovery/nat-dev/change_rt": {
@@ -2783,7 +2783,7 @@
         "engine": "LAMBDA",
         "environment": "dev",
         "reservation": "nat-recovery/nat-dev",
-        "package_sha256": "d324fd68e752588faa3d6b093871a5cb4ecbec5a8f6ee3842b2820cb4e8391f4",
+        "package_sha256": "40b597d8ae83d01536dba8cdf59f460f7a7f9b14cf493a67c2875157234d0520",
         "dependencies": []
       },
       "nat-recovery/nat-dev/disable_sdc": {
@@ -2792,7 +2792,7 @@
         "engine": "LAMBDA",
         "environment": "dev",
         "reservation": "nat-recovery/nat-dev",
-        "package_sha256": "c0fe06e027d28a289660f970a918ae24518be8496fcc5446a72d287a3d5b04ae",
+        "package_sha256": "a5a7fd37a03bd93b80f4323067aa0f63032480e579c17cd625a26c81f2a28771",
         "dependencies": []
       },
       "nat-recovery/nat-prod/assign_eip": {
@@ -2801,7 +2801,7 @@
         "engine": "LAMBDA",
         "environment": "prod",
         "reservation": "nat-recovery/nat-prod",
-        "package_sha256": "a7e2bee34ed458e3007d44cb619ca79a40053c248ee5a602227813297a190fa5",
+        "package_sha256": "1508b4efcd6c138074f390529e58e7f90bd5660907b32c2d2ea7260c64aded6c",
         "dependencies": []
       },
       "nat-recovery/nat-prod/change_rt": {
@@ -2810,7 +2810,7 @@
         "engine": "LAMBDA",
         "environment": "prod",
         "reservation": "nat-recovery/nat-prod",
-        "package_sha256": "b2c15048ab75a45f53a72e66287951b090b6aca0dd18e35d2a9fc8a03a15efb2",
+        "package_sha256": "35f1cdab2dd87ff4538d78b0ac419cb0254d56b1e856f418469a67eaca4f5e4e",
         "dependencies": []
       },
       "nat-recovery/nat-prod/disable_sdc": {
@@ -2819,7 +2819,7 @@
         "engine": "LAMBDA",
         "environment": "prod",
         "reservation": "nat-recovery/nat-prod",
-        "package_sha256": "147ccd72be424c09d3f204a6f8e1608bcc2468ac7dcc0a3db6d506e632299c05",
+        "package_sha256": "3ed173886bf6de997302af7af66172103ee7a0937bfeae39834dae80cc44d422",
         "dependencies": []
       }
     },
@@ -3439,7 +3439,7 @@
       ".github/workflows/cd-scope.yml": "eb77443dcd775afaadba8a8adb68c58db55b96ddc3955ea5acd3c1ae5f96d5dd",
       "scripts/lifecycle/contract.py": "a15c4083aaa8f2eb72580075cb324c59ae90cea79c50909e618f4d808b3ab582",
       "scripts/wp4d/gateway.py": "aed8a94814a08127142e60cd589e4c6621a94c070d5ac133e2270a77cbaea5f6",
-      "scripts/normal_delivery/delivery.py": "be2578643c17bb4f7213117573ed3376fdf9803325ac3b3e04f20bbccbc9674f",
+      "scripts/normal_delivery/delivery.py": "32ecec29f0a103c9d26e7733dbc85887061fa37d973dfc9e9efd69815a12f7fd",
       "scripts/normal_delivery/authorization.py": "5da787e3c77267a0d125b38895528d0c203aa40115d1e70e8c3686da20ef433b",
       ".github/workflows/e1-plan-dev.yml": "f129eea900b574cd2ff0ee7bd4f46a9f23922097a7f1c83790b43f6849f33dcf",
       ".github/workflows/e1-plan-prod.yml": "3cf7b5ad619ae5b43becc719a00d15587cffe7081f48aceba044bf0b1b8fe18a",

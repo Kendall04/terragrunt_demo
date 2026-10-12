@@ -149,8 +149,8 @@ def _normal_owned(clients, config, operation, request, authority):
     authorizer = a.Authorizer(endpoint, config["account"], config["region"], facts)
     runtime = Delivery(clients["ecs"], clients["elbv2"], clients["events"],
                        records, config["resources"])
-    result = d.Delivery(authorizer, runtime, records, Gate(BoundedProcess())).run(
-        operation, a.canonical(request))
+    result = d.Delivery(authorizer, runtime, records, Gate(BoundedProcess())).run_owned(
+        operation, a.canonical(request), authority)
     if result["status"] == "SUCCESS":
         authority.call(History(clients["s3"], config["evidence_bucket"],
                 config["environment"]).publish, result, records)

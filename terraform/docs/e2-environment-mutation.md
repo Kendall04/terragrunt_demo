@@ -128,8 +128,10 @@ current KDD. NAT handler algorithms/events and toolchain/Docker/CI dependency
 pins are untouched. Peer branches must regenerate shared derived artifacts from
 the combined source; E2 does not merge them.
 
-E4 remains deferred: partial listener/rule/schedule/index effects, compensating
-writes, database/schema reversal and general orphan repair are not redesigned.
+[E4](e4-post-switch-recovery.md) now adds one bounded post-switch continuation
+under the original live invocation's grant. No ownership primitive changes.
+Partial schedule/index effects, compensating writes, database/schema reversal
+and general orphan repair remain unresolved.
 No live IAM/provider installation/AWS or end-to-end deployment proof is claimed.
 
 ## Validation

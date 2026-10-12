@@ -9,6 +9,7 @@ DOCUMENTS = ('README.md', 'AGENTS.md', 'terraform/AGENTS.md', 'terraform/infra/s
              'terraform/docs/architecture.md', 'terraform/docs/deployment.md', 'terraform/docs/bootstrap.md',
              'terraform/docs/secrets-strategy.md', 'terraform/docs/decisions-and-limitations.md',
              'terraform/docs/validation.md', 'terraform/docs/e2-environment-mutation.md',
+             'terraform/docs/e4-post-switch-recovery.md',
              'terraform/docs/e13-nat-reliability.md', 'terraform/docs/e14b-toolchain-reproducibility.md', 'terraform/docs/e1-final-acceptance.md')
 
 

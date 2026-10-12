@@ -388,7 +388,7 @@ class Arbitration(unittest.TestCase):
         owner=authority(self.store).acquire();proof=owner.schedule()
         target=dict(Id="scale-down",Arn="fixed")
         class Events:
-            def describe_rule(self,**kw):return {"ScheduleExpression":"rate(5 minutes)"}
+            def describe_rule(self,**kw):return {"ScheduleExpression":"rate(5 minutes)","State":"ENABLED"}
             def list_targets_by_rule(self,**kw):return {"Targets":[self.target]}
         events=Events();events.target=dict(target)
         runtime=object.__new__(Delivery);runtime.events=e.Client(events,"events",owner)

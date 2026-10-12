@@ -185,6 +185,24 @@ class Delivery:
         # independently registered revision at zero. No storage I/O follows.
         self.bounded(op)
 
+    def guard_post_switch(self, op, stage):
+        """Fresh guards after write-ahead I/O, before rule/schedule mutation."""
+        self.current(op)
+        plan = self.stage_plan(op, 'switch')
+        proof = self.activation(op, plan['activation_sha256'])
+        revision = proof['registration']['task_definition_arn']
+        task = self.runtime.read_task(revision, op['deadline'])
+        a.exact(self.auth.validate_registration_readback(op['intent'], task),
+                proof['registration'], 'post-switch registration')
+        fresh = self.snapshot(op)
+        self.routes(op, fresh, switched=True, candidate=stage == 'cleanup')
+        self.prepared(op, fresh, revision, op['intent']['service']['desiredCount'])
+        for field in ('cohort', 'deployment'):
+            a.exact(fresh[field], proof['e3']['context'][field], 'post-switch ' + field)
+        self.auth.validate_readback(op['intent'], a.canonical(dict(
+            taskDefinition=a.decode(task), service=fresh['service_snapshot'])))
+        self.bounded(op)
+
     def observe_effect(self, op, stage, token, request, possible):
         try:
             observation = self.runtime.effect(token, op['deadline'])
@@ -316,6 +334,8 @@ class Delivery:
             self.put(key + '/attempt', dict(token=token, plan_sha256=a.sha(a.canonical(plan))))
             if stage in ('drain', 'attach', 'start'):
                 self.guard_preparation(op, stage, request, plan['expected_state'])
+            if stage in ('candidate', 'cleanup'):
+                self.guard_post_switch(op, stage)
             if stage == 'switch':
                 self.current(op)
                 final = self.snapshot(op); self.routes(op, final)
@@ -482,6 +502,95 @@ class Delivery:
                   target=intent['service']['loadBalancers'][0]['targetGroupArn'], initial=snapshot)
         self.routes(op, snapshot)
         return self.put(operation + '/intent', op)
+
+    def owned(self, operation, raw, authority):
+        """Require the existing invocation's exact E2 grant; never take over."""
+        from scripts.environment_mutation import Authority, canonical, require
+        require(type(authority) is Authority and authority.value is not None)
+        require(authority.store.environment == self.env and
+                authority.store.selected == 'application' and
+                authority.binding == 'normal-delivery/' + self.auth.endpoint and
+                authority.operation == operation and
+                authority.request_sha256 == a.sha(canonical(a.decode(raw))))
+        authority.acquire()  # Existing grant only: rechecks owner/generation/body.
+
+    def recovery_blocked(self, operation, checkpoint):
+        result = dict(schema='E1_DELIVERY_OUTCOME_V1', operation_id=operation,
+                      environment=self.env, status='UNCERTAIN',
+                      code='POST_SWITCH_RECOVERY_BLOCKED', checkpoint=checkpoint)
+        try: self.put(operation + '/outcomes/' + a.sha(a.canonical(result)), result)
+        except Exception: pass
+        return result
+
+    def recover_post_switch(self, operation, raw, authority):
+        """One bounded same-invocation continuation, no attempted-stage resend.
+
+        Journals prove historical effects; fresh effect/readback proves current
+        post-switch reality. No new deadline, owner, release or compensation.
+        """
+        checkpoint = 'ownership'
+        try:
+            self.owned(operation, raw, authority)
+            checkpoint = 'retained-operation'
+            op = self.retained_operation(operation)
+            a.require(op is not None)
+            a.exact(self.accept(operation, raw), op, 'recovery operation')
+            if self.read(operation + '/success') is not None:
+                return self.run(operation, raw)  # Historical receipt only.
+            checkpoint = 'switch-attempt-and-activation'
+            plan = self.stage_plan(op, 'switch')
+            proof = self.activation(op, plan['activation_sha256'])
+            checkpoint = 'immutable-effects'
+            self.reconcile(op)
+            # Do not reobserve superseded drain/attach states. Only post-switch
+            # effects have current readback meaning at this boundary.
+            for stage in ('switch', 'candidate', 'cleanup'):
+                checkpoint = 'current-' + stage + '-effect'
+                if self.read(operation + '/' + stage + '/attempt') is None:
+                    a.require(self.read(operation + '/' + stage + '/plan') is None)
+                    a.require(stage != 'switch')
+                    continue
+                stage_plan = self.stage_plan(op, stage)
+                now = self.runtime.now()
+                a.require(type(now) is int and now > 0)
+                observed = self.runtime.effect(stage_plan['token'], now + 30)
+                self.validate_effect(op, stage, observed, stage_plan['token'], stage_plan['request'])
+                self.put(operation + '/post-switch-readbacks/' + a.sha(a.canonical(observed)), observed)
+                a.require(observed['state'] == 'APPLIED')
+                a.exact(observed, self.stored_effect(op, stage), 'current effect versus journal')
+            checkpoint = 'current-authorization-and-topology'
+            self.current(op)
+            fresh = self.snapshot(op)
+            self.put(operation + '/post-switch-snapshots/' + a.sha(a.canonical(fresh)), fresh)
+            a.exact(fresh['normal_target'], op['target'], 'recovery listener')
+            candidate = self.stored_effect(op, 'candidate')
+            self.routes(op, fresh, switched=True, candidate=candidate is not None)
+            self.prepared(op, fresh, proof['registration']['task_definition_arn'],
+                          op['intent']['service']['desiredCount'])
+            for field in ('cohort', 'deployment'):
+                a.exact(fresh[field], proof['e3']['context'][field], 'recovery ' + field)
+            self.owned(operation, raw, authority)
+            checkpoint = 'continuation'
+            result = self.run(operation, raw)
+            if result['status'] != 'SUCCESS':
+                return self.recovery_blocked(operation, checkpoint)
+            return result
+        except Exception:
+            return self.recovery_blocked(operation, checkpoint)
+
+    def run_owned(self, operation, raw, authority):
+        """Installed entry: at most one recovery pass while this owner lives."""
+        try: self.owned(operation, raw, authority)
+        except Exception: return self.recovery_blocked(operation, 'ownership')
+        result = self.run(operation, raw)
+        if result['status'] == 'UNCERTAIN':
+            try:
+                attempted = self.records.read(self.env + '/' + operation + '/switch/attempt')
+            except Exception:
+                return self.recovery_blocked(operation, 'switch-attempt')
+            if attempted is not None:
+                return self.recover_post_switch(operation, raw, authority)
+        return result
 
     def run(self, operation, raw):
         """Only bounded identity + closed release/count/history inputs; no AWS args."""

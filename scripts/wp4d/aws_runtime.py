@@ -298,6 +298,7 @@ class Delivery(Effects, d.Runtime):
         targets = self.events.list_targets_by_rule(Rule=schedule["rule"]).get("Targets", [])
         expected = scheduled_target(self.events, target)
         return (rule.get("ScheduleExpression") == schedule["expression"] and
+                rule.get("State") == "ENABLED" and
                 len(targets) == 1 and all(targets[0].get(k) == v for k, v in expected.items()))
 
     def verify_saved(self, token, request, result, deadline):

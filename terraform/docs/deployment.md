@@ -4,6 +4,12 @@ Read [architecture](architecture.md) for ownership and [validation](validation.m
 for command effects. This describes checked-in behavior, not proven deployment
 results. No AWS infrastructure currently exists (owner reconciliation 2026-09-18).
 
+[E4 recovery/runbook](e4-post-switch-recovery.md) adds one bounded same-invocation
+continuation after a listener switch with failed evidence persistence. Fresh
+operation-linked readback and current authorization are mandatory; blocked
+partial deployments remain UNCERTAIN with E2 ownership retained. Later publication
+failures and interrupted workers still require separately authorized diagnosis.
+
 ## CURRENT CONTRACT — final E1 protected workflows
 
 [WP6 protected workflows](e1-protected-workflows.md) connects the accepted
