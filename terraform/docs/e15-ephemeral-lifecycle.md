@@ -342,3 +342,11 @@ SQL loss policy and protected per-operation confirmations, local artifact review
 same-invocation binary/context seal and fresh pre-apply ECS readbacks. Earlier SQL
 policy gaps above describe the original E15 assessment. ECS closure, NAT settlement
 and protected reviewed-plan handoff remain blockers; DOWN/EXECUTE remains denied.
+
+## E15-F — NAT quiescence remains partial
+
+[E15-F](e15f-nat-quiescence.md) adds an independent, uninstalled DEV NAT EC2
+admission fence and durable UNKNOWN diagnostic under the exact WP5/E2 owner.
+It demonstrates late dispatched effects and keeps networking teardown denied;
+controller installation, ASG/service inhibition and exhaustive executor/effect
+settlement remain separate prerequisites. It does not enable DOWN/EXECUTE.

@@ -591,3 +591,12 @@ YAML; activation stays 0/11, 0/16, 0/8. Ubuntu lint exactly reproduced inherited
 24 TFLint warnings and 46 tfsec findings, with no differences. See the linked
 results for scope and pending installation/owner/live gates. No executable source
 changed after the gate; these result paragraphs were checked separately.
+
+## E15-F — provider-free NAT quiescence
+
+Run `python -I -B scripts/tests/nat_quiescence/run.py` for the independent
+[contract](e15f-nat-quiescence.md): actual NAT/E2/journal boundaries, deterministic
+late-effect barriers and durable denied teardown. No live adapter, package/IAM
+activation or shared acceptance/source-inventory regeneration is supplied here;
+combined integration must reconcile admission. Existing E13/E2/R/E4/E15/B/C/D and
+E1 acceptance regressions remain required. No AWS/provider initialization is allowed.
