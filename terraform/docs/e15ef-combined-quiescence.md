@@ -283,3 +283,11 @@ references, focused tests and authoritative KDD/runbook links:
 - `terraform/docs/secrets-strategy.md`
 - `terraform/docs/validation.md`
 - `terraform/infra/security/authority.json`
+
+## E15-G operational component follow-up
+
+[E15-G](e15g-operational-teardown.md) adds original-E2-owner composition, bounded
+ECS drain, sealed terminal cohort handoff and residual completion checks.
+Complete installed DOWN remains PARTIALLY_READY and denied: NAT executor/effect
+closure, authentic ECS closure, whole-operation preparation and exhaustive
+residual installation remain required. No IAM/activation or live AWS evidence.

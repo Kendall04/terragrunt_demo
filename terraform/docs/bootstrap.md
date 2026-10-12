@@ -138,3 +138,11 @@ separate ECS/NAT guards into protected WP5/E15-D, with immutable UNKNOWN evidenc
 and the original E2 hold. Whole-operation ownership/stage order, terminal ECS
 cluster handoff, installed authenticated adapters and issued-effect settlement
 remain unavailable. Complete DOWN stays denied; no IAM or activation is added.
+
+## E15-G operational component follow-up
+
+[E15-G](e15g-operational-teardown.md) adds original-E2-owner composition, bounded
+ECS drain, sealed terminal cohort handoff and residual completion checks.
+Complete installed DOWN remains PARTIALLY_READY and denied: NAT executor/effect
+closure, authentic ECS closure, whole-operation preparation and exhaustive
+residual installation remain required. No IAM/activation or live AWS evidence.

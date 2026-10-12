@@ -13,7 +13,7 @@ import tempfile
 import time
 
 from scripts.lifecycle import contract as c
-from scripts.lifecycle import packages, handoff, quiescence
+from scripts.lifecycle import packages, handoff, quiescence, operational
 from scripts.lifecycle.controller import Controller
 from scripts.lifecycle.dev_down import check_data_consent
 from scripts.lifecycle.exact_destroy import Execution as ExactDestroyExecution
@@ -106,6 +106,15 @@ class Terraform:
         c.require(len(result.stdout)<=16777216,'bounded Terraform output')
         return result.stdout
     def require_combined_quiescence(self, phase):
+        operation = getattr(self, 'down_operation', None)
+        if operation is not None:
+            c.require(type(operation) is operational.Operation and
+                type(self.exact_destroy) is ExactDestroyExecution and
+                type(self.exact_destroy.channel) is handoff.Handoff,
+                'concrete installed whole DOWN handoff')
+            self.exact_destroy.channel.scope(self.request, self.protected)
+            self.exact_destroy.channel.session(False)
+            return operation.require(self.request, self.protected, self.authority, phase)
         c.require(type(self.exact_destroy) is ExactDestroyExecution and
                   type(self.exact_destroy.channel) is handoff.Handoff,
                   'concrete administrative handoff required for combined teardown')
@@ -348,3 +357,59 @@ def handler(event,context):
 
 
 if __name__=='__main__':handler(None,None)
+
+
+def execute_down(requests, configuration, clients_):
+    """Internal protected whole-DOWN entry; NOT a handler/event/CLI route.
+
+    Existing approved WP5 bootstrap and current administrator configuration are
+    mandatory. No arbitrary adapter is accepted. Current installed NAT source
+    denies creation of WholeGuard before any destructive stage. Installing the
+    missing authority is a separate owner decision, never a JSON enable flag.
+    """
+    c.keys(configuration, ('binding', 'account', 'region', 'package'), 'installed whole DOWN bootstrap')
+    c.require(configuration['binding'] == handoff.x.BINDING, 'DEV high-risk whole DOWN only')
+    response = clients_['s3'].get_object(Bucket='demo-release-artifacts-' + configuration['account'],
+        Key='lifecycle/' + configuration['binding'] + '/current.json', ExpectedBucketOwner=configuration['account'])
+    raw = response['Body'].read(1048577)
+    c.require(0 < len(raw) <= 1048576, 'bounded protected current configuration')
+    protected = json.loads(raw)
+    reference = configuration['package']
+    c.require(protected['binding'] == configuration['binding'] and protected['environment'] == 'dev'
+        and protected['account'] == configuration['account'] and protected['region'] == configuration['region']
+        and reference['sha256'] in protected['active_contracts']
+        and reference == protected['installations'].get(reference['sha256']), 'current exact installed package')
+    c.require(type(requests) is list and len(requests) == 5
+        and all(x['revision'] == reference['sha256'] for x in requests), 'one installed operation source')
+    first = c.request(configuration['binding'], requests[0])
+    bucket = f'e1-lifecycle-dev-{configuration["account"]}-{configuration["region"]}'
+    records = Records(clients_['s3'], bucket, 'operations/' + configuration['binding'] + '/')
+    authority = Authority(Store(clients_['s3'],
+        f'e1-wp4-dev-{configuration["account"]}-{configuration["region"]}', 'dev'),
+        configuration['binding'], first['operation_id'], first, layer='edge')
+    operation = operational.Operation(requests, protected, authority, records, lambda:int(time.time()))
+    with tempfile.TemporaryDirectory(prefix='wp5-whole-down-') as directory:
+        package = Packages(clients_['s3'], directory)
+        package.verify(reference)  # bootstrap bytes/import closure, before E2 admission
+        class PreparedPackages:
+            def verify(self, selected):
+                c.require(selected == reference, 'same already extracted whole-operation package')
+                return reference
+        prepared_packages = PreparedPackages()
+        def engine_factory(value, context):
+            engine = Terraform(directory, clients_['ecs'], protected, authority, request=value)
+            engine.down_operation = context
+            engine.exact_destroy = handoff.executor(engine, clients_['s3'], clients_.get('sts'), operation.clock)
+            return engine
+        def guard_factory(context):
+            engine = engine_factory(first, context)
+            channel = engine.exact_destroy.channel
+            selected = quiescence.ecs.scope(first, protected)
+            protocol = quiescence.ecs.Quiescence(first, protected, authority,
+                quiescence.ecs.ECS(clients_['ecs'], selected), quiescence.ecs.Journal(channel.storage, selected),
+                quiescence.ecs.HandoffBoundary(channel), operation.clock)
+            # No event/boolean/custom observer can replace this fixed source.
+            nat_protocol = quiescence.InstalledNAT().protocol(authority, requests[-1], protected,
+                                                             records, operation.clock)
+            return operational.WholeGuard(context, protocol, nat_protocol, operational.Residual())
+        return operation.execute(prepared_packages, engine_factory, guard_factory)

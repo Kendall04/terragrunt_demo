@@ -257,10 +257,17 @@ class Execution:
         authority = engine.authority
         c.require(type(authority) is e.Authority and authority.value is not None, 'E2 owner required')
         authority._check()  # original owner/generation, never acquire or takeover here
-        c.require(authority.binding == BINDING and authority.operation == engine.request['operation_id']
-                  and authority.request_sha256 == c.digest(c.canonical(engine.request))
-                  and authority.value['generation'] == observed['approval']['expected_generation'],
-                  'approved E2 operation and exact generation')
+        operation = getattr(engine, 'down_operation', None)
+        if operation is None:
+            c.require(authority.binding == BINDING and authority.operation == engine.request['operation_id']
+                      and authority.request_sha256 == c.digest(c.canonical(engine.request)),
+                      'approved exact E2 operation')
+        else:
+            from .operational import Operation
+            c.require(type(operation) is Operation, 'internal whole DOWN context only')
+            operation.owns_request(engine.request, engine.protected, authority)
+        c.require(authority.value['generation'] == observed['approval']['expected_generation'],
+                  'approved original E2 generation')
         current = self.channel.current(engine.request, engine.protected)
         c.keys(current, ('state', 'configuration_sha256'), 'protected current applicability')
         c.require(current['state'] == packet['review']['context']['state'] and

@@ -1481,19 +1481,19 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/lifecycle/ecs_quiescence.py": {
-      "sha256": "e26ba0ca0665786f561faf7a2dba8c41679418b173cbbcb18da1e5b4e11f0e7b",
+      "sha256": "b15f5fcba419771c25c6fa6a1a69681bc571bc1e0ed9aee21268a9c206f46718",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          33,
-          57,
-          59
+          38,
+          62,
+          64
         ]
       },
       "semantic_status": "UNVERIFIED"
     },
     "scripts/lifecycle/exact_destroy.py": {
-      "sha256": "354e6826613690b142736712fe6c076250fd2635a2a9d86d8ae0ba70692d408e",
+      "sha256": "9f6f099328ada3cfbb3d4f217abf3c16745d2f2b121db2f6d4b4e0531d125437",
       "declarations": [],
       "signals": {
         "role-input": [
@@ -1525,7 +1525,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/lifecycle/packages.py": {
-      "sha256": "57f9716fb3d8d834af679a7ede453608cacd34ac492f42af76b50a61b187e466",
+      "sha256": "f0803e4da311d3c7154cc9547a5677a42d4b8d0a059a9c8a7927a9d71080ca0d",
       "declarations": [],
       "signals": {
         "executable-dependency": [
@@ -1550,7 +1550,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/lifecycle/runtime.py": {
-      "sha256": "5603f41a7d0085bd354be28270f142a568418e0b7d1f0c946df00399660aafef",
+      "sha256": "6466547f3ab88dab8f4370058dfc541938ee05aa8da99a0221372fa3be9956d7",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -1558,9 +1558,9 @@
           83,
           95,
           103,
-          133,
-          235,
-          237
+          142,
+          244,
+          246
         ],
         "executable-dependency": [
           105
@@ -1591,7 +1591,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/nat/quiescence.py": {
-      "sha256": "f7911d816fbe583be9d0c9ed5dfbe492429191dbd15c167be7145aeeea3834d5",
+      "sha256": "3a8dee5e63ddd1d080be165e297feb6a1d2ba63a5c83813778ecbf530e0bf3e3",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -2398,7 +2398,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/final_acceptance/check_knowledge.py": {
-      "sha256": "9720420d5bfb658d48374cd47f375cb422cf37bcbc2f171efc91bb5c87cdb6c4",
+      "sha256": "2e62abd87ebb3d10121a0e7ab36a2cb7b925622ee743e59c80e6933398b591a8",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -2417,7 +2417,8 @@
           20,
           21,
           22,
-          42
+          23,
+          43
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -2465,12 +2466,12 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/final_acceptance/gate.py": {
-      "sha256": "baf8a918ba71282aeb1f28fc0616e0e539f8ca8a8e82cf25a38f93765d748116",
+      "sha256": "1cc745b7049c0a535e3a4927de2ac88a14eb42ebd144ccf5e1cbce1378a7f92c",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          64,
-          142
+          65,
+          143
         ],
         "executable-dependency": [
           3,
@@ -2493,7 +2494,8 @@
           61,
           62,
           63,
-          122
+          64,
+          123
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -3963,7 +3965,7 @@
       "semantic_status": "CURRENT_FACT"
     },
     "scripts/tests/security_root/wp5.py": {
-      "sha256": "4e0cf4f20215e6977c4139936d2635705c84e8f4a79f71ecd775818de492a4b3",
+      "sha256": "5b282f60f38e80ff28119b7716138dac649bed138bf3a31deb79053fdedeac82",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -4765,7 +4767,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/authority.json": {
-      "sha256": "fdcf43a0f55a623beecf01636eac4e1f5b383f567d553231c6e8891b07ec0dde",
+      "sha256": "a70915296bfc393e72bfc86a8e3bbaf0458d67720755eb15ea6ea93ebf6aa1db",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -7801,6 +7803,66 @@
         ],
         "executable-dependency": [
           4
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/lifecycle/operational.py": {
+      "sha256": "9098cdaedd0b03b516d3dd71f3f873ce03c377eb73a14b9f68d07bae70ae5ae5",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/tests/operational_teardown/run.py": {
+      "sha256": "8f53af27bd3c400152d78438a26d6978c08aca7e55b71c65088c91c3ec075025",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          14
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/tests/operational_teardown/test_operational.py": {
+      "sha256": "6b0cb2175830fd7c49dd535321963b3c484e2cc7df9b329cfe1954e521377ce9",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          27,
+          32,
+          33,
+          37,
+          38,
+          43,
+          45,
+          48,
+          51,
+          53,
+          57,
+          59,
+          62,
+          64,
+          65,
+          73,
+          76,
+          81,
+          85,
+          100,
+          127,
+          132,
+          138,
+          152,
+          160,
+          168,
+          175,
+          306,
+          348,
+          356
+        ],
+        "executable-dependency": [
+          353,
+          356,
+          387
         ]
       },
       "semantic_status": "UNVERIFIED"

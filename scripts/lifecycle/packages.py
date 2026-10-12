@@ -27,7 +27,7 @@ def verify(s3, reference, destination):
         with target.open('xb') as stream:stream.write(base64.b64decode(encoded, validate=True))
     # Privileged bootstrap must itself be the exact code inside the verified
     # package. An image with unrelated entrypoint bytes cannot borrow its hash.
-    for name in ('contract.py', 'controller.py', 'packages.py', 'runtime.py', 'dev_down.py', 'exact_destroy.py', 'handoff.py', 'ecs_quiescence.py', 'quiescence.py'):
+    for name in ('contract.py', 'controller.py', 'packages.py', 'runtime.py', 'dev_down.py', 'exact_destroy.py', 'handoff.py', 'ecs_quiescence.py', 'quiescence.py', 'operational.py'):
         source = Path(__file__).with_name(name).read_bytes().replace(b'\r\n', b'\n')
         c.require((root/'scripts/lifecycle'/name).read_bytes() == source, 'installed bootstrap byte identity')
     source = Path(__file__).parents[1]/'environment_mutation.py'

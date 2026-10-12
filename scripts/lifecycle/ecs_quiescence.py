@@ -21,6 +21,11 @@ class Blocked(ValueError):
     pass
 
 
+class Pending(ValueError):
+    """Complete, valid observation which has not reached quietness yet."""
+    pass
+
+
 DEPLOYMENT_FIELDS = ('id', 'status', 'rolloutState', 'taskDefinition',
                      'desiredCount', 'runningCount', 'pendingCount')
 
@@ -113,7 +118,7 @@ class Journal:
         self.prefix = 'operations/' + BINDING + '/' + selected['operation_id'] + '/ecs-quiescence/'
 
     def key(self, stage):
-        c.require(stage in ('intent', 'blue-attempt', 'green-attempt')
+        c.require(stage in ('intent', 'blue-attempt', 'green-attempt', 'terminal-seal', 'terminal-invalid')
                   or stage in ['sample-' + str(i) for i in range(MAX_SAMPLES)], 'bounded ECS journal stage')
         return self.prefix + stage + '.json'
 
@@ -228,18 +233,21 @@ class ECS:
 
 
 def quiet(observed):
+    def ready(ok, reason):
+        if not ok:
+            raise Pending(reason)
     c.keys(observed, ('services', 'tasks', 'live'), 'closed observation')
-    c.require(not observed['live'], 'live task listing not empty')
-    c.require(all(t['lastStatus'] == t['desiredStatus'] == 'STOPPED' for t in observed['tasks'].values()),
+    ready(not observed['live'], 'live task listing not empty')
+    ready(all(t['lastStatus'] == t['desiredStatus'] == 'STOPPED' for t in observed['tasks'].values()),
               'every previously observed task actually STOPPED')
     for service in observed['services'].values():
         if service == {'absence': 'EXACT_ECS_MISSING'}:
             continue
-        c.require(all(service[k] == 0 for k in ('desiredCount', 'runningCount', 'pendingCount')), 'service not at zero')
+        ready(all(service[k] == 0 for k in ('desiredCount', 'runningCount', 'pendingCount')), 'service not at zero')
         deployments = service['deployments']
-        c.require(len(deployments) == 1, 'old deployment remains able to reconcile')
+        ready(len(deployments) == 1, 'old deployment remains able to reconcile')
         deployment = deployments[0]
-        c.require(type(deployment['id']) is str and bool(deployment['id'])
+        ready(type(deployment['id']) is str and bool(deployment['id'])
                   and deployment['status'] == 'PRIMARY' and deployment['rolloutState'] == 'COMPLETED'
                   and deployment['taskDefinition'] == service['taskDefinition']
                   and all(type(deployment[k]) is int and deployment[k] == 0
@@ -263,6 +271,7 @@ class Quiescence:
         c.require(isinstance(boundary, ProtectedBoundary), 'protected internal closure port required')
         self.boundary, self.clock = boundary, clock
         self.owner = owner_identity(authority, self.selected)
+        self.terminal_failed = False
 
     def check_owner(self):
         c.require(owner_identity(self.authority, self.selected) == self.owner, 'original E2 generation/owner only')
@@ -416,3 +425,117 @@ class Quiescence:
         # A receipt alone never starts a dependent stage. Repeat all reads and
         # source closure; the caller must retain E2 through stage and completion.
         return self.check()
+
+    def drain_until_quiet(self):
+        """One drain attempt, then bounded fresh samples; no sleeps or resend.
+
+        Only a valid nonterminal observation permits another sample. Missing,
+        corrupt, ambiguous or failed readbacks stop immediately with the hold.
+        A lost mutation response also stops; this method is never recovery.
+        """
+        try:
+            return self.begin()
+        except Pending:
+            pass
+        for _ in range(MAX_SAMPLES - 1):
+            try:
+                return self.check()
+            except Pending:
+                continue
+        raise Blocked('E15G_ECS_DRAIN_BOUNDED_SAMPLES_EXHAUSTED')
+
+    def seal_before_cluster_delete(self):
+        """Seal actual STOPPED cohort immediately before platform deletion.
+
+        The immutable sample is captured while DescribeTasks is still possible.
+        This seal is usable only in the same uninterrupted owner and bounded
+        intent window, with fresh closure AND exact cluster-absence readback.
+        """
+        c.require(self.journal.read('terminal-seal') is None, 'terminal seal is single-use')
+        receipt = self.check()
+        sample = self.journal.read('sample-' + str(receipt['sample']))
+        self.validate_sample(sample);quiet(sample['observation'])
+        intent = self.journal.read('intent');self.intent(intent)
+        sealed = dict(schema='E15G_ECS_TERMINAL_V1', scope=self.selected, owner=self.owner,
+            stage='platform', sample=receipt, expires_at=intent['expires_at'])
+        self.journal.create('terminal-seal', sealed)
+        c.require(self.journal.read('terminal-seal') == sealed, 'durable terminal cohort seal')
+        self.closure();self.intent(intent)
+        return copy.deepcopy(sealed)
+
+    def require_terminal_handoff(self, stage):
+        c.require(not self.terminal_failed, 'terminal handoff failed in original invocation')
+        c.require(self.journal.read('terminal-invalid') is None, 'terminal handoff invalidated')
+        try:
+            return self._terminal_handoff(stage)
+        except Exception:
+            self.terminal_failed = True
+            # Never erase contradictory evidence even if a later read looks
+            # quiet again. An interrupted/invalid handoff requires diagnosis.
+            record = dict(schema='E15G_ECS_INVALID_V1', owner=self.owner,
+                scope_sha256=self.selected['scope_sha256'], state='UNKNOWN')
+            try:self.journal.create('terminal-invalid', record)
+            except Exception:pass
+            raise
+
+    def _terminal_handoff(self, stage):
+        c.require(stage in ('platform', 'data', 'global'), 'post-platform handoff only')
+        seal = self.journal.read('terminal-seal')
+        c.keys(seal, ('schema', 'scope', 'owner', 'stage', 'sample', 'expires_at'), 'terminal handoff seal')
+        intent = self.journal.read('intent');self.intent(intent)
+        c.require(seal['schema'] == 'E15G_ECS_TERMINAL_V1' and seal['scope'] == self.selected
+            and seal['owner'] == self.owner and seal['stage'] == 'platform'
+            and seal['expires_at'] == intent['expires_at'], 'original bounded terminal handoff')
+        receipt = seal['sample']
+        c.keys(receipt, ('state', 'sample', 'sha256', 'execution_authorized', 'down_state'), 'terminal sample receipt')
+        c.require(receipt['state'] == 'QUIET' and receipt['execution_authorized'] is False
+            and receipt['down_state'] == 'UNKNOWN' and type(receipt['sample']) is int
+            and 0 <= receipt['sample'] < MAX_SAMPLES, 'terminal cohort receipt only')
+        sample = self.journal.read('sample-' + str(receipt['sample']))
+        self.validate_sample(sample)
+        c.require(c.digest(c.canonical(sample)) == receipt['sha256'], 'exact sealed terminal sample')
+        quiet(sample['observation'])
+        # No new task/service read against deleted resources. This read is fresh
+        # absence, not inference from a timeout, empty list or stale sample.
+        started = self.clock();self.closure()
+        response = self.adapter.client.describe_clusters(clusters=[self.selected['cluster']])
+        c.require(response.get('clusters') == [] and response.get('failures') == [
+            {'arn': self.selected['cluster'], 'reason': 'MISSING'}], 'authoritative exact deleted cluster')
+        self.closure();self.intent(intent)
+        ended = self.clock()
+        c.require(type(started) is int and type(ended) is int and 0 <= ended - started < FRESH_SECONDS,
+                  'fresh bounded cluster absence')
+        return dict(state='TERMINAL_HANDOFF', stage=stage, seal_sha256=c.digest(c.canonical(seal)),
+                    owner=copy.deepcopy(self.owner), observed_at=ended, execution_authorized=False)
+
+    def require_predelete_seal(self):
+        c.require(not self.terminal_failed, 'terminal seal failed in original invocation')
+        c.require(self.journal.read('terminal-invalid') is None, 'terminal seal invalidated')
+        try:
+            return self._predelete_seal()
+        except Exception:
+            self.terminal_failed = True
+            if self.journal.read('terminal-seal') is not None:
+                record = dict(schema='E15G_ECS_INVALID_V1', owner=self.owner,
+                    scope_sha256=self.selected['scope_sha256'], state='UNKNOWN')
+                try:self.journal.create('terminal-invalid', record)
+                except Exception:pass
+            raise
+
+    def _predelete_seal(self):
+        c.require(self.journal.read('terminal-invalid') is None, 'terminal seal invalidated')
+        seal = self.journal.read('terminal-seal')
+        if seal is None:
+            return self.seal_before_cluster_delete()
+        # Repeated pre-dispatch guards retain the same immutable seal and
+        # refresh closure/tasks while the cluster is still available.
+        intent = self.journal.read('intent');self.intent(intent)
+        c.require(seal == dict(schema='E15G_ECS_TERMINAL_V1', scope=self.selected, owner=self.owner,
+            stage='platform', sample=seal['sample'], expires_at=intent['expires_at']), 'unchanged predelete seal')
+        receipt = self.check()
+        current = self.journal.read('sample-' + str(receipt['sample']))
+        prior = self.journal.read('sample-' + str(seal['sample']['sample']))
+        self.validate_sample(prior);quiet(prior['observation'])
+        c.require(c.digest(c.canonical(prior)) == seal['sample']['sha256']
+            and current['observation']['tasks'] == prior['observation']['tasks'], 'sealed terminal cohort unchanged')
+        return seal

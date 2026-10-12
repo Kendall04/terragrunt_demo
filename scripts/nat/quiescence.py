@@ -181,7 +181,7 @@ class Quiescence:
     unknown; diagnostics append immutable content-addressed observations. No
     SUCCESS/READY is representable under the current settlement architecture.
     """
-    def __init__(self, authority, request, protected, nat_config, records, observation, now=time.time):
+    def __init__(self, authority, request, protected, nat_config, records, observation, now=time.time, operation=None):
         self.scope = dev_down.scope(request, protected)
         c.require(self.scope['layer'] == 'global', 'NAT networking teardown stage only')
         self.members = slots(nat_config)
@@ -190,11 +190,18 @@ class Quiescence:
         c.require(all(s[k] in installed_ids for s in self.members
                       for k in ('vpc', 'subnet', 'asg', 'eip', 'route_table')), 'WP5/NAT membership agreement')
         c.require(all(nat_config[k] == self.scope[k] for k in ('environment', 'account', 'region')), 'WP5/NAT identity')
-        c.require(type(authority) is e.Authority and authority.store.environment == 'dev' and
-                  authority.store.selected == 'application' and authority.store.bucket ==
-                  f'e1-wp4-dev-{self.scope["account"]}-{self.scope["region"]}' and
-                  authority.binding == self.scope['binding'] and authority.operation == self.scope['operation_id'] and
-                  authority.request_sha256 == self.scope['request_sha256'], 'original WP5 owner')
+        if operation is None:
+            c.require(type(authority) is e.Authority and authority.store.environment == 'dev' and
+                      authority.store.selected == 'application' and authority.store.bucket ==
+                      f'e1-wp4-dev-{self.scope["account"]}-{self.scope["region"]}' and
+                      authority.binding == self.scope['binding'] and authority.operation == self.scope['operation_id'] and
+                      authority.request_sha256 == self.scope['request_sha256'], 'original WP5 owner')
+        else:
+            from scripts.lifecycle.operational import Operation
+            c.require(type(operation) is Operation and operation.authority is authority
+                and operation.requests[-1] == request and operation.protected == protected,
+                'original whole DOWN NAT scope')
+            operation.check()
         c.require(records.bucket == self.scope['backend']['bucket'] and
                   records.prefix == 'operations/' + self.scope['binding'] + '/', 'existing WP5 evidence location')
         c.require(isinstance(observation, Observation), 'protected observation port')

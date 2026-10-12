@@ -609,3 +609,22 @@ feature suites and the original final acceptance gate from the integrated tree.
 limits, inventory/package reconciliation and required original regression checks.
 No AWS, provider initialization, installation or timing-based settlement proof is
 authorized. Standalone feature agents did not complete full E1 acceptance.
+
+## E15-G provider-free operational components
+
+Run `python -I -B scripts/tests/operational_teardown/run.py` and the complete
+original final-acceptance gate. [Contract and limits](e15g-operational-teardown.md)
+distinguish implemented ECS/whole-owner components from blocked installation.
+E1/WP, E2/R/E4, E13 and E15/B/C/D/E/F/combined regression requirements remain.
+Inventory/packages, static gates, KDD links, parsing, check-only Terraform format
+and whitespace are required; no AWS/init/network or installation occurs.
+
+Final E15-G source gate completed with E1_REPOSITORY_ACCEPTANCE_PASS: 983 E1/WP,
+AC1-AC16, E2 41/E2-R 23/E4 28 and all 22 sequential checks, including E15-G 54,
+E15-E 49/E15-F 51/combined 39 and existing E15/B/C/D/E8/E13 suites. Independent
+E7 8/E11 33/E14-B 19 passed. Parsing: 179 Python/50 JSON/22 generated YAML;
+activation stays 0/11, 0/16, 0/8. All eight extracted WP5 package imports passed.
+Static finding identity/multiplicity remains exactly inherited 24/46. See E15-G
+for report paths, the single bounded repair, missing native Linux/lint tooling
+and explicit installed/live limitations. No executable source changed after this
+successful gate; results/link/whitespace documentation checks follow separately.
