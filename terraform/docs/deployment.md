@@ -15,6 +15,10 @@ executor termination and settlement of all potentially issued effects.
 
 ## CURRENT CONTRACT — final E1 protected workflows
 
+[E15 preparation/runbook](e15-ephemeral-lifecycle.md) reuses WP5/WP6 per-layer
+lifecycle and WP3/WP4 delivery. It adds no direct execution path; complete DEV
+shutdown remains partial pending approved quiescence/preview/settlement gates.
+
 [E8 retention](e8-rollback-image-retention.md) removes automatic application-image
 expiration and tightens exact account/repository/digest availability reads used
 by rollback/restoration. Current eligibility and independent prod approval remain

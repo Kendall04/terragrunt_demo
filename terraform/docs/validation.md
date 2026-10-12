@@ -410,6 +410,16 @@ See [WP7 acceptance and live limits](e1-final-acceptance.md). Optional preinstal
 Linux checks use `scripts/tests/final_acceptance/check_linux.py` for YAML/Bash
 syntax and the existing E3 entry points; unavailable dependencies are explicit.
 
+## E15 — provider-free ephemeral lifecycle readiness
+
+Run `python -I -B scripts/tests/ephemeral/run.py` and
+`python -I -B scripts/tests/ephemeral/check_plan_shape.py`. The
+[E15 contract](e15-ephemeral-lifecycle.md) covers offline preparation, graph order,
+confirmation/residual/budget boundaries and teardown-only WP5 empty-state checks.
+The shape check uses installed Terraform 1.13.4 with an empty provider-free local
+configuration, no backend, init or AWS. Both run as additional E1 gate checks;
+983 E1/WP counts remain fixed. No local notes or mock proves real teardown.
+
 ## E8 — provider-free image retention
 
 Run `python -I -B scripts/tests/retention/run.py` for 18 focused hermetic tests.

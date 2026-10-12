@@ -204,9 +204,10 @@ class Retention(unittest.TestCase):
         self.assertEqual(checksum(json.loads((ROOT / ownership.MODULE).read_text())),
                          baseline["configuration_without_lifecycle_sha256"])
         authority = copy.deepcopy(DOC)
-        for item in authority["wp4d"]["selected"].values():
-            del item["package_sha256"]
-        self.assertEqual(checksum(authority), baseline["authority_without_wp4d_package_hashes_sha256"])
+        for kind in ("wp4d", "wp5"):
+            for item in authority[kind]["selected"].values():
+                del item["package_sha256"]
+        self.assertEqual(checksum(authority), baseline["authority_without_wp4d_wp5_package_hashes_sha256"])
 
     def test_e4_uncertain_dependency_loss_retains_e2_hold(self):
         case = test_post_switch.Recovery()

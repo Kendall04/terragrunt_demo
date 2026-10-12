@@ -131,3 +131,19 @@ operational-independence target is still distinct. All external identities and
 WP4D/WP5 compute stay inactive. No deployment, installation, migration or external
 governance is claimed. Existing durability, concurrency, compensation, observability
 and reproducibility backlog remains outside E1; no further E1 work package is added.
+
+## E15 — ephemeral DEV lifecycle (partial repository readiness)
+
+The owner requests an on-demand DEV lab with controlled teardown and minimal
+residual cost. [E15](e15-ephemeral-lifecycle.md) recovers existing WP5 per-layer
+teardown, adds an offline preparation/residual interface and budget draft, and
+requires complete empty managed-state plus exact ECS quiescence readback before
+teardown SUCCESS. No AWS operation or activation occurred. Shared/secrets,
+security-root, backend/state/evidence/ECR remain retained; storage is not bounded
+and DOWN is not promised to cost zero.
+
+Owner decisions remain: monthly budget/alerts, separate SQL disposal/preservation,
+active-color quiescence authority, exact destroy-preview approval binding, bounded
+admin NAT/executor settlement and the existing E13/shared SNS identity mismatch.
+Interrupted E2/E4 owners cannot be taken over. E5 durability is not selected here;
+no automatic data/image cleanup or budget-driven shutdown is authorized.

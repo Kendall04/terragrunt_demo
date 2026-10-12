@@ -19,6 +19,11 @@ remote-quiescence guarantees; no administrative release command is implemented.
 
 ## CURRENT CONTRACT — protected greenfield reconstruction
 
+[E15](e15-ephemeral-lifecycle.md) supplies local status/UP/DOWN preparation and
+residual review. Teardown retains backend, state, evidence, ECR and protected
+control resources. Its operator runbook distinguishes per-layer teardown from
+a complete live shutdown and keeps interrupted/UNCERTAIN ownership blocked.
+
 WP7 retires the legacy roots and direct local bootstrap/deploy entry points.
 [bootstrap.sh](../../ci/authority/retired/scripts/bootstrap.sh.txt), [deploy.sh](../../ci/authority/retired/scripts/deploy.sh.txt)
 and the standalone blue/green entry fail before credential discovery or AWS calls.

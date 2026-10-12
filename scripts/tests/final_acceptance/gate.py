@@ -42,6 +42,8 @@ CRITERIA = {
     'AC16': SUITES + ADDITIONAL_SUITES,
 }
 CHECKS = (
+    ('ephemeral_plan_shape', ('python', '-I', '-B', 'scripts/tests/ephemeral/check_plan_shape.py')),
+    ('ephemeral_lifecycle', ('python', '-I', '-B', 'scripts/tests/ephemeral/run.py')),
     ('image_retention', ('python', '-I', '-B', 'scripts/tests/retention/run.py')),
     ('nat_reliability', ('python', '-I', '-B', 'scripts/tests/nat/run.py')),
     ('nat_static', ('python', '-I', '-B', 'scripts/tests/nat/check_static.py')),

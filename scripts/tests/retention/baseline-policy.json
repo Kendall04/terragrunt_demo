@@ -17,5 +17,6 @@
     }
   },
   "configuration_without_lifecycle_sha256": "f6e23e7034cec3c4bfd73ef07566f48685ac6255ff66f82d2e8121eca1438b8b",
-  "authority_without_wp4d_package_hashes_sha256": "01c4c505813b292cfcd8767d38bd89deb13f2b88d13ba99052e89bee991e545c"
+  "authority_without_wp4d_package_hashes_sha256": "01c4c505813b292cfcd8767d38bd89deb13f2b88d13ba99052e89bee991e545c",
+  "authority_without_wp4d_wp5_package_hashes_sha256": "7a2a26aa8cbaf40411c8b7d4ebedcf1c53bc2492ce9a92a5cbdbe3142dac40ca"
 }

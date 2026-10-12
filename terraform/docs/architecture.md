@@ -9,6 +9,10 @@ evidence from genuine future installation and live verification. The immutable
 
 ## CURRENT CONTRACT — authority, layers and state
 
+[E15 DEV lifecycle](e15-ephemeral-lifecycle.md) maps retained authority and the
+proposed reverse dependency teardown. Local preparation cannot authorize AWS;
+active-service quiescence, destroy preview and NAT executor settlement remain gates.
+
 [E8 retention](e8-rollback-image-retention.md) removes automatic expiration from
 the three protected application repositories. WP3 publishes untagged images to
 the neutral repository shared by dev/prod; digest references alone do not prove

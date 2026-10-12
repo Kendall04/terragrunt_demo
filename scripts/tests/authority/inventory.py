@@ -30,7 +30,7 @@ def sources(root):
             raise ValueError("source symlink requires explicit review: " + rel.as_posix())
         if not path.is_file():
             continue
-        if rel.parts[:2] == ("ci", "schemas") and path.suffix == ".json":
+        if rel.parts[0] == "ci" and len(rel.parts) > 1 and rel.parts[1] in ("schemas", "ephemeral") and path.suffix == ".json":
             yield path
             continue
         if rel.as_posix() == "global.json":

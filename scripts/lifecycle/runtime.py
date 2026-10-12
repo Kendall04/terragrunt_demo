@@ -17,6 +17,28 @@ from scripts.lifecycle import packages
 from scripts.lifecycle.controller import Controller
 from scripts.environment_mutation import Store, Authority, execute as arbitrate, domain
 
+def teardown_readback(readback):
+    """Require a complete refreshed values tree with no managed resources.
+
+    A no-op refresh alone can describe remaining infrastructure. This is state/
+    provider readback evidence, not an account-wide orphan inventory.
+    """
+    c.require(type(readback) is dict and type(readback.get('planned_values')) is dict,
+            'teardown refreshed values required')
+    values = readback['planned_values']
+    c.require(type(values.get('root_module')) is dict, 'teardown root values required')
+    def empty(module, depth=0):
+        c.require(type(module) is dict and depth < 64, 'bounded teardown values tree')
+        c.require(set(module) <= {'address', 'resources', 'child_modules'}, 'known values module')
+        resources, children = module.get('resources', []), module.get('child_modules', [])
+        c.require(type(resources) is list and type(children) is list, 'complete values collections')
+        for resource in resources:
+            c.require(type(resource) is dict and resource.get('mode') == 'data',
+                    'managed resource remains after teardown')
+        for child in children:
+            empty(child, depth + 1)
+    empty(values['root_module'])
+
 
 class Records:
     def __init__(self, s3, bucket, prefix):self.s3,self.bucket,self.prefix=s3,bucket,prefix
@@ -106,10 +128,26 @@ class Terraform:
     def verify(self,plan_hash,layer,operation):
         self.call(['plan','-refresh-only','-input=false','-out=wp5-readback.tfplan'])
         readback=json.loads(self.call(['show','-json','wp5-readback.tfplan']))
+        if operation == 'teardown':
+            # Terraform 1.13.4 omits resource_changes for a genuinely empty
+            # refresh-only plan. Complete empty values, not that optional field,
+            # establish state absence; partial/nonempty readback fails closed.
+            if not (readback.get('format_version') == '1.2'
+                    and readback.get('complete') is True and readback.get('errored') is False
+                    and not readback.get('resource_drift') and not readback.get('deferred_changes')):
+                return False
+            teardown_readback(readback)
+            changes = readback.get('resource_changes', [])
+            c.require(type(changes) is list and all(type(x) is dict and x.get('mode') == 'data'
+                and x.get('change', {}).get('actions') == ['no-op'] for x in changes),
+                'teardown readback contradictory changes')
+            c.quiescent(self.observe(self.protected['environment']), self.protected['environment'])
+            return True
         return (readback.get('format_version') == '1.2' and not readback.get('errored') and
                 'resource_changes' in readback and not readback.get('resource_drift') and
                 not readback.get('deferred_changes') and
                 all(x['change']['actions']==['no-op'] for x in readback['resource_changes']))
+
 
 
 def clients(region):
