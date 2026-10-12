@@ -238,10 +238,11 @@ class Monitoring(unittest.TestCase):
         for kind in ("wp4d", "wp5"):
             for value in doc[kind]["selected"].values():
                 value.pop("package_sha256")
-        # Integrated 72141a7 authority, excluding only source-derived WP4D/WP5 hashes.
+        # Initial E8 8ccc7c4 authority, excluding only source-derived WP4D/WP5 hashes.
+        # The old 72141a7 fingerprint was stale already at that initial revision.
         # Their exact current values are independently checked by model.validate_repository.
         self.assertEqual(hashlib.sha256(json.dumps(doc, sort_keys=True).encode()).hexdigest(),
-                         "588f99a5cdfe3ef9c01b6577fa9f2d94d6f879f597737a07b31925a4b328d0f7")
+                         "4b05684bbfcd82444e981cfc6912459a52c6cb1a30240844b0b4ef0418eb187e")
         self.assertEqual(doc["wp6"]["approvals"], {})
         for kind in ("wp4d", "wp5"):
             for field in ("installations", "runtime_approvals", "environment_bindings"):

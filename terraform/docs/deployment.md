@@ -15,6 +15,11 @@ executor termination and settlement of all potentially issued effects.
 
 ## CURRENT CONTRACT — final E1 protected workflows
 
+[E8 retention](e8-rollback-image-retention.md) removes automatic application-image
+expiration and tightens exact account/repository/digest availability reads used
+by rollback/restoration. Current eligibility and independent prod approval remain
+mandatory; no bounded historical horizon or live retention proof is claimed.
+
 [WP6 protected workflows](e1-protected-workflows.md) connects the accepted
 WP2-WP5 contracts through eleven dedicated reusable entries and exact OIDC
 request identities. Canonical approvals/installations are absent: every public

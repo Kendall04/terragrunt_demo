@@ -9,6 +9,11 @@ evidence from genuine future installation and live verification. The immutable
 
 ## CURRENT CONTRACT — authority, layers and state
 
+[E8 retention](e8-rollback-image-retention.md) removes automatic expiration from
+the three protected application repositories. WP3 publishes untagged images to
+the neutral repository shared by dev/prod; digest references alone do not prove
+availability. Storage remains unbounded pending a horizon/cleanup decision.
+
 Only the neutral [security root](../infra/security/README.md), its
 [wrapper](../live/security/terragrunt.hcl) and the fixed
 [TARGET environment modules](../modules/target) remain operational configuration.

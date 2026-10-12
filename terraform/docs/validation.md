@@ -410,6 +410,18 @@ See [WP7 acceptance and live limits](e1-final-acceptance.md). Optional preinstal
 Linux checks use `scripts/tests/final_acceptance/check_linux.py` for YAML/Bash
 syntax and the existing E3 entry points; unavailable dependencies are explicit.
 
+## E8 — provider-free image retention
+
+Run `python -I -B scripts/tests/retention/run.py` for 18 focused hermetic tests.
+The [E8 contract](e8-rollback-image-retention.md) records the captured any/count-15
+expiration risk, untagged WP3 publication, removal of all three protected repository
+lifecycle policies and unbounded storage tradeoff. The existing E1 gate runs this
+suite as an additional check; accepted E1/E2/E4 counts stay unchanged. Generated
+structures, installed exact availability reads, dev/prod rollback/emergency,
+E4 UNCERTAIN/E2 holds, package hashes and unchanged authority are tested offline.
+No provider initialization or AWS preview/read/deletion is required or implied;
+live policies, pulls/restoration and race behavior remain unverified.
+
 ## E7 — provider-free CloudWatch alarm configuration
 
 Run `python -I -B scripts/tests/monitoring/run.py` for the focused hermetic suite.

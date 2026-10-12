@@ -118,11 +118,15 @@ class Facts(a.Facts):
     def artifact(self, repository, digest):
         _require(repository == self.c["repository"])
         a.match(r"sha256:[0-9a-f]{64}", digest)
-        result = self.ecr.describe_images(repositoryName=repository,
+        result = self.ecr.describe_images(registryId=self.c["account"], repositoryName=repository,
                                           imageIds=[{"imageDigest": digest}])
         details = result.get("imageDetails", [])
         _require(type(details) is list and len(details) == 1
-                 and details[0].get("imageDigest") == digest)
+                 and type(details[0]) is dict and not result.get("nextToken")
+                 and details[0].get("registryId") == self.c["account"]
+                 and details[0].get("repositoryName") == repository
+                 and details[0].get("imageDigest") == digest
+                 and details[0].get("imageStatus") == "ACTIVE")
         return {"account": self.c["account"], "region": self.c["region"],
                 "repository": repository, "digest": digest, "available": True}
 

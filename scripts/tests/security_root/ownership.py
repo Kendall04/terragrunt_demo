@@ -220,7 +220,10 @@ def wiring(doc):
             put("aws_secretsmanager_secret", label, {"name": name, "kms_key_id": ref(item["key"]), "recovery_window_in_days": 0, "tags": tags})
         elif kind == "repository":
             put("aws_ecr_repository", label, {"name": name, "image_tag_mutability": "IMMUTABLE", "image_scanning_configuration": {"scan_on_push": True}, "tags": tags})
-            put("aws_ecr_lifecycle_policy", label, {"repository": ref(key, "name"), "policy": json.dumps({"rules": [{"rulePriority": 1, "description": "Keep last 15 images", "selection": {"tagStatus": "any", "countType": "imageCountMoreThan", "countNumber": 15}, "action": {"type": "expire"}}]})})
+            # E8: WP3 publishes digest-addressed UNTAGGED images. Neither an
+            # any/count rule nor an untagged rule can distinguish protected
+            # delivery/recovery dependencies from disposable builds. No automatic
+            # expiration until separately authorized evidence-driven cleanup exists.
         elif kind == "bucket":
             put("aws_s3_bucket", label, {"bucket": name + "${var.account_id}", "tags": tags})
             put("aws_s3_bucket_public_access_block", label, {"bucket": ref(key, "id"), **dict.fromkeys(("block_public_acls", "block_public_policy", "ignore_public_acls", "restrict_public_buckets"), True)})

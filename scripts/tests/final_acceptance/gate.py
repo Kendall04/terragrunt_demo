@@ -42,6 +42,7 @@ CRITERIA = {
     'AC16': SUITES + ADDITIONAL_SUITES,
 }
 CHECKS = (
+    ('image_retention', ('python', '-I', '-B', 'scripts/tests/retention/run.py')),
     ('nat_reliability', ('python', '-I', '-B', 'scripts/tests/nat/run.py')),
     ('nat_static', ('python', '-I', '-B', 'scripts/tests/nat/check_static.py')),
     ('generated_security', ('python', '-I', '-B', 'scripts/tests/security_root/render.py')),
