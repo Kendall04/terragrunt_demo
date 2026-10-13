@@ -201,3 +201,5 @@ original NAT duties, with exact account/region and the closed network-only schem
 They cannot install PROD or application controllers. The source catalog remains
 inactive; live receipts, published image digests and observed network IDs must be
 supplied by the authenticated security administrator, never the DEV operator.
+
+Windows cannot inspect WSL-created provider-cache symlinks using Path.is_file. Source verification now excludes only .terraform/.terragrunt-cache before inspecting paths; actual root/nested executable sources remain checked, with a regression proving foreign extra.tf is rejected. Readonly provider lock verification remains independent.

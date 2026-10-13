@@ -205,6 +205,7 @@ class Session:
             require(sha((ROOT/name).read_bytes())==digest and sha((self.directory/name).read_bytes())==digest,'source changed; no executable/root substitution')
         known=set(marker['sources'])
         for f in (self.directory/'terraform/modules/target/dev').rglob('*'):
+            if any(part in ('.terraform','.terragrunt-cache') for part in f.relative_to(self.directory).parts):continue
             if f.is_file() and (f.suffix in ('.tf','.hcl') or f.name.endswith('.tf.json')):
                 require(not f.is_symlink() and (f.relative_to(self.directory).as_posix() in known or f.name=='e16.auto.tfvars.json'),'extra nested executable Terraform source')
         for layer in UP:

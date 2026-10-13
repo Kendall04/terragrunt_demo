@@ -190,6 +190,12 @@ class Tests(unittest.TestCase):
     def test_network_bootstrap_rejects_already_created_nat_asgs(self):
         self.fake.states['global']=self.fake.rows('global')
         with self.assertRaisesRegex(ValueError,'NAT ASGs'):self.session.prepare(network_only=True)
+    def test_provider_cache_is_not_treated_as_executable_root_source(self):
+        cache=self.session.root('platform')/'.terraform/providers/registry.terraform.io/hashicorp/aws/5.100.0/linux_amd64'
+        cache.mkdir(parents=True);(cache/'cache-only.tf').write_text('provider cache is not root source')
+        self.session.source()
+        extra=self.session.root('platform')/'extra.tf';extra.write_text('resource "aws_vpc" "foreign" {}')
+        with self.assertRaisesRegex(ValueError,'extra nested'):self.session.source()
     def test_saved_binary_mismatch(self):
         review=self.session.prepare();(self.session.directory/'plans'/review['plan_id']/'saved.tfplan').write_bytes(b'changed')
         with self.assertRaisesRegex(ValueError,'binary'):self.session.apply(review['plan_id'],review['confirmation'])
