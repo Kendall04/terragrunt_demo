@@ -331,3 +331,39 @@ Application ALB and EC2 values were independently read from AWS Pricing
 GetProducts in us-east-1. Lambda's [reserved concurrency API](https://docs.aws.amazon.com/lambda/latest/api/API_PutFunctionConcurrency.html)
 requires 100 unreserved executions, explaining why the effective quota 10 cannot
 support the unchanged original reservation. A request is not approval.
+
+## Owner correction: optional email and resolved Lambda quota
+
+The owner authorized the original SNS topic with **no email recipient**.
+DEV alert_email now defaults to null; zero email subscriptions are created.
+Topic `arn:aws:sns:us-east-1:341936017254:demo-dev-shared-alerts` was created
+from an inspected saved one-resource Terraform plan and verified encrypted
+with the original alias/aws/sns, DEV/demo tags and no subscriptions.
+State remains `e1/lifecycle/dev/shared/terraform.tfstate` under the existing
+security administrator; human five-layer authority is unchanged. This independent
+SNS bootstrap targets its original declaration, requires no fabricated neutral
+references and does not claim the full protected shared publication is installed.
+The shared root's unused TLS lock entry was removed only for DEV; PROD package
+SHA-256 identities remain unchanged. Email delivery is inactive until a real
+recipient is configured and confirms the subscription. Encrypted CloudWatch-to-SNS
+publishing has not been functionally tested; service-publisher KMS requirements
+remain subject to genuine validation before claiming alerts work.
+
+AWS now reports actual Lambda concurrency **1,000**, so the earlier activation
+blocker is resolved even though the 1,001 request still shows CASE_OPENED.
+CreateFunction then definitively rejected the original 4,952-byte environment
+configuration; authentic inventory proved no NAT function was created.
+Only NAT DEV's redundant resources copy is now omitted (an empty object);
+the complete authoritative nat_slots remains, and runtime/package/image bytes
+and duty IAM remain unchanged. Production and application configuration preserve
+their full resource copy. Actual Terraform console configurations are 2,592,
+2,588 and 2,596 bytes including the environment-variable key, below 4 KB.
+All 11 Terraform policy/trust/configuration parity cases and 33 WP4D tests pass.
+SNS/source change tests pass 18; WP5 49, security foundation 18 and publication
+52 also pass. No earlier rejected creation is blindly replayed.
+
+The exact original storage policies now permit only the three authenticated NAT
+roles to read protected package versions and write their own conditional E13
+journals. TLS, no non-admin delete, immutable evidence, E2 conditional ownership
+and human read-only access remain. Mixed plans containing PROD were rejected;
+only the two evaluated DEV policies were installed and read back.

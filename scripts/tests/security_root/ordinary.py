@@ -74,6 +74,15 @@ def wiring(doc):
                     if layer == "data":
                         remove.add("kms_key_id")
                     text = select(text, lambda h: (h.startswith('variable "alert_email"') if layer == "shared" else not any(h.startswith('variable "' + name + '"') for name in remove)))
+                if env == "dev" and layer == "shared":
+                    if rel == "main.tf":
+                        text = text.replace('resource "aws_sns_topic_subscription" "alerts_email" {',
+                            'resource "aws_sns_topic_subscription" "alerts_email" {\n  count     = var.alert_email == null ? 0 : 1')
+                    elif rel == "variables.tf":
+                        text = text.replace('  type        = string', '  type        = string\n  default     = null')
+                        text = text.replace('Email to receive CloudWatch alarms', 'Optional confirmed recipient; null leaves email notifications inactive')
+                    elif rel == "outputs.tf":
+                        text += '\noutput "alerts_email_configured" {\n  value       = var.alert_email != null\n  description = "Configured is not confirmed delivery; pending SNS confirmation cannot receive email"\n}\n'
                 if "/" not in rel:
                     text = text.replace("var.env", '"' + env + '"').replace("var.project", '"demo"').replace("var.aws_region", "var.region")
                     # Simplify interpolated literal values for HCL readability.

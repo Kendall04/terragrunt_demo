@@ -98,6 +98,16 @@ class Tests(unittest.TestCase):
   self.assertEqual(child[0]['Action'],['ec2:CreateFlowLogs'])
   self.assertEqual(child[0]['Condition']['StringEquals'],{'aws:RequestedRegion':'us-east-1','aws:RequestTag/Environment':'dev','aws:RequestTag/Project':'demo'})
   self.assertEqual(parent[0]['Condition']['StringEquals']['aws:ResourceTag/Environment'],'dev')
+ def test_dev_alert_email_optional_preserves_topic_and_prod(self):
+  main=(ROOT/'terraform/modules/target/dev/shared/ordinary-main.tf').read_text()
+  variables=(ROOT/'terraform/modules/target/dev/shared/ordinary-variables.tf').read_text()
+  self.assertIn('resource "aws_sns_topic" "alerts"',main)
+  self.assertIn('kms_master_key_id = "alias/aws/sns"',main)
+  self.assertIn('count     = var.alert_email == null ? 0 : 1',main)
+  self.assertIn('default     = null',variables)
+  prod=(ROOT/'terraform/modules/target/prod/shared/ordinary-variables.tf').read_text()
+  self.assertNotIn('default     = null',prod)
+  self.assertNotIn('count = var.alert_email', (ROOT/'terraform/modules/target/prod/shared/ordinary-main.tf').read_text())
  def test_sql_output_references_observed_instance_ami(self):
   text=(ROOT/'terraform/modules/target/dev/data/ordinary-outputs.tf').read_text()
   self.assertIn('aws_instance.db.ami',text);self.assertNotIn('data.aws_ami.ubuntu_2204',text)

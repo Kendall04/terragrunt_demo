@@ -66,7 +66,7 @@ def configuration(doc):
         # Reuse actual reviewed provider checksums. No downloaded/generated lock.
         lock = retired.source(ROOT, 'terraform/live/dev/shared/.terraform.lock.hcl').read_text()
         for layer in LAYERS:
-            result[f'terraform/modules/target/{env}/{layer}/.terraform.lock.hcl'] = (lock.split('provider "registry.terraform.io/hashicorp/tls"',1)[0].rstrip()+'\n') if env=='dev' and layer in ('global','data','platform','apps','edge') else lock
+            result[f'terraform/modules/target/{env}/{layer}/.terraform.lock.hcl'] = (lock.split('provider "registry.terraform.io/hashicorp/tls"',1)[0].rstrip()+'\n') if env=='dev' and layer in ('shared','global','data','platform','apps','edge') else lock
     return result
 
 

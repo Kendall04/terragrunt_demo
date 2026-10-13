@@ -1,4 +1,5 @@
 variable "alert_email" {
   type        = string
-  description = "Email to receive CloudWatch alarms"
+  default     = null
+  description = "Optional confirmed recipient; null leaves email notifications inactive"
 }
