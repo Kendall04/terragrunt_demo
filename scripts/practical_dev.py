@@ -371,7 +371,10 @@ class Session:
             variables=decode(variables_file.read_bytes())
         else:variables=self.variables(layer)
         if network_only:
-            require(layer=='global' and not down and not states['global']['rows'],'network bootstrap only on fresh original global state')
+            require(layer=='global' and not down and not any(row['type']=='aws_autoscaling_group' for row in states['global']['rows']),
+                'network bootstrap only before original NAT ASGs; partial owned network must be reconciled')
+            groups=self.aws('autoscaling','describe-auto-scaling-groups','--auto-scaling-group-names','demo-dev-asg-nat-a','demo-dev-asg-nat-b')
+            require(not groups.get('NextToken') and groups['AutoScalingGroups']==[], 'existing or untracked NAT ASG blocks network bootstrap')
             variables['protected_nat_launch']={}
         elif layer=='global' and not down:require(set(variables.get('protected_nat_launch',{}))=={'a','b'},'after network bootstrap, install/read back both original NAT launch versions then configure them')
         if layer=='data' and not down:self.sql_secrets_ready(variables)

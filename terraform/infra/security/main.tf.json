@@ -44,6 +44,39 @@
       "type": "string",
       "default": null,
       "nullable": true
+    },
+    "dev_nat_launch_inputs": {
+      "type": "any",
+      "default": {},
+      "validation": {
+        "condition": "${alltrue([for key,value in var.dev_nat_launch_inputs: contains([\"dev/a\",\"dev/b\"],key) && value.environment==\"dev\" && value.account==var.aws_account_id && value.region==var.aws_region])}",
+        "error_message": "Only exact-account DEV NAT network bindings are permitted."
+      }
+    },
+    "dev_nat_installations": {
+      "type": "any",
+      "default": {},
+      "validation": {
+        "condition": "${alltrue([for key,value in var.dev_nat_installations: contains([\"nat-recovery/nat-dev/assign_eip\",\"nat-recovery/nat-dev/change_rt\",\"nat-recovery/nat-dev/disable_sdc\"],key)])}",
+        "error_message": "Only the three original DEV NAT duties may be installed."
+      }
+    },
+    "dev_nat_runtime_approvals": {
+      "type": "any",
+      "default": {},
+      "validation": {
+        "condition": "${alltrue([for key,value in var.dev_nat_runtime_approvals: contains([\"nat-recovery/nat-dev/assign_eip\",\"nat-recovery/nat-dev/change_rt\",\"nat-recovery/nat-dev/disable_sdc\"],key)])}",
+        "error_message": "Only the three original DEV NAT duties may be installed."
+      }
+    },
+    "dev_nat_network_binding": {
+      "type": "any",
+      "default": null,
+      "nullable": true,
+      "validation": {
+        "condition": "${var.dev_nat_network_binding==null ? true : try(var.dev_nat_network_binding.schema==\"E1_WP4D_PROTECTED_NAT_NETWORK_V1\" && var.dev_nat_network_binding.environment==\"dev\" && var.dev_nat_network_binding.account==var.aws_account_id && var.dev_nat_network_binding.region==var.aws_region,false)}",
+        "error_message": "Only the original DEV NAT network installation is supported."
+      }
     }
   },
   "provider": {
@@ -81,9 +114,9 @@
       "admin_arn": "${var.security_admin_principal_arn}",
       "installations": "${local.authority.internal_release.installations}",
       "runtime_approvals": "${local.authority.internal_release.runtime_approvals}",
-      "wp4d_installations": "${local.authority.wp4d.installations}",
-      "wp4d_runtime_approvals": "${local.authority.wp4d.runtime_approvals}",
-      "wp4d_environment_bindings": "${local.authority.wp4d.environment_bindings}",
+      "wp4d_installations": "${merge(local.authority.wp4d.installations,var.dev_nat_installations)}",
+      "wp4d_runtime_approvals": "${merge(local.authority.wp4d.runtime_approvals,var.dev_nat_runtime_approvals)}",
+      "wp4d_environment_bindings": "${merge(local.authority.wp4d.environment_bindings,jsondecode(var.dev_nat_network_binding==null ? \"{}\" : jsonencode({dev=var.dev_nat_network_binding})))}",
       "wp5_installations": "${local.authority.wp5.installations}",
       "wp5_runtime_approvals": "${local.authority.wp5.runtime_approvals}",
       "wp5_environment_bindings": "${local.authority.wp5.environment_bindings}",
@@ -99,7 +132,7 @@
       "account_id": "${var.aws_account_id}",
       "region": "${var.aws_region}",
       "admin_arn": "${var.security_admin_principal_arn}",
-      "nat_launch_inputs": "${local.authority.wp5.nat_launch_inputs}",
+      "nat_launch_inputs": "${merge(local.authority.wp5.nat_launch_inputs,var.dev_nat_launch_inputs)}",
       "dev_operator_arn": "${var.dev_operator_arn}"
     }
   },

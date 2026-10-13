@@ -255,6 +255,24 @@ def wiring(doc):
         'nat_launch_inputs':expression('local.authority.wp5.nat_launch_inputs'),'dev_operator_arn':expression('var.dev_operator_arn')}
     root['variable']['dev_operator_arn']={'type':'string','default':None,'nullable':True}
     root['module']['controller_compute']['dev_operator_arn']=expression('var.dev_operator_arn')
+    # Explicit DEV NAT installation inputs are available only to the separately
+    # authenticated security administrator. Default source maps remain inert;
+    # receipts/readbacks and existing WP4D gates still control materialization.
+    root['variable']['dev_nat_launch_inputs']={'type':'any','default':{},'validation':{
+        'condition':expression('alltrue([for key,value in var.dev_nat_launch_inputs: contains(["dev/a","dev/b"],key) && value.environment=="dev" && value.account==var.aws_account_id && value.region==var.aws_region])'),
+        'error_message':'Only exact-account DEV NAT network bindings are permitted.'}}
+    root['module']['lifecycle_foundations']['nat_launch_inputs']=expression('merge(local.authority.wp5.nat_launch_inputs,var.dev_nat_launch_inputs)')
+    for field in ('installations','runtime_approvals'):
+        name='dev_nat_'+field
+        root['variable'][name]={'type':'any','default':{},'validation':{
+            'condition':expression('alltrue([for key,value in var.'+name+': contains(["nat-recovery/nat-dev/assign_eip","nat-recovery/nat-dev/change_rt","nat-recovery/nat-dev/disable_sdc"],key)])'),
+            'error_message':'Only the three original DEV NAT duties may be installed.'}}
+        root['module']['controller_compute']['wp4d_'+field]=expression('merge(local.authority.wp4d.'+field+',var.'+name+')')
+    root['variable']['dev_nat_network_binding']={'type':'any','default':None,'nullable':True,'validation':{
+        'condition':expression('var.dev_nat_network_binding==null ? true : try(var.dev_nat_network_binding.schema=="E1_WP4D_PROTECTED_NAT_NETWORK_V1" && var.dev_nat_network_binding.environment=="dev" && var.dev_nat_network_binding.account==var.aws_account_id && var.dev_nat_network_binding.region==var.aws_region,false)'),
+        'error_message':'Only the original DEV NAT network installation is supported.'}}
+    root['module']['controller_compute']['wp4d_environment_bindings']=expression('merge(local.authority.wp4d.environment_bindings,jsondecode(var.dev_nat_network_binding==null ? "{}" : jsonencode({dev=var.dev_nat_network_binding})))')
+
     foundations=wp5.foundations()
     wp6.extend(root,child,compute_module,foundations,doc)
     return {**targets, 'terraform/infra/security/modules/lifecycle_foundations/main.tf.json':foundations,

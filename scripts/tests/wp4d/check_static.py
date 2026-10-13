@@ -111,6 +111,27 @@ def main():
             assert result.returncode==0,result.stderr
             assert console_json(result.stdout)==expected,(slots,result.stdout)
         print('Original DEV NAT exact two-slot Terraform validation PASS')
+        root=json.loads((wp4d.ROOT/'terraform/infra/security/main.tf.json').read_text())
+        names=('dev_nat_launch_inputs','dev_nat_installations','dev_nat_runtime_approvals','dev_nat_network_binding')
+        for name in names:
+            chosen=root['variable'][name]
+            assert chosen['default'] in ({},None)
+            good=({'dev/a':{'environment':'dev','account':ACCOUNT,'region':REGION}} if name=='dev_nat_launch_inputs' else
+                  {'schema':'E1_WP4D_PROTECTED_NAT_NETWORK_V1','environment':'dev','account':ACCOUNT,'region':REGION} if name=='dev_nat_network_binding' else
+                  {'nat-recovery/nat-dev/assign_eip':{}})
+            bad=({'prod/a':{'environment':'prod','account':ACCOUNT,'region':REGION}} if name=='dev_nat_launch_inputs' else
+                 {'schema':'E1_WP4D_PROTECTED_NAT_NETWORK_V1','environment':'prod','account':ACCOUNT,'region':REGION} if name=='dev_nat_network_binding' else
+                 {'nat-recovery/nat-prod/assign_eip':{}})
+            for value,expected in ((chosen['default'],True),(good,True),(bad,False)):
+                path.write_text(json.dumps({'variable':{'aws_account_id':{'type':'string','default':ACCOUNT},
+                    'aws_region':{'type':'string','default':REGION},name:{'type':'any','default':value}},
+                    'locals':{'valid':chosen['validation']['condition']}}),encoding='utf-8')
+                result=subprocess.run([terraform,'console','-no-color'],input='jsonencode(local.valid)\n',text=True,
+                    capture_output=True,cwd=directory,env=environment,timeout=30)
+                assert result.returncode==0,result.stderr
+                assert console_json(result.stdout)==expected,(name,value,result.stdout)
+        print('Security administrator NAT inputs: empty defaults, exact DEV acceptance, PROD rejection PASS')
+
 
 
 

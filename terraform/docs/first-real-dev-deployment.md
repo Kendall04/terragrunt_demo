@@ -185,3 +185,19 @@ read grant remained denied in both simulator and live calls. Policy part 4's thi
 version uses `Resource: "*"` for that one read action with `aws:RequestedRegion`
 fixed to `us-east-1`; mutation grants remain scoped. The original listener uses
 HTTP **8080**, as the actual source and reviewed plan specify.
+
+After independent reconciliation, a new session can prepare a networking bootstrap
+plan for partial owned global state. It rejects ASGs recorded in state and independently
+requires both exact native ASG names to be absent. This does not reopen the failed
+attempt, bypass unresolved evidence or authorize blind replay of its binary plan.
+
+The first real NAT plan also exposed another inert-source limitation: the security
+root passed only empty checked-in installation maps, so an administrator's tfvars
+could not install its declared launch templates or handlers. Four explicit
+administrator-only inputs now feed the existing gates: `dev_nat_launch_inputs`,
+`dev_nat_installations`, `dev_nat_runtime_approvals`, `dev_nat_network_binding`.
+Their default is empty/null; validation restricts keys to dev/a, dev/b and the three
+original NAT duties, with exact account/region and the closed network-only schema.
+They cannot install PROD or application controllers. The source catalog remains
+inactive; live receipts, published image digests and observed network IDs must be
+supplied by the authenticated security administrator, never the DEV operator.

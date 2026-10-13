@@ -117,6 +117,7 @@ class Fake:
         elif action=='get-function-configuration':value=dict(Timeout=60)
         elif action in ('disable-rule','put-function-concurrency','suspend-processes','update-auto-scaling-group','update-service'):value={}
         elif action=='describe-auto-scaling-groups':
+            if not any(r['type']=='aws_autoscaling_group' for r in self.states.get('global',[])):return c.canonical(dict(AutoScalingGroups=[]))
             value=dict(AutoScalingGroups=[dict(AutoScalingGroupName='demo-dev-asg-nat-'+v,Instances=[dict(InstanceId='i-nat',HealthStatus='Healthy',LifecycleState='InService')] if self.verify_mode else [],MinSize=0,MaxSize=0,DesiredCapacity=0,SuspendedProcesses=[dict(ProcessName=n) for n in p.PROCESSES]) for v in ('a','b')])
         elif action=='describe-scaling-activities':value=dict(Activities=[dict(StatusCode='InProgress')] if self.asg_busy else [])
         elif action in ('describe-lifecycle-hooks','describe-warm-pool','describe-scheduled-actions','describe-policies'):
@@ -180,6 +181,15 @@ class Tests(unittest.TestCase):
     def test_network_stage_does_not_claim_nat_ready(self):
         result=self.apply(network=True);self.assertEqual(result['phase'],'NETWORK_ONLY_ADMIN_NAT_INSTALL_NEXT');self.assertFalse((self.session.directory/'up-global-reconciled.json').exists())
         self.assertEqual(self.session.prepare()['layer'],'global')
+    def test_reconciled_partial_network_can_prepare_fresh_bootstrap_plan(self):
+        self.fake.states['global']=self.fake.rows('global',network=True)
+        result=self.session.prepare(network_only=True)
+        self.assertEqual(result['layer'],'global');self.assertEqual(result['phase'],'REVIEW_REQUIRED_NOT_EXECUTED')
+        calls=[v for v in self.fake.calls if 'describe-auto-scaling-groups' in v]
+        self.assertTrue(calls)
+    def test_network_bootstrap_rejects_already_created_nat_asgs(self):
+        self.fake.states['global']=self.fake.rows('global')
+        with self.assertRaisesRegex(ValueError,'NAT ASGs'):self.session.prepare(network_only=True)
     def test_saved_binary_mismatch(self):
         review=self.session.prepare();(self.session.directory/'plans'/review['plan_id']/'saved.tfplan').write_bytes(b'changed')
         with self.assertRaisesRegex(ValueError,'binary'):self.session.apply(review['plan_id'],review['confirmation'])
