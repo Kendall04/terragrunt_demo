@@ -37,7 +37,10 @@ Runtime bucket `e1-lifecycle-dev-341936017254-us-east-1` retains these keys:
 Shared/secrets/security state is excluded from the operator.
 
 KMS key `50d3fe36-8128-4d09-ac13-8f5536a230a7`, alias `dev-kms-service`.
-ECR repository `demo-dev-shared-demo-ms` is empty; no image publication occurred.
+ECR repository `demo-dev-shared-demo-ms` contains the original application image at
+`sha256:c53545834f80b1dbe452c2544c4f34243fd4dcc2ba9728d13c41e4861fcee5e6`.
+The existing OCI publisher uploaded it from Windows, with exact manifest readback.
+No mutable latest tag, VM AWS authentication or WP3 qualification claim is involved.
 Secret names are `demo/dev/app/db-connection-string`, `demo/dev/db/sql-app-password`
 and `demo/dev/db/sql-sa-password`; no secret values were seeded or put in Terraform.
 
@@ -100,8 +103,9 @@ The original Dockerfile built successfully. Image config digest:
 The packaged readiness-probe capability is available. This is not SQL/KMS readiness.
 
 The VM has no `cnp-cert-dev` authentication. No STS credentials or ECR token were
-sent there. A live ECR push from that VM requires independent owner authentication;
-Windows AWS/bootstrap work can continue separately.
+sent there. The VM exported only a digest-checked OCI artifact to Windows. The existing
+publisher uploaded it using Windows authentication, so independent VM AWS
+credentials are not required for this publication path.
 
 ## Retention and failure safety
 
@@ -120,3 +124,10 @@ No force unlock or broad account cleanup is permitted.
 Provider/runtime and full acceptance results, final runtime progress and any
 remaining live blockers are recorded in the session delivery report. The facts
 above do not certify a running application or complete DEV deployment.
+
+Historical tests that assumed an entirely empty output registry were updated for
+the explicitly authenticated first-session publication. They still validate closed
+records, inactive compute and the exact original authority checksum after excluding
+only allowed output metadata. The protected-resource snapshot excludes the new DEV
+output only after proving it equals the DEV subset of the complete output. No
+IAM/trust/activation checksum was relaxed or replaced.

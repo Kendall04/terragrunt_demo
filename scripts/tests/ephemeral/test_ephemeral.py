@@ -278,6 +278,11 @@ class Ephemeral(unittest.TestCase):
 
     def test_authority_unchanged_except_derived_package_hashes(self):
         authority=copy.deepcopy(DOC)
+        import ownership
+        ownership.validate_publications(authority)
+        # Authenticated first-session output metadata is now explicitly allowed;
+        # the rest of the historical protected authority snapshot stays fixed.
+        authority['ownership_closure']['publications']={}
         for group in ('wp4d','wp5'):
             for item in authority[group]['selected'].values():del item['package_sha256']
         self.assertEqual(hashlib.sha256(json.dumps(authority,sort_keys=True,separators=(',',':')).encode()).hexdigest(),

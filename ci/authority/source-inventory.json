@@ -2121,7 +2121,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/practical_dev.py": {
-      "sha256": "eced366fda4fe5b2b98d153a5daf2814e2b8ac755a058474a59c8df61744b19f",
+      "sha256": "78b42413bbf11a4595b7af79e050156c97be656a4a7ff7157831acd514402f88",
       "declarations": [],
       "signals": {
         "role-input": [
@@ -2135,96 +2135,96 @@
           65,
           66,
           68,
-          86,
-          87,
-          95,
-          96,
-          108,
-          118,
-          119,
-          123,
-          124,
-          127,
-          136,
-          137,
+          88,
+          89,
+          97,
+          98,
+          110,
+          120,
+          121,
+          125,
+          126,
+          129,
           138,
+          139,
           140,
           142,
-          143,
-          147,
+          144,
+          145,
           149,
-          154,
-          159,
-          163,
-          175,
-          176,
-          179,
-          182,
-          188,
-          191,
-          199,
-          203,
-          212,
-          216,
-          222,
-          223,
-          227,
-          228,
+          151,
+          156,
+          161,
+          165,
+          177,
+          178,
+          181,
+          184,
+          190,
+          193,
+          201,
+          205,
+          214,
+          218,
+          224,
+          225,
           229,
-          257,
+          230,
+          231,
           259,
-          273,
-          280,
-          288,
-          301,
-          322,
-          371,
-          419,
-          422,
-          425,
-          445,
-          446,
-          453,
-          460,
+          261,
+          275,
+          282,
+          290,
+          303,
+          324,
+          373,
+          421,
+          424,
+          427,
+          447,
+          448,
+          455,
           462,
-          467,
-          472,
-          477,
-          489,
-          500,
-          504,
-          508,
-          511,
-          515,
+          464,
+          469,
+          474,
+          479,
+          491,
+          502,
+          506,
+          510,
+          513,
           517,
-          518,
-          541,
-          547,
-          556,
-          562,
-          577,
-          578,
+          519,
+          520,
+          543,
+          549,
+          558,
+          564,
           579,
-          582,
-          585,
+          580,
+          581,
+          584,
           587,
           589,
-          593,
-          598,
-          602,
+          591,
+          595,
+          600,
           604,
-          609,
-          627,
-          629
+          606,
+          611,
+          629,
+          631
         ],
         "executable-dependency": [
-          74,
-          95,
-          146,
-          212
+          76,
+          97,
+          148,
+          214
         ],
         "security-control": [
-          142
+          144
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -2832,7 +2832,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/ephemeral/test_ephemeral.py": {
-      "sha256": "21ac0db8dc2278086a560799b2d3896e65684cf66c8e64063700237792a1ff0a",
+      "sha256": "085ea08bd3266f553eff35bb66777efbcd878f7a5d9a8e552946c0e78d6ee53c",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -2866,7 +2866,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/exact_destroy/test_exact_destroy.py": {
-      "sha256": "a69f146a08cf0932ce485052becd3a2959b12581f71441e4a085faf4f16ec8b8",
+      "sha256": "0f482afb074d09981655fe93abf6d56c756a5143f5bf2d771159e769921ec136",
       "declarations": [],
       "signals": {
         "role-input": [
@@ -3865,14 +3865,14 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/ownership_publication/test_wp2d.py": {
-      "sha256": "73914ca3756fe1245e61ecfa99f0c13c37136c08907271f1f3aeefc7dc51e039",
+      "sha256": "7cbc001e9c945abf982e9c9a32fcae349083cb8b592ea7ec95366294b7995ed8",
       "declarations": [],
       "signals": {
         "role-input": [
           112,
-          352,
-          362,
-          363
+          359,
+          369,
+          370
         ],
         "launch-or-mutation": [
           71,
@@ -3891,18 +3891,18 @@
           302,
           322,
           326,
-          347,
-          351,
           354,
+          358,
           361,
-          364,
-          378,
-          385
+          368,
+          371,
+          385,
+          392
         ],
         "executable-dependency": [
           211,
-          378,
-          518
+          385,
+          525
         ],
         "security-control": [
           111,
@@ -3913,7 +3913,7 @@
           218,
           303,
           316,
-          355
+          362
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -4168,7 +4168,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/retention/test_retention.py": {
-      "sha256": "30acf4e79d3b40444de2020e969c46ffcd0a7e47255c5cbc776e2a4cb014e1d0",
+      "sha256": "3044d6325e97f1ae1de1ba46e29932da95033f6f490a1c845fc55f540fc09246",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -4181,7 +4181,7 @@
           83,
           93,
           95,
-          227
+          233
         ]
       },
       "semantic_status": "UNVERIFIED"

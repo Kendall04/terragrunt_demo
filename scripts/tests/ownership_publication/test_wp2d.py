@@ -330,9 +330,16 @@ class ClosureTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 validate_repository(root)
 
-    def test_29_registry_is_empty_not_live_claim(self):
+    def test_29_registry_is_admin_metadata_not_live_compute_claim(self):
         c = self.doc["ownership_closure"]
-        self.assertEqual(c["publications"], {})
+        own.validate_publications(self.doc)
+        for context,value in c['publications'].items():
+            account,region=context.split('/')
+            pub.validate_publication(self.doc,value,account,region)
+            self.assertEqual(value['publisher'],'SECURITY_ADMIN_EXTERNAL_BOOTSTRAP')
+        for group in ('wp4d','wp5'):
+            for field in ('installations','runtime_approvals','environment_bindings'):
+                self.assertEqual(self.doc[group][field],{})
         self.assertEqual(c["live"], "UNVERIFIED")
         self.assertEqual(c["state_migration"], "NOT_PERFORMED")
         self.mutate(lambda d: d["ownership_closure"].update(live="VERIFIED"))

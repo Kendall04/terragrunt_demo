@@ -52,7 +52,7 @@ class Failure(ValueError):
 
 class Process:
     def __init__(self,config,aws_config_file=None,terraform_wsl_bin=None):
-        self.config=config;self.aws_config_file=None;self.terraform_wsl_bin=terraform_wsl_bin
+        self.config=config;self.aws_config_file=None;self.terraform_wsl_bin=terraform_wsl_bin;self.paths={}
         if aws_config_file:
             path=Path(aws_config_file).resolve();parsed=configparser.ConfigParser(interpolation=None);parsed.read(path)
             name='profile '+config['profile']
@@ -68,8 +68,10 @@ class Process:
             with zipfile.ZipFile(archive) as bundle:require(bundle.read('terraform')==Path(terraform_wsl_bin).read_bytes(),'exact pinned Terraform binary')
 
     def wsl_path(self,path):
+        key=Path(path).resolve().as_posix()
+        if key in self.paths:return self.paths[key]
         value=subprocess.run(['wsl','-d','Ubuntu','--exec','wslpath','-a',Path(path).resolve().as_posix()],capture_output=True,check=True).stdout.decode().strip()
-        require(value.startswith('/mnt/'),'observed local Windows mount required');return value
+        require(value.startswith('/mnt/'),'observed local Windows mount required');self.paths[key]=value;return value
 
     def wsl_command(self,args,cwd):
         config=configparser.ConfigParser(interpolation=None);config.read(self.aws_config_file)
@@ -80,7 +82,7 @@ class Process:
             if sep and Path(value).is_absolute():arg=key+'='+self.wsl_path(value)
             elif Path(arg).is_absolute():arg=self.wsl_path(arg)
             mapped.append(arg)
-        prefix=['wsl','-d','Ubuntu','--','env','-i','PATH=/usr/bin:/bin','HOME='+self.wsl_path(Path.home()),
+        prefix=['wsl','-d','Ubuntu','--exec','env','-i','PATH=/usr/bin:/bin','HOME='+self.wsl_path(Path.home()),
             'CHECKPOINT_DISABLE=1','TF_IN_AUTOMATION=1','AWS_PROFILE='+self.config['profile'],'AWS_REGION='+self.config['region'],
             'AWS_DEFAULT_REGION='+self.config['region'],'AWS_MAX_ATTEMPTS=1','AWS_EC2_METADATA_DISABLED=true',
             'AWS_CONFIG_FILE='+self.wsl_path(self.aws_config_file),'AWS_SHARED_CREDENTIALS_FILE='+self.wsl_path(Path.home()/'.aws/credentials'),

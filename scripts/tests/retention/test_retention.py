@@ -201,9 +201,15 @@ class Retention(unittest.TestCase):
         baseline = json.loads((Path(__file__).parent / "baseline-policy.json").read_text())
         def checksum(value):
             return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
-        self.assertEqual(checksum(json.loads((ROOT / ownership.MODULE).read_text())),
+        configuration = json.loads((ROOT / ownership.MODULE).read_text())
+        full = configuration['output']['protected_output_candidates']['value']
+        self.assertEqual(configuration['output'].pop('protected_dev_output_candidates')['value'],
+                         {key:record for key,record in full.items() if record['scope']=='dev'})
+        self.assertEqual(checksum(configuration),
                          baseline["configuration_without_lifecycle_sha256"])
         authority = copy.deepcopy(DOC)
+        ownership.validate_publications(authority)
+        authority['ownership_closure']['publications']={}
         for kind in ("wp4d", "wp5"):
             for item in authority[kind]["selected"].values():
                 del item["package_sha256"]
