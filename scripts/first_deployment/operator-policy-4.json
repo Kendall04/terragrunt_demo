@@ -192,7 +192,7 @@
         "elasticloadbalancing:DescribeListenerAttributes"
       ],
       "Resource": [
-        "arn:aws:elasticloadbalancing:us-east-1:341936017254:listener/app/demo-dev-internal-alb/*"
+        "*"
       ],
       "Condition": {
         "StringEquals": {

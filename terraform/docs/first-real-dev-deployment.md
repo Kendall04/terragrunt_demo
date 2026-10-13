@@ -178,3 +178,10 @@ Only exact task-generated provider binaries in obsolete private execution caches
 were removed; no state, plans, other project files or evidence were deleted.
 `--terraform-plugin-cache` can reuse an existing external cache on local WSL.
 Readonly provider locks/checksums remain enforced, so cache presence is not trust.
+
+AWS's [ELBv2 authorization reference](https://docs.aws.amazon.com/service-authorization/latest/reference/list_elbv2.html)
+does not support resource-level scoping for `DescribeListenerAttributes`. An ARN-only
+read grant remained denied in both simulator and live calls. Policy part 4's third
+version uses `Resource: "*"` for that one read action with `aws:RequestedRegion`
+fixed to `us-east-1`; mutation grants remain scoped. The original listener uses
+HTTP **8080**, as the actual source and reviewed plan specify.

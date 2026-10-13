@@ -1588,7 +1588,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/first_deployment/operator-policy-4.json": {
-      "sha256": "23a27ce35dbc700cd05606625a9dd7c9fd8ef60bbe495f01b4e1f3101cbf0974",
+      "sha256": "b1c1b39c8519004c49acac33270dfc3a13274cda54da9387e21c35eaa2e78d59",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -1623,7 +1623,6 @@
           152,
           156,
           185,
-          195,
           199,
           210,
           211,
