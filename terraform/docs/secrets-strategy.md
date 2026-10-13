@@ -123,3 +123,13 @@ ECS drain, sealed terminal cohort handoff and residual completion checks.
 Complete installed DOWN remains PARTIALLY_READY and denied: NAT executor/effect
 closure, authentic ECS closure, whole-operation preparation and exhaustive
 residual installation remain required. No IAM/activation or live AWS evidence.
+
+## E16 supervised original DEV mode (2026-10-13)
+
+The [E16 current operator contract](e16-practical-dev-lifecycle.md) implements
+per-layer original DEV saved-plan review/apply and observed shutdown under an
+explicitly authorized, exclusive existing-human state-writer transfer. Default
+mode remains inert; PROD/shared/security-root ownership is retained. Existing
+WP3/WP4 delivery and E13 recovery remain. E15-G/H advanced finality contracts are
+not weakened or activated. Source readiness is distinct from genuine installation
+and live AWS validation; no AWS operations occurred.

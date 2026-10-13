@@ -252,7 +252,9 @@ def wiring(doc):
     wp5.target_overlay(targets)
     root['module']['lifecycle_foundations']={'source':'./modules/lifecycle_foundations','account_id':expression('var.aws_account_id'),
         'region':expression('var.aws_region'),'admin_arn':expression('var.security_admin_principal_arn'),
-        'nat_launch_inputs':expression('local.authority.wp5.nat_launch_inputs')}
+        'nat_launch_inputs':expression('local.authority.wp5.nat_launch_inputs'),'dev_operator_arn':expression('var.dev_operator_arn')}
+    root['variable']['dev_operator_arn']={'type':'string','default':None,'nullable':True}
+    root['module']['controller_compute']['dev_operator_arn']=expression('var.dev_operator_arn')
     foundations=wp5.foundations()
     wp6.extend(root,child,compute_module,foundations,doc)
     return {**targets, 'terraform/infra/security/modules/lifecycle_foundations/main.tf.json':foundations,

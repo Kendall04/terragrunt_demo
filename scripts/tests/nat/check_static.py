@@ -102,7 +102,7 @@ def main():
                         assert send[0]["Condition"]=={"ArnEquals":{"aws:SourceArn":fake["aws_cloudwatch_event_rule"]["wp4d_nat"][environment]["arn"]},"StringEquals":{"aws:SourceAccount":ACCOUNT}}
                     else:
                         assert send[0]["Principal"]["AWS"]==[f"arn:aws:iam::{ACCOUNT}:role/{v['role']}" for k,v in sorted(doc["wp4d"]["selected"].items()) if k.startswith("nat-recovery/") and v["environment"]==environment]
-                    assert actual["alarms"][key]["alarm_actions"]==[f"arn:aws:sns:{REGION}:{ACCOUNT}:demo-{environment}-alerts"]
+                    assert actual["alarms"][key]["alarm_actions"]==[f"arn:aws:sns:{REGION}:{ACCOUNT}:demo-{environment}"+("-shared" if environment=="dev" else "")+"-alerts"]
             print(name+": actual Terraform retry/destination/queue-policy/alert projection PASS")
         result=subprocess.run([terraform,"validate","-no-color"],text=True,capture_output=True,cwd=directory,env=env,timeout=30)
         if result.returncode: raise AssertionError(result.stderr)

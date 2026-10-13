@@ -5,7 +5,7 @@ from pathlib import Path
 import re
 
 ROOT = Path(__file__).resolve().parents[3]
-DOCUMENTS = ('terraform/docs/original-full-lifecycle.md', 'README.md', 'AGENTS.md', 'terraform/AGENTS.md', 'terraform/infra/security/README.md',
+DOCUMENTS = ('terraform/docs/e16-practical-dev-lifecycle.md', 'terraform/docs/original-full-lifecycle.md', 'README.md', 'AGENTS.md', 'terraform/AGENTS.md', 'terraform/infra/security/README.md',
              'terraform/docs/architecture.md', 'terraform/docs/deployment.md', 'terraform/docs/bootstrap.md',
              'terraform/docs/secrets-strategy.md', 'terraform/docs/decisions-and-limitations.md',
              'terraform/docs/validation.md', 'terraform/docs/e2-environment-mutation.md',

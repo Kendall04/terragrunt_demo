@@ -176,7 +176,10 @@ def extend(root,child,compute,foundations,doc):
     state=foundations['resource']['aws_s3_bucket_policy']['state']
     state['policy']=state['policy'].replace('[var.admin_arn]', '[var.admin_arn,"arn:aws:iam::${var.account_id}:role/e1-request-plan-${each.key}","arn:aws:iam::${var.account_id}:role/e1-request-infra-${each.key}","arn:aws:iam::${var.account_id}:role/e1-request-infra-high-risk-${each.key}"]')
     extra=',{Sid="ExternalNoWrite",Effect="Deny",Principal="*",NotAction=["s3:GetObject","s3:ListBucket"],Resource=[each.value.arn,"${each.value.arn}/*"],Condition={ArnLike={"aws:PrincipalArn"="arn:aws:iam::${var.account_id}:role/e1-request-*"}}},{Sid="ExternalOnlyOwnPublic",Effect="Deny",Principal="*",Action="s3:GetObject",NotResource=["${each.value.arn}/operations/environment-lifecycle/infra-${each.key}/*/public.json","${each.value.arn}/operations/environment-lifecycle/infra-high-risk-${each.key}/*/public.json"],Condition={ArnEquals={"aws:PrincipalArn"=["arn:aws:iam::${var.account_id}:role/e1-request-infra-${each.key}","arn:aws:iam::${var.account_id}:role/e1-request-infra-high-risk-${each.key}"]}}},{Sid="PlanOnlyOwnState",Effect="Deny",Principal="*",Action="s3:GetObject",NotResource=[for layer in ["shared","secrets","global","data","platform","apps","edge"]:"${each.value.arn}/e1/lifecycle/${each.key}/${layer}/terraform.tfstate"],Condition={ArnEquals={"aws:PrincipalArn"="arn:aws:iam::${var.account_id}:role/e1-request-plan-${each.key}"}}}'
-    state['policy']=state['policy'].replace('}]})','}'+extra+']})')
+    if 'Statement=concat(' in state['policy']:
+        state['policy']=state['policy'].replace('}}}],jsondecode(', '}}}'+extra+'],jsondecode(')
+    else:
+        state['policy']=state['policy'].replace('}]})','}'+extra+']})')
     evidence=json.loads(compute['resource']['aws_s3_bucket_policy']['evidence']['policy'])
     evidence['Statement']+= [
         {'Sid':'ExternalNoWrite','Effect':'Deny','Principal':'*','NotAction':['s3:GetObject'],'Resource':['arn:aws:s3:::${local.evidence_bucket}','arn:aws:s3:::${local.evidence_bucket}/*'],'Condition':{'ArnLike':{'aws:PrincipalArn':'arn:aws:iam::${var.account_id}:role/e1-request-*'}}},

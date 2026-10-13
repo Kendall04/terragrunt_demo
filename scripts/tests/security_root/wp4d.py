@@ -675,7 +675,8 @@ def extend(tf):
         "rule": {"apply_server_side_encryption_by_default": {"sse_algorithm": "AES256"}}}
     # Bucket policy denies all unapproved readers/writers and non-admin delete.
     # Role identity policies then select the class-owned prefixes above.
-    local["wp4d_bucket_readers"] = ex('{ for env in ["dev", "prod"] : env => concat([var.admin_arn], [for k,v in local.wp4d_active : "arn:aws:iam::${var.account_id}:role/${v.role}" if v.environment == env], env == "dev" ? [for k,v in local.wp4d_active : "arn:aws:iam::${var.account_id}:role/${v.role}" if v.environment == "prod" && (startswith(k, "normal-delivery/") || startswith(k, "emergency-recovery/"))] : []) }')
+    tf['variable']['dev_operator_arn']={'type':'string','default':None,'nullable':True}
+    local["wp4d_bucket_readers"] = ex('{ for env in ["dev", "prod"] : env => concat([var.admin_arn], [for k,v in local.wp4d_active : "arn:aws:iam::${var.account_id}:role/${v.role}" if v.environment == env], env == "dev" ? [for k,v in local.wp4d_active : "arn:aws:iam::${var.account_id}:role/${v.role}" if v.environment == "prod" && (startswith(k, "normal-delivery/") || startswith(k, "emergency-recovery/"))] : [],env=="dev" && var.dev_operator_arn!=null ? [var.dev_operator_arn] : []) }')
     local["wp4d_bucket_writers"] = ex('{ for env in ["dev", "prod"] : env => concat([var.admin_arn], [for k,v in local.wp4d_active : "arn:aws:iam::${var.account_id}:role/${v.role}" if v.environment == env]) }')
     resources["aws_s3_bucket_policy"]["wp4d"] = {
         "for_each": ex("local.wp4d_buckets"), "bucket": ex("aws_s3_bucket.wp4d[each.key].id"),
@@ -706,6 +707,12 @@ def extend(tf):
         "principal": "events.amazonaws.com", "source_account": ex("var.account_id"),
         "source_arn": ex('"arn:aws:events:${var.region}:${var.account_id}:rule/${each.value.resources.cleanup.rule}"'),
         "depends_on": ["aws_lambda_alias.wp4d_cleanup"]}
+    # E16 observes only the DEV E2 head and three E13 duty journals. The
+    # operator never gets a writer exception, public configuration or PROD data.
+    observed_policy=resources['aws_s3_bucket_policy']['wp4d']['policy']
+    operator_reads='jsondecode(each.key=="dev" && var.dev_operator_arn!=null ? jsonencode([{Sid="E16ObservationObjects",Effect="Allow",Principal={AWS=var.dev_operator_arn},Action=["s3:GetObject","s3:GetObjectVersion"],Resource=concat(["${aws_s3_bucket.wp4d[each.key].arn}/arbitration/dev/application.json"],[for duty in ["assign_eip","change_rt","disable_sdc"]:"${aws_s3_bucket.wp4d[each.key].arn}/recovery/dev/recovery/${duty}/*"])},{Sid="E16ObservationList",Effect="Allow",Principal={AWS=var.dev_operator_arn},Action=["s3:ListBucket"],Resource=[aws_s3_bucket.wp4d[each.key].arn],Condition={StringLike={"s3:prefix"=["recovery/dev/recovery/*"]}}},{Sid="E16ObservationOnly",Effect="Deny",Principal="*",Action=["s3:GetObject","s3:GetObjectVersion"],NotResource=concat(["${aws_s3_bucket.wp4d[each.key].arn}/arbitration/dev/application.json"],[for duty in ["assign_eip","change_rt","disable_sdc"]:"${aws_s3_bucket.wp4d[each.key].arn}/recovery/dev/recovery/${duty}/*"]),Condition={ArnEquals={"aws:PrincipalArn"=var.dev_operator_arn}}}]) : "[]")'
+    # Preserve every original statement, including WP6's later extensions.
+    resources['aws_s3_bucket_policy']['wp4d']['policy']=ex('jsonencode(merge(jsondecode('+observed_policy[2:-1]+'),{Statement=concat(jsondecode('+observed_policy[2:-1]+').Statement,'+operator_reads+')}))')
     local["wp4d_nat_events"] = ex('{ for env in ["dev", "prod"] : env => try(var.wp4d_environment_bindings[env], null) if alltrue([for action in ["assign_eip", "change_rt", "disable_sdc"] : contains(keys(local.wp4d_active), "nat-recovery/nat-${env}/${action}")]) }')
     resources["aws_cloudwatch_event_rule"]["wp4d_nat"] = {
         "for_each": ex("local.wp4d_nat_events"), "name": ex('"e1-wp4-${each.key}-nat-launch"'),
@@ -748,7 +755,7 @@ def extend(tf):
         "dimensions": {"QueueName": ex('each.value.name')}, "statistic": "Maximum",
         "period": 60, "evaluation_periods": 1, "threshold": 0,
         "comparison_operator": "GreaterThanThreshold", "treat_missing_data": "missing",
-        "alarm_actions": [ex('"arn:aws:sns:${var.region}:${var.account_id}:demo-${each.value.environment}-alerts"')]}
+        "alarm_actions": [ex('"arn:aws:sns:${var.region}:${var.account_id}:demo-${each.value.environment}${each.value.environment=="dev"?"-shared":""}-alerts"')]}
     resources["aws_cloudwatch_metric_alarm"]["nat_async_delivery"] = {
         "for_each": ex('aws_cloudwatch_event_target.wp4d_nat'),
         "alarm_name": ex('"e1-${replace(each.key,"/","-")}-destination-failed"'),
@@ -756,14 +763,14 @@ def extend(tf):
         "dimensions": {"FunctionName": ex('aws_lambda_function.wp4d[each.key].function_name')},
         "statistic": "Sum", "period": 60, "evaluation_periods": 1, "threshold": 0,
         "comparison_operator": "GreaterThanThreshold", "treat_missing_data": "notBreaching",
-        "alarm_actions": [ex('"arn:aws:sns:${var.region}:${var.account_id}:demo-${local.wp4d_active[each.key].environment}-alerts"')]}
+        "alarm_actions": [ex('"arn:aws:sns:${var.region}:${var.account_id}:demo-${local.wp4d_active[each.key].environment}${local.wp4d_active[each.key].environment=="dev"?"-shared":""}-alerts"')]}
     resources["aws_cloudwatch_metric_alarm"]["nat_event_dlq_delivery"] = {
         "for_each": ex('local.wp4d_nat_events'), "alarm_name": ex('"e1-wp4-${each.key}-nat-dlq-delivery-failed"'),
         "namespace": "AWS/Events", "metric_name": "InvocationsFailedToBeSentToDlq",
         "dimensions": {"RuleName": ex('aws_cloudwatch_event_rule.wp4d_nat[each.key].name')},
         "statistic": "Sum", "period": 60, "evaluation_periods": 1, "threshold": 0,
         "comparison_operator": "GreaterThanThreshold", "treat_missing_data": "notBreaching",
-        "alarm_actions": [ex('"arn:aws:sns:${var.region}:${var.account_id}:demo-${each.key}-alerts"')]}
+        "alarm_actions": [ex('"arn:aws:sns:${var.region}:${var.account_id}:demo-${each.key}${each.key=="dev"?"-shared":""}-alerts"')]}
     resources["aws_lambda_permission"]["wp4d_nat"] = {
         "for_each": ex("aws_cloudwatch_event_target.wp4d_nat"),
         "statement_id": "ExactNatLaunchRule", "action": "lambda:InvokeFunction",

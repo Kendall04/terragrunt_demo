@@ -39,6 +39,11 @@
         "condition": "${can(regex(\"^arn:aws:iam::[0-9]{12}:(role|user)/[A-Za-z0-9+=,.@_/-]+$\", var.security_admin_principal_arn)) && split(\":\", var.security_admin_principal_arn)[4] == var.aws_account_id}",
         "error_message": "Supply an existing separately held IAM admin principal in the selected account, never root/session/requester credentials."
       }
+    },
+    "dev_operator_arn": {
+      "type": "string",
+      "default": null,
+      "nullable": true
     }
   },
   "provider": {
@@ -84,7 +89,8 @@
       ],
       "wp5_installations": "${local.authority.wp5.installations}",
       "wp5_runtime_approvals": "${local.authority.wp5.runtime_approvals}",
-      "wp5_environment_bindings": "${local.authority.wp5.environment_bindings}"
+      "wp5_environment_bindings": "${local.authority.wp5.environment_bindings}",
+      "dev_operator_arn": "${var.dev_operator_arn}"
     },
     "protected_resources": {
       "source": "./modules/protected_resources",
@@ -96,7 +102,8 @@
       "account_id": "${var.aws_account_id}",
       "region": "${var.aws_region}",
       "admin_arn": "${var.security_admin_principal_arn}",
-      "nat_launch_inputs": "${local.authority.wp5.nat_launch_inputs}"
+      "nat_launch_inputs": "${local.authority.wp5.nat_launch_inputs}",
+      "dev_operator_arn": "${var.dev_operator_arn}"
     }
   },
   "output": {

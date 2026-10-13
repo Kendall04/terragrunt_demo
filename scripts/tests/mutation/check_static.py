@@ -51,7 +51,7 @@ def main():
     with tempfile.TemporaryDirectory(prefix="e2-static-") as directory:
         path=Path(directory)/"main.tf.json"
         path.write_text(json.dumps(dict(variable={key:{"default":value} for key,value in
-            dict(account_id=ACCOUNT,admin_arn=f"arn:aws:iam::{ACCOUNT}:role/admin").items()},
+            dict(account_id=ACCOUNT,admin_arn=f"arn:aws:iam::{ACCOUNT}:role/admin",dev_operator_arn=None).items()},
             locals=locals_)),encoding="utf-8")
         for environment in ("dev","prod"):
             bucket=f"arn:aws:s3:::e1-wp4-{environment}-{ACCOUNT}-{REGION}"

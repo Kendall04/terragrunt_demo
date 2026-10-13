@@ -645,3 +645,22 @@ E15-S2 is not integrated. The [first-session procedure](original-full-lifecycle.
 records the complete resource/state graph, existing WP5/WP6 commands, thin DEV
 entry and separate UP installation versus DOWN finality blockers. No reduced
 lab, authority bypass, activation or AWS operation is introduced.
+
+## E16 supervised original DEV mode (2026-10-13)
+
+The [E16 current operator contract](e16-practical-dev-lifecycle.md) implements
+per-layer original DEV saved-plan review/apply and observed shutdown under an
+explicitly authorized, exclusive existing-human state-writer transfer. Default
+mode remains inert; PROD/shared/security-root ownership is retained. Existing
+WP3/WP4 delivery and E13 recovery remain. E15-G/H advanced finality contracts are
+not weakened or activated. Source readiness is distinct from genuine installation
+and live AWS validation; no AWS operations occurred.
+
+
+E16 final offline acceptance: 983 E1/WP, AC1–AC16 and all 44 gate suites/checks
+PASS; E16 35 and original entry 12 PASS. E2/E2-R/E4, E13 and E15-E/F/G/H
+regressions, inventory/package identities and generated-source checks passed.
+Historical static debt remains 24 TFLint/46 tfsec by rule/resource/message/source
+snippet and multiplicity, without suppression. See the [E16 evidence record](e16-practical-dev-lifecycle.md#completed-offline-acceptance-2026-10-13)
+for report paths, the bounded corrections, unavailable tools and separate
+IAM/provider/Linux/AWS gates. No cloud, provider init or deployment occurred.

@@ -44,6 +44,13 @@ def select(action, raw):
 
 
 def main(argv=None):
+    selected = list(sys.argv[1:] if argv is None else argv)
+    if selected[:1] == ['dev']:
+        from scripts.practical_dev import main as supervised
+        try:return supervised(selected[1:])
+        except (ValueError, KeyError, OSError) as error:
+            print('E16 stopped: '+str(error)+'; preserve session/state, inspect status/residual, reconcile before a new reviewed plan. Possible EC2/Fargate/ALB/EBS/IPv4 charges.',file=sys.stderr)
+            return 1
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action', choices=('plan', 'up', 'release', 'deploy', 'verify-infrastructure', 'down', 'residual'))
     parser.add_argument('--account', required=True)

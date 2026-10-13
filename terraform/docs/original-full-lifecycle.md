@@ -1,4 +1,8 @@
-# Original complete DEV: supervised first session
+# Original complete DEV: protected first-session baseline
+
+The following is the E15 baseline. [E16 supervised DEV](e16-practical-dev-lifecycle.md)
+explicitly replaces only its runtime DEV operation policy when exclusive state
+transfer is installed; its protected-mode restrictions remain unchanged.
 
 ## Owner decision and current status
 
