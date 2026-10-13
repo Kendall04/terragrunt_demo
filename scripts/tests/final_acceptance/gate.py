@@ -42,6 +42,7 @@ CRITERIA = {
     'AC16': SUITES + ADDITIONAL_SUITES,
 }
 CHECKS = (
+    ('original_dev', ('python', '-I', '-B', 'scripts/tests/original_dev/run.py')),
     ('nat_trusted_closure', ('python', '-I', '-B', 'scripts/tests/nat_closure/run.py')),
     ('operational_teardown', ('python', '-I', '-B', 'scripts/tests/operational_teardown/run.py')),
     ('combined_quiescence', ('python', '-I', '-B', 'scripts/tests/combined_quiescence/run.py')),

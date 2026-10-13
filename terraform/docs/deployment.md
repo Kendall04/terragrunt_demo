@@ -244,3 +244,11 @@ ECS drain, sealed terminal cohort handoff and residual completion checks.
 Complete installed DOWN remains PARTIALLY_READY and denied: NAT executor/effect
 closure, authentic ECS closure, whole-operation preparation and exhaustive
 residual installation remain required. No IAM/activation or live AWS evidence.
+
+## Original complete DEV lifecycle (2026-10-13)
+
+The owner restored the original full architecture. E15-S was explicitly reverted;
+E15-S2 is not integrated. The [first-session procedure](original-full-lifecycle.md)
+records the complete resource/state graph, existing WP5/WP6 commands, thin DEV
+entry and separate UP installation versus DOWN finality blockers. No reduced
+lab, authority bypass, activation or AWS operation is introduced.

@@ -1739,6 +1739,16 @@
       "signals": {},
       "semantic_status": "UNVERIFIED"
     },
+    "scripts/original_dev.py": {
+      "sha256": "a3b06a60ba4abb85cfd5fab07458c115e4b1a19ac504bc7d1f7bc65839362ba2",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          85
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
     "scripts/owner_recovery.py": {
       "sha256": "c395656853464823562c45e9e2df7478e0c21f879c7d132c6b8bf6b910ccae08",
       "declarations": [],
@@ -2434,7 +2444,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/final_acceptance/check_knowledge.py": {
-      "sha256": "28a1110aa6040a1db5c9a6c94121710c2c1b62be575e2a7dc18fab7795a0bc66",
+      "sha256": "94701a32d78ce102acaed8ec1ed852359273bedb09376a896d5177a873808181",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -2503,12 +2513,12 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/final_acceptance/gate.py": {
-      "sha256": "dd4c4fbb680c6a635d183543afbb2f945436253415538a4ece9750d2f28e07bc",
+      "sha256": "9ce0bc2fe4938761c6ee732d363066450a1986a1e0c6a2384560db835904ada0",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          66,
-          144
+          67,
+          145
         ],
         "executable-dependency": [
           3,
@@ -2533,7 +2543,8 @@
           63,
           64,
           65,
-          124
+          66,
+          125
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -3288,6 +3299,33 @@
           353,
           356,
           387
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/tests/original_dev/run.py": {
+      "sha256": "c2728ba75e5dee3b9babb10516807f7d9f9b3b9c19baf045f14c21fb4982a7b8",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          11
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/tests/original_dev/test_original.py": {
+      "sha256": "cc2593fc26fd769993757b99a0881570b985dcb1a371529d089feb9097eac639",
+      "declarations": [],
+      "signals": {
+        "role-input": [
+          52
+        ],
+        "launch-or-mutation": [
+          83,
+          85
+        ],
+        "executable-dependency": [
+          82
         ]
       },
       "semantic_status": "UNVERIFIED"

@@ -215,3 +215,11 @@ adds cooperative E13 dispatch/seal accounting and native ASG read contracts unde
 the original E15-G owner. Installed authentication, callable-version coverage and
 remote finality remain unproved; networking and complete DOWN still fail closed.
 No IAM policy, active binding or AWS resource is installed by this increment.
+
+## Original complete DEV lifecycle (2026-10-13)
+
+The owner restored the original full architecture. E15-S was explicitly reverted;
+E15-S2 is not integrated. The [first-session procedure](original-full-lifecycle.md)
+records the complete resource/state graph, existing WP5/WP6 commands, thin DEV
+entry and separate UP installation versus DOWN finality blockers. No reduced
+lab, authority bypass, activation or AWS operation is introduced.
