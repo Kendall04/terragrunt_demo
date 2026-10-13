@@ -248,6 +248,10 @@ def report(action, account, region, environment='dev', notes=None, budget_config
 
 
 def main(argv=None):
+    selected = sys.argv[1:] if argv is None else argv
+    if selected and selected[0] == 'lab':
+        from scripts.simple_lab import main as simple
+        return simple(selected[1:])
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action', choices=('status','up-prepare','down-preview','verify','residual','down-execute','down-review'))
     parser.add_argument('--environment', default='dev')
