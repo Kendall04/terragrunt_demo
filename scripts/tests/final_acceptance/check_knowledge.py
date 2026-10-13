@@ -20,7 +20,6 @@ DOCUMENTS = ('README.md', 'AGENTS.md', 'terraform/AGENTS.md', 'terraform/infra/s
              'terraform/docs/e15ef-combined-quiescence.md',
              'terraform/docs/e15g-operational-teardown.md',
              'terraform/docs/e15h-nat-trusted-closure.md',
-             'terraform/docs/e15s-simple-ephemeral-lab.md',
              'terraform/docs/e2r-owner-recovery.md',
              'terraform/docs/e13-nat-reliability.md', 'terraform/docs/e14b-toolchain-reproducibility.md', 'terraform/docs/e1-final-acceptance.md')
 

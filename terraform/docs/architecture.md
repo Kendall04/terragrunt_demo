@@ -233,13 +233,3 @@ adds cooperative E13 dispatch/seal accounting and native ASG read contracts unde
 the original E15-G owner. Installed authentication, callable-version coverage and
 remote finality remain unproved; networking and complete DOWN still fail closed.
 No IAM policy, active binding or AWS resource is installed by this increment.
-
-
-## E15-S disposable lab preparation
-
-[E15-S](e15s-simple-ephemeral-lab.md) provides `ephemeral_lab.py lab` local
-preparation/review commands and a small one-state draft with Fargate, SQL EC2
-and KMS integration, without NAT recovery or blue/green. It is a distinct lab
-proposal, not a WP5 DEV alias. E15-H/protected code stays intact. No lab source,
-backend, IAM, provisioning or destroy authority is installed; execution remains
-blocked pending narrow owner admission and genuine AWS validation.
