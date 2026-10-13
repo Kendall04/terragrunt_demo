@@ -223,13 +223,13 @@ def wiring(doc):
         "runtime_approvals": expression("local.authority.internal_release.runtime_approvals"),
         "wp4d_installations": expression("local.authority.wp4d.installations"),
         "wp4d_runtime_approvals": expression("local.authority.wp4d.runtime_approvals"),
-        "wp4d_environment_bindings": expression("local.authority.wp4d.environment_bindings"),
-        "depends_on": ["module.protected_resources"]}
+        "wp4d_environment_bindings": expression("local.authority.wp4d.environment_bindings")}
     root["output"]["controller_compute_foundation"] = {
         "value": expression("module.controller_compute.foundation"),
         "description": "TARGET compute declarations only; zero Lambda/CodeBuild instances, no invocation authorization."}
     root["module"]["protected_resources"] = {"source": "./modules/protected_resources", "account_id": expression("var.aws_account_id"), "region": expression("var.aws_region")}
     root["output"]["protected_output_candidates"] = {"value": expression("module.protected_resources.protected_output_candidates")}
+    root["output"]["protected_dev_output_candidates"] = {"value": expression("module.protected_resources.protected_dev_output_candidates")}
     compute_module = compute.wiring()
     wp4d.extend(compute_module)
     wp5.extend(compute_module)

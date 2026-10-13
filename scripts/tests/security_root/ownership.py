@@ -244,4 +244,5 @@ def wiring(doc):
             "authority_digest": authority_digest(c), "available": False, "value": None, "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"}
     return {"terraform": {"required_providers": {"aws": {"source": "hashicorp/aws", "version": "~> 5.50"}}},
         "variable": {"account_id": {"type": "string"}, "region": {"type": "string"}},
-        "resource": resources, "output": {"protected_output_candidates": {"value": records}}}
+        "resource": resources, "output": {"protected_output_candidates": {"value": records},
+        "protected_dev_output_candidates": {"value": {key:record for key,record in records.items() if record["scope"] == "dev"}}}}

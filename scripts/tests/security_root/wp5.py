@@ -66,7 +66,7 @@ def configuration(doc):
         # Reuse actual reviewed provider checksums. No downloaded/generated lock.
         lock = retired.source(ROOT, 'terraform/live/dev/shared/.terraform.lock.hcl').read_text()
         for layer in LAYERS:
-            result[f'terraform/modules/target/{env}/{layer}/.terraform.lock.hcl'] = lock
+            result[f'terraform/modules/target/{env}/{layer}/.terraform.lock.hcl'] = (lock.split('provider "registry.terraform.io/hashicorp/tls"',1)[0].rstrip()+'\n') if env=='dev' and layer in ('global','data','platform','apps','edge') else lock
     return result
 
 
@@ -77,6 +77,9 @@ def target_overlay(wiring):
         name = root+'data/ordinary-main.tf'
         text = ordinary.select(wiring[name], lambda h:not h.startswith('data "aws_ami"'))
         wiring[name] = text.replace('data.aws_ami.ubuntu_2204.id', 'var.protected_sql_ami')
+        if env == 'dev':
+            name = root+'data/ordinary-outputs.tf'
+            wiring[name] = wiring[name].replace('data.aws_ami.ubuntu_2204.id', 'aws_instance.db.ami')
         wiring[root+'data/ordinary-variables.tf'] += '\nvariable "protected_sql_ami" { type = string }\n'
         # The old archive provider served the removed Lambda ownership. The
         # protected lifecycle bundle has no caller ZIP/package compilation.
@@ -154,7 +157,9 @@ def package_files(root, doc, binding):
              for name,value in wiring.items() if name.startswith('terraform/modules/target/'+env+'/')}
     # Only protected publication data is needed by the immutable consumers;
     # exclude package digests/install maps, avoiding self-referential identities.
-    files['terraform/infra/security/authority.json'] = canonical({'ownership_closure':doc['ownership_closure']})
+    closure = {**doc['ownership_closure'], 'publications': {key:value for key,value in doc['ownership_closure']['publications'].items()
+        if env == 'dev' or value['schema'] != 'E1_DEV_OUTPUT_PUBLICATION_V1'}}
+    files['terraform/infra/security/authority.json'] = canonical({'ownership_closure':closure})
     for name in SOURCES+('terraform/infra/data/user_data.sh',):
         files[name]=(Path(root)/name).read_bytes().replace(b'\r\n',b'\n')
     return files

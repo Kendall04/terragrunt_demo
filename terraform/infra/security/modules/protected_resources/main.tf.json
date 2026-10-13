@@ -1035,6 +1035,250 @@
           "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
         }
       }
+    },
+    "protected_dev_output_candidates": {
+      "value": {
+        "dev/sql": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "role",
+          "logical_id": "dev/sql",
+          "declaration": "module.protected_resources/dev/sql",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.dev_sql.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/flow": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "role",
+          "logical_id": "dev/flow",
+          "declaration": "module.protected_resources/dev/flow",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.dev_flow.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/nat": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "role",
+          "logical_id": "dev/nat",
+          "declaration": "module.protected_resources/dev/nat",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.dev_nat.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/nat-recovery": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "role",
+          "logical_id": "dev/nat-recovery",
+          "declaration": "module.protected_resources/dev/nat-recovery",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.dev_nat_recovery.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/cleanup": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "role",
+          "logical_id": "dev/cleanup",
+          "declaration": "module.protected_resources/dev/cleanup",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.dev_cleanup.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/blue-task": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "role",
+          "logical_id": "dev/blue-task",
+          "declaration": "module.protected_resources/dev/blue-task",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.dev_blue_task.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/blue-exec": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "role",
+          "logical_id": "dev/blue-exec",
+          "declaration": "module.protected_resources/dev/blue-exec",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.dev_blue_exec.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/green-task": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "role",
+          "logical_id": "dev/green-task",
+          "declaration": "module.protected_resources/dev/green-task",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.dev_green_task.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/green-exec": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "role",
+          "logical_id": "dev/green-exec",
+          "declaration": "module.protected_resources/dev/green-exec",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.dev_green_exec.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/sql-profile": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "profile",
+          "logical_id": "dev/sql-profile",
+          "declaration": "module.protected_resources/dev/sql-profile",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_instance_profile.dev_sql_profile.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/nat-profile": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "profile",
+          "logical_id": "dev/nat-profile",
+          "declaration": "module.protected_resources/dev/nat-profile",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_instance_profile.dev_nat_profile.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/kms": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "key",
+          "logical_id": "dev/kms",
+          "declaration": "module.protected_resources/dev/kms",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_kms_key.dev_kms.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/sa": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "secret",
+          "logical_id": "dev/sa",
+          "declaration": "module.protected_resources/dev/sa",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_secretsmanager_secret.dev_sa.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/db-user": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "secret",
+          "logical_id": "dev/db-user",
+          "declaration": "module.protected_resources/dev/db-user",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_secretsmanager_secret.dev_db_user.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/connection": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "secret",
+          "logical_id": "dev/connection",
+          "declaration": "module.protected_resources/dev/connection",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_secretsmanager_secret.dev_connection.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/repository": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "repository",
+          "logical_id": "dev/repository",
+          "declaration": "module.protected_resources/dev/repository",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_ecr_repository.dev_repository.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "recovery/dev/cleanup": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "recovery",
+          "logical_id": "recovery/dev/cleanup",
+          "declaration": "reservation/recovery/dev/cleanup",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": false,
+          "value": null,
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "recovery/dev/nat-functions": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "recovery",
+          "logical_id": "recovery/dev/nat-functions",
+          "declaration": "reservation/recovery/dev/nat-functions",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": false,
+          "value": null,
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "recovery/dev/nat-events": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "recovery",
+          "logical_id": "recovery/dev/nat-events",
+          "declaration": "reservation/recovery/dev/nat-events",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": false,
+          "value": null,
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "recovery/dev/nat-launch": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "recovery",
+          "logical_id": "recovery/dev/nat-launch",
+          "declaration": "reservation/recovery/dev/nat-launch",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": false,
+          "value": null,
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        }
+      }
     }
   }
 }

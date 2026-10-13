@@ -173,3 +173,6 @@ mode remains inert; PROD/shared/security-root ownership is retained. Existing
 WP3/WP4 delivery and E13 recovery remain. E15-G/H advanced finality contracts are
 not weakened or activated. Source readiness is distinct from genuine installation
 and live AWS validation; no AWS operations occurred.
+
+
+The [first real DEV session](first-real-dev-deployment.md) records authentic account-specific bootstrap progress and the Windows-local Terraform path; its partial prerequisites are not full deployment evidence.

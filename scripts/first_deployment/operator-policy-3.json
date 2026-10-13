@@ -1,0 +1,278 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:CreateRoute",
+        "ec2:ReplaceRoute",
+        "ec2:DeleteRoute"
+      ],
+      "Resource": [
+        "arn:aws:ec2:us-east-1:341936017254:route-table/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/Environment": "dev",
+          "aws:ResourceTag/Project": "demo",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:AssociateRouteTable",
+        "ec2:DisassociateRouteTable",
+        "ec2:ReplaceRouteTableAssociation"
+      ],
+      "Resource": [
+        "arn:aws:ec2:us-east-1:341936017254:route-table/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/Environment": "dev",
+          "aws:ResourceTag/Project": "demo",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:ReleaseAddress"
+      ],
+      "Resource": [
+        "arn:aws:ec2:us-east-1:341936017254:elastic-ip/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/Environment": "dev",
+          "aws:ResourceTag/Project": "demo",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:DeleteFlowLogs"
+      ],
+      "Resource": [
+        "arn:aws:ec2:us-east-1:341936017254:vpc-flow-log/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/Environment": "dev",
+          "aws:ResourceTag/Project": "demo",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "elasticloadbalancing:ModifyLoadBalancerAttributes",
+        "elasticloadbalancing:SetSecurityGroups",
+        "elasticloadbalancing:SetSubnets",
+        "elasticloadbalancing:DeleteLoadBalancer"
+      ],
+      "Resource": [
+        "arn:aws:elasticloadbalancing:us-east-1:341936017254:loadbalancer/app/demo-dev-*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "elasticloadbalancing:ModifyTargetGroup",
+        "elasticloadbalancing:ModifyTargetGroupAttributes",
+        "elasticloadbalancing:DeleteTargetGroup"
+      ],
+      "Resource": [
+        "arn:aws:elasticloadbalancing:us-east-1:341936017254:targetgroup/demo-dev-*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "elasticloadbalancing:ModifyListener",
+        "elasticloadbalancing:DeleteListener"
+      ],
+      "Resource": [
+        "arn:aws:elasticloadbalancing:us-east-1:341936017254:listener/app/demo-dev-*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "elasticloadbalancing:ModifyRule",
+        "elasticloadbalancing:DeleteRule",
+        "elasticloadbalancing:SetRulePriorities"
+      ],
+      "Resource": [
+        "arn:aws:elasticloadbalancing:us-east-1:341936017254:listener-rule/app/demo-dev-*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "autoscaling:UpdateAutoScalingGroup",
+        "autoscaling:DeleteAutoScalingGroup"
+      ],
+      "Resource": [
+        "arn:aws:autoscaling:us-east-1:341936017254:autoScalingGroup:*:autoScalingGroupName/demo-dev-asg-nat-a",
+        "arn:aws:autoscaling:us-east-1:341936017254:autoScalingGroup:*:autoScalingGroupName/demo-dev-asg-nat-b"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ecs:DescribeClusters",
+        "ecs:UpdateCluster",
+        "ecs:UpdateClusterSettings",
+        "ecs:DeleteCluster",
+        "ecs:ListTagsForResource"
+      ],
+      "Resource": [
+        "arn:aws:ecs:us-east-1:341936017254:cluster/demo-dev-*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ecs:DescribeServices",
+        "ecs:UpdateService",
+        "ecs:DeleteService",
+        "ecs:ListTagsForResource"
+      ],
+      "Resource": [
+        "arn:aws:ecs:us-east-1:341936017254:service/demo-dev-*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ecs:DescribeTaskDefinition",
+        "ecs:DeregisterTaskDefinition",
+        "ecs:ListTagsForResource"
+      ],
+      "Resource": [
+        "arn:aws:ecs:us-east-1:341936017254:task-definition/demo-dev-*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:ModifyInstanceAttribute",
+        "ec2:TerminateInstances"
+      ],
+      "Resource": [
+        "arn:aws:ec2:us-east-1:341936017254:instance/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/Environment": "dev",
+          "aws:ResourceTag/Project": "demo",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "cloudwatch:DescribeAlarms",
+        "cloudwatch:PutMetricAlarm",
+        "cloudwatch:DeleteAlarms",
+        "cloudwatch:ListTagsForResource"
+      ],
+      "Resource": [
+        "arn:aws:cloudwatch:us-east-1:341936017254:alarm:demo-dev-*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "logs:PutRetentionPolicy",
+        "logs:DeleteLogGroup",
+        "logs:ListTagsForResource"
+      ],
+      "Resource": [
+        "arn:aws:logs:us-east-1:341936017254:log-group:demo-dev-*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/global/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/global/terraform.tfstate.tflock",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/data/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/data/terraform.tfstate.tflock",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/platform/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/platform/terraform.tfstate.tflock",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/apps/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/apps/terraform.tfstate.tflock",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/edge/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/edge/terraform.tfstate.tflock"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    }
+  ]
+}

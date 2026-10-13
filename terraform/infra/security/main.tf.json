@@ -84,9 +84,6 @@
       "wp4d_installations": "${local.authority.wp4d.installations}",
       "wp4d_runtime_approvals": "${local.authority.wp4d.runtime_approvals}",
       "wp4d_environment_bindings": "${local.authority.wp4d.environment_bindings}",
-      "depends_on": [
-        "module.protected_resources"
-      ],
       "wp5_installations": "${local.authority.wp5.installations}",
       "wp5_runtime_approvals": "${local.authority.wp5.runtime_approvals}",
       "wp5_environment_bindings": "${local.authority.wp5.environment_bindings}",
@@ -129,6 +126,9 @@
     },
     "protected_output_candidates": {
       "value": "${module.protected_resources.protected_output_candidates}"
+    },
+    "protected_dev_output_candidates": {
+      "value": "${module.protected_resources.protected_dev_output_candidates}"
     },
     "internal_release": {
       "value": "${module.controller_compute.internal_release}"

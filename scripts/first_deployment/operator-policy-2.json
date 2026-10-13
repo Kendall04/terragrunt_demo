@@ -1,0 +1,354 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ecs:ListTasks"
+      ],
+      "Resource": [
+        "*"
+      ],
+      "Condition": {
+        "ArnEquals": {
+          "ecs:cluster": "arn:aws:ecs:us-east-1:341936017254:cluster/demo-dev-platform-main-cluster"
+        },
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:CreateTags"
+      ],
+      "Resource": [
+        "arn:aws:ec2:us-east-1:341936017254:vpc-flow-log/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "ec2:CreateAction": "CreateFlowLogs",
+          "aws:RequestTag/Environment": "dev",
+          "aws:RequestTag/Project": "demo",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:AttachInternetGateway",
+        "ec2:CreateFlowLogs",
+        "ec2:CreateRouteTable",
+        "ec2:CreateSecurityGroup",
+        "ec2:CreateSubnet",
+        "ec2:ModifyVpcAttribute"
+      ],
+      "Resource": [
+        "arn:aws:ec2:us-east-1:341936017254:vpc/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/Environment": "dev",
+          "aws:ResourceTag/Project": "demo",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:AssociateRouteTable",
+        "ec2:ModifySubnetAttribute"
+      ],
+      "Resource": [
+        "arn:aws:ec2:us-east-1:341936017254:subnet/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/Environment": "dev",
+          "aws:ResourceTag/Project": "demo",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:AuthorizeSecurityGroupEgress",
+        "ec2:AuthorizeSecurityGroupIngress"
+      ],
+      "Resource": [
+        "arn:aws:ec2:us-east-1:341936017254:security-group/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/Environment": "dev",
+          "aws:ResourceTag/Project": "demo",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:AttachInternetGateway"
+      ],
+      "Resource": [
+        "arn:aws:ec2:us-east-1:341936017254:internet-gateway/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/Environment": "dev",
+          "aws:ResourceTag/Project": "demo",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:AssociateRouteTable",
+        "ec2:CreateRoute"
+      ],
+      "Resource": [
+        "arn:aws:ec2:us-east-1:341936017254:route-table/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/Environment": "dev",
+          "aws:ResourceTag/Project": "demo",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "elasticloadbalancing:CreateListener"
+      ],
+      "Resource": [
+        "arn:aws:elasticloadbalancing:us-east-1:341936017254:loadbalancer/app/demo-dev-internal-alb/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        },
+        "ForAllValues:StringEquals": {
+          "elasticloadbalancing:ListenerProtocol": "HTTP"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "elasticloadbalancing:CreateRule"
+      ],
+      "Resource": [
+        "arn:aws:elasticloadbalancing:us-east-1:341936017254:listener/app/demo-dev-internal-alb/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "elasticloadbalancing:ModifyLoadBalancerAttributes"
+      ],
+      "Resource": [
+        "arn:aws:elasticloadbalancing:us-east-1:341936017254:loadbalancer/app/demo-dev-internal-alb/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/Environment": "dev",
+          "aws:ResourceTag/Project": "demo",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "elasticloadbalancing:ModifyTargetGroupAttributes"
+      ],
+      "Resource": [
+        "arn:aws:elasticloadbalancing:us-east-1:341936017254:targetgroup/demo-dev-blue/*",
+        "arn:aws:elasticloadbalancing:us-east-1:341936017254:targetgroup/demo-dev-green/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/Environment": "dev",
+          "aws:ResourceTag/Project": "demo",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "iam:PassRole"
+      ],
+      "Resource": [
+        "arn:aws:iam::341936017254:role/demo-dev-vpc-flow-logs-role"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "iam:PassedToService": "vpc-flow-logs.amazonaws.com",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "iam:PassRole"
+      ],
+      "Resource": [
+        "arn:aws:iam::341936017254:role/demo-dev-data-sql-ec2-role"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "iam:PassedToService": "ec2.amazonaws.com",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "iam:PassRole"
+      ],
+      "Resource": [
+        "arn:aws:iam::341936017254:role/demo-dev-nat-role"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "iam:PassedToService": "ec2.amazonaws.com",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "iam:GetInstanceProfile"
+      ],
+      "Resource": [
+        "arn:aws:iam::341936017254:instance-profile/demo-dev-data-sql-ec2-profile",
+        "arn:aws:iam::341936017254:instance-profile/demo-dev-nat-instance-profile"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:ModifyVpcAttribute",
+        "ec2:DeleteVpc"
+      ],
+      "Resource": [
+        "arn:aws:ec2:us-east-1:341936017254:vpc/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/Environment": "dev",
+          "aws:ResourceTag/Project": "demo",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:ModifySubnetAttribute",
+        "ec2:DeleteSubnet"
+      ],
+      "Resource": [
+        "arn:aws:ec2:us-east-1:341936017254:subnet/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/Environment": "dev",
+          "aws:ResourceTag/Project": "demo",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:DeleteSecurityGroup"
+      ],
+      "Resource": [
+        "arn:aws:ec2:us-east-1:341936017254:security-group/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/Environment": "dev",
+          "aws:ResourceTag/Project": "demo",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:AuthorizeSecurityGroupIngress",
+        "ec2:RevokeSecurityGroupIngress",
+        "ec2:AuthorizeSecurityGroupEgress",
+        "ec2:RevokeSecurityGroupEgress"
+      ],
+      "Resource": [
+        "arn:aws:ec2:us-east-1:341936017254:security-group/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/Environment": "dev",
+          "aws:ResourceTag/Project": "demo",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:AttachInternetGateway",
+        "ec2:DetachInternetGateway",
+        "ec2:DeleteInternetGateway"
+      ],
+      "Resource": [
+        "arn:aws:ec2:us-east-1:341936017254:internet-gateway/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/Environment": "dev",
+          "aws:ResourceTag/Project": "demo",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:DeleteRouteTable"
+      ],
+      "Resource": [
+        "arn:aws:ec2:us-east-1:341936017254:route-table/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/Environment": "dev",
+          "aws:ResourceTag/Project": "demo",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    }
+  ]
+}

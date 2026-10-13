@@ -4,7 +4,7 @@ output "instance_id" {
 }
 
 output "ami_id" {
-  value       = data.aws_ami.ubuntu_2204.id
+  value       = aws_instance.db.ami
   description = "AMI used for deployment (Ubuntu 22.04)."
 }
 

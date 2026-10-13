@@ -5,6 +5,7 @@ layer. A future exclusive state-writer handoff is mandatory; never changes IAM.
 Advanced WP5 remains a distinct, mutually exclusive mode. No E2 writes/takeover.
 """
 import argparse
+import configparser
 import copy
 import hashlib
 import json
@@ -50,12 +51,49 @@ class Failure(ValueError):
 
 
 class Process:
-    def __init__(self,config):self.config=config
+    def __init__(self,config,aws_config_file=None,terraform_wsl_bin=None):
+        self.config=config;self.aws_config_file=None;self.terraform_wsl_bin=terraform_wsl_bin
+        if aws_config_file:
+            path=Path(aws_config_file).resolve();parsed=configparser.ConfigParser(interpolation=None);parsed.read(path)
+            name='profile '+config['profile']
+            require(parsed.sections()==[name] and set(parsed[name])=={'region','source_profile','role_arn','role_session_name','duration_seconds','ca_bundle'},'public same-profile role configuration only; no embedded credentials/process')
+            require(parsed[name]['region']==config['region'] and parsed[name]['source_profile']==config['profile'] and parsed[name]['role_arn']==config['operator_arn'] and parsed[name]['duration_seconds']=='3600','exact existing operator role/profile/region')
+            self.aws_config_file=path
+        if terraform_wsl_bin:
+            require(os.name=='nt' and self.aws_config_file is not None,'local Windows WSL requires explicit same-profile configuration')
+            import zipfile
+            archive=Path(terraform_wsl_bin).resolve().with_name('terraform-linux.zip')
+            pin=decode((ROOT/'.github/scripts/ci/toolchain.json').read_bytes())['tools']['terraform']
+            require(sha(archive.read_bytes())==pin['sha256'],'reviewed Terraform distribution')
+            with zipfile.ZipFile(archive) as bundle:require(bundle.read('terraform')==Path(terraform_wsl_bin).read_bytes(),'exact pinned Terraform binary')
+
+    def wsl_path(self,path):
+        value=subprocess.run(['wsl','-d','Ubuntu','--exec','wslpath','-a',Path(path).resolve().as_posix()],capture_output=True,check=True).stdout.decode().strip()
+        require(value.startswith('/mnt/'),'observed local Windows mount required');return value
+
+    def wsl_command(self,args,cwd):
+        config=configparser.ConfigParser(interpolation=None);config.read(self.aws_config_file)
+        cert=config['profile '+self.config['profile']]['ca_bundle']
+        mapped=[]
+        for arg in args[1:]:
+            key,sep,value=arg.partition('=')
+            if sep and Path(value).is_absolute():arg=key+'='+self.wsl_path(value)
+            elif Path(arg).is_absolute():arg=self.wsl_path(arg)
+            mapped.append(arg)
+        prefix=['wsl','-d','Ubuntu','--','env','-i','PATH=/usr/bin:/bin','HOME='+self.wsl_path(Path.home()),
+            'CHECKPOINT_DISABLE=1','TF_IN_AUTOMATION=1','AWS_PROFILE='+self.config['profile'],'AWS_REGION='+self.config['region'],
+            'AWS_DEFAULT_REGION='+self.config['region'],'AWS_MAX_ATTEMPTS=1','AWS_EC2_METADATA_DISABLED=true',
+            'AWS_CONFIG_FILE='+self.wsl_path(self.aws_config_file),'AWS_SHARED_CREDENTIALS_FILE='+self.wsl_path(Path.home()/'.aws/credentials'),
+            'AWS_CA_BUNDLE='+self.wsl_path(cert),self.wsl_path(self.terraform_wsl_bin)]
+        return prefix+mapped
     def run(self,args,cwd=None,data=None):
         env={k:v for k,v in os.environ.items() if not k.upper().startswith(('AWS','AMAZON','TF_','TERRAGRUNT'))}
         env.update(AWS_PROFILE=self.config['profile'],AWS_REGION=self.config['region'],AWS_DEFAULT_REGION=self.config['region'],
             AWS_MAX_ATTEMPTS='1',AWS_EC2_METADATA_DISABLED='true',AWS_PAGER='',TF_IN_AUTOMATION='1',CHECKPOINT_DISABLE='1')
-        stage=(Path(cwd).name+':terraform '+args[2]) if args[0]=='terraform' and cwd else ('AWS '+args[8]+' '+args[9] if args[0]=='aws' else Path(args[0]).name)
+        if self.aws_config_file:env['AWS_CONFIG_FILE']=str(self.aws_config_file)
+        original=args
+        if args[0]=='terraform' and self.terraform_wsl_bin:args=self.wsl_command(args,cwd)
+        stage=(Path(cwd).name+':terraform '+original[2]) if original[0]=='terraform' and cwd else ('AWS '+args[8]+' '+args[9] if args[0]=='aws' else Path(args[0]).name)
         try:result=subprocess.run(args,cwd=cwd,input=data,env=env,capture_output=True,timeout=1800)
         except subprocess.TimeoutExpired:raise Failure(-1,b'timeout; remote effect unknown',stage) from None
         if result.returncode:raise Failure(result.returncode,result.stderr,stage)
@@ -586,7 +624,9 @@ def main(argv=None,process=None):
     parser.add_argument('action',choices=('init','status','bootstrap-status','bootstrap-network-plan','up-plan','apply','down-plan','inhibit','review-inhibition','verify','residual'))
     parser.add_argument('--config',type=Path,required=True);parser.add_argument('--directory',type=Path,required=True)
     parser.add_argument('--plan-id');parser.add_argument('--confirm');parser.add_argument('--confirm-sql-loss')
-    args=parser.parse_args(argv);session=Session(decode(args.config.read_bytes()),args.directory,process)
+    parser.add_argument('--aws-config-file',type=Path);parser.add_argument('--terraform-wsl-bin',type=Path)
+    args=parser.parse_args(argv);config=decode(args.config.read_bytes())
+    session=Session(config,args.directory,process or Process(config,args.aws_config_file,args.terraform_wsl_bin))
     if args.action=='init':result=session.initialize()
     elif args.action=='bootstrap-status':result=session.bootstrap_status()
     elif args.action=='up-plan':result=session.prepare()
