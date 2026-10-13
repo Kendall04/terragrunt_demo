@@ -43,6 +43,24 @@ def decode(raw):
 def sha(raw):return hashlib.sha256(raw).hexdigest()
 
 
+def state_digest(raw):
+    # Terraform state pull iterates check-result maps in non-deterministic order.
+    # Retain every check/result and all resource data; normalize only that order
+    # and JSON object key order. Serial/lineage are still checked independently.
+    value=decode(raw)
+    checks=value.get('check_results')
+    if checks is not None:
+        require(type(checks) is list,'state check results format')
+        for check in checks:
+            require(type(check) is dict and isinstance(check.get('config_addr'),str),'state check identity')
+            objects=check.get('objects')
+            if objects is not None:
+                require(type(objects) is list and all(type(o) is dict and isinstance(o.get('object_addr'),str) for o in objects),'state check objects')
+                check['objects']=sorted(objects,key=lambda o:o['object_addr'])
+        value['check_results']=sorted(checks,key=lambda check:check['config_addr'])
+    return sha(c.canonical(value))
+
+
 class Failure(ValueError):
     def __init__(self,code,stderr,stage='unspecified'):
         self.stage=stage
@@ -289,7 +307,7 @@ class Session:
             response=self.aws('resourcegroupstaggingapi','get-resources','--resource-arn-list',*arns)
             observed={i['ResourceARN']:{v['Key']:v['Value'] for v in i['Tags']} for i in response['ResourceTagMappingList']}
             require(set(observed)==set(arns) and all(t.get('Environment')=='dev' and t.get('Project')=='demo' for t in observed.values()),'independent owner tags missing/foreign')
-        return dict(lineage=value['lineage'],serial=value['serial'],sha256=sha(raw),rows=rows,outputs={k:v['value'] for k,v in value.get('outputs',{}).items()})
+        return dict(lineage=value['lineage'],serial=value['serial'],sha256=state_digest(raw),rows=rows,outputs={k:v['value'] for k,v in value.get('outputs',{}).items()})
 
     def variables(self,layer):
         # Existing admin-promoted source publication supplies only security-owned

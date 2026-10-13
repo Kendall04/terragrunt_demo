@@ -1,4 +1,4 @@
-# First real original DEV session — 2026-10-13
+# First real original DEV session â€” 2026-10-13
 
 ## Verified scope and progress
 
@@ -117,7 +117,7 @@ not promise zero cost or delete these protected resources.
 Evidence, binary plans and state stay in the private Windows task directory under
 TEMP, not Git. Failed/ambiguous attempts are not retried without readback. The first
 runtime apply must use the exclusive E16 role, reviewed source and saved plan.
-Reverse order remains edge → apps → platform → data → global, with separate SQL
+Reverse order remains edge â†’ apps â†’ platform â†’ data â†’ global, with separate SQL
 loss confirmation and real ECS/NAT/ASG inhibition/reconciliation before teardown.
 No force unlock or broad account cleanup is permitted.
 
@@ -203,3 +203,32 @@ inactive; live receipts, published image digests and observed network IDs must b
 supplied by the authenticated security administrator, never the DEV operator.
 
 Windows cannot inspect WSL-created provider-cache symlinks using Path.is_file. Source verification now excludes only .terraform/.terragrunt-cache before inspecting paths; actual root/nested executable sources remain checked, with a regression proving foreign extra.tf is rejected. Readonly provider lock verification remains independent.
+
+## Live recovery: state serialization and Lambda quota
+
+The recovery plan stopped before any apply because Terraform state pull reordered
+its `check_results` entries between calls. Independent reads had the same lineage,
+serial, resource values and check results after sorting by check identity. E16 now
+hashes canonical JSON with only check-result/object ordering normalized. It retains
+all checks and statuses, every resource value and ordered resource arrays; a changed
+value at the same serial still rejects execution. The old rejected plan stays in
+private evidence; a fresh plan must be reviewed against the corrected source.
+
+All three NAT runtime ECR repositories now contain the exact OCI digest above,
+with manifest readback. The installed versioned packages and image approvals do
+not mean the Lambda handlers are installed or invoked.
+
+The account's actual us-east-1 Lambda concurrency quota is **10**. The original
+handlers reserve one execution each; their safeguards have not been removed.
+AWS definitively rejected the requested 110 with `IllegalArgumentException`:
+requests must exceed the service default of 1,000. Request
+`43e5dc5811104434a40854a2c8b3e583ahAgHwhY` for **1,001** was accepted as PENDING.
+An accepted request is not an increased quota. No NAT ASG may be started before
+the authentic handler installation and recovery binding are ready.
+
+The targeted handler preview also included unrelated controller roles, including
+PROD roles, through the shared IAM dependency expression. That binary plan was
+rejected and never applied. Any administrator installation must select only the
+three exact DEV recovery roles/policies/functions, retain the source-defined
+trust and duty scope, and record authentic readbacks. It cannot apply that mixed
+preview or fabricate an installed binding to proceed with ASGs/SQL.

@@ -202,6 +202,35 @@ class Tests(unittest.TestCase):
     def test_stale_state(self):
         self.apply();review=self.session.prepare();self.fake.states['data']=[];self.fake.serial+=1
         with self.assertRaisesRegex(ValueError,'stale'):self.session.apply(review['plan_id'],review['confirmation'])
+    def test_reordered_state_checks_preserve_exact_plan_execution(self):
+        self.apply(network=True)
+        original=self.fake.run
+        count=0
+        def run(args,cwd=None,data=None):
+            nonlocal count
+            raw=original(args,cwd,data)
+            if args[0]=='terraform' and args[2]=='state':
+                value=json.loads(raw);count+=1
+                checks=[dict(config_addr=n,object_kind='var',status='pass',objects=[dict(object_addr=n,status='pass')]) for n in ('var.a','var.b')]
+                value['check_results']=checks if count%2 else list(reversed(checks))
+                return json.dumps(value,indent=count%2+1).encode()
+            return raw
+        self.fake.run=run
+        review=self.session.prepare(network_only=True)
+        self.session.apply(review['plan_id'],review['confirmation'])
+        self.assertTrue((self.session.directory/'plans'/review['plan_id']/'completed.json').exists())
+    def test_same_serial_changed_state_still_rejects_saved_plan(self):
+        self.apply(network=True);review=self.session.prepare(network_only=True)
+        self.fake.states=copy.deepcopy(self.fake.states)
+        self.fake.states['global'][0]['values']['id']='different-vpc-at-same-serial'
+        with self.assertRaisesRegex(ValueError,'stale'):self.session.apply(review['plan_id'],review['confirmation'])
+        self.assertFalse((self.session.directory/'plans'/review['plan_id']/'attempt.json').exists())
+    def test_check_status_and_ordered_resource_values_are_not_ignored(self):
+        value=dict(check_results=[dict(config_addr='var.a',status='pass',objects=None)],resources=[dict(values=['first','second'])])
+        digest=p.state_digest(json.dumps(value).encode())
+        value['check_results'][0]['status']='fail';self.assertNotEqual(digest,p.state_digest(json.dumps(value).encode()))
+        value['check_results'][0]['status']='pass';value['resources'][0]['values'].reverse()
+        self.assertNotEqual(digest,p.state_digest(json.dumps(value).encode()))
     def test_independent_confirmation(self):
         review=self.session.prepare()
         with self.assertRaisesRegex(ValueError,'confirmation'):self.session.apply(review['plan_id'],'yes')
