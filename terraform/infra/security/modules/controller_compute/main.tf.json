@@ -185,6 +185,7 @@
     "wp4d_bucket_writers": "${{ for env in [\"dev\", \"prod\"] : env => concat([var.admin_arn], [for k,v in local.wp4d_active : \"arn:aws:iam::${var.account_id}:role/${v.role}\" if v.environment == env]) }}",
     "e2_lifecycle_writers": "${{ for env in [\"dev\", \"prod\"] : env => [for suffix in [\"infra-${env}\", \"infra-high-risk-${env}\"] : \"arn:aws:iam::${var.account_id}:role/e1-controller-${suffix}-exec\"] }}",
     "wp4d_nat_events": "${{ for env in [\"dev\", \"prod\"] : env => try(var.wp4d_environment_bindings[env], null) if alltrue([for action in [\"assign_eip\", \"change_rt\", \"disable_sdc\"] : contains(keys(local.wp4d_active), \"nat-recovery/nat-${env}/${action}\")]) }}",
+    "wp4d_nat_targets": "${{ for k,v in local.wp4d_gateways : k => v if startswith(k, \"nat-recovery/\") && contains(keys(local.wp4d_nat_events), v.environment) }}",
     "nat_failure_queues": "${merge({for env,q in aws_sqs_queue.nat_delivery_failed : \"${env}/delivery\" => {environment=env,arn=q.arn,url=q.url,name=q.name,kind=\"delivery\"}}, {for env,q in aws_sqs_queue.nat_execution_failed : \"${env}/execution\" => {environment=env,arn=q.arn,url=q.url,name=q.name,kind=\"execution\"}})}",
     "wp4d_repositories": "${{ for key, value in local.wp4d_contract.selected : \"e1-wp4d-${replace(replace(key, \"/\", \"-\"), \"_\", \"-\")}\" => { name = value.name, engine = value.engine } }}",
     "wp5_contract": "${var.authority.wp5}",
@@ -760,7 +761,7 @@
         "arn": "${aws_lambda_function.wp3[\"qualification-finalizer/qualification\"].qualified_arn}"
       },
       "wp4d_nat": {
-        "for_each": "${{ for k,v in local.wp4d_gateways : k => v if startswith(k, \"nat-recovery/\") && contains(keys(local.wp4d_nat_events), v.environment) }}",
+        "for_each": "${local.wp4d_nat_targets}",
         "rule": "${aws_cloudwatch_event_rule.wp4d_nat[each.value.environment].name}",
         "target_id": "${replace(each.key, \"/\", \"-\")}",
         "arn": "${aws_lambda_function.wp4d[each.key].qualified_arn}",
@@ -812,14 +813,17 @@
         ]
       },
       "wp4d_nat": {
-        "for_each": "${aws_cloudwatch_event_target.wp4d_nat}",
+        "for_each": "${local.wp4d_nat_targets}",
         "statement_id": "ExactNatLaunchRule",
         "action": "lambda:InvokeFunction",
         "function_name": "${aws_lambda_function.wp4d[each.key].function_name}",
         "qualifier": "${aws_lambda_function.wp4d[each.key].version}",
         "principal": "events.amazonaws.com",
         "source_account": "${var.account_id}",
-        "source_arn": "${aws_cloudwatch_event_rule.wp4d_nat[local.wp4d_active[each.key].environment].arn}"
+        "source_arn": "${aws_cloudwatch_event_rule.wp4d_nat[local.wp4d_active[each.key].environment].arn}",
+        "depends_on": [
+          "aws_cloudwatch_event_target.wp4d_nat"
+        ]
       }
     },
     "aws_ecr_repository_policy": {
@@ -879,7 +883,7 @@
     },
     "aws_lambda_function_event_invoke_config": {
       "wp4d_nat": {
-        "for_each": "${aws_cloudwatch_event_target.wp4d_nat}",
+        "for_each": "${local.wp4d_nat_targets}",
         "function_name": "${aws_lambda_function.wp4d[each.key].function_name}",
         "qualifier": "${aws_lambda_function.wp4d[each.key].version}",
         "maximum_event_age_in_seconds": 900,
@@ -888,7 +892,10 @@
           "on_failure": {
             "destination": "${aws_sqs_queue.nat_execution_failed[local.wp4d_active[each.key].environment].arn}"
           }
-        }
+        },
+        "depends_on": [
+          "aws_cloudwatch_event_target.wp4d_nat"
+        ]
       }
     },
     "aws_sqs_queue": {
@@ -946,7 +953,7 @@
         ]
       },
       "nat_async_delivery": {
-        "for_each": "${aws_cloudwatch_event_target.wp4d_nat}",
+        "for_each": "${local.wp4d_nat_targets}",
         "alarm_name": "${\"e1-${replace(each.key,\"/\",\"-\")}-destination-failed\"}",
         "namespace": "AWS/Lambda",
         "metric_name": "DestinationDeliveryFailures",
@@ -961,6 +968,9 @@
         "treat_missing_data": "notBreaching",
         "alarm_actions": [
           "${\"arn:aws:sns:${var.region}:${var.account_id}:demo-${local.wp4d_active[each.key].environment}${local.wp4d_active[each.key].environment==\"dev\"?\"-shared\":\"\"}-alerts\"}"
+        ],
+        "depends_on": [
+          "aws_cloudwatch_event_target.wp4d_nat"
         ]
       },
       "nat_event_dlq_delivery": {

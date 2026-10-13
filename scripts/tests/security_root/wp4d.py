@@ -750,8 +750,11 @@ def extend(tf):
     resources["aws_cloudwatch_event_rule"]["wp4d_nat"] = {
         "for_each": ex("local.wp4d_nat_events"), "name": ex('"e1-wp4-${each.key}-nat-launch"'),
         "event_pattern": ex('jsonencode({ source = ["aws.autoscaling"], "detail-type" = ["EC2 Instance Launch Successful"], account = [var.account_id], region = [var.region], detail = { AutoScalingGroupName = [for slot in each.value.nat_slots : slot.asg] } })')}
+    # Stable binding keys are known before target/function IDs exist. Import
+    # must not require applying unrelated resources to learn those same keys.
+    local["wp4d_nat_targets"] = ex('{ for k,v in local.wp4d_gateways : k => v if startswith(k, "nat-recovery/") && contains(keys(local.wp4d_nat_events), v.environment) }')
     resources["aws_cloudwatch_event_target"]["wp4d_nat"] = {
-        "for_each": ex('{ for k,v in local.wp4d_gateways : k => v if startswith(k, "nat-recovery/") && contains(keys(local.wp4d_nat_events), v.environment) }'),
+        "for_each": ex('local.wp4d_nat_targets'),
         "rule": ex("aws_cloudwatch_event_rule.wp4d_nat[each.value.environment].name"),
         "target_id": ex('replace(each.key, "/", "-")'),
         "arn": ex("aws_lambda_function.wp4d[each.key].qualified_arn"),
@@ -765,7 +768,7 @@ def extend(tf):
         "dead_letter_config": {"arn": ex('aws_sqs_queue.nat_delivery_failed[each.value.environment].arn')},
         "depends_on": ["aws_sqs_queue_policy.nat_failures"]})
     resources["aws_lambda_function_event_invoke_config"] = {"wp4d_nat": {
-        "for_each": ex('aws_cloudwatch_event_target.wp4d_nat'),
+        "for_each": ex('local.wp4d_nat_targets'),
         "function_name": ex('aws_lambda_function.wp4d[each.key].function_name'),
         "qualifier": ex('aws_lambda_function.wp4d[each.key].version'),
         "maximum_event_age_in_seconds": 900, "maximum_retry_attempts": 1,
@@ -790,7 +793,7 @@ def extend(tf):
         "comparison_operator": "GreaterThanThreshold", "treat_missing_data": "missing",
         "alarm_actions": [ex('"arn:aws:sns:${var.region}:${var.account_id}:demo-${each.value.environment}${each.value.environment=="dev"?"-shared":""}-alerts"')]}
     resources["aws_cloudwatch_metric_alarm"]["nat_async_delivery"] = {
-        "for_each": ex('aws_cloudwatch_event_target.wp4d_nat'),
+        "for_each": ex('local.wp4d_nat_targets'),
         "alarm_name": ex('"e1-${replace(each.key,"/","-")}-destination-failed"'),
         "namespace": "AWS/Lambda", "metric_name": "DestinationDeliveryFailures",
         "dimensions": {"FunctionName": ex('aws_lambda_function.wp4d[each.key].function_name')},
@@ -805,12 +808,16 @@ def extend(tf):
         "comparison_operator": "GreaterThanThreshold", "treat_missing_data": "notBreaching",
         "alarm_actions": [ex('"arn:aws:sns:${var.region}:${var.account_id}:demo-${each.key}${each.key=="dev"?"-shared":""}-alerts"')]}
     resources["aws_lambda_permission"]["wp4d_nat"] = {
-        "for_each": ex("aws_cloudwatch_event_target.wp4d_nat"),
+        "for_each": ex("local.wp4d_nat_targets"),
         "statement_id": "ExactNatLaunchRule", "action": "lambda:InvokeFunction",
         "function_name": ex("aws_lambda_function.wp4d[each.key].function_name"),
         "qualifier": ex("aws_lambda_function.wp4d[each.key].version"),
         "principal": "events.amazonaws.com", "source_account": ex("var.account_id"),
         "source_arn": ex('aws_cloudwatch_event_rule.wp4d_nat[local.wp4d_active[each.key].environment].arn')}
+    for kind,name in (("aws_lambda_permission","wp4d_nat"),
+                      ("aws_lambda_function_event_invoke_config","wp4d_nat"),
+                      ("aws_cloudwatch_metric_alarm","nat_async_delivery")):
+        resources[kind][name].setdefault("depends_on", []).append("aws_cloudwatch_event_target.wp4d_nat")
     local["wp4d_repositories"] = ex('{ for key, value in local.wp4d_contract.selected : "e1-wp4d-${replace(replace(key, "/", "-"), "_", "-")}" => { name = value.name, engine = value.engine } }')
     resources["aws_ecr_repository"]["wp4d"] = {
         "for_each": ex("local.wp4d_repositories"), "name": ex("each.key"),

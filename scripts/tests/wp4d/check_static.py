@@ -28,11 +28,11 @@ def main():
     tf = json.loads((wp4d.ROOT/'terraform/infra/security/modules/controller_compute/main.tf.json').read_text())
     locals_ = {key: value for key, value in tf['locals'].items() if key in (
         'wp4d_contract', 'wp4d_candidates', 'wp4d_ready', 'wp4d_active', 'wp4d_policy_templates',
-        'wp4d_project_names', 'wp4d_cleanup_names', 'wp4d_config')}
+        'wp4d_project_names', 'wp4d_cleanup_names', 'wp4d_config', 'wp4d_gateways', 'wp4d_nat_events', 'wp4d_nat_targets')}
     locals_['evidence_bucket'] = f'e1-evidence-{ACCOUNT}-{REGION}'
     policy = tf['resource']['aws_iam_role_policy']['wp4d']['policy'][2:-1].replace('each.value', 'v').replace('each.key', 'key')
     trust = tf['resource']['aws_iam_role']['wp4d_reserved']['assume_role_policy'][2:-1].replace('each.value', 'v')
-    expression = 'jsonencode({active=keys(local.wp4d_active), policies={for key,v in local.wp4d_active:key=>jsondecode(' + policy + ')}, trusts={for key,v in local.wp4d_active:key=>jsondecode(' + trust + ')}, configurations={for key,value in local.wp4d_config:key=>jsondecode(value)}})'
+    expression = 'jsonencode({active=keys(local.wp4d_active), policies={for key,v in local.wp4d_active:key=>jsondecode(' + policy + ')}, trusts={for key,v in local.wp4d_active:key=>jsondecode(' + trust + ')}, configurations={for key,value in local.wp4d_config:key=>jsondecode(value)},nat_target_keys=keys(local.wp4d_nat_targets)})'
     environment = {k:v for k,v in os.environ.items() if not k.upper().startswith(
         ('AWS', 'AMAZON', 'BOTO', 'TF_', 'TERRAGRUNT')) and 'PROXY' not in k.upper()}
     environment.update(AWS_EC2_METADATA_DISABLED='true', AWS_CONFIG_FILE=os.devnull,
@@ -70,6 +70,8 @@ def main():
                 raise AssertionError(name+': '+result.stderr)
             observed = console_json(result.stdout)
             assert observed['active'] == wp4d.creation_supported(authority, i, r, b, ACCOUNT, REGION), (name,observed['active'],wp4d.creation_supported(authority,i,r,b,ACCOUNT,REGION))
+            expected_nat=[key for key in observed['active'] if key.startswith('nat-recovery/') and all('nat-recovery/nat-'+key.split('/')[1].split('-')[1]+'/'+duty in observed['active'] for duty in ('assign_eip','change_rt','disable_sdc'))]
+            assert observed['nat_target_keys']==sorted(expected_nat)
             for binding in observed['active']:
                 selected = authority['wp4d']['selected'][binding]
                 config=observed['configurations'][binding]

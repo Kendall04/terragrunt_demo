@@ -367,3 +367,29 @@ roles to read protected package versions and write their own conditional E13
 journals. TLS, no non-admin delete, immutable evidence, E2 conditional ownership
 and human read-only access remain. Mixed plans containing PROD were rejected;
 only the two evaluated DEV policies were installed and read back.
+
+The original three NAT functions are now installed as published **version 1**,
+Active, immutable runtime digest verified and reserved concurrency **1** each.
+The three qualified EventBridge targets, exact invocation permissions and E13
+async failure destinations are read back. The native rule remains DISABLED until
+both ASG slots are prepared. Original NAT logs exist with **14-day** retention.
+
+Terraform import exposed an unknown-key dependency on untracked EventBridge
+target attributes. The same protected target selection is now a stable local
+binding map used by target/permission/async-alarm for_each, with explicit target
+dependencies preserved. This changes no target membership, IAM or PROD behavior;
+actual console parity verifies all environments and inactive rejection cases.
+Installed resources are imported through Terraform into original security state,
+never by editing or replacing state files. The old mixed plans remain unapplied.
+
+Lambda automatically added ECR permissions including repository-policy management
+and a wildcard function source. These three new NAT repositories now use the
+original source-defined service read-only policy, limited to their exact DEV
+function/account. No unrelated ECR repository was modified.
+
+A final gate attempt at 0438913 failed while copying fixtures because C: ran out
+of space. It is not a PASS. Only five identical, task-generated provider binaries
+in the obsolete private dev-runtime-session-1fb9bee cache were removed after
+path, size, SHA-256 and inactive-process verification; all state/plans/evidence and
+the active checksum-locked cache were preserved. Fresh acceptance must complete
+before delivery. The complete gate at 90bc3ce remains earlier evidence.
