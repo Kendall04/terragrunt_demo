@@ -301,3 +301,11 @@ Linux or AWS runtime claim. Provider-free expressions/fixtures passed; AWS
 provider schema validation, installation and all live operations remain UNVERIFIED.
 No executable source changed after the successful gate; evidence-only documentation
 was appended and links/whitespace are checked separately before the local commit.
+
+
+The [first real DEV session](first-real-dev-deployment.md) records the installed
+exclusive writer, authentic DEV-only output promotion and targeted deployment
+corrections. NAT DEV's first WP4D binding can now describe only the two real network
+slots, without requiring future ECS/cleanup IDs; application and PROD admission
+continue using the original full binding. This does not certify installed recovery
+or eliminate live E13/readback requirements.

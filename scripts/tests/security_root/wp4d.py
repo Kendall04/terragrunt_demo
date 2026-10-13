@@ -178,6 +178,7 @@ def install(root, authority, binding, account, region, storage):
 
 ENV_FIELDS = {"schema", "owner", "environment", "account", "region", "repository",
               "colors", "cleanup", "nat_slots"}
+NAT_ENV_FIELDS = {"schema", "owner", "environment", "account", "region", "repository", "nat_slots"}
 COLOR_FIELDS = {"roles", "secret_arn", "kms_key_arn", "log_group", "cluster", "service",
                 "subnets", "security_groups", "target_group", "listener", "candidate_rule"}
 SLOT_FIELDS = {"environment", "account", "region", "vpc", "subnet", "az", "asg", "eip", "route_table", "spec"}
@@ -205,6 +206,10 @@ def complete_resources(resources):
     if (set(resources["cleanup"]) != {"rule", "function_arn", "expression"} or
             not re.fullmatch(r"rate\((?:1 minute|(?:[2-9]|[1-5][0-9]|60) minutes)\)", resources["cleanup"]["expression"])):
         return False
+    return complete_nat_slots(resources)
+
+
+def complete_nat_slots(resources):
     slots = resources["nat_slots"]
     if len({s["vpc"] for s in slots}) != 1 or len({s["subnet"] for s in slots}) != 2:
         return False
@@ -263,34 +268,44 @@ def creation_supported(authority, installations, runtime_approvals, environment_
                     re.fullmatch(rf"{account}[.]dkr[.]ecr[.]{region}[.]amazonaws[.]com/"
                                  rf"{repository}@sha256:[0-9a-f]{{64}}", runtime["uri"])):
                 continue
-            if not (resources["schema"] == "E1_WP4D_PROTECTED_ENVIRONMENT_V1" and
-                    resources["owner"] == OWNER and resources["environment"] == env and
-                    resources["account"] == account and resources["region"] == region and
-                    resources["repository"] == "demo-shared-demo-ms"):
-                continue
-            if not complete_resources(resources):
-                continue
-            colors = resources["colors"]
-            blue, green = colors["blue"], colors["green"]
-            if any(blue[field] != green[field] for field in
-                   ("cluster", "listener", "candidate_rule")):
-                continue
-            if not (re.match(rf"^arn:aws:ecs:{region}:{account}:cluster/demo-{env}-", blue["cluster"])
-                    and re.match(rf"^arn:aws:elasticloadbalancing:{region}:{account}:listener/app/demo-{env}-", blue["listener"])
-                    and re.match(rf"^arn:aws:elasticloadbalancing:{region}:{account}:listener-rule/app/demo-{env}-", blue["candidate_rule"])):
-                continue
-            if any(colors[color]["service"] != f"demo-{env}-app-api-{color}-svc" or
-                   not re.match(rf"^arn:aws:elasticloadbalancing:{region}:{account}:targetgroup/demo-{env}-{color}/",
-                                colors[color]["target_group"]) or
-                   colors[color]["roles"] != {
-                       "task": f"arn:aws:iam::{account}:role/demo-{env}-app-api-{color}-task-role",
-                       "execution": f"arn:aws:iam::{account}:role/demo-{env}-app-api-{color}-exec-role"}
-                   for color in ("blue", "green")):
-                continue
-            cleanup = resources["cleanup"]
-            if (cleanup["rule"] != f"demo-{env}-scale-down-old-color-rule" or
-                cleanup["function_arn"] != f"arn:aws:lambda:{region}:{account}:function:e1-cleanup-recovery-cleanup-{env}:wp4d"):
-                continue
+            network_only = (key.startswith('nat-recovery/nat-dev/') and
+                            resources.get('schema') == 'E1_WP4D_PROTECTED_NAT_NETWORK_V1')
+            if network_only:
+                if not (set(resources) == NAT_ENV_FIELDS and resources['owner'] == OWNER
+                        and resources['environment'] == 'dev' and resources['account'] == account
+                        and resources['region'] == region and resources['repository'] == 'demo-dev-shared-demo-ms'
+                        and complete_nat_slots(resources)
+                        and {v['asg'] for v in resources['nat_slots']} == {'demo-dev-asg-nat-a','demo-dev-asg-nat-b'}):
+                    continue
+            else:
+                if not (resources["schema"] == "E1_WP4D_PROTECTED_ENVIRONMENT_V1" and
+                        resources["owner"] == OWNER and resources["environment"] == env and
+                        resources["account"] == account and resources["region"] == region and
+                        resources["repository"] == "demo-shared-demo-ms"):
+                    continue
+                if not complete_resources(resources):
+                    continue
+                colors = resources["colors"]
+                blue, green = colors["blue"], colors["green"]
+                if any(blue[field] != green[field] for field in
+                       ("cluster", "listener", "candidate_rule")):
+                    continue
+                if not (re.match(rf"^arn:aws:ecs:{region}:{account}:cluster/demo-{env}-", blue["cluster"])
+                        and re.match(rf"^arn:aws:elasticloadbalancing:{region}:{account}:listener/app/demo-{env}-", blue["listener"])
+                        and re.match(rf"^arn:aws:elasticloadbalancing:{region}:{account}:listener-rule/app/demo-{env}-", blue["candidate_rule"])):
+                    continue
+                if any(colors[color]["service"] != f"demo-{env}-app-api-{color}-svc" or
+                       not re.match(rf"^arn:aws:elasticloadbalancing:{region}:{account}:targetgroup/demo-{env}-{color}/",
+                                    colors[color]["target_group"]) or
+                       colors[color]["roles"] != {
+                           "task": f"arn:aws:iam::{account}:role/demo-{env}-app-api-{color}-task-role",
+                           "execution": f"arn:aws:iam::{account}:role/demo-{env}-app-api-{color}-exec-role"}
+                       for color in ("blue", "green")):
+                    continue
+                cleanup = resources["cleanup"]
+                if (cleanup["rule"] != f"demo-{env}-scale-down-old-color-rule" or
+                    cleanup["function_arn"] != f"arn:aws:lambda:{region}:{account}:function:e1-cleanup-recovery-cleanup-{env}:wp4d"):
+                    continue
             slots = resources["nat_slots"]
             if len(slots) != 2 or any(len({slot[field] for slot in slots}) != 2
                                       for field in ("asg", "eip", "route_table", "az")):
@@ -520,9 +535,14 @@ def _policy_expression():
                              f"__SUBNET_{index}__": member + ".subnet",
                              f"__PROFILE_{index}__": member + ".spec.instance_profile"})
     result = "local.wp4d_policy_templates[each.key]"
+    nat_result = result
+    nat_placeholders = {'__ACCOUNT__','__REGION__','__PACKAGE_SHA__','__NAME__','__VERSION__'} | {
+        f'__{label}_{i}__' for label in ('EIP','RT','SUBNET','PROFILE') for i in range(2)}
     for placeholder, expression in replacements.items():
         result = f'replace({result}, "{placeholder}", {expression})'
-    return "${" + result + "}"
+        if placeholder in nat_placeholders:
+            nat_result = f'replace({nat_result}, "{placeholder}", {expression})'
+    return '${startswith(each.key,"nat-recovery/nat-dev/") ? ' + nat_result + ' : ' + result + '}'
 
 
 def extend(tf):
@@ -603,8 +623,18 @@ def extend(tf):
     for field, prefix in (("vpc", "vpc"), ("subnet", "subnet"), ("eip", "eipalloc"), ("route_table", "rtb")):
         checks += [f'alltrue([for slot in v.resources.nat_slots : can(regex("^{prefix}-[0-9a-f]{{8,17}}$", slot.{field}))])']
     checks += ['alltrue([for slot in v.resources.nat_slots : can(regex("^ami-[0-9a-f]{8,17}$", slot.spec.ami)) && can(regex("^lt-[0-9a-f]{8,17}$", slot.spec.launch_template)) && can(regex("^[0-9a-f]{64}$", slot.spec.user_data_sha256)) && slot.spec.http_tokens == "required" && slot.spec.instance_type == "t3.micro" && slot.spec.associate_public_ip == true && slot.spec.delete_on_termination == true && length(slot.spec.security_groups) == 1 && can(regex("^sg-[0-9a-f]{8,17}$", slot.spec.security_groups[0]))])']
-    local["wp4d_ready"] = ex('{ for key, v in local.wp4d_candidates : key => v if try(' +
-                             ' && '.join(checks) + ', false) }')
+    nat_checks = [value for value in checks if not any(token in value for token in
+        ('v.resources.schema', 'v.resources.colors', 'v.resources.cleanup', 'v.resources.repository', 'sort(keys(v.resources))'))]
+    nat_checks += [keys_equal('v.resources', NAT_ENV_FIELDS),
+        'v.resources.schema == "E1_WP4D_PROTECTED_NAT_NETWORK_V1"',
+        'v.environment == "dev"',
+        'v.resources.repository == "demo-dev-shared-demo-ms"',
+        'sort([for slot in v.resources.nat_slots : slot.asg]) == sort(["demo-dev-asg-nat-a","demo-dev-asg-nat-b"])']
+    full_ready = 'try(' + ' && '.join(checks) + ', false)'
+    nat_ready = 'try(' + ' && '.join(nat_checks) + ', false)'
+    local["wp4d_ready"] = ex('{ for key, v in local.wp4d_candidates : key => v if '
+        '(startswith(key,"nat-recovery/nat-dev/") && try(v.resources.schema == "E1_WP4D_PROTECTED_NAT_NETWORK_V1",false) ? '
+        + nat_ready + ' : ' + full_ready + ') }')
     local["wp4d_active"] = ex('{ for key, v in local.wp4d_ready : key => v if alltrue([for dependency in v.dependencies : contains(keys(local.wp4d_ready), dependency)]) }')
     local["wp4d_gateways"] = ex('{ for key, v in local.wp4d_active : key => v if v.engine == "LAMBDA" }')
     local["wp4d_projects"] = ex('{ for key, v in local.wp4d_active : key => v if v.engine == "CODEBUILD" }')

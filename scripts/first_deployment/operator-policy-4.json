@@ -171,6 +171,69 @@
       "Resource": [
         "*"
       ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ec2:DescribeAddressesAttribute"
+      ],
+      "Resource": [
+        "*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "elasticloadbalancing:DescribeListenerAttributes"
+      ],
+      "Resource": [
+        "arn:aws:elasticloadbalancing:us-east-1:341936017254:listener/app/demo-dev-internal-alb/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:TagResource"
+      ],
+      "Resource": [
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/vpc/demo-dev-flow-logs",
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/vpc/demo-dev-flow-logs:*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1",
+          "aws:RequestTag/Project": "demo",
+          "aws:RequestTag/Environment": "dev"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "logs:PutRetentionPolicy",
+        "logs:DeleteLogGroup",
+        "logs:ListTagsForResource"
+      ],
+      "Resource": [
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/vpc/demo-dev-flow-logs",
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/vpc/demo-dev-flow-logs:*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
     }
   ]
 }

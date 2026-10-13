@@ -2,7 +2,7 @@
 import copy,json,sys,tempfile,unittest
 from pathlib import Path
 HERE=Path(__file__).resolve().parent;ROOT=HERE.parents[2]
-sys.path[:0]=[str(ROOT),str(HERE.parent/'authority'),str(HERE.parent/'security_root'),str(HERE.parent/'ownership_publication')]
+sys.path[:0]=[str(ROOT),str(HERE.parent/'authority'),str(HERE.parent/'security_root'),str(HERE.parent/'ownership_publication'),str(HERE.parent/'wp4d')]
 from scripts import first_dev_bootstrap as b
 import publication as pub,ownership
 from test_wp2d import Admin,output_fixture
@@ -90,6 +90,31 @@ class Tests(unittest.TestCase):
  def test_sql_output_references_observed_instance_ami(self):
   text=(ROOT/'terraform/modules/target/dev/data/ordinary-outputs.tf').read_text()
   self.assertIn('aws_instance.db.ami',text);self.assertNotIn('data.aws_ami.ubuntu_2204',text)
+
+ def nat_network(self):
+  import wp4d
+  from test_wp4d import installed_projection,ACCOUNT as A,REGION as R
+  doc=json.loads((ROOT/'terraform/infra/security/authority.json').read_text());installs,images,bindings=installed_projection(doc)
+  net={key:value for key,value in bindings['dev'].items() if key in wp4d.NAT_ENV_FIELDS}
+  net.update(schema='E1_WP4D_PROTECTED_NAT_NETWORK_V1',repository='demo-dev-shared-demo-ms')
+  for slot,side in zip(net['nat_slots'],('a','b')):slot['asg']='demo-dev-asg-nat-'+side
+  return wp4d,doc,installs,images,net,A,R
+ def test_dev_nat_bootstrap_needs_only_actual_network_binding(self):
+  module,doc,i,r,net,a,region=self.nat_network()
+  ready=module.creation_supported(doc,i,r,{'dev':net},a,region)
+  self.assertEqual(set(ready),{'nat-recovery/nat-dev/'+d for d in ('assign_eip','change_rt','disable_sdc')})
+  self.assertNotIn('colors',net);self.assertNotIn('cleanup',net)
+ def test_nat_network_cannot_authorize_prod_or_application(self):
+  module,doc,i,r,net,a,region=self.nat_network()
+  self.assertEqual(module.creation_supported(doc,i,r,{'prod':net},a,region),[])
+  for field,value in (('account','999999999999'),('region','us-west-2'),('owner','CALLER'),('environment','prod'),('colors',{})):
+   bad=copy.deepcopy(net);bad[field]=value
+   self.assertEqual(module.creation_supported(doc,i,r,{'dev':bad},a,region),[])
+ def test_nat_bootstrap_preserves_installation_and_exact_slot_guards(self):
+  module,doc,i,r,net,a,region=self.nat_network()
+  for mutate in (lambda n:n['nat_slots'][0].update(asg='unrelated'),lambda n:n['nat_slots'][0]['spec'].update(http_tokens='optional'),lambda n:n['nat_slots'][0]['spec'].update(instance_profile='arn:aws:iam::'+a+':instance-profile/foreign')):
+   bad=copy.deepcopy(net);mutate(bad);self.assertEqual(module.creation_supported(doc,i,r,{'dev':bad},a,region),[])
+  i={};self.assertEqual(module.creation_supported(doc,i,r,{'dev':net},a,region),[])
 
 if __name__=='__main__':
  from hermetic import install

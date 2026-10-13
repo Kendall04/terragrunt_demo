@@ -51,8 +51,13 @@ class Failure(ValueError):
 
 
 class Process:
-    def __init__(self,config,aws_config_file=None,terraform_wsl_bin=None):
-        self.config=config;self.aws_config_file=None;self.terraform_wsl_bin=terraform_wsl_bin;self.paths={}
+    def __init__(self,config,aws_config_file=None,terraform_wsl_bin=None,terraform_plugin_cache=None):
+        self.config=config;self.aws_config_file=None;self.terraform_wsl_bin=terraform_wsl_bin;self.paths={};self.terraform_plugin_cache=None
+        if terraform_plugin_cache:
+            cache=Path(terraform_plugin_cache).resolve()
+            require(terraform_wsl_bin is not None and cache.is_dir() and not cache.is_symlink() and cache!=ROOT and ROOT not in cache.parents,
+                'existing external provider cache only; readonly locks still verify providers')
+            self.terraform_plugin_cache=cache
         if aws_config_file:
             path=Path(aws_config_file).resolve();parsed=configparser.ConfigParser(interpolation=None);parsed.read(path)
             name='profile '+config['profile']
@@ -87,6 +92,7 @@ class Process:
             'AWS_DEFAULT_REGION='+self.config['region'],'AWS_MAX_ATTEMPTS=1','AWS_EC2_METADATA_DISABLED=true',
             'AWS_CONFIG_FILE='+self.wsl_path(self.aws_config_file),'AWS_SHARED_CREDENTIALS_FILE='+self.wsl_path(Path.home()/'.aws/credentials'),
             'AWS_CA_BUNDLE='+self.wsl_path(cert),self.wsl_path(self.terraform_wsl_bin)]
+        if self.terraform_plugin_cache:prefix.insert(-1,'TF_PLUGIN_CACHE_DIR='+self.wsl_path(self.terraform_plugin_cache))
         return prefix+mapped
     def run(self,args,cwd=None,data=None):
         env={k:v for k,v in os.environ.items() if not k.upper().startswith(('AWS','AMAZON','TF_','TERRAGRUNT'))}
@@ -626,9 +632,9 @@ def main(argv=None,process=None):
     parser.add_argument('action',choices=('init','status','bootstrap-status','bootstrap-network-plan','up-plan','apply','down-plan','inhibit','review-inhibition','verify','residual'))
     parser.add_argument('--config',type=Path,required=True);parser.add_argument('--directory',type=Path,required=True)
     parser.add_argument('--plan-id');parser.add_argument('--confirm');parser.add_argument('--confirm-sql-loss')
-    parser.add_argument('--aws-config-file',type=Path);parser.add_argument('--terraform-wsl-bin',type=Path)
+    parser.add_argument('--aws-config-file',type=Path);parser.add_argument('--terraform-wsl-bin',type=Path);parser.add_argument('--terraform-plugin-cache',type=Path)
     args=parser.parse_args(argv);config=decode(args.config.read_bytes())
-    session=Session(config,args.directory,process or Process(config,args.aws_config_file,args.terraform_wsl_bin))
+    session=Session(config,args.directory,process or Process(config,args.aws_config_file,args.terraform_wsl_bin,args.terraform_plugin_cache))
     if args.action=='init':result=session.initialize()
     elif args.action=='bootstrap-status':result=session.bootstrap_status()
     elif args.action=='up-plan':result=session.prepare()

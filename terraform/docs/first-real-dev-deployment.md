@@ -131,3 +131,50 @@ records, inactive compute and the exact original authority checksum after exclud
 only allowed output metadata. The protected-resource snapshot excludes the new DEV
 output only after proving it equals the DEV subset of the complete output. No
 IAM/trust/activation checksum was relaxed or replaced.
+
+## Actual first runtime plan and targeted correction
+
+The real global networking plan had 43 creations and no updates/deletions. Its
+saved binary was applied through E16 with the exclusive role and native S3 locks.
+It partially completed: VPC `vpc-0947cfaf91cb48ee9`, two public and two private
+subnets, routes, security groups, the two EIPs and internal ALB resources exist.
+No SQL, NAT ASG, Fargate task or Gateway was created at that stage.
+
+Provider readback exposed missing `ec2:DescribeAddressesAttribute` and
+`elasticloadbalancing:DescribeListenerAttributes`; logs creation also needed the
+actual `/aws/vpc/demo-dev-flow-logs` ARN. The operator policy's second version adds
+only those reads and the exact DEV log group operations. Live attributes and
+ownership are checked before clearing the three post-create taint flags. State
+and failed attempt evidence are preserved; a new reviewed plan is required.
+
+The partial apply does not count as reconciled global UP. ALB and two public
+IPv4 allocations incur charges while this stage remains present. The original
+reverse dependency order remains available for supervised cleanup, subject to
+actual controller absence/inhibition and Terraform state reconciliation.
+
+First NAT installation had a circular source gate: even NAT handlers required
+ECS color and cleanup IDs, while SQL bootstrap needed NAT first. The existing
+WP4D environment binding now accepts a closed `E1_WP4D_PROTECTED_NAT_NETWORK_V1`
+only for the three DEV NAT duties. It contains authenticated account/region,
+repository metadata and both exact a/b ASG/network/launch specifications; it
+cannot authorize application delivery, cleanup or PROD. Package/VersionId/digest
+approval, fresh membership resolution, narrow duty IAM and E13 UNKNOWN handling
+remain mandatory. No alternative coordinator or admission registry is added.
+
+Terraform/Python parity now explicitly covers the network-only binding and
+foreign-ASG/PROD rejection. Real Terraform console also exposed list-versus-tuple
+comparison in the DEV two-slot validation; both operands are now sorted lists.
+PROD wiring and lifecycle packages remain unchanged.
+
+The minimal WP4D Docker assembly copies only the existing runtime/installer and
+requires a digest-pinned Lambda Python base with boto3/awslambdaric already present.
+The VM built it without credentials using the observed official base
+`public.ecr.aws/lambda/python@sha256:c05509c1a303e7ca10acc26782f530ff1a8573411132e2a67c1924d687a65a96`.
+Its OCI image digest is `sha256:1f55128f3203d38f452405d9625011573865ac71710635eecd21ea17304162c4`.
+A built image alone is not an installed handler or callable-version proof.
+
+A duplicate local provider cache filled C: and invalidated one gate/initialization.
+Only exact task-generated provider binaries in obsolete private execution caches
+were removed; no state, plans, other project files or evidence were deleted.
+`--terraform-plugin-cache` can reuse an existing external cache on local WSL.
+Readonly provider locks/checksums remain enforced, so cache presence is not trust.

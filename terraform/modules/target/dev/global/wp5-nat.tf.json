@@ -4,7 +4,7 @@
       "type": "map(object({ id = string, version = number, subnet = string, recovery = string }))",
       "default": {},
       "validation": {
-        "condition": "${length(var.protected_nat_launch) == 0 || sort(keys(var.protected_nat_launch)) == [\"a\", \"b\"]}",
+        "condition": "${length(var.protected_nat_launch) == 0 || sort(keys(var.protected_nat_launch)) == sort([\"a\", \"b\"])}",
         "error_message": "Only the exact two protected NAT slots are admitted."
       }
     }

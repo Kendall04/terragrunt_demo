@@ -105,6 +105,8 @@ def target_overlay(wiring):
                     'lifecycle':{'precondition':{'condition':'${each.value.recovery == "ADMIN_VERIFIED_ALL_THREE_HANDLERS_AND_EXACT_MEMBERSHIP" && each.value.version > 0 && floor(each.value.version) == each.value.version && can(regex("^lt-[0-9a-f]{8,17}$", each.value.id))}',
                         'error_message':'Exact administrator-installed NAT launch identity required.'}}}}}}
         nat=wiring[root+'global/wp5-nat.tf.json']
+        if env == 'dev':
+            nat['variable']['protected_nat_launch']['validation']['condition'] = '${length(var.protected_nat_launch) == 0 || sort(keys(var.protected_nat_launch)) == sort(["a", "b"])}'
         nat['output']={'nat_eip_allocation_ids':{'value':'${{for key,v in aws_eip.wp5_nat:key=>v.allocation_id}}'},
             'nat_asg_names':{'value':'${{for key,v in aws_autoscaling_group.wp5_nat:key=>v.name}}'}}
         alarms=retired.source(ROOT, 'terraform/infra/global/modules/nat/alarms_nat.tf').read_text(encoding='utf-8')
