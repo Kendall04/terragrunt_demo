@@ -234,6 +234,23 @@
           "aws:RequestedRegion": "us-east-1"
         }
       }
+    },
+    {
+      "Sid": "CreateTaggedDevVpcFlowLog",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:CreateFlowLogs"
+      ],
+      "Resource": [
+        "arn:aws:ec2:us-east-1:341936017254:vpc-flow-log/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1",
+          "aws:RequestTag/Environment": "dev",
+          "aws:RequestTag/Project": "demo"
+        }
+      }
     }
   ]
 }

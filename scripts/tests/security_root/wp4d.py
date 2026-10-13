@@ -541,7 +541,10 @@ def _policy_expression():
     for placeholder, expression in replacements.items():
         result = f'replace({result}, "{placeholder}", {expression})'
         if placeholder in nat_placeholders:
-            nat_result = f'replace({nat_result}, "{placeholder}", {expression})'
+            # Closed two-slot validation guarantees element(0) is index zero.
+            # Avoid the JSON-expression index offset bug in the pinned linter.
+            nat_expression = expression.replace('each.value.resources.nat_slots[0]', 'element(each.value.resources.nat_slots, 0)')
+            nat_result = f'replace({nat_result}, "{placeholder}", {nat_expression})'
     return '${startswith(each.key,"nat-recovery/nat-dev/") ? ' + nat_result + ' : ' + result + '}'
 
 

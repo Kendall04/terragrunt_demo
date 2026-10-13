@@ -232,3 +232,29 @@ rejected and never applied. Any administrator installation must select only the
 three exact DEV recovery roles/policies/functions, retain the source-defined
 trust and duty scope, and record authentic readbacks. It cannot apply that mixed
 preview or fabricate an installed binding to proceed with ASGs/SQL.
+
+The repository gate at `c3eeb8d404c5c155a5b0911a984e0dbaaa81d3cd` passed
+983 E1/WP tests and AC1–AC16. This is not AWS application health. The corrected
+operator passed 41 tests; bootstrap now passes 17, including both Flow Log
+resource authorizations.
+
+Network recovery created the candidate ALB rule and VPC log group, then
+failed definitively on CreateFlowLogs for the new vpc-flow-log resource.
+Operator Part4 version v4 adds only that create action on same-account/region
+flow logs, requiring DEV/demo request tags. The original parent-VPC DEV/demo
+resource-tag check and scoped PassRole remain. IAM analysis, installed readback
+and simulator confirmed the addition. A new missing-resource plan is required;
+the failed binary is not replayed and its state/evidence remain retained.
+
+Three exact original NAT execution roles/policies and two encrypted diagnostic
+queues are installed. No Lambda function or target is installed. Policy import
+encountered unknown EventBridge target for_each dependencies. A scoped
+policies-only preview excludes PROD and unrelated roles and is independent
+of function activation. Quota request is CASE_OPENED (case 179193009300032),
+while actual Lambda concurrency remains 10.
+
+Pinned TFLint mislocates deprecated-index diagnostics in escaped JSON. The new
+DEV-only branch uses equivalent element(slots, 0) for its first slot, whose
+closed two-element length is already validated. The existing full-binding/PROD
+branch remains unchanged. Actual console policy/trust parity passes all 11
+cases; no finding is suppressed.

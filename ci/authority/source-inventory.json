@@ -1588,7 +1588,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/first_deployment/operator-policy-4.json": {
-      "sha256": "b1c1b39c8519004c49acac33270dfc3a13274cda54da9387e21c35eaa2e78d59",
+      "sha256": "8ed70b351257d9a9aff3539c5817791b180e5ffbb5ebe5b81fc15eec1b720e9f",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -1631,7 +1631,11 @@
           217,
           229,
           230,
-          234
+          234,
+          245,
+          249,
+          250,
+          251
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -3099,7 +3103,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/first_deployment/run.py": {
-      "sha256": "2b9244e00c952ebfe0da489cba89ec6ae0365a0648d21065abc517920eeb8c58",
+      "sha256": "77d01025c4b24aef233e126cc5e3cc3b0a3ec4461dec436308e9cfe12573cf6f",
       "declarations": [],
       "signals": {
         "role-input": [
@@ -3125,9 +3129,13 @@
           72,
           73,
           77,
-          91,
+          96,
           97,
-          115
+          99,
+          100,
+          102,
+          108,
+          126
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -4635,12 +4643,12 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/wp4d.py": {
-      "sha256": "1008de2c0fac79a54091a7cedb330e5f4a33f4a214d571a38cc91636d410b844",
+      "sha256": "81648ee6a9f64d14da4381ea724d62054a64af658f88b64f4797807e2c60d20b",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
-          650,
-          653
+          653,
+          656
         ],
         "launch-or-mutation": [
           51,
@@ -4669,35 +4677,35 @@
           516,
           517,
           525,
-          587,
-          588,
-          589,
           590,
           591,
+          592,
           593,
-          601,
-          622,
-          650,
+          594,
+          596,
+          604,
+          625,
           653,
-          662,
-          689,
-          709,
-          710,
+          656,
+          665,
+          692,
+          712,
           713,
-          715,
-          719,
-          728,
-          730,
-          738,
-          743,
-          749,
-          758,
-          780,
-          788,
-          796,
-          803,
-          818,
-          820
+          716,
+          718,
+          722,
+          731,
+          733,
+          741,
+          746,
+          752,
+          761,
+          783,
+          791,
+          799,
+          806,
+          821,
+          823
         ],
         "executable-dependency": [
           35,
@@ -4719,46 +4727,46 @@
           103,
           185,
           226,
-          625,
-          648,
-          669,
-          680,
-          713,
-          716,
-          717,
-          718,
-          719,
-          721,
-          722,
-          743,
-          749,
-          780
-        ],
-        "security-control": [
+          628,
           651,
-          653,
-          654,
-          655,
-          656,
-          658,
-          666,
-          671,
-          678,
-          691,
-          711,
+          672,
+          683,
           716,
+          719,
           720,
           721,
+          722,
+          724,
+          725,
+          746,
+          752,
+          783
+        ],
+        "security-control": [
+          654,
+          656,
+          657,
+          658,
+          659,
+          661,
+          669,
+          674,
+          681,
+          694,
+          714,
+          719,
           723,
           724,
-          731,
-          732,
-          742,
+          726,
+          727,
+          734,
+          735,
           745,
-          763,
-          778,
-          804,
-          815
+          748,
+          766,
+          781,
+          807,
+          818
         ]
       },
       "semantic_status": "CURRENT_FACT"
@@ -5782,7 +5790,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/modules/controller_compute/main.tf.json": {
-      "sha256": "48a7f43e58f9efae1ded24597995945dde1a5ab88526d4ee69666feee2575ef6",
+      "sha256": "535535bee3dae568c795376867123d02f2b5040ad071ad89f0f18a5defcd9497",
       "declarations": [],
       "signals": {
         "credential-acquisition": [

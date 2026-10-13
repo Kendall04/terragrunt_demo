@@ -87,6 +87,17 @@ class Tests(unittest.TestCase):
   for binding in wp5.BINDINGS:
    if binding.endswith('-prod'):self.assertEqual(wp5.artifact(ROOT,before,binding),wp5.artifact(ROOT,after,binding))
 
+ def test_flow_log_creation_scopes_both_parent_and_new_resource(self):
+  p2=json.loads((ROOT/'scripts/first_deployment/operator-policy-2.json').read_text())
+  p4=json.loads((ROOT/'scripts/first_deployment/operator-policy-4.json').read_text())
+  parent=[s for s in p2['Statement'] if 'ec2:CreateFlowLogs' in s.get('Action',[])]
+  child=[s for s in p4['Statement'] if 'ec2:CreateFlowLogs' in s.get('Action',[])]
+  self.assertEqual(len(parent),1);self.assertEqual(len(child),1)
+  self.assertEqual(parent[0]['Resource'],['arn:aws:ec2:us-east-1:341936017254:vpc/*'])
+  self.assertEqual(child[0]['Resource'],['arn:aws:ec2:us-east-1:341936017254:vpc-flow-log/*'])
+  self.assertEqual(child[0]['Action'],['ec2:CreateFlowLogs'])
+  self.assertEqual(child[0]['Condition']['StringEquals'],{'aws:RequestedRegion':'us-east-1','aws:RequestTag/Environment':'dev','aws:RequestTag/Project':'demo'})
+  self.assertEqual(parent[0]['Condition']['StringEquals']['aws:ResourceTag/Environment'],'dev')
  def test_sql_output_references_observed_instance_ami(self):
   text=(ROOT/'terraform/modules/target/dev/data/ordinary-outputs.tf').read_text()
   self.assertIn('aws_instance.db.ami',text);self.assertNotIn('data.aws_ami.ubuntu_2204',text)
