@@ -42,7 +42,9 @@ ECR repository `demo-dev-shared-demo-ms` contains the original application image
 The existing OCI publisher uploaded it from Windows, with exact manifest readback.
 No mutable latest tag, VM AWS authentication or WP3 qualification claim is involved.
 Secret names are `demo/dev/app/db-connection-string`, `demo/dev/db/sql-app-password`
-and `demo/dev/db/sql-sa-password`; no secret values were seeded or put in Terraform.
+and `demo/dev/db/sql-sa-password`. SQL SA/app passwords are now generated and seeded
+outside Terraform, with exact AWSCURRENT metadata readback. The connection string
+is unseeded until a real SQL private IP exists; no value enters Terraform or logs.
 
 ## Deployment corrections
 
@@ -258,3 +260,74 @@ DEV-only branch uses equivalent element(slots, 0) for its first slot, whose
 closed two-element length is already validated. The existing full-binding/PROD
 branch remains unchanged. Actual console policy/trust parity passes all 11
 cases; no finding is suppressed.
+
+## Reconciled checkpoint before AWS quota approval
+
+The saved single-resource recovery completed under the exclusive human role.
+Global networking has **43 managed resources**; data/platform/apps/edge have zero.
+Flow Log `fl-04a223185c4dc25e0` is ACTIVE with CloudWatch delivery SUCCESS.
+The VPC has both original public and private subnet pairs, original ALB/listener,
+candidate rule, target groups, EIPs and routes. Global UP is only network bootstrap;
+no NAT ASG, SQL EC2, ECS task/service or API Gateway is claimed healthy.
+
+Three NAT roles/policies, two encrypted diagnostic queues and their exact queue
+policies are reconciled in the original security state. EventBridge rule
+`e1-wp4-dev-nat-launch` is independently confirmed DISABLED and has no targets.
+The three runtime images and protected package versions are installed, but the
+Lambda functions are not. Quota request/case above remains the next activation gate.
+
+Real RESIDUAL initially found missing DescribeNetworkInterfaces authority.
+Part4 version **v5** adds only that regional read; installed document and an
+actual assumed-operator EC2 read succeeded after IAM propagation. RESIDUAL then
+completed with authenticated observations, reported the two EIPs and a VPC ENI,
+and correctly retained partial/unverified status rather than a zero-bill claim.
+Tag directory candidates require direct EC2 reconciliation; tags alone never
+identify a safe deletion target. No account-wide cleanup is permitted.
+
+The two originally empty SQL password secrets now have generated AWSCURRENT
+versions. The short-lived input files had explicit user-only Windows ACLs and
+were removed; passwords were never logged, placed on command lines or put in
+Terraform state. SQL and its connection-string secret remain unprovisioned.
+
+At revision `90bc3ce58b1845f67cbd8e81ab6e8feae2d162f7`, the complete E1 gate
+again passed **983 tests, AC1–AC16 and all 44 checks**, including E15-H.
+The final source used the already installed AWS **5.100.0** provider with Terraform
+**1.13.4**: local no-backend validate passed, zero errors/warnings, without a
+provider download. Real provider plans/applies and S3 native locking also executed.
+Pinned TFLint/tfsec retain exactly **24/46** findings by identity/multiplicity.
+The final ENI grant is a read-only installation-document correction, verified live
+and by focused bootstrap/source-inventory checks after that complete gate.
+
+Current base running cost is about USD **0.0325/hour** (0.0225 Application ALB,
+plus two IPv4 allocations at 0.005 each), or **0.78/day**, before LCU, logs,
+KMS/secrets, S3/ECR storage, requests and transfer. This is a list-price estimate,
+not an AWS bill or approved budget. The original future NAT slots are t3.micro
+(0.0104/hour each); SQL's t3a.small is 0.0188/hour, plus EBS and workload costs.
+Backend, identities, keys, secrets, images and diagnostic evidence are retained.
+
+Emergency cleanup remains the original E16 sequence: inhibit and review authentic
+controller/ASG/ECS observations, review each next-layer down-plan, then apply that
+exact saved binary with independent SQL-loss confirmation when data exists.
+IAM simulation permits DeleteVpc, DeleteFlowLogs, ReleaseAddress and ALB deletion
+on the actual DEV IDs. No destroy, forced unlock or executor-finality certification
+was performed. Preserve failed attempts and original state; never replay them.
+
+Next: AWS must approve the pending Lambda quota; install/read back only the three
+DEV handler versions, package read access and EventBridge failure/target bindings,
+then complete global with both original ASGs. Data → platform → apps → edge and
+WP3/WP4 application qualification/deployment follow using real created IDs.
+The SNS email subscription still needs the owner's actual destination; it cannot
+be invented. A published application image is not yet a qualified/deployed release.
+
+The tag directory returned two additional subnet IDs. Exact EC2 lookups for
+`subnet-0e56abf760ef9212c` and `subnet-0e1be451d6570d5bb` both returned
+InvalidSubnetID.NotFound, so these are not confirmed surviving subnets. Their
+absence was reconciled independently; no adoption or deletion was attempted.
+The bounded residual report remains partial because the real ALB/EIPs/ENI and
+protected retained resources are still present.
+
+Pricing sources: [public IPv4](https://aws.amazon.com/vpc/pricing/);
+Application ALB and EC2 values were independently read from AWS Pricing
+GetProducts in us-east-1. Lambda's [reserved concurrency API](https://docs.aws.amazon.com/lambda/latest/api/API_PutFunctionConcurrency.html)
+requires 100 unreserved executions, explaining why the effective quota 10 cannot
+support the unchanged original reservation. A request is not approval.

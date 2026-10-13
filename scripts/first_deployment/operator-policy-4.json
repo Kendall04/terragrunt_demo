@@ -175,7 +175,8 @@
     {
       "Effect": "Allow",
       "Action": [
-        "ec2:DescribeAddressesAttribute"
+        "ec2:DescribeAddressesAttribute",
+        "ec2:DescribeNetworkInterfaces"
       ],
       "Resource": [
         "*"
