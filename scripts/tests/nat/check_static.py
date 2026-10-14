@@ -55,10 +55,10 @@ def main():
           "aws_lambda_function":{"wp4d":{key:{"function_name":v["name"],"version":"7",
           "qualified_arn":f"arn:aws:lambda:{REGION}:{ACCOUNT}:function:{v['name']}:7"} for key,v in doc["wp4d"]["selected"].items()}}}
     local={key:expression(value) for key,value in tf["locals"].items() if key in (
-        "wp4d_contract","wp4d_candidates","wp4d_ready","wp4d_active","wp4d_gateways","wp4d_nat_events","nat_failure_queues")}
+        "wp4d_contract","wp4d_candidates","wp4d_ready","wp4d_active","wp4d_gateways","wp4d_nat_events","wp4d_nat_targets","nat_failure_queues")}
     resource=tf["resource"]
     local["targets"]=project(resource["aws_cloudwatch_event_target"]["wp4d_nat"])
-    # Invoke config for_each references target map, not a provider resource.
+    # Invoke config uses the same authoritative stable target binding map.
     fake["aws_cloudwatch_event_target"]={"wp4d_nat":{key:{"arn":"synthetic"} for key in doc["wp4d"]["selected"] if key.startswith("nat-recovery/")}}
     local["invocations"]=project(resource["aws_lambda_function_event_invoke_config"]["wp4d_nat"])
     local["queue_policies"]=project(resource["aws_sqs_queue_policy"]["nat_failures"])

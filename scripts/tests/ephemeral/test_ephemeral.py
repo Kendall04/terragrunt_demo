@@ -283,6 +283,13 @@ class Ephemeral(unittest.TestCase):
         # Authenticated first-session output metadata is now explicitly allowed;
         # the rest of the historical protected authority snapshot stays fixed.
         authority['ownership_closure']['publications']={}
+        # Owner authorized optional DEV email; validate that exact input delta
+        # before restoring the historical snapshot for unrelated authority.
+        for key in ('request-gateway/infra-dev','environment-lifecycle/infra-dev',
+                    'request-gateway/infra-high-risk-dev','environment-lifecycle/infra-high-risk-dev'):
+            inputs=authority['wp5']['selected'][key]['required_inputs']['shared']
+            self.assertEqual(inputs,['account_id','protected_inputs','region'])
+            inputs.insert(1,'alert_email')
         for group in ('wp4d','wp5'):
             for item in authority[group]['selected'].values():del item['package_sha256']
         self.assertEqual(hashlib.sha256(json.dumps(authority,sort_keys=True,separators=(',',':')).encode()).hexdigest(),

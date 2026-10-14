@@ -137,6 +137,18 @@ class Tests(unittest.TestCase):
    bad=copy.deepcopy(net);mutate(bad);self.assertEqual(module.creation_supported(doc,i,r,{'dev':bad},a,region),[])
   i={};self.assertEqual(module.creation_supported(doc,i,r,{'dev':net},a,region),[])
 
+ def test_nat_launch_permission_uses_actual_two_templates_and_no_state_authority(self):
+  policy=json.loads((ROOT/'scripts/first_deployment/operator-policy-5.json').read_text())
+  expected=['arn:aws:ec2:us-east-1:341936017254:launch-template/'+v for v in ('lt-04ab8d2ec1f975f96','lt-0b3ed490a53f8dfe7')]
+  for stmt in policy['Statement']:
+   self.assertTrue(set(stmt['Action']) <= {'ec2:RunInstances','ec2:CreateTags'})
+   self.assertNotIn('*',stmt['Resource']);self.assertNotIn('prod',json.dumps(stmt))
+   self.assertEqual(stmt['Condition']['StringEquals']['aws:RequestedRegion'],'us-east-1')
+   if stmt['Action']==['ec2:RunInstances']:
+    self.assertEqual(stmt['Condition']['ArnEquals']['ec2:LaunchTemplate'],expected)
+  self.assertEqual(policy['Statement'][1]['Condition']['StringEquals']['ec2:MetadataHttpTokens'],'required')
+  self.assertEqual(policy['Statement'][2]['Condition']['StringEquals']['ec2:CreateAction'],'RunInstances')
+
 if __name__=='__main__':
  from hermetic import install
  install();result=unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromTestCase(Tests));raise SystemExit(not result.wasSuccessful())

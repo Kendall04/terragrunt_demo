@@ -210,6 +210,12 @@ class Retention(unittest.TestCase):
         authority = copy.deepcopy(DOC)
         ownership.validate_publications(authority)
         authority['ownership_closure']['publications']={}
+        # Only the owner-approved optional DEV email input is normalized.
+        for key in ('request-gateway/infra-dev','environment-lifecycle/infra-dev',
+                    'request-gateway/infra-high-risk-dev','environment-lifecycle/infra-high-risk-dev'):
+            inputs=authority['wp5']['selected'][key]['required_inputs']['shared']
+            self.assertEqual(inputs,['account_id','protected_inputs','region'])
+            inputs.insert(1,'alert_email')
         for kind in ("wp4d", "wp5"):
             for item in authority[kind]["selected"].values():
                 del item["package_sha256"]

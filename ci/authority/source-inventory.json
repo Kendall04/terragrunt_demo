@@ -1640,6 +1640,35 @@
       },
       "semantic_status": "UNVERIFIED"
     },
+    "scripts/first_deployment/operator-policy-5.json": {
+      "sha256": "e28f509fa39923bc5c27aec422d5d7811fd5b0bd6121d4aeedf6243e5fa23532",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          22,
+          26,
+          27,
+          39,
+          43,
+          49,
+          50,
+          62,
+          66,
+          68,
+          69,
+          70
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
     "scripts/first_dev_bootstrap.py": {
       "sha256": "97034585e6a9e5bec1ceb936bfb70377f23bf553897737eead22bc239fdcb3b7",
       "declarations": [],
@@ -2853,7 +2882,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/ephemeral/test_ephemeral.py": {
-      "sha256": "085ea08bd3266f553eff35bb66777efbcd878f7a5d9a8e552946c0e78d6ee53c",
+      "sha256": "cb09420f6ca3b494aab0f26e981fa82a6471eb445f58b765bec7562e549eb127",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -2887,7 +2916,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/exact_destroy/test_exact_destroy.py": {
-      "sha256": "0f482afb074d09981655fe93abf6d56c756a5143f5bf2d771159e769921ec136",
+      "sha256": "b6190f6ce65d33478658b2bfeaf5b2d2725275a1011a1e98259d75ec7636059c",
       "declarations": [],
       "signals": {
         "role-input": [
@@ -3103,7 +3132,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/first_deployment/run.py": {
-      "sha256": "ab0cff47818871159d460b57540d2544f3af2f153b40fed4dd8421c44ffdbfd6",
+      "sha256": "7445d12d4534155fd002d4e7458e51ee9fe2033f97cfd16341f74eebdc215253",
       "declarations": [],
       "signals": {
         "role-input": [
@@ -3140,7 +3169,12 @@
           110,
           112,
           118,
-          136
+          136,
+          142,
+          146
+        ],
+        "security-control": [
+          141
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -3513,7 +3547,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/nat/check_static.py": {
-      "sha256": "74ee35fe93407e64a441d2788946c69c78a72950504578cf62230d4eb4ab63f5",
+      "sha256": "d01e801cd9584db234bb9d7e4bba4fed2114c7561420e4bd6587139d3eec8341",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -4202,7 +4236,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/retention/test_retention.py": {
-      "sha256": "3044d6325e97f1ae1de1ba46e29932da95033f6f490a1c845fc55f540fc09246",
+      "sha256": "16281fa24e19739115eef8bbf75575d90f0f5d562bdaa077d40acd73907880a0",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -4215,7 +4249,7 @@
           83,
           93,
           95,
-          233
+          239
         ]
       },
       "semantic_status": "UNVERIFIED"
