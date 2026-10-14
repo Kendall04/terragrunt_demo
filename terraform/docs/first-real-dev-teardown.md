@@ -230,7 +230,8 @@ Thirteen managed resources remain: VPC, IGW, four subnets, three route tables an
 four explicit associations. AWS also lists the VPC's default main route table.
 Independent readbacks found no remaining project compute, known EBS/EIP, ALB or ENI.
 The owner subsequently authorized the two-action, five-resource temporary policy;
-installation awaits the new reviewed remaining-resource plan.
+it was installed with verified conditions and removed immediately after the
+new, reviewed remaining-resource plan completed.
 
 The DEV guard now handles a reconciled partial destroy that already deleted an
 ASG: live ASG names must match the remaining Terraform-managed controllers.
@@ -240,3 +241,56 @@ Every absent prior instance still requires its exact successful termination
 activity; incomplete history, active activity, failed termination or unreconciled
 state blocks. Existing E13/Lambda/effect checks remain mandatory. No plan or
 failed-attempt record is overwritten or force-settled.
+
+### Final independently verified result — 2026-10-14
+
+The first supervised original DEV teardown completed in account `341936017254`,
+profile `cnp-cert-dev`, region `us-east-1`, in order
+`edge -> apps -> platform -> data -> global`. Separate explicit SQL/EBS loss
+consent preceded the data apply. Every executed plan was a saved, reviewed binary;
+failed binaries were retained and never replayed. The final remaining-network
+plan was `36d90e69-1534-4f7b-a695-014da4c5e5c9` (13 resources).
+
+Independent service reads confirmed: original VPC, all four subnets, IGW, route
+tables, security groups, network ACLs and ENIs absent; both NAT ASGs and EIPs
+absent; NAT instances terminated/absent; SQL terminated and all three known EC2
+root EBS volumes absent; ALB and both target groups absent; API Gateway and VPC
+Link absent. ECS services were removed, the cluster is INACTIVE with zero active
+services/running/pending tasks. All five DEV states retain their original backend
+identities with no managed resources, and native S3 locks were clear.
+
+All three temporary IAM grants (log delivery, task-definition deregistration,
+exact VPC/subnet dependencies) were removed immediately after their applicable
+apply, before expiration. Readbacks showed no inline policies on the DEV role;
+IAM simulation confirmed the temporary actions no longer effective. No PROD,
+shared/backend/security-root resource was destroyed, and no force-unlock or
+state deletion was used. One backend-init TLS timeout was followed only by a
+read-only initialization retry in a new private session; no apply had begun.
+
+Intentionally retained: runtime and security S3 backends and versions, coordination
+/release/effect evidence and exact historical DLQ archive version, security IAM,
+shared enabled KMS key, three secrets, ECR repository and three images, two NAT
+launch templates, shared SNS topic, protected NAT functions/rule/queues/logs.
+The three NAT functions remain at reserved concurrency zero and their rule
+DISABLED. ECS task-definition revisions remain as release metadata: both
+Terraform revisions `:2` are INACTIVE; revisions `:1`, `:3`, `:4` remain ACTIVE
+as definitions only, with no active cluster/services/tasks. No unapproved metadata
+or image garbage collection was performed.
+
+The tagging index still returned historical references to terminated instances,
+deleted volume/flow log and removed ECS resources. Direct EC2/ECS readbacks
+reconciled these; the flow log itself was independently confirmed absent.
+No project-tagged EBS volumes, EIPs or snapshots were found in this region.
+This is not universal account/billing coverage: KMS, Secrets Manager, ECR, S3
+versions/artifacts and retained CloudWatch/security storage may continue charging.
+No zero-dollar claim is made.
+
+Focused correction validation: 56 practical DEV tests passed, source inventory
+matched and `git diff --check` passed. Terraform architecture and protected
+package manifests were not edited by these corrections. Private raw state/plans/inventory/receipts remain outside
+Git in the dated teardown evidence directory; no credentials or secret values
+were committed. Before another UP, use staged bootstrap with newly observed VPC,
+subnet, EIP and other resource identities, then explicitly verify/re-enable NAT
+controllers. Do not reuse this teardown's old IDs, plans or closure evidence.
+
+Final inventory UTC: `2026-10-14T23:45:25.291090+00:00`. Empty state readbacks: global serial 17, data serial 5, platform serial 2, apps serial 8, edge serial 9.
