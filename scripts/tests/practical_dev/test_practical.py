@@ -167,6 +167,37 @@ class Tests(unittest.TestCase):
         for _ in p.UP:self.apply()
     def shutdown(self):
         self.session.save(self.session.directory/'shutdown-readback.json',dict(config_sha256=p.sha(c.canonical(self.config)),prior_instances={'demo-dev-asg-nat-a':[],'demo-dev-asg-nat-b':[]},at=int(time.time())-600,timeouts={'e1-nat-recovery-nat-dev-change-rt':60},reviewed=True))
+    def test_retired_nat_absence_requires_exact_completed_asg_termination(self):
+        self.all_up();self.shutdown()
+        file=self.session.directory/'shutdown-readback.json';proof=json.loads(file.read_text())
+        proof['prior_instances']['demo-dev-asg-nat-a']=['i-retired'];file.write_text(json.dumps(proof))
+        original=self.fake.run
+        activity=dict(AutoScalingGroupName='demo-dev-asg-nat-a',Description='Terminating EC2 instance: i-retired',StatusCode='Successful',EndTime='2026-01-01T00:00:00Z')
+        def run(args,cwd=None,data=None):
+            if 'describe-scaling-activities' in args:
+                return c.canonical(dict(Activities=[activity] if args[-1]=='demo-dev-asg-nat-a' else []))
+            return original(args,cwd,data)
+        self.fake.run=run
+        self.session.shutdown_observation()
+        for field,value in [('AutoScalingGroupName','foreign'),('Description','Terminating EC2 instance: i-other'),('StatusCode','Failed'),('EndTime',None)]:
+            with self.subTest(field=field):
+                changed=activity.copy();activity[field]=value
+                with self.assertRaisesRegex(ValueError,'termination unverified|active/ambiguous'):self.session.shutdown_observation()
+                activity.clear();activity.update(changed)
+
+    def test_retired_nat_still_running_or_incomplete_readback_blocks(self):
+        self.all_up();self.shutdown()
+        file=self.session.directory/'shutdown-readback.json';proof=json.loads(file.read_text())
+        proof['prior_instances']['demo-dev-asg-nat-a']=['i-retired'];file.write_text(json.dumps(proof))
+        original=self.fake.run
+        def run(args,cwd=None,data=None):
+            if 'describe-instances' in args:return c.canonical(response)
+            return original(args,cwd,data)
+        self.fake.run=run
+        for response in [dict(Reservations=[]),dict(Reservations=[],NextToken='more'),dict(Reservations=[dict(Instances=[dict(InstanceId='i-retired',State=dict(Name='running'))])])]:
+            with self.subTest(response=response):
+                with self.assertRaisesRegex(ValueError,'prior NAT'):self.session.shutdown_observation()
+
     def test_dev_only_scope(self):
         for field,value in (('environment','prod'),('environment','shared'),('operator_arn','arn:aws:iam::'+ACCOUNT+':role/e1-controller-infra-dev')):
             with self.assertRaises(ValueError):p.Session(dict(self.config,**{field:value}),self.session.directory,self.fake)

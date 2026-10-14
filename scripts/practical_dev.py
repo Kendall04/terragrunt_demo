@@ -540,6 +540,7 @@ class Session:
         require(proof['config_sha256']==sha(c.canonical(self.config)),'same inhibition session')
         groups=self.aws('autoscaling','describe-auto-scaling-groups','--auto-scaling-group-names','demo-dev-asg-nat-a','demo-dev-asg-nat-b')['AutoScalingGroups']
         require({g['AutoScalingGroupName'] for g in groups}==set(proof['prior_instances']),'ASG inventory changed or missing')
+        terminated=set()
         for group in groups:
             require(group['AutoScalingGroupName'] in ('demo-dev-asg-nat-a','demo-dev-asg-nat-b'),'foreign ASG')
             require(set(PROCESSES)<={v['ProcessName'] for v in group['SuspendedProcesses']} and 'Terminate' not in {v['ProcessName'] for v in group['SuspendedProcesses']},'native processes not inhibited')
@@ -549,12 +550,19 @@ class Session:
                 require(not observed.get('NextToken') and not observed[field],'unexpected native controller/warm pool/hook; manual reconciliation')
             activities=self.aws('autoscaling','describe-scaling-activities','--auto-scaling-group-name',group['AutoScalingGroupName'])
             require(not activities.get('NextToken') and all(v['StatusCode'] in ('Successful','Failed','Cancelled') and v.get('EndTime') for v in activities['Activities']),'ASG replacement active/ambiguous')
+            for instance in proof['prior_instances'][group['AutoScalingGroupName']]:
+                if any(v.get('AutoScalingGroupName')==group['AutoScalingGroupName'] and v.get('Description')=='Terminating EC2 instance: '+instance and v.get('StatusCode')=='Successful' and v.get('EndTime') for v in activities['Activities']):
+                    terminated.add(instance)
         require(set(proof['prior_instances'])<= {'demo-dev-asg-nat-a','demo-dev-asg-nat-b'},'prior NAT identities before capacity mutation')
         previous=sorted({i for ids in proof['prior_instances'].values() for i in ids})
         if previous:
-            old=self.aws('ec2','describe-instances','--instance-ids',*previous)
+            # EC2 stops returning terminated IDs after its retention interval.
+            # Absence alone is insufficient: require the exact ASG's successful
+            # completed termination activity for each omitted prior member.
+            old=self.aws('ec2','describe-instances','--filters','Name=instance-id,Values='+','.join(previous))
+            require(not old.get('NextToken'),'incomplete prior NAT instance inventory')
             observed={i['InstanceId']:i for r in old['Reservations'] for i in r['Instances']}
-            require(set(observed)==set(previous) and all(i['State']['Name']=='terminated' for i in observed.values()),'prior NAT termination unverified')
+            require(set(observed)<=set(previous) and all(i['State']['Name']=='terminated' for i in observed.values()) and set(previous)-set(observed)<=terminated,'prior NAT termination unverified')
         cluster=self.state('platform')['outputs'].get('cluster_name')
         if cluster:
             services=self.aws('ecs','describe-services','--cluster',cluster,'--services','demo-dev-app-api-blue-svc','demo-dev-app-api-green-svc')

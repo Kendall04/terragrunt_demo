@@ -171,3 +171,19 @@ stage; this is a known partial result, not an excuse to replay an ambiguous plan
 Preserve the old attempt. Correct only the two missing reads, then inspect/apply
 an ordinary saved refresh-only state plan before a fresh remaining-scope destroy
 preview. Backend/security/shared/KMS/secrets/ECR remain excluded.
+
+### Terminated NAT IDs aging out of EC2 inventory
+
+The next live guard stopped before apply when both previously terminated NAT
+instances had aged out of DescribeInstances. Independent reads found only the
+stopped SQL instance in the VPC and exact successful, completed ASG termination
+activities for each original NAT ID. The DEV guard now accepts an absent prior
+member only with that exact group's successful termination activity, a complete
+EC2 filtered read, empty inhibited ASGs and the existing effect/execution checks.
+An absent ID alone, failed termination, active member or incomplete read blocks.
+No destructive apply was retried and no SQL/EBS loss approval was inferred.
+
+AWS documents the limited visibility of terminated instances in
+[DescribeInstances](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstances.html)
+and the attributable termination activity in
+[scaling activity verification](https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-verify-scaling-activity.html).
