@@ -80,6 +80,8 @@ def wiring(doc):
 '''
                     assert text.count(block) == 1, "reviewed inert bootstrap log block"
                     text = text.replace(block, "")
+                elif env == "dev" and layer == "apps" and rel == "modules/ecs_service/logs.tf":
+                    text = text.replace('data "aws_region" "current" {}\n', '')
                 elif layer == "apps" and rel == "modules/ecs_service/outputs.tf":
                     text = select(text, lambda h: not h.startswith(('output "task_role_arn"', 'output "execution_role_arn"')))
                 if rel == "variables.tf":

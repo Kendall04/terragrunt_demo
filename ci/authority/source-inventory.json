@@ -1670,7 +1670,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/first_deployment/operator-policy-6.json": {
-      "sha256": "5079e2f804ab61f3f492d3229db6c912f851fe7129fda929bac29b1b04955e04",
+      "sha256": "ed90955952ce2a68524e5e2d09b8e5998d3b30e9449e9fa9c441ad428ee80589",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -1695,7 +1695,15 @@
           87,
           88,
           92,
-          107
+          107,
+          118,
+          122,
+          123,
+          124,
+          125,
+          126,
+          127,
+          130
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -1750,6 +1758,16 @@
           85,
           86,
           90
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/first_deployment/operator-policy-9.json": {
+      "sha256": "e5ca5f6993a1585771217a045dbe26a3becdf16be633be8bc68622ca4d6e981d",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          15
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -3217,13 +3235,13 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/first_deployment/run.py": {
-      "sha256": "2da0fd6f9c0b9f7e6727cceeb6c9d133528f17dc87e1b7a7a1af103a3ee7f6da",
+      "sha256": "7c2562bc28c86bbb26b5bc46f1468e8cdc099d3c243aaca8932bd071396e9467",
       "declarations": [],
       "signals": {
         "role-input": [
           78,
           172,
-          179
+          180
         ],
         "launch-or-mutation": [
           9,
@@ -3272,12 +3290,17 @@
           174,
           175,
           176,
-          184,
+          177,
           185,
-          188,
-          190,
-          194,
-          196
+          186,
+          189,
+          191,
+          195,
+          197,
+          202,
+          206,
+          207,
+          208
         ],
         "executable-dependency": [
           173,
@@ -3286,7 +3309,9 @@
         "security-control": [
           141,
           153,
-          181
+          182,
+          201,
+          204
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -4569,26 +4594,26 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/ordinary.py": {
-      "sha256": "6d7e2f2d69db214f31145c53e4f79a250e7d49ceacee7f855e9e73cda2ff2cf9",
+      "sha256": "6f9e4cf1897a5d2aaf5aa399de818b2bc0f2f0ef7a4635d1c9ef72d8109d8d57",
       "declarations": [],
       "signals": {
         "role-input": [
           44,
           68,
-          84
+          86
         ],
         "launch-or-mutation": [
           12,
           25,
           26,
           37,
-          111
+          113
         ],
         "executable-dependency": [
           49,
           52,
           64,
-          108
+          110
         ],
         "security-control": [
           43,
@@ -5759,7 +5784,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/authority.json": {
-      "sha256": "89b7e0d446aa21e8cda32227af55069526ca4a04c80190dacc3946d91cd297ef",
+      "sha256": "332a7745dcc0f852e46c1df0b9e3cc57ca1354e960aae0eef76b4c1efc5996e3",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -6409,24 +6434,18 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/modules/target/dev/apps/modules/ecs_service/logs.tf": {
-      "sha256": "8010a2ef6659eb69194c7532213c935f4effdb97335990fee80c056cb0be873a",
+      "sha256": "9515b9b715a84528412573bc8f7e4a186e673b49b4307c06452c3b6b123cecad",
       "declarations": [
-        {
-          "kind": "data",
-          "type": "aws_region",
-          "name": "current",
-          "line": 1
-        },
         {
           "kind": "resource",
           "type": "aws_cloudwatch_log_group",
           "name": "this",
-          "line": 2
+          "line": 1
         }
       ],
       "signals": {
         "launch-or-mutation": [
-          4
+          3
         ]
       },
       "semantic_status": "UNVERIFIED"

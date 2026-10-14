@@ -541,3 +541,32 @@ A role-free definition cannot support ECS Exec; no task-role/SSM authority is
 added to work around that mismatch. PROD and the real runtime template remain
 unchanged. The pending source-6c session must fail its clean-source identity check
 before any application when the corrected source is committed.
+
+## First apps partial apply: attributable read denial
+
+The corrected apps plan created both log groups and inert definitions revision 2,
+but stopped before either service. DescribeTaskDefinition does not support
+resource-level authorization: AWS returned AccessDenied on resource *, despite
+the earlier task-definition ARN grant. Part9 v1 adds only that read operation,
+in us-east-1. See the [ECS authorization reference](https://docs.aws.amazon.com/service-authorization/latest/reference/list_ecs.html).
+No mutation wildcard, secret-value read or PROD mutation authority is added.
+
+Both definitions were independently compared with the reviewed plan (all requested
+container fields, family, CPU/memory, networking, tags and absence of roles).
+Environment/secret lists are normalized only by name. After exact authenticated
+readback, Terraform untaint reconciles the failed read without replacing the
+already-correct definitions; the original failed attempt remains preserved.
+A fresh session/plan must create only the missing services/alarms.
+
+SQL's next plan found missing root-volume tags. Part6 v4 permits only CreateTags
+on observed vol-013e417f112c5fe43 with the five exact original tags. The saved
+plan added them; independent volume readback verified tags, attachment, size and
+encryption without restarting/replacing SQL. No general disk mutation was added.
+The unused DEV bootstrap region data source is removed; real application logging
+and PROD generation remain unchanged.
+
+Acceptance on stable 4d1c490 passed 983 baseline tests, AC1–AC16 and all checks.
+The previous gate ran while source was being corrected and failed source-drift
+checks; it is not acceptance evidence. tfsec remains 46 by identity/multiplicity.
+TFLint detected one unused region declaration after removing inert logging; its
+source is now removed and a fresh scan is required, without suppression.

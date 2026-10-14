@@ -173,6 +173,7 @@ class Tests(unittest.TestCase):
   self.assertEqual(generated['terraform/modules/target/dev/apps/ordinary-demo.tf'].count('enable_execute_command = false'),2)
   self.assertNotIn('enable_execute_command = false',generated['terraform/modules/target/prod/apps/ordinary-demo.tf'])
   self.assertIn('aws_cloudwatch_log_group',generated['terraform/modules/target/dev/apps/modules/ecs_service/logs.tf'])
+  self.assertNotIn('aws_region',generated['terraform/modules/target/dev/apps/modules/ecs_service/logs.tf'])
   self.assertIn('logConfiguration',generated['terraform/modules/target/prod/apps/modules/ecs_service/locals.tf'])
   template=json.loads((ROOT/'demo-api/deploy/task-definition.template.json').read_text())
   self.assertTrue(all(c['logConfiguration']['logDriver']=='awslogs' for c in template['containerDefinitions']))
@@ -195,6 +196,16 @@ class Tests(unittest.TestCase):
   for row in api['Statement']:
    self.assertTrue(all(a.startswith('apigateway:') for a in row['Action']));self.assertEqual(row['Condition']['StringEquals']['aws:RequestedRegion'],'us-east-1')
    self.assertNotIn('prod',json.dumps(row));self.assertNotIn('iam:',json.dumps(row))
+
+ def test_ecs_definition_read_has_only_required_regional_wildcard(self):
+  policy=json.loads((ROOT/'scripts/first_deployment/operator-policy-9.json').read_text())
+  self.assertEqual(policy,{'Version':'2012-10-17','Statement':[{'Sid':'RegionalDescribeTaskDefinitionRequiresWildcard','Effect':'Allow','Action':['ecs:DescribeTaskDefinition'],'Resource':['*'],'Condition':{'StringEquals':{'aws:RequestedRegion':'us-east-1'}}}]})
+ def test_sql_existing_volume_tagging_is_exact_not_general_mutation(self):
+  policy=json.loads((ROOT/'scripts/first_deployment/operator-policy-6.json').read_text())
+  row=next(v for v in policy['Statement'] if v.get('Sid')=='TagOnlyObservedOriginalSqlRootVolume')
+  self.assertEqual(row['Action'],['ec2:CreateTags']);self.assertEqual(row['Resource'],['arn:aws:ec2:us-east-1:341936017254:volume/vol-013e417f112c5fe43'])
+  self.assertEqual(row['Condition']['StringEquals'],{'aws:RequestedRegion':'us-east-1','aws:RequestTag/Environment':'dev','aws:RequestTag/Project':'demo','aws:RequestTag/ManagedBy':'terraform','aws:RequestTag/Owner':'kendall','aws:RequestTag/Role':'root-ebs'})
+  self.assertEqual(set(row['Condition']['ForAllValues:StringEquals']['aws:TagKeys']),{'Environment','Project','ManagedBy','Owner','Role'})
 
 if __name__=='__main__':
  from hermetic import install
