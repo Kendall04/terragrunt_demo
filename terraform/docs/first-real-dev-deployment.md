@@ -393,3 +393,36 @@ in the obsolete private dev-runtime-session-1fb9bee cache were removed after
 path, size, SHA-256 and inactive-process verification; all state/plans/evidence and
 the active checksum-locked cache were preserved. Fresh acceptance must complete
 before delivery. The complete gate at 90bc3ce remains earlier evidence.
+
+## Original NAT launch: first supervised attempt
+
+Six original E13 diagnostic alarms were installed, read back and imported into
+security state. The mixed convergence plan containing PROD roles was not applied.
+The DEV NAT launch rule is ENABLED; all three original published handler versions
+and exact invocation permissions were verified before activation.
+
+The human reviewed a six-create global plan: two original NAT ASGs and four
+capacity alarms, without changes/deletions. Both ASG calls were definitively
+AccessDenied in CloudTrail. Exact readbacks found none of those six resources;
+global state still held its prior 43 resources. Preserve that failed plan/attempt.
+It is never replayed; further deployment uses a fresh supervised plan/session.
+
+An operator EC2 dry-run identified missing ec2:RunInstances. AWS documents
+[launch-template permission checks](https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-launch-template-permissions.html)
+for Auto Scaling. TerragruntDemoDevOperatorPart5 v1 now matches the installed
+account-specific source policy: only the two observed NAT template ARNs, their
+exact AMI/public subnets/security group, t3.micro and required IMDSv2. Instance
+tagging is limited to RunInstances with original DEV/demo/NAT tags. No template
+mutation, IAM administration, state permission or PROD/shared access is added.
+Independent successful dry-runs are required before preparing another ASG plan.
+
+Acceptance at dbba1bc executed all 983 baseline tests but failed four checks:
+three historical authority snapshots still expected mandatory DEV email, and
+the NAT projection omitted the production stable target-map local. Corrections
+validate only the authorized optional-email delta before the historical hash;
+all other authority/inert-binding assertions remain. NAT now evaluates its actual
+target-map expression. Focused reruns pass: exact_destroy 46, ephemeral 30,
+retention 18, NAT projection both cases and first-deployment 19. This does not
+claim a successful complete final gate or AWS application readiness.
+Static debt remains 24 TFLint / 46 tfsec, unchanged by identity/multiplicity.
+SQL, ECS and API Gateway remain unprovisioned at this checkpoint.
