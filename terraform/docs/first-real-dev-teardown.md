@@ -1,4 +1,4 @@
-# First real original DEV teardown — preparation, 2026-10-14
+# First real original DEV teardown â€” preparation, 2026-10-14
 
 ## Current checkpoint
 
@@ -43,8 +43,12 @@ instance/request/role and Client.UnauthorizedOperation. The separately identifie
 human correction `41ff966c-8f56-5cc9-a2ab-4ba64f6e4333` has ACK/APPLIED evidence.
 This is a known rejected historical request, not evidence of a still-running
 mutation; it does not authorize fabricating an ACK or rewriting old records.
-The retained E16 execution guard still requires proper attributable reconciliation
-before execution; investigation alone does not bypass it.
+A new create-only E13 `/reconciled` record now reports `ABSENT` with null
+request digest/result, bound through S3 metadata to the separately versioned exact
+CloudTrail evidence and original plan/attempt versions. Old outcomes remain
+untouched; no ACK was fabricated and no mutation resent. The E16 reader was
+corrected to accept this existing E13 terminal representation while rejecting
+UNKNOWN, malformed ABSENT and foreign/mismatched APPLIED evidence.
 
 All six execution-DLQ messages are actual version-1 failures from 00:17 UTC on
 2026-10-14, marked RetriesExhausted. They are not offline fixtures and are not
@@ -99,3 +103,23 @@ ALB LCU, logs/Container Insights, traffic/API requests, KMS/secrets and retained
 ECR/S3 storage. This is historical session pricing, not an approved budget or
 future price guarantee. Retained storage, keys, secrets and evidence may continue
 billing after runtime DOWN. No automatic garbage collection is introduced.
+
+## Saved-plan and execution checkpoint
+
+All five actual binary destroy plans and JSON/text previews were prepared and
+reviewed from source revision `82392594aab7f53f1f58f475ba94b710ae9eea77`:
+edge 9, apps 9, platform 1, data 5, global 49 managed instances. Three are local
+`terraform_data` markers; 70 are AWS-managed declarations. Exact original
+resource IDs and owned child-parent relationships were reviewed, including ASG
+list-form tags and untagged security-group rules. No shared/security state is in
+these plans. No destructive apply has occurred. Later source/state changes require
+fresh saved-plan review, not silent execution of these historical binaries.
+
+Complete visible execution-log readbacks pair every START with REPORT for all
+three functions. Fresh native reads show no warm pools, lifecycle hooks,
+schedules, scaling policies, instance refreshes or active ASG activities.
+CloudWatch currently returns no ConcurrentExecutions datapoints after inhibition;
+this is not zero and does not satisfy the retained metric-based execution guard.
+Independent manual reconciliation and a narrowly reviewed observation-path fix
+remain necessary before apply; do not fabricate metrics or bypass that guard.
+Both approvals remain pending. Capacity is still running and billing.

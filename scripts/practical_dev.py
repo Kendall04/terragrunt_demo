@@ -471,8 +471,13 @@ class Session:
                 require(attempt==dict(token=plan['token'],plan_sha256=a.sha(a.canonical(plan))),'E13 attempt/plan mismatch')
                 for k in observations:
                     effect=self.object(k)
-                    require(set(effect)=={'token','request_sha256','state','result'} and effect['token']==plan['token'] and effect['request_sha256']==a.sha(a.canonical(plan['request'])),'E13 attributable effect mismatch')
-                    require(effect['state'] in ('APPLIED','ABSENT') and (effect['state']!='APPLIED' or effect['result']==plan['request']),'E13 UNKNOWN/ambiguous effect')
+                    require(set(effect)=={'token','request_sha256','state','result'} and effect['token']==plan['token'],'E13 attributable effect mismatch')
+                    # E13 represents definitive non-application as ABSENT with
+                    # null request digest/result; never invent an APPLIED ACK.
+                    if effect['state']=='APPLIED':
+                        require(effect['request_sha256']==a.sha(a.canonical(plan['request'])) and effect['result']==plan['request'],'E13 attributable effect mismatch')
+                    else:
+                        require(effect['state']=='ABSENT' and effect['request_sha256'] is None and effect['result'] is None,'E13 UNKNOWN/ambiguous effect')
         if any(name.startswith('e1-nat-recovery-nat-dev-') for name in functions):
             for kind in ('delivery','execution'):
                 queue=self.aws('sqs','get-queue-url','--queue-name','e1-wp4-dev-nat-'+kind+'-failed','--queue-owner-aws-account-id',self.account)

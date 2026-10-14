@@ -272,6 +272,47 @@ class Tests(unittest.TestCase):
         self.all_up();self.shutdown();self.fake.unknown=True
         review=self.session.prepare(True)
         with self.assertRaisesRegex(ValueError,'UNKNOWN'):self.session.apply(review['plan_id'],review['confirmation'])
+    def test_canonical_e13_absent_and_attributable_applied_before_destroy(self):
+        self.all_up();self.shutdown();self.fake.unknown=True
+        original=self.session.object
+        def read(key):
+            value=original(key)
+            if key.endswith('/observed'):
+                value.update(state='ABSENT',request_sha256=None,result=None)
+            return value
+        self.session.object=read
+        # Same terminal representation accepted by the production E13 journal.
+        from scripts.normal_delivery.delivery import Delivery
+        value=read('recovery/dev/recovery/change_rt/op/change_rt/observed')
+        Delivery.check_effect(None,value,value['token'],{'RouteTableId':'rtb-own'})
+        self.assertEqual(self.apply(True)['layer'],'edge')
+        def applied(key):
+            value=original(key)
+            if key.endswith('/observed'):value['state']='APPLIED'
+            return value
+        self.session.object=applied
+        self.assertEqual(self.apply(True)['layer'],'apps')
+
+    def test_noncanonical_or_foreign_e13_effect_never_dispatches_destroy(self):
+        self.all_up();self.shutdown();self.fake.unknown=True
+        original=self.session.object;review=self.session.prepare(True)
+        changes=[dict(state='UNKNOWN',request_sha256=None,result=None),
+                 dict(state='ABSENT'),dict(state='ABSENT',request_sha256=None),
+                 dict(state='ABSENT',result=None),dict(state='ABSENT',request_sha256=None,result=None,token='foreign'),
+                 dict(state='APPLIED',request_sha256='0'*64),dict(state='APPLIED',result={'RouteTableId':'foreign'})]
+        count=sum(a[0]=='terraform' and a[2]=='apply' for a in self.fake.calls)
+        for fields in changes:
+            with self.subTest(fields=fields):
+                def read(key):
+                    value=original(key)
+                    if key.endswith('/observed'):value.update(fields)
+                    return value
+                self.session.object=read
+                with self.assertRaisesRegex(ValueError,'E13'):
+                    self.session.apply(review['plan_id'],review['confirmation'])
+                self.assertFalse((self.session.directory/'plans'/review['plan_id']/'attempt.json').exists())
+        self.assertEqual(sum(a[0]=='terraform' and a[2]=='apply' for a in self.fake.calls),count)
+
     def test_asg_replacement_blocks(self):
         self.all_up();self.shutdown();self.fake.asg_busy=True
         review=self.session.prepare(True)
