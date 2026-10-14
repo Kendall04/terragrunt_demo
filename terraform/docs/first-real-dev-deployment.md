@@ -426,3 +426,35 @@ retention 18, NAT projection both cases and first-deployment 19. This does not
 claim a successful complete final gate or AWS application readiness.
 Static debt remains 24 TFLint / 46 tfsec, unchanged by identity/multiplicity.
 SQL, ECS and API Gateway remain unprovisioned at this checkpoint.
+
+## Both original NAT slots created; E13 absence-read correction
+
+A fresh reviewed global plan after the exact-template EC2 permission fix applied
+all six resources. Both ASGs have one InService/Healthy t3.micro, version 1:
+A i-0a1ffe2dcf7c0889a / eni-0c571d9ef27631ea7;
+B i-0afcbfdf10a181f94 / eni-05f3589d7243685d3.
+The original global state is reconciled, not functional networking evidence.
+
+Native launch events invoked the three handlers. All six E13 operations retained
+UNCERTAIN outcomes; the journal directory contained no intent/attempt/effect.
+Fresh EIP/route/SDC readbacks still show no association, no private default route
+and SDC true. No SQL/app deployment proceeds from that incomplete networking.
+The DEV rule and new Lambda invocations are inhibited during diagnosis. This is
+not a claim that concurrency zero terminates earlier executors.
+
+S3 [GetObject](https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html)
+returns 403 for missing keys without bucket-list authority. The original adapter
+cannot establish absence from that response. Only the three DEV NAT packages now
+select a bounded NatObjects reader: after a denied GET it independently lists the
+exact key prefix (at most two entries), requires a complete matching observation,
+and returns absent only if that exact key is absent. Denied, partial or existing
+key observations remain failures. Each DEV NAT role receives ListBucket only for
+its own recovery/dev/recovery/DUTY prefix; E2, other duties and PROD are rejected.
+
+The common adapter, runtime/image bootstrap and all 13 non-DEV-NAT WP4D package
+identities remain unchanged. Every WP5 package remains unchanged. No PROD IAM
+installation occurs. Three DEV bundle hashes are intentionally regenerated and
+need exact-version conditional installation/readback before reactivation.
+WP4D 33 tests and all eleven real Terraform expression parity cases pass.
+Earlier UNCERTAIN operations/evidence remain preserved; no forced settlement or
+blind resend is performed. Private plans/state/password values remain outside Git.

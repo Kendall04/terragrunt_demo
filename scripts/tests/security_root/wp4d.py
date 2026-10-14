@@ -76,6 +76,8 @@ def package_sources(binding):
     # transitive dependencies for every binding; IAM and fixed configuration
     # still separate authority. Only normal delivery needs the Bash E3 payload.
     sources = list(SUPPORT + COMMON + RECOVERY)
+    if binding.startswith("nat-recovery/nat-dev/"):
+        sources.append("scripts/wp4d/dev_nat_objects.py")
     if binding.startswith("normal-delivery/"):
         sources += list(E3)
     return tuple(sorted(set(sources)))
@@ -95,6 +97,15 @@ def artifact(root, catalog, binding):
         if len(raw) > 1048576 or b"\r" in raw or b"\x00" in raw:
             raise ValueError("WP4D_SOURCE_ENCODING_OR_SIZE")
         files[relative] = base64.b64encode(raw).decode("ascii")
+    if binding.startswith("nat-recovery/nat-dev/"):
+        # Exact selected DEV package only. No change to any PROD/application
+        # package or the image's digest-verified runtime/installed bootstrap.
+        name = "scripts/wp4d/dev_nat_objects.py"
+        source = (Path(root) / name).read_bytes().replace(b"\r\n", b"\n")
+        files[name] = base64.b64encode(source).decode("ascii")
+        name = "scripts/wp4d/adapters.py"
+        source = base64.b64decode(files[name]) + b"\nfrom scripts.wp4d.dev_nat_objects import NatObjects as Objects\n"
+        files[name] = base64.b64encode(source).decode("ascii")
     env, engine = RESERVED[binding]
     return canonical({"format": "E1_WP4D_BUNDLE_JSON_V1", "owner": OWNER,
                       "binding": binding, "reservation": reserved,
@@ -465,6 +476,11 @@ def policy(binding, resources, account, region, version_id):
                   {"StringEquals": {"aws:ResourceTag/Environment": env, "aws:ResourceTag/Role": "nat"}})
         own = f"recovery/{env}/recovery/{action}/"
         read(bucket, own)
+        # First real DEV invocation needs an authoritative absence read. No
+        # full bucket inventory or access to another duty/E2 prefix is granted.
+        if env == "dev":
+            allow(("s3:ListBucket",), [f"arn:aws:s3:::{bucket}"],
+                  {"StringLike": {"s3:prefix": own + "*"}})
         write(bucket, own)
     if binding.startswith(("normal-delivery/", "emergency-recovery/", "cleanup-recovery/")):
         coordination = s3(bucket, f"arbitration/{env}/application.json")

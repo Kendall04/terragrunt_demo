@@ -156,6 +156,14 @@ class Completion(unittest.TestCase):
                                     {k:v for k,v in context.items() if k != field}))
 
     def test_evidence_and_installation_access_is_class_owned(self):
+        for duty in ('assign_eip','change_rt','disable_sdc'):
+            p = policy('nat-recovery/nat-dev/'+duty)
+            bucket = f'arn:aws:s3:::e1-wp4-dev-{ACCOUNT}-{REGION}'
+            self.assertTrue(permits(p,'s3:ListBucket',bucket,{'s3:prefix':'recovery/dev/recovery/'+duty+'/op/intent'}))
+            for prefix in ('arbitration/dev/', 'recovery/prod/recovery/'+duty+'/', 'delivery/dev/', 'recovery/dev/recovery/foreign/'):
+                self.assertFalse(permits(p,'s3:ListBucket',bucket,{'s3:prefix':prefix}))
+            self.assertFalse(permits(p,'s3:ListBucket',bucket,{}))
+            self.assertFalse(permits(policy('nat-recovery/nat-prod/'+duty),'s3:ListBucket',bucket,{'s3:prefix':'recovery/dev/recovery/'+duty+'/'}))
         for binding, (env, _) in wp4d.RESERVED.items():
             p = policy(binding)
             foreign = 'prod' if env == 'dev' else 'dev'

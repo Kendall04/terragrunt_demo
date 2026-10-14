@@ -337,7 +337,29 @@ class Authority(unittest.TestCase):
 
 
 class Membership(unittest.TestCase):
+    def assert_denied_get_requires_independent_complete_exact_prefix_absence(self):
+        from scripts.wp4d.dev_nat_objects import NatObjects as Objects
+        class Denied(Exception):
+            response = {"Error": {"Code": "AccessDenied"}}
+        class Store:
+            def __init__(self): self.entries=[];self.truncated=False;self.denied=False;self.calls=[]
+            def get_object(self, **kw): raise Denied()
+            def list_objects_v2(self, **kw):
+                self.calls.append(kw)
+                if self.denied: raise Denied()
+                return {"Prefix":kw["Prefix"],"IsTruncated":self.truncated,"Contents":self.entries}
+        s3=Store();records=Objects(s3,"protected","recovery/")
+        self.assertIsNone(records.read("dev/recovery/assign_eip/op/intent"))
+        self.assertEqual(s3.calls,[{"Bucket":"protected","Prefix":"recovery/dev/recovery/assign_eip/op/intent","MaxKeys":2}])
+        s3.entries=[{"Key":s3.calls[0]["Prefix"]}]
+        with self.assertRaises(Denied): records.read("dev/recovery/assign_eip/op/intent")
+        s3.entries=[];s3.truncated=True
+        with self.assertRaises(ValueError): records.read("dev/recovery/assign_eip/op/intent")
+        s3.truncated=False;s3.denied=True
+        with self.assertRaises(Denied): records.read("dev/recovery/assign_eip/op/intent")
+
     def test_recovery_journal_and_wp4b_receipt_use_distinct_protected_paths(self):
+        self.assert_denied_get_requires_independent_complete_exact_prefix_absence()
         class Store:
             def __init__(self): self.items = {}
             def put_object(self, **kw):
