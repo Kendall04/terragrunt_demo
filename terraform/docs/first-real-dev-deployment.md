@@ -495,3 +495,41 @@ Terraform policy/trust projections pass. Every package identity is unchanged
 by that policy correction; no PROD IAM installation occurred. The final source
 commit was temporarily blocked because automatic approval review reached its
 usage limit, not because a safety rejection identified unsafe behavior.
+
+## SQL and ECS platform verified — 2026-10-14
+
+The fresh reviewed data plan created i-0e47f560bf71333e4, Ubuntu 22.04 x86_64,
+t3a.small, private address 10.0.100.10, encrypted 30 GiB gp3, no public IP.
+SSM agent 3.3.4793.0 is Online through NAT-A. SQL Server 2022 Express bootstrap
+completed, mssql-server is active, and an authenticated SSM check connected to
+demodb as fargate_user. This proves actual SQL login and private-A outbound access;
+application SQL/KMS round-trip and private-B traffic remain unverified.
+
+The connection secret was seeded once outside Terraform using the observed SQL
+address and the existing application password. Password quoting handles connection
+string delimiters. Only returned version/AWSCURRENT metadata was retained;
+the private temporary input was removed. No values entered Terraform or Git.
+
+The exact SQL metadata/read grants now match Part6 v3. Part7 v2 scopes logs to
+the two original ECS groups and original API access group. Part8 v1 scopes HTTP
+API/VPC-link creation by original names and DEV/demo tags and resource changes by
+DEV ownership; installed documents were independently read back. These add no IAM,
+state, secret-value or PROD permissions. The native ECS service-linked role was
+absent and separately installed by the security administrator; the existing API
+Gateway service-linked role was inspected without modification.
+
+The reviewed one-resource platform plan created the original ECS cluster. The
+first apps plan was retained unexecuted: its role-free inert Fargate definition
+incorrectly included awslogs, which requires an execution role. The DEV-only
+source generator omits that log configuration from the zero-count bootstrap.
+Both log groups, the actual two-container application template, its awslogs
+configuration, and WP4 role bindings remain unchanged. PROD extraction is unchanged.
+See the AWS [task execution role requirements](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/security-ecs-iam-role-overview.html).
+A new source-bound session and fresh reviewed plans are required after this fix;
+no previously reviewed binary is silently edited or replayed. Only DEV WP5 source
+package hashes change; their installations remain inert, and no PROD or NAT
+runtime package is replaced by this correction.
+
+At 0cb0355, TFLint 24 and tfsec 46 findings match the preceding baseline by
+rule/resource/description/severity identity and multiplicity. This checkpoint does
+not claim deployed application readiness or completed API Gateway provisioning.

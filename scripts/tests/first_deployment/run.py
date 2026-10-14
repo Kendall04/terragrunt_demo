@@ -161,8 +161,38 @@ class Tests(unittest.TestCase):
   self.assertEqual(cond['StringEquals']['aws:RequestTag/Environment'],'dev')
   self.assertEqual(cond['StringEquals']['aws:RequestTag/Project'],'demo')
   for row in policy['Statement']:
-   self.assertTrue(set(row['Action'])<={'ec2:RunInstances','ec2:CreateTags','ec2:DescribeInstanceCreditSpecifications'})
+   self.assertTrue(set(row['Action'])<={'ec2:RunInstances','ec2:CreateTags','ec2:DescribeInstanceCreditSpecifications','ec2:DescribeInstanceTypes','secretsmanager:DescribeSecret'})
    self.assertNotIn('prod',json.dumps(row))
+
+ def test_dev_inert_task_has_no_awslogs_without_execution_role(self):
+  import ordinary
+  doc=json.loads((ROOT/'terraform/infra/security/authority.json').read_text());generated=ordinary.wiring(doc)
+  dev=generated['terraform/modules/target/dev/apps/modules/ecs_service/locals.tf']
+  self.assertNotIn('logConfiguration',dev)
+  self.assertNotIn('execution_role_arn',generated['terraform/modules/target/dev/apps/modules/ecs_service/taskdef.tf'])
+  self.assertIn('aws_cloudwatch_log_group',generated['terraform/modules/target/dev/apps/modules/ecs_service/logs.tf'])
+  self.assertIn('logConfiguration',generated['terraform/modules/target/prod/apps/modules/ecs_service/locals.tf'])
+  template=json.loads((ROOT/'demo-api/deploy/task-definition.template.json').read_text())
+  self.assertTrue(all(c['logConfiguration']['logDriver']=='awslogs' for c in template['containerDefinitions']))
+  self.assertIn('executionRoleArn',template)
+ def test_secret_preflight_only_metadata_of_three_installed_dev_secrets(self):
+  policy=json.loads((ROOT/'scripts/first_deployment/operator-policy-6.json').read_text())
+  rows=[s for s in policy['Statement'] if 'secretsmanager:DescribeSecret' in s['Action']]
+  self.assertEqual(len(rows),1);self.assertEqual(rows[0]['Action'],['secretsmanager:DescribeSecret'])
+  self.assertEqual(set(rows[0]['Resource']),{'arn:aws:secretsmanager:us-east-1:341936017254:secret:'+v for v in ('demo/dev/db/sql-sa-password-30fCjc','demo/dev/db/sql-app-password-2Shh56','demo/dev/app/db-connection-string-72ytze')})
+  self.assertNotIn('GetSecretValue',json.dumps(policy));self.assertEqual(rows[0]['Condition']['StringEquals']['aws:RequestedRegion'],'us-east-1')
+ def test_original_log_permissions_and_api_create_scopes(self):
+  logs=json.loads((ROOT/'scripts/first_deployment/operator-policy-7.json').read_text())
+  expected={'arn:aws:logs:us-east-1:341936017254:log-group:'+name+suffix for name in ('/aws/ecs/demo-dev-app-api-blue','/aws/ecs/demo-dev-app-api-green','/aws/apigw/demo-dev-edge-http-access') for suffix in ('',':*')}
+  for row in logs['Statement']:
+   self.assertEqual(set(row['Resource']),expected);self.assertEqual(row['Condition']['StringEquals']['aws:RequestedRegion'],'us-east-1')
+   self.assertTrue(set(row['Action'])<={'logs:CreateLogGroup','logs:TagResource','logs:PutRetentionPolicy','logs:DeleteLogGroup','logs:ListTagsForResource'})
+  api=json.loads((ROOT/'scripts/first_deployment/operator-policy-8.json').read_text())
+  self.assertEqual(api['Statement'][0]['Condition']['StringEquals']['apigateway:Request/ApiName'],'demo-dev-edge')
+  self.assertEqual(api['Statement'][1]['Condition']['StringEquals']['aws:RequestTag/Name'],'demo-dev-edge-vpc-link')
+  for row in api['Statement']:
+   self.assertTrue(all(a.startswith('apigateway:') for a in row['Action']));self.assertEqual(row['Condition']['StringEquals']['aws:RequestedRegion'],'us-east-1')
+   self.assertNotIn('prod',json.dumps(row));self.assertNotIn('iam:',json.dumps(row))
 
 if __name__=='__main__':
  from hermetic import install

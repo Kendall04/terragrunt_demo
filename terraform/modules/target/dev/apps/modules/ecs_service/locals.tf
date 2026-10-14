@@ -29,14 +29,6 @@ locals {
       environment = local.env_list
       secrets     = local.secrets_list
 
-      logConfiguration = {
-        logDriver = "awslogs"
-        options = {
-          awslogs-group         = aws_cloudwatch_log_group.this.name
-          awslogs-region        = data.aws_region.current.name
-          awslogs-stream-prefix = coalesce(var.container_name, var.name)
-        }
-      }
     },
     var.healthcheck == null ? {} : {
       healthCheck = {

@@ -63,6 +63,20 @@ def wiring(doc):
                     # Inert bootstrap: no workload roles or secrets. Real runtime
                     # role bindings are published for WP4, never inherited here.
                     text = re.sub(r'^  (?:execution_role_arn|task_role_arn)\s*=.*\n', '', text, flags=re.M)
+                elif env == "dev" and layer == "apps" and rel == "modules/ecs_service/locals.tf":
+                    # Role-free, zero-count bootstrap cannot use awslogs on Fargate.
+                    # Keep the log groups and the real WP4 task template unchanged.
+                    block = '''      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-group         = aws_cloudwatch_log_group.this.name
+          awslogs-region        = data.aws_region.current.name
+          awslogs-stream-prefix = coalesce(var.container_name, var.name)
+        }
+      }
+'''
+                    assert text.count(block) == 1, "reviewed inert bootstrap log block"
+                    text = text.replace(block, "")
                 elif layer == "apps" and rel == "modules/ecs_service/outputs.tf":
                     text = select(text, lambda h: not h.startswith(('output "task_role_arn"', 'output "execution_role_arn"')))
                 if rel == "variables.tf":

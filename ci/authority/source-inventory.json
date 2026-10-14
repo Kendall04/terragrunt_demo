@@ -1670,7 +1670,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/first_deployment/operator-policy-6.json": {
-      "sha256": "9f5a9479202f6b764890d7821fd86aabc99fea36153aaf0852266529d724b270",
+      "sha256": "5079e2f804ab61f3f492d3229db6c912f851fe7129fda929bac29b1b04955e04",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -1690,7 +1690,66 @@
           57,
           59,
           60,
-          75
+          75,
+          86,
+          87,
+          88,
+          92,
+          107
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/first_deployment/operator-policy-7.json": {
+      "sha256": "a480c62e110b8df477684ec97907839b1ed7f081fda725c50ece442be49547ff",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          21,
+          22,
+          23,
+          36,
+          37,
+          38,
+          39,
+          40,
+          41,
+          45
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/first_deployment/operator-policy-8.json": {
+      "sha256": "911ed177e980313dd1a7376b2083cbc7f7836e222efc7c46d635954957e2e6f5",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          11,
+          15,
+          16,
+          17,
+          29,
+          33,
+          34,
+          35,
+          36,
+          47,
+          48,
+          52,
+          67,
+          68,
+          72,
+          73,
+          74,
+          85,
+          86,
+          90
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -3158,11 +3217,13 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/first_deployment/run.py": {
-      "sha256": "defbd1920b67eb986743ffb19d141be5fb3a9f34bc045c97d81e695a567886c8",
+      "sha256": "e3ea9a4a258ccf583d555594e10f02a472d25bfd7012789c6f454c6fb9245126",
       "declarations": [],
       "signals": {
         "role-input": [
-          78
+          78,
+          172,
+          177
         ],
         "launch-or-mutation": [
           9,
@@ -3203,11 +3264,23 @@
           157,
           159,
           161,
-          162
+          162,
+          169,
+          170,
+          172,
+          173,
+          174,
+          182,
+          183,
+          186,
+          188,
+          192,
+          194
         ],
         "security-control": [
           141,
-          153
+          153,
+          179
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -4490,25 +4563,25 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/ordinary.py": {
-      "sha256": "64018c6abc1659023bea49949c4ec32c617a38404ed7c96b9a7a2ac41b8449a2",
+      "sha256": "65bdadb0b5e44a4fa44aefcdb17a1b46ed781024848d5a0f9387cccbe8b329e3",
       "declarations": [],
       "signals": {
         "role-input": [
           44,
           65,
-          67
+          81
         ],
         "launch-or-mutation": [
           12,
           25,
           26,
           37,
-          94
+          108
         ],
         "executable-dependency": [
           49,
           52,
-          91
+          105
         ],
         "security-control": [
           43,
@@ -5679,7 +5752,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/authority.json": {
-      "sha256": "3d20463f7f124ff8fd5ecc366c006571ae3c8058c0edee73299448e0279cc72d",
+      "sha256": "97f9fa168bc9dc6c89a1c77f92e524014af7e157ed6b11a25c53a4cccc43f32b",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -6318,12 +6391,12 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/modules/target/dev/apps/modules/ecs_service/locals.tf": {
-      "sha256": "4f5adde6c88d20840bee634d064701363fa870e082dd4b5f5bf522cf53e89f95",
+      "sha256": "51f124d168c8a8d091b5d3239a0019b5d2032ca5c0280a3e6a924782936978ce",
       "declarations": [],
       "signals": {
         "executable-dependency": [
           19,
-          43
+          35
         ]
       },
       "semantic_status": "UNVERIFIED"

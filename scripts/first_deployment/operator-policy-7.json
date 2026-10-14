@@ -1,0 +1,50 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "CreateTwoOriginalDevEcsLogGroups",
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:TagResource"
+      ],
+      "Resource": [
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/ecs/demo-dev-app-api-blue",
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/ecs/demo-dev-app-api-blue:*",
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/ecs/demo-dev-app-api-green",
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/ecs/demo-dev-app-api-green:*",
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/apigw/demo-dev-edge-http-access",
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/apigw/demo-dev-edge-http-access:*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1",
+          "aws:RequestTag/Environment": "dev",
+          "aws:RequestTag/Project": "demo"
+        }
+      }
+    },
+    {
+      "Sid": "ManageTwoOriginalDevEcsLogGroups",
+      "Effect": "Allow",
+      "Action": [
+        "logs:PutRetentionPolicy",
+        "logs:DeleteLogGroup",
+        "logs:ListTagsForResource"
+      ],
+      "Resource": [
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/ecs/demo-dev-app-api-blue",
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/ecs/demo-dev-app-api-blue:*",
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/ecs/demo-dev-app-api-green",
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/ecs/demo-dev-app-api-green:*",
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/apigw/demo-dev-edge-http-access",
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/apigw/demo-dev-edge-http-access:*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    }
+  ]
+}

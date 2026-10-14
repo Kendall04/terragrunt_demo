@@ -75,6 +75,38 @@
           "aws:RequestedRegion": "us-east-1"
         }
       }
+    },
+    {
+      "Sid": "ReadOnlyOriginalDevSecretMetadata",
+      "Effect": "Allow",
+      "Action": [
+        "secretsmanager:DescribeSecret"
+      ],
+      "Resource": [
+        "arn:aws:secretsmanager:us-east-1:341936017254:secret:demo/dev/db/sql-sa-password-30fCjc",
+        "arn:aws:secretsmanager:us-east-1:341936017254:secret:demo/dev/db/sql-app-password-2Shh56",
+        "arn:aws:secretsmanager:us-east-1:341936017254:secret:demo/dev/app/db-connection-string-72ytze"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Sid": "ReadInstanceTypeForOriginalSqlLaunch",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:DescribeInstanceTypes"
+      ],
+      "Resource": [
+        "*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
     }
   ]
 }
