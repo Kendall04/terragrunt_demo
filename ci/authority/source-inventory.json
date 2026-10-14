@@ -1763,11 +1763,13 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/first_deployment/operator-policy-9.json": {
-      "sha256": "e5ca5f6993a1585771217a045dbe26a3becdf16be633be8bc68622ca4d6e981d",
+      "sha256": "5bbeb52fe4af5a0c8dc3f76af0d426b67803ac9702af56a1ca560e9d0b738d1b",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          15
+          15,
+          26,
+          30
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -3235,7 +3237,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/first_deployment/run.py": {
-      "sha256": "7c2562bc28c86bbb26b5bc46f1468e8cdc099d3c243aaca8932bd071396e9467",
+      "sha256": "cb206708d2ac9d4f5d3b90bfb97db9eaa9d7d80b44079ab853cce1767be2d316",
       "declarations": [],
       "signals": {
         "role-input": [
@@ -3299,8 +3301,9 @@
           197,
           202,
           206,
-          207,
-          208
+          211,
+          212,
+          213
         ],
         "executable-dependency": [
           173,
@@ -3311,7 +3314,8 @@
           153,
           182,
           201,
-          204
+          204,
+          209
         ]
       },
       "semantic_status": "UNVERIFIED"

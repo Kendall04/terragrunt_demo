@@ -199,7 +199,12 @@ class Tests(unittest.TestCase):
 
  def test_ecs_definition_read_has_only_required_regional_wildcard(self):
   policy=json.loads((ROOT/'scripts/first_deployment/operator-policy-9.json').read_text())
-  self.assertEqual(policy,{'Version':'2012-10-17','Statement':[{'Sid':'RegionalDescribeTaskDefinitionRequiresWildcard','Effect':'Allow','Action':['ecs:DescribeTaskDefinition'],'Resource':['*'],'Condition':{'StringEquals':{'aws:RequestedRegion':'us-east-1'}}}]})
+  self.assertEqual(policy['Version'],'2012-10-17');self.assertEqual(policy['Statement'][0],{'Sid':'RegionalDescribeTaskDefinitionRequiresWildcard','Effect':'Allow','Action':['ecs:DescribeTaskDefinition'],'Resource':['*'],'Condition':{'StringEquals':{'aws:RequestedRegion':'us-east-1'}}})
+ def test_task_read_is_limited_to_original_dev_cluster_and_never_mutates(self):
+  policy=json.loads((ROOT/'scripts/first_deployment/operator-policy-9.json').read_text())
+  self.assertEqual(len(policy['Statement']),2)
+  self.assertEqual(policy['Statement'][1],{'Sid':'DescribeOnlyOriginalDevClusterTasks','Effect':'Allow','Action':['ecs:DescribeTasks'],'Resource':['arn:aws:ecs:us-east-1:341936017254:task/demo-dev-platform-main-cluster/*'],'Condition':{'StringEquals':{'aws:RequestedRegion':'us-east-1'}}})
+  self.assertEqual({a for row in policy['Statement'] for a in row['Action']},{'ecs:DescribeTaskDefinition','ecs:DescribeTasks'})
  def test_sql_existing_volume_tagging_is_exact_not_general_mutation(self):
   policy=json.loads((ROOT/'scripts/first_deployment/operator-policy-6.json').read_text())
   row=next(v for v in policy['Statement'] if v.get('Sid')=='TagOnlyObservedOriginalSqlRootVolume')

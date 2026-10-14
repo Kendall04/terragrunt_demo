@@ -15,6 +15,21 @@
           "aws:RequestedRegion": "us-east-1"
         }
       }
+    },
+    {
+      "Sid": "DescribeOnlyOriginalDevClusterTasks",
+      "Effect": "Allow",
+      "Action": [
+        "ecs:DescribeTasks"
+      ],
+      "Resource": [
+        "arn:aws:ecs:us-east-1:341936017254:task/demo-dev-platform-main-cluster/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
     }
   ]
 }

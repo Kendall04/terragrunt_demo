@@ -685,3 +685,32 @@ default policies match the source exactly; no invalid tagging grant was installe
 The owner requested leaving the successful environment running for inspection;
 ongoing charges continue. No complete DOWN, production deployment, GitHub push,
 merge or protected release qualification is claimed.
+
+## Final operator readback and repository acceptance
+
+The production E16 verify path initially stopped on ecs:DescribeTasks denial.
+Part9 v2 adds only that read on task/demo-dev-platform-main-cluster/* in
+us-east-1; the regional DescribeTaskDefinition grant remains unchanged. IAM Access
+Analyzer returned no errors and the installed default document was independently
+read back exactly. No ECS mutation, IAM administration, secret-value or PROD
+authority was added. The real E16 verify path subsequently completed its original
+state/backend, both NAT routes/EIPs/SDC, SQL, ECS per-task readiness and public
+application SQL/KMS round-trip checks.
+
+Complete repository acceptance on clean 5329085 passed 983 E1/WP tests, AC1–AC16
+and all 44 suites/checks. All 103 .NET tests pass with network disabled on the VM;
+the Docker build/export and runtime readability/liveness probes pass. The tested
+source matches the committed application files. ShellCheck, explicit-file
+Actionlint and Bash parsing pass on the existing VM tools. TFLint 24 and tfsec 46
+match the preceding baseline by identity and multiplicity, without suppression.
+The final Part9 read-only addition has a focused regression and refreshed source
+inventory; it does not change Terraform resources or protected package identities.
+
+Independent CloudTrail observations also contain successful KMS Decrypt calls by
+the real application task role. The exact API access stream contains all five
+functional-test requests with HTTP 200 and no integration error; an initially
+empty FilterLogEvents page was not treated as proof of missing delivery.
+All private plans, state, credentials and log evidence remain outside Git.
+Future source commits require a new E16 execution session/configuration and a
+review of retained original layer variables; old source-bound plans are never
+replayed under a different commit.
