@@ -1,6 +1,6 @@
 # First real original DEV teardown â€” preparation, 2026-10-14
 
-## Current checkpoint
+## Preparation checkpoint (before destructive approval)
 
 No destructive Terraform apply has occurred. Initial owner destruction approval
 and independent SQL data-loss approval are both pending. Deployment baseline
@@ -152,3 +152,22 @@ approval. Do not bypass the nonempty-queue guard or treat archived evidence alon
 as permission. SQL deletion needs its independent later confirmation.
 Old source-bound previews must not be applied after these source/runtime changes;
 prepare and inspect fresh saved plans before the final owner approval.
+
+
+## First authorized edge apply: partial failure, sequence stopped
+
+After explicit owner approval, only the exact six approved historical failure
+messages were acknowledged, with archive VersionId/hash and live IDs/bodies
+reverified first. No purge, redrive, new-message deletion or evidence deletion.
+The complete real E16 shutdown guard passed. The exact approved edge binary was
+then applied once. AWS deleted all four routes, the integration and VPC Link;
+DeleteStage failed for missing ListLogDeliveries, and the VPC Link delete waiter
+failed GET after tags disappeared. Native lock released; partial state serial 6
+retains API/stage/log group plus the already absent link. Apps/platform/data/global
+have not been dispatched. SQL/EBS loss still lacks its separate approval.
+
+Independent AWS collections establish the link's completed absence and retained
+stage; this is a known partial result, not an excuse to replay an ambiguous plan.
+Preserve the old attempt. Correct only the two missing reads, then inspect/apply
+an ordinary saved refresh-only state plan before a fresh remaining-scope destroy
+preview. Backend/security/shared/KMS/secrets/ECR remain excluded.

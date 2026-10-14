@@ -45,6 +45,21 @@
           "aws:RequestedRegion": "us-east-1"
         }
       }
+    },
+    {
+      "Sid": "ReadRegionalLogDeliveriesForOriginalStageDeletion",
+      "Effect": "Allow",
+      "Action": [
+        "logs:ListLogDeliveries"
+      ],
+      "Resource": [
+        "*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
     }
   ]
 }

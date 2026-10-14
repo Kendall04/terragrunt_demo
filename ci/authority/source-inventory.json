@@ -1709,7 +1709,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/first_deployment/operator-policy-7.json": {
-      "sha256": "a480c62e110b8df477684ec97907839b1ed7f081fda725c50ece442be49547ff",
+      "sha256": "bab7523baaa3901ff685a36f22ecf5e0d29e120c9cc058993bd71e611eb34838",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -1728,13 +1728,14 @@
           39,
           40,
           41,
-          45
+          45,
+          60
         ]
       },
       "semantic_status": "UNVERIFIED"
     },
     "scripts/first_deployment/operator-policy-8.json": {
-      "sha256": "911ed177e980313dd1a7376b2083cbc7f7836e222efc7c46d635954957e2e6f5",
+      "sha256": "c0ceb4fd2be47741c880dc37702c7329324bfa85d083a4baa80ea2c9712bb7b0",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -1757,7 +1758,11 @@
           74,
           85,
           86,
-          90
+          90,
+          101,
+          102,
+          103,
+          107
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -3259,7 +3264,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/first_deployment/run.py": {
-      "sha256": "f4a38028b14a3096eff8d3dc989a663625fbb9676d015de58b3d221ecdd5a600",
+      "sha256": "5acdcded0102ebdef473c29809133a5b22076f6261cb5d7cf02168a7d0a21ea4",
       "declarations": [],
       "signals": {
         "role-input": [
@@ -3321,17 +3326,20 @@
           191,
           195,
           197,
-          202,
-          206,
+          204,
+          208,
           209,
-          210,
-          215,
-          217,
+          214,
           218,
+          221,
           222,
+          227,
           229,
           230,
-          231
+          234,
+          241,
+          242,
+          243
         ],
         "executable-dependency": [
           173,
@@ -3341,10 +3349,10 @@
           141,
           153,
           182,
-          201,
-          204,
           213,
-          227
+          216,
+          225,
+          239
         ]
       },
       "semantic_status": "UNVERIFIED"

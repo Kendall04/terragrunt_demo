@@ -173,8 +173,9 @@ Inhibit captures prior exact NAT instance IDs and published-version maximum
 Lambda timeouts, disables existing DEV NAT EventBridge rule, sets reserved
 concurrency zero for callable three NAT functions and DEV lifecycle/deploy/
 emergency/cleanup entries, drains both ECS services, suspends Launch/AlarmNotification/
-AZRebalance/ReplaceUnhealthy/ScheduledActions/InstanceRefresh and sets both ASGs
-min/max/desired zero. Terminate is NOT suspended. One local UNKNOWN attempt before
+AZRebalance/ReplaceUnhealthy/ScheduledActions/InstanceRefresh while retaining NAT
+capacity. After actual ECS STOPPED and normal SQL stop retaining EBS, the
+administrator sets both exact ASGs min/max/desired zero. Terminate is NOT suspended. One local UNKNOWN attempt before
 commands prevents a blind resend if any response is lost. No controller code,
 trust/role, E13 algorithm or protected state grant is altered by these commands.
 
@@ -187,7 +188,8 @@ No preview grants apply authority, and SQL-loss confirmation remains independent
 
 Before EVERY destructive dispatch: fresh E2/build reads, rule/function inhibition,
 unchanged callable inventory, all published timeouts elapsed AND fresh zero
-ConcurrentExecutions data (missing/stale metrics block), exact E13 plan/attempt/
+ConcurrentExecutions data or the DEV NAT-only live START/REPORT alternative below
+when datapoints are absent (positive/stale metrics still block), exact E13 plan/attempt/
 terminal-effect correlation, no retained failure messages, terminal ASG activities,
 no native hooks/warm pools/schedules/policies, prior EC2 instances actually terminated,
 ECS zero desired/running/pending and complete empty task list. Known UNKNOWN or
@@ -206,8 +208,9 @@ observations for disposable DEV. It reports `executor_finality=NOT_CERTIFIED` an
 retained unobservable-late-effect risk. A stopped executor/terminal journal is not
 proof of every possible earlier remote effect. The owner accepts this observational
 limit; positively known or ambiguous effects still require manual reconciliation.
-If the first experiment cannot obtain fresh activity metrics or attributable E13
-readbacks, DOWN remains blocked; no fake zero/finality marker substitutes.
+If neither fresh metrics nor the narrow live invocation-log alternative is
+available, or attributable E13 readbacks are missing, DOWN remains blocked; no
+fake zero/finality marker substitutes.
 Protected E15-G/H retains its stricter denial and can only run after the explicit
 backend policy is transferred back by the administrator with genuine readbacks.
 
@@ -359,3 +362,26 @@ authorization. A versioned evidence archive does not itself authorize deleting
 queue records. Never replace this with an approximate-empty or unconditional
 success assertion. Explicit per-layer previews read their own state only;
 execution continues to recheck all five states and reverse dependency order.
+
+
+### Partial edge destruction: ordinary state reconciliation
+
+The first saved `edge` apply stopped with explicit AWS errors: DeleteStage lacked
+permission-only `logs:ListLogDeliveries`; GetVpcLink after accepted deletion lost
+tag-based authorization. Independent AWS reads confirmed the VPC Link absent,
+all four routes and the integration absent, with the API/stage/log group retained.
+The old failed attempt stays retained and must never be blindly replayed.
+The fixes add only regional ListLogDeliveries and read-only GETs on the exact
+original API subtree/VPC Link, not a wildcard log-delivery write permission.
+AWS documents ListLogDeliveries as permission-only (not a CLI operation):
+[CloudWatch Logs authorization](https://docs.aws.amazon.com/service-authorization/latest/reference/list_logs.html).
+
+A deleted resource may still be in partial Terraform state and correctly fail the
+normal independent-tag guard. Do not weaken that guard or run `state rm`. Use the
+same exclusive DEV operator/backend/locks to prepare a real saved `-refresh-only`
+plan, inspect its JSON for no remote mutations and the attributable missing
+resource drift, then apply that exact refresh-only plan once. Preserve state
+versions and old failed receipts. Once authentic state and AWS agree, initialize
+an ordinary new E16 session and review fresh destroy plans for only the remaining
+original DEV resources. No new resources, alternate state authority, force-unlock
+or unreviewed destroy retry is authorized by this reconciliation.

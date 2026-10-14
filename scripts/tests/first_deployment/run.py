@@ -187,7 +187,7 @@ class Tests(unittest.TestCase):
  def test_original_log_permissions_and_api_create_scopes(self):
   logs=json.loads((ROOT/'scripts/first_deployment/operator-policy-7.json').read_text())
   expected={'arn:aws:logs:us-east-1:341936017254:log-group:'+name+suffix for name in ('/aws/ecs/demo-dev-app-api-blue','/aws/ecs/demo-dev-app-api-green','/aws/apigw/demo-dev-edge-http-access') for suffix in ('',':*')}
-  for row in logs['Statement']:
+  for row in logs['Statement'][:2]:
    self.assertEqual(set(row['Resource']),expected);self.assertEqual(row['Condition']['StringEquals']['aws:RequestedRegion'],'us-east-1')
    self.assertTrue(set(row['Action'])<={'logs:CreateLogGroup','logs:TagResource','logs:PutRetentionPolicy','logs:DeleteLogGroup','logs:ListTagsForResource'})
   api=json.loads((ROOT/'scripts/first_deployment/operator-policy-8.json').read_text())
@@ -196,6 +196,18 @@ class Tests(unittest.TestCase):
   for row in api['Statement']:
    self.assertTrue(all(a.startswith('apigateway:') for a in row['Action']));self.assertEqual(row['Condition']['StringEquals']['aws:RequestedRegion'],'us-east-1')
    self.assertNotIn('prod',json.dumps(row));self.assertNotIn('iam:',json.dumps(row))
+
+ def test_first_down_permissions_only_read_exact_deleting_resources(self):
+  logs=json.loads((ROOT/'scripts/first_deployment/operator-policy-7.json').read_text())
+  self.assertEqual(len(logs['Statement']),3);row=logs['Statement'][2]
+  self.assertEqual(row['Action'],['logs:ListLogDeliveries']);self.assertEqual(row['Resource'],['*'])
+  self.assertEqual(row['Condition'],{'StringEquals':{'aws:RequestedRegion':'us-east-1'}})
+  api=json.loads((ROOT/'scripts/first_deployment/operator-policy-8.json').read_text())
+  self.assertEqual(len(api['Statement']),6);row=api['Statement'][5]
+  self.assertEqual(row['Action'],['apigateway:GET'])
+  self.assertEqual(set(row['Resource']),{'arn:aws:apigateway:us-east-1::/apis/wjjhpal9ig','arn:aws:apigateway:us-east-1::/apis/wjjhpal9ig/*','arn:aws:apigateway:us-east-1::/vpclinks/7fe58y'})
+  self.assertEqual(row['Condition'],{'StringEquals':{'aws:RequestedRegion':'us-east-1'}})
+  self.assertNotIn('DELETE',json.dumps(row));self.assertNotIn('Put',json.dumps(logs['Statement'][2]))
 
  def test_ecs_definition_read_has_only_required_regional_wildcard(self):
   policy=json.loads((ROOT/'scripts/first_deployment/operator-policy-9.json').read_text())

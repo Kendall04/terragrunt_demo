@@ -90,6 +90,23 @@
           "aws:RequestedRegion": "us-east-1"
         }
       }
+    },
+    {
+      "Sid": "ReadOnlyOriginalApiAndVpcLinkDuringDeletion",
+      "Effect": "Allow",
+      "Action": [
+        "apigateway:GET"
+      ],
+      "Resource": [
+        "arn:aws:apigateway:us-east-1::/apis/wjjhpal9ig",
+        "arn:aws:apigateway:us-east-1::/apis/wjjhpal9ig/*",
+        "arn:aws:apigateway:us-east-1::/vpclinks/7fe58y"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
     }
   ]
 }
