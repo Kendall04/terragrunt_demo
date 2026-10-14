@@ -145,9 +145,13 @@ class Completion(unittest.TestCase):
     def test_disable_sdc_attribute_and_environment_are_required(self):
         p = policy('nat-recovery/nat-dev/disable_sdc')
         instance = f'arn:aws:ec2:{REGION}:{ACCOUNT}:instance/i-replacement'
-        context = {'ec2:Attribute': 'sourceDestCheck', 'aws:ResourceTag/Environment': 'dev',
+        context = {'ec2:Attribute': 'SourceDestCheck', 'aws:ResourceTag/Environment': 'dev',
                    'aws:ResourceTag/Role': 'nat'}
         self.assertTrue(permits(p, 'ec2:ModifyInstanceAttribute', instance, context))
+        self.assertFalse(permits(p, 'ec2:ModifyInstanceAttribute', instance, {**context,'ec2:Attribute':'sourceDestCheck'}))
+        prod=policy('nat-recovery/nat-prod/disable_sdc')
+        prod_statement=next(s for s in prod['Statement'] if s['Action']==['ec2:ModifyInstanceAttribute'])
+        self.assertEqual(prod_statement['Condition']['StringEquals']['ec2:Attribute'],'sourceDestCheck')
         for field, bad in [('ec2:Attribute', 'userData'), ('aws:ResourceTag/Environment', 'prod'),
                            ('aws:ResourceTag/Role', 'app')]:
             self.assertFalse(permits(p, 'ec2:ModifyInstanceAttribute', instance, {**context, field: bad}))

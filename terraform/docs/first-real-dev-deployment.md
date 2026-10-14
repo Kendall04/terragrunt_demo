@@ -458,3 +458,40 @@ need exact-version conditional installation/readback before reactivation.
 WP4D 33 tests and all eleven real Terraform expression parity cases pass.
 Earlier UNCERTAIN operations/evidence remain preserved; no forced settlement or
 blind resend is performed. Private plans/state/password values remain outside Git.
+
+## Both original NAT slots reconciled
+
+Authenticated readbacks confirm both original ASGs have one Healthy/InService
+t3.micro, launch-template version 1. Both exact EIPs are associated to their
+current ENIs; both private default routes are active; source/destination checks
+are false; both fixed bootstrap CONFIGURED markers are present. Private-subnet
+packet forwarding still needs live workload evidence. NAT-A is
+i-0a1ffe2dcf7c0889a; NAT-B is i-0afcbfdf10a181f94.
+
+Three DEV-only bundle version/readbacks and published Lambda version 2 retain
+the original runtime image. Targets, permissions and failure destinations are
+verified. Native launch events were read from the preserved failure queue and
+processed sequentially only after complete journal reads showed no prior attempt.
+NAT-B completed EIP/route/SDC and E13 bootstrap verification with SUCCESS.
+
+NAT-A SDC was rejected definitively: CloudTrail event
+98730b62-65c7-49d1-8f3b-ea1f227dae89 identifies the exact execution role, instance
+and sourceDestCheck=false request with UnauthorizedOperation. Only DEV's IAM
+attribute value changes from sourceDestCheck to SourceDestCheck; actions,
+resources and ownership conditions are unchanged. PROD retains its original
+policy. A separately identified authenticated human reconciliation completed
+SDC with operation 41ff966c-8f56-5cc9-a2ab-4ba64f6e4333. This is explicitly
+not a native AWS delivery. The earlier UNCERTAIN journal is preserved unchanged
+with its attributable denial evidence; no forced settlement or blind resend.
+
+The exact SQL operator policy Part6 v1 is installed/read back: observed Ubuntu
+AMI, first private subnet, SQL SG/profile, t3a.small, required IMDSv2 and DEV/demo
+request tags. After propagation the real dry-run returned DryRunOperation; no
+SQL instance was created by the check. State/PROD/shared protection is unchanged.
+
+Complete acceptance at 8ce1cf0 passed 983 tests, AC1-AC16 and all 44 checks.
+After the IAM case correction, WP4D 33, first-deployment 20 and all eleven
+Terraform policy/trust projections pass. Every package identity is unchanged
+by that policy correction; no PROD IAM installation occurred. The final source
+commit was temporarily blocked because automatic approval review reached its
+usage limit, not because a safety rejection identified unsafe behavior.

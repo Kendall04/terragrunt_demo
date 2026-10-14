@@ -149,6 +149,21 @@ class Tests(unittest.TestCase):
   self.assertEqual(policy['Statement'][1]['Condition']['StringEquals']['ec2:MetadataHttpTokens'],'required')
   self.assertEqual(policy['Statement'][2]['Condition']['StringEquals']['ec2:CreateAction'],'RunInstances')
 
+ def test_sql_permission_has_exact_profile_ami_subnet_sg_and_no_state_authority(self):
+  policy=json.loads((ROOT/'scripts/first_deployment/operator-policy-6.json').read_text())
+  self.assertEqual(policy['Statement'][0]['Resource'][:3],[
+   'arn:aws:ec2:us-east-1::image/ami-062944a84867f2386',
+   'arn:aws:ec2:us-east-1:341936017254:subnet/subnet-01b43cbada7cf6f5c',
+   'arn:aws:ec2:us-east-1:341936017254:security-group/sg-020126488b4fb8a1f'])
+  cond=policy['Statement'][1]['Condition']
+  self.assertEqual(cond['ArnEquals']['ec2:InstanceProfile'],'arn:aws:iam::341936017254:instance-profile/demo-dev-data-sql-ec2-profile')
+  self.assertEqual(cond['StringEquals']['ec2:MetadataHttpTokens'],'required')
+  self.assertEqual(cond['StringEquals']['aws:RequestTag/Environment'],'dev')
+  self.assertEqual(cond['StringEquals']['aws:RequestTag/Project'],'demo')
+  for row in policy['Statement']:
+   self.assertTrue(set(row['Action'])<={'ec2:RunInstances','ec2:CreateTags','ec2:DescribeInstanceCreditSpecifications'})
+   self.assertNotIn('prod',json.dumps(row))
+
 if __name__=='__main__':
  from hermetic import install
  install();result=unittest.TextTestRunner(verbosity=2).run(unittest.defaultTestLoader.loadTestsFromTestCase(Tests));raise SystemExit(not result.wasSuccessful())

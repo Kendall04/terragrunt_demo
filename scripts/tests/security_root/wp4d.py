@@ -467,7 +467,7 @@ def policy(binding, resources, account, region, version_id):
                   [arn("ec2", "route-table", slot["route_table"]) for slot in slots])
         elif action == "disable_sdc":
             allow(("ec2:ModifyInstanceAttribute",), [arn("ec2", "instance", "*")],
-                  {"StringEquals": {"ec2:Attribute": "sourceDestCheck",
+                  {"StringEquals": {"ec2:Attribute": "SourceDestCheck" if env == "dev" else "sourceDestCheck",
                                     "aws:ResourceTag/Environment": env,
                                     "aws:ResourceTag/Role": "nat"}})
         allow(("sqs:SendMessage",), [f"arn:aws:sqs:{region}:{account}:e1-wp4-{env}-nat-execution-failed"])

@@ -1669,6 +1669,32 @@
       },
       "semantic_status": "UNVERIFIED"
     },
+    "scripts/first_deployment/operator-policy-6.json": {
+      "sha256": "9f5a9479202f6b764890d7821fd86aabc99fea36153aaf0852266529d724b270",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          11,
+          12,
+          13,
+          14,
+          15,
+          19,
+          30,
+          34,
+          35,
+          36,
+          41,
+          52,
+          53,
+          57,
+          59,
+          60,
+          75
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
     "scripts/first_dev_bootstrap.py": {
       "sha256": "97034585e6a9e5bec1ceb936bfb70377f23bf553897737eead22bc239fdcb3b7",
       "declarations": [],
@@ -3132,7 +3158,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/first_deployment/run.py": {
-      "sha256": "7445d12d4534155fd002d4e7458e51ee9fe2033f97cfd16341f74eebdc215253",
+      "sha256": "defbd1920b67eb986743ffb19d141be5fb3a9f34bc045c97d81e695a567886c8",
       "declarations": [],
       "signals": {
         "role-input": [
@@ -3171,10 +3197,17 @@
           118,
           136,
           142,
-          146
+          146,
+          155,
+          156,
+          157,
+          159,
+          161,
+          162
         ],
         "security-control": [
-          141
+          141,
+          153
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -4682,7 +4715,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/wp4d.py": {
-      "sha256": "074f9d3cbd2bd37eb3c9404df2e0bce977c36b81379867ff65bc19f40d50ecc5",
+      "sha256": "4641a1f48df3515d8d67cfe09d4022a98856f3def94ac74579deee916bf31f7d",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -5232,11 +5265,11 @@
       "semantic_status": "CURRENT_FACT"
     },
     "scripts/tests/wp4d/test_runtime.py": {
-      "sha256": "57e69e5c8ffc3f4c8b5090a071468f3f36a9a3dd82adce1474d30b093229d825",
+      "sha256": "74b2d7d0a5cd225f61a1bdbc6eb67dd131fb81cd3dfb550e609bedad7034d407",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
-          178
+          182
         ],
         "launch-or-mutation": [
           28,
@@ -5249,15 +5282,15 @@
           147,
           148,
           149,
-          151,
-          152,
-          161,
-          172,
-          174,
-          189,
-          222,
-          242,
-          244
+          155,
+          156,
+          165,
+          176,
+          178,
+          193,
+          226,
+          246,
+          248
         ],
         "executable-dependency": [
           30,
@@ -5268,11 +5301,11 @@
           76,
           79,
           108,
-          184,
-          187,
-          194,
-          230,
-          233
+          188,
+          191,
+          198,
+          234,
+          237
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -5843,7 +5876,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/modules/controller_compute/main.tf.json": {
-      "sha256": "402bfe02fd799a13ea4f5161493f3baf8914d2f5575c44a55c2b7885816d2fda",
+      "sha256": "ebadb0ef7743c6414c6daf0d2b4df76948e8f6ee718ce3d2e7abe9385f27a2d2",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
