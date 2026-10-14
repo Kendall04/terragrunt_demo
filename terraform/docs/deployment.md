@@ -2,7 +2,9 @@
 
 Read [architecture](architecture.md) for ownership and [validation](validation.md)
 for command effects. This describes checked-in behavior, not proven deployment
-results. No AWS infrastructure currently exists (owner reconciliation 2026-09-18).
+results. The owner reconciliation on 2026-09-18 preceded all AWS resources.
+The [first real DEV deployment record](first-real-dev-deployment.md) distinguishes
+authenticated runtime evidence from uninstalled protected GitHub/WP3/WP4 delivery.
 
 [E4 recovery/runbook](e4-post-switch-recovery.md) adds one bounded same-invocation
 continuation after a listener switch with failed evidence persistence. Fresh

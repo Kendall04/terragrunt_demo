@@ -1,5 +1,13 @@
 # First real original DEV session â€” 2026-10-13
 
+Latest checkpoint (2026-10-14): all five original DEV layers are applied and the
+public application SQL/KMS round-trip passes, including 4096 UTF-8 bytes. Both
+colors, both NAT slots, SQL, internal ALB and API/VPC Link are running. See
+[the final functional evidence](#successful-public-functional-verification--2026-10-14)
+and [retention/recovery limits](#operating-costs-and-retained-boundary). Earlier
+sections below preserve the chronological checkpoints, not current blockers.
+Normal GitHub delivery and complete destructive rehearsal remain unverified.
+
 ## Verified scope and progress
 
 Profile `cnp-cert-dev`, account `341936017254`, region `us-east-1`.
@@ -570,3 +578,110 @@ The previous gate ran while source was being corrected and failed source-drift
 checks; it is not acceptance evidence. tfsec remains 46 by identity/multiplicity.
 TFLint detected one unused region declaration after removing inert logging; its
 source is now removed and a fresh scan is required, without suppression.
+
+## First real application and edge checkpoint — 2026-10-14
+
+Both original ECS services use immutable image
+`sha256:9671c5484c60de9db50f54abade794bb86263a5d636bca96a5eb3522c8643a50`,
+revision 4 in their original color families. Each desired count is one. These are
+supervised first-installation updates by the authorized account administrator,
+not WP3 qualification or an installed GitHub/WP4 delivery execution. Terraform
+continues to ignore task revisions/counts; ALB default forwarding remains blue.
+
+The first real Fargate startup exposed root-owned mode-0600 configuration copied
+from the private build context. The publish stage now grants `a+rX` within
+`/app/publish`; it retains root ownership and runtime UID 1654 and adds no write
+permission. Actual Docker non-root readability/non-writability and liveness
+checks pass. No secret values are built into that directory.
+
+The existing ciphertext-expansion migration lacked EF discovery attributes.
+Adding its exact DbContext and migration identity makes EF discover the existing
+migration without changing its Up/Down operations. A SQL Server provider test
+scripts the real ALTER without opening a connection. Real SQL now records both
+migration identities and `DemoTexts.Text` max_length=-1. The corrected image
+applied the migration; no manual schema alteration was used. All 103 .NET tests
+pass on the isolated VM with network disabled and cached packages. The exact
+four modified/new source files match the tested VM copy by SHA-256.
+
+The edge apply stopped after creating its 30-day log group. Attributable
+CloudTrail records show both tagged create requests rejected: API creation needs
+an encoded tag-resource POST, while VPC Link's rejection names
+`apigateway:TagResource`, which IAM Access Analyzer rejects as an invalid action.
+That invalid candidate was never installed. No permissions were broadened.
+The already-authorized administrator created only the exact reviewed DEV API,
+VPC Link and default stage; their authentic IDs and tags were read back, and the
+exclusive DEV state writer imported them into the existing original Terraform
+root with ordinary S3 locking. No unrelated resource was imported. A fresh
+session/plan is mandatory for the remaining resources; the failed attempt and
+original binary remain preserved. Future recreation requires this same small
+administrator bootstrap until AWS's tagged-create permission discrepancy is
+resolved; the current operator policy does not claim that capability works.
+
+API ID: `wjjhpal9ig`; VPC Link ID: `7fe58y`. Availability and functional public
+round-trip remain pending at this checkpoint. This entry must not be interpreted
+as completed application access or successful complete teardown.
+
+## Operating costs and retained boundary
+
+The authenticated runtime inventory contains exactly the two original NAT EC2
+instances, one private SQL EC2 instance, two final Fargate service tasks, the
+internal ALB and two EIPs. Original NAT root volumes are 8 GiB gp2 each (the
+original launch configuration does not encrypt those disks); SQL is 30 GiB
+encrypted gp3. All three root attachments are DeleteOnTermination. No extra
+application compute from the diagnostic one-off tasks remains running.
+
+Observed regional unit rates produce a running base of approximately USD
+0.096785/hour with both colors at one task: two t3.micro at 0.0104 each,
+t3a.small at 0.0188, ALB at 0.0225, two IPv4 at 0.005 each and two Fargate
+0.25-vCPU/0.5-GiB tasks at 0.0123425 each. This excludes EBS, ALB LCU, logs and
+Container Insights, API requests, data transfer, KMS, Secrets Manager, ECR and
+S3/evidence storage. It is not an approved budget or a zero-cost teardown claim.
+Rates are the session's regional pricing observations, not a future price promise.
+
+Before DOWN: inspect the exact account and states, inhibit actual deployments and
+NAT triggers/invocations, reconcile outstanding requests and failure messages,
+then native ASG activities/membership. Disable/zero concurrency does not cancel an
+already-dispatched effect. The preserved NAT-A SDC UNCERTAIN attempt has a
+specific CloudTrail UnauthorizedOperation denial and later successful separately
+identified human reconciliation; its original journal is not overwritten.
+Existing E16 shutdown admission still requires attributable terminal evidence and
+failure-message reconciliation. Do not force it through or force-unlock state.
+
+Use reviewed saved plans in reverse order edge -> apps -> platform -> data ->
+global, with the independent SQL-loss confirmation. A failed layer stops the
+sequence, preserves state and requires a fresh review after reconciliation.
+No complete destructive rehearsal has been performed. The administrator's
+owner-authorized emergency path is restricted to these recorded project-owned
+identities, with state reconciliation through the exclusive operator; it is not
+account-wide cleanup. Retain the backends, state versions/locking protection,
+security/IAM, KMS/secrets, ECR images, journals, failure evidence and intended log
+retention. Email alerts remain inactive by the owner's decision. GitHub OIDC and
+normal protected WP3/WP4 delivery still require separate installation and GitHub
+authorization; the successful local image build/bootstrap does not certify them.
+
+## Successful public functional verification — 2026-10-14
+
+All five original DEV layers are applied. The endpoint is
+https://wjjhpal9ig.execute-api.us-east-1.amazonaws.com. VPC Link 7fe58y is AVAILABLE;
+integration anw2uwb targets the original internal ALB listener. Four original
+routes and the auto-deployed default stage are installed with 30-day access logs.
+Both original color services are COMPLETED with desired=running=1, pending=0,
+revision 4, the final digest, readiness-probe exit 0 and one healthy ALB target each.
+Blue task 607b5fedb0274cf2b18b7cac3e0f2919 uses private address 10.0.100.130; green
+a90ec1bb8d324da0b358251099dd8e1e uses 10.0.100.9. The listener remains blue.
+
+Authentic public /ready reports database and KMS Healthy. POST/GET /text round trips
+succeeded for a 46-byte synthetic marker and 4096 UTF-8 bytes (2048 ñ characters),
+proving actual SQL persistence and KMS Encrypt/Decrypt through Gateway/VPC Link/ALB.
+No secret values are included in those test records. Actual private-B diagnostic
+Fargate execution and private-A SQL/SSM/application execution also prove outbound
+service access through both original NAT routes; failover/forced replacement has
+not been exercised. All diagnostic one-off tasks are stopped.
+
+The completed edge plan 64cab12d-c1d7-4fbc-8b35-ddf224ca26c6 created only the
+integration and four routes, using the exclusive operator, exact reviewed binary,
+unchanged imported resources and normal S3 locks. All ten installed operator
+default policies match the source exactly; no invalid tagging grant was installed.
+The owner requested leaving the successful environment running for inspection;
+ongoing charges continue. No complete DOWN, production deployment, GitHub push,
+merge or protected release qualification is claimed.

@@ -26,6 +26,9 @@ public class ContainerContractTests
     [InlineData("COPY --from=build /app/publish .", "COPY --from=build --chmod=600 /app/publish .")]
     [InlineData("terragrunt-demo.dll", "other.dll")]
     [InlineData("/p:UseAppHost=false", "/p:UseAppHost=true")]
+    [InlineData("&& chmod -R a+rX /app/publish", "")]
+    [InlineData("a+rX", "777")]
+    [InlineData("a+rX", "a+rwX")]
     [InlineData("-o /app/publish", "-o /app/other")]
     [InlineData("WORKDIR /app", "WORKDIR /root")]
     [InlineData("ENTRYPOINT", "CMD")]
@@ -111,7 +114,7 @@ public class ContainerContractTests
             "COPY terragrunt-demo/terragrunt-demo.csproj terragrunt-demo/",
             "RUN dotnet restore terragrunt-demo/terragrunt-demo.csproj",
             "COPY terragrunt-demo/ terragrunt-demo/",
-            "RUN dotnet publish terragrunt-demo/terragrunt-demo.csproj -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false",
+            "RUN dotnet publish terragrunt-demo/terragrunt-demo.csproj -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false && chmod -R a+rX /app/publish",
             "FROM base AS final", "WORKDIR /app", "COPY --from=build /app/publish .",
             "USER $APP_UID", "ENTRYPOINT [\"dotnet\", \"terragrunt-demo.dll\"]"
         }, instructions);

@@ -10,7 +10,11 @@ Release default, framework-dependent publish to `/app/publish`, final `/app` wor
 directory and `dotnet terragrunt-demo.dll` entrypoint. Both runtime stages explicitly
 use `USER $APP_UID`, supplied as UID 1654 by the verified .NET 8 image. The build
 stage retains its original build identity; it is not the deployed runtime stage.
-No package installation, chmod/chown layer or privileged runtime operation is added.
+The first real DEV startup demonstrated mode-0600 publish files from a private
+build context. The build stage now applies `chmod -R a+rX /app/publish` before
+COPY, retaining root ownership and granting runtime read/traversal without adding
+write permissions. No package installation, chown or privileged runtime operation
+is added. See the [real deployment record](first-real-dev-deployment.md).
 
 The bases are pinned to the **linux/amd64 child manifests**, matching the existing
 [ECS template](../../demo-api/deploy/task-definition.template.json)'s Linux/X86_64
@@ -23,7 +27,8 @@ x86-64; ARM64 builds are outside this contract.
 The published files remain root-owned through Docker COPY's default ownership.
 The inspected application reads its binaries/configuration, logs to stdout/stderr
 and performs network DB/KMS operations; it does not write application files or
-require root. Standard publish output is expected to be readable by UID 1654.
+require root. Publish permissions explicitly make configuration and assemblies
+readable by UID 1654.
 The selected base's configuration/history reports the `app` account/group and
 `/home/app` creation. `/tmp` and the app home remain available for normal runtime
 temporary files. Linux permissions and execution must still be checked with a

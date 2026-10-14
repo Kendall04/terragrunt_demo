@@ -29,7 +29,8 @@ COPY terragrunt-demo/ terragrunt-demo/
 RUN dotnet publish terragrunt-demo/terragrunt-demo.csproj \
     -c $BUILD_CONFIGURATION \
     -o /app/publish \
-    /p:UseAppHost=false
+    /p:UseAppHost=false \
+    && chmod -R a+rX /app/publish
 
 # ===========================
 # Final image

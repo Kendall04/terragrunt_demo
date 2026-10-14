@@ -1,8 +1,11 @@
 # Architecture and current contracts
 
-WP7 completes the repository E1 authority model. This is undeployed greenfield
-configuration: eleven external identities and all sixteen WP4D/eight WP5 bindings
-remain inactive. [Final acceptance](e1-final-acceptance.md) separates repository
+WP7 defines the repository E1 authority model. Its eleven external identities
+and default sixteen WP4D/eight WP5 binding declarations remain inactive. The
+[first real DEV deployment](first-real-dev-deployment.md) records separately
+installed DEV state authority, original runtime resources and three NAT handlers;
+repository acceptance alone does not establish those installations.
+[Final acceptance](e1-final-acceptance.md) separates repository
 evidence from genuine future installation and live verification. The immutable
 [specification](../../specs/iam-hardening/spec.md) and
 [plan](../../specs/iam-hardening/plan.md) govern the accepted architecture.
@@ -198,6 +201,10 @@ SQL Server 2022 Express runs on Ubuntu EC2 in the first private subnet, default
 t3a.small. Its encrypted 30-GiB root disk is deleted on termination. The app user
 has db_owner; startup EF migrations are enabled by default and fail startup on
 error. Both colors share the DB. Image rollback does not reverse schema changes.
+The ciphertext-expansion migration explicitly declares its DbContext and migration
+identity so EF discovers and applies the existing `nvarchar(max)` operation.
+A provider-only regression scripts it without opening SQL; the first real DEV
+startup separately verified both migrations and the resulting column length.
 
 Evidence: [Program](../../demo-api/terragrunt-demo/Program.cs),
 [controller](../../demo-api/terragrunt-demo/Controllers/DemoTextController.cs),
