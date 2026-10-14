@@ -187,3 +187,27 @@ AWS documents the limited visibility of terminated instances in
 [DescribeInstances](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstances.html)
 and the attributable termination activity in
 [scaling activity verification](https://docs.aws.amazon.com/autoscaling/ec2/userguide/as-verify-scaling-activity.html).
+
+### Second edge attempt: log-delivery delete authorization pending
+
+After the retired-instance guard correction passed all 53 practical DEV tests,
+the full live shutdown observation passed. The newly reviewed edge binary was
+applied once. DeleteStage definitively failed for missing
+`logs:DeleteLogDelivery` (request `3f7a72e8-5033-4001-b850-6b6d42fe25b0`).
+No subsequent layer was applied and the failed attempt remains preserved.
+
+Readbacks confirmed API `wjjhpal9ig` and stage `$default` remain, VPC Link
+`7fe58y` is absent, and the five DEV states remain readable without active native
+locks: edge 3 resources (serial 8), apps 9 (5), platform 1 (1), data 5 (4),
+global 49 (14). SQL remains stopped with its encrypted 30 GiB root EBS in use.
+No independent SQL/EBS permanent-loss approval has been received.
+
+AWS documents DeleteLogDelivery as a permission-only action without resource-level
+ARN support. An uninstalled proposal requests only that action for the existing
+DEV operator role, selected account/region, and a maximum one-hour validity,
+followed by removal after edge. Explicit owner approval for this scope limitation
+is pending; no broad logging permission was silently installed. See
+[HTTP API logging permissions](https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-logging.html)
+and [CloudWatch Logs authorization](https://docs.aws.amazon.com/service-authorization/latest/reference/list_logs.html).
+After approval, reconcile current state and prepare/review a fresh saved plan;
+never replay the failed binary or force-unlock.
