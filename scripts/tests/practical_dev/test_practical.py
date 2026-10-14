@@ -28,7 +28,7 @@ class Fake:
             'data':[('aws_instance.db','aws_instance')],'platform':[('module.ecs_cluster.aws_ecs_cluster.this','aws_ecs_cluster')],
             'apps':[('module.demo_api_blue.aws_ecs_service.this','aws_ecs_service'),('module.demo_api_green.aws_ecs_service.this','aws_ecs_service')],
             'edge':[('module.apigateway.aws_apigatewayv2_api.http','aws_apigatewayv2_api')]}
-        return [dict(address=a,mode='managed',type=t,values=dict(id=layer+'-'+str(i),tags=dict(Environment='dev',Project='demo'),**({'desired_count':0} if t=='aws_ecs_service' else {}))) for i,(a,t) in enumerate(types[layer])]
+        return [dict(address=a,mode='managed',type=t,values=dict(id=layer+'-'+str(i),tags=dict(Environment='dev',Project='demo'),**({'desired_count':0} if t=='aws_ecs_service' else {'name':'demo-dev-asg-nat-'+('a' if a.endswith('["a"]') else 'b')} if t=='aws_autoscaling_group' else {}))) for i,(a,t) in enumerate(types[layer])]
     def out(self,layer):
         return {'global':dict(private_subnet_ids=['subnet-a','subnet-b'],db_instance_sg_id='sg-db',demo_sg_id='sg-app',vpc_link_sg_id='sg-link',alb_listener_arn='arn:listener',demo_blue_tg_arn='arn:tg:blue',demo_green_tg_arn='arn:tg:green',vpc_id='vpc-own',nat_eip_allocation_ids={'a':'eipalloc-a','b':'eipalloc-b'}),
             'data':dict(instance_id='i-sql',db_private_ip='10.0.100.5'), 'platform':dict(cluster_name='demo-dev-platform-main-cluster',cluster_arn='arn:cluster'),
@@ -197,6 +197,44 @@ class Tests(unittest.TestCase):
         for response in [dict(Reservations=[]),dict(Reservations=[],NextToken='more'),dict(Reservations=[dict(Instances=[dict(InstanceId='i-retired',State=dict(Name='running'))])])]:
             with self.subTest(response=response):
                 with self.assertRaisesRegex(ValueError,'prior NAT'):self.session.shutdown_observation()
+
+    def test_partial_global_deleted_asgs_need_authentic_completed_history(self):
+        self.all_up();self.shutdown()
+        file=self.session.directory/'shutdown-readback.json';proof=json.loads(file.read_text())
+        proof['prior_instances']={f'demo-dev-asg-nat-{slot}':[f'i-retired-{slot}'] for slot in ('a','b')};file.write_text(json.dumps(proof))
+        self.fake.states['global']=[r for r in self.fake.states['global'] if r['type']!='aws_autoscaling_group']
+        original=self.fake.run;status='Successful';truncated=False
+        def run(args,cwd=None,data=None):
+            if 'describe-scaling-activities' in args:
+                self.assertIn('--include-deleted-groups',args);name=args[-1];slot=name[-1]
+                value=dict(Activities=[dict(AutoScalingGroupName=name,Description='Terminating EC2 instance: i-retired-'+slot,StatusCode=status,EndTime='2026-01-01T00:00:00Z')])
+                if truncated:value['NextToken']='more'
+                return c.canonical(value)
+            return original(args,cwd,data)
+        self.fake.run=run
+        self.session.shutdown_observation()
+        status='Failed'
+        with self.assertRaisesRegex(ValueError,'prior NAT termination'):self.session.shutdown_observation()
+        status='InProgress'
+        with self.assertRaisesRegex(ValueError,'deleted ASG activity'):self.session.shutdown_observation()
+        status='Successful';truncated=True
+        with self.assertRaisesRegex(ValueError,'deleted ASG activity'):self.session.shutdown_observation()
+
+    def test_missing_asg_with_unreconciled_managed_state_blocks(self):
+        self.all_up();self.shutdown();original=self.fake.run
+        def run(args,cwd=None,data=None):
+            if 'describe-auto-scaling-groups' in args:return c.canonical(dict(AutoScalingGroups=[]))
+            return original(args,cwd,data)
+        self.fake.run=run
+        with self.assertRaisesRegex(ValueError,'ASG inventory'):self.session.shutdown_observation()
+
+    def test_foreign_prior_asg_rejected_before_deleted_history_read(self):
+        self.all_up();self.shutdown()
+        file=self.session.directory/'shutdown-readback.json';proof=json.loads(file.read_text())
+        proof['prior_instances']['demo-prod-asg-nat-a']=[];file.write_text(json.dumps(proof))
+        start=len(self.fake.calls)
+        with self.assertRaisesRegex(ValueError,'prior NAT identities'):self.session.shutdown_observation()
+        self.assertFalse(any('demo-prod-asg-nat-a' in args for args in self.fake.calls[start:]))
 
     def test_dev_only_scope(self):
         for field,value in (('environment','prod'),('environment','shared'),('operator_arn','arn:aws:iam::'+ACCOUNT+':role/e1-controller-infra-dev')):

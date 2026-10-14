@@ -211,3 +211,32 @@ is pending; no broad logging permission was silently installed. See
 and [CloudWatch Logs authorization](https://docs.aws.amazon.com/service-authorization/latest/reference/list_logs.html).
 After approval, reconcile current state and prepare/review a fresh saved plan;
 never replay the failed binary or force-unlock.
+
+### Live teardown progress and partial global reconciliation
+
+Owner-authorized temporary DeleteLogDelivery and DeregisterTaskDefinition grants
+were scoped to the DEV operator, account and region with 55-minute expirations.
+IAM simulations denied expired/wrong-region contexts; actual Terraform deletions
+succeeded. Each grant was removed immediately after its layer apply, and further
+simulation confirmed both actions denied. Edge, apps, platform and data are now
+empty; independent SQL/EBS loss consent preceded data. SQL terminated and its
+encrypted 30 GiB root volume was independently confirmed absent.
+
+Global's reviewed binary ran once and partially succeeded: NAT ASGs, EIPs, ALB,
+security groups and other dependent resources were removed. It stopped on missing
+DetachInternetGateway authorization for the exact VPC and DisassociateRouteTable
+authorization for the four exact subnets. No permissions were automatically added.
+Thirteen managed resources remain: VPC, IGW, four subnets, three route tables and
+four explicit associations. AWS also lists the VPC's default main route table.
+Independent readbacks found no remaining project compute, known EBS/EIP, ALB or ENI.
+The owner subsequently authorized the two-action, five-resource temporary policy;
+installation awaits the new reviewed remaining-resource plan.
+
+The DEV guard now handles a reconciled partial destroy that already deleted an
+ASG: live ASG names must match the remaining Terraform-managed controllers.
+Missing groups require complete, terminal AWS activity history retrieved with
+[include-deleted-groups](https://docs.aws.amazon.com/cli/latest/reference/autoscaling/describe-scaling-activities.html).
+Every absent prior instance still requires its exact successful termination
+activity; incomplete history, active activity, failed termination or unreconciled
+state blocks. Existing E13/Lambda/effect checks remain mandatory. No plan or
+failed-attempt record is overwritten or force-settled.

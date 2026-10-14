@@ -538,8 +538,11 @@ class Session:
         require((self.directory/'shutdown-readback.json').exists(),'run inhibit and independently reconcile existing Lambda executions/effects first')
         proof=decode((self.directory/'shutdown-readback.json').read_bytes())
         require(proof['config_sha256']==sha(c.canonical(self.config)),'same inhibition session')
+        require(set(proof['prior_instances'])<= {'demo-dev-asg-nat-a','demo-dev-asg-nat-b'},'prior NAT identities before capacity mutation')
         groups=self.aws('autoscaling','describe-auto-scaling-groups','--auto-scaling-group-names','demo-dev-asg-nat-a','demo-dev-asg-nat-b')['AutoScalingGroups']
-        require({g['AutoScalingGroupName'] for g in groups}==set(proof['prior_instances']),'ASG inventory changed or missing')
+        names={g['AutoScalingGroupName'] for g in groups}
+        managed={row['values'].get('name',row['values']['id']) for row in self.state('global')['rows'] if row['type']=='aws_autoscaling_group'}
+        require(names==managed and names<=set(proof['prior_instances']),'ASG inventory changed or missing; reconcile Terraform state')
         terminated=set()
         for group in groups:
             require(group['AutoScalingGroupName'] in ('demo-dev-asg-nat-a','demo-dev-asg-nat-b'),'foreign ASG')
@@ -553,7 +556,15 @@ class Session:
             for instance in proof['prior_instances'][group['AutoScalingGroupName']]:
                 if any(v.get('AutoScalingGroupName')==group['AutoScalingGroupName'] and v.get('Description')=='Terminating EC2 instance: '+instance and v.get('StatusCode')=='Successful' and v.get('EndTime') for v in activities['Activities']):
                     terminated.add(instance)
-        require(set(proof['prior_instances'])<= {'demo-dev-asg-nat-a','demo-dev-asg-nat-b'},'prior NAT identities before capacity mutation')
+        for name in set(proof['prior_instances'])-names:
+            # A partial destroy may already have removed the native controller.
+            # Require matching reconciled state and authentic deleted-group history;
+            # neither a missing ASG nor an empty EC2 snapshot alone settles work.
+            activities=self.aws('autoscaling','describe-scaling-activities','--include-deleted-groups','--auto-scaling-group-name',name)
+            require(not activities.get('NextToken') and activities['Activities'] and all(v.get('AutoScalingGroupName')==name and v.get('StatusCode') in ('Successful','Failed','Cancelled') and v.get('EndTime') for v in activities['Activities']),'deleted ASG activity missing/incomplete/ambiguous')
+            for instance in proof['prior_instances'][name]:
+                if any(v.get('Description')=='Terminating EC2 instance: '+instance and v['StatusCode']=='Successful' for v in activities['Activities']):
+                    terminated.add(instance)
         previous=sorted({i for ids in proof['prior_instances'].values() for i in ids})
         if previous:
             # EC2 stops returning terminated IDs after its retention interval.
