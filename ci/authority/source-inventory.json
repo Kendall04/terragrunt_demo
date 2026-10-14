@@ -3217,13 +3217,13 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/first_deployment/run.py": {
-      "sha256": "e3ea9a4a258ccf583d555594e10f02a472d25bfd7012789c6f454c6fb9245126",
+      "sha256": "2da0fd6f9c0b9f7e6727cceeb6c9d133528f17dc87e1b7a7a1af103a3ee7f6da",
       "declarations": [],
       "signals": {
         "role-input": [
           78,
           172,
-          177
+          179
         ],
         "launch-or-mutation": [
           9,
@@ -3270,17 +3270,23 @@
           172,
           173,
           174,
-          182,
-          183,
-          186,
+          175,
+          176,
+          184,
+          185,
           188,
-          192,
-          194
+          190,
+          194,
+          196
+        ],
+        "executable-dependency": [
+          173,
+          174
         ],
         "security-control": [
           141,
           153,
-          179
+          181
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -4563,25 +4569,26 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/ordinary.py": {
-      "sha256": "65bdadb0b5e44a4fa44aefcdb17a1b46ed781024848d5a0f9387cccbe8b329e3",
+      "sha256": "6d7e2f2d69db214f31145c53e4f79a250e7d49ceacee7f855e9e73cda2ff2cf9",
       "declarations": [],
       "signals": {
         "role-input": [
           44,
-          65,
-          81
+          68,
+          84
         ],
         "launch-or-mutation": [
           12,
           25,
           26,
           37,
-          108
+          111
         ],
         "executable-dependency": [
           49,
           52,
-          105
+          64,
+          108
         ],
         "security-control": [
           43,
@@ -5752,7 +5759,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/authority.json": {
-      "sha256": "97f9fa168bc9dc6c89a1c77f92e524014af7e157ed6b11a25c53a4cccc43f32b",
+      "sha256": "89b7e0d446aa21e8cda32227af55069526ca4a04c80190dacc3946d91cd297ef",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -6490,7 +6497,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/modules/target/dev/apps/ordinary-demo.tf": {
-      "sha256": "720345dd3eb647c77ca04e257fe821440914c39b52d2579a6909e6ea993d2362",
+      "sha256": "a108425c80afb2e6bc540c4ac639a8ee5f5cac33e90489589a598222266a78db",
       "declarations": [
         {
           "kind": "module",
@@ -6502,15 +6509,17 @@
           "kind": "module",
           "type": "demo_api_green",
           "name": null,
-          "line": 44
+          "line": 46
         }
       ],
       "signals": {
         "executable-dependency": [
           2,
           11,
-          47,
-          56
+          33,
+          49,
+          58,
+          80
         ]
       },
       "semantic_status": "UNVERIFIED"

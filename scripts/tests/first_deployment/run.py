@@ -170,6 +170,8 @@ class Tests(unittest.TestCase):
   dev=generated['terraform/modules/target/dev/apps/modules/ecs_service/locals.tf']
   self.assertNotIn('logConfiguration',dev)
   self.assertNotIn('execution_role_arn',generated['terraform/modules/target/dev/apps/modules/ecs_service/taskdef.tf'])
+  self.assertEqual(generated['terraform/modules/target/dev/apps/ordinary-demo.tf'].count('enable_execute_command = false'),2)
+  self.assertNotIn('enable_execute_command = false',generated['terraform/modules/target/prod/apps/ordinary-demo.tf'])
   self.assertIn('aws_cloudwatch_log_group',generated['terraform/modules/target/dev/apps/modules/ecs_service/logs.tf'])
   self.assertIn('logConfiguration',generated['terraform/modules/target/prod/apps/modules/ecs_service/locals.tf'])
   template=json.loads((ROOT/'demo-api/deploy/task-definition.template.json').read_text())

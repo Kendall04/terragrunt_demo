@@ -30,6 +30,8 @@ module "demo_api_blue" {
 
   secrets = {}
 
+  enable_execute_command = false
+
   desired_count = 0 # Runtime scale is owned by the app deployment pipeline.
   task_cpu      = "256"
   task_memory   = "512"
@@ -74,6 +76,8 @@ module "demo_api_green" {
   }
 
   secrets = {}
+
+  enable_execute_command = false
 
   desired_count = 0 # Runtime scale is owned by the app deployment pipeline.
   task_cpu      = "256"

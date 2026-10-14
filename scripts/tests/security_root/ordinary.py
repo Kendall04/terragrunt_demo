@@ -59,6 +59,9 @@ def wiring(doc):
                     text = re.sub(r'  (?:task_policy_arns|execution_policy_arns) = \[[\s\S]*?\n  \]\n', '', text)
                     text = re.sub(r'  secrets = \{[\s\S]*?\n  \}', '  secrets = {}', text)
                     text = text.replace("var.kms_key_id", 'local.expected["' + env + '/kms"]')
+                    if env == "dev":
+                        # ECS Exec needs a task role; the inert bootstrap has none.
+                        text = text.replace("  desired_count = 0", "  enable_execute_command = false\n\n  desired_count = 0")
                 elif layer == "apps" and rel == "modules/ecs_service/taskdef.tf":
                     # Inert bootstrap: no workload roles or secrets. Real runtime
                     # role bindings are published for WP4, never inherited here.

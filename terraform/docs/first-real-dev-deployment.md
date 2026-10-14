@@ -533,3 +533,11 @@ runtime package is replaced by this correction.
 At 0cb0355, TFLint 24 and tfsec 46 findings match the preceding baseline by
 rule/resource/description/severity identity and multiplicity. This checkpoint does
 not claim deployed application readiness or completed API Gateway provisioning.
+
+The same pre-apply inspection found ECS Exec enabled by the extracted module
+variable default, despite the accepted inert/normal-delivery contracts requiring
+it disabled. DEV's two zero-count service calls now explicitly set it false.
+A role-free definition cannot support ECS Exec; no task-role/SSM authority is
+added to work around that mismatch. PROD and the real runtime template remain
+unchanged. The pending source-6c session must fail its clean-source identity check
+before any application when the corrected source is committed.
