@@ -245,6 +245,22 @@ class Tests(unittest.TestCase):
         with self.assertRaises(p.Failure):self.session.apply(review['plan_id'],review['confirmation'])
         self.fake.fail=False
         with self.assertRaisesRegex(ValueError,'ambiguous'):self.session.prepare(True)
+    def test_destroy_preview_before_inhibition_never_dispatches_mutation(self):
+        self.all_up();self.fake.inhibited=False
+        review=self.session.prepare(True)
+        self.assertEqual(review['layer'],'edge');self.assertEqual(review['phase'],'REVIEW_REQUIRED_NOT_EXECUTED')
+        self.assertFalse((self.session.directory/'shutdown-readback.json').exists())
+        count=sum(a[0]=='terraform' and a[2]=='apply' for a in self.fake.calls)
+        with self.assertRaisesRegex(ValueError,'inhibited'):self.session.apply(review['plan_id'],review['confirmation'])
+        self.assertEqual(sum(a[0]=='terraform' and a[2]=='apply' for a in self.fake.calls),count)
+        self.assertFalse((self.session.directory/'plans'/review['plan_id']/'attempt.json').exists())
+    def test_later_layer_preview_is_not_out_of_order_authority(self):
+        self.all_up();self.shutdown()
+        review=self.session.prepare(True,down_layer='global');self.assertEqual(review['layer'],'global')
+        with self.assertRaisesRegex(ValueError,'dependency order'):self.session.apply(review['plan_id'],review['confirmation'])
+        for bad in ('prod','shared','security'):
+            with self.assertRaisesRegex(ValueError,'original DEV'):self.session.prepare(True,down_layer=bad)
+        with self.assertRaisesRegex(ValueError,'original DEV'):self.session.prepare(False,down_layer='global')
     def test_full_down_order_retains_backend_shared(self):
         self.all_up();self.shutdown();results=[self.apply(True)['layer'] for _ in p.DOWN];self.assertEqual(results,list(p.DOWN))
         self.assertFalse(any('delete-bucket' in a for a in self.fake.calls));self.assertNotIn('shared',self.fake.states)
@@ -254,19 +270,24 @@ class Tests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'SQL'):self.session.apply(review['plan_id'],review['confirmation'])
     def test_known_nat_effect_unknown_blocks(self):
         self.all_up();self.shutdown();self.fake.unknown=True
-        with self.assertRaisesRegex(ValueError,'UNKNOWN'):self.session.prepare(True)
+        review=self.session.prepare(True)
+        with self.assertRaisesRegex(ValueError,'UNKNOWN'):self.session.apply(review['plan_id'],review['confirmation'])
     def test_asg_replacement_blocks(self):
         self.all_up();self.shutdown();self.fake.asg_busy=True
-        with self.assertRaisesRegex(ValueError,'replacement'):self.session.prepare(True)
+        review=self.session.prepare(True)
+        with self.assertRaisesRegex(ValueError,'replacement'):self.session.apply(review['plan_id'],review['confirmation'])
     def test_ecs_activity_blocks(self):
         self.all_up();self.shutdown();self.fake.ecs_busy=True
-        with self.assertRaisesRegex(ValueError,'drained'):self.session.prepare(True)
+        review=self.session.prepare(True)
+        with self.assertRaisesRegex(ValueError,'drained'):self.session.apply(review['plan_id'],review['confirmation'])
     def test_metric_absence_is_not_zero(self):
         self.all_up();self.shutdown();self.fake.metrics=False
-        with self.assertRaisesRegex(ValueError,'metric absence'):self.session.prepare(True)
+        review=self.session.prepare(True)
+        with self.assertRaisesRegex(ValueError,'metric absence'):self.session.apply(review['plan_id'],review['confirmation'])
     def test_controller_reactivation_blocks(self):
         self.all_up();self.shutdown();self.fake.inhibited=False
-        with self.assertRaisesRegex(ValueError,'inhibited'):self.session.prepare(True)
+        review=self.session.prepare(True)
+        with self.assertRaisesRegex(ValueError,'inhibited'):self.session.apply(review['plan_id'],review['confirmation'])
     def test_foreign_state_address(self):
         self.apply();self.fake.states['global'][0]['address']='aws_vpc.foreign'
         with self.assertRaisesRegex(ValueError,'foreign'):self.session.status()

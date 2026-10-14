@@ -178,7 +178,14 @@ min/max/desired zero. Terminate is NOT suspended. One local UNKNOWN attempt befo
 commands prevents a blind resend if any response is lost. No controller code,
 trust/role, E13 algorithm or protected state grant is altered by these commands.
 
-Before EVERY destroy preview/dispatch: fresh E2/build reads, rule/function inhibition,
+Destroy previews may be prepared before shutdown and owner approval. Optional
+`dev down-plan --layer <edge|apps|platform|data|global>` reviews an existing layer
+without changing execution order. Each preview remains bound to its state, source
+and exact saved binary; later inhibition or prior-layer deletion may make it stale.
+A fresh plan within the disclosed scope must be reviewed before execution.
+No preview grants apply authority, and SQL-loss confirmation remains independent.
+
+Before EVERY destructive dispatch: fresh E2/build reads, rule/function inhibition,
 unchanged callable inventory, all published timeouts elapsed AND fresh zero
 ConcurrentExecutions data (missing/stale metrics block), exact E13 plan/attempt/
 terminal-effect correlation, no retained failure messages, terminal ASG activities,
@@ -309,3 +316,7 @@ corrections. NAT DEV's first WP4D binding can now describe only the two real net
 slots, without requiring future ECS/cleanup IDs; application and PROD admission
 continue using the original full binding. This does not certify installed recovery
 or eliminate live E13/readback requirements.
+
+The [first real teardown preparation](first-real-dev-teardown.md) records the
+owner-approval boundary, real historical E13/DLQ distinctions and the limited
+preview-before-shutdown correction. It does not claim a completed DOWN.

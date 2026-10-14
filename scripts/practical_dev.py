@@ -374,12 +374,15 @@ class Session:
         if down:require({r['address'] for r in state['rows']}<=seen,'complete next-layer teardown')
         return changes
 
-    def prepare(self,down=False,network_only=False):
+    def prepare(self,down=False,network_only=False,down_layer=None):
+        require(down_layer is None or (down and down_layer in DOWN),'preview layer must be an original DEV DOWN layer')
         self.identity();self.source();self.backend();self.idle();self.unresolved()
         states={layer:self.state(layer) for layer in UP}
         if down:
-            remaining=[l for l in DOWN if states[l]['rows']];require(remaining,'no runtime state; run residual');layer=remaining[0]
-            self.shutdown_observation()
+            remaining=[l for l in DOWN if states[l]['rows']];require(remaining,'no runtime state; run residual')
+            layer=down_layer or remaining[0];require(layer in remaining,'requested layer has no runtime state')
+            # Preview is read-only and must precede destructive human approval.
+            # apply() still enforces reverse order and the complete live shutdown guard.
         else:
             remaining=[l for l in UP if not (self.directory/('up-'+l+'-reconciled.json')).exists()];require(remaining,'infrastructure states present; verify, then use WP3/WP4 deployment');layer=remaining[0]
         if down:
@@ -653,15 +656,16 @@ def main(argv=None,process=None):
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action',choices=('init','status','bootstrap-status','bootstrap-network-plan','up-plan','apply','down-plan','inhibit','review-inhibition','verify','residual'))
     parser.add_argument('--config',type=Path,required=True);parser.add_argument('--directory',type=Path,required=True)
+    parser.add_argument('--layer',choices=DOWN,help='review an existing DEV layer before shutdown; apply still enforces reverse order')
     parser.add_argument('--plan-id');parser.add_argument('--confirm');parser.add_argument('--confirm-sql-loss')
     parser.add_argument('--aws-config-file',type=Path);parser.add_argument('--terraform-wsl-bin',type=Path);parser.add_argument('--terraform-plugin-cache',type=Path)
-    args=parser.parse_args(argv);config=decode(args.config.read_bytes())
+    args=parser.parse_args(argv);require(args.layer is None or args.action=='down-plan','--layer is only a DOWN preview selector');config=decode(args.config.read_bytes())
     session=Session(config,args.directory,process or Process(config,args.aws_config_file,args.terraform_wsl_bin,args.terraform_plugin_cache))
     if args.action=='init':result=session.initialize()
     elif args.action=='bootstrap-status':result=session.bootstrap_status()
     elif args.action=='up-plan':result=session.prepare()
     elif args.action=='bootstrap-network-plan':result=session.prepare(network_only=True)
-    elif args.action=='down-plan':result=session.prepare(True)
+    elif args.action=='down-plan':result=session.prepare(True,down_layer=args.layer)
     elif args.action=='apply':result=session.apply(args.plan_id,args.confirm,args.confirm_sql_loss)
     elif args.action=='inhibit':result=session.inhibit(args.confirm)
     elif args.action=='review-inhibition':result=session.review_inhibition(args.confirm)
