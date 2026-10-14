@@ -123,3 +123,32 @@ this is not zero and does not satisfy the retained metric-based execution guard.
 Independent manual reconciliation and a narrowly reviewed observation-path fix
 remain necessary before apply; do not fabricate metrics or bypass that guard.
 Both approvals remain pending. Capacity is still running and billing.
+
+
+## Authorized controlled shutdown checkpoint
+
+The owner authorized controlled shutdown and activity reconciliation, explicitly
+withholding destructive Terraform applies and permanent SQL data-loss consent.
+Actual sequence: both original ECS tasks reached STOPPED after ALB's configured
+300-second deregistration; SQL `i-0e47f560bf71333e4` was normally stopped with
+`vol-013e417f112c5fe43` retained; only then were both NAT ASGs resized to zero.
+Both NAT instances are now terminated, both ASGs have zero min/max/desired and
+no members, and all observed scaling activities have terminal status and EndTime.
+The VPC, four subnets, EIPs, ALB and API still exist pending destroy approval.
+Backend/state/security/IAM/KMS/secrets/ECR/artifacts remain retained.
+
+The metric-absence defect now has the narrow direct-AWS-log alternative described
+in the E16 runbook. Live verification uses the real exclusive operator role, not
+a local observation fixture: six assign-EIP executions, six route executions and
+seven SDC executions each have their own completed START/REPORT pair. Retries
+sharing RequestId are counted separately. Windows AWS CLI output is explicitly
+UTF-8 so the strict JSON reader can handle actual non-ASCII log messages.
+
+The six historical failure messages have a create-only S3 archive with exact
+version/digest readback. Original SQS messages remain unchanged: automatic review
+rejected their deletion because the owner has not yet authorized that specific
+step. Ask for explicit acknowledgement permission together with final destruction
+approval. Do not bypass the nonempty-queue guard or treat archived evidence alone
+as permission. SQL deletion needs its independent later confirmation.
+Old source-bound previews must not be applied after these source/runtime changes;
+prepare and inspect fresh saved plans before the final owner approval.

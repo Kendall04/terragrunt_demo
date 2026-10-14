@@ -30,6 +30,108 @@
           "aws:RequestedRegion": "us-east-1"
         }
       }
+    },
+    {
+      "Sid": "ReadOnlyThreeDevNatLogStreamInventories",
+      "Effect": "Allow",
+      "Action": [
+        "logs:DescribeLogStreams"
+      ],
+      "Resource": [
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/lambda/e1-nat-recovery-nat-dev-assign-eip:*",
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/lambda/e1-nat-recovery-nat-dev-change-rt:*",
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/lambda/e1-nat-recovery-nat-dev-disable-sdc:*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Sid": "ReadOnlyThreeDevNatInvocationLogs",
+      "Effect": "Allow",
+      "Action": [
+        "logs:GetLogEvents"
+      ],
+      "Resource": [
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/lambda/e1-nat-recovery-nat-dev-assign-eip:log-stream:*",
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/lambda/e1-nat-recovery-nat-dev-change-rt:log-stream:*",
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/lambda/e1-nat-recovery-nat-dev-disable-sdc:log-stream:*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Sid": "ReadOnlyThreeDevNatVersionInventories",
+      "Action": [
+        "lambda:ListVersionsByFunction"
+      ],
+      "Resource": [
+        "arn:aws:lambda:us-east-1:341936017254:function:e1-nat-recovery-nat-dev-assign-eip",
+        "arn:aws:lambda:us-east-1:341936017254:function:e1-nat-recovery-nat-dev-change-rt",
+        "arn:aws:lambda:us-east-1:341936017254:function:e1-nat-recovery-nat-dev-disable-sdc"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Sid": "ReadOnlyOriginalDevNatRule",
+      "Action": [
+        "events:DescribeRule"
+      ],
+      "Resource": [
+        "arn:aws:events:us-east-1:341936017254:rule/e1-wp4-dev-nat-launch"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Sid": "ReadOnlyTwoDevNatFailureQueues",
+      "Action": [
+        "sqs:GetQueueUrl",
+        "sqs:GetQueueAttributes"
+      ],
+      "Resource": [
+        "arn:aws:sqs:us-east-1:341936017254:e1-wp4-dev-nat-delivery-failed",
+        "arn:aws:sqs:us-east-1:341936017254:e1-wp4-dev-nat-execution-failed"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Sid": "RegionalReadOnlyNativeActivityAndMetricsWithoutResourceScopeSupport",
+      "Action": [
+        "autoscaling:DescribeLifecycleHooks",
+        "autoscaling:DescribeWarmPool",
+        "autoscaling:DescribeScheduledActions",
+        "autoscaling:DescribePolicies",
+        "cloudwatch:GetMetricStatistics"
+      ],
+      "Resource": [
+        "*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
     }
   ]
 }

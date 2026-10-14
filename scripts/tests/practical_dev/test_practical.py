@@ -22,7 +22,7 @@ class Fake:
     def __init__(self):
         self.calls=[];self.states={};self.outputs={};self.serial=0;self.plans={};self.wrong=False;self.exclusive=True;self.active=False
         self.busy=False;self.fail=False;self.partial=False;self.asg_busy=False;self.ecs_busy=False;self.metrics=True;self.unknown=False;self.tamper_tags=False
-        self.inhibited=True;self.verify_mode=False;self.ready=True
+        self.inhibited=True;self.verify_mode=False;self.ready=True;self.log_history=False;self.log_unpaired=False;self.log_after=False;self.log_retry=False
     def rows(self,layer,network=False):
         types={'global':[('module.vpc.aws_vpc.this','aws_vpc')]+([] if network else [('aws_autoscaling_group.wp5_nat["a"]','aws_autoscaling_group'),('aws_autoscaling_group.wp5_nat["b"]','aws_autoscaling_group')]),
             'data':[('aws_instance.db','aws_instance')],'platform':[('module.ecs_cluster.aws_ecs_cluster.this','aws_ecs_cluster')],
@@ -99,7 +99,20 @@ class Fake:
                 target.write_bytes(c.canonical(value))
             value=dict(VersionId='offline-version')
         elif action=='list-functions':value=dict(Functions=[dict(FunctionName='e1-nat-recovery-nat-dev-change-rt',FunctionArn=f'arn:aws:lambda:{REGION}:{ACCOUNT}:function:e1-nat-recovery-nat-dev-change-rt')])
-        elif action=='list-versions-by-function':value=dict(Versions=[dict(Timeout=60,Version='1')])
+        elif action=='list-versions-by-function':
+            version=dict(Timeout=60,Version='1')
+            if self.log_history:version.update(LastModified='2000-01-01T00:00:00.000+0000',LoggingConfig=dict(LogFormat='Text',LogGroup='/aws/lambda/'+rest[rest.index('--function-name')+1]))
+            value=dict(Versions=[version])
+        elif action=='describe-log-streams':value=dict(logStreams=[dict(logStreamName='original-stream')])
+        elif action=='get-log-events':
+            if not hasattr(self,'log_epoch'):self.log_epoch=int((time.time()-1000)*1000)
+            # Stable fixture timestamps across pages, even on a clock boundary.
+            at=self.log_epoch+(1000000 if self.log_after else 0)
+            events=[dict(timestamp=at,message='START RequestId: 11111111-1111-4111-8111-111111111111 Version: 1')]
+            if not self.log_unpaired:events.append(dict(timestamp=at+1,message='REPORT RequestId: 11111111-1111-4111-8111-111111111111 Duration: 1 ms'))
+            if self.log_retry:
+                events+= [dict(timestamp=at+10,message='START RequestId: 11111111-1111-4111-8111-111111111111 Version: 1'),dict(timestamp=at+11,message='REPORT RequestId: 11111111-1111-4111-8111-111111111111 Duration: 1 ms')]
+            value=dict(events=events,nextForwardToken='same-page-end')
         elif action=='list-projects':value=dict(projects=['e1-controller-'+n for n in p.BINDINGS])
         elif action=='list-builds-for-project':value=dict(ids=['build-one'] if self.busy else [])
         elif action=='batch-get-builds':value=dict(builds=[dict(buildInProgress=True,buildStatus='IN_PROGRESS')],buildsNotFound=[])
@@ -325,6 +338,48 @@ class Tests(unittest.TestCase):
         self.all_up();self.shutdown();self.fake.metrics=False
         review=self.session.prepare(True)
         with self.assertRaisesRegex(ValueError,'metric absence'):self.session.apply(review['plan_id'],review['confirmation'])
+    def test_absent_metrics_use_live_nat_logs_without_certifying_finality(self):
+        self.all_up();self.shutdown();self.fake.metrics=False;self.fake.log_history=True
+        result=self.session.shutdown_observation()
+        self.assertFalse(result['aws_verified']);self.assertEqual(result['executor_finality'],'NOT_CERTIFIED')
+        self.assertTrue(any('get-log-events' in call for call in self.fake.calls))
+        self.assertEqual(self.apply(True)['layer'],'edge')
+
+    def test_async_retry_reuses_request_id_but_each_execution_needs_report(self):
+        self.all_up();self.shutdown();self.fake.log_history=True;self.fake.log_retry=True
+        proof=json.loads((self.session.directory/'shutdown-readback.json').read_text())
+        result=self.session.lambda_execution_history('e1-nat-recovery-nat-dev-change-rt',proof)
+        self.assertEqual(result['invocations'],2)
+        self.fake.log_unpaired=True
+        with self.assertRaisesRegex(ValueError,'unpaired'):
+            self.session.lambda_execution_history('e1-nat-recovery-nat-dev-change-rt',proof)
+
+    def test_live_log_alternative_rejects_inflight_and_late_execution(self):
+        self.all_up();self.shutdown();self.fake.metrics=False;self.fake.log_history=True
+        self.fake.log_unpaired=True
+        with self.assertRaisesRegex(ValueError,'unpaired'):self.session.shutdown_observation()
+        self.fake.log_unpaired=False;self.fake.log_after=True
+        with self.assertRaisesRegex(ValueError,'after inhibition'):self.session.shutdown_observation()
+        with self.assertRaisesRegex(ValueError,'protected executors'):
+            self.session.lambda_execution_history('e1-gateway-infra-dev',{})
+
+    def test_positive_or_stale_metrics_cannot_fall_back_to_logs(self):
+        self.all_up();self.shutdown();self.fake.log_history=True;original=self.fake.run
+        for value in [dict(Maximum=1,Timestamp=time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime())),dict(Maximum=0,Timestamp='2000-01-01T00:00:00Z')]:
+            def run(args,cwd=None,data=None):
+                if 'get-metric-statistics' in args:return c.canonical(dict(Datapoints=[value]))
+                return original(args,cwd,data)
+            self.fake.run=run
+            with self.assertRaisesRegex(ValueError,'positive/stale'):self.session.shutdown_observation()
+        self.assertFalse(any('get-log-events' in call for call in self.fake.calls))
+
+    def test_explicit_preview_reads_only_its_own_state_execution_still_ordered(self):
+        self.all_up();before=len(self.fake.calls);review=self.session.prepare(True,down_layer='data')
+        calls=[a for a in self.fake.calls[before:] if a[0]=='terraform' and a[2]=='state']
+        self.assertEqual(len(calls),1);self.assertTrue(calls[0][1].replace('\\','/').endswith('/data'))
+        with self.assertRaisesRegex(ValueError,'dependency order'):
+            self.session.apply(review['plan_id'],review['confirmation'],review['sql_confirmation'])
+
     def test_controller_reactivation_blocks(self):
         self.all_up();self.shutdown();self.fake.inhibited=False
         review=self.session.prepare(True)
@@ -341,7 +396,10 @@ class Tests(unittest.TestCase):
     def test_residual_is_not_zero_bill_or_synthetic_proof(self):
         self.all_up();result=self.session.residual();self.assertFalse(result['zero_cost_claim']);self.assertFalse(result['aws_verified']);self.assertTrue(result['unverified']);self.assertIn('ECR/evidence',result['retained'])
     def test_inhibition_is_not_finality_and_no_resend(self):
+        self.all_up()  # Existing NAT groups must actually exercise the inhibition loop.
         result=self.session.inhibit('INHIBIT DEV '+ACCOUNT+' '+REGION);self.assertIn('RECONCILE',result['stage'])
+        self.assertIn('ECS STOPPED',result['next_action'])
+        self.assertFalse(any('update-auto-scaling-group' in call for call in self.fake.calls),'never terminate NAT before its live consumers drain')
         with self.assertRaisesRegex(ValueError,'retry'):self.session.inhibit('INHIBIT DEV '+ACCOUNT+' '+REGION)
     def test_production_cli_uses_same_session(self):
         config=self.session.directory.parent/'config.json';config.write_text(json.dumps(self.config))
@@ -362,6 +420,15 @@ class Tests(unittest.TestCase):
         self.all_up();self.shutdown();self.fake.metrics=False
         with self.assertRaises(ValueError):self.session.review_inhibition('REVIEW SUPERVISED DEV INHIBITION '+ACCOUNT+' '+REGION)
         self.assertFalse(json.loads((self.session.directory/'shutdown-readback.json').read_text())['reviewed'])
+
+    def test_windows_cli_json_encoding_is_explicit_and_identity_is_preserved(self):
+        def invoke(args,**kwargs):
+            self.assertEqual(kwargs['env']['PYTHONUTF8'],'1');self.assertEqual(kwargs['env']['PYTHONIOENCODING'],'utf-8')
+            self.assertEqual(kwargs['env']['AWS_PROFILE'],self.config['profile']);self.assertEqual(kwargs['env']['AWS_REGION'],REGION)
+            return type('Result',(),dict(returncode=0,stdout='{"message":"nonbreaking \u00a0 text"}'.encode('utf-8')))()
+        with patch.object(p.subprocess,'run',side_effect=invoke):
+            raw=p.Process(self.config).run(['aws','--profile',self.config['profile'],'--region',REGION,'--no-cli-pager','--output','json','logs','get-log-events'])
+        self.assertEqual(p.decode(raw)['message'],'nonbreaking \u00a0 text')
 
     def test_actual_verify_requires_gateway_sql_kms_readbacks(self):
         self.all_up();self.fake.verify_mode=True

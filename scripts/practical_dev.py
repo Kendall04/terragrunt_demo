@@ -115,7 +115,8 @@ class Process:
     def run(self,args,cwd=None,data=None):
         env={k:v for k,v in os.environ.items() if not k.upper().startswith(('AWS','AMAZON','TF_','TERRAGRUNT'))}
         env.update(AWS_PROFILE=self.config['profile'],AWS_REGION=self.config['region'],AWS_DEFAULT_REGION=self.config['region'],
-            AWS_MAX_ATTEMPTS='1',AWS_EC2_METADATA_DISABLED='true',AWS_PAGER='',TF_IN_AUTOMATION='1',CHECKPOINT_DISABLE='1')
+            AWS_MAX_ATTEMPTS='1',AWS_EC2_METADATA_DISABLED='true',AWS_PAGER='',TF_IN_AUTOMATION='1',CHECKPOINT_DISABLE='1',
+            PYTHONUTF8='1',PYTHONIOENCODING='utf-8')
         if self.aws_config_file:env['AWS_CONFIG_FILE']=str(self.aws_config_file)
         original=args
         if args[0]=='terraform' and self.terraform_wsl_bin:args=self.wsl_command(args,cwd)
@@ -377,9 +378,11 @@ class Session:
     def prepare(self,down=False,network_only=False,down_layer=None):
         require(down_layer is None or (down and down_layer in DOWN),'preview layer must be an original DEV DOWN layer')
         self.identity();self.source();self.backend();self.idle();self.unresolved()
-        states={layer:self.state(layer) for layer in UP}
+        # Explicit read-only preview needs only its own state. Execution still
+        # rechecks every layer and dependency order before dispatch.
+        states={layer:self.state(layer) for layer in ([down_layer] if down_layer else UP)}
         if down:
-            remaining=[l for l in DOWN if states[l]['rows']];require(remaining,'no runtime state; run residual')
+            remaining=[l for l in DOWN if l in states and states[l]['rows']];require(remaining,'no runtime state; run residual')
             layer=down_layer or remaining[0];require(layer in remaining,'requested layer has no runtime state')
             # Preview is read-only and must precede destructive human approval.
             # apply() still enforces reverse order and the complete live shutdown guard.
@@ -446,6 +449,53 @@ class Session:
                 self.save(self.directory/('up-'+layer+'-reconciled.json'),dict(state_sha256=after['sha256']))
         self.save(folder/'completed.json',dict(state='STATE_RECONCILED',sha256=after['sha256']))
         return dict(layer=layer,phase='NETWORK_ONLY_ADMIN_NAT_INSTALL_NEXT' if review['network_only'] else 'STATE_RECONCILED_NOT_FUNCTIONAL_HEALTH',next_action='down-plan' if review['down'] else 'up-plan',possible_charges=True)
+
+    def lambda_execution_history(self,name,proof):
+        # DEV NAT-only supervised alternative when CloudWatch emits no metric.
+        # Live service reads, never an operator-supplied certificate or zero.
+        exact={f'e1-nat-recovery-nat-dev-{d.replace("_","-")}' for d in DUTIES}
+        require(name in exact,'metric absence: no log alternative for protected executors')
+        from datetime import datetime
+        versions=self.aws('lambda','list-versions-by-function','--function-name',name)
+        require(not versions.get('NextMarker') and versions.get('Versions'),'metric absence: incomplete version inventory')
+        group='/aws/lambda/'+name
+        for version in versions['Versions']:
+            log=version.get('LoggingConfig',{})
+            require(log.get('LogFormat')=='Text' and log.get('LogGroup')==group,'metric absence: unsupported or missing invocation logs')
+            modified=datetime.fromisoformat(version['LastModified'].replace('Z','+00:00')).timestamp()
+            require(modified<=proof['at'] and version['Timeout']<=proof['timeouts'][name],'Lambda configuration changed after inhibition')
+        streams=self.aws('logs','describe-log-streams','--log-group-name',group)
+        require(not streams.get('nextToken') and streams.get('logStreams'),'incomplete or absent invocation log streams')
+        completed=0;last_report=0
+        for stream in streams['logStreams']:
+            token=None;pending={};seen=set()
+            for _ in range(100):
+                args=['logs','get-log-events','--log-group-name',group,'--log-stream-name',stream['logStreamName'],'--start-from-head']
+                if token:args+=['--next-token',token]
+                page=self.aws(*args)
+                for event in page['events']:
+                    match=re.match(r'^(START|REPORT) RequestId: ([0-9a-f-]{36})(?:\s|$)',event['message'])
+                    if match:
+                        identity=(event['timestamp'],event['message'])
+                        if identity in seen:continue
+                        seen.add(identity);request=match[2]
+                        # Async retries can reuse RequestId. Account each ordered
+                        # START/REPORT pair in its actual log stream separately.
+                        if match[1]=='START':
+                            require(request not in pending,'unpaired/missing Lambda REPORT before another START')
+                            pending[request]=event['timestamp']
+                        else:
+                            require(request in pending,'unpaired/missing Lambda START before REPORT')
+                            require(pending.pop(request)<=event['timestamp']<=proof['at']*1000,'Lambda execution after inhibition or inconsistent timestamps')
+                            completed+=1;last_report=max(last_report,event['timestamp'])
+                following=page.get('nextForwardToken');require(following,'incomplete invocation log readback')
+                if following==token:break
+                token=following
+            else:require(False,'incomplete invocation log pagination')
+            require(not pending,'unpaired/missing Lambda START or REPORT; manual reconciliation')
+        require(completed>0,'unpaired/missing Lambda execution history; manual reconciliation')
+        require(self.aws('lambda','get-function-concurrency','--function-name',name).get('ReservedConcurrentExecutions')==0,'Lambda admission reactivated during observation')
+        return dict(function=name,method='LIVE_START_REPORT_HISTORY_PLUS_INHIBITION',invocations=completed,last_report_ms=last_report,executor_finality='NOT_CERTIFIED')
 
     def shutdown_observation(self):
         self.idle()
@@ -528,7 +578,10 @@ class Session:
                 '--start-time',start,'--end-time',stop,'--period','60','--statistics','Maximum')
             from datetime import datetime,timezone
             points=[v for v in metrics['Datapoints'] if datetime.fromisoformat(v['Timestamp'].replace('Z','+00:00')).timestamp()>=proof['at']+proof['timeouts'][name]]
-            require(points and all(v['Maximum']==0 for v in points) and max(datetime.fromisoformat(v['Timestamp'].replace('Z','+00:00')).timestamp() for v in points)>=time.time()-180,'Lambda activity positive/stale or metric absence; manual reconciliation')
+            if not metrics['Datapoints']:
+                self.lambda_execution_history(name,proof)
+            else:
+                require(points and all(v['Maximum']==0 for v in points) and max(datetime.fromisoformat(v['Timestamp'].replace('Z','+00:00')).timestamp() for v in points)>=time.time()-180,'Lambda activity positive/stale; manual reconciliation')
         return dict(model='SUPERVISED_BOUNDED_OBSERVATIONS',executor_finality='NOT_CERTIFIED',unobservable_late_effect_risk='RETAINED',aws_verified=type(self.process) is Process)
 
     def inhibit(self,confirmation):
@@ -553,9 +606,11 @@ class Session:
             for color in ('blue','green'):self.aws('ecs','update-service','--cluster',cluster,'--service','demo-dev-app-api-'+color+'-svc','--desired-count','0')
         for name in sorted(previous):
             self.aws('autoscaling','suspend-processes','--auto-scaling-group-name',name,'--scaling-processes',*PROCESSES)
-            self.aws('autoscaling','update-auto-scaling-group','--auto-scaling-group-name',name,'--min-size','0','--max-size','0','--desired-capacity','0')
+            # Do not terminate NAT while asynchronous ECS draining or SQL/SSM
+            # still needs outbound access. Reconcile actual ECS STOPPED and
+            # normal SQL stop, then resize these exact ASGs administratively.
         self.save(self.directory/'shutdown-readback.json',dict(config_sha256=sha(c.canonical(self.config)),state='INHIBITION_REQUESTED_FINALITY_UNVERIFIED',prior_instances=previous,timeouts=timeouts,at=int(time.time()),reviewed=False))
-        return dict(stage='INHIBITION_REQUESTED_RECONCILE_BEFORE_DOWN',possible_charges=True)
+        return dict(stage='INHIBITION_REQUESTED_RECONCILE_BEFORE_DOWN',next_action='wait for ECS STOPPED; normally stop SQL preserving EBS; only then set exact NAT ASG capacities to zero and observe termination',possible_charges=True)
 
     def review_inhibition(self,confirmation):
         self.identity();self.source();self.backend();self.idle()

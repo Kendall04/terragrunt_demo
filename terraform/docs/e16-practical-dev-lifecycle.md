@@ -320,3 +320,42 @@ or eliminate live E13/readback requirements.
 The [first real teardown preparation](first-real-dev-teardown.md) records the
 owner-approval boundary, real historical E13/DLQ distinctions and the limited
 preview-before-shutdown correction. It does not claim a completed DOWN.
+
+
+### First-live supervised shutdown correction (2026-10-14)
+
+`inhibit` requests ECS draining and suspends NAT replacement, but now leaves NAT
+capacity intact. Observe the actual previous ECS tasks at STOPPED, normally stop
+SQL EC2 while retaining its EBS, and only then set the two exact NAT ASGs to zero.
+Keep invocation/replacement inhibition until the networking layer is removed.
+No database deletion is authorized by an ordinary EC2 stop.
+
+When CloudWatch returns no ConcurrentExecutions datapoints, the three DEV NAT
+functions alone may use direct live log observations instead: complete version
+inventory with unchanged Text log configuration and bounded timeouts, complete
+stream/page reads, each ordered START paired with its REPORT (including async
+retries reusing RequestId), no execution after inhibition, and concurrency zero
+read back again. Missing/unpaired/late records, changed configuration, unknown
+E13 effects, positive/stale metrics and any protected gateway still block.
+This is bounded supervised evidence, not an AWS cancellation guarantee or an
+executor-finality certificate. E13/CloudTrail effect settlement remains separate.
+See [AWS Python invocation logging](https://docs.aws.amazon.com/lambda/latest/dg/python-logging.html).
+
+The actual DEV operator installation additionally needs read-only log-stream and
+log-event access to the three exact DEV NAT log groups, ListVersionsByFunction
+for those three functions, DescribeRule for the one DEV launch rule, and
+GetQueueUrl/GetQueueAttributes for the two DEV failure queues. The regional
+ASG DescribeLifecycleHooks/WarmPool/ScheduledActions/Policies and CloudWatch
+GetMetricStatistics actions require wildcard resources because their APIs do not
+support resource scoping; none grants a mutation or a state/IAM write. Exact
+account-specific policy is [operator-policy-9.json](../../scripts/first_deployment/operator-policy-9.json).
+The existing first two ECS-read statements and all backend writer restrictions
+remain unchanged. Installed Part9 v4 has authentic matching readback and no
+Access Analyzer findings.
+
+A queue with known failures still blocks the existing execution guard until
+those exact messages are independently reconciled and acknowledged with owner
+authorization. A versioned evidence archive does not itself authorize deleting
+queue records. Never replace this with an approximate-empty or unconditional
+success assertion. Explicit per-layer previews read their own state only;
+execution continues to recheck all five states and reverse dependency order.

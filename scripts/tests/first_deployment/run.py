@@ -202,9 +202,27 @@ class Tests(unittest.TestCase):
   self.assertEqual(policy['Version'],'2012-10-17');self.assertEqual(policy['Statement'][0],{'Sid':'RegionalDescribeTaskDefinitionRequiresWildcard','Effect':'Allow','Action':['ecs:DescribeTaskDefinition'],'Resource':['*'],'Condition':{'StringEquals':{'aws:RequestedRegion':'us-east-1'}}})
  def test_task_read_is_limited_to_original_dev_cluster_and_never_mutates(self):
   policy=json.loads((ROOT/'scripts/first_deployment/operator-policy-9.json').read_text())
-  self.assertEqual(len(policy['Statement']),2)
+  self.assertEqual(len(policy['Statement']),8)
   self.assertEqual(policy['Statement'][1],{'Sid':'DescribeOnlyOriginalDevClusterTasks','Effect':'Allow','Action':['ecs:DescribeTasks'],'Resource':['arn:aws:ecs:us-east-1:341936017254:task/demo-dev-platform-main-cluster/*'],'Condition':{'StringEquals':{'aws:RequestedRegion':'us-east-1'}}})
-  self.assertEqual({a for row in policy['Statement'] for a in row['Action']},{'ecs:DescribeTaskDefinition','ecs:DescribeTasks'})
+  self.assertEqual({a for row in policy['Statement'][:2] for a in row['Action']},{'ecs:DescribeTaskDefinition','ecs:DescribeTasks'})
+  for row,action,suffix in zip(policy['Statement'][2:4],('logs:DescribeLogStreams','logs:GetLogEvents'),(':*',':log-stream:*')):
+   self.assertEqual(row['Action'],[action]);self.assertEqual(row['Condition'],{'StringEquals':{'aws:RequestedRegion':'us-east-1'}})
+   self.assertEqual(set(row['Resource']),{'arn:aws:logs:us-east-1:341936017254:log-group:/aws/lambda/e1-nat-recovery-nat-dev-'+d+suffix for d in ('assign-eip','change-rt','disable-sdc')})
+   self.assertNotIn('prod',json.dumps(row));self.assertNotIn('s3:',json.dumps(row));self.assertNotIn('Delete',json.dumps(row))
+ def test_shutdown_observation_additions_are_read_only_and_region_bound(self):
+  policy=json.loads((ROOT/'scripts/first_deployment/operator-policy-9.json').read_text())
+  rows=policy['Statement'][4:];self.assertEqual(len(rows),4)
+  self.assertEqual(set(rows[0]['Resource']),{'arn:aws:lambda:us-east-1:341936017254:function:e1-nat-recovery-nat-dev-'+d for d in ('assign-eip','change-rt','disable-sdc')})
+  self.assertEqual(rows[0]['Action'],['lambda:ListVersionsByFunction'])
+  self.assertEqual(rows[1]['Resource'],['arn:aws:events:us-east-1:341936017254:rule/e1-wp4-dev-nat-launch']);self.assertEqual(rows[1]['Action'],['events:DescribeRule'])
+  self.assertEqual(set(rows[2]['Resource']),{'arn:aws:sqs:us-east-1:341936017254:e1-wp4-dev-nat-'+d+'-failed' for d in ('delivery','execution')})
+  self.assertEqual(set(rows[2]['Action']),{'sqs:GetQueueUrl','sqs:GetQueueAttributes'})
+  self.assertEqual(rows[3]['Resource'],['*']);self.assertEqual(set(rows[3]['Action']),{'autoscaling:DescribeLifecycleHooks','autoscaling:DescribeWarmPool','autoscaling:DescribeScheduledActions','autoscaling:DescribePolicies','cloudwatch:GetMetricStatistics'})
+  for row in rows:
+   self.assertEqual(row['Condition'],{'StringEquals':{'aws:RequestedRegion':'us-east-1'}})
+   self.assertTrue(all(a.split(':')[1].startswith(('Get','List','Describe')) for a in row['Action']))
+   self.assertNotIn('prod',json.dumps(row));self.assertNotIn('s3:',json.dumps(row));self.assertNotIn('iam:',json.dumps(row))
+
  def test_sql_existing_volume_tagging_is_exact_not_general_mutation(self):
   policy=json.loads((ROOT/'scripts/first_deployment/operator-policy-6.json').read_text())
   row=next(v for v in policy['Statement'] if v.get('Sid')=='TagOnlyObservedOriginalSqlRootVolume')
