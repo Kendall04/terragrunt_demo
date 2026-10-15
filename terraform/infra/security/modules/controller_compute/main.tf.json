@@ -68,7 +68,7 @@
     }
   },
   "locals": {
-    "nodes": "${{for key,value in var.authority.controller_compute.nodes:key=>value if !var.dev_cicd_installation_only || contains([\"request-gateway/release\",\"build/release\",\"request-gateway/deploy-dev\",\"normal-delivery/deploy-dev\"],key)}}",
+    "nodes": "${{ for key, n in var.authority.controller_compute.nodes : key => merge(n, { bundle = var.authority.control_bundles.consumer_references[n.bundle_binding] }) if !var.dev_cicd_installation_only || contains([\"request-gateway/release\",\"build/release\",\"request-gateway/deploy-dev\",\"normal-delivery/deploy-dev\"],key) }}",
     "gateways": "${{ for key, n in local.nodes : key => n if n.kind == \"gateway\" && (var.authority.controller_compute.creation_supported && n.operational && alltrue(values(n.prerequisites)) && try(n.bundle.version_id != null && n.bundle.version_id != \"\" && n.bundle.version_id != \"null\" && n.bundle.version_id != \"latest\" && n.bundle.installation == \"VERIFIED\" && n.bundle.operational && can(regex(\"@sha256:[0-9a-f]{64}$\", n.image_digest_uri)), false)) }}",
     "projects": "${{ for key, n in local.nodes : key => n if n.kind == \"controller\" && (var.authority.controller_compute.creation_supported && n.operational && alltrue(values(n.prerequisites)) && try(n.bundle.version_id != null && n.bundle.version_id != \"\" && n.bundle.version_id != \"null\" && n.bundle.version_id != \"latest\" && n.bundle.installation == \"VERIFIED\" && n.bundle.operational && can(regex(\"@sha256:[0-9a-f]{64}$\", n.image_digest_uri)), false)) }}",
     "wp3_contract": "${var.authority.internal_release}",

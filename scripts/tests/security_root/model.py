@@ -279,7 +279,7 @@ def wiring(doc):
     root['variable']['dev_cicd_installation_only']={'type':'bool','default':False}
     root['module']['controller_compute']['dev_cicd_installation_only']=expression('var.dev_cicd_installation_only')
     compute_module['variable']['dev_cicd_installation_only']={'type':'bool','default':False}
-    compute_module['locals']['nodes']=expression('{for key,value in var.authority.controller_compute.nodes:key=>value if !var.dev_cicd_installation_only || contains(["request-gateway/release","build/release","request-gateway/deploy-dev","normal-delivery/deploy-dev"],key)}')
+    compute_module['locals']['nodes']=expression('{ for key, n in var.authority.controller_compute.nodes : key => merge(n, { bundle = var.authority.control_bundles.consumer_references[n.bundle_binding] }) if !var.dev_cicd_installation_only || contains(["request-gateway/release","build/release","request-gateway/deploy-dev","normal-delivery/deploy-dev"],key) }')
     compute_module['locals']['wp4d_buckets']=expression('{for env in ["dev","prod"]:env=>"e1-wp4-${env}-${var.account_id}-${var.region}" if !var.dev_cicd_installation_only || env=="dev"}')
 
     # Separately authenticated security-admin installation ports for the existing
