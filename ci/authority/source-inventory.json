@@ -1641,7 +1641,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/first_deployment/operator-policy-5.json": {
-      "sha256": "e28f509fa39923bc5c27aec422d5d7811fd5b0bd6121d4aeedf6243e5fa23532",
+      "sha256": "26a2a5dc3f027fcc27e0a485c2d5fae1c9e57bb7603757ead070f8787f19f685",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -1670,7 +1670,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/first_deployment/operator-policy-6.json": {
-      "sha256": "ed90955952ce2a68524e5e2d09b8e5998d3b30e9449e9fa9c441ad428ee80589",
+      "sha256": "a7d1e2a495addf5c2bfd465652da36a789e686753bb5d044a7724ad83d0c37cb",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -1735,7 +1735,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/first_deployment/operator-policy-8.json": {
-      "sha256": "c0ceb4fd2be47741c880dc37702c7329324bfa85d083a4baa80ea2c9712bb7b0",
+      "sha256": "f3fa0d49dac8a54806d8886953b4607f811022f9da2457290ac90afd61256e29",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -3265,13 +3265,13 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/first_deployment/run.py": {
-      "sha256": "5acdcded0102ebdef473c29809133a5b22076f6261cb5d7cf02168a7d0a21ea4",
+      "sha256": "ca1828017a40b5db3f39f6b21a03891cd57143d604716da733f4292aa67911b3",
       "declarations": [],
       "signals": {
         "role-input": [
           78,
-          172,
-          180
+          183,
+          191
         ],
         "launch-or-mutation": [
           9,
@@ -3307,53 +3307,58 @@
           136,
           142,
           146,
-          155,
           156,
           157,
-          159,
-          161,
-          162,
-          169,
+          158,
+          160,
+          166,
+          167,
+          168,
           170,
           172,
           173,
-          174,
-          175,
-          176,
-          177,
+          180,
+          181,
+          183,
+          184,
           185,
           186,
-          189,
-          191,
-          195,
+          187,
+          188,
+          196,
           197,
-          204,
+          200,
+          202,
+          206,
           208,
-          209,
-          214,
-          218,
-          221,
-          222,
-          227,
+          215,
+          219,
+          220,
+          225,
           229,
-          230,
-          234,
+          232,
+          233,
+          238,
+          240,
           241,
-          242,
-          243
+          245,
+          252,
+          253,
+          254
         ],
         "executable-dependency": [
-          173,
-          174
+          184,
+          185
         ],
         "security-control": [
           141,
           153,
-          182,
-          213,
-          216,
-          225,
-          239
+          164,
+          193,
+          224,
+          227,
+          236,
+          250
         ]
       },
       "semantic_status": "UNVERIFIED"

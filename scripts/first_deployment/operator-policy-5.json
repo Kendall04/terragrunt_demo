@@ -9,9 +9,9 @@
       ],
       "Resource": [
         "arn:aws:ec2:us-east-1::image/ami-0f8f318086d72b1b4",
-        "arn:aws:ec2:us-east-1:341936017254:subnet/subnet-070011dbda608ef31",
-        "arn:aws:ec2:us-east-1:341936017254:subnet/subnet-0b60312bb24e5a5be",
-        "arn:aws:ec2:us-east-1:341936017254:security-group/sg-0baf27dd9f382ec78",
+        "arn:aws:ec2:us-east-1:341936017254:subnet/subnet-0c0015acb0147b62e",
+        "arn:aws:ec2:us-east-1:341936017254:subnet/subnet-07cfc3b9ed3fe5a77",
+        "arn:aws:ec2:us-east-1:341936017254:security-group/sg-05a0c795917e7b133",
         "arn:aws:ec2:us-east-1:341936017254:launch-template/lt-04ab8d2ec1f975f96",
         "arn:aws:ec2:us-east-1:341936017254:launch-template/lt-0b3ed490a53f8dfe7",
         "arn:aws:ec2:us-east-1:341936017254:network-interface/*",

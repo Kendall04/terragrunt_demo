@@ -1,5 +1,8 @@
 # First real original DEV session â€” 2026-10-13
 
+This report records the first cycle. For the current reconstructed environment,
+see the [second real DEV cycle](second-real-dev-cycle.md).
+
 Latest checkpoint (2026-10-14): all five original DEV layers are applied and the
 public application SQL/KMS round-trip passes, including 4096 UTF-8 bytes. Both
 colors, both NAT slots, SQL, internal ALB and API/VPC Link are running. See

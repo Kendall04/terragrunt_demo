@@ -9,8 +9,8 @@
       ],
       "Resource": [
         "arn:aws:ec2:us-east-1::image/ami-062944a84867f2386",
-        "arn:aws:ec2:us-east-1:341936017254:subnet/subnet-01b43cbada7cf6f5c",
-        "arn:aws:ec2:us-east-1:341936017254:security-group/sg-020126488b4fb8a1f",
+        "arn:aws:ec2:us-east-1:341936017254:subnet/subnet-08302f1ff29ca5338",
+        "arn:aws:ec2:us-east-1:341936017254:security-group/sg-0b1d1c8829de734e6",
         "arn:aws:ec2:us-east-1:341936017254:network-interface/*",
         "arn:aws:ec2:us-east-1:341936017254:volume/*"
       ],
@@ -115,7 +115,7 @@
         "ec2:CreateTags"
       ],
       "Resource": [
-        "arn:aws:ec2:us-east-1:341936017254:volume/vol-013e417f112c5fe43"
+        "arn:aws:ec2:us-east-1:341936017254:volume/vol-0206bcb0b6b243e3a"
       ],
       "Condition": {
         "StringEquals": {

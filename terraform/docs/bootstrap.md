@@ -176,3 +176,12 @@ and live AWS validation; no AWS operations occurred.
 
 
 The [first real DEV session](first-real-dev-deployment.md) records authentic account-specific bootstrap progress and the Windows-local Terraform path; its partial prerequisites are not full deployment evidence.
+
+
+## Current second-cycle live checkpoint
+
+The [second real DEV cycle](second-real-dev-cycle.md) records reconstruction after
+the completed first DOWN, authentic replacement IDs, staged NAT/E13 rebinding,
+real SQL/KMS application verification and retained costs. This later live evidence
+supersedes assumptions of an empty account for this exact DEV account/region;
+it does not activate PROD or replace the protected installation contracts.

@@ -149,12 +149,23 @@ class Tests(unittest.TestCase):
   self.assertEqual(policy['Statement'][1]['Condition']['StringEquals']['ec2:MetadataHttpTokens'],'required')
   self.assertEqual(policy['Statement'][2]['Condition']['StringEquals']['ec2:CreateAction'],'RunInstances')
 
+ def test_second_cycle_nat_launch_rebinds_only_observed_network(self):
+  policy=json.loads((ROOT/'scripts/first_deployment/operator-policy-5.json').read_text())
+  resources=policy['Statement'][0]['Resource']
+  self.assertEqual({r for r in resources if ':subnet/' in r or ':security-group/' in r},{
+   'arn:aws:ec2:us-east-1:341936017254:subnet/subnet-0c0015acb0147b62e',
+   'arn:aws:ec2:us-east-1:341936017254:subnet/subnet-07cfc3b9ed3fe5a77',
+   'arn:aws:ec2:us-east-1:341936017254:security-group/sg-05a0c795917e7b133'})
+  for row in policy['Statement']:
+   self.assertEqual(row['Condition']['StringEquals']['aws:RequestedRegion'],'us-east-1')
+   self.assertTrue(set(row['Action'])<={'ec2:RunInstances','ec2:CreateTags'})
+
  def test_sql_permission_has_exact_profile_ami_subnet_sg_and_no_state_authority(self):
   policy=json.loads((ROOT/'scripts/first_deployment/operator-policy-6.json').read_text())
   self.assertEqual(policy['Statement'][0]['Resource'][:3],[
    'arn:aws:ec2:us-east-1::image/ami-062944a84867f2386',
-   'arn:aws:ec2:us-east-1:341936017254:subnet/subnet-01b43cbada7cf6f5c',
-   'arn:aws:ec2:us-east-1:341936017254:security-group/sg-020126488b4fb8a1f'])
+   'arn:aws:ec2:us-east-1:341936017254:subnet/subnet-08302f1ff29ca5338',
+   'arn:aws:ec2:us-east-1:341936017254:security-group/sg-0b1d1c8829de734e6'])
   cond=policy['Statement'][1]['Condition']
   self.assertEqual(cond['ArnEquals']['ec2:InstanceProfile'],'arn:aws:iam::341936017254:instance-profile/demo-dev-data-sql-ec2-profile')
   self.assertEqual(cond['StringEquals']['ec2:MetadataHttpTokens'],'required')
@@ -205,7 +216,7 @@ class Tests(unittest.TestCase):
   api=json.loads((ROOT/'scripts/first_deployment/operator-policy-8.json').read_text())
   self.assertEqual(len(api['Statement']),6);row=api['Statement'][5]
   self.assertEqual(row['Action'],['apigateway:GET'])
-  self.assertEqual(set(row['Resource']),{'arn:aws:apigateway:us-east-1::/apis/wjjhpal9ig','arn:aws:apigateway:us-east-1::/apis/wjjhpal9ig/*','arn:aws:apigateway:us-east-1::/vpclinks/7fe58y'})
+  self.assertEqual(set(row['Resource']),{'arn:aws:apigateway:us-east-1::/apis/427id1ezuk','arn:aws:apigateway:us-east-1::/apis/427id1ezuk/*','arn:aws:apigateway:us-east-1::/vpclinks/xt9msp'})
   self.assertEqual(row['Condition'],{'StringEquals':{'aws:RequestedRegion':'us-east-1'}})
   self.assertNotIn('DELETE',json.dumps(row));self.assertNotIn('Put',json.dumps(logs['Statement'][2]))
 
@@ -238,7 +249,7 @@ class Tests(unittest.TestCase):
  def test_sql_existing_volume_tagging_is_exact_not_general_mutation(self):
   policy=json.loads((ROOT/'scripts/first_deployment/operator-policy-6.json').read_text())
   row=next(v for v in policy['Statement'] if v.get('Sid')=='TagOnlyObservedOriginalSqlRootVolume')
-  self.assertEqual(row['Action'],['ec2:CreateTags']);self.assertEqual(row['Resource'],['arn:aws:ec2:us-east-1:341936017254:volume/vol-013e417f112c5fe43'])
+  self.assertEqual(row['Action'],['ec2:CreateTags']);self.assertEqual(row['Resource'],['arn:aws:ec2:us-east-1:341936017254:volume/vol-0206bcb0b6b243e3a'])
   self.assertEqual(row['Condition']['StringEquals'],{'aws:RequestedRegion':'us-east-1','aws:RequestTag/Environment':'dev','aws:RequestTag/Project':'demo','aws:RequestTag/ManagedBy':'terraform','aws:RequestTag/Owner':'kendall','aws:RequestTag/Role':'root-ebs'})
   self.assertEqual(set(row['Condition']['ForAllValues:StringEquals']['aws:TagKeys']),{'Environment','Project','ManagedBy','Owner','Role'})
 

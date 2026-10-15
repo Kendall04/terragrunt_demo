@@ -233,3 +233,13 @@ mode remains inert; PROD/shared/security-root ownership is retained. Existing
 WP3/WP4 delivery and E13 recovery remain. E15-G/H advanced finality contracts are
 not weakened or activated. Source readiness is distinct from genuine installation
 and live AWS validation; no AWS operations occurred.
+
+
+## Second full DEV cycle (2026-10-14 local)
+
+The owner authorized the second complete original DEV UP after reviewing its
+scope and estimated running costs. The [live record](second-real-dev-cycle.md)
+separates verified reconstruction/SQL/KMS functionality from future CI/CD,
+blue/green and NAT failover experiments. Leave this successful deployment running
+for those exercises; further DOWN still needs teardown and independent SQL-loss
+consent. No new architecture, PROD/shared authority or automatic cleanup is added.
