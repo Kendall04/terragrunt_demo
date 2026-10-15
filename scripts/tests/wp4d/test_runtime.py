@@ -115,9 +115,14 @@ for field,value in [('strategy','BLUE_GREEN'),('deploymentCircuitBreaker',{'enab
  else:raise AssertionError('Active/unknown ECS configuration accepted')
 class Base:
  config={'environment':'dev'}
- def service(self,color):return {'deploymentConfiguration':copy.deepcopy(observed),'platformVersion':'LATEST'},[],True
+ def service(self,color):return {'deploymentConfiguration':copy.deepcopy(observed),'platformVersion':'LATEST','launchType':'FARGATE'},[],True
 service,_,stable=dev.observer(Base)().service('green')
 assert service['platformVersion']=='LATEST' and stable
+assert service['capacityProviderStrategy']==[]
+for bad in ({'launchType':'EC2','deploymentConfiguration':observed},{'launchType':'FARGATE','deploymentConfiguration':observed,'capacityProviderStrategy':[{'capacityProvider':'FARGATE'}]}):
+ try:dev.service(bad)
+ except ValueError:pass
+ else:raise AssertionError('Foreign capacity strategy accepted')
 print('EXTRACTED_DEV_CONTRACT_PASS')
 """
                 saved={k:v for k,v in sys.modules.items() if k=='scripts' or k.startswith('scripts.')}

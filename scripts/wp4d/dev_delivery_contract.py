@@ -34,13 +34,22 @@ def deployment(value):
     return result
 
 
+def service(value):
+    result = copy.deepcopy(value)
+    result["deploymentConfiguration"] = deployment(result["deploymentConfiguration"])
+    if "capacityProviderStrategy" not in result:
+        a.require(result.get("launchType") == "FARGATE")
+        result["capacityProviderStrategy"] = []
+    a.exact(result["capacityProviderStrategy"], [], "DEV has no capacity provider strategy")
+    return result
+
+
 def observer(base):
     class Observer(base):
         def service(self, color):
             a.require(self.config["environment"] == "dev")
-            service, tasks, stable = super().service(color)
-            result = copy.deepcopy(service)
-            result["deploymentConfiguration"] = deployment(result["deploymentConfiguration"])
+            observed, tasks, stable = super().service(color)
+            result = service(observed)
             # Never turn LATEST into an invented numeric pin.
             return result, tasks, stable
     return Observer

@@ -5522,7 +5522,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/workflows/historical_snapshot.py": {
-      "sha256": "ce2a73d357e22476acafc5d24d0fd8c17db0d855822afd5fa1a1f9027adcc72e",
+      "sha256": "56b6b53b1b3128d63836b0044361e66a4d789060b4e28de3922454d1f787f416",
       "declarations": [],
       "signals": {
         "executable-dependency": [
@@ -5636,33 +5636,33 @@
       "semantic_status": "CURRENT_FACT"
     },
     "scripts/tests/wp4d/test_runtime.py": {
-      "sha256": "b6a7a925d71eb9bfaaad4b15e961463261f02f6bae3314482dfc2a8731abae84",
+      "sha256": "962517351caab001271e44385deb81a62ede41f33e8044814a3f9fdce5a92091",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
-          234
+          239
         ],
         "launch-or-mutation": [
           28,
           54,
           83,
-          134,
-          152,
-          186,
-          187,
-          188,
-          199,
-          200,
-          201,
-          207,
-          208,
-          217,
-          228,
-          230,
-          245,
-          278,
-          298,
-          300
+          139,
+          157,
+          191,
+          192,
+          193,
+          204,
+          205,
+          206,
+          212,
+          213,
+          222,
+          233,
+          235,
+          250,
+          283,
+          303,
+          305
         ],
         "executable-dependency": [
           30,
@@ -5672,12 +5672,12 @@
           71,
           76,
           79,
-          160,
-          240,
-          243,
-          250,
-          286,
-          289
+          165,
+          245,
+          248,
+          255,
+          291,
+          294
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -5887,7 +5887,7 @@
     },
     "scripts/wp4d/dev_delivery_contract.py": {
       "semantic_status": "UNVERIFIED",
-      "sha256": "5ff2ff6d326a5bc006d24f87ad41737a6a178a2174ef562d843c2f2dce454328",
+      "sha256": "2457213ae7f2cf9b2187932f3337ac51463abf02214461d8cd35542bf065ef2b",
       "declarations": [],
       "signals": {}
     },
@@ -6062,7 +6062,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/authority.json": {
-      "sha256": "41d3fce6d580a0c479e1cf0c37b403e9a05001fcb08951dae59c16bcd517bfd3",
+      "sha256": "8b8a2f53d6a72be5e73ce95532bd627d075cf8d1f55033806955a43e657beeb4",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
