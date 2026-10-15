@@ -583,3 +583,29 @@ also includes the unpublished documentary/cleanup commits after remote d016fc5;
 the exact final range, files, secret/history audit and automatic workflows must
 be presented for explicit owner approval first. The second digest, release ID,
 new task revision and rollback outcome remain unknown until genuine execution.
+
+#### Authentic new-pin admission prepared, not activated
+
+The first owner-approved feature publication ended at immutable commit
+`f0ba8ad1d6528d362693c8de932f935c8084529d`. Its real GitHub CI
+[38702309795](https://github.com/Kendall04/terragrunt_demo/actions/runs/38702309795)
+completed SUCCESS, including E1, .NET/Docker, hygiene, static infrastructure and
+aggregate validation. No release or deployment workflow was triggered.
+
+The existing administrator readback procedure independently verified every WP6
+source hash at that published commit, current subject customization, branch and
+Environment restrictions, isolated entries/runners, secret-name exposure limits,
+project bundle versions, runtime trust/inline/resource policies and the two
+existing numeric gateways (release 1, deploy-dev 2). Only release/deploy-dev
+received new source-bound admission records from those authentic observations;
+no PROD entry, IAM action, ref wildcard or lifecycle authority was added. The
+new generated callers pin that exact immutable commit. Private readbacks remain
+outside Git; the checked-in admission is not a substitute for live installation.
+
+This second local revision requires its own exact publication authorization.
+Before dispatch, its CI must pass; review/apply only the two existing request-role
+trust replacements from the old immutable pin to the new pin, without modifying
+permissions, and update/read back only the two existing Environment configuration
+variables. Do not apply the intermediate inactive root or a graph-wide plan.
+Until those installation readbacks succeed, the live request route retains its
+old configuration and no new WP3/WP4/rollback request is permitted.
