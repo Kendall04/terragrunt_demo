@@ -3742,7 +3742,7 @@
         "workflow_commit": "fe7e775812f139e5c2f6e044d9a37c95b0b747fc",
         "active": true,
         "governance": "ADMIN_VERIFIED_G1_G9",
-        "gateway_version": "1",
+        "gateway_version": "2",
         "plan_binding": null,
         "source_sha256": {
           "ci/authority/governance.json": "97d1ba5258e937627e6c048360be76a582c6e49fc95124a8e355e9ec5ec940e0",
@@ -3766,7 +3766,7 @@
           ".github/workflows/e1-dev-emergency.yml": "a6b497e7f21795dfe665a44807ef77dd4854775e5f24d204d1b874385a66d88e",
           ".github/workflows/e1-prod-emergency.yml": "5314136503db6c93119f14c05a33534df646e0284b6a2c6809837b99ab266823"
         },
-        "endpoint_readback": "arn:aws:lambda:us-east-1:341936017254:function:e1-gateway-deploy-dev:1"
+        "endpoint_readback": "arn:aws:lambda:us-east-1:341936017254:function:e1-gateway-deploy-dev:2"
       }
     },
     "live": "UNVERIFIED_NOT_DEPLOYED",

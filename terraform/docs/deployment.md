@@ -352,11 +352,16 @@ absence is normalized to []; nonempty strategies or other launch types reject.
 
 The first WP4 Actions attempt stopped before creating a gateway intention,
 CodeBuild build or E2 generation: GetObject on a missing S3 key returned 403.
-The prepared DEV-only correction checks absence with a complete exact-prefix
+The owner-approved DEV-only correction checks absence with a complete exact-prefix
 listing. A denied, truncated, foreign, historical-version or present-key read
 cannot become absence. It adds only ListBucket scoped to each existing readable
 prefix for gateway/normal/cleanup DEV; it adds no write, delete, state or PROD
 permission. Existing NAT and common source implementations remain unchanged.
-This additional read capability and immutable gateway-version cutover require
-the owner's concrete permission approval and authentic installation readback.
-The failed attempt must be reconciled before a new request; no blind retry.
+The owner explicitly approved these own-prefix reads and immutable DEV versions.
+After CI 38683396476 passed, a reviewed seven-update plan installed gateway 2,
+cleanup 3 and the normal controller bundle. Native IAM/configuration reads and
+the existing G1-G9 administrative channel verified the new gateway. The source
+request approval now names gateway 2; its InvokeFunction policy and GitHub
+environment must be cut over only after the complete E1 gate for this revision.
+The first failed request created no intention, CodeBuild build or E2 owner;
+its request is not resent. A new request may use the same qualified release.
