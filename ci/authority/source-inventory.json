@@ -5440,9 +5440,13 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/test-dev-e3-stable-window.sh": {
-      "sha256": "264259befe7bbceba59162d59c6e828b06f5013266c81f26bb116dec4499976a",
+      "sha256": "77d5c91d83b1c958879213b88e90212451e5b3fe4c7940b8b7b68174656c0149",
       "declarations": [],
-      "signals": {},
+      "signals": {
+        "executable-dependency": [
+          11
+        ]
+      },
       "semantic_status": "CURRENT_FACT"
     },
     "scripts/tests/test-ecs-readiness-gate.sh": {

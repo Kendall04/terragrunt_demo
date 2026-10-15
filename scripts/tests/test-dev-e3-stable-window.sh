@@ -8,6 +8,7 @@ run_case() (
   set +e
   output="$( (
     set -euo pipefail
+    # shellcheck source=scripts/ecs-readiness-gate.sh
     source "$gate"
     ticks=0; reads=0; STABLE_OBSERVATIONS=2
     validate_registered_definition() { :; }
