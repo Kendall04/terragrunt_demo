@@ -676,8 +676,8 @@ def extend(tf):
     inert = resources["aws_iam_role_policy"]["inert"]
     inert["for_each"] = ex('{ for k,v in local.nodes : k=>v if !contains(keys(local.wp3_active),k) && !contains(keys(local.wp4d_active),k) }')
     resources["aws_iam_role_policy"]["wp4d"] = {"for_each": ex("local.wp4d_active"),
-        "name": "wp4d-exact", "role": ex("each.value.role"), "policy": _policy_expression(),
-        "depends_on": ["aws_iam_role.execution", "aws_iam_role.wp4d_reserved"]}
+        "name": "wp4d-exact", "role": ex("each.value.role"),
+        "depends_on": ["aws_iam_role.execution", "aws_iam_role.wp4d_reserved"], "policy": _policy_expression()}
     resources["aws_cloudwatch_log_group"]["wp4d"] = {
         "for_each": ex("local.wp4d_active"),
         "name": ex('"/aws/${each.value.engine == "LAMBDA" ? "lambda" : "codebuild"}/${each.value.name}"'),
