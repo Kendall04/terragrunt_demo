@@ -609,3 +609,66 @@ permissions, and update/read back only the two existing Environment configuratio
 variables. Do not apply the intermediate inactive root or a graph-wide plan.
 Until those installation readbacks succeed, the live request route retains its
 old configuration and no new WP3/WP4/rollback request is permitted.
+
+### Rollback trial: authentic admission and source transport (2026-10-15)
+
+The authorized feature publication reached `8317c604ee4c86fa05ec261256fc3eebc5cfe744`.
+[CI 38704428485](https://github.com/Kendall04/terragrunt_demo/actions/runs/38704428485)
+passed E1, hygiene and infrastructure; app CI was correctly skipped for that
+metadata-only delta. The preceding
+[CI 38702309795](https://github.com/Kendall04/terragrunt_demo/actions/runs/38702309795)
+had passed app/Docker checks. Both existing request-role trusts and Environment
+configurations now pin `f0ba8ad1d6528d362693c8de932f935c8084529d`, without new actions,
+refs or gateways. CloudTrail independently observed successful GitHub OIDC for
+the exact release subject, audience and new immutable pin.
+
+[WP3 38705672347](https://github.com/Kendall04/terragrunt_demo/actions/runs/38705672347)
+was rejected before creating a build: the published source lacked its existing
+source-admission record. The administrator admitted only that exact published,
+CI-successful commit with create-only/version readback. Later genuine requests
+38706006545, 38706580283, 38712621736 and 38800776556 produced protected terminal
+source failures: all seven checks NOT_RUN, without workers or image publication.
+Their polling jobs were cancelled only after terminal readback; failures remain.
+No delivery/rollback was dispatched and no E2 owner/generation changed.
+
+A read-only diagnostic in the existing immutable controller image reproduced
+HTTP 403 and anonymous GitHub REST quota zero. After the announced reset, a
+separate complete read-only acquisition passed all 42 REST reads and source
+integrity checks. Diagnostic CodeBuild successes are not qualifications. Each
+business attempt suppresses its transport exception, so the observed quota
+failure is not a proven explanation for every later failure.
+
+The local, not-installed Source patch retains commit/tree REST reads and obtains
+file bytes through fixed-repository raw URLs at that exact commit. Every body
+must match its selected tree's Git blob SHA before materialization; portable
+paths, modes, source-size bounds and sealed execution checks remain enforced.
+This application needs two REST reads plus 40 raw-content reads, rather than
+42 REST reads. HTTP failures remain fail-closed; diagnostics log only a fixed
+transport category and integer status, never URLs, headers or error bodies.
+No token, IAM action, archive extraction, branch/latest fallback or retry is added.
+Two metadata reads still require REST availability; this cannot promise success.
+
+Focused tests exercise production URL construction/encoding, SHA mismatches,
+wrong source, links/traversal, oversize bodies and metadata/raw rejection without
+private diagnostics. New subcases preserve the accepted regression methods.
+The executable pin and derived package IDs are reconciled; historical fixture
+normalization verifies the exact inverse of 49 content-ID fields while retaining
+original digest/security assertions. Derived inactive PROD/WP5 hashes do not
+activate or install those paths. WP4 cleanup, E2, workflow, app and IAM behavior
+are unchanged by this patch.
+
+Fresh AWS observations: green revision 7 healthy, blue revision 8 at zero, E2
+generation 10 RELEASED, original histories preserved, /ready and POST/GET SQL/KMS
+passed. DEV remains running and billable. No second qualified digest or real
+rollback is claimed. The changed Source also passed actual public reads of all
+40 files and source integrity from the local host; that is not AWS qualification.
+
+Next: review/authorize the additional public source commit, verify its actual CI,
+then rebuild/review the existing WP3 immutable runtime installation, including
+its shared support identity and exact bundle/version/permission readbacks.
+Prepare the concrete affected-resource plan before installing; never apply a
+whole security-root graph with stale installation inputs. Keep current WP4 DEV
+runtime/gateway versions and evidence readable; no PROD/WP5 activation or writes
+to the five E16 states. Only genuine distinct-digest WP3 success enables the
+already-described protected delivery/rollback trial. Remote main/develop stay
+unchanged. Private plans, logs and native evidence remain outside Git.

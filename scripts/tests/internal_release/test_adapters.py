@@ -8,6 +8,7 @@ from pathlib import Path
 import tarfile
 import tempfile
 import unittest
+import urllib.error
 from unittest.mock import patch
 
 import e1_contract as c
@@ -247,15 +248,13 @@ class Adapters(unittest.TestCase):
             if path.startswith('git/commits/'):return {'sha':'a'*40,'tree':{'sha':'b'*40}}
             if path.startswith('git/trees/'):return {'sha':'b'*40,'truncated':False,'tree':[
                 {'path':'demo-api/Program.cs','type':'blob','mode':'100644','sha':sha}]}
-            return {'sha':sha,'encoding':'base64','size':len(raw),'content':base64.b64encode(raw).decode()}
+            raise AssertionError('REST blob endpoint must not be used')
         with tempfile.TemporaryDirectory() as tmp:
-            source=a.Source(fetch);source.acquire('Kendall04/terragrunt_demo','a'*40,tmp)
+            source=a.Source(fetch, lambda commit, name: raw);source.acquire('Kendall04/terragrunt_demo','a'*40,tmp)
             self.assertEqual((Path(tmp)/'demo-api/Program.cs').read_bytes(),raw)
         for mutation in ('blob','symlink','traversal','commit'):
             def hostile(path):
                 result=fetch(path)
-                if mutation=='blob' and path.startswith('git/blobs/'):
-                    result['content']=base64.b64encode(b'evil').decode()
                 if path.startswith('git/trees/'):
                     if mutation=='symlink':result['tree'][0]['mode']='120000'
                     if mutation=='traversal':result['tree'][0]['path']='demo-api/../escape'
@@ -263,7 +262,75 @@ class Adapters(unittest.TestCase):
                 return result
             with tempfile.TemporaryDirectory() as tmp:
                 with self.assertRaises((c.Rejected,a.supervisor.Rejected)):
-                    a.Source(hostile).acquire('Kendall04/terragrunt_demo','a'*40,tmp)
+                    a.Source(hostile, lambda commit, name: b'evil' if mutation=='blob' else raw).acquire('Kendall04/terragrunt_demo','a'*40,tmp)
+
+        for check in (self.check_source_production_transport_limits_rest_to_commit_and_tree,
+                      self.check_source_http_errors_never_fallback_or_materialize,
+                      self.check_source_raw_blob_is_bounded_and_hash_verified):
+            with self.subTest(transport_case=check.__name__):
+                check()
+
+    def check_source_production_transport_limits_rest_to_commit_and_tree(self):
+        raw = b'approved immutable bytes\n'
+        sha = hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()
+        commit = 'a'*40
+        name = 'demo-api/a #%.cs'
+        calls = []
+        def open_url(request, timeout):
+            calls.append(request.full_url)
+            self.assertEqual(timeout, 60)
+            if '/git/commits/' in request.full_url:
+                return io.BytesIO(json.dumps({'sha': commit, 'tree': {'sha': 'b'*40}}).encode())
+            if '/git/trees/' in request.full_url:
+                return io.BytesIO(json.dumps({'sha': 'b'*40, 'truncated': False, 'tree': [
+                    {'path': name, 'type': 'blob', 'mode': '100644', 'sha': sha}]}).encode())
+            self.assertEqual(request.full_url, 'https://raw.githubusercontent.com/Kendall04/terragrunt_demo/'
+                             + commit + '/demo-api/a%20%23%25.cs')
+            self.assertNotIn('Authorization', request.headers)
+            return io.BytesIO(raw)
+        with tempfile.TemporaryDirectory() as tmp, patch.object(a.urllib.request, 'urlopen', open_url):
+            a.Source().acquire('Kendall04/terragrunt_demo', commit, tmp)
+            self.assertEqual((Path(tmp)/name).read_bytes(), raw)
+        self.assertEqual(sum(url.startswith('https://api.github.com/') for url in calls), 2)
+        self.assertEqual(len(calls), 3)
+
+    def check_source_http_errors_never_fallback_or_materialize(self):
+        for failed_host in ('api.github.com', 'raw.githubusercontent.com'):
+            calls = []
+            def open_url(request, timeout):
+                calls.append(request.full_url)
+                if failed_host in request.full_url:
+                    raise urllib.error.HTTPError('https://private.invalid/token', 403, 'private-sentinel', {}, None)
+                if '/git/commits/' in request.full_url:
+                    return io.BytesIO(json.dumps({'sha': 'a'*40, 'tree': {'sha': 'b'*40}}).encode())
+                return io.BytesIO(json.dumps({'sha': 'b'*40, 'truncated': False, 'tree': [
+                    {'path': 'demo-api/Program.cs', 'type': 'blob', 'mode': '100644', 'sha': 'c'*40}]}).encode())
+            diagnostics = io.StringIO()
+            with tempfile.TemporaryDirectory() as tmp, patch.object(a.urllib.request, 'urlopen', open_url), \
+                    patch.object(a.sys, 'stderr', diagnostics):
+                with self.assertRaises(urllib.error.HTTPError):
+                    a.Source().acquire('Kendall04/terragrunt_demo', 'a'*40, tmp)
+                self.assertEqual(list(Path(tmp).iterdir()), [])
+            self.assertEqual(json.loads(diagnostics.getvalue()), {
+                'diagnostic': 'E1_SOURCE_HTTP_FAILURE', 'status': 403,
+                'transport': 'metadata' if failed_host == 'api.github.com' else 'raw-blob'})
+            self.assertNotIn('private', diagnostics.getvalue())
+            self.assertEqual(len(calls), 1 if failed_host == 'api.github.com' else 3)
+
+    def check_source_raw_blob_is_bounded_and_hash_verified(self):
+        with patch.object(a.urllib.request, 'urlopen', return_value=io.BytesIO(b'x'*(16*1024*1024+1))):
+            with self.assertRaises(c.Rejected):
+                a.Source._fetch_blob('a'*40, 'demo-api/Program.cs')
+        def metadata(path):
+            if path.startswith('git/commits/'):
+                return {'sha': 'a'*40, 'tree': {'sha': 'b'*40}}
+            return {'sha': 'b'*40, 'truncated': False, 'tree': [
+                {'path': 'demo-api/Program.cs', 'type': 'blob', 'mode': '100644', 'sha': 'c'*40}]}
+        for raw in (b'untrusted changed bytes', 'not bytes'):
+            with tempfile.TemporaryDirectory() as tmp:
+                with self.assertRaises(c.Rejected):
+                    a.Source(metadata, lambda commit, name: raw).acquire('Kendall04/terragrunt_demo', 'a'*40, tmp)
+                self.assertEqual(list(Path(tmp).iterdir()), [])
 
     def test_verified_bundle_survives_warm_invocations(self):
         import bundles

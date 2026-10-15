@@ -9,6 +9,8 @@ import json
 from pathlib import Path
 import sys
 import urllib.request
+import urllib.error
+import urllib.parse
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.extend([str(ROOT / 'scripts/build_supervision'), str(ROOT / 'scripts/qualification')])
@@ -106,21 +108,46 @@ class Manifests(supervisor.Manifests):
 
 
 class Source:
-    """Public repository Git objects over TLS, exact commit/tree/blob identities.
+    """Public TLS source, with exact commit/tree and verified Git blob identities.
 
-    No Git hooks, submodules, checkout filters or application execution. Failure
-    or GitHub rate limiting stops acquisition; there is no branch/latest fallback.
+    Only commit/tree metadata uses the rate-limited REST API. File bytes come
+    from the same repository's immutable raw commit paths and must hash to the
+    selected tree's blob SHA. No hooks, archive extraction or application runs.
+    Transport/rate failures stop acquisition; no tag/latest or retry fallback.
     """
-    def __init__(self, fetch=None):
+    def __init__(self, fetch=None, fetch_blob=None):
         self.fetch = fetch or self._fetch
+        self.fetch_blob = fetch_blob or self._fetch_blob
     @staticmethod
     def _fetch(path):
         request = urllib.request.Request('https://api.github.com/repos/Kendall04/terragrunt_demo/' + path,
                                          headers={'User-Agent': 'e1-protected-source', 'Accept': 'application/vnd.github+json'})
-        with urllib.request.urlopen(request, timeout=60) as response:
-            raw = response.read(24 * 1024 * 1024 + 1)
+        try:
+            with urllib.request.urlopen(request, timeout=60) as response:
+                raw = response.read(24 * 1024 * 1024 + 1)
+        except urllib.error.HTTPError as error:
+            status = error.code if type(error.code) is int and 100 <= error.code <= 599 else 0
+            print(json.dumps({'diagnostic': 'E1_SOURCE_HTTP_FAILURE', 'transport': 'metadata',
+                              'status': status}), file=sys.stderr)
+            raise
         require(len(raw) <= 24 * 1024 * 1024)
         return json.loads(raw)
+    @staticmethod
+    def _fetch_blob(commit, name):
+        # acquire() validates the commit and portable path before this read.
+        url = ('https://raw.githubusercontent.com/Kendall04/terragrunt_demo/'
+               + commit + '/' + urllib.parse.quote(name, safe='/'))
+        request = urllib.request.Request(url, headers={'User-Agent': 'e1-protected-source'})
+        try:
+            with urllib.request.urlopen(request, timeout=60) as response:
+                raw = response.read(16 * 1024 * 1024 + 1)
+        except urllib.error.HTTPError as error:
+            status = error.code if type(error.code) is int and 100 <= error.code <= 599 else 0
+            print(json.dumps({'diagnostic': 'E1_SOURCE_HTTP_FAILURE', 'transport': 'raw-blob',
+                              'status': status}), file=sys.stderr)
+            raise
+        require(len(raw) <= 16 * 1024 * 1024)
+        return raw
     def acquire(self, repository, commit, workspace):
         require(repository == 'Kendall04/terragrunt_demo')
         import re
@@ -139,10 +166,8 @@ class Source:
             if entry['type'] == 'tree':
                 continue
             require(entry['mode'] in ('100644', '100755'))
-            blob = self.fetch('git/blobs/' + entry['sha'])
-            require(blob['encoding'] == 'base64' and blob['sha'] == entry['sha'])
-            raw = base64.b64decode(blob['content'])
-            require(len(raw) == blob['size'] and len(raw) <= 16 * 1024 * 1024)
+            raw = self.fetch_blob(commit, name)
+            require(type(raw) is bytes and len(raw) <= 16 * 1024 * 1024)
             require(hashlib.sha1(b'blob ' + str(len(raw)).encode() + b'\0' + raw).hexdigest() == entry['sha'])
             total += len(raw)
             require(total <= 64 * 1024 * 1024)
