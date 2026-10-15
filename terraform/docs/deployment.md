@@ -329,3 +329,20 @@ read back with a supported numeric platform before normal delivery. Authentic
 CloudTrail CreateService records confirm current-cycle skeleton revision `:5`
 was created at desired count zero; the currently running revision `:4` is a
 later workload and is not misrepresented as an inert bootstrap.
+
+The two DEV bundles also accept the exact derived ECS response capabilities seen
+on the live, closed two-container task, while retaining `requiresCompatibilities`
+exactly FARGATE. Unknown capabilities, nonempty system controls and nonzero
+container CPU defaults reject; these normalizations grant no new task feature.
+AWS's inferred EC2/FARGATE/MANAGED_INSTANCES metadata is not launch authorization.
+
+Live candidate replacement demonstrated more than 30 seconds of ECS/ALB drain.
+The DEV normal runtime can continue read-only effect observation for up to 600
+seconds, bounded by the original immutable operation deadline, only for its own
+current invocation's persisted ACK. It never resends a mutation. Missing ACK,
+interrupted invocation and unresolved/deadline outcomes remain UNKNOWN and retain
+E2. This preserves supervised reconciliation instead of treating normal async
+settlement as an instantly final API acknowledgement.
+
+ECS can omit the empty capacity-provider strategy for explicit FARGATE. Only that
+absence is normalized to []; nonempty strategies or other launch types reject.

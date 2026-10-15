@@ -14,7 +14,7 @@ def before_authorized_trial(authority):
     dev_trial_approvals(value)
     value['wp6']['approvals']={}
     # Preserve the prior immutable snapshot while checking the exact approved DEV delta.
-    for key,(previous,current) in {'normal-delivery/deploy-dev': ('9a56022ea676cc583fc9e5eaec292ea2cc9f6434131d2cd3a21c95096f792577', '2f5ff87d0838d42f1447ae2c72efcf90f4189c2714af2c7cc9e6de2ec765a5c4'), 'cleanup-recovery/cleanup-dev': ('2a4b6681a62824b69ba127f33fda22cca85398647777b0a91041e4a2ba6ef312', '03aaa6e4436afa86c15163f6f17969fd9a214e1d5a06b61a80eefaa573e26cef')}.items():
+    for key,(previous,current) in {'normal-delivery/deploy-dev': ('9a56022ea676cc583fc9e5eaec292ea2cc9f6434131d2cd3a21c95096f792577', '0ca7b51f487644cb235587e98fc25513c59b3a8ddf47aebc16187df44111b7bc'), 'cleanup-recovery/cleanup-dev': ('2a4b6681a62824b69ba127f33fda22cca85398647777b0a91041e4a2ba6ef312', 'ec7c4f63f7e7133b5baeaf6e557618637db59d63071b025e0f35856b42e854a9')}.items():
         assert value["wp4d"]["selected"][key]["package_sha256"]==current
         value["wp4d"]["selected"][key]["package_sha256"]=previous
     for key in ('release','deploy-dev'):

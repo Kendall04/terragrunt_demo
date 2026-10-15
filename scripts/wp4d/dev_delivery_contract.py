@@ -4,6 +4,7 @@ The storage response, not an eligibility body, owns S3 VersionId. ECS defaults
 are normalized only when their complete values are inert and understood.
 """
 import copy
+import time
 from scripts.normal_delivery import authorization as a
 
 
@@ -53,3 +54,55 @@ def observer(base):
             # Never turn LATEST into an invented numeric pin.
             return result, tasks, stable
     return Observer
+
+
+# Derived ECS response metadata observed for this exact closed Fargate task.
+ATTRIBUTES = frozenset((
+    "com.amazonaws.ecs.capability.logging-driver.awslogs",
+    "ecs.capability.execution-role-awslogs", "com.amazonaws.ecs.capability.ecr-auth",
+    "com.amazonaws.ecs.capability.docker-remote-api.1.19",
+    "ecs.capability.secrets.asm.environment-variables",
+    "com.amazonaws.ecs.capability.docker-remote-api.1.21",
+    "com.amazonaws.ecs.capability.task-iam-role", "ecs.capability.execution-role-ecr-pull",
+    "com.amazonaws.ecs.capability.docker-remote-api.1.18", "ecs.capability.task-eni"))
+
+
+def task_readback(value):
+    result = copy.deepcopy(value)
+    a.require(result.get("requiresCompatibilities") == ["FARGATE"])
+    compatible = result.get("compatibilities")
+    a.require(type(compatible) is list and len(compatible) == len(set(compatible))
+              and set(compatible) == {"EC2", "FARGATE", "MANAGED_INSTANCES"})
+    attributes = result.get("requiresAttributes")
+    a.require(type(attributes) is list and len(attributes) == len(ATTRIBUTES)
+              and all(type(v) is dict and set(v) == {"name"} for v in attributes)
+              and {v["name"] for v in attributes} == ATTRIBUTES)
+    # These fields describe inferred capabilities, not permitted launch types.
+    # Explicit requiresCompatibilities and the complete task model stay checked.
+    result["compatibilities"] = ["FARGATE"]
+    result["requiresAttributes"] = []
+    for container in result["containerDefinitions"]:
+        for key, empty in (("cpu", 0), ("systemControls", [])):
+            if key in container:
+                a.exact(container.pop(key), empty, "DEV empty container default." + key)
+    return result
+
+
+def delivery(base):
+    class Delivery(base):
+        def effect(self, token, deadline):
+            result = super().effect(token, deadline)
+            # Only this still-running invocation's own persisted ACK permits
+            # more observations. No ACK, crash/retry or foreign effect stays UNKNOWN.
+            if result["state"] != "UNKNOWN" or token not in self.applied:
+                return result
+            end = min(deadline, self.now() + 600)
+            while self.now() < end:
+                time.sleep(2)
+                if self.now() >= end:
+                    break
+                result = super().effect(token, end)
+                if result["state"] != "UNKNOWN":
+                    return result
+            return result
+    return Delivery

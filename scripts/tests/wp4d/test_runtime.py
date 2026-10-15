@@ -123,6 +123,32 @@ for bad in ({'launchType':'EC2','deploymentConfiguration':observed},{'launchType
  try:dev.service(bad)
  except ValueError:pass
  else:raise AssertionError('Foreign capacity strategy accepted')
+record={'requiresCompatibilities':['FARGATE'],'compatibilities':['EC2','FARGATE','MANAGED_INSTANCES'],
+ 'requiresAttributes':[{'name':n} for n in dev.ATTRIBUTES],
+ 'containerDefinitions':[{'cpu':0,'systemControls':[],'name':'kept'}]}
+normalized=dev.task_readback(record)
+assert normalized['requiresCompatibilities']==['FARGATE'] and normalized['requiresAttributes']==[]
+assert normalized['containerDefinitions']==[{'name':'kept'}] and record['containerDefinitions'][0]['cpu']==0
+for bad in (record|{'requiresAttributes':[{'name':'unknown'}]},record|{'compatibilities':['FARGATE','UNKNOWN']},
+ record|{'requiresCompatibilities':['EC2']},record|{'containerDefinitions':[{'cpu':1}]}):
+ try:dev.task_readback(bad)
+ except ValueError:pass
+ else:raise AssertionError('Foreign task default/capability accepted')
+class Poll:
+ def __init__(self):self.applied={};self.tick=1;self.reads=0
+ def now(self):self.tick+=1;return self.tick
+ def effect(self,token,deadline):
+  self.reads+=1
+  return {'state':'APPLIED' if self.reads>=3 else 'UNKNOWN'}
+port=dev.delivery(Poll)()
+assert port.effect('missing-ack',100)['state']=='UNKNOWN' and port.reads==1
+port=dev.delivery(Poll)();port.applied['own-ack']=object()
+from unittest.mock import patch
+with patch.object(dev.time,'sleep'):
+ assert port.effect('own-ack',100)['state']=='APPLIED' and port.reads==3
+port=dev.delivery(Poll)();port.applied['own-ack']=object()
+with patch.object(dev.time,'sleep'):
+ assert port.effect('own-ack',2)['state']=='UNKNOWN'
 print('EXTRACTED_DEV_CONTRACT_PASS')
 """
                 saved={k:v for k,v in sys.modules.items() if k=='scripts' or k.startswith('scripts.')}

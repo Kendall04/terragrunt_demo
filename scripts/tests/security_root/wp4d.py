@@ -119,11 +119,17 @@ def artifact(root, catalog, binding):
         if source.count(previous) != 1:
             raise ValueError("WP4D_DEV_ELIGIBILITY_SOURCE_DRIFT")
         source = source.replace(previous, replacement)
+        previous = b"task = copy.deepcopy(response['taskDefinition'])"
+        if source.count(previous) != 1:
+            raise ValueError("WP4D_DEV_TASK_READBACK_SOURCE_DRIFT")
+        source = source.replace(previous, b"task = _dev_task_readback(response['taskDefinition'])")
+        source += b"\nfrom scripts.wp4d.dev_delivery_contract import task_readback as _dev_task_readback\n"
         source += b"\nfrom scripts.wp4d.dev_delivery_contract import eligibility as _dev_eligibility\n"
         files[name] = base64.b64encode(source).decode("ascii")
         name = "scripts/wp4d/aws_runtime.py"
         source = base64.b64decode(files[name])
         source += b"\nfrom scripts.wp4d.dev_delivery_contract import observer as _dev_observer\nObserver = _dev_observer(Observer)\n"
+        source += b"\nfrom scripts.wp4d.dev_delivery_contract import delivery as _dev_delivery\nDelivery = _dev_delivery(Delivery)\n"
         files[name] = base64.b64encode(source).decode("ascii")
     env, engine = RESERVED[binding]
     return canonical({"format": "E1_WP4D_BUNDLE_JSON_V1", "owner": OWNER,
