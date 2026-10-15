@@ -278,6 +278,14 @@ class Authority(unittest.TestCase):
             self.assertEqual(b"record = _dev_eligibility(" in auth_source, selected_dev)
             self.assertEqual(b"Observer = _dev_observer(Observer)" in observer_source, selected_dev)
             self.assertEqual("scripts/wp4d/dev_startup.py" in package["files"], binding == "normal-delivery/deploy-dev")
+            if "scripts/ecs-readiness-gate.sh" in package["files"]:
+                readiness = base64.b64decode(package["files"]["scripts/ecs-readiness-gate.sh"])
+                original = (ROOT/"scripts/ecs-readiness-gate.sh").read_bytes().replace(b"\r\n", b"\n")
+                reset = b'      [ -z "$last_fingerprint" ] || log "Complete readiness observation changed; restarting stable window."'
+                reject = b'      [ -z "$last_fingerprint" ] || die "Complete readiness evidence changed between observations."'
+                self.assertEqual(readiness, original.replace(reject, reset) if binding == "normal-delivery/deploy-dev" else original)
+
+
             self.assertEqual("scripts/wp4d/dev_cleanup.py" in package["files"], binding == "cleanup-recovery/cleanup-dev")
             self.assertEqual(b"Application = _dev_cleanup(Application)" in observer_source, binding == "cleanup-recovery/cleanup-dev")
 

@@ -450,3 +450,23 @@ recovery bundles retain their existing implementation. This source correction
 and its deterministic tests do not establish live delivery or cleanup success.
 The failed generation 5 requires its separately owner-approved reconciliation;
 prior FAILURE evidence must remain intact and no old invocation may be replayed.
+
+The subsequent Actions trial 38692781756 reached ECS steady state but failed with
+the authentic fixed E3 diagnostic `COMPLETE_E3_EVIDENCE_CHANGED`, before switch or
+cleanup. Green revision 6 stayed active, blue revision 7 remained a candidate,
+and generation 6 retained FAILURE/ACTIVE. The original four effects were APPLIED;
+no cleanup invocation or automatic success is inferred. Its cancellation and
+exact FAILURE CAS require the separately approved generation-6 reconciliation.
+
+Only the normal DEV package now restarts the consecutive-stability window when
+two independently complete observations have different full fingerprints. It
+keeps the complete fingerprints (no fields removed), frozen service/deployment
+and task cohort identities, image/probe/network/lifecycle validation, read-error
+rejection, original deadline, and immediate final equality check. Continuous
+changes time out; changed final evidence still fails. The exact changing AWS
+fingerprint component was not retained by the failed invocation and is unknown.
+This bounded waiting correction does not classify an identity contradiction as
+settled or fabricate the lost snapshots. PROD and the common E3 source retain
+existing behavior. `test-dev-e3-stable-window.sh` exercises the actual extracted
+DEV loop with deterministic observation ports: settling/incomplete observations,
+continuous drift to deadline, final drift, identity rejection and read failure.

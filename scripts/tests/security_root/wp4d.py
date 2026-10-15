@@ -150,6 +150,18 @@ def artifact(root, catalog, binding):
         source = source.replace(before, b'            if proc.returncode:\n                print(_dev_e3_diagnostic(output), flush=True)\n' + before)
         source += b"\nfrom scripts.wp4d.dev_startup import delivery as _dev_startup, diagnostic as _dev_e3_diagnostic\nDelivery = _dev_startup(Delivery)\n"
         files[name] = base64.b64encode(source).decode("ascii")
+    if binding == "normal-delivery/deploy-dev":
+        name = "scripts/ecs-readiness-gate.sh"
+        source = base64.b64decode(files[name])
+        before = b'      [ -z "$last_fingerprint" ] || die "Complete readiness evidence changed between observations."'
+        if source.count(before) != 1:
+            raise ValueError("WP4D_DEV_E3_STABLE_WINDOW_SOURCE_DRIFT")
+        # Every observation still enforces frozen identities, complete healthy
+        # evidence, monotonic lifecycle and the original deadline. A changed
+        # complete fingerprint must establish a new consecutive stable window;
+        # it never grants success or changes the final immediate revalidation.
+        source = source.replace(before, b'      [ -z "$last_fingerprint" ] || log "Complete readiness observation changed; restarting stable window."')
+        files[name] = base64.b64encode(source).decode("ascii")
     if binding == "cleanup-recovery/cleanup-dev":
         name = "scripts/wp4d/aws_runtime.py"
         source = base64.b64decode(files[name])
