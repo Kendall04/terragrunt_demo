@@ -5,6 +5,9 @@ for command effects. This describes checked-in behavior, not proven deployment
 results. The owner reconciliation on 2026-09-18 preceded all AWS resources.
 The [first real DEV deployment record](first-real-dev-deployment.md) distinguishes
 authenticated runtime evidence from uninstalled protected GitHub/WP3/WP4 delivery.
+The [current real CI/CD preflight](final-github-actions-cicd.md) records the public
+GitHub/history audit, authentic OIDC-provider installation and the still-pending
+publication, protected WP3/WP4 installation and actual Actions execution.
 
 [E4 recovery/runbook](e4-post-switch-recovery.md) adds one bounded same-invocation
 continuation after a listener switch with failed evidence persistence. Fresh
