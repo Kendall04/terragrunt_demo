@@ -361,7 +361,49 @@ The owner explicitly approved these own-prefix reads and immutable DEV versions.
 After CI 38683396476 passed, a reviewed seven-update plan installed gateway 2,
 cleanup 3 and the normal controller bundle. Native IAM/configuration reads and
 the existing G1-G9 administrative channel verified the new gateway. The source
-request approval now names gateway 2; its InvokeFunction policy and GitHub
-environment must be cut over only after the complete E1 gate for this revision.
+request approval names gateway 2. After CI 38684045312 passed the complete E1
+gate, the reviewed one-policy plan and GitHub DEV variable were cut over and
+read back; release remains gateway 1 with the same immutable workflow pin.
 The first failed request created no intention, CodeBuild build or E2 owner;
 its request is not resent. A new request may use the same qualified release.
+
+
+### First authentic Actions / OIDC / WP3 / WP4 DEV result (2026-10-14)
+
+[WP3 Actions 38681029373](https://github.com/Kendall04/terragrunt_demo/actions/runs/38681029373)
+and [WP4 Actions 38685068331](https://github.com/Kendall04/terragrunt_demo/actions/runs/38685068331)
+completed successfully. CloudTrail independently confirms the two restricted OIDC
+request roles. WP3's controller and three isolated workers succeeded, including
+103 .NET tests, image build/publication and probe capability checks. The neutral
+repository is `demo-shared-demo-ms`, distinct from the prior manually deployed
+DEV repository. Its qualified application digest is
+`sha256:ca7d92532de8cfeee7a7a59a80f78714a26083ff323019d512d8be20f83ebfb8`.
+
+WP4 registered green revision 6, passed the real E3 gate, switched the internal
+ALB listener and published its protected SUCCESS and DEV activation records.
+Independent ECS/target-group reads confirm that digest on active green, readiness
+HTTP 200 and successful SQL/KMS POST/GET round-trip. Blue subsequently reached
+zero tasks and zero targets. These are live observations, not fixture readiness.
+The legacy WP3 manifest's `sourceBranch=develop` and run-number defaults are not
+real provenance: qualification source commit and actual Actions/CodeBuild/OIDC
+observations establish this first trial's origin. Raw evidence remains private.
+
+The automatic inactive-color cleanup separately returned FAILURE after its
+acknowledged/observed scale-to-zero: an ALB target was still draining when the
+next strict target-membership guard ran. No RemoveTargets call was attempted.
+It retained E2 as designed. With separate explicit owner approval, the operator
+disabled only that cleanup rule, waited for authenticated empty blue tasks and
+targets, verified active green, removed the exact cleanup target/rule and closed
+the exact generation-3 E2 record using its unchanged ETag. Owner/generation,
+original FAILURE journals and earlier versions were preserved; no automatic
+cleanup SUCCESS or generic recovery capability is claimed. E2 is RELEASED and
+the cancelled schedule is cleared. Before another delivery, fix and test the DEV
+cleanup's observation of target deregistration within its original deadline;
+do not replay the failed operation or introduce automatic owner release.
+
+The original DEV architecture, exclusive E16 state writer and remote main/develop
+refs are unchanged. No DOWN, NAT failover, PROD installation or WP5 activation
+occurred. DEV remains running and billable. Additional CI/CD costs are on-demand
+CodeBuild/Lambda, ECR images and S3/CloudWatch evidence; there is no always-running
+CodeBuild worker. This successful first delivery does not establish production,
+rollback or unattended cleanup readiness.
