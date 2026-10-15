@@ -66,7 +66,9 @@ def main():
                 'authority': authority, 'account_id': ACCOUNT, 'region': REGION,
                 'wp4d_installations': i, 'wp4d_runtime_approvals': r,
                 'wp4d_environment_bindings': b, 'dev_delivery_binding': overlay}.items()}
-            path.write_text(json.dumps({'variable':variables, 'locals':locals_}), encoding='utf-8')
+            selected_locals=copy.deepcopy(locals_)
+            if overlay is not None:selected_locals['evidence_bucket']=f'demo-release-artifacts-{ACCOUNT}'
+            path.write_text(json.dumps({'variable':variables, 'locals':selected_locals}), encoding='utf-8')
             result = subprocess.run([terraform, 'console', '-no-color'], input=expression+'\n',
                                     text=True, capture_output=True, cwd=directory, env=environment, timeout=30)
             if result.returncode:
@@ -83,6 +85,8 @@ def main():
                 selected = authority['wp4d']['selected'][binding]
                 config=observed['configurations'][binding]
                 assert config['binding']==binding
+                expected_admin=(f'e1-evidence-{ACCOUNT}-{REGION}' if binding.startswith('nat-recovery/nat-dev/') else selected_locals['evidence_bucket'])
+                assert config['admin_bucket']==expected_admin, 'WP3 must not rebind existing DEV NAT authority'
                 compact=binding in ('request-gateway/deploy-dev','cleanup-recovery/cleanup-dev')
                 assert config['nat_slots']==([] if compact else bound[config['environment']]['nat_slots'])
                 if binding.startswith('nat-recovery/nat-dev/') or binding=='request-gateway/deploy-dev':

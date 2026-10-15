@@ -297,3 +297,8 @@ These runtime resources add ECR/S3/log storage and Lambda/build usage. Builds ar
 on demand. The original DEV infrastructure stays running and continues charging.
 No Terraform state writer transfer, infrastructure deployment, DOWN, NAT failover
 or PROD activation belongs to this CI/CD installation.
+
+When WP3 becomes active, DEV NAT keeps its existing `e1-evidence-<account>-<region>`
+administrative bucket. It must not inherit the neutral release-artifacts bucket
+from the WP3 selection. The coexistence fixture tests both configurations, and
+an installation plan containing NAT function updates must be rejected here.

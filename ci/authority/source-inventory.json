@@ -5062,7 +5062,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/wp4d.py": {
-      "sha256": "6141b95f6419187386357022ae69786342f6b08a749add25560f882cc04ed3c5",
+      "sha256": "fc6ebad9cd3335fd2a58c3b0505ca7c25a8651c385d43f8bb526ce77c0658b81",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -5587,7 +5587,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/wp4d/check_static.py": {
-      "sha256": "cb417482693e8e6700ccfd5a241d184230936d11da1bb9d7ee5dacd22ca367e8",
+      "sha256": "ae54b7f9a0005da30c74c3f4a15e5de98012f6b6b7431c8c0ec6d496859fbc0f",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -5596,17 +5596,17 @@
           25,
           27,
           28,
-          70,
-          106,
-          109,
-          118,
-          119,
-          121,
+          72,
+          110,
+          113,
+          122,
+          123,
           125,
-          130,
-          135,
-          150,
-          159
+          129,
+          134,
+          139,
+          154,
+          163
         ],
         "security-control": [
           33,
@@ -6255,7 +6255,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/modules/controller_compute/main.tf.json": {
-      "sha256": "c92506a4c15a887acaf1216e855e4b5db0da5aa5d19cd77aa18b8d7a29559384",
+      "sha256": "f72eefe33096774dcf4e45979c85bd807ab640560115e6f223a4b07700562fd9",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
