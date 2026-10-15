@@ -1,0 +1,575 @@
+{
+  "schema": "REVIEWED_STATIC_FINDINGS_V1",
+  "reviewed_source": "2a442f667fdb34c3110487ada58ad5f56501b46c",
+  "meaning": "Exact inherited debt; not remediation or permission to add findings. Every identity, multiplicity and source snippet must remain unchanged. No automatic update mode.",
+  "tool_versions": {
+    "tflint": "0.64.0",
+    "tfsec": "1.28.14"
+  },
+  "findings": {
+    "tflint": [
+      {
+        "rule": "terraform_required_version",
+        "severity": "WARNING",
+        "file": "terraform/infra/security/modules/control_bundle_storage/main.tf.json",
+        "resource": "",
+        "message": "terraform \"required_version\" attribute is required",
+        "source_sha256": "ce25128f09d2bd0876480c94a27c9de3facb145563610c7124dbdf690bcc7672"
+      },
+      {
+        "rule": "terraform_deprecated_index",
+        "severity": "WARNING",
+        "file": "terraform/infra/security/modules/controller_compute/main.tf.json",
+        "resource": "",
+        "message": "List items should be accessed using square brackets",
+        "source_sha256": "e42eec7ba2f27b6f6b0159139fefb7e47a02b31973807a3bae8d2becae95b210"
+      },
+      {
+        "rule": "terraform_required_version",
+        "severity": "WARNING",
+        "file": "terraform/infra/security/modules/controller_compute/main.tf.json",
+        "resource": "",
+        "message": "terraform \"required_version\" attribute is required",
+        "source_sha256": "ce25128f09d2bd0876480c94a27c9de3facb145563610c7124dbdf690bcc7672"
+      },
+      {
+        "rule": "terraform_required_version",
+        "severity": "WARNING",
+        "file": "terraform/infra/security/modules/lifecycle_foundations/main.tf.json",
+        "resource": "",
+        "message": "terraform \"required_version\" attribute is required",
+        "source_sha256": "ce25128f09d2bd0876480c94a27c9de3facb145563610c7124dbdf690bcc7672"
+      },
+      {
+        "rule": "terraform_required_version",
+        "severity": "WARNING",
+        "file": "terraform/infra/security/modules/protected_resources/main.tf.json",
+        "resource": "",
+        "message": "terraform \"required_version\" attribute is required",
+        "source_sha256": "ce25128f09d2bd0876480c94a27c9de3facb145563610c7124dbdf690bcc7672"
+      },
+      {
+        "rule": "terraform_required_version",
+        "severity": "WARNING",
+        "file": "terraform/infra/security/modules/request_identities/main.tf.json",
+        "resource": "",
+        "message": "terraform \"required_version\" attribute is required",
+        "source_sha256": "ce25128f09d2bd0876480c94a27c9de3facb145563610c7124dbdf690bcc7672"
+      },
+      {
+        "rule": "terraform_unused_declarations",
+        "severity": "WARNING",
+        "file": "terraform/modules/target/dev/apps/modules/ecs_service/variables.tf",
+        "resource": "",
+        "message": "variable \"execution_policy_arns\" is declared but not used",
+        "source_sha256": "52589ad4db9c98c282fd8334ccfd604cf333dbcd73ad071fad2eb4f937f98340"
+      },
+      {
+        "rule": "terraform_unused_declarations",
+        "severity": "WARNING",
+        "file": "terraform/modules/target/dev/apps/modules/ecs_service/variables.tf",
+        "resource": "",
+        "message": "variable \"task_policy_arns\" is declared but not used",
+        "source_sha256": "590ddff8b7337ae7dabcb5f88a8471f80bdb9971567572b46ec3f707b36f0de1"
+      },
+      {
+        "rule": "terraform_unused_declarations",
+        "severity": "WARNING",
+        "file": "terraform/modules/target/dev/apps/ordinary-locals.tf",
+        "resource": "",
+        "message": "local.account_id is declared but not used",
+        "source_sha256": "2ea465197f4e0345d6e4671d2a90c4a7a74bbea976006c1e6ed8bbf12952ac4d"
+      },
+      {
+        "rule": "terraform_unused_declarations",
+        "severity": "WARNING",
+        "file": "terraform/modules/target/dev/apps/ordinary-locals.tf",
+        "resource": "",
+        "message": "local.scale_down_lambda_name is declared but not used",
+        "source_sha256": "52684729d18a64a39f0c715e7e82311b93fe1555dcc5edbf1772396418aa64d2"
+      },
+      {
+        "rule": "terraform_unused_declarations",
+        "severity": "WARNING",
+        "file": "terraform/modules/target/dev/apps/ordinary-locals.tf",
+        "resource": "",
+        "message": "local.scale_down_rule_name is declared but not used",
+        "source_sha256": "5c88963fb8389eb2517ec2b394c643a65e095a2590e6a180b496a213259c061f"
+      },
+      {
+        "rule": "terraform_unused_declarations",
+        "severity": "WARNING",
+        "file": "terraform/modules/target/dev/apps/ordinary-variables.tf",
+        "resource": "",
+        "message": "variable \"alb_listener_arn\" is declared but not used",
+        "source_sha256": "b050896c16825e96f6ce456f7274169aef84720f8dd01f481d3aabb3b0c0e766"
+      },
+      {
+        "rule": "terraform_unused_declarations",
+        "severity": "WARNING",
+        "file": "terraform/modules/target/dev/apps/ordinary-variables.tf",
+        "resource": "",
+        "message": "variable \"cluster_name\" is declared but not used",
+        "source_sha256": "78f00a4f78c05bd785fb2ef787a4c8532525badf6913e45298e001d9a525a792"
+      },
+      {
+        "rule": "terraform_required_providers",
+        "severity": "WARNING",
+        "file": "terraform/modules/target/dev/secrets/main.tf.json",
+        "resource": "",
+        "message": "Missing version constraint for provider \"aws\" in `required_providers`",
+        "source_sha256": "410198f4f7478a3da83cb2d49bf291ef684379559aee8cd2c3b86627691ad4c6"
+      },
+      {
+        "rule": "terraform_required_version",
+        "severity": "WARNING",
+        "file": "terraform/modules/target/dev/secrets/main.tf.json",
+        "resource": "",
+        "message": "terraform \"required_version\" attribute is required",
+        "source_sha256": "ce25128f09d2bd0876480c94a27c9de3facb145563610c7124dbdf690bcc7672"
+      },
+      {
+        "rule": "terraform_unused_declarations",
+        "severity": "WARNING",
+        "file": "terraform/modules/target/prod/apps/modules/ecs_service/variables.tf",
+        "resource": "",
+        "message": "variable \"execution_policy_arns\" is declared but not used",
+        "source_sha256": "52589ad4db9c98c282fd8334ccfd604cf333dbcd73ad071fad2eb4f937f98340"
+      },
+      {
+        "rule": "terraform_unused_declarations",
+        "severity": "WARNING",
+        "file": "terraform/modules/target/prod/apps/modules/ecs_service/variables.tf",
+        "resource": "",
+        "message": "variable \"task_policy_arns\" is declared but not used",
+        "source_sha256": "590ddff8b7337ae7dabcb5f88a8471f80bdb9971567572b46ec3f707b36f0de1"
+      },
+      {
+        "rule": "terraform_unused_declarations",
+        "severity": "WARNING",
+        "file": "terraform/modules/target/prod/apps/ordinary-locals.tf",
+        "resource": "",
+        "message": "local.account_id is declared but not used",
+        "source_sha256": "2ea465197f4e0345d6e4671d2a90c4a7a74bbea976006c1e6ed8bbf12952ac4d"
+      },
+      {
+        "rule": "terraform_unused_declarations",
+        "severity": "WARNING",
+        "file": "terraform/modules/target/prod/apps/ordinary-locals.tf",
+        "resource": "",
+        "message": "local.scale_down_lambda_name is declared but not used",
+        "source_sha256": "5f1f5c5f28ca7f49f59b7985be002812f1b2bfe2c6b74c92843ca0da563bec54"
+      },
+      {
+        "rule": "terraform_unused_declarations",
+        "severity": "WARNING",
+        "file": "terraform/modules/target/prod/apps/ordinary-locals.tf",
+        "resource": "",
+        "message": "local.scale_down_rule_name is declared but not used",
+        "source_sha256": "bb2e2efa5c1515ba22fe35620ff9ed60d6ceaeb5f2cc9a106d359c2bc236df4e"
+      },
+      {
+        "rule": "terraform_unused_declarations",
+        "severity": "WARNING",
+        "file": "terraform/modules/target/prod/apps/ordinary-variables.tf",
+        "resource": "",
+        "message": "variable \"alb_listener_arn\" is declared but not used",
+        "source_sha256": "b050896c16825e96f6ce456f7274169aef84720f8dd01f481d3aabb3b0c0e766"
+      },
+      {
+        "rule": "terraform_unused_declarations",
+        "severity": "WARNING",
+        "file": "terraform/modules/target/prod/apps/ordinary-variables.tf",
+        "resource": "",
+        "message": "variable \"cluster_name\" is declared but not used",
+        "source_sha256": "78f00a4f78c05bd785fb2ef787a4c8532525badf6913e45298e001d9a525a792"
+      },
+      {
+        "rule": "terraform_required_providers",
+        "severity": "WARNING",
+        "file": "terraform/modules/target/prod/secrets/main.tf.json",
+        "resource": "",
+        "message": "Missing version constraint for provider \"aws\" in `required_providers`",
+        "source_sha256": "410198f4f7478a3da83cb2d49bf291ef684379559aee8cd2c3b86627691ad4c6"
+      },
+      {
+        "rule": "terraform_required_version",
+        "severity": "WARNING",
+        "file": "terraform/modules/target/prod/secrets/main.tf.json",
+        "resource": "",
+        "message": "terraform \"required_version\" attribute is required",
+        "source_sha256": "ce25128f09d2bd0876480c94a27c9de3facb145563610c7124dbdf690bcc7672"
+      }
+    ],
+    "tfsec": [
+      {
+        "rule": "AVD-AWS-0132",
+        "severity": "HIGH",
+        "file": "terraform/infra/security/modules/control_bundle_storage/main.tf.json",
+        "resource": "module.control_bundle_storage",
+        "message": "Bucket does not encrypt data with a customer managed key.",
+        "source_sha256": "578b04157f4ebe9c3ded7facbf408afa15a75731341c222bae87a26c3ddaf9e8"
+      },
+      {
+        "rule": "AVD-AWS-0088",
+        "severity": "HIGH",
+        "file": "terraform/infra/security/modules/control_bundle_storage/main.tf.json",
+        "resource": "module.control_bundle_storage",
+        "message": "Bucket does not have encryption enabled",
+        "source_sha256": "578b04157f4ebe9c3ded7facbf408afa15a75731341c222bae87a26c3ddaf9e8"
+      },
+      {
+        "rule": "AVD-AWS-0089",
+        "severity": "MEDIUM",
+        "file": "terraform/infra/security/modules/control_bundle_storage/main.tf.json",
+        "resource": "module.control_bundle_storage",
+        "message": "Bucket does not have logging enabled",
+        "source_sha256": "024018048e3aabbf1e64f09dc17ec6225ad5a66da7a6ecb2e353a791d4414378"
+      },
+      {
+        "rule": "AVD-AWS-0090",
+        "severity": "MEDIUM",
+        "file": "terraform/infra/security/modules/control_bundle_storage/main.tf.json",
+        "resource": "module.control_bundle_storage",
+        "message": "Bucket does not have versioning enabled",
+        "source_sha256": "e7c33c4931ecb0f37369302cc5a5ecdbf1bc916a24222e7dbb635db004309354"
+      },
+      {
+        "rule": "AVD-AWS-0132",
+        "severity": "HIGH",
+        "file": "terraform/infra/security/modules/controller_compute/main.tf.json",
+        "resource": "module.controller_compute",
+        "message": "Bucket does not encrypt data with a customer managed key.",
+        "source_sha256": "2c99cf66e5104eebad2afd127388f2ce37ba91ef0010cec1350b9f5593829549"
+      },
+      {
+        "rule": "AVD-AWS-0132",
+        "severity": "HIGH",
+        "file": "terraform/infra/security/modules/controller_compute/main.tf.json",
+        "resource": "module.controller_compute",
+        "message": "Bucket does not encrypt data with a customer managed key.",
+        "source_sha256": "2c99cf66e5104eebad2afd127388f2ce37ba91ef0010cec1350b9f5593829549"
+      },
+      {
+        "rule": "AVD-AWS-0132",
+        "severity": "HIGH",
+        "file": "terraform/infra/security/modules/controller_compute/main.tf.json",
+        "resource": "module.controller_compute",
+        "message": "Bucket does not encrypt data with a customer managed key.",
+        "source_sha256": "7f1c51651a56a7a2a13b3d2313c049803eec07937fe0001179e1ad28c5f8cfa4"
+      },
+      {
+        "rule": "AVD-AWS-0088",
+        "severity": "HIGH",
+        "file": "terraform/infra/security/modules/controller_compute/main.tf.json",
+        "resource": "module.controller_compute",
+        "message": "Bucket does not have encryption enabled",
+        "source_sha256": "2c99cf66e5104eebad2afd127388f2ce37ba91ef0010cec1350b9f5593829549"
+      },
+      {
+        "rule": "AVD-AWS-0088",
+        "severity": "HIGH",
+        "file": "terraform/infra/security/modules/controller_compute/main.tf.json",
+        "resource": "module.controller_compute",
+        "message": "Bucket does not have encryption enabled",
+        "source_sha256": "2c99cf66e5104eebad2afd127388f2ce37ba91ef0010cec1350b9f5593829549"
+      },
+      {
+        "rule": "AVD-AWS-0088",
+        "severity": "HIGH",
+        "file": "terraform/infra/security/modules/controller_compute/main.tf.json",
+        "resource": "module.controller_compute",
+        "message": "Bucket does not have encryption enabled",
+        "source_sha256": "7f1c51651a56a7a2a13b3d2313c049803eec07937fe0001179e1ad28c5f8cfa4"
+      },
+      {
+        "rule": "AVD-AWS-0089",
+        "severity": "MEDIUM",
+        "file": "terraform/infra/security/modules/controller_compute/main.tf.json",
+        "resource": "module.controller_compute",
+        "message": "Bucket does not have logging enabled",
+        "source_sha256": "19f0312e9a0b9bd04253dc122f8a1b84328ae3c542abcd9ef2272b084275541e"
+      },
+      {
+        "rule": "AVD-AWS-0089",
+        "severity": "MEDIUM",
+        "file": "terraform/infra/security/modules/controller_compute/main.tf.json",
+        "resource": "module.controller_compute",
+        "message": "Bucket does not have logging enabled",
+        "source_sha256": "19f0312e9a0b9bd04253dc122f8a1b84328ae3c542abcd9ef2272b084275541e"
+      },
+      {
+        "rule": "AVD-AWS-0089",
+        "severity": "MEDIUM",
+        "file": "terraform/infra/security/modules/controller_compute/main.tf.json",
+        "resource": "module.controller_compute",
+        "message": "Bucket does not have logging enabled",
+        "source_sha256": "c1f7e5cdb61c764d7bb04fe5c73d5194cdeec3e031ddc5de9fa4dbe7895e2062"
+      },
+      {
+        "rule": "AVD-AWS-0090",
+        "severity": "MEDIUM",
+        "file": "terraform/infra/security/modules/controller_compute/main.tf.json",
+        "resource": "module.controller_compute",
+        "message": "Bucket does not have versioning enabled",
+        "source_sha256": "58f26887e5151bef14d994c2e39b71da4ad11bf91e7f46b49fcfe58b1d77cae1"
+      },
+      {
+        "rule": "AVD-AWS-0090",
+        "severity": "MEDIUM",
+        "file": "terraform/infra/security/modules/controller_compute/main.tf.json",
+        "resource": "module.controller_compute",
+        "message": "Bucket does not have versioning enabled",
+        "source_sha256": "58f26887e5151bef14d994c2e39b71da4ad11bf91e7f46b49fcfe58b1d77cae1"
+      },
+      {
+        "rule": "AVD-AWS-0090",
+        "severity": "MEDIUM",
+        "file": "terraform/infra/security/modules/controller_compute/main.tf.json",
+        "resource": "module.controller_compute",
+        "message": "Bucket does not have versioning enabled",
+        "source_sha256": "f3e6c5d53e8ce396a12951147430868461ad11f48530ac3f233e1febde60632e"
+      },
+      {
+        "rule": "AVD-AWS-0030",
+        "severity": "HIGH",
+        "file": "terraform/infra/security/modules/controller_compute/main.tf.json",
+        "resource": "module.controller_compute",
+        "message": "Image scanning is not enabled.",
+        "source_sha256": "1c88509c57001286ad4495d13d7e2e40d782784f61cac46d97e6d1b3739565f3"
+      },
+      {
+        "rule": "AVD-AWS-0030",
+        "severity": "HIGH",
+        "file": "terraform/infra/security/modules/controller_compute/main.tf.json",
+        "resource": "module.controller_compute",
+        "message": "Image scanning is not enabled.",
+        "source_sha256": "1c88509c57001286ad4495d13d7e2e40d782784f61cac46d97e6d1b3739565f3"
+      },
+      {
+        "rule": "AVD-AWS-0030",
+        "severity": "HIGH",
+        "file": "terraform/infra/security/modules/controller_compute/main.tf.json",
+        "resource": "module.controller_compute",
+        "message": "Image scanning is not enabled.",
+        "source_sha256": "1c88509c57001286ad4495d13d7e2e40d782784f61cac46d97e6d1b3739565f3"
+      },
+      {
+        "rule": "AVD-AWS-0030",
+        "severity": "HIGH",
+        "file": "terraform/infra/security/modules/controller_compute/main.tf.json",
+        "resource": "module.controller_compute",
+        "message": "Image scanning is not enabled.",
+        "source_sha256": "1c88509c57001286ad4495d13d7e2e40d782784f61cac46d97e6d1b3739565f3"
+      },
+      {
+        "rule": "AVD-AWS-0030",
+        "severity": "HIGH",
+        "file": "terraform/infra/security/modules/controller_compute/main.tf.json",
+        "resource": "module.controller_compute",
+        "message": "Image scanning is not enabled.",
+        "source_sha256": "1c88509c57001286ad4495d13d7e2e40d782784f61cac46d97e6d1b3739565f3"
+      },
+      {
+        "rule": "AVD-AWS-0030",
+        "severity": "HIGH",
+        "file": "terraform/infra/security/modules/controller_compute/main.tf.json",
+        "resource": "module.controller_compute",
+        "message": "Image scanning is not enabled.",
+        "source_sha256": "1c88509c57001286ad4495d13d7e2e40d782784f61cac46d97e6d1b3739565f3"
+      },
+      {
+        "rule": "AVD-AWS-0030",
+        "severity": "HIGH",
+        "file": "terraform/infra/security/modules/controller_compute/main.tf.json",
+        "resource": "module.controller_compute",
+        "message": "Image scanning is not enabled.",
+        "source_sha256": "1c88509c57001286ad4495d13d7e2e40d782784f61cac46d97e6d1b3739565f3"
+      },
+      {
+        "rule": "AVD-AWS-0030",
+        "severity": "HIGH",
+        "file": "terraform/infra/security/modules/controller_compute/main.tf.json",
+        "resource": "module.controller_compute",
+        "message": "Image scanning is not enabled.",
+        "source_sha256": "4c67eb3f5d0523ed0555ce06e6110cf5278f89e2e90a361e2ab2abc4a40d191b"
+      },
+      {
+        "rule": "AVD-AWS-0030",
+        "severity": "HIGH",
+        "file": "terraform/infra/security/modules/controller_compute/main.tf.json",
+        "resource": "module.controller_compute",
+        "message": "Image scanning is not enabled.",
+        "source_sha256": "4c67eb3f5d0523ed0555ce06e6110cf5278f89e2e90a361e2ab2abc4a40d191b"
+      },
+      {
+        "rule": "AVD-AWS-0030",
+        "severity": "HIGH",
+        "file": "terraform/infra/security/modules/controller_compute/main.tf.json",
+        "resource": "module.controller_compute",
+        "message": "Image scanning is not enabled.",
+        "source_sha256": "4c67eb3f5d0523ed0555ce06e6110cf5278f89e2e90a361e2ab2abc4a40d191b"
+      },
+      {
+        "rule": "AVD-AWS-0030",
+        "severity": "HIGH",
+        "file": "terraform/infra/security/modules/controller_compute/main.tf.json",
+        "resource": "module.controller_compute",
+        "message": "Image scanning is not enabled.",
+        "source_sha256": "4c67eb3f5d0523ed0555ce06e6110cf5278f89e2e90a361e2ab2abc4a40d191b"
+      },
+      {
+        "rule": "AVD-AWS-0030",
+        "severity": "HIGH",
+        "file": "terraform/infra/security/modules/controller_compute/main.tf.json",
+        "resource": "module.controller_compute",
+        "message": "Image scanning is not enabled.",
+        "source_sha256": "4c67eb3f5d0523ed0555ce06e6110cf5278f89e2e90a361e2ab2abc4a40d191b"
+      },
+      {
+        "rule": "AVD-AWS-0030",
+        "severity": "HIGH",
+        "file": "terraform/infra/security/modules/controller_compute/main.tf.json",
+        "resource": "module.controller_compute",
+        "message": "Image scanning is not enabled.",
+        "source_sha256": "4c67eb3f5d0523ed0555ce06e6110cf5278f89e2e90a361e2ab2abc4a40d191b"
+      },
+      {
+        "rule": "AVD-AWS-0030",
+        "severity": "HIGH",
+        "file": "terraform/infra/security/modules/controller_compute/main.tf.json",
+        "resource": "module.controller_compute",
+        "message": "Image scanning is not enabled.",
+        "source_sha256": "4c67eb3f5d0523ed0555ce06e6110cf5278f89e2e90a361e2ab2abc4a40d191b"
+      },
+      {
+        "rule": "AVD-AWS-0030",
+        "severity": "HIGH",
+        "file": "terraform/infra/security/modules/controller_compute/main.tf.json",
+        "resource": "module.controller_compute",
+        "message": "Image scanning is not enabled.",
+        "source_sha256": "4c67eb3f5d0523ed0555ce06e6110cf5278f89e2e90a361e2ab2abc4a40d191b"
+      },
+      {
+        "rule": "AVD-AWS-0132",
+        "severity": "HIGH",
+        "file": "terraform/infra/security/modules/lifecycle_foundations/main.tf.json",
+        "resource": "module.lifecycle_foundations",
+        "message": "Bucket does not encrypt data with a customer managed key.",
+        "source_sha256": "632b47b3781d9c1a86dbc1771fbe844adc1b88c8c5506f7d98c3723e5ae2aadd"
+      },
+      {
+        "rule": "AVD-AWS-0132",
+        "severity": "HIGH",
+        "file": "terraform/infra/security/modules/lifecycle_foundations/main.tf.json",
+        "resource": "module.lifecycle_foundations",
+        "message": "Bucket does not encrypt data with a customer managed key.",
+        "source_sha256": "632b47b3781d9c1a86dbc1771fbe844adc1b88c8c5506f7d98c3723e5ae2aadd"
+      },
+      {
+        "rule": "AVD-AWS-0088",
+        "severity": "HIGH",
+        "file": "terraform/infra/security/modules/lifecycle_foundations/main.tf.json",
+        "resource": "module.lifecycle_foundations",
+        "message": "Bucket does not have encryption enabled",
+        "source_sha256": "632b47b3781d9c1a86dbc1771fbe844adc1b88c8c5506f7d98c3723e5ae2aadd"
+      },
+      {
+        "rule": "AVD-AWS-0088",
+        "severity": "HIGH",
+        "file": "terraform/infra/security/modules/lifecycle_foundations/main.tf.json",
+        "resource": "module.lifecycle_foundations",
+        "message": "Bucket does not have encryption enabled",
+        "source_sha256": "632b47b3781d9c1a86dbc1771fbe844adc1b88c8c5506f7d98c3723e5ae2aadd"
+      },
+      {
+        "rule": "AVD-AWS-0089",
+        "severity": "MEDIUM",
+        "file": "terraform/infra/security/modules/lifecycle_foundations/main.tf.json",
+        "resource": "module.lifecycle_foundations",
+        "message": "Bucket does not have logging enabled",
+        "source_sha256": "ff1b953ccfa155a65a38e1bb8b32638655546bb627dfdfee69b3153bdfbe9da4"
+      },
+      {
+        "rule": "AVD-AWS-0089",
+        "severity": "MEDIUM",
+        "file": "terraform/infra/security/modules/lifecycle_foundations/main.tf.json",
+        "resource": "module.lifecycle_foundations",
+        "message": "Bucket does not have logging enabled",
+        "source_sha256": "ff1b953ccfa155a65a38e1bb8b32638655546bb627dfdfee69b3153bdfbe9da4"
+      },
+      {
+        "rule": "AVD-AWS-0090",
+        "severity": "MEDIUM",
+        "file": "terraform/infra/security/modules/lifecycle_foundations/main.tf.json",
+        "resource": "module.lifecycle_foundations",
+        "message": "Bucket does not have versioning enabled",
+        "source_sha256": "7a075ccc936939378311201020aa28b8fc08367e2178b0123cd88239b46bb9f4"
+      },
+      {
+        "rule": "AVD-AWS-0090",
+        "severity": "MEDIUM",
+        "file": "terraform/infra/security/modules/lifecycle_foundations/main.tf.json",
+        "resource": "module.lifecycle_foundations",
+        "message": "Bucket does not have versioning enabled",
+        "source_sha256": "7a075ccc936939378311201020aa28b8fc08367e2178b0123cd88239b46bb9f4"
+      },
+      {
+        "rule": "AVD-AWS-0132",
+        "severity": "HIGH",
+        "file": "terraform/infra/security/modules/protected_resources/main.tf.json",
+        "resource": "module.protected_resources",
+        "message": "Bucket does not encrypt data with a customer managed key.",
+        "source_sha256": "3a0ed8e62489c539759bd6c61e3a11045e59fa6adab00f26ff9538cef0d105f8"
+      },
+      {
+        "rule": "AVD-AWS-0088",
+        "severity": "HIGH",
+        "file": "terraform/infra/security/modules/protected_resources/main.tf.json",
+        "resource": "module.protected_resources",
+        "message": "Bucket does not have encryption enabled",
+        "source_sha256": "3a0ed8e62489c539759bd6c61e3a11045e59fa6adab00f26ff9538cef0d105f8"
+      },
+      {
+        "rule": "AVD-AWS-0089",
+        "severity": "MEDIUM",
+        "file": "terraform/infra/security/modules/protected_resources/main.tf.json",
+        "resource": "module.protected_resources",
+        "message": "Bucket does not have logging enabled",
+        "source_sha256": "499dcc16fb63229b2f4a832477f9f5248ccd83e49b07978a47e3d309ca6b1974"
+      },
+      {
+        "rule": "AVD-AWS-0090",
+        "severity": "MEDIUM",
+        "file": "terraform/infra/security/modules/protected_resources/main.tf.json",
+        "resource": "module.protected_resources",
+        "message": "Bucket does not have versioning enabled",
+        "source_sha256": "3c2b6f3c4f6fc3cb643bfeb990c11617e49d536b9d64ad25bb61177ed6b38314"
+      },
+      {
+        "rule": "AVD-AWS-0030",
+        "severity": "HIGH",
+        "file": "terraform/infra/security/modules/protected_resources/main.tf.json",
+        "resource": "module.protected_resources",
+        "message": "Image scanning is not enabled.",
+        "source_sha256": "0f56dc7fe4634ff5fe3cbd8d1e820407fd9b6de2785f71fd2c3b7131bf909437"
+      },
+      {
+        "rule": "AVD-AWS-0030",
+        "severity": "HIGH",
+        "file": "terraform/infra/security/modules/protected_resources/main.tf.json",
+        "resource": "module.protected_resources",
+        "message": "Image scanning is not enabled.",
+        "source_sha256": "56c6dc32f2e90672734cd3b7ae467193a1592b2d0a5dbdc0832363dbd2edea3c"
+      },
+      {
+        "rule": "AVD-AWS-0030",
+        "severity": "HIGH",
+        "file": "terraform/infra/security/modules/protected_resources/main.tf.json",
+        "resource": "module.protected_resources",
+        "message": "Image scanning is not enabled.",
+        "source_sha256": "a30384b8bb973cfa0fda316734b650f974272304b9b6f31c755a98e87ef8bf8b"
+      }
+    ]
+  }
+}

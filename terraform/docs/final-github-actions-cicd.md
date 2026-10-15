@@ -140,3 +140,42 @@ not rerun locally. Source inventory remained exact, documentation links and
 `git diff --check` passed. Final AWS readbacks show both services steady 1/1,
 NAT rule enabled and public readiness Healthy. No temporary inline grants were
 added to the DEV Terraform operator.
+
+
+## First authorized public run and bounded CI corrections
+
+The owner explicitly authorized public publication of only the feature branch.
+Push of `d1ff247e60c582c0461a04bc1dde58eab72de465` created
+`codex/final-github-actions-cicd`; remote main/develop were independently unchanged.
+[Run 38670124902](https://github.com/Kendall04/terragrunt_demo/actions/runs/38670124902)
+executed genuine GitHub-hosted .NET restore/build, **103 passing application tests**,
+Docker build and packaged readiness capability/no-server checks successfully.
+It did not deploy or destroy infrastructure and had no AWS OIDC permission.
+
+That complete run failed three CI prerequisites; it is retained as failed evidence:
+
+- TFLint returned the same 24 historical warnings. The scanner steps now compare
+  rule, severity, normalized file, resource, message, source-snippet SHA-256 and
+  multiplicity against the already reviewed 24/46 debt. Scanner failures, malformed
+  output, added/missing findings or changed identities/source fail. No ignore,
+  suppression, soft-fail, automatic baseline update or count-only acceptance.
+  Both exact pinned Linux scanners reproduced the original accepted identity sets.
+- E14-B's old lock-symmetry test had not been updated after deliberate prior removal
+  of unused TLS from six DEV roots (shared and five runtime roots). Tests now verify
+  their real AWS-only declarations and identical AWS blocks versus PROD; all provider
+  versions/platform checksums and PROD/TLS blocks remain checked. No lock or Terraform
+  source changed. The separate DEV secrets root still retains both providers.
+- E1's checkout depth 1 omitted historical Git objects required by the existing
+  E16 static and extracted-package provenance checks. Both acceptance-capable
+  checkouts now fetch complete history; exact event SHA and nonpersisted credentials
+  remain enforced. Missing baselines are not skipped and assertions are preserved.
+
+Six negative scanner-boundary tests cover changed identities/severity/source,
+extra/missing/duplicate findings, scanner errors, malformed output and path
+normalization. The resulting reproducibility suite has 25 tests. Local exact
+Linux tools also passed Actionlint, ShellCheck over the 33 original Git LF shell
+blobs and Terraform/Terragrunt check-only formatting. CRLF checkout bytes initially
+caused local-only ShellCheck errors; validation used original LF Git blobs rather
+than modifying scripts or suppressing those diagnostics. These local results do
+not replace the next real Actions run. Protected WP3/WP4/WP5 implementations,
+packages, IAM and live infrastructure were not changed by these CI corrections.

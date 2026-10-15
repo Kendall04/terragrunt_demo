@@ -478,24 +478,24 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/scripts/ci/tests/test_ci_selection.py": {
-      "sha256": "3f904490fc696da1915570ce450a89c899aa69019afb979651d56f19d99458fb",
+      "sha256": "1238a3f496055d09554370565d650eb859c011f869493160110e854cbdba39f0",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
-          305
+          307
         ],
         "role-input": [
-          305
+          307
         ],
         "launch-or-mutation": [
           111,
           115,
           156,
           159,
-          245,
-          282,
-          297,
-          305
+          247,
+          284,
+          299,
+          307
         ],
         "executable-dependency": [
           13,
@@ -507,15 +507,15 @@
           138,
           162,
           183,
-          224,
-          259,
-          262,
-          266,
-          267,
-          270,
-          291,
-          296,
-          299
+          226,
+          261,
+          264,
+          268,
+          269,
+          272,
+          293,
+          298,
+          301
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -725,35 +725,37 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/ci-terragrunt.yml": {
-      "sha256": "2c09b9c205353fbfc4f96e057a5161afb828bd7de15f88438198f9827d11f90d",
+      "sha256": "6f896ccff38c738eb4dc4d401f80211d4af33e8c92b3bae82924b825d8fa64c1",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          51,
-          69,
-          72
+          53,
+          71,
+          74
         ],
         "executable-dependency": [
           35,
-          51,
-          57
+          53,
+          59,
+          65,
+          68
         ]
       },
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/ci.yml": {
-      "sha256": "d7907b95b690c42784ace4ad06361675ffd647a4311691205ee2324d72fc409f",
+      "sha256": "40aed2f3cc55de3b508571e6376047027a4cdece6e8b4b569628f5a0f5b1bd4f",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          81,
-          114
+          82,
+          115
         ],
         "executable-dependency": [
           58,
-          81,
-          85,
-          169
+          82,
+          86,
+          170
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -4355,53 +4357,61 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/reproducibility/test_reproducibility.py": {
-      "sha256": "b7e3c86be6495c845f09946ccf0b3be0681f9ea2b459c448a2a77f1c3da5b088",
+      "sha256": "5afe89a36ff9c5d868d0d7a48f165a32bf7a66f84cfce0970d236c17c05b7405",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
-          172
+          188
         ],
         "launch-or-mutation": [
-          41,
-          46,
-          50,
+          42,
+          47,
           51,
           52,
-          65,
-          67,
+          53,
+          66,
           68,
-          73,
-          81,
-          86,
-          89,
-          113,
+          69,
+          74,
+          82,
+          87,
+          90,
           114,
-          119,
-          124,
-          126,
+          115,
+          120,
+          125,
           127,
-          131,
+          128,
           132,
-          146,
-          147,
-          153,
+          133,
+          134,
+          135,
+          149,
+          150,
+          151,
+          152,
+          154,
+          155,
+          160,
+          161,
           169,
-          171,
-          186
+          185,
+          187,
+          202
         ],
         "executable-dependency": [
           24,
           25,
-          31,
-          116,
-          119,
-          121,
-          150,
-          153,
-          157,
-          167,
-          195,
-          198
+          32,
+          117,
+          120,
+          122,
+          166,
+          169,
+          173,
+          183,
+          211,
+          214
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -8898,6 +8908,158 @@
         ]
       },
       "semantic_status": "UNVERIFIED"
+    },
+    ".github/scripts/ci/check-static-findings.py": {
+      "semantic_status": "CURRENT_FACT",
+      "sha256": "b8a53b3ddfcdea72df8b3a212ac0a4ece101af4d521e9353dda9c84b839c7325",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          30,
+          32
+        ],
+        "executable-dependency": [
+          36,
+          41
+        ]
+      }
+    },
+    "scripts/tests/reproducibility/test_static_findings.py": {
+      "semantic_status": "CURRENT_FACT",
+      "sha256": "de51bab5d68232f4ed4c01038416bef562ec1db79c7eac6bc14d5bcfa541ca12",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          15,
+          18,
+          44,
+          46,
+          48,
+          53
+        ],
+        "executable-dependency": [
+          9,
+          15
+        ]
+      }
+    },
+    ".github/scripts/ci/static-findings.json": {
+      "semantic_status": "CURRENT_FACT",
+      "sha256": "dd827c1465a21eb54b5fcebe5527eba58778971a390a2818b3ec4ed6138efcb1",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          12,
+          14,
+          16,
+          20,
+          22,
+          28,
+          30,
+          32,
+          36,
+          38,
+          40,
+          44,
+          46,
+          48,
+          52,
+          54,
+          56,
+          60,
+          62,
+          68,
+          70,
+          76,
+          78,
+          84,
+          86,
+          92,
+          94,
+          100,
+          102,
+          108,
+          110,
+          116,
+          118,
+          120,
+          124,
+          126,
+          128,
+          132,
+          134,
+          140,
+          142,
+          148,
+          150,
+          156,
+          158,
+          164,
+          166,
+          172,
+          174,
+          180,
+          182,
+          188,
+          190,
+          192,
+          196,
+          198,
+          200,
+          208,
+          216,
+          224,
+          232,
+          240,
+          248,
+          256,
+          264,
+          272,
+          280,
+          288,
+          296,
+          304,
+          312,
+          320,
+          328,
+          336,
+          344,
+          352,
+          360,
+          368,
+          376,
+          384,
+          392,
+          400,
+          408,
+          416,
+          424,
+          432,
+          440,
+          448,
+          456,
+          464,
+          472,
+          480,
+          488,
+          496,
+          504,
+          512,
+          520,
+          528,
+          536,
+          544,
+          552,
+          560,
+          568
+        ],
+        "security-control": [
+          64,
+          72,
+          136,
+          144
+        ]
+      }
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged"

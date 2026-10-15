@@ -25,6 +25,7 @@ INSTALL = load('install_tools', '.github/scripts/ci/install-tools.py')
 SELECT = load('select_checks', '.github/scripts/ci/select-checks.py')
 DOC = json.loads(INSTALL.MANIFEST.read_text())
 LAYERS = ('shared', 'secrets', 'global', 'data', 'platform', 'apps', 'edge')
+AWS_ONLY_DEV = ('shared', 'global', 'data', 'platform', 'apps', 'edge')
 
 
 def references(text):
@@ -129,7 +130,9 @@ class ReproducibilityTests(unittest.TestCase):
         for name in sorted(expected):
             text = (ROOT / name).read_text()
             blocks = re.findall(r'provider "registry.terraform.io/hashicorp/(\w+)" \{([^}]+)\}', text)
-            self.assertEqual({name for name, _ in blocks}, {'aws'} if '/infra/security/' in name else {'aws', 'tls'})
+            aws_only = name == 'terraform/infra/security/.terraform.lock.hcl' or name in {
+                f'terraform/modules/target/dev/{layer}/.terraform.lock.hcl' for layer in AWS_ONLY_DEV}
+            self.assertEqual({provider for provider, _ in blocks}, {'aws'} if aws_only else {'aws', 'tls'})
             for provider, block in blocks:
                 evidence = DOC['provider_platforms'][provider]
                 self.assertEqual(re.search(r'version\s*=\s*"([^"]+)"', block)[1], evidence['version'])
@@ -141,10 +144,23 @@ class ReproducibilityTests(unittest.TestCase):
                 for value in re.findall(r'"zh:([^"]+)"', block):
                     self.assertRegex(value, r'^[0-9a-f]{64}$')
 
-    def test_dev_prod_lock_symmetry(self):
+    def test_dev_prod_aws_lock_identity_and_explicit_dev_provider_selection(self):
         for layer in LAYERS:
-            self.assertEqual((ROOT / f'terraform/modules/target/dev/{layer}/.terraform.lock.hcl').read_text(),
-                             (ROOT / f'terraform/modules/target/prod/{layer}/.terraform.lock.hcl').read_text())
+            paths = [ROOT / f'terraform/modules/target/{env}/{layer}' for env in ('dev', 'prod')]
+            locks = [dict(re.findall(r'provider "registry.terraform.io/hashicorp/(\w+)" \{([^}]+)\}',
+                                    (path / '.terraform.lock.hcl').read_text())) for path in paths]
+            self.assertEqual(locks[0]['aws'], locks[1]['aws'])
+            if layer in AWS_ONLY_DEV:
+                self.assertEqual(set(locks[0]), {'aws'})
+                self.assertEqual(set(locks[1]), {'aws', 'tls'})
+                declaration = (paths[0] / 'ordinary-versions.tf').read_text()
+                self.assertIn('required_providers {', declaration)
+                providers = set(re.findall(r'(\w+)\s*=\s*\{\s*source\s*=', declaration))
+                for config in paths[0].glob('*.tf.json'):
+                    providers.update(json.loads(config.read_text()).get('terraform', {}).get('required_providers', {}))
+                self.assertEqual(providers, {'aws'})
+            else:
+                self.assertEqual(locks[0], locks[1])
 
     def test_new_toolchain_inputs_select_all_e11_gates(self):
         for path in ('.github/scripts/ci/install-tools.py', '.github/scripts/ci/toolchain.json', 'global.json'):

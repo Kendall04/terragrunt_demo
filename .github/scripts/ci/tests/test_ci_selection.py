@@ -214,6 +214,8 @@ class WorkflowTests(unittest.TestCase):
         self.assertFalse(any('paths' in key for key in events['pull_request']))
         checkout = WORKFLOW['jobs']['detect-changes']['steps'][0]
         self.assertEqual(checkout['with'], {'ref': '${{ github.sha }}', 'persist-credentials': False, 'fetch-depth': 0})
+        self.assertEqual(WORKFLOW['jobs']['e1-acceptance']['steps'][0]['with'],
+                         {'ref': '${{ github.sha }}', 'persist-credentials': False, 'fetch-depth': 0})
         self.assertTrue(all(output == '${{ steps.scope.outputs.' + name + ' }}'
                             for name, output in WORKFLOW['jobs']['detect-changes']['outputs'].items()))
 
