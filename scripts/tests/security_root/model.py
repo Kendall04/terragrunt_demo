@@ -273,6 +273,15 @@ def wiring(doc):
         'error_message':'Only the original DEV NAT network installation is supported.'}}
     root['module']['controller_compute']['wp4d_environment_bindings']=expression('merge(local.authority.wp4d.environment_bindings,jsondecode(var.dev_nat_network_binding==null ? "{}" : jsonencode({dev=var.dev_nat_network_binding})))')
 
+    # Explicit limited installation mode: the default full protected root is
+    # unchanged. A DEV trial must not materialize inert WP5/PROD reservations
+    # merely because a shared Terraform collection is referenced by a Lambda.
+    root['variable']['dev_cicd_installation_only']={'type':'bool','default':False}
+    root['module']['controller_compute']['dev_cicd_installation_only']=expression('var.dev_cicd_installation_only')
+    compute_module['variable']['dev_cicd_installation_only']={'type':'bool','default':False}
+    compute_module['locals']['nodes']=expression('{for key,value in var.authority.controller_compute.nodes:key=>value if !var.dev_cicd_installation_only || contains(["request-gateway/release","build/release","request-gateway/deploy-dev","normal-delivery/deploy-dev"],key)}')
+    compute_module['locals']['wp4d_buckets']=expression('{for env in ["dev","prod"]:env=>"e1-wp4-${env}-${var.account_id}-${var.region}" if !var.dev_cicd_installation_only || env=="dev"}')
+
     # Separately authenticated security-admin installation ports for the existing
     # neutral WP3 and three DEV delivery responsibilities only. No WP5/PROD.
     for field in ('installations','runtime_approvals'):

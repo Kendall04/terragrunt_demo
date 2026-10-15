@@ -216,3 +216,47 @@ four explicitly pinned old/new source hashes before checking the unchanged old
 whole-authority checksum; unrelated changes and activation remain rejected. The
 E13 provider-free fixture now supplies the new delivery input as null. No runtime
 NAT behavior or historical fingerprint was changed. A new complete gate is required.
+
+
+## Live installation checkpoint and bounded corrections
+
+[Run 38675313467](https://github.com/Kendall04/terragrunt_demo/actions/runs/38675313467)
+passed complete E1 acceptance for `cabe0cfeddf149c382379537f31242abc192ab5e`.
+Application source was unchanged; App CI was correctly skipped and the preceding
+103-test/Docker result remains separate evidence.
+
+The reviewed storage-only plan created 31 new resources: ten ECR repositories
+(one neutral application, six WP3 runtime and three WP4 DEV runtime repositories),
+the neutral artifacts and quarantine buckets and configured protections. Native
+AWS readbacks confirmed names, versioning, encryption and public blocks. Nine
+runtimes were built without VM credentials, checked blob-by-blob as OCI and
+published by digest from Windows. The neutral application repository remains
+empty until genuine WP3. Three WP3 class installations and three WP4 DEV packages
+have authenticated conditional-write/exact-VersionId readbacks. Accepted core
+build/finalizer identities are unchanged; installation is not qualification.
+
+The first compute preview was rejected without apply: collection dependencies
+would create 14 unrelated inert roles and a WP4 PROD bucket. The administrator
+`dev_cicd_installation_only` switch defaults false; when explicitly selected it
+materializes only the four existing WP3/DEV controller reservations and DEV
+evidence bucket. The original protected default and NAT bindings remain intact.
+The corrected preview excludes those extra resources. New request roles still
+need authentic WP6 approval/numeric gateways; this selector grants no workflow
+credentials, WP5 activation, Terraform state write or PROD authority.
+
+Real DEV membership alone is 4181 JSON bytes, exceeding Lambda's 4 KiB environment
+limit before its envelope. The DEV gateway omits unused resource/NAT copies;
+DEV cleanup retains environment/colors/cleanup, the fields its existing runtime
+uses. Full binding admission and IAM still use complete resources. Normal delivery
+retains full CodeBuild configuration; NAT and PROD configuration are unchanged.
+The actual scoped preview gives environment sizes 807/849 bytes for WP3 Lambda,
+889 for the DEV gateway and 3236 for cleanup. Provider-free Terraform tests cover
+both installation modes, coexistence and policy/trust/configuration parity.
+A complete gate on the final corrected source is required before activation.
+
+No CodeBuild project, gateway/finalizer/cleanup function, request role or Actions
+OIDC session has yet been activated at this checkpoint. Existing shared policies
+on `e1-control-bundles-341936017254-us-east-1` and `e1-wp4-dev-341936017254-us-east-1`
+need a separate owner exception under the installation authorization condition.
+No such policy update has been applied. Native policy before/after evidence and
+plans stay private; backend/security evidence, E16 writer, NAT and PROD are retained.

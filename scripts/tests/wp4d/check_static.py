@@ -82,11 +82,16 @@ def main():
                 bound={'dev':overlay} if overlay is not None and binding in delivery else b
                 selected = authority['wp4d']['selected'][binding]
                 config=observed['configurations'][binding]
-                assert config['binding']==binding and config['nat_slots']==bound[config['environment']]['nat_slots']
-                if binding.startswith('nat-recovery/nat-dev/'):
+                assert config['binding']==binding
+                compact=binding in ('request-gateway/deploy-dev','cleanup-recovery/cleanup-dev')
+                assert config['nat_slots']==([] if compact else bound[config['environment']]['nat_slots'])
+                if binding.startswith('nat-recovery/nat-dev/') or binding=='request-gateway/deploy-dev':
                     assert config['resources']=={}
-                    assert len('E1_PROTECTED_CONFIGURATION'.encode())+len(json.dumps(config,separators=(',',':'),ensure_ascii=False).encode())<=4096, 'Lambda configuration too large'
+                elif binding=='cleanup-recovery/cleanup-dev':
+                    assert config['resources']=={k:bound['dev'][k] for k in ('environment','colors','cleanup')}
                 else:assert config['resources']==bound[config['environment']]
+                if binding.startswith('nat-recovery/nat-dev/') or compact:
+                    assert len('E1_PROTECTED_CONFIGURATION'.encode())+len(json.dumps(config,separators=(',',':'),ensure_ascii=False).encode())<=4096, 'Lambda configuration too large'
                 env = selected['environment']
                 if bound[env].get('schema') == 'E1_WP4D_PROTECTED_NAT_NETWORK_V1':
                     resources = {'package_sha256':selected['package_sha256'],'name':selected['name'],
@@ -147,6 +152,17 @@ def main():
                 assert result.returncode==0,result.stderr
                 assert console_json(result.stdout)==expected,(name,value,result.stdout)
         print('Security administrator NAT inputs: empty defaults, exact DEV acceptance, PROD rejection PASS')
+        scoped={'nodes':tf['locals']['nodes'],'buckets':tf['locals']['wp4d_buckets']}
+        for limited in (False,True):
+            values={'authority':authority,'account_id':ACCOUNT,'region':REGION,'dev_cicd_installation_only':limited}
+            path.write_text(json.dumps({'variable':{k:{'type':'any','default':v} for k,v in values.items()},'locals':scoped}),encoding='utf-8')
+            result=subprocess.run([terraform,'console','-no-color'],input='jsonencode({nodes=keys(local.nodes),buckets=keys(local.buckets)})\n',text=True,capture_output=True,cwd=directory,env=environment,timeout=30)
+            assert result.returncode==0,result.stderr
+            observed=console_json(result.stdout)
+            expected=['build/release','normal-delivery/deploy-dev','request-gateway/deploy-dev','request-gateway/release'] if limited else sorted(authority['controller_compute']['nodes'])
+            assert observed=={'nodes':expected,'buckets':['dev'] if limited else ['dev','prod']},observed
+        print('Existing protected default and exact WP3/DEV installation scope PASS')
+
 
 
 

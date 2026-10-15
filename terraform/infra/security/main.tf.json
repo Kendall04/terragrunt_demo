@@ -78,6 +78,10 @@
         "error_message": "Only the original DEV NAT network installation is supported."
       }
     },
+    "dev_cicd_installation_only": {
+      "type": "bool",
+      "default": false
+    },
     "wp3_installations": {
       "type": "any",
       "default": {},
@@ -162,6 +166,7 @@
       "wp5_runtime_approvals": "${local.authority.wp5.runtime_approvals}",
       "wp5_environment_bindings": "${local.authority.wp5.environment_bindings}",
       "dev_operator_arn": "${var.dev_operator_arn}",
+      "dev_cicd_installation_only": "${var.dev_cicd_installation_only}",
       "dev_delivery_binding": "${var.dev_delivery_binding}"
     },
     "protected_resources": {

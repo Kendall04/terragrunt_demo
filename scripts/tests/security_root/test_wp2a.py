@@ -56,6 +56,8 @@ class FoundationTests(unittest.TestCase):
             self.assertEqual(root['variable'][name]['default'],{})
             rule=root['variable'][name]['validation']['condition']
             self.assertNotIn('promote-prod',rule);self.assertNotIn('infra-dev',rule)
+        self.assertIs(root['variable']['dev_cicd_installation_only']['default'],False)
+        self.assertEqual(module['dev_cicd_installation_only'],'${var.dev_cicd_installation_only}')
         self.assertIsNone(root['variable']['dev_delivery_binding']['default'])
         self.assertIn('demo-shared-demo-ms',root['variable']['dev_delivery_binding']['validation']['condition'])
         child=generated['terraform/infra/security/modules/controller_compute/main.tf.json']
