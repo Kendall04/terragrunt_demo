@@ -91,3 +91,20 @@ def exercise(test):
         with test.assertRaises(CoordinationError): owner.finish(True,"SUCCESS")
         test.assertEqual(store.read(),before);test.assertEqual(store.read()[0]["state"],"ACTIVE")
         test.assertEqual(storage.values[("protected-dev","prior/failure")],(b'{"status":"FAILURE"}\n',"prior-version"))
+
+    with test.subTest(cleanup="adjacent-ECS-startup-requires-steady-state"):
+        from scripts.wp4d.dev_startup import delivery, diagnostic
+        class Original:
+            config={"environment":"dev","colors":{"blue":{"cluster":"cluster","service":"blue"}}}
+        port=delivery(Original)();clock=[0];obs=Observation(clock,0);port.observer=obs
+        service={"desiredCount":1,"runningCount":1,"pendingCount":0,"taskDefinition":"qualified:6"}
+        port.observer.service=lambda color:(service,[],False)
+        req={"cluster":"cluster","service":"blue","desiredCount":1,"taskDefinition":"qualified:6"}
+        test.assertFalse(port._service_matches(req))
+        port.observer.service=lambda color:(service,[],True)
+        test.assertTrue(port._service_matches(req))
+        test.assertFalse(port._service_matches(req|{"taskDefinition":"foreign:7"}))
+        test.assertEqual(diagnostic(b"Candidate service changed within an evidence observation."),"E1_DEV_E3_SERVICE_CHANGED_DURING_E3_READ")
+        secret=b"untrusted token never print this"
+        test.assertEqual(diagnostic(secret),"E1_DEV_E3_UNCLASSIFIED_REJECTION")
+        test.assertNotIn(secret.decode(),diagnostic(secret))

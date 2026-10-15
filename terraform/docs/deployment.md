@@ -429,3 +429,24 @@ FAILURE retention, PROD/NAT and all other immutable bundles remain unchanged.
 Deterministic subcases cover active tasks, stopped/draining, empty terminal state,
 transient/malformed/failed reads, deadline, idempotent reconciliation and CAS
 failure. Live installation and automatic success must be recorded separately.
+
+### DEV startup settlement and bounded E3 diagnostics
+
+The next authentic WP4 trial (Actions 38689162523) failed before traffic changed
+or cleanup was attempted. Green revision 6 remained active. All four issued
+candidate effects were observed APPLIED, but the protected delivery outcome was
+FAILURE; CodeBuild exit zero was not delivery success. Startup evidence preceded
+ECS rollout completion. Native CloudTrail shows E3's service observations across
+that transition and no API access errors. The old process port discarded stderr,
+so its exact rejection code is unavailable; a service-fingerprint transition is
+an inference, not a recovered error message.
+
+Only the normal DEV bundle selects `dev_startup.delivery`: settling the existing
+start effect additionally requires the observer's ECS steady-state predicate,
+within its original deadline. Strict E3 identity/fingerprint checks are preserved.
+A rejected E3 process emits only an allowlisted fixed diagnostic code; arbitrary
+child output, SDK values and credentials are not printed. Other environment and
+recovery bundles retain their existing implementation. This source correction
+and its deterministic tests do not establish live delivery or cleanup success.
+The failed generation 5 requires its separately owner-approved reconciliation;
+prior FAILURE evidence must remain intact and no old invocation may be replayed.

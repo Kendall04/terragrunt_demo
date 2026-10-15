@@ -277,6 +277,7 @@ class Authority(unittest.TestCase):
             observer_source=base64.b64decode(package["files"]["scripts/wp4d/aws_runtime.py"])
             self.assertEqual(b"record = _dev_eligibility(" in auth_source, selected_dev)
             self.assertEqual(b"Observer = _dev_observer(Observer)" in observer_source, selected_dev)
+            self.assertEqual("scripts/wp4d/dev_startup.py" in package["files"], binding == "normal-delivery/deploy-dev")
             self.assertEqual("scripts/wp4d/dev_cleanup.py" in package["files"], binding == "cleanup-recovery/cleanup-dev")
             self.assertEqual(b"Application = _dev_cleanup(Application)" in observer_source, binding == "cleanup-recovery/cleanup-dev")
 
