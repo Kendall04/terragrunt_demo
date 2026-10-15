@@ -3017,7 +3017,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/ephemeral/test_ephemeral.py": {
-      "sha256": "cb09420f6ca3b494aab0f26e981fa82a6471eb445f58b765bec7562e549eb127",
+      "sha256": "f7c4dd343a8d8597d47529320b24d262bf160befba963d9dfac325f21350fff4",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -3051,7 +3051,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/exact_destroy/test_exact_destroy.py": {
-      "sha256": "b6190f6ce65d33478658b2bfeaf5b2d2725275a1011a1e98259d75ec7636059c",
+      "sha256": "6813b95aa07ee179feb71383597899bf951b1030588434d684e7a527ae9757b3",
       "declarations": [],
       "signals": {
         "role-input": [
@@ -3733,7 +3733,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/nat/check_static.py": {
-      "sha256": "d01e801cd9584db234bb9d7e4bba4fed2114c7561420e4bd6587139d3eec8341",
+      "sha256": "753233a1e8efadf4e1174c6cb372d9f6fd7e1ea1fff52ceedd100bb8226fce78",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -4437,7 +4437,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/retention/test_retention.py": {
-      "sha256": "16281fa24e19739115eef8bbf75575d90f0f5d562bdaa077d40acd73907880a0",
+      "sha256": "e43afda149bb7b57c16db8c634ebfc8e745878c559e363defcdbc95dd58213ed",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -4450,7 +4450,7 @@
           83,
           93,
           95,
-          239
+          240
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -5346,15 +5346,15 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/workflows/test_workflows.py": {
-      "sha256": "ed3c8f0354d2cb897ff6df1de758f864994c5c8f4861cca7dd70359f91530077",
+      "sha256": "625f89857593f8167c4babedf76ada51144d95bb10cf3ccaa2a9e95d575fd6c4",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
-          98,
-          211
+          107,
+          220
         ],
         "role-input": [
-          208
+          217
         ],
         "launch-or-mutation": [
           27,
@@ -5367,32 +5367,33 @@
           37,
           38,
           39,
-          104,
-          106,
-          107,
-          111,
+          113,
           115,
-          123,
-          126,
-          127,
-          130,
-          131,
+          116,
+          120,
+          124,
           132,
+          135,
           136,
           139,
-          180,
-          181,
-          182,
-          208,
-          209,
-          212,
-          252,
-          280,
-          294,
-          297
+          140,
+          141,
+          145,
+          148,
+          189,
+          190,
+          191,
+          217,
+          218,
+          221,
+          261,
+          289,
+          303,
+          306
         ],
         "executable-dependency": [
-          75
+          75,
+          100
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -9062,6 +9063,16 @@
           144
         ]
       }
+    },
+    "scripts/tests/workflows/historical_snapshot.py": {
+      "sha256": "7f943b8cc867e1de43863a2c8d0461745176a635cd9f1de9703e988d88620a1e",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          9
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged"

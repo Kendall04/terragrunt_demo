@@ -342,7 +342,8 @@ class Boundaries(Base):
         self.setup_case();self.p['environment']='prod';self.denied(self.load)
     def test_authority_unchanged_except_derived_package_hashes(self):
         import hashlib
-        authority=copy.deepcopy(DOC)
+        from scripts.tests.workflows.historical_snapshot import before_authorized_trial
+        authority=before_authorized_trial(DOC)
         import ownership
         ownership.validate_publications(authority)
         # Authenticated first-session output metadata is now explicitly allowed;

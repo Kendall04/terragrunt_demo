@@ -69,7 +69,7 @@ def main():
         path=Path(directory)/"main.tf.json"
         for name,i,r,b in (("undeployed",{},{},{}),("all-synthetic",installs,images,bindings)):
             values={"authority":doc,"account_id":ACCOUNT,"region":REGION,"admin_arn":f"arn:aws:iam::{ACCOUNT}:role/SeparateAdmin",
-                    "wp4d_installations":i,"wp4d_runtime_approvals":r,"wp4d_environment_bindings":b,**fake}
+                    "wp4d_installations":i,"wp4d_runtime_approvals":r,"wp4d_environment_bindings":b,"dev_delivery_binding":None,**fake}
             # Inert resources must also stay inert in the synthetic provider map.
             local_case=copy.deepcopy(local)
             if name=="undeployed":

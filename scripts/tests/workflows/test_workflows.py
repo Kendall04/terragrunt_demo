@@ -91,6 +91,15 @@ class Workflows(unittest.TestCase):
         self.assertEqual(callers['deploy-dev.yml']['jobs']['deploy']['if'],"${{ github.ref == '"+trial+"' }}")
         s=c.subject('deploy-dev',COMMIT);self.assertEqual(s,'repo:'+c.REPOSITORY+':environment:e1-dev-deploy:job_workflow_ref:'+c.workflow('deploy-dev')+'@'+COMMIT)
         for sha in ('main','develop','0'*40,'${SHA}','b'*39):self.reject(c.subject,'deploy-dev',sha)
+        from scripts.tests.workflows.historical_snapshot import before_authorized_trial
+        prior=before_authorized_trial(DOC)
+        self.assertEqual(prior['wp6']['selected']['release']['ref'],'refs/heads/develop')
+        for identity in ('release','deploy-dev'):
+            bad=copy.deepcopy(DOC);bad['wp6']['selected'][identity]['ref']='refs/heads/other'
+            with self.assertRaises(AssertionError):before_authorized_trial(bad)
+        bad=copy.deepcopy(DOC);bad['wp6']['source_sha256']['scripts/workflow_requests/contract.py']='f'*64
+        with self.assertRaises(AssertionError):before_authorized_trial(bad)
+
     def test_role_templates_have_no_security_admin_or_role_chaining(self):
         for key in c.IDENTITIES:
             p=wp6.policy(key,projection(key),ACCOUNT,REGION)

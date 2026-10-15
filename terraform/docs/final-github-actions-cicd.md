@@ -1,4 +1,4 @@
-# Real GitHub CI/CD — pre-publication checkpoint
+# Real GitHub CI/CD â€” pre-publication checkpoint
 
 Date: 2026-10-14 local / 2026-10-15 UTC. This is preparation evidence, not a
 successful GitHub Actions, WP3 qualification or WP4 deployment claim.
@@ -208,3 +208,11 @@ installation; source inputs alone are not live readback or activation evidence.
 The neutral `demo-shared-demo-ms` is a new, protected qualification publication
 repository, distinct from existing `demo-dev-shared-demo-ms`. Manual images in the
 latter are not qualified releases and will not be imported as qualification.
+
+The first installation-input/ref commit `649d420` passed the 983 principal tests
+but its complete gate correctly failed four additional checks. Historical E8/E15
+whole-authority fingerprints now admit **only** the two reviewed ref fields and
+four explicitly pinned old/new source hashes before checking the unchanged old
+whole-authority checksum; unrelated changes and activation remain rejected. The
+E13 provider-free fixture now supplies the new delivery input as null. No runtime
+NAT behavior or historical fingerprint was changed. A new complete gate is required.
