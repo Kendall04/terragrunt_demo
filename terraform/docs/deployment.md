@@ -31,8 +31,14 @@ mandatory; no bounded historical horizon or live retention proof is claimed.
 
 [WP6 protected workflows](e1-protected-workflows.md) connects the accepted
 WP2-WP5 contracts through eleven dedicated reusable entries and exact OIDC
-request identities. Canonical approvals/installations are absent: every public
-AWS request path currently fails closed. No deployment or OIDC cutover occurred.
+request identities. The owner-authorized first Actions trial permits source
+approval records only for `release` and `deploy-dev`, account `341936017254`,
+region `us-east-1`, exact ref `refs/heads/codex/final-github-actions-cicd`.
+Each still requires the existing separately authenticated G1–G9 observation,
+source hashes, immutable reusable-workflow SHA and observed numeric gateway
+version. The remaining nine entries retain their inactive source contract.
+Source approval is distinct from IAM installation, an STS exchange, qualification
+and deployment; none of those is proved by a source record alone.
 
 | Entry point | Protected request path |
 | --- | --- |
@@ -267,3 +273,27 @@ mode remains inert; PROD/shared/security-root ownership is retained. Existing
 WP3/WP4 delivery and E13 recovery remain. E15-G/H advanced finality contracts are
 not weakened or activated. Source readiness is distinct from genuine installation
 and live AWS validation; no AWS operations occurred.
+
+
+## First protected DEV CI/CD installation
+
+The explicitly selected `dev_cicd_installation_only=true` administration mode
+limits controller reservations, bucket creation and request-role creation to
+WP3 neutral and the three existing WP4 DEV responsibilities. Its default remains
+false; it does not activate WP5 or PROD. Runtime inline policies explicitly depend
+on their role resources: a literal name alone does not establish Terraform order.
+The first IAM apply exposed that defect; its partial state was read back and a
+new four-policy plan completed it without repeating the failed binary plan.
+
+Live readbacks confirmed four published Lambda versions, five CodeBuild projects
+and the approved two existing S3 policy changes. Bundle readers gained only the
+six runtime identities; WP4 DEV gained its three runtime identities. Existing
+NAT/E16, TLS, conditional writes and deletion restrictions were preserved.
+The neutral application repository is `demo-shared-demo-ms`; runtime installation
+images are not qualified application releases. `demo-dev-shared-demo-ms` and its
+manual application history do not establish WP3 qualification.
+
+These runtime resources add ECR/S3/log storage and Lambda/build usage. Builds are
+on demand. The original DEV infrastructure stays running and continues charging.
+No Terraform state writer transfer, infrastructure deployment, DOWN, NAT failover
+or PROD activation belongs to this CI/CD installation.

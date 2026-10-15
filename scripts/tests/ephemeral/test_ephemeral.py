@@ -207,7 +207,7 @@ class Ephemeral(unittest.TestCase):
         for kind in ('wp4d','wp5'):
             for field in ('installations','runtime_approvals','environment_bindings'):
                 self.assertEqual(DOC[kind][field],{})
-        self.assertEqual(DOC['wp6']['approvals'],{})
+        self.assertEqual(DOC['wp6']['approvals'], __import__('wp6').dev_trial_approvals(DOC))
 
     def test_empty_teardown_values_and_data_only_readback(self):
         runtime.teardown_readback(readback())

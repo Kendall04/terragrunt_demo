@@ -44,7 +44,8 @@ def main():
     synthetic=copy.deepcopy(DOC);synthetic['wp6']['approvals']={k:projection(k) for k in wp6.c.IDENTITIES}
     endpoints={'request-gateway/'+k:v['endpoint_readback'] for k,v in synthetic['wp6']['approvals'].items() if not k.startswith('plan-')}
     target='terraform/infra/security/modules/request_identities/main.tf.json'
-    cases=[('undeployed',DOC,{},None),('all-synthetic',synthetic,endpoints,None),('missing-installed-endpoints',synthetic,{},None)]
+    inactive=copy.deepcopy(DOC);inactive['wp6']['approvals']={}
+    cases=[('undeployed',inactive,{},None),('all-synthetic',synthetic,endpoints,None),('missing-installed-endpoints',synthetic,{},None)]
     for field,value in [('active',False),('governance','UNVERIFIED'),('workflow_commit','main'),('environment','attacker'),('source_sha256',{}),('gateway_version','$LATEST')]:
         mutant=copy.deepcopy(synthetic)
         for v in mutant['wp6']['approvals'].values():v[field]=value

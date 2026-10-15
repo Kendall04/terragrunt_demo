@@ -60,7 +60,8 @@ def closed(root):
         commands = '\n'.join(line for line in text.splitlines() if '--generate-cli-skeleton' not in line)
         require(not re.search(r'\baws\s+(ecs|elbv2|ec2|iam|sts|lambda|codebuild)\s+', commands),
                 'unprotected workflow API mutation/acquisition: ' + path.name)
-    require(doc['wp6']['approvals'] == {}, 'external activation introduced')
+    import wp6
+    wp6.dev_trial_approvals(doc) # Authenticated approval/install gates remain mandatory.
     for kind, count in (('wp4d', 16), ('wp5', 8)):
         require(len(doc[kind]['selected']) == count, 'compute reservation count')
         for field in ('installations', 'runtime_approvals', 'environment_bindings'):

@@ -64,13 +64,24 @@ class Workflows(unittest.TestCase):
     def reject(self,fn,*args):
         with self.assertRaises((ValueError,KeyError,TypeError,RuntimeError)):fn(*args)
     def test_registry_eleven_reserved_inactive(self):
-        self.assertEqual(set(DOC['wp6']['selected']),set(c.IDENTITIES));self.assertEqual(DOC['wp6']['approvals'],{})
+        self.assertEqual(set(DOC['wp6']['selected']),set(c.IDENTITIES));self.assertEqual(DOC['wp6']['approvals'],wp6.dev_trial_approvals(DOC))
         self.assertTrue(all(v['stage']=='INERT' and v['oidc_expectation']['commit'] is None for v in DOC['request_identities'].values()))
     def test_wp4d_wp5_remain_uninstalled(self):
         self.assertEqual(len(DOC['wp4d']['selected']),16);self.assertEqual(len(DOC['wp5']['selected']),8)
         for key in ('wp4d','wp5','internal_release'):
             self.assertEqual(DOC[key]['installations'],{});self.assertEqual(DOC[key]['runtime_approvals'],{})
-    def test_source_identity_admission(self):wp6.validate(ROOT,DOC)
+    def test_source_identity_admission(self):
+        wp6.validate(ROOT,DOC)
+        for key in ('release','deploy-dev'):
+            candidate=copy.deepcopy(DOC)
+            record=projection(key)|{'account':'341936017254','endpoint_readback':f'arn:aws:lambda:{REGION}:341936017254:function:e1-gateway-{key}:7'}
+            candidate['wp6']['approvals']={key:record}
+            self.assertEqual(wp6.dev_trial_approvals(candidate),{key:record})
+            for field,bad in (('account','123456789012'),('region','us-west-2'),('gateway_version','$LATEST'),('governance','UNVERIFIED')):
+                wrong=copy.deepcopy(candidate);wrong['wp6']['approvals'][key][field]=bad
+                self.reject(wp6.dev_trial_approvals,wrong)
+        wrong=copy.deepcopy(DOC);wrong['wp6']['approvals']={'promote-prod':projection('promote-prod')}
+        self.reject(wp6.dev_trial_approvals,wrong)
     def test_source_identity_drift_rejected(self):
         bad=copy.deepcopy(DOC);bad['wp6']['source_sha256']['scripts/workflow_requests/client.py']='f'*64
         self.reject(wp6.validate,ROOT,bad)
@@ -96,9 +107,9 @@ class Workflows(unittest.TestCase):
         self.assertEqual(prior['wp6']['selected']['release']['ref'],'refs/heads/develop')
         for identity in ('release','deploy-dev'):
             bad=copy.deepcopy(DOC);bad['wp6']['selected'][identity]['ref']='refs/heads/other'
-            with self.assertRaises(AssertionError):before_authorized_trial(bad)
+            with self.assertRaises((AssertionError,ValueError)):before_authorized_trial(bad)
         bad=copy.deepcopy(DOC);bad['wp6']['source_sha256']['scripts/workflow_requests/contract.py']='f'*64
-        with self.assertRaises(AssertionError):before_authorized_trial(bad)
+        with self.assertRaises((AssertionError,ValueError)):before_authorized_trial(bad)
 
     def test_role_templates_have_no_security_admin_or_role_chaining(self):
         for key in c.IDENTITIES:
@@ -190,8 +201,8 @@ class Workflows(unittest.TestCase):
         self.reject(lambda:client.execute('deploy-dev',json.dumps(request('deploy-dev')),config('deploy-dev'),claims('deploy-dev'),aws,deadline=0))
         self.assertEqual(len(aws.invocations),1)
     def test_workflows_and_pins_are_deterministic(self):
-        first=render.render(ROOT,{})
-        self.assertEqual(first,render.render(ROOT,{}))
+        first=render.render(ROOT,DOC["wp6"]["approvals"])
+        self.assertEqual(first,render.render(ROOT,DOC["wp6"]["approvals"]))
         for name,text in first.items():self.assertEqual((ROOT/name).read_text(),text)
         positive=render.call('deploy-dev','{}',{'deploy-dev':projection('deploy-dev')})
         self.assertEqual(positive['uses'],c.workflow('deploy-dev')+'@'+COMMIT)

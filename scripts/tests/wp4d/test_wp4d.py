@@ -294,6 +294,8 @@ class Authority(unittest.TestCase):
     def test_service_trust_and_no_external_invocation(self):
         tf = json.loads((ROOT / "terraform/infra/security/modules/controller_compute/main.tf.json").read_text())
         templates = tf["locals"]["wp4d_policy_templates"]
+        self.assertEqual(tf["resource"]["aws_iam_role_policy"]["wp4d"]["depends_on"],
+                         ["aws_iam_role.execution", "aws_iam_role.wp4d_reserved"])
         self.assertEqual(set(templates), set(wp4d.RESERVED))
         self.assertTrue(all("${var.account_id}" not in value and
                             "${var.region}" not in value for value in templates.values()))

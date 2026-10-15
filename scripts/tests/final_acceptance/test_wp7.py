@@ -48,7 +48,7 @@ class FinalAuthority(unittest.TestCase):
 
     def test_eleven_request_identities_and_24_compute_bindings_stay_inactive(self):
         doc = contract.closed(ROOT)
-        self.assertEqual(doc['wp6']['approvals'], {})
+        self.assertEqual(doc['wp6']['approvals'], wp6.dev_trial_approvals(doc))
         self.assertEqual(len(doc['wp4d']['selected']) + len(doc['wp5']['selected']), 24)
         self.assertTrue(all(v['stage'] == 'INERT' for v in doc['request_identities'].values()))
 

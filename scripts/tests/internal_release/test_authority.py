@@ -76,6 +76,7 @@ def compromise_ceiling(policy):
 
 def topology(tf):
     r=tf['resource'];outer=r['aws_codebuild_project']['wp3'];worker=r['aws_codebuild_project']['payload']
+    assert r['aws_iam_role_policy']['wp3']['depends_on']==['aws_iam_role.execution','aws_iam_role.wp3_reserved']
     assert outer['source']['type']=='NO_SOURCE'
     phases=json.loads(outer['source']['buildspec'])['phases']
     assert phases=={'build':{'on-failure':'ABORT','commands':['python3 /opt/e1/scripts/internal_release/runtime.py']}}

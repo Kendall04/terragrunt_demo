@@ -10,7 +10,9 @@ SOURCE_PAIRS={'scripts/workflow_requests/contract.py': ('c69368c01e5eced55fb33c5
 
 def before_authorized_trial(authority):
     value=copy.deepcopy(authority)
-    assert value['wp6']['approvals']=={}
+    from scripts.tests.security_root.wp6 import dev_trial_approvals
+    dev_trial_approvals(value)
+    value['wp6']['approvals']={}
     for key in ('release','deploy-dev'):
         assert value['wp6']['selected'][key]['ref']==REF
         value['wp6']['selected'][key]['ref']='refs/heads/develop'

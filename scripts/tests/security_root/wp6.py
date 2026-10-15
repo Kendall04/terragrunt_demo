@@ -55,6 +55,21 @@ def ready(key,record,account,region,endpoint,source):
         return True
     except Exception:return False
 
+def dev_trial_approvals(doc):
+    """Only the owner's two exact trial entries may leave repository inactivity.
+
+    This validates source records; it is never live governance or installation
+    evidence. approve() still requires the independently authenticated G1-G9 port.
+    """
+    records=doc['wp6']['approvals']
+    c.require(type(records) is dict and set(records)<= {'release','deploy-dev'})
+    for key,value in records.items():
+        c.require(doc['wp6']['selected'][key]['ref']=='refs/heads/codex/final-github-actions-cicd')
+        c.require(value['account']=='341936017254' and value['region']=='us-east-1')
+        c.require(ready(key,value,'341936017254','us-east-1',value['endpoint_readback'],doc['wp6']['source_sha256']))
+    return records
+
+
 class RequestAdminChannel:
     """Separately authenticated operator port, never a workflow transport.
 

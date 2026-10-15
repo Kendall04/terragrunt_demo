@@ -362,4 +362,4 @@ class Boundaries(Base):
             '7a2a26aa8cbaf40411c8b7d4ebedcf1c53bc2492ce9a92a5cbdbe3142dac40ca')
         for kind in ('wp4d','wp5'):
             for field in ('installations','runtime_approvals','environment_bindings'):self.assertEqual(DOC[kind][field],{})
-        self.assertEqual(DOC['wp6']['approvals'],{})
+        self.assertEqual(DOC['wp6']['approvals'], __import__('wp6').dev_trial_approvals(DOC))

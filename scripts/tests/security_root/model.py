@@ -305,6 +305,11 @@ def wiring(doc):
 
     foundations=wp5.foundations()
     wp6.extend(root,child,compute_module,foundations,doc)
+    # The same limited DEV installation must not create any other request role.
+    root['module']['request_identities']['dev_cicd_installation_only']=expression('var.dev_cicd_installation_only')
+    child['variable']['dev_cicd_installation_only']={'type':'bool','default':False}
+    child['resource']['aws_iam_role']['request']['for_each']=expression('{for key,v in var.authority.request_identities:key=>v if !var.dev_cicd_installation_only || contains(["release","deploy-dev"],key)}')
+    child['resource']['aws_iam_role_policy']['inert']['for_each']=expression('{for key,v in var.authority.request_identities:key=>v if !contains(keys(local.wp6_active),key) && (!var.dev_cicd_installation_only || contains(["release","deploy-dev"],key))}')
     return {**targets, 'terraform/infra/security/modules/lifecycle_foundations/main.tf.json':foundations,
             # Only AWS is required here. Reuse its reviewed block verbatim;
             # no provider initialization/download or new checksum is implied.

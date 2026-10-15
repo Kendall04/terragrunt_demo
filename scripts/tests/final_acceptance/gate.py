@@ -164,7 +164,7 @@ def main():
                   e4_count=records['post_switch'].get('executed', 0),
                   e2r_count=records['owner_recovery'].get('executed', 0),
                   external_prerequisites='UNVERIFIED_NOT_DEPLOYED',
-                  native_linux_e3='SEPARATE_EVIDENCE_REQUIRED', activation={'request_identities': '0/11', 'wp4d': '0/16', 'wp5': '0/8'},
+                  native_linux_e3='SEPARATE_EVIDENCE_REQUIRED', activation={'request_identities': str(len(json.loads((ROOT/'terraform/infra/security/authority.json').read_text())['wp6']['approvals']))+'/11 source-approved; live verification separate', 'wp4d': '0/16', 'wp5': '0/8'},
                   limitations=['WP1 historical characterization is extractor regression, not final TARGET evidence',
                                'Provider-free Terraform does not validate AWS provider schemas',
                                'Live IAM, installation, resource membership, GitHub governance, E3 and app DB/KMS remain separate evidence'])

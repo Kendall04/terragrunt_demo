@@ -160,6 +160,8 @@ def extend(tf):
         'role':ex('local.wp3_role_arns[each.key]'),'policy':ex('replace(replace(local.wp3_policy_templates[each.key], "__BUNDLE_KEY__", each.value.install.key), "__VERSION__", each.value.install.version_id)')}
     # aws_iam_role_policy.role requires role name, not ARN.
     r['aws_iam_role_policy']['wp3']['role']=ex('"${each.value.name}-exec"')
+    # Explicit creation dependency: the literal role name alone does not order IAM.
+    r['aws_iam_role_policy']['wp3']['depends_on']=['aws_iam_role.execution','aws_iam_role.wp3_reserved']
     r['aws_iam_role_policy']['payload']={'for_each':ex('aws_iam_role.payload'),'role':ex('each.value.name'),
         'name':'wp3-compromise-ceiling','policy':json.dumps(ps['payload'])}
     r.setdefault('aws_cloudwatch_log_group',{})['wp3']={'for_each':ex('merge({ for k,v in local.wp3_active : k => { name = "${v.engine == "LAMBDA" ? "/aws/lambda/" : "/aws/codebuild/"}${v.name}" } }, { for k,v in local.payloads : "payload/${k}" => { name = "/aws/codebuild/${v.name}" } })'),
