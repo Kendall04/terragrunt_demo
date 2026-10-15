@@ -6133,7 +6133,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/authority.json": {
-      "sha256": "0260e8093c13ea76047b0102a2f33eb5a9b025fa4873cbada672df3f7797a65e",
+      "sha256": "34705a1533ddc8036e6181a1c3723076bf54fd69a43c2989e1aa53376bab3987",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -6683,7 +6683,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/modules/request_identities/main.tf.json": {
-      "sha256": "a57b82de347815374194297e937d30a73ccf4839800a22434d8971346101952e",
+      "sha256": "801314c5c459c46cd081f05a8ca0c7789d13dedd9ba76a8922fb4a40f41453ee",
       "declarations": [],
       "signals": {
         "credential-acquisition": [

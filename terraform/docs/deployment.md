@@ -672,3 +672,43 @@ runtime/gateway versions and evidence readable; no PROD/WP5 activation or writes
 to the five E16 states. Only genuine distinct-digest WP3 success enables the
 already-described protected delivery/rollback trial. Remote main/develop stay
 unchanged. Private plans, logs and native evidence remain outside Git.
+
+
+### SourceTransport runtime activation and exact DEV endpoints (2026-10-15)
+
+Owner-authorized artifact staging published runtime digest
+`sha256:2643aa2efb14db3672959194451e6b361223be9517029083435cb3e0b4744860`
+from source `f55f52f501bbec6138d3eed994ab08e19510ef8a`, whose
+[CI 38806508256](https://github.com/Kendall04/terragrunt_demo/actions/runs/38806508256)
+passed. The existing operator then reconciled only five reviewed installation
+records with ETag-conditional writes and created the exact new gateway consumer
+publication. Old versions remain; the temporary five-key CreateOnly exception
+was immediately removed, the exact original bucket policy read back, and five
+safe negative writes returned 403 without creating versions. This was an explicit
+administrative exception, not a general replacement API or atomic five-key update.
+
+A first runtime plan was rejected without apply because an old derived gateway
+approval hash would deactivate DEV delivery. Revalidating only that hash against
+the unchanged gateway executables/image produced a saved plan with exactly six
+in-place updates, no creation/destruction: one existing CodeBuild controller,
+three existing Lambdas and the two gateway bundle-read policies. The operator
+applied that reviewed binary once, using the neutral security backend; the five
+E16 DEV states, application infrastructure and restored CreateOnly were excluded.
+Native readbacks verified the new runtime/support identity, bundle versions,
+request gateway release:2, qualification finalizer:2 and request gateway DEV:3.
+Workers, normal delivery, cleanup and NAT remained unchanged. No new WP3 release,
+WP4 delivery or rollback was dispatched. Local image/source checks and installed
+configuration readbacks are not a successful AWS qualification or rollback.
+
+The two source admissions now bind only those exact numeric request endpoints,
+from genuine G1-G9/source/installation observations. Immutable workflow pin
+`f0ba8ad1d6528d362693c8de932f935c8084529d`, repository, exact trial branch,
+Environment separation, audience and OIDC trusts remain unchanged. Only the
+existing request policies' numeric InvokeFunction resources and matching existing
+Environment variables may follow these admissions after protected acceptance
+and native readbacks. No wildcard, alias, $LATEST or extra action is authorized.
+Checked-in admissions alone do not prove those external settings are installed;
+retain their authentic operator readbacks. Any additional public publication
+requires separate owner approval. A first WP3 execution with SourceTransport
+still requires its own authorization; there is no second qualified app digest
+or completed rollback from this installation alone. DEV remains billable.
