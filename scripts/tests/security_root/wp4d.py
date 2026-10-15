@@ -80,6 +80,8 @@ def package_sources(binding):
         sources.append("scripts/wp4d/dev_nat_objects.py")
     if binding.startswith("normal-delivery/"):
         sources += list(E3)
+    if binding in ("normal-delivery/deploy-dev", "cleanup-recovery/cleanup-dev"):
+        sources.append("scripts/wp4d/dev_delivery_contract.py")
     return tuple(sorted(set(sources)))
 
 
@@ -105,6 +107,23 @@ def artifact(root, catalog, binding):
         files[name] = base64.b64encode(source).decode("ascii")
         name = "scripts/wp4d/adapters.py"
         source = base64.b64decode(files[name]) + b"\nfrom scripts.wp4d.dev_nat_objects import NatObjects as Objects\n"
+        files[name] = base64.b64encode(source).decode("ascii")
+    if binding in ("normal-delivery/deploy-dev", "cleanup-recovery/cleanup-dev"):
+        # Only these new immutable DEV packages select the approved correction.
+        # Original common source, PROD, NAT and WP3 packages remain unchanged.
+        name = "scripts/normal_delivery/authorization.py"
+        source = base64.b64decode(files[name])
+        previous = (b"record = wp3.validate_eligibility(envelope(eligible, 'release_id', q['release_id']), q['release_id'])\n"
+                    b"            require(record['version_id'] == eligible['version_id'] and record['state'] == 'ELIGIBLE')")
+        replacement = b"record = _dev_eligibility(eligible, q['release_id'], self.endpoint)"
+        if source.count(previous) != 1:
+            raise ValueError("WP4D_DEV_ELIGIBILITY_SOURCE_DRIFT")
+        source = source.replace(previous, replacement)
+        source += b"\nfrom scripts.wp4d.dev_delivery_contract import eligibility as _dev_eligibility\n"
+        files[name] = base64.b64encode(source).decode("ascii")
+        name = "scripts/wp4d/aws_runtime.py"
+        source = base64.b64decode(files[name])
+        source += b"\nfrom scripts.wp4d.dev_delivery_contract import observer as _dev_observer\nObserver = _dev_observer(Observer)\n"
         files[name] = base64.b64encode(source).decode("ascii")
     env, engine = RESERVED[binding]
     return canonical({"format": "E1_WP4D_BUNDLE_JSON_V1", "owner": OWNER,

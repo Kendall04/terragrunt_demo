@@ -262,6 +262,14 @@ class Authority(unittest.TestCase):
             self.assertEqual(package["binding"], binding)
             self.assertIn("scripts/normal_delivery/authorization.py", package["files"])
             self.assertIn("scripts/normal_delivery/delivery.py", package["files"])
+            selected_dev = binding in ("normal-delivery/deploy-dev", "cleanup-recovery/cleanup-dev")
+            self.assertEqual("scripts/wp4d/dev_delivery_contract.py" in package["files"], selected_dev)
+            import base64
+            auth_source=base64.b64decode(package["files"]["scripts/normal_delivery/authorization.py"])
+            observer_source=base64.b64decode(package["files"]["scripts/wp4d/aws_runtime.py"])
+            self.assertEqual(b"record = _dev_eligibility(" in auth_source, selected_dev)
+            self.assertEqual(b"Observer = _dev_observer(Observer)" in observer_source, selected_dev)
+
 
     def test_exact_version_install_readback(self):
         authority = json.loads((ROOT / "terraform/infra/security/authority.json").read_text())

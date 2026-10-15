@@ -18,7 +18,7 @@ failures and interrupted workers still require separately authorized diagnosis.
 ACTIVE holds. Administrative release remains blocked without verified exact
 executor termination and settlement of all potentially issued effects.
 
-## CURRENT CONTRACT — final E1 protected workflows
+## CURRENT CONTRACT â€” final E1 protected workflows
 
 [E15 preparation/runbook](e15-ephemeral-lifecycle.md) reuses WP5/WP6 per-layer
 lifecycle and WP3/WP4 delivery. It adds no direct execution path; complete DEV
@@ -34,7 +34,7 @@ WP2-WP5 contracts through eleven dedicated reusable entries and exact OIDC
 request identities. The owner-authorized first Actions trial permits source
 approval records only for `release` and `deploy-dev`, account `341936017254`,
 region `us-east-1`, exact ref `refs/heads/codex/final-github-actions-cicd`.
-Each still requires the existing separately authenticated G1–G9 observation,
+Each still requires the existing separately authenticated G1â€“G9 observation,
 source hashes, immutable reusable-workflow SHA and observed numeric gateway
 version. The remaining nine entries retain their inactive source contract.
 Source approval is distinct from IAM installation, an STS exchange, qualification
@@ -78,7 +78,7 @@ history and requires actual selected job success. CD Safety covers PRs and
 develop/main pushes independently. External required-check settings remain
 unverified. No CI result grants deployment authority.
 
-## Historical helper observations — not operational authority
+## Historical helper observations â€” not operational authority
 
 The details below preserve accepted E3 behavior and historical artifact semantics.
 They do not authorize the retired standalone deploy path or optimistic quality
@@ -182,7 +182,7 @@ Evidence: [release renderer](../../scripts/render-release-manifest.sh),
 [schemas](../../ci/schemas), [ECR lifecycle](../../ci/authority/retired/terraform/infra/shared/modules/ecr/main.tf.txt),
 [deployment script](../../scripts/ecs-blue-green-deploy.sh).
 
-## CURRENT CONTRACT — E2 mutation ownership
+## CURRENT CONTRACT â€” E2 mutation ownership
 
 [Environment mutation arbitration](e2-environment-mutation.md) now coordinates
 protected normal delivery/promotion/rollback, emergency, cleanup and conflicting
@@ -227,7 +227,7 @@ Evidence: [ALB health](../../ci/authority/retired/terraform/infra/global/modules
 [dev deploy](../../.github/workflows/deploy-dev.yml),
 [cleanup Lambda](../infra/apps/fargate/lambda/scale_down_old_color.py).
 
-## UNRESOLVED / TARGET — rollback and evidence
+## UNRESOLVED / TARGET â€” rollback and evidence
 
 The owner did not comprehensively test original rollback. The emergency flip
 and manifest redeploy are current behavior, not a proven recovery contract.
@@ -309,3 +309,23 @@ record. This preserves the endpoint comparison without making request IAM depend
 on all compute instances; pending NAT publication metadata is outside this stage.
 Third-party action pins remain in the toolchain manifest. Same-repository reusable
 pins are checked against the exact WP6 source approvals instead of invented tags.
+
+
+### Approved DEV eligibility and ECS-readback correction
+
+Only new `normal-delivery/deploy-dev` and `cleanup-recovery/cleanup-dev` bundles
+select `E1_ELIGIBILITY_DEV_V2`: exact schema, administrator writer, qualified
+release ID and ELIGIBLE/REVOKED state. The object body does not predict its own
+S3 VersionId. The protected CURRENT read supplies the actual VersionId; the
+runtime intent retains that version and the exact body hash. Caller evidence,
+historical reads and revoked/foreign releases remain rejected. PROD V1 source,
+all NAT packages and immutable previous versions remain unchanged.
+
+The same two DEV bundles recognize only explicitly inert ECS API defaults:
+circuit breaker `{enable:false,rollback:false}`, `strategy:ROLLING` and integer
+`bakeTimeInMinutes:0`. Active/unknown variants stop the operation. `LATEST` is not
+converted to a false numeric platform pin. The candidate must be configured and
+read back with a supported numeric platform before normal delivery. Authentic
+CloudTrail CreateService records confirm current-cycle skeleton revision `:5`
+was created at desired count zero; the currently running revision `:4` is a
+later workload and is not misrepresented as an inert bootstrap.

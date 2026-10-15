@@ -78,6 +78,58 @@ class Completion(unittest.TestCase):
                         for alias in node.names:
                             self.assertIn(path + '/' + alias.name + '.py', files, (binding, name))
 
+        # Test the actual extracted modules, including their import order.
+        import base64
+        authority=json.loads((ROOT/'terraform/infra/security/authority.json').read_text())
+        for selected in ('normal-delivery/deploy-dev','cleanup-recovery/cleanup-dev'):
+            with tempfile.TemporaryDirectory() as directory:
+                package=json.loads(wp4d.artifact(ROOT,authority['control_bundles'],selected))
+                for name,encoded in package['files'].items():
+                    destination=Path(directory)/name;destination.parent.mkdir(parents=True,exist_ok=True)
+                    destination.write_bytes(base64.b64decode(encoded))
+                code = r"""
+import sys,copy
+sys.path.insert(0,sys.argv[1])
+from scripts.normal_delivery import authorization as a
+from scripts.wp4d import dev_delivery_contract as dev
+from scripts.wp4d.aws_runtime import Observer
+assert Observer.__module__=='scripts.wp4d.dev_delivery_contract'
+release='sha256-'+'a'*64
+record={'schema':'E1_ELIGIBILITY_DEV_V2','writer':'SECURITY_ADMIN','release_id':release,'state':'ELIGIBLE'}
+def envelope(body=record,version='returned-current-S3-version'):
+ return {'release_id':release,'version_id':version,'bytes':a.canonical(body)}
+assert a._dev_eligibility(envelope(),release,'deploy-dev')==record
+for value,endpoint in [(envelope(),'promote-prod'),(envelope(version='latest'),'deploy-dev'),
+ (envelope(record|{'state':'REVOKED'}),'deploy-dev'),(envelope(record|{'version_id':'invented'}),'deploy-dev'),
+ (envelope(record|{'writer':'WORKFLOW'}),'deploy-dev'),(envelope(record|{'release_id':'sha256-'+'b'*64}),'deploy-dev')]:
+ try:a._dev_eligibility(value,release,endpoint)
+ except ValueError:pass
+ else:raise AssertionError('Invalid eligibility accepted')
+base={'minimumHealthyPercent':100,'maximumPercent':200}
+observed=base|{'deploymentCircuitBreaker':{'enable':False,'rollback':False},'strategy':'ROLLING','bakeTimeInMinutes':0}
+assert dev.deployment(observed)==base and 'strategy' in observed
+for field,value in [('strategy','BLUE_GREEN'),('deploymentCircuitBreaker',{'enable':True,'rollback':False}),
+ ('bakeTimeInMinutes',False),('bakeTimeInMinutes',1),('unknown',0)]:
+ try:dev.deployment(observed|{field:value})
+ except ValueError:pass
+ else:raise AssertionError('Active/unknown ECS configuration accepted')
+class Base:
+ config={'environment':'dev'}
+ def service(self,color):return {'deploymentConfiguration':copy.deepcopy(observed),'platformVersion':'LATEST'},[],True
+service,_,stable=dev.observer(Base)().service('green')
+assert service['platformVersion']=='LATEST' and stable
+print('EXTRACTED_DEV_CONTRACT_PASS')
+"""
+                saved={k:v for k,v in sys.modules.items() if k=='scripts' or k.startswith('scripts.')}
+                try:
+                    for key in saved:sys.modules.pop(key,None)
+                    with patch.object(sys,'argv',['extracted-test',directory]), patch.object(sys,'path',list(sys.path)):
+                        exec(compile(code,'extracted-dev-contract','exec'),{})
+                finally:
+                    for key in list(sys.modules):
+                        if key=='scripts' or key.startswith('scripts.'):sys.modules.pop(key,None)
+                    sys.modules.update(saved)
+
     def test_installation_receipt_requires_returned_identity_and_exact_readback(self):
         authority = json.loads((ROOT / 'terraform/infra/security/authority.json').read_text())
         class Storage(AdminBundleStorage):
