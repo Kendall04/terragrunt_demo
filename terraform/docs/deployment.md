@@ -470,3 +470,64 @@ settled or fabricate the lost snapshots. PROD and the common E3 source retain
 existing behavior. `test-dev-e3-stable-window.sh` exercises the actual extracted
 DEV loop with deterministic observation ports: settling/incomplete observations,
 continuous drift to deadline, final drift, identity rejection and read failure.
+
+### Verified DEV automatic cleanup — 2026-10-15
+
+Authentic GitHub Actions deliveries
+[38696034872](https://github.com/Kendall04/terragrunt_demo/actions/runs/38696034872)
+and [38697168833](https://github.com/Kendall04/terragrunt_demo/actions/runs/38697168833)
+completed SUCCESS through the existing pinned WP4 request workflow. Protected
+receipts independently confirm blue revision 8 (operation
+`1e55ec37-7628-4351-96bc-7898241f8f65`) and green revision 7 (operation
+`6471310a-0a3a-489a-81dd-42213a00ad80`). Both used the existing WP3-qualified
+release `sha256-b22f33f93bdac5608da1dcd1e17f372f638dcaa766c1e758f34ee6f396673f44`
+and digest `sha256:ca7d92532de8cfeee7a7a59a80f78714a26083ff323019d512d8be20f83ebfb8`.
+These trials demonstrate delivery/runtime corrections with the same application
+binary, not a new application release or independent WP3 build.
+
+Automatic cleanup Lambda version 4 completed both directions without manual
+reconciliation: green cleanup `09da0422-c6c1-584b-aadd-e8412294a923` and blue
+cleanup `56e539b3-04b1-5d3b-9c7b-739cc3061c2e`. Each has protected SUCCESS outcome
+and receipt plus APPLIED observations for scale-zero, remove-target and delete-rule.
+During each drain, native ECS showed zero tasks while ALB still retained a target;
+the journal retained its scale-zero ACK without prematurely recording APPLIED.
+Native Lambda durations were approximately 325 and 326 seconds, below the
+unchanged 600-second deadline. The existing ALB deregistration delay was 300 seconds.
+No timeout increase, IAM action expansion or new compute service was needed.
+
+Independent final reads confirmed green revision 7 desired/running 1, pending 0,
+healthy target and active listener; blue revision 8 desired/running/pending 0,
+no tasks and no targets; temporary cleanup rule absent. E2 generation 10 is
+RELEASED with schedule null, through normal automatic completion. `/ready`
+returned Healthy and a unique POST/GET roundtrip verified SQL persistence and
+KMS encryption/decryption through the active API, all HTTP 200. Earlier generation
+3/5/6 FAILURE journals and object versions remain unchanged. Separately authorized
+manual reconciliations of the two failed pre-promotion trials are not automatic
+cleanup evidence. Queued duplicate invocations did not create a new E2 owner.
+
+Validation: the final executable-source revision `f0bf1ffe6a6a21732ad858e5377768a3bea68ad0`
+passed the complete local E1 gate (959 regressions + 24 WP7, AC1–AC16), generated
+packages/inventory, affected safety suites and Terraform format checks. The six
+extracted DEV loop cases and ShellCheck also passed. Existing static findings
+remain 24 TFLint / 46 tfsec by identity/multiplicity; no IaC topology changed.
+Application source was unchanged; this increment did not rerun .NET/Docker builds.
+Live proof and local gate results remain distinct. Private runtime evidence was
+kept outside Git. No commits were published automatically.
+
+Rollback is prepared, not executed. Both successful histories now exist, but
+the DEV `rollback-manifest.yml` caller still requires `develop` while its approved
+OIDC entry allows only `codex/final-github-actions-cicd`. The smallest proposed
+fix selects the already approved `source_ref(deploy-dev)` for that DEV caller;
+PROD stays on main. Protected renderer-source/governance reconciliation and
+explicit publication authorization remain required; a normal feature push would
+also publish the earlier local documentary commit that the owner excluded from
+automatic publication. Do not bypass the caller by direct Lambda/ECS/listener
+writes. A qualified rollback recreates a revision from the selected SUCCESS
+history and current eligibility; removed tasks are not themselves recoverable.
+The two current histories share a digest, so such a test would prove rollback
+mechanics rather than behavior between two different application binaries.
+
+DEV remains running and billable. This work added only versioned S3 bundles and
+on-demand CodeBuild/Lambda/log activity; no additional persistent compute or
+network topology. No DOWN, NAT failover, PROD/shared mutation or Terraform DEV
+state operation occurred.
