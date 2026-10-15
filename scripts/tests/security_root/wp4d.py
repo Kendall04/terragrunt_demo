@@ -84,6 +84,8 @@ def package_sources(binding):
         sources.append("scripts/wp4d/dev_delivery_contract.py")
     if binding in ("request-gateway/deploy-dev", "normal-delivery/deploy-dev", "cleanup-recovery/cleanup-dev"):
         sources.append("scripts/wp4d/dev_absence.py")
+    if binding == "cleanup-recovery/cleanup-dev":
+        sources.append("scripts/wp4d/dev_cleanup.py")
     return tuple(sorted(set(sources)))
 
 
@@ -132,6 +134,11 @@ def artifact(root, catalog, binding):
         source = base64.b64decode(files[name])
         source += b"\nfrom scripts.wp4d.dev_delivery_contract import observer as _dev_observer\nObserver = _dev_observer(Observer)\n"
         source += b"\nfrom scripts.wp4d.dev_delivery_contract import delivery as _dev_delivery\nDelivery = _dev_delivery(Delivery)\n"
+        files[name] = base64.b64encode(source).decode("ascii")
+    if binding == "cleanup-recovery/cleanup-dev":
+        name = "scripts/wp4d/aws_runtime.py"
+        source = base64.b64decode(files[name])
+        source += b"\nfrom scripts.wp4d.dev_cleanup import application as _dev_cleanup\nApplication = _dev_cleanup(Application)\n"
         files[name] = base64.b64encode(source).decode("ascii")
     if binding in ("request-gateway/deploy-dev", "normal-delivery/deploy-dev", "cleanup-recovery/cleanup-dev"):
         name = "scripts/wp4d/adapters.py"

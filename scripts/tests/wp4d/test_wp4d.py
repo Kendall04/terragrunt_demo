@@ -277,6 +277,8 @@ class Authority(unittest.TestCase):
             observer_source=base64.b64decode(package["files"]["scripts/wp4d/aws_runtime.py"])
             self.assertEqual(b"record = _dev_eligibility(" in auth_source, selected_dev)
             self.assertEqual(b"Observer = _dev_observer(Observer)" in observer_source, selected_dev)
+            self.assertEqual("scripts/wp4d/dev_cleanup.py" in package["files"], binding == "cleanup-recovery/cleanup-dev")
+            self.assertEqual(b"Application = _dev_cleanup(Application)" in observer_source, binding == "cleanup-recovery/cleanup-dev")
 
 
     def test_exact_version_install_readback(self):
@@ -395,6 +397,8 @@ class Membership(unittest.TestCase):
             records.create("dev/123e4567-e89b-42d3-a456-426614174000/success", b"forged")
 
     def test_health_is_exact_task_ip_set(self):
+        from cleanup_cases import exercise
+        exercise(self)
         class ELB:
             def __init__(self, ids): self.ids = ids
             def describe_target_health(self, **kw):

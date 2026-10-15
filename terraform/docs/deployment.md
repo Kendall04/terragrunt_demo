@@ -407,3 +407,25 @@ occurred. DEV remains running and billable. Additional CI/CD costs are on-demand
 CodeBuild/Lambda, ECR images and S3/CloudWatch evidence; there is no always-running
 CodeBuild worker. This successful first delivery does not establish production,
 rollback or unattended cleanup readiness.
+
+
+### DEV cleanup drain settlement correction
+
+The original cleanup did not exhaust its 600-second operation budget. Its
+scale-zero effect checked ECS task counts only and returned APPLIED; the next
+strict observation then rejected the old ALB target still in `draining`.
+The invocation ended after approximately 14 seconds. STOPPED tasks are not
+included in the RUNNING desired-status cohort, but ALB deregistration outlives
+that cohort. Treating those two observations as simultaneous caused the failure.
+
+Only the new cleanup DEV bundle selects `dev_cleanup.application`. Its existing
+scale-zero ACK remains provenance; completion additionally requires stable zero
+ECS desired/running/pending counts, no tasks and a complete empty target-health
+response. Read errors, absent response fields and draining targets cannot prove
+completion. Only the still-running invocation with its own ACK continues polling
+within the original mutation/operation deadline; no new deadline, resend or
+owner release is added. Retry uses the existing journal/readback path. E2 CAS,
+FAILURE retention, PROD/NAT and all other immutable bundles remain unchanged.
+Deterministic subcases cover active tasks, stopped/draining, empty terminal state,
+transient/malformed/failed reads, deadline, idempotent reconciliation and CAS
+failure. Live installation and automatic success must be recorded separately.
