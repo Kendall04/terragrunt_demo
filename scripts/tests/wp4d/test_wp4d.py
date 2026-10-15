@@ -228,6 +228,14 @@ class Authority(unittest.TestCase):
             self.assertFalse(permits(p, "codebuild:StartBuild", project + "-foreign"))
 
     def test_request_closure(self):
+        bucket=f"arn:aws:s3:::e1-wp4-dev-{ACCOUNT}-{REGION}"
+        for binding,prefix in (("request-gateway/deploy-dev","gateway/dev/normal/"),
+                               ("normal-delivery/deploy-dev","delivery/dev/"),
+                               ("cleanup-recovery/cleanup-dev","recovery/dev/recovery/cleanup/")):
+            self.assertTrue(permits(policy(binding),"s3:ListBucket",bucket,{"s3:prefix":prefix+"op"}))
+            for bad in ("", "arbitration/dev/application.json", "delivery/prod/op", "foreign/op"):
+                self.assertFalse(permits(policy(binding),"s3:ListBucket",bucket,{"s3:prefix":bad}))
+
         envelope = {"operation_id": "123e4567-e89b-42d3-a456-426614174000", "body": "{}"}
         self.assertEqual(gateway.request("emergency", envelope)[1], {})
         for body in ('{"release_id":"x"}', '{"ready":true}', '{"service":"x"}'):

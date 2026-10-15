@@ -149,6 +149,35 @@ with patch.object(dev.time,'sleep'):
 port=dev.delivery(Poll)();port.applied['own-ack']=object()
 with patch.object(dev.time,'sleep'):
  assert port.effect('own-ack',2)['state']=='UNKNOWN'
+from scripts.wp4d.dev_absence import get_object
+from scripts.wp4d.adapters import Objects
+from scripts.environment_mutation import Store,Authority
+class Denied(Exception):
+ response={'Error':{'Code':'AccessDenied'}}
+class S3:
+ def __init__(self,mode='absent'):self.mode=mode;self.lists=[]
+ def get_object(self,**kw):raise Denied()
+ def list_objects_v2(self,**kw):
+  self.lists.append(kw)
+  if self.mode=='denied':raise Denied()
+  return {'Prefix':kw['Prefix'],'IsTruncated':self.mode=='truncated',
+          'Contents':[{'Key':kw['Prefix']}] if self.mode=='present' else []}
+bucket='e1-wp4-dev-111122223333-us-east-1'
+assert Objects(S3(),bucket,'gateway/dev/normal/').read('operations/op.json') is None
+owner=Authority(Store(S3(),bucket,'dev'),'normal-delivery/deploy-dev','11111111-1111-4111-8111-111111111111',{})
+assert owner.retained() is None
+for mode in ('denied','truncated','present'):
+ try:Objects(S3(mode),bucket,'gateway/dev/normal/').read('operations/op.json')
+ except Denied:pass
+ else:raise AssertionError('Unproven absence accepted')
+for request in ({'Bucket':bucket,'Key':'arbitration/dev/application.json'},
+ {'Bucket':bucket.replace('-dev-','-prod-'),'Key':'gateway/dev/normal/op'},
+ {'Bucket':bucket,'Key':'gateway/dev/normal/op','VersionId':'old'}):
+ s3=S3()
+ try:get_object(s3,**request)
+ except Denied:pass
+ else:raise AssertionError('Foreign/versioned absence accepted')
+ assert s3.lists==[]
 print('EXTRACTED_DEV_CONTRACT_PASS')
 """
                 saved={k:v for k,v in sys.modules.items() if k=='scripts' or k.startswith('scripts.')}

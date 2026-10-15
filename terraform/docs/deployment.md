@@ -346,3 +346,17 @@ settlement as an instantly final API acknowledgement.
 
 ECS can omit the empty capacity-provider strategy for explicit FARGATE. Only that
 absence is normalized to []; nonempty strategies or other launch types reject.
+
+
+### Fresh DEV namespace absence
+
+The first WP4 Actions attempt stopped before creating a gateway intention,
+CodeBuild build or E2 generation: GetObject on a missing S3 key returned 403.
+The prepared DEV-only correction checks absence with a complete exact-prefix
+listing. A denied, truncated, foreign, historical-version or present-key read
+cannot become absence. It adds only ListBucket scoped to each existing readable
+prefix for gateway/normal/cleanup DEV; it adds no write, delete, state or PROD
+permission. Existing NAT and common source implementations remain unchanged.
+This additional read capability and immutable gateway-version cutover require
+the owner's concrete permission approval and authentic installation readback.
+The failed attempt must be reconciled before a new request; no blind retry.

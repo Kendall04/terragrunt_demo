@@ -14,9 +14,11 @@ def before_authorized_trial(authority):
     dev_trial_approvals(value)
     value['wp6']['approvals']={}
     # Preserve the prior immutable snapshot while checking the exact approved DEV delta.
-    for key,(previous,current) in {'normal-delivery/deploy-dev': ('9a56022ea676cc583fc9e5eaec292ea2cc9f6434131d2cd3a21c95096f792577', '0ca7b51f487644cb235587e98fc25513c59b3a8ddf47aebc16187df44111b7bc'), 'cleanup-recovery/cleanup-dev': ('2a4b6681a62824b69ba127f33fda22cca85398647777b0a91041e4a2ba6ef312', 'ec7c4f63f7e7133b5baeaf6e557618637db59d63071b025e0f35856b42e854a9')}.items():
+    for key,(previous,current) in {'normal-delivery/deploy-dev': ('9a56022ea676cc583fc9e5eaec292ea2cc9f6434131d2cd3a21c95096f792577', '2275a20ca29347818a8cfee1afb1f2360231150456eb59ce44b6124a2ad6c44f'), 'cleanup-recovery/cleanup-dev': ('2a4b6681a62824b69ba127f33fda22cca85398647777b0a91041e4a2ba6ef312', '131c70713182aad728bd365734bd17475f0a16f0ec97ed605b4fa64cbef85923')}.items():
         assert value["wp4d"]["selected"][key]["package_sha256"]==current
         value["wp4d"]["selected"][key]["package_sha256"]=previous
+    assert value['wp4d']['selected']['request-gateway/deploy-dev']['package_sha256']=='867decc33be9e95215767103ecb3b9ca10b2f89653bed365c39c2410c1332037'
+    value['wp4d']['selected']['request-gateway/deploy-dev']['package_sha256']='2ac570048cc68d3a88013f45dbd5c71d3fc0145a3a0a18542c138eb19de2643d'
     for key in ('release','deploy-dev'):
         assert value['wp6']['selected'][key]['ref']==REF
         value['wp6']['selected'][key]['ref']='refs/heads/develop'

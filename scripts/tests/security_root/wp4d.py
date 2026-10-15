@@ -82,6 +82,8 @@ def package_sources(binding):
         sources += list(E3)
     if binding in ("normal-delivery/deploy-dev", "cleanup-recovery/cleanup-dev"):
         sources.append("scripts/wp4d/dev_delivery_contract.py")
+    if binding in ("request-gateway/deploy-dev", "normal-delivery/deploy-dev", "cleanup-recovery/cleanup-dev"):
+        sources.append("scripts/wp4d/dev_absence.py")
     return tuple(sorted(set(sources)))
 
 
@@ -130,6 +132,27 @@ def artifact(root, catalog, binding):
         source = base64.b64decode(files[name])
         source += b"\nfrom scripts.wp4d.dev_delivery_contract import observer as _dev_observer\nObserver = _dev_observer(Observer)\n"
         source += b"\nfrom scripts.wp4d.dev_delivery_contract import delivery as _dev_delivery\nDelivery = _dev_delivery(Delivery)\n"
+        files[name] = base64.b64encode(source).decode("ascii")
+    if binding in ("request-gateway/deploy-dev", "normal-delivery/deploy-dev", "cleanup-recovery/cleanup-dev"):
+        name = "scripts/wp4d/adapters.py"
+        source = base64.b64decode(files[name])
+        previous = b"value = self.s3.get_object(Bucket=self.bucket, Key=self._key(key))"
+        if source.count(previous) != 1:
+            raise ValueError("WP4D_DEV_ABSENCE_SOURCE_DRIFT")
+        source = source.replace(previous, b"value = _dev_get_object(self.s3, Bucket=self.bucket, Key=self._key(key))")
+        source = source.replace(b"return code in (\"NoSuchKey\", \"NoSuchVersion\", \"404\")",
+                                b"return isinstance(error, FileNotFoundError) or code in (\"NoSuchKey\", \"NoSuchVersion\", \"404\")")
+        source += b"\nfrom scripts.wp4d.dev_absence import get_object as _dev_get_object\n"
+        files[name] = base64.b64encode(source).decode("ascii")
+        name = "scripts/environment_mutation.py"
+        source = base64.b64decode(files[name])
+        previous = b"response = self.store.s3.get_object(Bucket=self.store.bucket, Key=self.terminal_key())"
+        if source.count(previous) != 1:
+            raise ValueError("WP4D_DEV_TERMINAL_ABSENCE_SOURCE_DRIFT")
+        source = source.replace(previous, b"response = _dev_get_object(self.store.s3, Bucket=self.store.bucket, Key=self.terminal_key())")
+        source = source.replace(b"if getattr(error, \"response\", {}).get(\"Error\", {}).get(\"Code\") in (\"NoSuchKey\", \"404\"):",
+                                b"if isinstance(error, FileNotFoundError) or getattr(error, \"response\", {}).get(\"Error\", {}).get(\"Code\") in (\"NoSuchKey\", \"404\"):")
+        source += b"\nfrom scripts.wp4d.dev_absence import get_object as _dev_get_object\n"
         files[name] = base64.b64encode(source).decode("ascii")
     env, engine = RESERVED[binding]
     return canonical({"format": "E1_WP4D_BUNDLE_JSON_V1", "owner": OWNER,
@@ -387,6 +410,10 @@ def policy(binding, resources, account, region, version_id):
     def read(name, *prefixes):
         allow(("s3:GetObject", "s3:GetObjectVersion"),
               [s3(name, prefix + "*") for prefix in prefixes])
+        if env == "dev" and name == bucket and binding in (
+                "request-gateway/deploy-dev", "normal-delivery/deploy-dev", "cleanup-recovery/cleanup-dev"):
+            allow(("s3:ListBucket",), [f"arn:aws:s3:::{bucket}"],
+                  {"StringLike": {"s3:prefix": [prefix + "*" for prefix in prefixes]}})
     def read_exact(name, *keys):
         allow(("s3:GetObject", "s3:GetObjectVersion"), [s3(name, key) for key in keys])
     def write(name, *prefixes, create_only=True):
