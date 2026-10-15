@@ -273,6 +273,27 @@ def wiring(doc):
         'error_message':'Only the original DEV NAT network installation is supported.'}}
     root['module']['controller_compute']['wp4d_environment_bindings']=expression('merge(local.authority.wp4d.environment_bindings,jsondecode(var.dev_nat_network_binding==null ? "{}" : jsonencode({dev=var.dev_nat_network_binding})))')
 
+    # Separately authenticated security-admin installation ports for the existing
+    # neutral WP3 and three DEV delivery responsibilities only. No WP5/PROD.
+    for field in ('installations','runtime_approvals'):
+        name='wp3_'+field
+        allowed=['request-gateway/release','build/release','qualification-finalizer/qualification','status/status-neutral']
+        if field=='runtime_approvals':allowed += ['payload/dotnet','payload/image','payload/probe']
+        root['variable'][name]={'type':'any','default':{},'validation':{
+            'condition':expression('alltrue([for key,value in var.'+name+': contains('+json.dumps(allowed)+',key)])'),
+            'error_message':'Only existing neutral WP3 responsibilities may be installed.'}}
+        root['module']['controller_compute'][field]=expression('merge(local.authority.internal_release.'+field+',var.'+name+')')
+        name='dev_delivery_'+field
+        allowed=['request-gateway/deploy-dev','normal-delivery/deploy-dev','cleanup-recovery/cleanup-dev']
+        root['variable'][name]={'type':'any','default':{},'validation':{
+            'condition':expression('alltrue([for key,value in var.'+name+': contains('+json.dumps(allowed)+',key)])'),
+            'error_message':'Only the three original WP4 DEV delivery responsibilities may be installed.'}}
+        root['module']['controller_compute']['wp4d_'+field]=expression('merge(local.authority.wp4d.'+field+',var.dev_nat_'+field+',var.'+name+')')
+    root['variable']['dev_delivery_binding']={'type':'any','default':None,'nullable':True,'validation':{
+        'condition':expression('var.dev_delivery_binding==null ? true : try(var.dev_delivery_binding.schema=="E1_WP4D_PROTECTED_ENVIRONMENT_V1" && var.dev_delivery_binding.environment=="dev" && var.dev_delivery_binding.account==var.aws_account_id && var.dev_delivery_binding.region==var.aws_region && var.dev_delivery_binding.repository=="demo-shared-demo-ms",false)'),
+        'error_message':'Only exact-account DEV delivery with the neutral qualified repository is supported.'}}
+    root['module']['controller_compute']['dev_delivery_binding']=expression('var.dev_delivery_binding')
+
     foundations=wp5.foundations()
     wp6.extend(root,child,compute_module,foundations,doc)
     return {**targets, 'terraform/infra/security/modules/lifecycle_foundations/main.tf.json':foundations,

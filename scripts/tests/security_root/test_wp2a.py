@@ -47,6 +47,21 @@ class FoundationTests(unittest.TestCase):
             validate_repository(root)
 
     def test_closed_source_and_terraform_match(self):
+        generated=wiring(load_authority(ROOT))
+        root=generated['terraform/infra/security/main.tf.json']
+        module=root['module']['controller_compute']
+        self.assertEqual(module['installations'],'${merge(local.authority.internal_release.installations,var.wp3_installations)}')
+        self.assertEqual(module['wp5_installations'],'${local.authority.wp5.installations}')
+        for name in ('wp3_installations','wp3_runtime_approvals','dev_delivery_installations','dev_delivery_runtime_approvals'):
+            self.assertEqual(root['variable'][name]['default'],{})
+            rule=root['variable'][name]['validation']['condition']
+            self.assertNotIn('promote-prod',rule);self.assertNotIn('infra-dev',rule)
+        self.assertIsNone(root['variable']['dev_delivery_binding']['default'])
+        self.assertIn('demo-shared-demo-ms',root['variable']['dev_delivery_binding']['validation']['condition'])
+        child=generated['terraform/infra/security/modules/controller_compute/main.tf.json']
+        candidate=child['locals']['wp4d_candidates']
+        self.assertIn('"request-gateway/deploy-dev","normal-delivery/deploy-dev","cleanup-recovery/cleanup-dev"',candidate)
+        self.assertIn('var.wp4d_environment_bindings[v.environment]',candidate)
         doc = validate_repository(ROOT)
         self.assertEqual(set(doc["request_identities"]), REQUESTS)
         self.assertEqual(len(doc["request_identities"]), 11)

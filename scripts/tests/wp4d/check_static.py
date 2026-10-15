@@ -53,47 +53,54 @@ def main():
     network.update(schema='E1_WP4D_PROTECTED_NAT_NETWORK_V1',repository='demo-dev-shared-demo-ms')
     for slot,side in zip(network['nat_slots'],('a','b')):slot['asg']='demo-dev-asg-nat-'+side
     cases.append(('dev-network-bootstrap',installs,images,{'dev':network}))
+    cases.append(('dev-network-with-qualified-delivery',installs,images,{'dev':network}))
     wrong=copy.deepcopy(network);wrong['nat_slots'][0]['asg']='foreign-asg'
     cases.append(('dev-network-foreign-asg',installs,images,{'dev':wrong}))
     cases.append(('nat-network-not-prod',installs,images,{'prod':network}))
     with tempfile.TemporaryDirectory(prefix='e1-wp4d-provider-free-') as directory:
         path = Path(directory)/'main.tf.json'
         for name, i, r, b in cases:
+            overlay=bindings['dev'] if name=='dev-network-with-qualified-delivery' else None
+            delivery={'request-gateway/deploy-dev','normal-delivery/deploy-dev','cleanup-recovery/cleanup-dev'}
             variables = {key:{'type':'any', 'default': value} for key,value in {
                 'authority': authority, 'account_id': ACCOUNT, 'region': REGION,
                 'wp4d_installations': i, 'wp4d_runtime_approvals': r,
-                'wp4d_environment_bindings': b}.items()}
+                'wp4d_environment_bindings': b, 'dev_delivery_binding': overlay}.items()}
             path.write_text(json.dumps({'variable':variables, 'locals':locals_}), encoding='utf-8')
             result = subprocess.run([terraform, 'console', '-no-color'], input=expression+'\n',
                                     text=True, capture_output=True, cwd=directory, env=environment, timeout=30)
             if result.returncode:
                 raise AssertionError(name+': '+result.stderr)
             observed = console_json(result.stdout)
-            assert observed['active'] == wp4d.creation_supported(authority, i, r, b, ACCOUNT, REGION), (name,observed['active'],wp4d.creation_supported(authority,i,r,b,ACCOUNT,REGION))
+            expected=set(wp4d.creation_supported(authority,i,r,b,ACCOUNT,REGION))
+            if overlay is not None:
+                expected=(expected-delivery)|(set(wp4d.creation_supported(authority,i,r,{'dev':overlay},ACCOUNT,REGION))&delivery)
+            assert observed['active']==sorted(expected),(name,observed['active'],sorted(expected))
             expected_nat=[key for key in observed['active'] if key.startswith('nat-recovery/') and all('nat-recovery/nat-'+key.split('/')[1].split('-')[1]+'/'+duty in observed['active'] for duty in ('assign_eip','change_rt','disable_sdc'))]
             assert observed['nat_target_keys']==sorted(expected_nat)
             for binding in observed['active']:
+                bound={'dev':overlay} if overlay is not None and binding in delivery else b
                 selected = authority['wp4d']['selected'][binding]
                 config=observed['configurations'][binding]
-                assert config['binding']==binding and config['nat_slots']==b[config['environment']]['nat_slots']
+                assert config['binding']==binding and config['nat_slots']==bound[config['environment']]['nat_slots']
                 if binding.startswith('nat-recovery/nat-dev/'):
                     assert config['resources']=={}
                     assert len('E1_PROTECTED_CONFIGURATION'.encode())+len(json.dumps(config,separators=(',',':'),ensure_ascii=False).encode())<=4096, 'Lambda configuration too large'
-                else:assert config['resources']==b[config['environment']]
+                else:assert config['resources']==bound[config['environment']]
                 env = selected['environment']
-                if b[env].get('schema') == 'E1_WP4D_PROTECTED_NAT_NETWORK_V1':
+                if bound[env].get('schema') == 'E1_WP4D_PROTECTED_NAT_NETWORK_V1':
                     resources = {'package_sha256':selected['package_sha256'],'name':selected['name'],
-                        'nat_slots':[{**slot,'instance_profile':slot['spec']['instance_profile']} for slot in b[env]['nat_slots']]}
+                        'nat_slots':[{**slot,'instance_profile':slot['spec']['instance_profile']} for slot in bound[env]['nat_slots']]}
                 else:
-                    env = selected['environment']; colors = b[env]['colors']
+                    env = selected['environment']; colors = bound[env]['colors']
                     cluster = colors['blue']['cluster']
                     resources = {'name': selected['name'], 'project': 'e1-controller-'+binding.split('/')[1],
                         'package_sha256': selected['package_sha256'], 'cluster_arn': cluster,
                         'cluster_name': cluster.split('/')[1], 'listener': colors['blue']['listener'],
-                        'candidate_rule': colors['blue']['candidate_rule'], 'repository': b[env]['repository'],
-                        'cleanup': {'rule_arn':f'arn:aws:events:{REGION}:{ACCOUNT}:rule/'+b[env]['cleanup']['rule'],
-                                    'function_arn':b[env]['cleanup']['function_arn']},
-                        'nat_slots': [{**s, 'instance_profile':s['spec']['instance_profile']} for s in b[env]['nat_slots']],
+                        'candidate_rule': colors['blue']['candidate_rule'], 'repository': bound[env]['repository'],
+                        'cleanup': {'rule_arn':f'arn:aws:events:{REGION}:{ACCOUNT}:rule/'+bound[env]['cleanup']['rule'],
+                                    'function_arn':bound[env]['cleanup']['function_arn']},
+                        'nat_slots': [{**s, 'instance_profile':s['spec']['instance_profile']} for s in bound[env]['nat_slots']],
                         'colors': {color:{'service_arn':f'arn:aws:ecs:{REGION}:{ACCOUNT}:service/'+cluster.split('/')[1]+'/'+member['service'],
                                          'target_group':member['target_group'], 'family':f'demo-{env}-app-api-{color}',
                                          'task_role':member['roles']['task'], 'execution_role':member['roles']['execution']}

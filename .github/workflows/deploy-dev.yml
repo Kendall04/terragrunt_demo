@@ -44,7 +44,7 @@
           "run": "echo \"::error::E1 deploy-dev is inactive: no verified immutable workflow pin, installation and governance binding.\"; exit 1"
         }
       ],
-      "if": "${{ github.ref == 'refs/heads/develop' }}"
+      "if": "${{ github.ref == 'refs/heads/codex/final-github-actions-cicd' }}"
     }
   }
 }

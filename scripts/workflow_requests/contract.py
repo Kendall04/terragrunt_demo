@@ -29,7 +29,11 @@ def match(pattern,value):require(type(value) is str and re.fullmatch(pattern,val
 
 def environment(identity):return 'neutral' if identity=='release' else identity.rsplit('-',1)[1]
 
-def source_ref(identity):return 'refs/heads/main' if environment(identity)=='prod' else 'refs/heads/develop'
+def source_ref(identity):
+    # Owner-authorized first DEV Actions trial: replace only these two callers.
+    # This is one exact ref, never a wildcard or additional accepted branch.
+    if identity in ('release','deploy-dev'):return 'refs/heads/codex/final-github-actions-cicd'
+    return 'refs/heads/main' if environment(identity)=='prod' else 'refs/heads/develop'
 
 def workflow(identity):return REPOSITORY+'/.github/workflows/'+CONTEXTS[identity]+'.yml'
 

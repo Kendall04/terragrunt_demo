@@ -76,11 +76,11 @@ def callers(approvals):
     # Public application requests preserve artifact identity and report only the
     # independently qualified release, never CodeBuild's transport success.
     result['release-build.yml']=workflow('Release Build',{}, {'release':call('release',dump_request({'source_commit':'${{ github.sha }}'}),approvals,
-        **{'if':"${{ github.ref == 'refs/heads/develop' }}"})})
+        **{'if':"${{ github.ref == '"+c.source_ref('release')+"' }}"})})
     delivery={'release_id':{'type':'string','required':True},'replicas':{'type':'number','default':1,'required':False}}
     deliver=dump_request({'action':'deliver','release_id':'${{ inputs.release_id }}','replicas':'REPLICAS'})
     deliver=deliver.replace('"REPLICAS"','${{ inputs.replicas }}')
-    result['deploy-dev.yml']=workflow('Deploy Dev',delivery,{'deploy':call('deploy-dev',deliver,approvals,**{'if':"${{ github.ref == 'refs/heads/develop' }}"})})
+    result['deploy-dev.yml']=workflow('Deploy Dev',delivery,{'deploy':call('deploy-dev',deliver,approvals,**{'if':"${{ github.ref == '"+c.source_ref('deploy-dev')+"' }}"})})
     result['promote-prod.yml']=workflow('Promote Prod',delivery,{'promote':call('promote-prod',deliver,approvals,**{'if':"${{ github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' }}"})})
     envinput={'environment':{'type':'string','required':True,'description':'dev or prod; selects disjoint fixed entry jobs.'}}
     rollback=dict(envinput,history={'type':'string','required':True},replicas=delivery['replicas'])

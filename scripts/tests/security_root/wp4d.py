@@ -571,10 +571,11 @@ def extend(tf):
         "wp4d_installations": {"type": "any", "default": {}},
         "wp4d_runtime_approvals": {"type": "any", "default": {}},
         "wp4d_environment_bindings": {"type": "any", "default": {}},
+        "dev_delivery_binding": {"type": "any", "default": None, "nullable": True},
     })
     local = tf["locals"]
     local["wp4d_contract"] = ex("var.authority.wp4d")
-    local["wp4d_candidates"] = ex('{ for key, v in local.wp4d_contract.selected : key => merge(v, { install = try(var.wp4d_installations[key], null), runtime = try(var.wp4d_runtime_approvals[key], null), resources = try(var.wp4d_environment_bindings[v.environment], null) }) }')
+    local["wp4d_candidates"] = ex('{ for key, v in local.wp4d_contract.selected : key => merge(v, { install = try(var.wp4d_installations[key], null), runtime = try(var.wp4d_runtime_approvals[key], null), resources = try(jsondecode(contains(["request-gateway/deploy-dev","normal-delivery/deploy-dev","cleanup-recovery/cleanup-dev"],key) && var.dev_delivery_binding != null ? jsonencode(var.dev_delivery_binding) : jsonencode(var.wp4d_environment_bindings[v.environment])), null) }) }')
     checks = [
         "v.install.binding == key", "v.install.sha256 == v.package_sha256",
         'v.install.bucket == "e1-control-bundles-${var.account_id}-${var.region}"',

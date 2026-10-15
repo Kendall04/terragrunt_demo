@@ -179,3 +179,32 @@ caused local-only ShellCheck errors; validation used original LF Git blobs rathe
 than modifying scripts or suppressing those diagnostics. These local results do
 not replace the next real Actions run. Protected WP3/WP4/WP5 implementations,
 packages, IAM and live infrastructure were not changed by these CI corrections.
+
+
+## Authorized neutral installation and exact DEV trial ref
+
+[Run 38671311404](https://github.com/Kendall04/terragrunt_demo/actions/runs/38671311404)
+completed successfully at `0b31beabd6186cfe4f0e7ca249601a1b31682087`, including
+E1 acceptance, application/.NET/Docker, hygiene, infrastructure and CI Validation.
+The PR-only job was correctly skipped. The result was independently read from GitHub.
+
+The owner separately authorized installation of the existing neutral WP3 and WP4
+DEV responsibilities and replacement of the source ref for **only** `release`
+and `deploy-dev` with `refs/heads/codex/final-github-actions-cicd` for the first
+real trial. Other DEV entries remain on develop; PROD remains on main. Remote
+main/develop are unchanged. Immutable reusable-workflow SHA, exact repository,
+audience/custom subject, genuine governance and installed numeric gateway versions
+remain mandatory. Canonical approvals remain empty and do not certify installation.
+
+The existing security root now exposes narrowly keyed administrator inputs for
+WP3 installations/runtime approvals and the three WP4 DEV delivery responsibilities.
+Their child-module package, version, digest, role and full environment admission
+checks remain in force. All inputs default empty/null. A separate DEV delivery
+binding lets the qualified neutral ECR repository coexist with the original NAT
+network-only binding; it does not repoint or reactivate NAT or grant state writes.
+WP5 and PROD installation paths are unchanged. Plans must be reviewed before
+installation; source inputs alone are not live readback or activation evidence.
+
+The neutral `demo-shared-demo-ms` is a new, protected qualification publication
+repository, distinct from existing `demo-dev-shared-demo-ms`. Manual images in the
+latter are not qualified releases and will not be imported as qualification.

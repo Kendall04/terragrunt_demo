@@ -78,6 +78,17 @@ class Workflows(unittest.TestCase):
         with patch('urllib.request.urlopen',side_effect=AssertionError('token must not be acquired')):
             self.reject(client.configuration,'deploy-dev','{}')
     def test_immutable_subject_has_no_default_fallback(self):
+        trial='refs/heads/codex/final-github-actions-cicd'
+        for key in c.IDENTITIES:
+            expected=trial if key in ('release','deploy-dev') else ('refs/heads/main' if c.environment(key)=='prod' else 'refs/heads/develop')
+            self.assertEqual(c.source_ref(key),expected)
+            self.assertEqual(DOC['wp6']['selected'][key]['ref'],expected)
+            if key in ('release','deploy-dev'):
+                for other in ('refs/heads/develop','refs/heads/main',trial+'-other'):
+                    self.reject(c.context,key,claims(key)|{'ref':other},config(key))
+        callers=render.callers({})
+        self.assertEqual(callers['release-build.yml']['jobs']['release']['if'],"${{ github.ref == '"+trial+"' }}")
+        self.assertEqual(callers['deploy-dev.yml']['jobs']['deploy']['if'],"${{ github.ref == '"+trial+"' }}")
         s=c.subject('deploy-dev',COMMIT);self.assertEqual(s,'repo:'+c.REPOSITORY+':environment:e1-dev-deploy:job_workflow_ref:'+c.workflow('deploy-dev')+'@'+COMMIT)
         for sha in ('main','develop','0'*40,'${SHA}','b'*39):self.reject(c.subject,'deploy-dev',sha)
     def test_role_templates_have_no_security_admin_or_role_chaining(self):
