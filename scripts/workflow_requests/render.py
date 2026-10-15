@@ -85,7 +85,7 @@ def callers(approvals):
     envinput={'environment':{'type':'string','required':True,'description':'dev or prod; selects disjoint fixed entry jobs.'}}
     rollback=dict(envinput,history={'type':'string','required':True},replicas=delivery['replicas'])
     payload=dump_request({'action':'rollback-release','history':'${{ inputs.history }}','replicas':'REPLICAS'}).replace('"REPLICAS"','${{ inputs.replicas }}')
-    result['rollback-manifest.yml']=workflow('Rollback Manifest',rollback,{env:call(identity,payload,approvals,**{'if':"${{ inputs.environment == '"+env+"' && github.ref == 'refs/heads/"+('main' if env=='prod' else 'develop')+"' && github.event_name == 'workflow_dispatch' }}"}) for env,identity in [('dev','deploy-dev'),('prod','promote-prod')]})
+    result['rollback-manifest.yml']=workflow('Rollback Manifest',rollback,{env:call(identity,payload,approvals,**{'if':"${{ inputs.environment == '"+env+"' && github.ref == '"+c.source_ref(identity)+"' && github.event_name == 'workflow_dispatch' }}"}) for env,identity in [('dev','deploy-dev'),('prod','promote-prod')]})
     result['cd-rollback.yml']=workflow('Emergency Recovery',envinput,{env:call('emergency-'+env,'{}',approvals,**{'if':"${{ inputs.environment == '"+env+"' && github.ref == 'refs/heads/"+('main' if env=='prod' else 'develop')+"' && github.event_name == 'workflow_dispatch' }}"}) for env in ('dev','prod')})
     lifecycle=dict(envinput,request=INPUT['request'])
     jobs={}

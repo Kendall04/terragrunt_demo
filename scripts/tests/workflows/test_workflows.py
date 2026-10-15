@@ -100,6 +100,11 @@ class Workflows(unittest.TestCase):
         callers=render.callers({})
         self.assertEqual(callers['release-build.yml']['jobs']['release']['if'],"${{ github.ref == '"+trial+"' }}")
         self.assertEqual(callers['deploy-dev.yml']['jobs']['deploy']['if'],"${{ github.ref == '"+trial+"' }}")
+        for env,identity in (("dev","deploy-dev"),("prod","promote-prod")):
+            condition=callers['rollback-manifest.yml']['jobs'][env]['if']
+            self.assertEqual(condition,"${{ inputs.environment == '"+env+"' && github.ref == '"+c.source_ref(identity)+"' && github.event_name == 'workflow_dispatch' }}")
+        self.assertNotIn("refs/heads/develop",callers['rollback-manifest.yml']['jobs']['dev']['if'])
+        self.assertIn("refs/heads/main",callers['rollback-manifest.yml']['jobs']['prod']['if'])
         s=c.subject('deploy-dev',COMMIT);self.assertEqual(s,'repo:'+c.REPOSITORY+':environment:e1-dev-deploy:job_workflow_ref:'+c.workflow('deploy-dev')+'@'+COMMIT)
         for sha in ('main','develop','0'*40,'${SHA}','b'*39):self.reject(c.subject,'deploy-dev',sha)
         from scripts.tests.workflows.historical_snapshot import before_authorized_trial

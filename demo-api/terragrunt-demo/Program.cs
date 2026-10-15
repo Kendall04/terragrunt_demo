@@ -67,6 +67,8 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+app.Logger.LogInformation("Application revision: rollback-proof-v2.");
+
 // 8) Apply migrations on startup when enabled. Fail fast so a task never serves
 // traffic with an unknown schema state.
 var runMigrationsOnStartup = configuration.GetValue("Database:RunMigrationsOnStartup", true);

@@ -676,14 +676,9 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/cd-demo-api.yml": {
-      "sha256": "69b7d29b9fa8a4bec1222d20d75d437f3bb6610c48ee8cc194bb8cada50c407c",
+      "sha256": "7ce62fcf6f03b6de4fdc864a54b4f9c2285a2d791accbe4b2265e79773c1452d",
       "declarations": [],
-      "signals": {
-        "launch-or-mutation": [
-          30,
-          43
-        ]
-      },
+      "signals": {},
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/cd-rollback.yml": {
@@ -756,13 +751,11 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/cd.yml": {
-      "sha256": "a231d9bf6848a21d4079d5437255809b4955af02faa4da83d6ce4d027f264804",
+      "sha256": "08541dd455b90eb91015d206775302b706fa844b3d6c643cfe66abe8b9d7b7e2",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          10,
-          353,
-          366
+          10
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -901,13 +894,9 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/deploy-dev.yml": {
-      "sha256": "cf20bb796fd28d4f77f98769d80d76359ca2fe4074b40bc3be3eac31abab530f",
+      "sha256": "8f749dac8b0b641787b917e89210e3e1ce21874d57be83a541dd19b1c4fd9bdf",
       "declarations": [],
-      "signals": {
-        "launch-or-mutation": [
-          40
-        ]
-      },
+      "signals": {},
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/e1-dev-deploy.yml": {
@@ -1077,23 +1066,15 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/release-build.yml": {
-      "sha256": "c54663057eec64882e9ac3ddcca352ad0e6d42d968a8fef77b0f39c539c0eb5a",
+      "sha256": "7d781675d535ead301b255fe69e944a36c6291a5a105ba244d190064cc526864",
       "declarations": [],
-      "signals": {
-        "launch-or-mutation": [
-          20
-        ]
-      },
+      "signals": {},
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/rollback-manifest.yml": {
-      "sha256": "56407c6c7b07c5732edee8937e967f3aeac9db2aa9012b1d605e89401c932379",
+      "sha256": "2a58974bc0bda58262d113f95bdca7b85759b33d10812bf67264d36c40beea48",
       "declarations": [],
-      "signals": {
-        "launch-or-mutation": [
-          50
-        ]
-      },
+      "signals": {},
       "semantic_status": "UNVERIFIED"
     },
     "ci/ephemeral/budget-draft.json": {
@@ -5554,7 +5535,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/workflows/historical_snapshot.py": {
-      "sha256": "9128dc8e0fa62b3bcdce5b5e7fdcf54341cab15095cade92f726fc7c4d45fd9a",
+      "sha256": "18cbb0879f8afc2930ac596f282f150fd5c3c67d68f265f24375024616f722e8",
       "declarations": [],
       "signals": {
         "executable-dependency": [
@@ -5574,15 +5555,15 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/workflows/test_workflows.py": {
-      "sha256": "56f85f3716e6122b33990c267f3fab162ec9d511d03aa8e028662b7cc989792f",
+      "sha256": "3926503199e03279ba1b979aa361d90203c7fdd1f0c9f27b1d55807de2db67cb",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
-          118,
-          236
+          123,
+          241
         ],
         "role-input": [
-          233
+          238
         ],
         "launch-or-mutation": [
           27,
@@ -5596,34 +5577,34 @@
           38,
           39,
           77,
-          121,
-          129,
-          131,
-          132,
+          126,
+          134,
           136,
-          140,
-          148,
-          151,
-          152,
-          155,
+          137,
+          141,
+          145,
+          153,
           156,
           157,
+          160,
           161,
-          164,
-          205,
-          206,
-          207,
-          233,
-          234,
-          237,
-          277,
-          305,
-          319,
-          322
+          162,
+          166,
+          169,
+          210,
+          211,
+          212,
+          238,
+          239,
+          242,
+          282,
+          310,
+          324,
+          327
         ],
         "executable-dependency": [
           86,
-          111
+          116
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -5886,7 +5867,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/workflow_requests/render.py": {
-      "sha256": "3f82a50f2948a6c6cf00cc53061c95506a7a9d3760f0fc3e54ba75993e1a9468",
+      "sha256": "1f28b7f1bfefdaaae7f6ee6bae974d5120c5825e7963deb2fd9ef468c9041748",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -6128,7 +6109,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/authority.json": {
-      "sha256": "d0c51183eed8a0a8368f2386372a159459bfd89fcb131567763c156eee9199c1",
+      "sha256": "c8d362c398a674b58529fc9117ba5104fe3dac383ec3227b60f937a0d4e98101",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -6240,9 +6221,7 @@
           3643,
           3653,
           3663,
-          3673,
-          3735,
-          3769
+          3673
         ],
         "executable-dependency": [
           398,
@@ -6278,21 +6257,7 @@
           3686,
           3687,
           3688,
-          3689,
-          3715,
-          3716,
-          3717,
-          3719,
-          3720,
-          3721,
-          3722,
-          3749,
-          3750,
-          3751,
-          3753,
-          3754,
-          3755,
-          3756
+          3689
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -6678,21 +6643,21 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/modules/request_identities/main.tf.json": {
-      "sha256": "03af3b2f8d3c7ead39a5531340cd99c989363c5caa2c44ce81b25958477d3ba1",
+      "sha256": "038ab10a9a9dd6fd2d4bb61765f4e190bc83e058043ce4b45d3d162188a7e2d7",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
-          146,
-          147,
-          148,
-          149,
-          150,
-          151,
-          152,
-          153,
-          154,
-          155,
-          156
+          77,
+          78,
+          79,
+          80,
+          81,
+          82,
+          83,
+          84,
+          85,
+          86,
+          87
         ],
         "role-input": [
           64
@@ -6701,47 +6666,29 @@
           2,
           4,
           5,
-          107,
-          141,
-          144,
-          146,
-          147,
-          148,
-          149,
-          150,
-          151,
-          152,
-          153,
-          154,
-          155,
-          156,
-          159,
-          160,
-          161,
-          162,
-          163,
-          164,
-          165,
-          166,
-          167,
-          168,
-          169
-        ],
-        "executable-dependency": [
+          75,
+          77,
+          78,
+          79,
+          80,
+          81,
+          82,
+          83,
+          84,
+          85,
+          86,
           87,
-          88,
-          89,
+          90,
           91,
           92,
           93,
           94,
-          121,
-          122,
-          123,
-          125,
-          126,
-          127,
-          128
+          95,
+          96,
+          97,
+          98,
+          99,
+          100
         ],
         "security-control": [
           30,

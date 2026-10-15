@@ -37,14 +37,13 @@
   },
   "jobs": {
     "deploy": {
-      "uses": "Kendall04/terragrunt_demo/.github/workflows/e1-dev-deploy.yml@fe7e775812f139e5c2f6e044d9a37c95b0b747fc",
-      "permissions": {
-        "contents": "read",
-        "id-token": "write"
-      },
-      "with": {
-        "request": "{\"action\":\"deliver\",\"release_id\":\"${{ inputs.release_id }}\",\"replicas\":${{ inputs.replicas }}}"
-      },
+      "runs-on": "ubuntu-latest",
+      "permissions": {},
+      "steps": [
+        {
+          "run": "echo \"::error::E1 deploy-dev is inactive: no verified immutable workflow pin, installation and governance binding.\"; exit 1"
+        }
+      ],
       "if": "${{ github.ref == 'refs/heads/codex/final-github-actions-cicd' }}"
     }
   }

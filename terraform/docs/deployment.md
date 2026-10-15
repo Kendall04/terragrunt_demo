@@ -531,3 +531,55 @@ DEV remains running and billable. This work added only versioned S3 bundles and
 on-demand CodeBuild/Lambda/log activity; no additional persistent compute or
 network topology. No DOWN, NAT failover, PROD/shared mutation or Terraform DEV
 state operation occurred.
+
+### Pending distinct-image DEV rollback trial
+
+The live baseline remains green revision 7, blue revision 8 stopped, E2 generation
+10 RELEASED, with the two automatic cleanup SUCCESS receipts above. Native
+preflight confirmed both protected histories refer to the same qualified image;
+the neutral ECR repository contained only that image. They are not evidence of
+restoring a different application version.
+
+The prepared source change aligns only the DEV rollback caller with
+`source_ref(deploy-dev)`, the already authorized exact feature ref. PROD remains
+restricted to main, workflow_dispatch remains mandatory, and existing Environment,
+OIDC audience/repository/subject, numeric gateway and immutable reusable workflow
+requirements remain in force. No direct ECS/Lambda/listener rollback route is added.
+Tests assert exact DEV and PROD caller conditions and existing identity rejection.
+
+Because the authoritative renderer is source-bound, its old release/deploy-dev
+source approval records cannot attest this changed source. This preparation
+explicitly removes those source activations and regenerates callers as inactive;
+it does not apply their removal to AWS. Never apply the whole security root to
+install this intermediate preparation. The current live identities remain on the
+previous authenticated pin. After explicit public-publication approval, publish
+only the feature branch, verify its actual CI and immutable sources plus G1–G9,
+then use the existing approval procedure to admit only release/deploy-dev against
+the new exact commit and observed numeric gateways. Reconcile the generated
+caller pins, exact request-role trust and Environment variables through reviewed
+installation/readbacks before WP3/WP4 dispatch. No approval may be fabricated from
+local JSON. No PROD/shared activation, new IAM actions or wildcard refs are needed.
+
+A single fixed startup message, `Application revision: rollback-proof-v2.`, is
+prepared in the application binary. It changes no HTTP payload, database schema,
+SQL/KMS contract or dependency. Its sole purpose is a traceable, harmless second
+binary. The digest must be measured from a genuine new WP3 qualification; it is
+unknown before build. Do not publish a manual image or reuse an old qualification
+as the new version.
+
+Supervised trial after authorization: preserve the old qualified release and
+SUCCESS receipt for green operation `6471310a-0a3a-489a-81dd-42213a00ad80`; qualify
+the new source once via WP3; deploy its distinct measured digest to inactive blue
+via WP4; verify health/SQL/KMS, promotion and automatic cleanup; then use
+`rollback-manifest.yml` with environment dev, that exact old green history and
+replicas 1. Refresh only the legitimate inactive-color binding from actual
+readbacks. WP4 must reauthorize the history and current eligibility, register a
+new task revision, prove its old digest, promote, and complete automatic cleanup
+and E2 release. Never restart deleted tasks or rewrite history/FAILURE receipts.
+Stop and reconcile any ambiguous result before another request.
+
+Publication and execution have not occurred for this preparation. A normal push
+also includes the unpublished documentary/cleanup commits after remote d016fc5;
+the exact final range, files, secret/history audit and automatic workflows must
+be presented for explicit owner approval first. The second digest, release ID,
+new task revision and rollback outcome remain unknown until genuine execution.
