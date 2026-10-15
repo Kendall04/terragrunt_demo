@@ -145,7 +145,15 @@ def templates(doc):
 def extend(root,child,compute,foundations,doc):
     ex=lambda s:'${'+s+'}'
     compute['output']['wp6_endpoints']={'value':ex('merge({for key,v in aws_lambda_function.wp3:key=>v.qualified_arn if startswith(key,"request-gateway/")},{for key,v in aws_lambda_function.wp4d:key=>v.qualified_arn if startswith(key,"request-gateway/")},{for key,v in aws_lambda_function.wp5:key=>v.qualified_arn if startswith(key,"request-gateway/")})')}
-    root['module']['request_identities'].update(account_id=ex('var.aws_account_id'),region=ex('var.aws_region'),endpoints=ex('module.controller_compute.wp6_endpoints'))
+    # Request activation is a later installation stage. Read the exact already
+    # installed numeric version independently, rather than depending on the
+    # entire compute collection (which can include unrelated existing NAT).
+    root.setdefault('data',{})['aws_lambda_function']={'request_gateway':{
+        'for_each':ex('{for key,v in local.authority.wp6.approvals:key=>v if !startswith(key,"plan-")}'),
+        'function_name':ex('"e1-gateway-${each.key}"'),
+        'qualifier':ex('each.value.gateway_version')}}
+    root['module']['request_identities'].update(account_id=ex('var.aws_account_id'),region=ex('var.aws_region'),
+        endpoints=ex('{for key,v in data.aws_lambda_function.request_gateway:"request-gateway/${key}"=>v.qualified_arn}'))
     root['output']['wp6']={'value':ex('module.request_identities.wp6')}
     child['variable'].update(account_id={'type':'string'},region={'type':'string'},endpoints={'type':'map(string)'})
     local=child.setdefault('locals',{})

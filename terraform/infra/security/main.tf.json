@@ -141,7 +141,7 @@
       "authority": "${local.authority}",
       "account_id": "${var.aws_account_id}",
       "region": "${var.aws_region}",
-      "endpoints": "${module.controller_compute.wp6_endpoints}",
+      "endpoints": "${{for key,v in data.aws_lambda_function.request_gateway:\"request-gateway/${key}\"=>v.qualified_arn}}",
       "dev_cicd_installation_only": "${var.dev_cicd_installation_only}"
     },
     "control_bundle_storage": {
@@ -222,6 +222,15 @@
     },
     "wp6": {
       "value": "${module.request_identities.wp6}"
+    }
+  },
+  "data": {
+    "aws_lambda_function": {
+      "request_gateway": {
+        "for_each": "${{for key,v in local.authority.wp6.approvals:key=>v if !startswith(key,\"plan-\")}}",
+        "function_name": "${\"e1-gateway-${each.key}\"}",
+        "qualifier": "${each.value.gateway_version}"
+      }
     }
   }
 }

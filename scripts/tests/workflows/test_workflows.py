@@ -118,6 +118,11 @@ class Workflows(unittest.TestCase):
             self.assertFalse(actions & {'iam:PassRole','sts:AssumeRole','codebuild:StartBuild','lambda:UpdateFunctionCode','iam:CreateRole','s3:PutObject','secretsmanager:GetSecretValue','kms:Decrypt'})
             self.assertFalse(any('*' in a for a in actions))
     def test_gateway_region_and_exact_version(self):
+        generated=model.wiring(DOC)['terraform/infra/security/main.tf.json']
+        read=generated['data']['aws_lambda_function']['request_gateway']
+        self.assertEqual(read['qualifier'],'${each.value.gateway_version}')
+        self.assertEqual(read['function_name'],'${"e1-gateway-${each.key}"}')
+        self.assertNotIn('module.controller_compute',generated['module']['request_identities']['endpoints'])
         for key in c.IDENTITIES:
             if key.startswith('plan-'):continue
             p=wp6.policy(key,projection(key),ACCOUNT,REGION);arn=projection(key)['endpoint_readback']

@@ -447,6 +447,6 @@ class NatBoundary(unittest.TestCase):
         authority=json.loads((ROOT/'terraform/infra/security/authority.json').read_text())
         for kind in ('wp4d','wp5'):
             for field in ('installations','runtime_approvals','environment_bindings'):self.assertEqual(authority[kind][field],{})
-        self.assertEqual(authority['wp6']['approvals'],{})
+        self.assertEqual(authority['wp6']['approvals'], __import__('wp6').dev_trial_approvals(authority))
         self.assertEqual(lab.DOWN,down.DOWN)
         self.assertEqual(lab.RETAINED_LAYERS,('shared','secrets'))

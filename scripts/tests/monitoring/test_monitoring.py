@@ -243,7 +243,7 @@ class Monitoring(unittest.TestCase):
         # Their exact current values are independently checked by model.validate_repository.
         self.assertEqual(hashlib.sha256(json.dumps(doc, sort_keys=True).encode()).hexdigest(),
                          "4b05684bbfcd82444e981cfc6912459a52c6cb1a30240844b0b4ef0418eb187e")
-        self.assertEqual(doc["wp6"]["approvals"], {})
+        self.assertEqual(doc["wp6"]["approvals"], __import__("wp6").dev_trial_approvals(doc))
         for kind in ("wp4d", "wp5"):
             for field in ("installations", "runtime_approvals", "environment_bindings"):
                 self.assertEqual(doc[kind][field], {})

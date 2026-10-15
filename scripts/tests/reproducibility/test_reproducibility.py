@@ -103,9 +103,17 @@ class ReproducibilityTests(unittest.TestCase):
 
     def test_all_active_actions_recorded_or_explicitly_deferred(self):
         found = set()
+        authority=json.loads((ROOT/'terraform/infra/security/authority.json').read_text())
+        # These immutable same-repository entries are governed by WP6 source
+        # approval, not by an invented third-party release tag in toolchain.json.
+        entries={'release':'e1-release','deploy-dev':'e1-dev-deploy'}
+        approved={f"Kendall04/terragrunt_demo/.github/workflows/{entries[k]}.yml@{v['workflow_commit']}"
+                  for k,v in authority['wp6']['approvals'].items() if k in entries}
         for path in (ROOT / '.github/workflows').glob('*.yml'):
             for reference in references(path.read_text()):
                 if reference.startswith('./'): continue
+                if reference.startswith('Kendall04/terragrunt_demo/.github/workflows/'):
+                    self.assertIn(reference,approved);continue
                 found.add(reference)
                 self.assertTrue(reference in DOC['actions'] or reference in DOC['deferred_actions'], reference)
         self.assertEqual(found, set(DOC['actions']) | set(DOC['deferred_actions']))
@@ -200,7 +208,10 @@ class ReproducibilityTests(unittest.TestCase):
 
     def test_protected_packages_and_image_gates_remain_inactive(self):
         authority = json.loads((ROOT / 'terraform/infra/security/authority.json').read_text())
-        self.assertEqual(authority['wp6']['approvals'], {})
+        import sys
+        sys.path[:0]=[str(ROOT),str(ROOT/'scripts/tests/security_root'),str(ROOT/'scripts/tests/authority')]
+        import wp6
+        self.assertEqual(authority['wp6']['approvals'], wp6.dev_trial_approvals(authority))
         for name in ('wp4d', 'wp5', 'internal_release'):
             self.assertEqual(authority[name]['installations'], {})
             self.assertEqual(authority[name]['runtime_approvals'], {})

@@ -302,3 +302,10 @@ When WP3 becomes active, DEV NAT keeps its existing `e1-evidence-<account>-<regi
 administrative bucket. It must not inherit the neutral release-artifacts bucket
 from the WP3 selection. The coexistence fixture tests both configurations, and
 an installation plan containing NAT function updates must be rejected here.
+
+Request-role activation follows gateway creation. Terraform independently reads
+the exact installed numeric Lambda version named by the administrator's WP6
+record. This preserves the endpoint comparison without making request IAM depend
+on all compute instances; pending NAT publication metadata is outside this stage.
+Third-party action pins remain in the toolchain manifest. Same-repository reusable
+pins are checked against the exact WP6 source approvals instead of invented tags.
