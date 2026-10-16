@@ -408,14 +408,15 @@ PROD, incomplete logs and late executions remain rejected. This is supervised
 observation, never an executor-finality certificate. The 59 focused E16 tests
 pass, including the two exact names and rejection of other protected executors.
 Temporary observation permissions must be removed on completion or any stop.
-The real operator observation did not pass: ListVersionsByFunction returned an
-explicit AccessDenied despite the reviewed temporary reader grant. Readback and
+At the initial checkpoint, the operator observation did not pass:
+ListVersionsByFunction returned an explicit AccessDenied despite the reviewed temporary reader grant. Readback and
 custom-policy simulation matched the intended scope; that simulation is not
-proof of effective live access. Both temporary installations were reconciled and
-removed immediately after their bounded read attempts. No permission expansion
-was used, and C3 is not reported as live-validated.
+proof of effective live access. Both initial temporary installations were
+reconciled and removed immediately after their bounded read attempts. No permission expansion
+was used, and C3 was not yet live-validated at that checkpoint.
 
-The final DOWN has NOT been applied. Its historical SDC attempt
+At that initial checkpoint, the final DOWN had not been applied. Its historical
+SDC attempt
 `05fc796a-03ae-5e11-8d3b-64a61d144d5d` remains without a terminal observation.
 Native evidence read on 2026-10-16 UTC shows the retained FAILURE was written at
 01:09:46, before the later attempt at 01:10:51. The two Lambda invocations have
@@ -434,9 +435,9 @@ ReceiptHandle. The versioned archive and all FAILURE evidence remain retained.
 No purge or redrive occurred. An empty queue cannot replace effect reconciliation.
 
 C4 teardown grants were not installed while this material C1 gate remained
-unresolved. NAT remains at capacity one per slot with replacement processes
-suspended; ECS is drained and SQL stopped with EBS retained. These states do not
-mean DOWN or zero charges. Saved previews must be regenerated against a clean
+unresolved. At that checkpoint NAT remained at capacity one per slot with
+replacement processes suspended; ECS was drained and SQL stopped with EBS
+retained. Those observations did not mean DOWN or zero charges. Saved previews must be regenerated against a clean
 source commit before any future apply. Retain backend/locking, protected
 identities, neutral WP3/WP4, KMS/secrets/ECR and versioned evidence.
 
@@ -478,3 +479,73 @@ read scope; no S3 permission was added. WP4 cleanup remains checked through its
 existing E2 owner/schedule, controller completion and exact START/REPORT guard.
 Every NAT attempt is still validated; other NAT UNKNOWNs still block. All 62
 focused E16 tests pass, including the protected-cleanup inventory regression.
+
+
+## Final real DEV DOWN completed — 2026-10-16 UTC
+
+The original five DEV layers completed through E16 in account 341936017254,
+us-east-1, using cnp-cert-dev and the exclusive TerragruntDemoDevOperator.
+Execution used clean source 786bee0f50a8d89a0678874d48b2ac046f78fee6.
+The owner separately approved destruction, permanent SQL/EBS loss, the exact
+historical uncertainty disposition and bounded temporary observation/deletion
+permissions. No new UP, application release, rollback or NAT trial was executed.
+
+| Layer | Reviewed plan | Planned managed deletions | Result |
+| --- | --- | ---: | --- |
+| edge | 5dd4a170-4e94-4646-9896-50258249a38d | 9 | Reconciled, API/VPC Link absent |
+| apps | 97fc110f-b0d2-4841-9a37-27dd987a5cb7 | 9 | Reconciled, services inactive and no tasks |
+| platform | 46c6305b-2200-40a5-be7a-b07aef87f80c | 1 | Reconciled, ECS cluster inactive |
+| data | 3ff54603-a6f2-4c5b-aafa-9293c7f70b24 | 5 | Reconciled, SQL terminated and EBS absent |
+| global | 36a2202b-3211-4732-8ed1-b3358b0582d0 | 49 | Reconciled, networking removed |
+
+These counts include Terraform-only markers and exclude service-created children.
+Each apply used its reviewed binary after source, identity, state, hash, lock,
+controller and dependency checks. Global stopped before dispatch when C3 expired
+at 05:15 UTC. The owner's subsequent exact extension to 05:40 UTC was installed
+and verified through actual operator reads before global proceeded. Its original
+C4 network grant retained the same resources and 06:06:55 UTC expiry. A fresh
+session of the same operator resolved the observed difference from a cached
+session that continued receiving AccessDenied. No permission scope was broadened.
+
+Independent AWS observations after global completed confirmed all five states
+have zero resource entries and no active S3 lockfiles. Both NAT instances have
+successful attributable ASG termination histories; the SQL instance is terminated
+and all three known root EBS volumes are absent. Both NAT ASGs, EIPs, ALB, target
+groups, API, VPC Link, VPC, four subnets, routes, Internet Gateway, security groups
+and ENIs are absent. ECS has zero running/pending tasks or active services.
+No unexpected tagged DEV compute, EBS or EIP was observed; the account/region
+inventory also found no self-owned AMIs or snapshots.
+
+The NAT launch rule remains disabled. The three NAT handlers, release and DEV
+deployment gateways and cleanup function retain reserved concurrency zero. There are
+no active project CodeBuild builds or temporary blue/green cleanup rule. E2 stays
+at generation 14 RELEASED. The exact historical SDC result remains UNKNOWN under
+the owner's accepted residual-risk disposition. Its original attempt, plan,
+intent and FAILURE versions and the immutable SQS archive remain unchanged.
+No synthetic terminal E13 observation was written. Only the exact authorized
+historical SQS message was acknowledged; both retained queues report zero
+approximate counts, which are diagnostic observations rather than drain proof.
+
+All temporary C3/C4 operator inline policies were removed on completion. A fresh
+operator session produced six actual denied C3 reads before the extended expiry.
+Five EC2 DryRun calls for the former exact Internet Gateway/VPC and route-table
+associations returned UnauthorizedOperation. IAM policy readback and exact-scope
+simulations additionally denied the C4 actions, including the permission-only
+log-delivery and task-definition actions. Protected policies and CreateOnly were
+not changed.
+
+Retained resources include the two backends and version histories, protected
+identities/evidence, one enabled KMS key, three Secrets Manager secrets, fourteen
+ECR repositories, six S3 buckets, five CodeBuild projects and seven Lambda
+functions, two NAT launch templates, twelve protected log groups with 14-day
+retention, six monitoring alarms and the two failure queues. KMS, secrets,
+ECR/S3/log storage, monitoring and future neutral service requests can still incur
+charges. DOWN is not a zero-bill claim. Private native inventories, saved plans,
+state VersionIds and permission receipts remain outside Git.
+
+The prior dated delivery evidence preserves reproducible UP, SQL/KMS, OIDC and
+WP3/WP4, automatic blue/green cleanup, distinct-digest A-to-B-to-A rollback and
+NAT A/B recovery. This shutdown did not repeat those functional tests. The 62
+focused E16 tests and generated DEV policy/PROD/shared/source-inventory checks
+passed for the narrow preceding fixes; the 983-test historical gate was not
+rerun for this operational documentation closure.
