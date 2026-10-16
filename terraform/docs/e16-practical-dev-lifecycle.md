@@ -439,3 +439,30 @@ suspended; ECS is drained and SQL stopped with EBS retained. These states do not
 mean DOWN or zero charges. Saved previews must be regenerated against a clean
 source commit before any future apply. Retain backend/locking, protected
 identities, neutral WP3/WP4, KMS/secrets/ECR and versioned evidence.
+
+
+## Owner disposition of the one historical SDC uncertainty
+
+The owner subsequently accepted the residual historical risk for only
+`disable_sdc/05fc796a-03ae-5e11-8d3b-64a61d144d5d` in account 341936017254,
+us-east-1, solely to finish DEV DOWN. E16 recognizes a local, session-bound
+manual decision while preserving UNKNOWN; it does not write any E13 observation,
+ACK, ABSENT, APPLIED, SUCCESS or replacement FAILURE. The exception checks the
+exact attempt/plan hashes, original FAILURE hash, terminated historical instance,
+current config and evidence digest. A different account, attempt, altered record,
+active old instance or altered decision is rejected. All remaining controller,
+queue, native ASG, ECS, state/lock and exact-plan safeguards still execute.
+The 61 focused E16 tests pass. This is not a general recovery/bypass interface.
+
+The temporary C3 grant was subsequently held through IAM propagation and checked
+with both a fresh session of the same operator and the original session. Actual
+ListVersionsByFunction and START/REPORT observations succeeded for gateway DEV
+(8 completed executions) and cleanup DEV (10). Simulation alone was not accepted.
+No additional action, trust, account, region or function was authorized.
+
+A subsequent read found the exact authorized SQS message still present despite
+the earlier HTTP 200 delete acknowledgement. Visibility zero had exposed repeated
+deliveries/ReceiptHandles. After reconciling its unchanged ID/body and versioned
+archive, the operator received that single message with 60-second visibility and
+used its current handle. No other message was acknowledged; no purge/redrive
+occurred. Independent queue readback remains required before teardown proceeds.

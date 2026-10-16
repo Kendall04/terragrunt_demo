@@ -497,6 +497,21 @@ class Session:
         require(self.aws('lambda','get-function-concurrency','--function-name',name).get('ReservedConcurrentExecutions')==0,'Lambda admission reactivated during observation')
         return dict(function=name,method='LIVE_START_REPORT_HISTORY_PLUS_INHIBITION',invocations=completed,last_report_ms=last_report,executor_finality='NOT_CERTIFIED')
 
+    def historical_sdc_unknown_disposition(self,key,attempt,plan):
+        # Owner-authorized final DEV teardown only. Never alter the E13 outcome.
+        from scripts.normal_delivery import authorization as a
+        operation='05fc796a-03ae-5e11-8d3b-64a61d144d5d'
+        base='recovery/dev/recovery/disable_sdc/'+operation
+        require((self.account,self.region,self.coordination,key)==('341936017254','us-east-1','e1-wp4-dev-341936017254-us-east-1',base+'/disable_sdc/attempt'),'no exception for another E13 attempt or environment')
+        require(sha(a.canonical(attempt))=='21e82136c2da974b79bc24e8a4e209fdb91b052ea90ad9ac24827a0316606a57' and sha(a.canonical(plan))=='0afb7e9329e99c2b1295161241530e92361689583f5093b06df4b126ff70d099','historical E13 attempt/plan changed')
+        decision=decode((self.directory/'historical-SDC-05fc796a-owner-disposition.json').read_bytes())
+        evidence=(self.directory/'historical-SDC-05fc796a-native-evidence.json').read_bytes()
+        require(decision==dict(operation=operation,account=self.account,region=self.region,config_sha256=sha(c.canonical(self.config)),historical_result='UNKNOWN',owner_decision='ACCEPT_RESIDUAL_HISTORICAL_RISK_FOR_FINAL_DOWN_ONLY',evidence_sha256=sha(evidence)),'exact owner historical-risk disposition required')
+        require(sha(a.canonical(self.object(base+'/outcomes/57920b17a13f2cf63f76b088fb125ad3d0c5f7765b7ea4bbeb9b63601b9d9b22')))=='57920b17a13f2cf63f76b088fb125ad3d0c5f7765b7ea4bbeb9b63601b9d9b22','historical FAILURE changed')
+        old=self.aws('ec2','describe-instances','--filters','Name=instance-id,Values=i-0bc30a0862a35bd4c')
+        require(not old.get('NextToken') and all(i['InstanceId']=='i-0bc30a0862a35bd4c' and i['State']['Name']=='terminated' for r in old['Reservations'] for i in r['Instances']),'historical SDC instance still active or inventory incomplete')
+        # All live controller, queue, ASG, ECS and effect checks still run below.
+
     def shutdown_observation(self):
         self.idle()
         rule=self.aws('events','describe-rule','--name','e1-wp4-dev-nat-launch');require(rule['State']=='DISABLED','NAT recovery rule not inhibited')
@@ -512,13 +527,17 @@ class Session:
             if key.endswith('/attempt') or key.endswith('/attempt.json'):
                 base=key.rsplit('/',1)[0]
                 observations=[k for k in keys if k.startswith(base+'/') and (k.endswith('/observed.json') or k.endswith('/reconciled.json') or k.endswith('/observed') or k.endswith('/reconciled'))]
-                require(observations,'known dispatched NAT effect without terminal readback; manual reconciliation')
                 from scripts.normal_delivery import authorization as a
                 attempt=self.object(key)
                 planned=base+'/plan'+('.json' if key.endswith('.json') else '')
                 require(planned in keys,'E13 missing exact dispatch plan')
                 plan=self.object(planned)
                 require(attempt==dict(token=plan['token'],plan_sha256=a.sha(a.canonical(plan))),'E13 attempt/plan mismatch')
+                if not observations:
+                    if key=='recovery/dev/recovery/disable_sdc/05fc796a-03ae-5e11-8d3b-64a61d144d5d/disable_sdc/attempt':
+                        self.historical_sdc_unknown_disposition(key,attempt,plan)
+                        continue
+                    require(False,'known dispatched NAT effect without terminal readback; manual reconciliation')
                 for k in observations:
                     effect=self.object(k)
                     require(set(effect)=={'token','request_sha256','state','result'} and effect['token']==plan['token'],'E13 attributable effect mismatch')

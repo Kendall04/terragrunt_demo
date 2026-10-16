@@ -454,6 +454,49 @@ class Tests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'protected executors'):
             self.session.lambda_execution_history('e1-gateway-infra-dev',{})
 
+    def test_exact_historical_disposition_keeps_unknown_and_checks_old_instance(self):
+        operation='05fc796a-03ae-5e11-8d3b-64a61d144d5d'
+        base='recovery/dev/recovery/disable_sdc/'+operation
+        token='dev/recovery/disable_sdc/'+operation+'/disable_sdc'
+        plan=dict(operation_sha256='95d37c380a06ec3c77285c9699777de0f8fe9fa708cbc9f76f7673d0443c8f47',request=dict(InstanceId='i-0bc30a0862a35bd4c',SourceDestCheck=dict(Value=False)),token=token)
+        attempt=dict(token=token,plan_sha256=p.sha(c.canonical(plan)))
+        self.session.account='341936017254';self.session.region='us-east-1';self.session.coordination='e1-wp4-dev-341936017254-us-east-1'
+        evidence=b'{"offline_fixture":true}\n'
+        (self.session.directory/'historical-SDC-05fc796a-native-evidence.json').write_bytes(evidence)
+        decision=dict(operation=operation,account=self.session.account,region=self.session.region,config_sha256=p.sha(c.canonical(self.session.config)),historical_result='UNKNOWN',owner_decision='ACCEPT_RESIDUAL_HISTORICAL_RISK_FOR_FINAL_DOWN_ONLY',evidence_sha256=p.sha(evidence))
+        file=self.session.directory/'historical-SDC-05fc796a-owner-disposition.json';file.write_bytes(c.canonical(decision))
+        self.session.object=lambda key:dict(namespace='dev/recovery/disable_sdc',operation=operation,status='FAILURE')
+        observed=dict(Reservations=[dict(Instances=[dict(InstanceId='i-0bc30a0862a35bd4c',State=dict(Name='terminated'))])])
+        calls=[]
+        def aws(*args):calls.append(args);return observed
+        self.session.aws=aws
+        self.session.historical_sdc_unknown_disposition(base+'/disable_sdc/attempt',attempt,plan)
+        self.assertEqual(calls,[('ec2','describe-instances','--filters','Name=instance-id,Values=i-0bc30a0862a35bd4c')])
+        self.assertEqual(json.loads(file.read_text())['historical_result'],'UNKNOWN')
+        observed['Reservations'][0]['Instances'][0]['State']['Name']='running'
+        with self.assertRaisesRegex(ValueError,'still active'):
+            self.session.historical_sdc_unknown_disposition(base+'/disable_sdc/attempt',attempt,plan)
+        observed['Reservations'][0]['Instances'][0]['State']['Name']='terminated'
+        for field,value in [('historical_result','ABSENT'),('account','111122223333'),('config_sha256','0'*64),('evidence_sha256','0'*64)]:
+            with self.subTest(field=field):
+                altered=decision.copy();altered[field]=value;file.write_bytes(c.canonical(altered))
+                with self.assertRaisesRegex(ValueError,'owner historical-risk disposition'):
+                    self.session.historical_sdc_unknown_disposition(base+'/disable_sdc/attempt',attempt,plan)
+        file.write_bytes(c.canonical(decision));self.session.object=lambda key:dict(status='SUCCESS')
+        with self.assertRaisesRegex(ValueError,'FAILURE changed'):
+            self.session.historical_sdc_unknown_disposition(base+'/disable_sdc/attempt',attempt,plan)
+
+    def test_historical_disposition_is_closed_to_other_accounts_and_attempts(self):
+        with self.assertRaisesRegex(ValueError,'another E13 attempt'):
+            self.session.historical_sdc_unknown_disposition('foreign/attempt',{}, {})
+        self.session.account='341936017254';self.session.region='us-east-1';self.session.coordination='e1-wp4-dev-341936017254-us-east-1'
+        with self.assertRaisesRegex(ValueError,'another E13 attempt'):
+            self.session.historical_sdc_unknown_disposition('foreign/attempt',{}, {})
+        key='recovery/dev/recovery/disable_sdc/05fc796a-03ae-5e11-8d3b-64a61d144d5d/disable_sdc/attempt'
+        with self.assertRaisesRegex(ValueError,'attempt/plan changed'):
+            self.session.historical_sdc_unknown_disposition(key,{}, {})
+        self.assertFalse(any('put-object' in call for call in self.fake.calls))
+
     def test_exact_dev_deployment_executors_use_bounded_live_logs(self):
         self.all_up();self.shutdown();self.fake.log_history=True
         proof=json.loads((self.session.directory/'shutdown-readback.json').read_text())
