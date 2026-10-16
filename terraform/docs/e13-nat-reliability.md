@@ -291,3 +291,49 @@ targets and failure destinations before enabling delivery. Inhibiting delivery
 is not cancellation of an issued AWS effect. A fresh live replacement of the
 current instance requires its own destructive authorization; replaying the old
 failed operation is not an acceptable test. DEV remains running and billable.
+
+### Installed DEV correction and automatic B retrial
+
+After the separate owner authorization and [CI 38835661671 SUCCESS](https://github.com/Kendall04/terragrunt_demo/actions/runs/38835661671),
+source `57c8c0b46f875d60b5144040309d5e3d2bf2c3c6` was installed through the existing
+neutral security root. The reviewed saved plan made exactly six in-place updates:
+three bundle references and their three exact GetObjectVersion reader bindings.
+All three handlers now use numeric version 4 with their previous OCI image,
+unchanged action permissions and exact event source. New bundle/version bytes,
+retry settings, failure destinations and targets were read back before resuming
+delivery. Old immutable packages/versions remain. CreateOnly was unchanged;
+no stable installation record, trust, PROD or five-layer DEV state was rewritten.
+The existing neutral-state installation associations were reconciled, preserving
+old AWS versions and evidence. Simulations allowed each new exact bundle version
+and denied its old bundle and a wrong VersionId; actual new Lambda execution
+subsequently demonstrated successful loading of the installed bundles.
+
+The separately authorized second B replacement terminated only the repaired old
+instance through its existing ASG, retaining desired/min/max one and LT version 2.
+The fresh replacement completed **automatically**, without administrative SDC/EIP/
+route repair. E13 recorded matching attempt/ACK/APPLIED and SUCCESS receipts for
+assign_eip (`5846e5d3-36e0-5f56-8146-02c65c3e72de`), change_rt
+(`a6f352f7-db64-538f-8abc-b71607810cac`) and disable_sdc
+(`e4a6f249-0581-5ef1-86f9-69bfce8c3535`). Bootstrap readiness was independently
+verified. Private-subnet HTTPS before and after returned HTTP 200 with the same
+expected B EIP and verified TLS; both temporary tasks stopped with exit code zero.
+A remained Healthy/InService. This proves the original A trial and the corrected
+B trial, not a new A replacement on version 4 or uninterrupted cross-AZ egress.
+
+The old B FAILURE versions and exact original queue message/body were reread and
+remain retained, without ACK, redrive, deletion or forced SUCCESS. The terminated
+old B root volume was confirmed absent. Final AWS checks found the expected three
+running project EC2 instances (two NAT plus SQL). Green:8 still serves the original
+application digest, blue:9 has no tasks/targets, the temporary cleanup rule is absent,
+and E2 generation 14 is RELEASED. A fresh POST/GET SQL/KMS round trip and /ready
+passed. No new deployment, rollback, DOWN or PROD operation occurred in this trial.
+
+Local acceptance passed all 983 E1/WP tests, AC1-AC16 and all 44 gate checks;
+the focused NAT suite passed 45 tests. Real GitHub acceptance, hygiene and static
+infrastructure jobs passed. CI compared the existing 24 TFLint and 46 tfsec findings
+by identity/multiplicity/source with no additions or suppressions. Actual Terraform
+1.13.4/AWS provider 5.100.0 validation and saved-plan application completed for
+this installation. Source inventory and package generation passed; only the three
+DEV NAT package identities changed. Raw runtime evidence remains outside Git.
+DEV and retained resources continue billing. Final DOWN and SQL/EBS loss still
+require their independent destructive confirmations.
