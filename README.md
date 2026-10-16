@@ -1,70 +1,163 @@
-# terragrunt_demo — cost-aware AWS platform and backend demo
+# terragrunt_demo — AWS infrastructure and delivery, proven end to end
 
-This personal project demonstrates AWS infrastructure, a small .NET backend,
-Terraform/Terragrunt composition and GitHub Actions delivery. One operator owns
-the system end to end. It favors explicit tradeoffs over maximum redundancy.
+A personal AWS/DevOps portfolio project: provision the **original full DEV
+architecture**, deploy a .NET application, qualify and deliver immutable images,
+exercise blue/green and rollback, recover NAT instances, then destroy the runtime.
+Terraform/Terragrunt, GitHub Actions and AWS OIDC support one supervised operator.
 
-**Verified DEV checkpoint, 2026-10-15 (Costa Rica): the original full
-infrastructure is deployed.** The second UP reconstructed it after a verified
-first DOWN. Real GitHub Actions/OIDC qualification, delivery of a distinct image
-and protected rollback to the original digest have now passed, including SQL/KMS
-and automatic cleanup. See the [dated delivery evidence](terraform/docs/deployment.md#real-sourcetransport-qualification-and-distinct-digest-dev-rollback).
-This is a session snapshot, not a permanent availability promise; DEV remains
-running and billable until a separately authorized DOWN.
+**Project closure — 2026-10-16:** two full DEV deployments, application SQL/KMS
+checks, protected CI/CD, distinct-image rollback and per-slot NAT recovery were
+verified in AWS. Final DOWN completed. A fresh read-only audit confirmed five
+empty DEV states, no locks and no surviving DEV runtime compute or networking.
+The API is **offline**. Retained security, artifacts and storage can still incur
+charges; see [closure inventory and operations](terraform/docs/portfolio-operations.md).
+This repository is a demonstrated DEV system, not a production availability claim.
 
-## Current implementation
+## Architecture demonstrated
 
-Public API Gateway connects through VPC Link to an internal ALB and private
-Fargate tasks. Blue and green services run the same .NET 8 text API. KMS encrypts
-text stored in SQL Server Express on private EC2. Two NAT instances provide
-per-AZ egress and event-driven replacement recovery.
+```mermaid
+flowchart TB
+  user["API client"]
+  git["GitHub Actions / OIDC"]
+  subgraph aws["AWS — us-east-1 / demonstrated DEV topology"]
+    api["API Gateway HTTP API"] --> link["VPC Link"]
+    wp3["WP3 tests, Docker, qualification and publisher"]
+    subgraph vpc["One VPC — two Availability Zones"]
+      alb["Internal Application Load Balancer"]
+      link --> alb
+      subgraph aza["Availability Zone A"]
+        subgraph publicA["Public subnet A"]
+          natA["NAT A — EC2 / ASG / EIP"]
+        end
+        subgraph privateA["Private subnet A"]
+          tasksA["Fargate task placement A"]
+          sql["SQL Server 2022 Express — EC2 / EBS"]
+        end
+        tasksA -. "outbound default route" .-> natA
+      end
+      subgraph azb["Availability Zone B"]
+        subgraph publicB["Public subnet B"]
+          natB["NAT B — EC2 / ASG / EIP"]
+        end
+        subgraph privateB["Private subnet B"]
+          tasksB["Fargate task placement B"]
+        end
+        tasksB -. "outbound default route" .-> natB
+      end
+      alb --> colors["Blue / green ECS services and IP target groups"]
+      colors --> tasksA
+      colors --> tasksB
+      tasksA --> sql
+      tasksB --> sql
+      natA --> igw["Internet Gateway"]
+      natB --> igw
+    end
+    services["KMS / Secrets Manager / ECR / CloudWatch"]
+    igw -. "public AWS endpoints" .-> services
+    events["ASG launch event → EventBridge → E13 Lambda duties"]
+    events -. "EIP / route / source-destination check" .-> natA
+    events -. "EIP / route / source-destination check" .-> natB
+    events -. "failed delivery or execution" .-> sqs["SQS diagnostic queues"]
+    ecr["Qualified ECR image digest"] --> wp4["WP4 DEV delivery / promotion / rollback / cleanup"]
+    wp4 -. "owns runtime revisions, counts and traffic" .-> colors
+    wp4 -.-> alb
+  end
+  user --> api
+  git --> wp3
+  wp3 --> ecr
+  git --> wp4
+  classDef network fill:#e8f1fb,stroke:#31658b,color:#102d44
+  classDef workload fill:#e9f5ee,stroke:#28744b,color:#123b25
+  classDef control fill:#fff3df,stroke:#93611d,color:#50350e
+  class api,link,alb,natA,natB,igw network
+  class tasksA,tasksB,sql,colors workload
+  class git,wp3,wp4,events,sqs,ecr,services control
+```
 
-The final E1 model separates protected security administration, qualified release,
-delivery/recovery and environment lifecycle. Terraform owns skeletons; protected
-delivery owns task revisions/counts and traffic. Images use qualified digests.
-The existing WP3 and WP4 DEV paths are installed for the exact authorized branch
-and immutable workflows. E16 retains exclusive ownership of the five DEV states;
-this trial does not activate PROD or WP5. Repository tests and native AWS/GitHub
-observations are recorded separately. NAT replacement testing and final DOWN
-remain separate operations.
-See [final E1 acceptance](terraform/docs/e1-final-acceptance.md).
+Task placement spans the two private subnets; this diagram does not promise one
+permanent task in each AZ. Blue/green means two services, with only the serving
+color kept running between deliveries. SQL is a **single EC2 instance**, not an
+HA database. NAT recovery replaces a failed instance **within its slot/AZ**;
+it does not prove cross-AZ failover or uninterrupted outbound connectivity.
+No Cloud Map registration is implemented.
 
-## Durable knowledge map
+The .NET 8 API encrypts text with KMS, stores ciphertext in SQL Server and decrypts
+it on retrieval. `/health` is liveness; `/ready` checks database/KMS readiness;
+POST/GET `/text` exercises the actual data path. Application and SQL instances
+are private. VPC Link reaches the internal ALB; no public SQL or SSH ingress is
+required. NAT provides outbound access for private workloads.
 
-| Read | When |
+## Infrastructure and ownership
+
+Terraform/Terragrunt separate the runtime into five states:
+
+| Creation order | Layer | Main responsibility |
+| --- | --- | --- |
+| 1 | `global` | VPC, four subnets, routing, IGW, EIPs, both NAT ASG slots, ALB/target groups |
+| 2 | `data` | SQL EC2 and its encrypted disposable EBS |
+| 3 | `platform` | ECS cluster |
+| 4 | `apps` | Blue/green service skeletons and application log groups |
+| 5 | `edge` | API Gateway, VPC Link and edge logging |
+
+DOWN reverses this order. The separately protected security root, S3 state
+backends/versions, KMS/secrets, ECR, identities and release evidence are retained.
+E16 grants one operator exclusive write authority over the five DEV state/lock
+pairs. Terraform owns skeletons; WP4 owns task revisions, desired counts and ALB
+traffic. Protected delivery does not acquire Terraform state-write authority.
+
+## CI/CD and verified results
+
+GitHub Actions obtains temporary AWS credentials through **OIDC**, without
+permanent AWS access keys in GitHub. WP3 qualifies source through seven controls,
+.NET tests and Docker/probe checks, then publishes through its authorized ECR
+publisher. WP4 consumes a qualified release/digest, verifies readiness, promotes
+traffic and automatically drains the old color. Rollback recreates the previous
+qualified image rather than relabeling the current one.
+
+| Demonstration | Authentic evidence / scope |
 | --- | --- |
-| [Architecture](terraform/docs/architecture.md) | Understanding topology, networking, layer/state ownership or app/data contracts |
-| [Deployment](terraform/docs/deployment.md) | Changing workflows, promotion, rollback or release evidence |
-| [Bootstrap and operations](terraform/docs/bootstrap.md) | Reconstructing or operating infrastructure |
-| [Security and secrets](terraform/docs/secrets-strategy.md) | Changing trust, credentials, encryption or exposure |
-| [Decisions and limitations](terraform/docs/decisions-and-limitations.md) | Reviewing constraints, targets, unresolved choices or improvement candidates |
-| [Validation](terraform/docs/validation.md) | Choosing checks and understanding side effects |
-| [Agent map](AGENTS.md) | Finding task-specific working guidance |
+| Rebuild after DOWN | Second full original DEV UP reconstructed resources with new IDs; [deployment record](terraform/docs/second-real-dev-cycle.md) |
+| Qualification | [WP3 run 38825575655](https://github.com/Kendall04/terragrunt_demo/actions/runs/38825575655): seven controls passed, 103 .NET tests, real Docker/probe and ECR publication |
+| Blue/green delivery | [WP4 run 38825984998](https://github.com/Kendall04/terragrunt_demo/actions/runs/38825984998): distinct digest B served traffic; automatic cleanup |
+| Real A → B → A rollback | [Run 38827037528](https://github.com/Kendall04/terragrunt_demo/actions/runs/38827037528): original digest A restored, SQL/KMS round trips passed, cleanup automatic, E2 generation 14 RELEASED |
+| NAT replacement | Both slots recovered with E13 and real private egress; the initial B failure and its manual repair remain distinguished from the successful corrected automatic retrial in the [NAT record](terraform/docs/e13-nat-reliability.md#installed-dev-correction-and-automatic-b-retrial) |
+| Final runtime removal | Five reviewed saved plans applied; independent AWS removal checks and retained-resource inventory in the [final DOWN record](terraform/docs/e16-practical-dev-lifecycle.md#final-real-dev-down-completed--2026-10-16-utc) |
 
-Implementation is authoritative for current behavior. Owner decisions govern
-constraints and intent. Documents explicitly distinguish current contracts,
-accepted decisions, targets, unresolved questions and historical material.
+[Delivery evidence](terraform/docs/deployment.md#real-sourcetransport-qualification-and-distinct-digest-dev-rollback)
+records complete releases and digests. Repository acceptance previously passed
+983 E1/WP tests and AC1–AC16; that is offline contract evidence, separate from the
+live trials above. Historical static debt was 24 TFLint warnings / 46 tfsec findings.
+The documentation closure does not claim a new execution of those suites/scanners.
 
-## Layout and historical evidence
+**Branch-bound validation:** the demonstrated request workflows, GitHub
+Environments and OIDC identities were bound to
+`codex/final-github-actions-cicd` and an immutable reusable-workflow pin.
+Publishing this history on `main` does **not** activate delivery from `main`.
+PROD and WP5 execution were not demonstrated or enabled by these DEV trials.
 
-- `demo-api/`: application, migrations, tests, Dockerfile and task template.
-- `terraform/infra/security/`, `terraform/live/security/`: protected security root.
-- `terraform/modules/target/{dev,prod}/`: fixed protected lifecycle layer modules.
-- `ci/authority/retired/`: inert historical source text, never deployable roots.
-- `.github/`: workflows, actions, CD classification and fixtures.
-- `scripts/`: bootstrap, deployment, artifact and state-audit helpers.
-- `ci/schemas/`: release/deployment contracts.
-- `terraform/docs/`: durable knowledge and explicitly historical narratives.
+## Operate, review or explore
 
-[Case study](terraform/docs/case-study.md), [interview guide](terraform/docs/interview-guide.md)
-and [delivery evolution notes](terraform/docs/ci-cd-target-architecture.md) preserve
-historical reasoning, not current operating instructions.
-[Evidence examples](terraform/docs/evidence/README.md) are synthetic.
-The architecture PNG is illustrative; the pipeline PNG is superseded.
-Neither proves deployment success or availability.
+Start with the [short operations and retained-cost guide](terraform/docs/portfolio-operations.md).
+It explains prerequisites, staged bootstrap, plan review, release handoff, failure
+handling and supervised teardown. Commands can mutate AWS: documentation is not
+permission to run them. No automatic UP, DOWN or retained-resource cleanup is part
+of this closure.
 
-Read validation guidance before running commands. Deployment/bootstrap commands
-contact AWS and mutate resources; their documentation is not authorization.
+| Reference | Purpose |
+| --- | --- |
+| [Architecture](terraform/docs/architecture.md) | Network, application/data contracts, layer and state ownership |
+| [Deployment](terraform/docs/deployment.md) | Protected release, promotion, rollback and dated evidence |
+| [E16 operator](terraform/docs/e16-practical-dev-lifecycle.md) | Actual original DEV saved-plan workflow and completed shutdown |
+| [Bootstrap](terraform/docs/bootstrap.md) / [security](terraform/docs/secrets-strategy.md) | Durable installation, secret metadata/value separation and authority |
+| [Decisions and limitations](terraform/docs/decisions-and-limitations.md) | Explicit tradeoffs, unresolved targets and accepted constraints |
+| [Validation](terraform/docs/validation.md) | Test meaning, toolchain and command side effects |
+
+Source lives in `demo-api/`, `terraform/`, `.github/`, `scripts/` and `ci/`.
+Historical case studies, PNGs, retired sources and synthetic evidence examples
+are background material, not live operating authority. This personal DEV exercise
+does not establish PROD independence, database backup/restore, a recovery-time
+SLA or permanent service availability. SQL data was explicitly disposable for the
+approved teardown. Retained storage and security services mean **DOWN is not $0**.
 
 ## Author
 

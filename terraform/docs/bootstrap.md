@@ -1,5 +1,12 @@
 # Bootstrap, operations and recovery
 
+> **Dated context:** the 2026-09-18 empty-account baseline below preceded the two real DEV
+> cycles. Final DOWN is complete; see [current closure and short
+> operations](portfolio-operations.md). The proven supervised path is
+> [E16](e16-practical-dev-lifecycle.md), distinct from the advanced WP5 whole-DOWN gates
+> discussed below. Retained installation and new resource bindings still need genuine
+> verification before any separately authorized reconstruction.
+
 ## Accepted context and operating model
 
 Owner reconciliation on 2026-09-18: no AWS infrastructure is deployed. Previous

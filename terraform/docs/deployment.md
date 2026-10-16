@@ -1,5 +1,13 @@
 # Deployment and release contract
 
+> **Closure status — 2026-10-16:** later dated evidence in [real qualification and
+> distinct-digest
+> rollback](#real-sourcetransport-qualification-and-distinct-digest-dev-rollback) supersedes
+> the early pending-installation/rollback checkpoints. Final DEV DOWN has completed; the API
+> is offline. [Portfolio operations](portfolio-operations.md) records current retained
+> resources and exact branch-bound OIDC limits; a main-based deployment route is not
+> demonstrated.
+
 Read [architecture](architecture.md) for ownership and [validation](validation.md)
 for command effects. This describes checked-in behavior, not proven deployment
 results. The owner reconciliation on 2026-09-18 preceded all AWS resources.

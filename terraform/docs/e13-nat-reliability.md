@@ -1,5 +1,14 @@
 # E13 NAT recovery reliability
 
+> **Closure status — 2026-10-16:** the early undeployed TARGET baseline below is historical.
+> The [installed automatic B retrial](#installed-dev-correction-and-automatic-b-retrial)
+> records the later live result separately from its failed predecessor. [Final
+> DOWN](e16-practical-dev-lifecycle.md#final-real-dev-down-completed--2026-10-16-utc)
+> subsequently removed both NAT slots and retained the original historical uncertainty/FAILURE
+> evidence. The exact archived SQS message was acknowledged under separate owner approval; no
+> historical attempt was relabeled successful. [Current inventory](portfolio-operations.md)
+> records inhibited controllers and retained resources.
+
 Repository implementation over integrated baseline
 `72141a7f666ce058ce4d18eb3c3adc180e521ca4`. This remains undeployed TARGET:
 all protected activation maps are empty. No live IDs, AMI rollout, forwarding

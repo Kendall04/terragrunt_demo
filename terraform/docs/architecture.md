@@ -1,5 +1,13 @@
 # Architecture and current contracts
 
+> **Closure status — 2026-10-16:** the complete original DEV topology below was deployed and
+> exercised, then destroyed. The [portfolio operations guide](portfolio-operations.md)
+> distinguishes retained security/control resources from the empty runtime states. Early
+> inactive/default declarations below describe the source baseline; the dated [delivery
+> evidence](deployment.md#real-sourcetransport-qualification-and-distinct-digest-dev-rollback)
+> records the separately installed DEV WP3/WP4 path. No PROD deployment or Cloud Map is
+> implied.
+
 WP7 defines the repository E1 authority model. Its eleven external identities
 and default sixteen WP4D/eight WP5 binding declarations remain inactive. The
 [first real DEV deployment](first-real-dev-deployment.md) records separately
