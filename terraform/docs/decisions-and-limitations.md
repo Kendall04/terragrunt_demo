@@ -298,3 +298,22 @@ One private versioned bucket and one backup CMK remain; temporary roles, key-use
 bindings and local runtime/data were retired. No existing text-key policy changed.
 Hourly/2+2-day/two-hour lab settings are accepted; RPO/RTO remain unmeasured,
 no scheduler is installed and cross-AZ/full-app qualification remains separate.
+
+## V2 local SQL service increment (2026-10-16)
+
+The owner authorized implementation, KDD, a local commit and isolated codex-vm SSH
+fixtures for the backup service. This scope includes hourly inert units,
+self-contained packaging, fresh-remote-proof deletion of owned older .bak only,
+and local inhibit/wait/resume. It authorizes no AWS call/deployment, publication,
+permanent service/credential/security installation or change to existing resources.
+The [runbook](../../operations/sql-backup/README.md#local-service-increment---2026-10-16)
+states the exact install impact and the limits of local fencing. SQL minimum
+verifier CREATE DATABASE in master was proven in disposable Express without
+sysadmin/dbcreator/source SELECT; restore permissions remain a separate boundary.
+
+Finite acceptance closed with local component/native tests, actual package smoke
+and static units; two accelerated wrapper activations do not claim a running
+systemd timer or co-located EC2/AWS integration. Failure files remain until operator
+review; disk reserve can stop further backups. No additional HA/production stack,
+Cognito, Daybreak review dependency or cosmetic review loop is introduced. EC2
+installation and full-app/cross-AZ recovery are subsequent explicitly scoped work.

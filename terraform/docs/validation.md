@@ -920,3 +920,52 @@ unmeasured objectives. Cross-AZ/EC2 recovery, app /ready and POST/GET, EC2-role
 installation, independent-host notification and full original DEV qualification
 remain outside this drill. Future restore needs a separately authorized scoped
 role/key-policy binding; retained data is not an automatic access grant.
+
+## SQL backup service local qualification - 2026-10-16
+
+Result: LOCAL_SERVICE_COMPONENT_PASS. Owner-authorized source/scripts/templates,
+KDD and local commit only; no AWS calls, deployment, host service installation,
+push/merge, credential transfer or persistent permissions change. Windows Git
+owns the existing linked `C:\CodexDrop\terragrunt_demo` checkout; Linux validation
+uses `/mnt/hgfs/CodexDrop/terragrunt_demo` over supported SSH codex-vm with explicit
+Windows SSH config, BatchMode and StrictHostKeyChecking=yes. No WSL or trust change.
+
+Evidence directory: `C:\CodexDrop\temp\terragrunt-demo-sql-service-20261016`.
+FinalTestResults records 104/104 app tests and 51/51 backup offline tests (one
+native fact intentionally skipped there). host-tests.log records 12/12 Python
+fixtures in a pinned official Python container, network=none and source read-only.
+Coverage includes two accelerated activations, lock exclusion, waiting inhibit,
+explicit resume, failed/no-space/not-ready stubs, timeout UNKNOWN fencing,
+secret-output sentinel, permissions/links, deterministic archive, traversal/drift
+refusal and unprivileged staging-only writes in the disposable container.
+
+The separate native fact passed on real SQL Express 16 with no published ports,
+fresh labelled private volume, and actual SQL UID/GID 10001/10001. A dedicated
+verifier was denied before granting CREATE DATABASE in master, then successfully
+verified backup headers/checksums with sysadmin=0, dbcreator=0 and source SELECT
+denied. Backup remained db_backupoperator; isolated restore still used its separate
+administrative lab context. Existing restore/CHECKDB/known-row/no-overwrite/
+truncated-file/source-preservation checks passed. The first verifier fixture
+attempt reached those assertions but failed DROP LOGIN because client pooling
+held the connection. Disabling pooling for its disposable logins fixed fixture
+cleanup; the final run passed. Both attempts retired their owned resources.
+`sql-lab-evidence.json` records TestExitCode=0, CleanupVerified=true, CLI assembly
+SHA-256 `41f257b11fdad466e6bee5317ef556cebabe35bd8c42d65bb4f98a42b00e0799` and test
+assembly `c5975ca47f172b98cd92b8a304a25333306298eaebe1d6e5c9df4ec5ced6e047`.
+Existing windrose-sql stayed running and untouched.
+
+publish.log records SDK 10.0.402 self-contained linux-x64/runtime 10.0.13 publish.
+real-package-evidence.json records 241 files, default plan without writes,
+STAGED_NOT_ENABLED then ALREADY_INSTALLED in a temporary root, and actual apphost
+cloud-preview exit 0. systemd-static-evidence.json records static unit verification
+only in a temporary root, no manager and no timer activation. The fixture's
+placeholder nobody user produced a static safety warning; the proposed real unit
+uses the existing SQL mssql identity. Real host ownership and LoadCredential/boot/
+hourly behavior are not qualified by that static check.
+
+Cleanup's S3 proof is covered by offline protocol/store fixtures, with no new live
+cloud exercise. The earlier 36-check S3/KMS component record remains historical
+and its retained bucket/key are untouched. No new AWS cost was incurred by this
+local increment; no fresh cloud resource or access claim is made. Real IMDS role,
+SQL grants/credentials, installed timer, observer notification and full co-located
+EC2 CLI remain the next installation boundary. RPO/RTO remain unmeasured.

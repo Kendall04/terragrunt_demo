@@ -1,6 +1,6 @@
 namespace SqlBackup;
 
-public sealed class Protocol(Options options, ISqlEngine? sql, IStore? store)
+public sealed partial class Protocol(Options options, ISqlEngine? sql, IStore? store)
 {
     public void ValidateManifest(Manifest m)
     {
@@ -36,6 +36,7 @@ public sealed class Protocol(Options options, ISqlEngine? sql, IStore? store)
         using var held = new FileStream(Path.Combine(options.StagingDirectory, "operation.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
         var id = Guid.NewGuid().ToString("N");
         var directory = Path.Combine(options.StagingDirectory, id); Local.PrivateDirectory(directory);
+        JsonFiles.Write(Path.Combine(directory, "owner.json"), new OwnedRun(1, id, options.Database, options.Bucket, options.Prefix, options.BackupKeyArn, options.TextKeyArn));
         var state = Path.Combine(options.StagingDirectory, "last-attempt.json");
         JsonFiles.Write(state, new Attempt(id, "STARTED", DateTimeOffset.UtcNow));
         try

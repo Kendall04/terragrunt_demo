@@ -1,21 +1,23 @@
-# PROPOSED template only; no unit is installed/enabled by this increment.
+# Install is inert. Enable only after separately authorized host/role/SQL bootstrap.
 [Unit]
-Description=Native SQL Express backup with verified remote commit
+Description=Verified SQL Express backup and bounded local cleanup
 After=network-online.target mssql-server.service
+Wants=network-online.target
 Requisite=mssql-server.service
 
 [Service]
 Type=oneshot
-User=mssql
+User=@SERVICE_USER@
 UMask=0077
 NoNewPrivileges=true
 ProtectSystem=strict
 ProtectHome=true
-ReadWritePaths=/var/opt/mssql/backup/v2
-# Future approved secret delivery must supply these runtime-only files.
+PrivateTmp=true
+ReadWritePaths=@STAGING@
 LoadCredential=backup-connection:/run/sql-backup-credentials/backup-connection
 LoadCredential=verify-connection:/run/sql-backup-credentials/verify-connection
 Environment=AWS_EC2_METADATA_V1_DISABLED=true
 Environment=DOTNET_CLI_TELEMETRY_OPTOUT=1
-ExecStart=/bin/sh -c 'export SQL_BACKUP_CONNECTION_STRING="$$(cat "$$CREDENTIALS_DIRECTORY/backup-connection")" SQL_VERIFY_CONNECTION_STRING="$$(cat "$$CREDENTIALS_DIRECTORY/verify-connection")"; exec /opt/terragrunt-demo/sql-backup/SqlBackup backup --config /etc/terragrunt-demo/sql-backup.json --aws --ec2-role --local-sql-self-signed'
-TimeoutStartSec=660
+ExecStart=/usr/bin/python3 /opt/terragrunt-demo/sql-backup/host.py run --config /etc/terragrunt-demo/sql-backup/config.json --executable /opt/terragrunt-demo/sql-backup/bin/SqlBackup --local-sql-self-signed
+TimeoutStartSec=1300
+# No automatic retry: UNKNOWN is not remote cancellation or replay authority.

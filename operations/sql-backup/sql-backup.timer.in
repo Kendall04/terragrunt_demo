@@ -1,6 +1,5 @@
-# PROPOSED hourly lab default. Not installed, enabled or accepted as an RPO.
 [Unit]
-Description=Proposed hourly SQL backup lab schedule
+Description=Hourly SQL backup while the owner enables the SQL host
 [Timer]
 OnCalendar=hourly
 Persistent=true

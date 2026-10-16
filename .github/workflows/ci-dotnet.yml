@@ -49,6 +49,13 @@ jobs:
       - name: Run tests
         run: dotnet test ./demo-api/terragrunt-demo.sln --configuration Release --no-build --verbosity normal
 
+      - name: Validate SQL backup host contracts
+        run: |
+          docker run --rm --network none --entrypoint /var/lang/bin/python3 \
+            --mount type=bind,source="${GITHUB_WORKSPACE}/operations/sql-backup",target=/src,readonly \
+            -w /src public.ecr.aws/lambda/python@sha256:c05509c1a303e7ca10acc26782f530ff1a8573411132e2a67c1924d687a65a96 \
+            -I -B test_host.py
+
       - name: Validate readiness deployment contracts
         run: |
           set -euo pipefail

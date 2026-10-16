@@ -229,8 +229,11 @@ adds a local V2 contract: private bounded native Express backups with CHECKSUM,
 separate backup/verifier contexts, immutable exact-version storage evidence and
 restore to an isolated new DB with CHECKDB/readback. It does not change SQL EC2,
 root-disk deletion, application credentials/migrations or the five-layer lifecycle.
-Native SQL is locally verified; S3/KMS, scheduling, alerts and cloud restore remain
-uninstalled/unverified. [Evidence](validation.md#sql-backuprestore-local-increment---2026-10-16).
+Native SQL and the bounded S3/KMS component drill are verified separately. The
+[local service increment](validation.md#sql-backup-service-local-qualification---2026-10-16)
+adds verified packaging, owned-file cleanup and inhibit/wait/resume. No host
+service, EC2 role/secret delivery, real timer, alert or cross-AZ/app restore is
+installed or qualified. [Initial evidence](validation.md#sql-backuprestore-local-increment---2026-10-16).
 
 The original simple demo is not the final backend target. Read the decision
 register before adding identity or treating database limitations as accepted.

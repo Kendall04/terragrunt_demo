@@ -19,7 +19,9 @@ needed for the task; this file is a map, not the architecture reference.
   The owner authorized the first local V2 SQL backup/restore increment on
   2026-10-16. Its [runbook](operations/sql-backup/README.md) and
   [validation boundary](terraform/docs/validation.md#sql-backuprestore-local-increment---2026-10-16)
-  separate native Express proof from mocked S3 and future AWS installation.
+  separate native Express proof, the accepted S3/KMS component drill and future
+  EC2 installation. The [local service contract](operations/sql-backup/README.md#local-service-increment---2026-10-16)
+  adds packaging/cleanup/inhibition; it installs no host service or cloud access.
 
 ## Read when
 

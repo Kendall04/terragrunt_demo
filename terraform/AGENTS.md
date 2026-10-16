@@ -23,6 +23,7 @@ Read [architecture](docs/architecture.md) for layer/state/network ownership,
   explicit check flags; no AWS operation is implied by a validation request.
 - SQL Server stays on EC2. The owner-authorized local V2
   [backup/restore increment](../operations/sql-backup/README.md) is implemented;
-  its policies/units are uninstalled proposals. Cloud integration, real S3/KMS,
-  recovery targets and retention still need separate authorization/decisions.
+  its policies/units remain uninstalled. The bounded real S3/KMS component drill
+  passed; local service packaging/cleanup now has isolated fixtures. EC2 role,
+  secret delivery, real scheduling and cross-AZ/app recovery remain unqualified.
   Never apply its preview or introduce RDS as incidental cleanup.

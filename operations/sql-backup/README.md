@@ -23,8 +23,8 @@ missing, stale and maintenance states distinguished; no secrets in output.
 This first lab increment supports one data file and one log file and refuses
 allocated databases/backups beyond the configured bound (512 MiB proposed,
 maximum configurable 1 GiB). It never truncates a database or silently relies on
-compression. Multipart, differential/log backups, PITR, HA and automated cleanup
-are excluded. SQL Express lacks SQL Agent and native encrypted/compressed/S3 URL
+compression. Multipart, differential/log backups, PITR and HA remain excluded. The subsequent
+local service increment below adds only remote-confirmed owned-file cleanup. SQL Express lacks SQL Agent and native encrypted/compressed/S3 URL
 backup support; scheduling is external and encryption is local EBS + S3/KMS.
 
 Build/test: the existing app solution includes both CLI and tests. The SQL
@@ -58,7 +58,8 @@ All S3 requests enforce ExpectedBucketOwner=341936017254. See the
 [AWS missing-object permission behavior](https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html).
 A local .bak or LOCAL_VERIFIED result is
 not a remote backup. Failures retain private local files and sanitized state;
-there is no automatic deletion or retry of unconfirmed mutations. Rerunning a
+the local service can delete only its own older .bak after fresh remote proof;
+there is no deletion or retry of unconfirmed mutations. Rerunning a
 whole backup creates a new unique run, never overwrites a previous one.
 
 `restore --config <config> --aws --manifest-key <exact-key> --manifest-version
@@ -118,14 +119,17 @@ Other SQL containers, caches and volumes are not touched.
 The synthetic native test verifies Express engine/backup checksums, a backup login
 without sysadmin or CREATE ANY DATABASE, successful restore/CHECKDB/known-row
 read, refusal to overwrite the restored DB, rejection of a truncated .bak and
-preservation of newer source rows. SQL verification/restore uses a separate
-administrative lab connection: production minimum verifier permissions still
-need installation review. Storage is an in-memory S3 fake: neither actual S3/KMS
+preservation of newer source rows. The service increment additionally verifies
+a separate verifier login: denied before a master CREATE DATABASE grant, then
+HEADERONLY/VERIFYONLY successful with sysadmin=0 and dbcreator=0, while source
+SELECT remains denied. Restore still uses the separate administrative lab
+connection; minimum restore permissions and real host login installation remain
+unqualified. Storage is an in-memory S3 fake: neither actual S3/KMS
 encryption nor application decryption/readiness is proven by this local test.
 
 The `.service.in`/`.timer.in` files are inert proposals. The service uses Requisite,
 so it cannot start SQL by itself; it never starts EC2 or bypasses lifecycle
-ownership. Publishing a reviewed self-contained Linux artifact, secret delivery,
+ownership. The subsequent service increment below supplies a self-contained Linux package. Secret delivery,
 an accepted EC2 role/bucket/key, external observer and notification wiring remain
 separate installation work. A deadline failure retains files and reports failure;
 it does not claim remote SQL/S3 cancellation or authorize blind replay.
@@ -172,3 +176,86 @@ instance/EBS and its temporary configuration/access; stop scheduled work before
 supervised E16 DOWN. Retain backup objects, backup CMK and original text key for
 the owner-selected horizon. Deletion, retention changes, IAM changes and another
 UP/DOWN remain unapproved; never delete backup keys just to report a zero bill.
+
+## Local service increment - 2026-10-16
+
+Owner scope: implement source, scripts/templates, local commit and isolated SSH
+fixtures only. No AWS calls, deployment, push/merge, persistent host installation,
+credentials or security changes occurred. `windrose-sql` remained untouched.
+Hourly/two-hour stale/2+2-day expiry are the previously accepted lab settings;
+RPO <=70 minutes and component RTO <=30 minutes remain unmeasured objectives.
+
+`cleanup --config <config> --aws --ec2-role` acquires the CLI operation lock and
+keeps two verified local backups by default (`RetainLocalVerifiedBackups`, 1..10),
+including the last-success pointer. It considers only UUID directories with an
+exact matching `owner.json` and a valid committed receipt. Before deleting an
+older `database.bak`, it rereads the exact S3 manifest and backup versions and
+checks KMS identity, manifest equality, size/SHA-256 and the local file hash.
+Only that owned .bak is removed; receipts/metadata, SQL data, restored databases
+and all S3 versions remain. No DeleteObject grant is needed. Legacy directories,
+foreign entries, changed files and unconfirmed failures are preserved. Old failed
+directories can accumulate: this is bounded deletion of confirmed backups, not
+a guarantee of bounded total disk usage. The existing free-space reserve refuses
+new work when exhausted; an operator must investigate retained failures.
+
+`host.py run --config <config> --executable <absolute-binary>` holds one private
+flock across backup plus cleanup. It requires REMOTE_VERIFIED before cleanup and
+does not report job success on partial cleanup. Two SQL connection values are
+read from private systemd `CREDENTIALS_DIRECTORY` files named `backup-connection`
+and `verify-connection`, passed only to the backup child, then removed from the
+cleanup child's environment. Captured child output is not logged. AWS is the
+explicit EC2-role path with exact role/account checks; no profile/session is
+copied to Linux. IMDS/role execution remains untested on a real EC2 host.
+
+`host.py inhibit --config <config> --wait-seconds 600` first fences future wrapper
+runs, then waits for the current whole job without killing it. A wait timeout
+leaves inhibition in place. `status` exposes the local state; `resume` is an
+explicit operator action. STARTED/UNKNOWN from an interrupted/deadline job blocks
+the next activation until review and explicit resume. Resume does not replay work
+or certify remote SQL/S3 cancellation. INHIBITED_LOCAL_IDLE certifies local wrapper
+idleness only, never SQL quiescence or global E2 ownership. Direct CLI invocations
+outside this wrapper are not inhibited. No E16 hook or installed DOWN integration
+is claimed; preserve existing lifecycle authority.
+
+The inert service uses Requisite=mssql-server.service, no Restart, private staging,
+LoadCredential, read-only system protection and a 1300-second outer bound. It
+cannot start SQL or EC2. After an authorized installation, first verify SQL is
+ready and run one successful manual service backup before enabling the hourly
+timer. Persistent=true permits one catch-up activation; it cannot recover missed
+hourly RPO or prove startup SQL readiness. Failure and missing-commit observation
+still need the independent observer and an approved human notification channel.
+
+`package.py build --publish-dir <self-contained-linux-x64-publish> --out <new.tar>
+--source-commit <40-hex-commit>` verifies runtime 10.0.13 and required apphost/runtime
+files and writes a deterministic tar with file hashes/modes and a source commit.
+Use SDK 10.0.402 and `dotnet publish -c Release -r linux-x64 --self-contained true
+-p:RuntimeFrameworkVersion=10.0.13`. The package still requires compatible Linux
+native libraries (including ICU/OpenSSL), Python 3, systemd and local SQL.
+
+`package.py install --package <tar> --expected-sha256 <reviewed-sha256> --config
+<public-config> --service-user mssql` produces an INSTALL_PLAN by default. Config
+has no secret fields; replace every proposed-lab placeholder before real use.
+It checks archive traversal/links, digest/inventory, exact role/key syntax and
+existing unmanaged targets. `--apply --root <existing-isolated-fixture>` stages
+files without services/credentials; the same package/config returns
+ALREADY_INSTALLED, while drift/replacement is refused. It is not an upgrade or
+uninstall framework. Keep a failed partial install for investigation.
+
+Actual `/` application additionally requires root and
+`--confirm-host-install <same-reviewed-sha256>`. No such application occurred.
+Its concrete future changes are root-owned `/opt/terragrunt-demo/sql-backup`,
+root:service-group 0640 `/etc/terragrunt-demo/sql-backup/config.json`, two 0644
+units under `/etc/systemd/system` and service-owned 0700 staging. The installer
+never calls systemctl or creates logins/credentials. Separately authorize and
+review any real host ownership changes, SQL login/grants, runtime credential
+delivery, EC2 role/key-policy binding, daemon-reload, manual service start and
+timer enable/start before executing those installation actions.
+
+Validation: 104 app tests, 51 backup offline tests, 12 Python host/package fixtures
+and one native Express fact passed. Fixtures cover two accelerated executor
+activations, concurrency, startup SQL unavailable, failure, low space, private
+permissions, inhibition/wait/resume, deadline fencing and inert/idempotent install.
+Unprivileged writes were exercised only inside a temporary container. Units passed
+systemd-analyze static verify in a temporary root; no PID1 manager or real hourly
+timer was run. A real self-contained package passed temporary staging, idempotence
+and cloud-preview on codex-vm. See [qualification](../../terraform/docs/validation.md#sql-backup-service-local-qualification---2026-10-16).

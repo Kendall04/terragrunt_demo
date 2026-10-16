@@ -8,7 +8,7 @@ public static class Program
     {
         try
         {
-            if (args.Length < 3 || !new[] {"backup", "restore", "check", "cloud-preview"}.Contains(args[0])) throw new BackupFailure("USAGE_REQUIRED");
+            if (args.Length < 3 || !new[] {"backup", "restore", "check", "cleanup", "cloud-preview"}.Contains(args[0])) throw new BackupFailure("USAGE_REQUIRED");
             var values = new Dictionary<string, string>(); bool aws = false, ec2Role = false, localSql = false;
             for (int i = 1; i < args.Length; i++)
             {
@@ -34,6 +34,13 @@ public static class Program
                     : new("", Credential("SQL_RESTORE_CONNECTION_STRING"), Credential("SQL_RESTORE_CONNECTION_STRING"), options.TimeoutSeconds, localSql);
             }
             var protocol = new Protocol(options, engine, store);
+            if (args[0] == "cleanup")
+            {
+                if (!aws) throw new BackupFailure("REMOTE_STORAGE_REQUIRED_FOR_CLEANUP");
+                var cleanup = await protocol.Cleanup(ct);
+                Console.WriteLine(JsonSerializer.Serialize(cleanup));
+                return cleanup.UnconfirmedBackups == 0 ? 0 : 1;
+            }
             if (args[0] == "backup")
             {
                 var receipt = await protocol.Backup(ct);

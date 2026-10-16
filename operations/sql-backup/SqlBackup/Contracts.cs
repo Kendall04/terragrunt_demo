@@ -19,12 +19,14 @@ public sealed record Options
     public long MaxBackupBytes { get; init; } = 536870912;
     public long FreeReserveBytes { get; init; } = 268435456;
     public int TimeoutSeconds { get; init; } = 600;
+    public int RetainLocalVerifiedBackups { get; init; } = 2;
     public int ProposedIntervalHours { get; init; } = 1;
     public int ProposedRetentionDays { get; init; } = 2;
     public int ProposedMaxAgeHours { get; init; } = 2;
     public void Validate()
     {
         Names.Database(Database);
+        if (RetainLocalVerifiedBackups is < 1 or > 10) throw new BackupFailure("INVALID_LOCAL_RETENTION");
         if (new[] {"master", "model", "msdb", "tempdb"}.Contains(Database, StringComparer.OrdinalIgnoreCase)) throw new BackupFailure("SYSTEM_DATABASE_DENIED");
         if (!Regex.IsMatch(Prefix, "^[a-z0-9][a-z0-9/_-]{1,120}$") || Prefix.Contains("//")) throw new BackupFailure("INVALID_PREFIX");
         foreach (var key in new[] {BackupKeyArn, TextKeyArn})

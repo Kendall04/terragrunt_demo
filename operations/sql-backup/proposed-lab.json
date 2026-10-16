@@ -11,5 +11,7 @@
   "TimeoutSeconds": 600,
   "ProposedIntervalHours": 1,
   "ProposedRetentionDays": 2,
-  "ProposedMaxAgeHours": 2
+  "ProposedMaxAgeHours": 2,
+  "ExpectedEc2RoleName": "replace-before-install",
+  "RetainLocalVerifiedBackups": 2
 }

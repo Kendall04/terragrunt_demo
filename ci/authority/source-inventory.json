@@ -788,24 +788,28 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/ci-dotnet.yml": {
-      "sha256": "55781adc5f47336d9596018ebc025cdbc3b9df9d9b3fc81fb6fdfbdc5287108c",
+      "sha256": "cfa706c44509f692fe8a60c0ef9e95c2687546a54433a31988420937fd5d39f7",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           44,
           47,
           50,
-          85,
-          87
+          54,
+          56,
+          92,
+          94
         ],
         "executable-dependency": [
           22,
           31,
           36,
-          56,
-          59,
-          64,
-          72
+          55,
+          57,
+          63,
+          66,
+          71,
+          79
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -9263,7 +9267,7 @@
     },
     "operations/sql-backup/proposed-lab.json": {
       "semantic_status": "UNVERIFIED",
-      "sha256": "873de64a8c9ee749249bfd523627ed5cca76a8c6b3ba8ee55b20a8366c76d689",
+      "sha256": "8b4af524325caaadb468e62add84d835ffae36e9b406be2e61b31fc73a861b15",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -9276,17 +9280,20 @@
     },
     "operations/sql-backup/sql-backup.service.in": {
       "semantic_status": "UNVERIFIED",
-      "sha256": "8a1452dfd2c880744a2dd73e43c37e84d7bbee9c88f8f2ce8f52ba585408b769",
+      "sha256": "b5251fca941552f725389ddf21d42527fc403381b27b9984250e385123492460",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          20
+          21
+        ],
+        "executable-dependency": [
+          21
         ]
       }
     },
     "operations/sql-backup/sql-backup.timer.in": {
       "semantic_status": "UNVERIFIED",
-      "sha256": "2638aa62fc2ffd47899eb39eda20ec1fb743f3e6fcd3dacd6deaa0b05c963cea",
+      "sha256": "832097e3e5a746d19bb8a8d4399d32609dedc3bdbcca95eba3ed15492514c49a",
       "declarations": [],
       "signals": {}
     },
@@ -9320,12 +9327,12 @@
     },
     "operations/sql-backup/SqlBackup/Contracts.cs": {
       "semantic_status": "UNVERIFIED",
-      "sha256": "ea27f779aa454e9eb195a35dbbd21c6968a8d59cb765e1db79383b6623aedf40",
+      "sha256": "a2436181bc7b5f3d787449223d85ae06122e468e96b91385b4cc334cbd32fd8b",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           15,
-          31
+          33
         ]
       }
     },
@@ -9349,7 +9356,7 @@
     },
     "operations/sql-backup/SqlBackup/Program.cs": {
       "semantic_status": "UNVERIFIED",
-      "sha256": "3ab03890d92c9363cd225cdabe885a99b0bf10cfdf068eb430cc0e386babb5a3",
+      "sha256": "7a5879cc913d0578794570858e81b90a5659328aaa489a80e849330367ef45bc",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -9357,13 +9364,14 @@
           15,
           22,
           28,
-          44
+          39,
+          51
         ]
       }
     },
     "operations/sql-backup/SqlBackup/Protocol.cs": {
       "semantic_status": "UNVERIFIED",
-      "sha256": "5848eb2adc24767018f4001c36a4590989f079ad4f5a18ba80b451941321abe8",
+      "sha256": "865f13ddd6162a5305bac0ced9a81439a714f4a2cc51ad9669e15f181d2b926f",
       "declarations": [],
       "signals": {}
     },
@@ -9408,15 +9416,15 @@
     },
     "operations/sql-backup/SqlBackup.Tests/SqlExpressIntegrationTests.cs": {
       "semantic_status": "UNVERIFIED",
-      "sha256": "64364e6b77afdedae0a27173ee1ea9dc3ca6cb4fae7f3857e914eea2d6c21810",
+      "sha256": "de1b4efc9d84a673fa64adf7fda8b64774e6efc7e451bc96898afde45b945a96",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          35
+          36
         ],
         "executable-dependency": [
           19,
-          22
+          23
         ]
       }
     },
@@ -9453,6 +9461,70 @@
       "signals": {
         "launch-or-mutation": [
           39
+        ]
+      }
+    },
+    "operations/sql-backup/host.py": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "787bff71d6a8916c3f32e2de765b34f6723b2a6e3ecd5f9b340980d5f68bdee2",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          89
+        ]
+      }
+    },
+    "operations/sql-backup/package.py": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "a06d94ce4a73cf90686788436df9cfe1bb19a432da3dbd4b3602f299487f8099",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          74,
+          78,
+          79
+        ],
+        "executable-dependency": [
+          36,
+          37,
+          127,
+          128,
+          129
+        ]
+      }
+    },
+    "operations/sql-backup/SqlBackup/Cleanup.cs": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "177022d6b46de380f975f240b820a9e7f2c65c3247edbf09ae3dff4f5654c8e3",
+      "declarations": [],
+      "signals": {}
+    },
+    "operations/sql-backup/SqlBackup.Tests/CleanupTests.cs": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "bd3ef013bea6aa8846c7520ddb46f1406ecc191b9b8688146feac359e24b6925",
+      "declarations": [],
+      "signals": {}
+    },
+    "operations/sql-backup/test_host.py": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "333f12794d184821389d210d766b1f5d307a598d119712d77c628a8a9457563b",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          26,
+          107,
+          118,
+          133,
+          143
+        ],
+        "executable-dependency": [
+          18,
+          44,
+          45,
+          58,
+          93,
+          94,
+          133
         ]
       }
     }
