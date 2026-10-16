@@ -41,6 +41,8 @@ generate files and contact AWS. Deployment/rollback commands mutate resources.
 Do not install dependencies, access AWS or deploy merely because a doc lists a command.
 
 Preserve digest-based delivery and secret metadata/value separation.
-Rollback is not proven; release metadata defaults are not test evidence.
+The dated [DEV rollback evidence](terraform/docs/deployment.md#real-sourcetransport-qualification-and-distinct-digest-dev-rollback)
+proves one qualified application A-to-B-to-A trial, not PROD recovery or database
+restore. Release metadata defaults are not test evidence.
 Update the authoritative docs alongside future behavior changes. Historical
 case-study/interview/phase-plan material and PNGs are not operational authority.

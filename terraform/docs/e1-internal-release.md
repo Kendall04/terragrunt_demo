@@ -51,11 +51,16 @@ external invocation/workflow cutover; WP4+ deployment and lifecycle are absent.
 
 ## Source, archive and publication
 
-The trusted source adapter reads the fixed public repository through GitHub's
-exact commit/tree/blob API. It verifies blob Git identities and admits regular
-0644/0755 application files only. There are no Git hooks, submodules, checkout
-filters, application processes, inherited files, or branch/latest fallback.
-GitHub is the trusted source transport; rate-limit/acquisition failures stop.
+The trusted source adapter makes two REST metadata reads for the fixed public
+repository's exact commit and recursive tree. Application bytes come from
+`raw.githubusercontent.com` at that same commit and must match each selected
+Git blob SHA-1 before materialization. Only regular 0644/0755 application files
+are admitted. There are no Git hooks, submodules, checkout filters, application
+processes, inherited files, or branch/latest fallback. No GitHub token is supplied;
+the two metadata reads still depend on anonymous REST availability. Rate-limit
+and acquisition failures stop without blind retries. The [live DEV delivery
+record](deployment.md#real-sourcetransport-qualification-and-distinct-digest-dev-rollback)
+separates native acquisition diagnostics from genuine WP3 qualification.
 The unchanged WP3B supervisor retains raw source bytes and seals its local
 copies. Its restore/build/test and image ports cross the worker boundary.
 

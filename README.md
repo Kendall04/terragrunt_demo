@@ -4,10 +4,13 @@ This personal project demonstrates AWS infrastructure, a small .NET backend,
 Terraform/Terragrunt composition and GitHub Actions delivery. One operator owns
 the system end to end. It favors explicit tradeoffs over maximum redundancy.
 
-**Owner-confirmed status, 2026-09-18: no AWS infrastructure is deployed.**
-Earlier resources and historical Terraform state were destroyed to avoid unused
-costs. Checked-in configuration is not proof of live resources or a successful
-future reconstruction.
+**Verified DEV checkpoint, 2026-10-15 (Costa Rica): the original full
+infrastructure is deployed.** The second UP reconstructed it after a verified
+first DOWN. Real GitHub Actions/OIDC qualification, delivery of a distinct image
+and protected rollback to the original digest have now passed, including SQL/KMS
+and automatic cleanup. See the [dated delivery evidence](terraform/docs/deployment.md#real-sourcetransport-qualification-and-distinct-digest-dev-rollback).
+This is a session snapshot, not a permanent availability promise; DEV remains
+running and billable until a separately authorized DOWN.
 
 ## Current implementation
 
@@ -19,8 +22,11 @@ per-AZ egress and event-driven replacement recovery.
 The final E1 model separates protected security administration, qualified release,
 delivery/recovery and environment lifecycle. Terraform owns skeletons; protected
 delivery owns task revisions/counts and traffic. Images use qualified digests.
-All external request identities and WP4D/WP5 compute remain inactive. Repository
-acceptance is separate from unverified AWS installation and operational behavior.
+The existing WP3 and WP4 DEV paths are installed for the exact authorized branch
+and immutable workflows. E16 retains exclusive ownership of the five DEV states;
+this trial does not activate PROD or WP5. Repository tests and native AWS/GitHub
+observations are recorded separately. NAT replacement testing and final DOWN
+remain separate operations.
 See [final E1 acceptance](terraform/docs/e1-final-acceptance.md).
 
 ## Durable knowledge map

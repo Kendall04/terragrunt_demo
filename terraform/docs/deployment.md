@@ -229,10 +229,12 @@ Evidence: [ALB health](../../ci/authority/retired/terraform/infra/global/modules
 
 ## UNRESOLVED / TARGET â€” rollback and evidence
 
-The owner did not comprehensively test original rollback. The emergency flip
-and manifest redeploy are current behavior, not a proven recovery contract.
-Rollback must eventually consider artifact retention, history/current pointers,
-DB compatibility, traffic switching, cleanup and evidence together.
+The [dated DEV trial below](#real-sourcetransport-qualification-and-distinct-digest-dev-rollback)
+proves one protected application rollback between distinct qualified digests,
+including traffic, SQL/KMS and automatic cleanup. It does not prove PROD recovery,
+database restore, incompatible migration rollback or the separate emergency flip.
+Future recovery scenarios still require their own artifact/history, compatibility,
+traffic, cleanup and evidence checks.
 
 Production should retain robust blue/green; development may become simpler.
 Strict provenance and production-like governance are targets, not present
@@ -712,3 +714,104 @@ retain their authentic operator readbacks. Any additional public publication
 requires separate owner approval. A first WP3 execution with SourceTransport
 still requires its own authorization; there is no second qualified app digest
 or completed rollback from this installation alone. DEV remains billable.
+
+
+## Real SourceTransport qualification and distinct-digest DEV rollback
+
+Verified on 2026-10-15 in Costa Rica (the rollback Actions run is dated October
+16 UTC). Only account `341936017254`, region `us-east-1`, profile `cnp-cert-dev`
+and `codex/final-github-actions-cicd` were used. No PROD/shared changes, IAM
+expansion, CreateOnly exception, Terraform-state operation, NAT failover or DOWN
+was part of this trial. The existing controller, workers, publisher, WP4 and
+cleanup were used; no direct ECS/listener replacement for WP4 was performed.
+
+### SourceTransport and the HTTP failure
+
+The installed controller used OCI digest
+`sha256:2643aa2efb14db3672959194451e6b361223be9517029083435cb3e0b4744860`.
+Its metadata request is an unauthenticated HTTPS GET to the fixed public
+repository's `/git/commits/<exact SHA>` followed by `/git/trees/<tree SHA>?recursive=1`.
+The failed [38824573732 run](https://github.com/Kendall04/terragrunt_demo/actions/runs/38824573732)
+left authentic source FAILED evidence and seven NOT_RUN checks; only its waiting
+Actions job was cancelled after native terminal reconciliation. No worker/image
+or qualification came from that failure. Its bounded diagnostic recorded HTTP
+403 but no response headers/body, so its precise rejection reason cannot be
+retroactively asserted. Earlier independent quota-zero observations are not
+proof of the cause of this particular 403.
+
+New native CodeBuild diagnostics used the installed Source implementation and
+its original Git checks. Equivalent metadata requests returned 200 with anonymous
+limit 60 and available quota; Windows anonymous and authenticated controls also
+returned 200. A complete native acquisition passed **2 REST metadata requests
+plus 40 immutable raw downloads**, verified every Git blob SHA-1 and obtained
+source seal `fb2ba65d5d44231300b0de8cdae103cf2be9b70ffa0be2d6da962a0fe7fa7378`.
+It did not launch workers or count as a qualification. This verified the already
+installed reduction from 42 REST requests before another business request.
+[GitHub documents](https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api)
+the anonymous quota by originating IP. Two metadata reads still require GitHub
+availability; neither IAM expansion, token transfer, blind retry nor guaranteed
+immunity from future HTTP denials is claimed.
+
+### Genuine qualification and version difference
+
+[WP3 38825575655](https://github.com/Kendall04/terragrunt_demo/actions/runs/38825575655)
+completed SUCCESS for published source
+`f55f52f501bbec6138d3eed994ab08e19510ef8a`. Native controller and all three worker
+builds completed SUCCEEDED. All seven protected checks passed; the .NET worker
+reported 103 passed tests. The authorized publisher published the image into
+neutral `demo-shared-demo-ms`, not the manual DEV registry. Qualification,
+manifest VersionId/hash, actual ECR digest and DEV eligibility were read back.
+
+| Identity | Original A | Qualified B |
+| --- | --- | --- |
+| Source | `b1e59975c0dae7cd4baf0d897f77d04192744ccc` | `f55f52f501bbec6138d3eed994ab08e19510ef8a` |
+| Release | `sha256-b22f33f93bdac5608da1dcd1e17f372f638dcaa766c1e758f34ee6f396673f44` | `sha256-279f48b8311d9c5dfaa8f93f7ae060e0598cece03ec0f35817398eeba8976f53` |
+| Image | `sha256:ca7d92532de8cfeee7a7a59a80f78714a26083ff323019d512d8be20f83ebfb8` | `sha256:7aa96288aa4449de35864d87a86fd9a89024fba13b95c88a1027c1b11cbcd654` |
+
+B includes the harmless fixed startup message `Application revision: rollback-proof-v2.`;
+HTTP, SQL schema and KMS contracts are unchanged. The real blue task's CloudWatch
+startup log contained that marker with digest B, so this was not merely a changed
+build timestamp/label. Controller digest `2643aa2e...` is not an application digest.
+
+### Protected delivery, rollback and automatic cleanup
+
+| Phase | Actions result | Real traffic/digest | Automatic cleanup |
+| --- | --- | --- | --- |
+| Deliver B | [38825984998 SUCCESS](https://github.com/Kendall04/terragrunt_demo/actions/runs/38825984998) | blue:9, B | green tasks/targets empty; temporary rule absent; E2 generation 12 RELEASED |
+| Roll back A | [38827037528 SUCCESS](https://github.com/Kendall04/terragrunt_demo/actions/runs/38827037528) | green:8, A | blue tasks/targets empty; temporary rule absent; E2 generation 14 RELEASED |
+
+The published DEV `rollback-manifest.yml` caller already allowed exactly the
+trial branch, workflow_dispatch and pinned `e1-dev-deploy.yml@f0ba8ad1d6528d362693c8de932f935c8084529d`.
+No new caller publication or trust weakening was needed. Its PROD job was skipped.
+CloudTrail independently confirmed actual AssumeRoleWithWebIdentity, exact
+Environment subjects/audience and the existing request roles for WP3 and both
+WP4 requests. Numeric gateways were release:2 and deploy-dev:3; pins/trusts stayed
+unchanged.
+
+Rollback consumed original protected SUCCESS history
+`6471310a-0a3a-489a-81dd-42213a00ad80`. It recreated green revision 8 from the
+qualified original digest; it did not restart deleted green:7 tasks or relabel B.
+The old SUCCESS receipt/version remained unchanged. Both promotions and cleanups
+have native protected SUCCESS receipts. No manual drain, rule deletion, E2 CAS
+reconciliation, history rewrite or forced settlement was needed. A draining ALB
+target was kept nonterminal until AWS reported actual absence.
+
+Both served versions passed `/ready` and POST/GET `/text` SQL/KMS round trips.
+After rollback, A also read/decrypted the text written by B. This is live
+application/database/key compatibility for this unchanged schema, not database
+backup/restore evidence. Final native observations show green:8 healthy, blue:9
+at zero with no tasks/targets, listener on green, no temporary rule and E2 released
+with no schedule. API Gateway/VPC Link and the original full topology remain.
+
+Focused hermetic validation passed 33 internal-release and 33 WP4D tests, no
+failures/errors/skips. The 103 .NET tests and Docker/probe checks above ran in the
+real qualified workers. The local documentation follow-up did not rerun the
+full offline gate or assert new Terraform provider validation/lint comparison;
+the prior activation's acceptance is recorded above, and normal CI enforces the
+repository gate when this branch is published.
+
+DEV remains running and billable. The trial added one qualified application image,
+short CodeBuild executions, logs and protected S3 versions; no new permanent
+infrastructure or IAM authority. ECR images, evidence and backends remain retained.
+A destructive NAT replacement experiment and the final DOWN/data-loss decisions
+are separate gates; no completion of either is implied by application rollback.
