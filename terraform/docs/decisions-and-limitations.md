@@ -339,3 +339,19 @@ hours; no final ceremonial backup for disposable synthetic data. The prior USD-1
 ECS envelope is shared, not renewed; planned first-month baseline plus retained
 component plus session is approximately USD 4.31 before tax, rounded USD 5 with
 stated assumptions, not a remaining-balance or automatic-spending-cap claim.
+
+## EC2 grouped approval and execution pause (2026-10-16)
+
+The owner approved the exact EC2 backup installation, one manual plus two hourly
+runs, and disposable runtime/data retirement within four hours, using the prior
+shared USD-10 budget. The [execution preflight](validation.md#approved-ec2-backup-execution-preflight---2026-10-16)
+initialized E16 but stopped before runtime creation: the fresh network plan could
+not read native Terraform state, and existing E16 DOWN requires a new owner
+disposition for the preserved historical SDC UNKNOWN. The previous final-DOWN-only
+exception is not reusable. No evidence, control or IAM permission was weakened;
+approval did not silently include this previously undisclosed risk disposition.
+An attempted sensitive diagnostic was rejected by automatic review and not run.
+Human sanitized diagnosis or explicit bounded diagnostic approval is needed.
+The four-hour billable-runtime window has not started; there is nothing new to
+retire. Preserve the installation approval and pause only for these material
+boundaries, without a cosmetic review loop or ceremonial synthetic final backup.

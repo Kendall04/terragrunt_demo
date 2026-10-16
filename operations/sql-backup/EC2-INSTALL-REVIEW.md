@@ -1,10 +1,12 @@
 # EC2 SQL backup installation review - 2026-10-16
 
-Status: PREPARED, NOT AUTHORIZED OR INSTALLED. This is the next ECS-track SQL
+Status: OWNER APPROVED; EXECUTION PAUSED BEFORE RUNTIME CREATION. This is the next ECS-track SQL
 backup component, following local service commit b036141. Source preparation,
-local fixtures and AWS read-only inventory are authorized. Owner approval of this
-concrete scope is required before any runtime apply, IAM/KMS/bucket/network change,
-SQL login/credential creation or real host installation. No push/merge is included.
+local fixtures and AWS read-only inventory are authorized. The owner approved this grouped scope on 2026-10-16 at 22:37 UTC. The
+[execution checkpoint](../../terraform/docs/validation.md#approved-ec2-backup-execution-preflight---2026-10-16)
+records the material historical-retirement and native Terraform read blockers.
+No runtime apply, IAM/KMS/bucket/network change, SQL login/credential creation or
+real host installation has occurred. No push/merge is included.
 
 ## Current inventory and minimum topology
 
@@ -105,7 +107,7 @@ sql-backup.service.d/credentials.conf plus the credential files/receipt. Python 
 existing AWS CLI and sqlcmd18, compatible ICU/OpenSSL and systemd are prerequisites;
 no permanent .NET SDK is needed. Existing Ubuntu awscli v1/v2 are supported by
 the bootstrap commands. All real file/ownership/login/daemon-reload/manual-start/
-timer-enable changes are pending this grouped approval.
+timer-enable changes remain unexecuted while the approved session is paused.
 
 ## Finite qualification and four-hour window
 

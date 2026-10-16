@@ -279,3 +279,15 @@ prefix is isolated from the retained historical drill. Real co-located CLI and
 two actual hourly timer activations still require grouped owner approval and a
 fresh original E16 saved-plan/identity/network reconciliation. The independent
 observer, cross-AZ restore and full application deployment remain outside scope.
+
+## Approved execution checkpoint - 2026-10-16
+
+The owner approved the grouped 8009b21 installation/retirement request. The first
+fresh E16 execution attempt is paused before runtime creation: native Terraform
+state read failed, and the existing historical SDC retirement guard needs a fresh
+owner risk disposition. No old exception was reused. See the
+[evidence and exact resume boundary](../../terraform/docs/validation.md#approved-ec2-backup-execution-preflight---2026-10-16).
+No timer, credential or AWS security change was installed; the approved four-hour
+runtime window has not started. Automatic review rejected reading/storing the
+potentially sensitive diagnostic, so a human sanitized error summary or explicit
+bounded diagnostic approval is needed before that investigation continues.

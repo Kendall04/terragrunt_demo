@@ -1012,3 +1012,58 @@ cached Python image ran. codex-vm had about 7.2 GiB free initially and existing
 windrose-sql remained active. The reviewed package uses the already qualified
 self-contained CLI; real role/SQL/SSM bootstrap, systemd LoadCredential behavior
 and two real hourly activations await the approved EC2 session.
+
+## Approved EC2 backup execution preflight - 2026-10-16
+
+Result: BLOCKED_BEFORE_BILLABLE_RUNTIME_CREATION. The owner gave a verified
+thumbs-up to the exact grouped installation/qualification/four-hour retirement
+request at 2026-10-16T22:37:21Z. This approved the 8009b21 packet under the existing
+shared USD-10 limit, not another budget. Execution preflight began at 22:38 UTC.
+No runtime billing-start or four-hour deadline was established because no runtime
+resource was created. Ordinary read/request charges on retained services are not
+a zero-cost claim. No IAM/KMS/bucket/network/SQL/credential installation occurred.
+
+Native Windows Terraform 1.13.4 and AWS CLI 2.24.25 were available. A fresh E16
+session initialized all five existing runtime roots successfully using the
+retained TerragruntDemoDevOperator and a public same-profile role config.
+Identity/backend/E2-idle checks passed. Windows-native execution avoided WSL and
+any Linux credential handoff. The requested fresh bootstrap-network-plan then
+failed at global Terraform state pull, before saving a new plan binary or apply.
+There is no fresh approved plan to replay and no partial cloud apply to repair.
+
+Before billable creation, the existing E16 retirement branch was also exercised
+read-only for SDC attempt 05fc796a-03ae-5e11-8d3b-64a61d144d5d. Its original attempt
+still has no terminal observed/reconciled object; the bound plan/attempt hashes
+passed the existing historical guard, which then required a new session-bound
+owner-disposition record. The prior exception was final-DOWN-only and cannot be
+copied into this session. Native EC2 read found the old exact target
+i-0bc30a0862a35bd4c absent; that does not rewrite the preserved historical UNKNOWN
+or supply new owner risk consent. No program-recognized disposition file or fake
+terminal observation was created. The preparation had not exercised this guard;
+the execution preflight found it before any resource creation.
+
+The installed operator Part6 version v6 also still names the previous cycle's
+SQL AMI/private subnet/SG. Existing original identity rebinding remains necessary
+after genuine new network outputs; no permission document was altered or widened.
+
+Automatic approval review rejected the attempted diagnostic action that would
+read/store Terraform stderr/state-related output, citing possible secret or
+credential content not clearly authorized in that form. That diagnostic execution
+did not run and was not retried indirectly. The Terraform read failure's underlying
+cause is therefore unverified. A human may inspect the local error and provide a
+sanitized summary, or explicitly authorize a narrowly bounded diagnostic review;
+never hand AWS credentials or state/secret values to another execution environment.
+
+Private evidence is C:\CodexDrop\temp\terragrunt-demo-sql-ec2-live-20261016:
+execution-window.json, initialize.stdout/stderr, fresh-network-plan.stdout/stderr,
+retirement-guard-preflight.json and an explicitly unsigned REVIEW-ONLY proposed
+historical disposition. Raw state/provider caches remain private in that fresh
+session, not in Git/output. The rejected diagnostic created no diagnostic file.
+Final project-scoped native reads found no demo/dev VPC or EC2 instance; EKS was
+neither targeted nor changed. There is no new runtime requiring emergency deletion.
+
+Resume requires resolving the preserved historical owner-disposition boundary and
+the native Terraform read failure, then fresh E16 state/plans and the already
+approved scoped security/host installation. The original grouped approval remains
+recorded; no full installation reapproval is requested merely for routine details.
+Do not start compute while its required safe retirement path is blocked.

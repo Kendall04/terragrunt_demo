@@ -23,8 +23,9 @@ needed for the task; this file is a map, not the architecture reference.
   EC2 installation. The [local service contract](operations/sql-backup/README.md#local-service-increment---2026-10-16)
   adds packaging/cleanup/inhibition; it installs no host service or cloud access.
   [EC2 installation preparation](operations/sql-backup/EC2-INSTALL-REVIEW.md) has
-  source/read-only authorization only; grouped security/host/network approval
-  remains pending.
+  received grouped owner approval. The [execution checkpoint](terraform/docs/validation.md#approved-ec2-backup-execution-preflight---2026-10-16)
+  is paused before creation on native Terraform state read and the existing
+  historical E13 owner-disposition boundary; do not reuse an old exception.
 
 ## Read when
 
