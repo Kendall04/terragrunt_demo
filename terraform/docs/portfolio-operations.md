@@ -32,7 +32,7 @@ there was no queue purge or alteration of historical failure evidence.
 1. Read [E16](e16-practical-dev-lifecycle.md), [bootstrap](bootstrap.md),
    [security](secrets-strategy.md) and [validation](validation.md). Use the
    reviewed source/locks and existing supported toolchain: Python, AWS CLI,
-   Terraform 1.13.4, Terragrunt 0.93.3, .NET 8.0.425 and Linux/Docker where needed.
+   Terraform 1.13.4, Terragrunt 0.93.3, .NET 10.0.402 and Linux/Docker where needed.
 2. Configure legitimate temporary AWS authentication locally. Scrub overriding
    credential environment variables; explicitly select the approved profile and
    region. Verify effective account/caller before any AWS-facing process; never

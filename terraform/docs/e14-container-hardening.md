@@ -8,7 +8,7 @@ Dockerfile validation. It does not complete the broader B14/E14 toolchain initia
 The [Dockerfile](../../demo-api/Dockerfile) retains its runtime/build/final stages,
 Release default, framework-dependent publish to `/app/publish`, final `/app` work
 directory and `dotnet terragrunt-demo.dll` entrypoint. Both runtime stages explicitly
-use `USER $APP_UID`, supplied as UID 1654 by the verified .NET 8 image. The build
+use `USER $APP_UID`, supplied as UID 1654 by the verified .NET 10 image. The build
 stage retains its original build identity; it is not the deployed runtime stage.
 The first real DEV startup demonstrated mode-0600 publish files from a private
 build context. The build stage now applies `chmod -R a+rX /app/publish` before
@@ -41,27 +41,26 @@ can modify the configured database. The local smoke recipe below disables them.
 
 ## Verified image identities
 
-On 2026-10-11, installed Docker Buildx 0.37.1 queried public Microsoft Container
-Registry with `imagetools inspect`. Each 8.0 index listed the selected linux/amd64
-manifest; digest-qualified manifest and `.Image` reads confirmed OS/architecture,
-.NET/ASP.NET 8.0.31, SDK 8.0.425, `APP_UID=1654` and base HTTP port 8080.
-The index, manifest and config digests are recorded in
+On 2026-10-16, Docker Buildx queried public Microsoft Container Registry.
+Digest-qualified manifest/configuration reads established linux/amd64,
+runtime/ASP.NET 10.0.13, SDK 10.0.402, APP_UID=1654 and HTTP 8080.
+Index/manifest/config digests are recorded in
 [base-image evidence](../../demo-api/container-base-images.json).
 
 | Stage | Immutable linux/amd64 manifest |
 | --- | --- |
-| Runtime | `mcr.microsoft.com/dotnet/aspnet:8.0@sha256:9a432d3500734557e5fecea0336bf274c85de15aa55505a2dafe06e44f0cd024` |
-| SDK | `mcr.microsoft.com/dotnet/sdk:8.0@sha256:e1d5584f7c7f45439449054292acadf4f71730034507186497bab3d539a5a9b7` |
+| Runtime | `mcr.microsoft.com/dotnet/aspnet:10.0.13@sha256:e4b445f93a5deeb6bd7de300febceb8dd7e481ac65ccf1b474eddc3642a3010f` |
+| SDK | `mcr.microsoft.com/dotnet/sdk:10.0.402@sha256:3a48280a9a7c6276c3eeaba1efa6a08820f18c84fb9e6274c187719ecfaf9fbc` |
 
-These fix the base contents, including OS layers. They do not establish bit-for-bit
-application build reproducibility: NuGet/transitive resolution, SDK selection in
-host CI, actions/tools and infrastructure locks are addressed by the bounded
-[E14-B contract](e14b-toolchain-reproducibility.md); its remaining gaps still limit
-overall reproducibility.
+The fresh application build and isolated Linux smoke are recorded in
+[current qualification](validation.md#net-10-lts-local-migration---2026-10-16).
+V1's .NET 8 identities and dated acceptance remain preserved in Git history.
+These pins do not establish bit-for-bit application reproducibility: NuGet remains
+unlocked and [E14-B](e14b-toolchain-reproducibility.md) records other limits.
 
 ## Intentional update procedure
 
-Using an existing Docker/Buildx installation, inspect both approved .NET 8 tags:
+Using an existing Docker/Buildx installation, inspect both approved .NET 10 LTS patch tags:
 
 ```bash
 docker buildx imagetools inspect mcr.microsoft.com/dotnet/aspnet:8.0
@@ -94,7 +93,7 @@ dotnet build demo-api/terragrunt-demo.sln --configuration Release --no-restore
 dotnet test demo-api/terragrunt-demo.sln --configuration Release --no-build
 ```
 
-Candidate local evidence: restore succeeded; build had zero warnings/errors; all
+Historical V1 candidate evidence (superseded for current runtime pins): restore succeeded; build had zero warnings/errors; all
 61 tests passed. Framework-dependent publish succeeded, the published probe's
 `--check-capability` succeeded and Production startup returned HTTP 200/Healthy
 from `/health` on loopback port 8080. That startup used the installed Windows .NET

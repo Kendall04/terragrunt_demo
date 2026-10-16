@@ -6,13 +6,13 @@ These never constitute live AWS isolation or deployment evidence.
 
 ## CURRENT CONTRACT — toolchain and coverage
 
-CI selects Terraform 1.13.4, Terragrunt 0.93.3 and exact .NET SDK 8.0.425.
+CI selects Terraform 1.13.4, Terragrunt 0.93.3 and exact .NET SDK 10.0.402.
 All 14 TARGET environment/layer roots have tracked locks; the neutral security
 root now has an AWS-only lock. They retain AWS 5.100.0 (~>5.50); TARGET locks
 also retain TLS 4.3.0. [E14-B](e14b-toolchain-reproducibility.md) records verified
 standalone tool checksums, immutable CI action identities, platform/hash coverage
 and the intentional update procedure. [E14-A](e14-container-hardening.md) retains
-verified .NET 8 Linux/amd64 image digests and UID 1654. Runner inputs, jq, BuildKit,
+verified .NET 10 Linux/amd64 image digests and UID 1654. Runner inputs, jq, BuildKit,
 NuGet and protected runtime installation evidence remain reproducibility gaps.
 
 These are current selections, not a guarantee other versions work or a requirement
@@ -664,3 +664,54 @@ Historical static debt remains 24 TFLint/46 tfsec by rule/resource/message/sourc
 snippet and multiplicity, without suppression. See the [E16 evidence record](e16-practical-dev-lifecycle.md#completed-offline-acceptance-2026-10-13)
 for report paths, the bounded corrections, unavailable tools and separate
 IAM/provider/Linux/AWS gates. No cloud, provider init or deployment occurred.
+
+## .NET 10 LTS local migration - 2026-10-16
+
+The owner explicitly authorized upgrading the source to .NET 10 LTS while
+retaining the original two-AZ architecture and existing Terraform/Terragrunt
+selections. SDK 10.0.402, runtime/ASP.NET 10.0.13 and Microsoft EF Core/testing
+packages 10.0.13 were verified against [Microsoft downloads](https://dotnet.microsoft.com/en-us/download/dotnet/10.0),
+[release metadata](https://builds.dotnet.microsoft.com/dotnet/release-metadata/10.0/releases.json)
+and NuGet. global.json still disables roll-forward and prereleases. App CI rejects
+a different SDK input; Docker bases remain immutable linux/amd64 child manifests.
+Microsoft.NET.Test.Sdk is 18.11.0. Other application dependencies are unchanged.
+
+The first successful restore identified two PKCS advisories in transitive 9.0.11.
+An explicit System.Security.Cryptography.Pkcs 10.0.13 reference selects the patched
+version ([Microsoft advisory](https://github.com/advisories/GHSA-2fmv-rv2c-59x7),
+[second advisory](https://github.com/advisories/GHSA-846f-f764-76mx)); no warnings
+were suppressed. The final NuGet direct/transitive audit reported no vulnerable
+packages from its current public source; this is dated evidence, not a guarantee
+against future advisories.
+
+Executed locally through SSH on codex-vm using the exact SDK image:
+
+- Restore and Release build succeeded with zero warnings/errors.
+- All 104 .NET tests passed, with none skipped. Existing API/KMS boundaries,
+  pagination, health/readiness and container mutation checks remain. The added
+  SQL Server model comparison uses no connection and confirms there are no
+  pending schema changes; checked-in migration/snapshot files are unchanged.
+- All 25 offline reproducibility/static-finding tests passed. Only the three
+  reviewed SDK/CI/Dockerfile source-inventory entries were refreshed, with their
+  semantic dispositions preserved. This does not certify new AWS authority.
+- A fresh Docker build succeeded. Linux smoke verified effective UID 1654,
+  nonwritable application binaries, Production /health HTTP 200, packaged probe
+  capability and exit 1 without a local readiness server. Smoke used network=none,
+  no credential mounts, a dummy connection and startup migrations disabled.
+
+The worktree was moved with git worktree move from
+`C:\proyectos\terragrunt_demo-wt-batch1` to `C:\CodexDrop\terragrunt_demo`
+(VM: `/mnt/hgfs/CodexDrop/terragrunt_demo`), retaining its history/metadata.
+Windows Git manages the linked worktree: its common repository remains under
+`C:\proyectos\terragrunt_demo`, so Linux Git cannot follow the Windows gitdir
+pointer directly. Build/test uses the shared source without another clone.
+NuGet HTTP cache must stay on a Linux filesystem (container `/tmp`), because
+its URL-derived cache names contain colons rejected by the Windows-backed share.
+The package cache and test logs are outside Git under
+`C:\CodexDrop\temp\terragrunt-demo-dotnet10`.
+
+No AWS deployment, real SQL/KMS test, OIDC rebinding, protected installation,
+push/merge, full E1 historical suite or Terraform/Terragrunt upgrade occurred.
+The reusable-workflow pins and existing cloud authority remain unchanged. This
+qualifies the local source/container; a future cloud session needs its own
+authorization and release qualification.

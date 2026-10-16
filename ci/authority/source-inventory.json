@@ -788,7 +788,7 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/ci-dotnet.yml": {
-      "sha256": "6bd3da5e80600cbd5ec7858a6d7ba76485a633f45d99d2966a1490c7e44e153d",
+      "sha256": "55781adc5f47336d9596018ebc025cdbc3b9df9d9b3fc81fb6fdfbdc5287108c",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -1163,7 +1163,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "demo-api/Dockerfile": {
-      "sha256": "3cd01303fe77bdd3cf2cfb17e5716727bf7566aa457fe370fd76abd38de8c6a9",
+      "sha256": "549286d5879b6afd110badde2e7ec61ad1904c1e8e1c0123aad367c65d99a89d",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -1178,7 +1178,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "global.json": {
-      "sha256": "0a15550b7b496f0eb8ea6e405da955cf264bf519fb0fb60dd8a7e25967bbca5d",
+      "sha256": "81ae2087dbfb46027fd94748351fb4b1ab24145fbb52544a2822bf128e2e48f1",
       "declarations": [],
       "signals": {},
       "semantic_status": "UNVERIFIED"

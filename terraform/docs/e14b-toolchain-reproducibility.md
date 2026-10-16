@@ -51,13 +51,15 @@ tested repository revision. Tokens remain contents:read in validation jobs; exac
 event checkouts, untrusted-PR handling, E11 fail-closed selection/results, the
 standalone E1 default gate and CD Safety enforcement remain in place.
 
-[global.json](../../global.json) selects SDK 8.0.425 with roll-forward disabled,
+[global.json](../../global.json) selects SDK 10.0.402 with roll-forward disabled,
 matching E14-A's inspected SDK image. App CI installs that exact SDK and rejects
 an input differing from the repository contract. Docker Buildx selects 0.37.1,
 whose official release existence was verified and which matches E14-A's inspected
 tool. Its action-managed download has no repository checksum pin; this narrower
 version pin is not classified as a verified artifact download. The application
-image manifests and explicit UID 1654 runtime contract are unchanged.
+image manifests were deliberately refreshed by the owner-authorized .NET 10
+[migration](validation.md#net-10-lts-local-migration---2026-10-16); the explicit
+UID 1654 runtime contract is unchanged.
 
 ## Authoritative provider locks
 
@@ -118,7 +120,7 @@ The 137 retired legacy paths are inert evidence and receive no repairs.
    operation, not part of the offline gate. Preserve readonly runtime init and
    provision the exact reviewed mirror bytes through security administration.
 4. For SDK updates, follow the [E14-A image procedure](e14-container-hardening.md),
-   keep the .NET 8 family, and update global.json/default/evidence together. Review
+   keep the approved .NET 10 LTS family, and update global.json/default/evidence together. Review
    NuGet resolution separately; the current application has no locked restore.
 5. Run focused reproducibility/E11 checks and applicable E1, generated wiring,
    package, parsing, format and link checks before committing. Review inventory

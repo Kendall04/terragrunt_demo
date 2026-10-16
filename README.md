@@ -5,13 +5,17 @@ architecture**, deploy a .NET application, qualify and deliver immutable images,
 exercise blue/green and rollback, recover NAT instances, then destroy the runtime.
 Terraform/Terragrunt, GitHub Actions and AWS OIDC support one supervised operator.
 
-**Project closure — 2026-10-16:** two full DEV deployments, application SQL/KMS
+**V1 runtime closure - 2026-10-16:** two full DEV deployments, application SQL/KMS
 checks, protected CI/CD, distinct-image rollback and per-slot NAT recovery were
 verified in AWS. Final DOWN completed. A fresh read-only audit confirmed five
 empty DEV states, no locks and no surviving DEV runtime compute or networking.
 The API is **offline**. Retained security, artifacts and storage can still incur
 charges; see [closure inventory and operations](terraform/docs/portfolio-operations.md).
 This repository is a demonstrated DEV system, not a production availability claim.
+
+V2 continues locally. The owner-authorized .NET 10 LTS migration uses SDK
+10.0.402 and runtime 10.0.13, with [local qualification](terraform/docs/validation.md#net-10-lts-local-migration---2026-10-16).
+The dated AWS trials above used V1; .NET 10 has not been deployed to AWS.
 
 ## Architecture demonstrated
 
@@ -81,7 +85,7 @@ HA database. NAT recovery replaces a failed instance **within its slot/AZ**;
 it does not prove cross-AZ failover or uninterrupted outbound connectivity.
 No Cloud Map registration is implemented.
 
-The .NET 8 API encrypts text with KMS, stores ciphertext in SQL Server and decrypts
+The .NET 10 LTS API encrypts text with KMS, stores ciphertext in SQL Server and decrypts
 it on retrieval. `/health` is liveness; `/ready` checks database/KMS readiness;
 POST/GET `/text` exercises the actual data path. Application and SQL instances
 are private. VPC Link reaches the internal ALB; no public SQL or SSH ingress is

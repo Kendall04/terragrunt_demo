@@ -243,3 +243,17 @@ separates verified reconstruction/SQL/KMS functionality from future CI/CD,
 blue/green and NAT failover experiments. Leave this successful deployment running
 for those exercises; further DOWN still needs teardown and independent SQL-loss
 consent. No new architecture, PROD/shared authority or automatic cleanup is added.
+
+## V2 owner decision and local .NET 10 milestone (2026-10-16)
+
+The owner requires .NET 10 LTS and the original two-AZ architecture, with simple
+single-operator execution rather than a reduced one-AZ/public-IP lab. The
+[local migration](validation.md#net-10-lts-local-migration---2026-10-16) updates
+SDK/targets/Microsoft dependencies and immutable container bases, preserving
+behavior and SQL schema. V1 AWS evidence remains historical; this source has not
+been deployed. Terraform/Terragrunt selections, providers, IAM/OIDC and cloud
+authority are unchanged. No new clone/worktree was created; the existing linked
+worktree moved to CodexDrop. Backups/restore, PKI and Sentinel remain subsequent
+increments, not implemented by this runtime milestone. Reviews should close on
+material correctness/security/behavior evidence without reopening accepted
+observational boundaries for minor refinements.

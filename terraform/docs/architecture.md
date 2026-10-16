@@ -166,12 +166,15 @@ Evidence: [app skeleton](../modules/target/dev/apps/ordinary-demo.tf),
 
 ## CURRENT CONTRACT — application and data
 
-The [E14-A container contract](e14-container-hardening.md) pins both .NET 8
+The [E14-A container contract](e14-container-hardening.md) pins the .NET 10 LTS
 base images to verified Linux/x86-64 manifests and explicitly runs the application
 and packaged readiness probe as UID 1654. HTTP 8080, `/app`, the framework-dependent
 DLL entrypoint and ECS environment/secret semantics are preserved. Deterministic
 checks, host startup and isolated Linux container execution pass; live Fargate
-execution remains unverified. See the linked batch integration evidence.
+execution of this .NET 10 revision remains unverified. The owner-authorized
+[2026-10-16 migration](validation.md#net-10-lts-local-migration---2026-10-16)
+preserves the SQL schema, API, readiness and execution contracts. Dated V1 AWS
+trials used .NET 8. See the linked batch integration evidence.
 
 | Interface | Behavior |
 | --- | --- |

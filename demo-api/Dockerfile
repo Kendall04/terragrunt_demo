@@ -2,7 +2,7 @@
 # Base image (runtime)
 # ===========================
 # Verified linux/amd64 manifests; update procedure: ../terraform/docs/e14-container-hardening.md
-FROM mcr.microsoft.com/dotnet/aspnet:8.0@sha256:9a432d3500734557e5fecea0336bf274c85de15aa55505a2dafe06e44f0cd024 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:10.0.13@sha256:e4b445f93a5deeb6bd7de300febceb8dd7e481ac65ccf1b474eddc3642a3010f AS base
 WORKDIR /app
 
 EXPOSE 8080
@@ -12,7 +12,7 @@ USER $APP_UID
 # ===========================
 # Build image (SDK)
 # ===========================
-FROM mcr.microsoft.com/dotnet/sdk:8.0@sha256:e1d5584f7c7f45439449054292acadf4f71730034507186497bab3d539a5a9b7 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0.402@sha256:3a48280a9a7c6276c3eeaba1efa6a08820f18c84fb9e6274c187719ecfaf9fbc AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 

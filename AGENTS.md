@@ -31,6 +31,11 @@ needed for the task; this file is a map, not the architecture reference.
 | Requirement/tradeoff or improvement selection | [Decisions and backlog](terraform/docs/decisions-and-limitations.md) |
 | Any validation execution | [Validation and side effects](terraform/docs/validation.md) |
 
+The owner authorized the .NET 10 LTS source migration on 2026-10-16.
+[Current local qualification](terraform/docs/validation.md#net-10-lts-local-migration---2026-10-16)
+records the SDK/image pins, test boundary and shared checkout. Historical .NET 8
+AWS trials do not prove deployment of the .NET 10 source.
+
 ## Validation and hazards
 
 Use git diff/status and local link review for docs. App checks live in

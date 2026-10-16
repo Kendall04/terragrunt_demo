@@ -44,9 +44,9 @@ public class ContainerContractTests
     [InlineData("sdk")]
     public void Dockerfile_RejectsMutableOrDifferentBaseIdentity(string family)
     {
-        var pattern = $@"mcr\.microsoft\.com/dotnet/{family}:8\.0@sha256:[0-9a-f]{{64}}";
+        var pattern = $@"mcr\.microsoft\.com/dotnet/{family}:10\.0\.[0-9]+@sha256:[0-9a-f]{{64}}";
         Assert.Matches(pattern, Dockerfile);
-        foreach (var replacement in new[] { $"mcr.microsoft.com/dotnet/{family}:8.0", $"mcr.microsoft.com/dotnet/{family}:9.0@sha256:{new string('0', 64)}" })
+        foreach (var replacement in new[] { $"mcr.microsoft.com/dotnet/{family}:10.0", $"mcr.microsoft.com/dotnet/{family}:9.0@sha256:{new string('0', 64)}" })
             Assert.ThrowsAny<XunitException>(() => Validate(Regex.Replace(Dockerfile, pattern, replacement)));
     }
 
@@ -78,9 +78,9 @@ public class ContainerContractTests
     }
 
     [Fact]
-    public void ApplicationOutput_IsFrameworkDependentNet8WithPackagedProbe()
+    public void ApplicationOutput_IsFrameworkDependentNet10WithPackagedProbe()
     {
-        Assert.Contains("<TargetFramework>net8.0</TargetFramework>", File.ReadAllText(Path.Combine(ApiRoot, "terragrunt-demo", "terragrunt-demo.csproj")));
+        Assert.Contains("<TargetFramework>net10.0</TargetFramework>", File.ReadAllText(Path.Combine(ApiRoot, "terragrunt-demo", "terragrunt-demo.csproj")));
         Assert.Contains("ReadinessProbe.IsProbeCommand(args)", File.ReadAllText(Path.Combine(ApiRoot, "terragrunt-demo", "Program.cs")));
         Assert.Contains("http://127.0.0.1:8080/ready", File.ReadAllText(Path.Combine(ApiRoot, "terragrunt-demo", "ReadinessProbe.cs")));
         Assert.Equal("terragrunt-demo", typeof(Program).Assembly.GetName().Name);
@@ -102,9 +102,14 @@ public class ContainerContractTests
             var image = evidence.RootElement.GetProperty("bases").GetProperty(stage);
             var tag = image.GetProperty("tag").GetString();
             var digest = image.GetProperty("manifestDigest").GetString();
-            Assert.Equal($"mcr.microsoft.com/dotnet/{family}:8.0", tag);
+            Assert.Equal($"mcr.microsoft.com/dotnet/{family}:" + (family == "sdk" ? "10.0.402" : "10.0.13"), tag);
             Assert.Matches(@"^sha256:[0-9a-f]{64}$", digest!);
-            Assert.StartsWith("8.0.", image.GetProperty("dotnetVersion").GetString());
+            Assert.Equal("10.0.13", image.GetProperty("dotnetVersion").GetString());
+            if (family == "sdk")
+            {
+                using var sdk = JsonDocument.Parse(File.ReadAllText(Path.Combine(ApiRoot, "..", "global.json")));
+                Assert.Equal(sdk.RootElement.GetProperty("sdk").GetProperty("version").GetString(), image.GetProperty("sdkVersion").GetString());
+            }
             return $"FROM {tag}@{digest} AS {stage}";
         }
         Assert.Equal(new[] {
