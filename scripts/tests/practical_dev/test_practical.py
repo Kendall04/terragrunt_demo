@@ -454,6 +454,18 @@ class Tests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'protected executors'):
             self.session.lambda_execution_history('e1-gateway-infra-dev',{})
 
+    def test_nat_guard_does_not_read_separately_protected_wp4_cleanup_journals(self):
+        self.all_up();self.shutdown();original=self.fake.run
+        def run(args,cwd=None,data=None):
+            raw=original(args,cwd,data)
+            if 'list-objects-v2' in args and args[args.index('--prefix')+1]=='recovery/dev/recovery/':
+                v=json.loads(raw);v['Contents'].append(dict(Key='recovery/dev/recovery/cleanup/old/delete_rule/attempt'));return c.canonical(v)
+            if 'get-object' in args:
+                self.assertNotIn('/cleanup/',args[args.index('--key')+1])
+            return raw
+        self.fake.run=run
+        self.assertEqual(self.session.shutdown_observation()['executor_finality'],'NOT_CERTIFIED')
+
     def test_exact_historical_disposition_keeps_unknown_and_checks_old_instance(self):
         operation='05fc796a-03ae-5e11-8d3b-64a61d144d5d'
         base='recovery/dev/recovery/disable_sdc/'+operation

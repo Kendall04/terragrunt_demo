@@ -466,3 +466,15 @@ deliveries/ReceiptHandles. After reconciling its unchanged ID/body and versioned
 archive, the operator received that single message with 60-second visibility and
 used its current handle. No other message was acknowledged; no purge/redrive
 occurred. Independent queue readback remains required before teardown proceeds.
+
+
+### NAT journal inventory scope
+
+The final live guard exposed a GetObject denial on a WP4 cleanup attempt because
+it scanned the common recovery prefix as if every journal belonged to NAT.
+The NAT effect loop now selects only the three existing exact duties
+assign_eip/change_rt/disable_sdc. This matches its documented purpose and installed
+read scope; no S3 permission was added. WP4 cleanup remains checked through its
+existing E2 owner/schedule, controller completion and exact START/REPORT guard.
+Every NAT attempt is still validated; other NAT UNKNOWNs still block. All 62
+focused E16 tests pass, including the protected-cleanup inventory regression.

@@ -524,6 +524,9 @@ class Session:
         require(not listed.get('IsTruncated'),'incomplete E13 attempt inventory')
         keys={item['Key'] for item in listed.get('Contents',[])}
         for key in keys:
+            # This is the NAT effect guard. WP4 cleanup owns separate journals;
+            # its activity is checked by E2, idle and exact executor history.
+            if not any(key.startswith('recovery/dev/recovery/'+duty+'/') for duty in DUTIES):continue
             if key.endswith('/attempt') or key.endswith('/attempt.json'):
                 base=key.rsplit('/',1)[0]
                 observations=[k for k in keys if k.startswith(base+'/') and (k.endswith('/observed.json') or k.endswith('/reconciled.json') or k.endswith('/observed') or k.endswith('/reconciled'))]
