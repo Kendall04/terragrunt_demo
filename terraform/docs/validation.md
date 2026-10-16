@@ -1067,3 +1067,17 @@ the native Terraform read failure, then fresh E16 state/plans and the already
 approved scoped security/host installation. The original grouped approval remains
 recorded; no full installation reapproval is requested merely for routine details.
 Do not start compute while its required safe retirement path is blocked.
+
+Coordination follow-up: an independent provider-schema probe used an empty local
+configuration, no backend/state, AWS config/credentials set to NUL and IMDS disabled.
+It attempted only to reuse the already installed pinned Windows AWS 5.100.0 package
+under the copied readonly lock. Local init rejected that unpacked cache because it
+did not match the recorded platform checksums, before schema execution. This probe
+does not confirm the separate EKS task's reported local mTLS x509 failure and does
+not diagnose the private Terraform state-read stderr. No lock, TLS validation,
+certificate store, trust setting or AWS authentication was changed to bypass either
+failure. The safe probe output is provider-schema-no-backend-probe.json in the
+execution evidence directory. There is still no functioning qualified Terraform
+route for this session and no runtime billing start. A Linux authentication handoff,
+if chosen by the owner, must be performed by the human; this agent transferred no
+tokens, credentials or .aws files.
