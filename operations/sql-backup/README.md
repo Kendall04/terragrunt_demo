@@ -259,3 +259,23 @@ Unprivileged writes were exercised only inside a temporary container. Units pass
 systemd-analyze static verify in a temporary root; no PID1 manager or real hourly
 timer was run. A real self-contained package passed temporary staging, idempotence
 and cloud-preview on codex-vm. See [qualification](../../terraform/docs/validation.md#sql-backup-service-local-qualification---2026-10-16).
+
+## EC2 installation preparation - 2026-10-16
+
+The owner authorized the next source/read-only preparation. The
+[installation approval packet](EC2-INSTALL-REVIEW.md) groups exact retained
+storage/role changes, private host credentials, original two-AZ global/data
+activation, gateway endpoint, four-hour qualification and retirement. Nothing is
+installed by this preparation. ec2_snapshot.py reads only metadata/pricing;
+ec2_prepare.py renders review JSON offline; ec2_credentials.py plans by default
+and has explicit root/approval/package/instance-role guards before secret or SQL
+access. Credentials would persist root-only on encrypted EBS and be injected by
+systemd LoadCredential; no new Secrets Manager secret is proposed.
+
+Current AWS reads show the original runtime absent. Do not adopt the default VPC,
+invent resource IDs, overwrite existing policies, place IAM in an ordinary root
+or treat generated endpoint Terraform as E1-admitted source. The new operational
+prefix is isolated from the retained historical drill. Real co-located CLI and
+two actual hourly timer activations still require grouped owner approval and a
+fresh original E16 saved-plan/identity/network reconciliation. The independent
+observer, cross-AZ restore and full application deployment remain outside scope.

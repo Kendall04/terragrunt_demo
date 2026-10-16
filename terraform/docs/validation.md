@@ -969,3 +969,46 @@ and its retained bucket/key are untouched. No new AWS cost was incurred by this
 local increment; no fresh cloud resource or access claim is made. Real IMDS role,
 SQL grants/credentials, installed timer, observer notification and full co-located
 EC2 CLI remain the next installation boundary. RPO/RTO remain unmeasured.
+
+## SQL EC2 installation preparation - 2026-10-16
+
+Result: SOURCE_PREPARED_AWAITING_GROUPED_APPROVAL. No AWS resource, role, policy,
+credential, SQL host/login, endpoint or timer was installed/modified. Windows AWS
+CLI 2.24.25 with explicit cnp-cert-dev/us-east-1 read account 341936017254 and
+cnp-cert-admin. Current EC2/ASG/ECS/SSM/endpoint inventories were empty; only the
+default VPC exists. Retained bucket versioning/SSE-KMS, enabled backup key, six
+old object versions, the SQL role/profile and existing secret metadata were
+re-read without any secret value, backup-body or Terraform-state download.
+
+External evidence: C:\CodexDrop\temp\terragrunt-demo-sql-ec2-20261016.
+aws-readonly-snapshot.json records policy/lifecycle before documents, identity,
+AMI candidate and public AWS Pricing GetProducts quotes: Linux t3a.small 0.0188/h,
+t3.micro 0.0104/h. The generated review packet records payload hashes, exact
+operational-prefix scope, retained-resource preservation, four-hour session and
+the shared USD-10 boundary. No actual remaining budget or live installation is
+inferred from those reads. [Full review](../../operations/sql-backup/EC2-INSTALL-REVIEW.md).
+
+The pinned existing Python container runs the entire SQL host/review suite offline
+with source read-only and network=none. The 29 fixtures cover the prior host/package
+contracts plus default no-access credential planning, exact instance-role guard,
+root-only files in a temporary container root, SQL input bounds, uncertain failed
+bootstrap receipt/no replay, policy/lifecycle preservation, prefix scoping,
+default VPC refusal, exact package digest and cost-envelope refusal. The first
+new fixture exposed an incomplete fake installed-unit layout; the install-unit
+precondition and fixture were corrected. No real SQL/secret call occurred.
+Existing native permission proof and 104 app/51 CLI tests belong to b036141 and
+were not rerun merely for these Python-only changes.
+
+Access Analyzer ValidatePolicy checked the candidate identity policy, bucket
+policy and generic KMS resource policy, creating no analyzer or attachment.
+There were no ERROR or SECURITY_WARNING findings. One identity and three bucket
+warnings flag literal '*' under exact s3:if-none-match equality, including the
+preserved original bucket statement; these are intentional exact-header checks,
+not wildcard matching. KMS policy had no findings. This is static policy analysis,
+not installed IAM/KMS/IMDS behavior or an authorization grant.
+
+No additional image pull, SQL container or SDK installation was needed; only the
+cached Python image ran. codex-vm had about 7.2 GiB free initially and existing
+windrose-sql remained active. The reviewed package uses the already qualified
+self-contained CLI; real role/SQL/SSM bootstrap, systemd LoadCredential behavior
+and two real hourly activations await the approved EC2 session.

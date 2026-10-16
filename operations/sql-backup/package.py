@@ -33,7 +33,7 @@ def build(publish,output,commit):
         require(not path.is_symlink(),'PACKAGE_SYMLINK_DENIED')
         if path.is_file(): files['bin/'+path.relative_to(publish).as_posix()]=(path.read_bytes(),0o755 if path.name=='SqlBackup' or path.suffix=='.so' else 0o644)
     base=Path(__file__).resolve().parent
-    for name in ('host.py','package.py','sql-backup.service.in','sql-backup.timer.in'):
+    for name in ('host.py','package.py','ec2_credentials.py','ec2_prepare.py','sql-backup.service.in','sql-backup.timer.in'):
         files[name]=((base/name).read_bytes(),0o755 if name.endswith('.py') else 0o644)
     manifest={'SchemaVersion':1,'SourceCommit':commit,'Runtime':'10.0.13','Target':'linux-x64','Files':{name:{'Sha256':digest(body),'Bytes':len(body),'Mode':mode} for name,(body,mode) in files.items()}}
     files['manifest.json']=(json.dumps(manifest,sort_keys=True,separators=(',',':')).encode(),0o644)

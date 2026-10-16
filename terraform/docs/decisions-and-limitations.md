@@ -317,3 +317,25 @@ systemd timer or co-located EC2/AWS integration. Failure files remain until oper
 review; disk reserve can stop further backups. No additional HA/production stack,
 Cognito, Daybreak review dependency or cosmetic review loop is introduced. EC2
 installation and full-app/cross-AZ recovery are subsequent explicitly scoped work.
+
+## V2 EC2 backup installation preparation (2026-10-16)
+
+Following b036141, the owner asked to continue the ECS track. Authorization covers
+implementable scripts/docs, offline validation and read-only AWS account
+341936017254/us-east-1 through cnp-cert-dev. Security/network/SQL credential/host
+installation and runtime apply remain pending a concrete grouped approval.
+[The review packet](../../operations/sql-backup/EC2-INSTALL-REVIEW.md) reuses the
+retained bucket/CMK/SQL role with a new operational prefix and private root-only
+credentials on encrypted EBS, avoiding new paid secrets or broad permissions.
+This is a proposed lab credential-storage decision, not an installed policy.
+
+Readbacks found no original DEV VPC/runtime/SSM host or endpoint; default VPC is
+not a substitute. Original global/data saved plans, separately administered
+NAT/E13 setup and actual network/host IDs are prerequisites, preserving the two-AZ
+architecture. No ordinary/protected Terraform source grammar is extended by a
+generated review candidate. Finite next acceptance is one complete manual EC2-role
+backup plus two real hourly timer fires and safe inhibition/retirement within four
+hours; no final ceremonial backup for disposable synthetic data. The prior USD-10
+ECS envelope is shared, not renewed; planned first-month baseline plus retained
+component plus session is approximately USD 4.31 before tax, rounded USD 5 with
+stated assumptions, not a remaining-balance or automatic-spending-cap claim.

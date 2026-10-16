@@ -133,3 +133,21 @@ mode remains inert; PROD/shared/security-root ownership is retained. Existing
 WP3/WP4 delivery and E13 recovery remain. E15-G/H advanced finality contracts are
 not weakened or activated. Source readiness is distinct from genuine installation
 and live AWS validation; no AWS operations occurred.
+
+## Proposed EC2 backup credential installation (2026-10-16)
+
+The [grouped installation review](../../operations/sql-backup/EC2-INSTALL-REVIEW.md)
+proposes two dedicated local SQL logins. After explicit approval, root on the
+selected EC2 instance would use its existing SA-secret read permission, generate
+passwords locally, and store only the two connection strings in root:root 0600
+files under a 0700 directory on encrypted EBS. systemd LoadCredential supplies
+private runtime copies to the backup job. SA remains process-only, and no secret
+value enters Terraform, argv, SSM command text, output, evidence or Git. No new
+secret container, text-key grant or application-login change is proposed.
+
+This is an uninstalled lab proposal. The source plans without access by default;
+actual bootstrap requires root, reviewed package/config, explicit approval hash
+and exact IMDS role/account. Existing logins/credentials or an uncertain receipt
+block replay. Reboot persistence is limited to that disposable encrypted EBS;
+no managed rotation, cross-host continuity or production credential guarantee
+is introduced. Preserve security-admin ownership of the separate role/KMS overlay.

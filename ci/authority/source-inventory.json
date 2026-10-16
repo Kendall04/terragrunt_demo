@@ -788,7 +788,7 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/ci-dotnet.yml": {
-      "sha256": "cfa706c44509f692fe8a60c0ef9e95c2687546a54433a31988420937fd5d39f7",
+      "sha256": "f8980017fe452c41032d01adb66fac051194dc0fad8e27c1ec0df7886417d5f7",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -9476,7 +9476,7 @@
     },
     "operations/sql-backup/package.py": {
       "semantic_status": "UNVERIFIED",
-      "sha256": "a06d94ce4a73cf90686788436df9cfe1bb19a432da3dbd4b3602f299487f8099",
+      "sha256": "475650f73dac86b7af897a6ff12b666a4bd716b25c9fd2abce14fa551a5c661e",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -9525,6 +9525,103 @@
           93,
           94,
           133
+        ]
+      }
+    },
+    "operations/sql-backup/ec2_credentials.py": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "f43a7cd092dc8619a1324d0d1fdcc56c2bea387c9dd9c7f35369f3e8cc7fc9aa",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          19,
+          62,
+          64,
+          78,
+          82,
+          92,
+          94,
+          99,
+          100,
+          101,
+          116
+        ]
+      }
+    },
+    "operations/sql-backup/ec2_prepare.py": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "0c85f9bb10f37dfa048ca1651c879a819b4ecf6041f21f67500f60e1ce1e923b",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          36,
+          37,
+          56,
+          57,
+          58,
+          64,
+          67,
+          69,
+          88,
+          113,
+          117,
+          119
+        ],
+        "executable-dependency": [
+          54
+        ],
+        "security-control": [
+          63
+        ]
+      }
+    },
+    "operations/sql-backup/ec2_snapshot.py": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "0258204138190db0e700054d657b04c48319f2f4390c82bfaf31958289534549",
+      "declarations": [],
+      "signals": {
+        "credential-acquisition": [
+          21
+        ],
+        "launch-or-mutation": [
+          9,
+          10,
+          13,
+          14,
+          15,
+          35,
+          40
+        ]
+      }
+    },
+    "operations/sql-backup/test_ec2.py": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "7f93434b5e0934ee4bf94540d5008b556ae2ef702f57a6530839163c81ea357a",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          88,
+          94,
+          96,
+          105,
+          107,
+          115,
+          123,
+          136,
+          144
+        ],
+        "executable-dependency": [
+          30
+        ],
+        "security-control": [
+          48
         ]
       }
     }

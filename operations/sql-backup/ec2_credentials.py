@@ -1,0 +1,133 @@
+#!/usr/bin/env python3
+"""Plan or explicitly provision lab-only SQL credentials on the selected EC2 host.
+
+Never invokes systemctl, uploads credentials, or writes secret values to stdout.
+The approval hash is an operator acknowledgement, not a substitute for owner consent.
+"""
+import argparse
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import secrets
+import stat
+import subprocess
+
+ACCOUNT='341936017254'
+ROLE='demo-dev-data-sql-ec2-role'
+SA='arn:aws:secretsmanager:us-east-1:341936017254:secret:demo/dev/db/sql-sa-password-30fCjc'
+LOGINS=('td_backup_dev','td_verify_dev')
+
+def require(ok,code):
+    if not ok: raise ValueError(code)
+
+def digest(body): return hashlib.sha256(body).hexdigest()
+
+def no_links(path):
+    require(path.is_absolute() and '..' not in path.parts,'ABSOLUTE_SAFE_ROOT_REQUIRED')
+    require(not any(p.is_symlink() for p in (path,*path.parents)),'SYMLINK_DENIED')
+
+def private_write(path,body,mode=0o600):
+    no_links(path)
+    descriptor=os.open(path,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,mode)
+    with os.fdopen(descriptor,'wb') as stream: stream.write(body)
+    path.chmod(mode)
+
+def sql_batch(database,backup_password,verify_password):
+    require(re.fullmatch('[A-Za-z][A-Za-z0-9_]{0,63}',database) is not None,'SAFE_DATABASE_REQUIRED')
+    require(all(re.fullmatch('Synthetic![a-f0-9]{48}',p) for p in (backup_password,verify_password)),'GENERATED_PASSWORD_REQUIRED')
+    return f"""SET NOCOUNT ON; SET XACT_ABORT ON;
+USE master;
+IF DB_ID(N'{database}') IS NULL THROW 51000, 'Database not ready', 1;
+IF SUSER_ID(N'{LOGINS[0]}') IS NOT NULL OR SUSER_ID(N'{LOGINS[1]}') IS NOT NULL THROW 51000, 'Existing login requires review', 1;
+BEGIN TRANSACTION;
+CREATE LOGIN [{LOGINS[0]}] WITH PASSWORD=N'{backup_password}', CHECK_POLICY=ON;
+CREATE LOGIN [{LOGINS[1]}] WITH PASSWORD=N'{verify_password}', CHECK_POLICY=ON;
+CREATE USER [{LOGINS[1]}] FOR LOGIN [{LOGINS[1]}];
+GRANT CREATE DATABASE TO [{LOGINS[1]}];
+USE [{database}];
+CREATE USER [{LOGINS[0]}] FOR LOGIN [{LOGINS[0]}];
+ALTER ROLE db_backupoperator ADD MEMBER [{LOGINS[0]}];
+COMMIT;
+"""
+
+class HostPort:
+    def environment(self):
+        # Only IMDS can supply AWS auth: ignore profiles, files and ambient tokens.
+        return {'PATH':'/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/mssql-tools18/bin',
+                'HOME':'/nonexistent','AWS_CONFIG_FILE':'/dev/null','AWS_SHARED_CREDENTIALS_FILE':'/dev/null',
+                'AWS_REGION':'us-east-1','AWS_DEFAULT_REGION':'us-east-1','AWS_EC2_METADATA_V1_DISABLED':'true',
+                'AWS_MAX_ATTEMPTS':'1','AWS_PAGER':''}
+    def aws(self,*args):
+        # Ubuntu 22.04's existing awscli may be v1; AWS_PAGER also covers v2.
+        run=subprocess.run(['aws','--region','us-east-1','--output','json',*args],env=self.environment(),text=True,capture_output=True,timeout=60)
+        require(run.returncode==0 and len(run.stdout)<=65536,'INSTANCE_ROLE_READ_FAILED')
+        return json.loads(run.stdout)
+    def sql(self,password,batch):
+        env=self.environment(); env['SQLCMDPASSWORD']=password
+        run=subprocess.run(['/opt/mssql-tools18/bin/sqlcmd','-S','127.0.0.1','-C','-U','sa','-b','-l','10','-t','60'],input=batch,env=env,text=True,capture_output=True,timeout=75)
+        # Do not return sqlcmd diagnostics: SQL input may contain passwords.
+        require(run.returncode==0,'SQL_BOOTSTRAP_FAILED_OR_UNKNOWN')
+
+def operate(approval_path,config_path,root,apply=False,confirmation=None,port=None):
+    require(approval_path.stat().st_size<=65536 and config_path.stat().st_size<=65536,'PUBLIC_INPUT_BOUND_EXCEEDED')
+    approval_bytes=approval_path.read_bytes(); approval=json.loads(approval_bytes)
+    config=json.loads(config_path.read_bytes()); approval_sha=digest(approval_bytes)
+    require(approval['Schema']=='SQL_BACKUP_EC2_REVIEW_V1' and approval['Account']==ACCOUNT and approval['Region']=='us-east-1','REVIEW_ACCOUNT_REQUIRED')
+    require(approval['Runtime']['ExpectedRole']==f'arn:aws:iam::{ACCOUNT}:role/{ROLE}' and approval['Runtime']['ExistingSaSecret']==SA,'REVIEW_ROLE_AND_SECRET_REQUIRED')
+    require(digest(config_path.read_bytes())==approval['PayloadSha256']['config.json'] and config['Database']=='demodb','REVIEWED_CONFIG_REQUIRED')
+    require(config['ExpectedEc2RoleName']==ROLE,'ROLE_CONFIG_MISMATCH')
+    no_links(root)
+    base=root/'etc/terragrunt-demo/sql-backup'; directory=base/'credentials'
+    dropin=root/'etc/systemd/system/sql-backup.service.d'
+    result={'Status':'CREDENTIAL_PLAN','ApprovalSha256':approval_sha,'SqlLogins':list(LOGINS),'NewSecretsManagerSecrets':0,
+            'CredentialDirectory':str(directory),'CredentialMode':'root:root 0600; directory 0700; encrypted EBS',
+            'SecretValuesPrinted':False,'SystemctlActions':[]}
+    if not apply: return result
+    require(confirmation==approval_sha,'EXACT_SECRET_BOOTSTRAP_CONFIRMATION_REQUIRED')
+    require(os.geteuid()==0,'ROOT_REQUIRED')
+    require(root==Path('/') or root.exists(),'EXISTING_FIXTURE_ROOT_REQUIRED')
+    no_links(base); no_links(dropin)
+    require(base.is_dir() and (base/'config.json').is_file() and (root/'opt/terragrunt-demo/sql-backup/install-receipt.json').is_file(),'PACKAGE_INSTALL_REQUIRED_FIRST')
+    require((root/'etc/systemd/system/sql-backup.service').is_file(),'PACKAGE_UNITS_REQUIRED_FIRST')
+    install_receipt=json.loads((root/'opt/terragrunt-demo/sql-backup/install-receipt.json').read_text())
+    require(install_receipt['PackageSha256']==approval['Package']['Sha256'] and install_receipt['SourceCommit']==approval['SourceCommit'],'INSTALLED_PACKAGE_MISMATCH')
+    require(digest((base/'config.json').read_bytes())==approval['PayloadSha256']['config.json'],'INSTALLED_CONFIG_DRIFT')
+    require(not directory.exists() and not dropin.exists(),'EXISTING_CREDENTIAL_BOOTSTRAP_REQUIRES_REVIEW')
+    port=port or HostPort()
+    identity=port.aws('sts','get-caller-identity')
+    require(identity['Account']==ACCOUNT and identity['Arn'].startswith(f'arn:aws:sts::{ACCOUNT}:assumed-role/{ROLE}/'),'INSTANCE_ROLE_MISMATCH')
+    value=port.aws('secretsmanager','get-secret-value','--secret-id',SA)
+    sa=value.get('SecretString','')
+    require(isinstance(sa,str) and 1<=len(sa)<=4096 and '\n' not in sa and '\r' not in sa,'INVALID_SA_SECRET')
+    backup_password='Synthetic!'+secrets.token_hex(24); verify_password='Synthetic!'+secrets.token_hex(24)
+    directory.mkdir(mode=0o700); directory.chmod(0o700)
+    receipt=directory/'bootstrap-receipt.json'
+    proof={'SchemaVersion':1,'Status':'PREPARING_OR_UNKNOWN','ApprovalSha256':approval_sha,'Database':config['Database'],'Logins':list(LOGINS)}
+    private_write(receipt,json.dumps(proof).encode())
+    # A failure intentionally preserves the receipt and refuses blind retry.
+    port.sql(sa,sql_batch(config['Database'],backup_password,verify_password))
+    for name,user,password in [('backup-connection',LOGINS[0],backup_password),('verify-connection',LOGINS[1],verify_password)]:
+        database=config['Database'] if name=='backup-connection' else 'master'
+        connection=f'Server=127.0.0.1,1433;Database={database};User ID={user};Password={password};Encrypt=True;TrustServerCertificate=True;Connect Timeout=10'
+        private_write(directory/name,connection.encode())
+    dropin.mkdir(mode=0o755)
+    unit='[Service]\nLoadCredential=\nLoadCredential=backup-connection:/etc/terragrunt-demo/sql-backup/credentials/backup-connection\nLoadCredential=verify-connection:/etc/terragrunt-demo/sql-backup/credentials/verify-connection\n'
+    private_write(dropin/'credentials.conf',unit.encode(),0o644)
+    proof['Status']='PROVISIONED_NOT_STARTED'
+    replacement=directory/'completed.json'; private_write(replacement,json.dumps(proof).encode()); os.replace(replacement,receipt)
+    return dict(result,Status='PROVISIONED_NOT_STARTED')
+
+def main():
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--approval',type=Path,required=True); parser.add_argument('--config',type=Path,required=True)
+    parser.add_argument('--root',type=Path,default=Path('/')); parser.add_argument('--apply',action='store_true'); parser.add_argument('--confirm-secret-bootstrap')
+    args=parser.parse_args()
+    return operate(args.approval,args.config,args.root,args.apply,args.confirm_secret_bootstrap)
+
+if __name__=='__main__':
+    try: print(json.dumps(main(),separators=(',',':')))
+    except Exception as error:
+        print(json.dumps({'Status':'FAILED','Code':str(error) if isinstance(error,ValueError) else 'CREDENTIAL_BOOTSTRAP_FAILED_OR_UNKNOWN'}))
+        raise SystemExit(1)
