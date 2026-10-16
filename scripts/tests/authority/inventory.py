@@ -41,6 +41,9 @@ def sources(root):
         own_test = rel.parts[:3] == ("scripts", "tests", "authority") and path.suffix in (".py", ".md")
         if own_contract or own_test:
             continue
+        if rel.parts[:2] == ("operations", "sql-backup") and path.suffix != ".md":
+            yield path
+            continue
         # Deliberately conservative: unknown files under operational roots are covered too.
         if (rel.parts[0] in ("terraform", ".github", "scripts") and path.suffix not in (".md", ".png")) or \
                 (rel.parts[:2] == ("demo-api", "deploy")) or path.name == "Dockerfile":

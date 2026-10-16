@@ -224,6 +224,14 @@ Evidence: [Program](../../demo-api/terragrunt-demo/Program.cs),
 [encryption](../../demo-api/terragrunt-demo/Services/IEncryptionService.cs),
 [data](../modules/target/dev/data/ordinary-main.tf), [SQL setup](../infra/data/user_data.sh).
 
+The owner-authorized [SQL backup/restore CLI](../../operations/sql-backup/README.md)
+adds a local V2 contract: private bounded native Express backups with CHECKSUM,
+separate backup/verifier contexts, immutable exact-version storage evidence and
+restore to an isolated new DB with CHECKDB/readback. It does not change SQL EC2,
+root-disk deletion, application credentials/migrations or the five-layer lifecycle.
+Native SQL is locally verified; S3/KMS, scheduling, alerts and cloud restore remain
+uninstalled/unverified. [Evidence](validation.md#sql-backuprestore-local-increment---2026-10-16).
+
 The original simple demo is not the final backend target. Read the decision
 register before adding identity or treating database limitations as accepted.
 

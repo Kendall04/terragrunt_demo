@@ -715,3 +715,88 @@ push/merge, full E1 historical suite or Terraform/Terragrunt upgrade occurred.
 The reusable-workflow pins and existing cloud authority remain unchanged. This
 qualifies the local source/container; a future cloud session needs its own
 authorization and release qualification.
+
+## SQL backup/restore local increment - 2026-10-16
+
+Current source: [CLI/protocol/native SQL/S3 adapter and tests](../../operations/sql-backup/README.md).
+The app solution includes the new projects; operations/sql-backup changes select
+app, hygiene and acceptance gates (and infra if IaC is later added). The new
+operational sources are inventoried as UNVERIFIED for authority semantics; a
+source hash does not grant a cloud role or certify a policy installation.
+
+Local qualification uses pinned SDK 10.0.402/runtime 10.0.13. The final ordinary
+solution run passed 104 existing application tests plus 40 new backup/SDK/process
+safety tests. One native SQL fact is explicitly skipped without lab credentials;
+it was then executed separately against real SQL Server 2022 **Express 16.0.4265.3**
+and passed without skips. Its assertions cover native COPY_ONLY/CHECKSUM header
+and VERIFYONLY, a db_backupoperator login with sysadmin=0/CREATE ANY DATABASE=0,
+restore to a new DB with MOVE, DBCC CHECKDB, the exact synthetic known row,
+refusal of an existing target, rejection of a truncated backup and preservation
+of a newer second source row. Restore/verification used a separate administrative
+synthetic SQL connection, not the restricted backup login.
+
+Storage in the native test is an in-memory S3 fake. The 40 offline cases cover
+checksum/size/key/version mismatch, ambiguous writes, commit failure, corruption,
+wrong target/manifest, insufficient space, missing/stale/maintenance, duplicate
+JSON, symlinks, credential-output redaction, mandatory TLS and S3 owner/encryption/
+conditional-write requests. They do not prove real AWS IAM, SSE-KMS, retention,
+notifications, cross-AZ recovery, KMS decryption or application readiness.
+The CLI's direct/transitive NuGet audit reported no vulnerable packages from the
+current public source. CI selection/enforcement passed 35 tests; reproducibility
+retains its separately executed 25 passing tests.
+
+The official SQL image was pinned to
+`mcr.microsoft.com/mssql/server@sha256:ba4c8329f48fb8f02e1416be6a930ebfd71268caee78aa985f3af4315e457c89`.
+After explicit owner approval, the lab set ACCEPT_EULA=Y/MSSQL_PID=Express under
+[Microsoft terms dated 2022-10-21](https://www.microsoft.com/content/dam/microsoft/usetm/documents/sql-server/sql-server-2022-developer-express-evaluation/retail-packaged/SQLServer2022_SQLServer2022DeveloperExpressEvaluation_English.pdf).
+It exposed no ports and used network=none, random process-only credentials,
+private 0700 staging and a new labelled volume. Runner identity must match SQL's
+actual UID/GID (10001/10001 here); do not assume GID 0 or relax permissions.
+The SDK's VSTest 18.7 runner executes the prebuilt native test directly, avoiding
+SDK first-use migrations as that UID. The harness validates labels and removes
+only its containers/volume in finally, including on failure. The existing SQL
+container and all other projects remain untouched. The final lab evidence binds
+the CLI/test assembly hashes and records cleanup and remaining space.
+
+Private logs/TRX/evidence and the generated cloud preview remain outside Git in
+`C:\CodexDrop\temp\terragrunt-demo-sql-backup`. No raw .bak, SQL credentials,
+cloud credentials or actual data are committed. Native backup staging existed only
+in the retired synthetic volume. No AWS client was invoked against AWS and no
+unit, timer, IAM/bucket/endpoint or notification was installed. The service template
+uses Requisite and cannot start SQL or EC2 by itself. The code preserves failure/
+UNKNOWN outcomes and never claims remote cancellation or authorizes blind replay.
+
+A direct historical WP1 test_repository invocation expects retired active IAM
+paths and failed; that invocation is not the current acceptance entry. No retired
+source was restored or altered to satisfy it. The supported final-acceptance gate
+is used for the current source and its result is recorded separately below.
+
+### Completed E1 acceptance and final targeted SQL correction
+
+Before the final S3 ordering correction, the supported provider-free
+final-acceptance gate completed successfully on
+2026-10-16: E1_REPOSITORY_ACCEPTANCE_PASS, all 16 AC criteria passed,
+959 accepted regressions plus 24 WP7 cases;
+E2 mutation 41, E4 post-switch 28 and E2-R owner-recovery 23 cases also passed.
+All gate checks, source-inventory admission, generated artifacts, knowledge links,
+Terraform formatting and whitespace checks passed. Evidence is outside Git in
+`C:\Users\PC\AppData\Local\Temp\terragrunt-demo-sql-backup-e1-final\acceptance.json`.
+The report identifies that pre-correction source and its content hashes.
+Final review then found that GetObject on a missing key returns 403 without
+ListBucket, which the minimal producer role deliberately lacks. The protocol
+now starts with conditional Put on its new UUID key and reads back afterward;
+no extra permission was added. A regression covers a store that denies reads
+of absent objects. The final solution tests (104 app + 40 backup/process/SDK,
+one native fact skipped in ordinary CI), separate native SQL test, source
+inventory, knowledge check and whitespace/link checks passed after this fix.
+The expensive historical E1 suite was not repeated after the small protocol
+correction; its prior result is kept distinct from the final targeted proof.
+No IAM/lifecycle implementation or frozen E1 contract changed. This is repository
+evidence, not AWS provider-schema or live acceptance.
+
+The final native SQL run at 2026-10-16T15:43:25.730514+00:00 passed and its evidence matches
+the final CLI/test assembly hashes. CleanupVerified is true; only the lab's
+labelled containers/volume were retired. Free root space afterward was
+7651381248 bytes (about 7.13 GiB).
+`sql-lab-evidence.json`, `sql-integration.log` and the final TRX under
+`C:\CodexDrop\temp\terragrunt-demo-sql-backup` retain the detailed local proof.

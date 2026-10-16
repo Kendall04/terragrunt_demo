@@ -1,0 +1,9 @@
+# PROPOSED hourly lab default. Not installed, enabled or accepted as an RPO.
+[Unit]
+Description=Proposed hourly SQL backup lab schedule
+[Timer]
+OnCalendar=hourly
+Persistent=true
+Unit=sql-backup.service
+[Install]
+WantedBy=timers.target

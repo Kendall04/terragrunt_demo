@@ -467,7 +467,7 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/scripts/ci/select-checks.py": {
-      "sha256": "8ffd2cfb545701e1eec792b78d3060c8363e2b03bb4f4ff449859fca0d6222cc",
+      "sha256": "6c71d81926847aef0fbec8b3bc816ebb29fc94820dcc85694bc9293ff13973d2",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -480,8 +480,8 @@
           42,
           44,
           49,
-          61,
-          65
+          65,
+          69
         ],
         "executable-dependency": [
           19,
@@ -611,7 +611,7 @@
       "semantic_status": "CURRENT_FACT"
     },
     ".github/scripts/ci/tests/test_ci_selection.py": {
-      "sha256": "1238a3f496055d09554370565d650eb859c011f869493160110e854cbdba39f0",
+      "sha256": "b56b9d49e9044317fd751f8f33e9c97793c5b1612a7a11ccb6bc646da376d52a",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -9260,6 +9260,201 @@
       "declarations": [],
       "signals": {},
       "semantic_status": "CURRENT_FACT"
+    },
+    "operations/sql-backup/proposed-lab.json": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "873de64a8c9ee749249bfd523627ed5cca76a8c6b3ba8ee55b20a8366c76d689",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          5,
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    "operations/sql-backup/sql-backup.service.in": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "8a1452dfd2c880744a2dd73e43c37e84d7bbee9c88f8f2ce8f52ba585408b769",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          20
+        ]
+      }
+    },
+    "operations/sql-backup/sql-backup.timer.in": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "2638aa62fc2ffd47899eb39eda20ec1fb743f3e6fcd3dacd6deaa0b05c963cea",
+      "declarations": [],
+      "signals": {}
+    },
+    "operations/sql-backup/SqlBackup/CloudPreview.cs": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "d6fb08f075bf5aaa9bb21673748be63a9ad5aac72df92bff8930138078d01bab",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          10,
+          14,
+          18,
+          23,
+          24,
+          25,
+          26,
+          32
+        ],
+        "executable-dependency": [
+          12,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27
+        ]
+      }
+    },
+    "operations/sql-backup/SqlBackup/Contracts.cs": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "ea27f779aa454e9eb195a35dbbd21c6968a8d59cb765e1db79383b6623aedf40",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          15,
+          31
+        ]
+      }
+    },
+    "operations/sql-backup/SqlBackup/NativeSql.cs": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "5cb7e034839f916f23fd056d3108e8ffce8d100d84ec3095eb7b3262d91b6b0c",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          16,
+          17,
+          18,
+          24,
+          25,
+          32,
+          33,
+          38,
+          39
+        ]
+      }
+    },
+    "operations/sql-backup/SqlBackup/Program.cs": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "3ab03890d92c9363cd225cdabe885a99b0bf10cfdf068eb430cc0e386babb5a3",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          12,
+          15,
+          22,
+          28,
+          44
+        ]
+      }
+    },
+    "operations/sql-backup/SqlBackup/Protocol.cs": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "5848eb2adc24767018f4001c36a4590989f079ad4f5a18ba80b451941321abe8",
+      "declarations": [],
+      "signals": {}
+    },
+    "operations/sql-backup/SqlBackup/S3Store.cs": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "8d48207e823661fb3caa83c19e07abd361934da5d8ce2efa8fd4558d65ada02f",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          12,
+          28
+        ]
+      }
+    },
+    "operations/sql-backup/SqlBackup/SqlBackup.csproj": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "2c5c9a6a12088f7b934b5f6dfe76419c7a42d3fe77a0cf9664cfda478feb5b05",
+      "declarations": [],
+      "signals": {}
+    },
+    "operations/sql-backup/SqlBackup.Tests/ProtocolTests.cs": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "0cb180e3fd2185b228549a3ab815400a012d1409eb82feef9e8126b9fdb77f64",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          18
+        ]
+      }
+    },
+    "operations/sql-backup/SqlBackup.Tests/S3AdapterTests.cs": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "af8c8bff55c41ea6e04d0495b9daea57f9f3867eba4c79a5d937a54259cc5cd7",
+      "declarations": [],
+      "signals": {}
+    },
+    "operations/sql-backup/SqlBackup.Tests/SqlBackup.Tests.csproj": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "0c085a06da2be5c633ca69ebd709d89f4a1c7bead2ed8c2c242492d4bd79092a",
+      "declarations": [],
+      "signals": {}
+    },
+    "operations/sql-backup/SqlBackup.Tests/SqlExpressIntegrationTests.cs": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "64364e6b77afdedae0a27173ee1ea9dc3ca6cb4fae7f3857e914eea2d6c21810",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          35
+        ],
+        "executable-dependency": [
+          19,
+          22
+        ]
+      }
+    },
+    "operations/sql-backup/run-sql-lab.py": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "da32c861307c733eed0d9dd7a10e1f7c6fe9a004dbd316adc7aaa1e794f16095",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          36,
+          39,
+          40,
+          104,
+          108
+        ],
+        "executable-dependency": [
+          35,
+          46,
+          47,
+          48,
+          49,
+          51,
+          61,
+          82,
+          83,
+          84
+        ]
+      }
+    },
+    "operations/sql-backup/SqlBackup.Tests/ProcessSafetyTests.cs": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "c85ce231388f0cd3e12f4d6f1bb408d3ae68e8fcb3cdff39c1ba2f9c66f96631",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          39
+        ]
+      }
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged"

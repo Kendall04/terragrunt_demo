@@ -50,6 +50,10 @@ def classify(paths):
                 result['app'] = True
         elif path.startswith(('ci/', 'specs/')):
             result.update(acceptance=True, hygiene=True)
+        elif path.startswith('operations/sql-backup/'):
+            result.update(acceptance=True, app=True, hygiene=True)
+            if p.suffix in ('.tf', '.hcl') or path.endswith('.tf.json'):
+                result['infra'] = True
         elif path.startswith('demo-api/'):
             result['app'] = True
             if path.startswith('demo-api/deploy/') or p.name in ('Dockerfile', '.dockerignore'):

@@ -16,8 +16,10 @@ needed for the task; this file is a map, not the architecture reference.
 - Production independence from dev-owned resources is a TARGET requirement;
   current dev/shared ownership is a known defect, not a convention to perpetuate.
 - Cost and single-operator safety are design constraints. SQL Server stays on EC2.
-  Database durability is important but deferred until redeployed AWS can support
-  safe experiments near program end. Do not select its solution prematurely.
+  The owner authorized the first local V2 SQL backup/restore increment on
+  2026-10-16. Its [runbook](operations/sql-backup/README.md) and
+  [validation boundary](terraform/docs/validation.md#sql-backuprestore-local-increment---2026-10-16)
+  separate native Express proof from mocked S3 and future AWS installation.
 
 ## Read when
 

@@ -16,6 +16,9 @@ This repository is a demonstrated DEV system, not a production availability clai
 V2 continues locally. The owner-authorized .NET 10 LTS migration uses SDK
 10.0.402 and runtime 10.0.13, with [local qualification](terraform/docs/validation.md#net-10-lts-local-migration---2026-10-16).
 The dated AWS trials above used V1; .NET 10 has not been deployed to AWS.
+The first [V2 backup/restore increment](operations/sql-backup/README.md) now passes
+local SQL Server 2022 Express backup, restore and integrity checks. S3/KMS remain
+simulated and no cloud backup service is installed.
 
 ## Architecture demonstrated
 

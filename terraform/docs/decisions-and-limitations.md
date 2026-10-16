@@ -87,7 +87,7 @@ mean low importance. Scope/dependencies below do not authorize implementation.
 | B2 / E2 High delivery — repository implementation; E2-R partial | [Environment mutation arbitration](e2-environment-mutation.md) coordinates protected delivery/recovery/lifecycle and generation-bound cleanup; [E2-R](e2r-owner-recovery.md) adds read-only interrupted-owner diagnosis | No timeout takeover; head CAS cannot cancel checked/in-flight calls; exact executor termination and remote quiescence cannot currently be verified, so administrative recovery stays BLOCKED | Provider-free repository evidence; live installation/termination/effect settlement remain unverified; E4 compensation remains deferred |
 | B3 High readiness — completed | Per-task one-shot readiness gate precedes promotion; the bounded ECS/ALB observation model and historical rather than continuous readiness are explicit | Preserve exact cohort/digest/target evidence, bounded failure, unchanged `/health`, fail-closed external evidence handling and immediate final revalidation | [Durable spec](../../specs/deployment-readiness-promotion/spec.md), [plan](../../specs/deployment-readiness-promotion/plan.md) and [reviewed evidence](validation.md#deployment-readiness-promotion--reviewed-evidence) complete the feature; optional hardening below is separate |
 | B4 / E4 High recovery — PARTIALLY_RESOLVED | [Bounded same-invocation continuation](e4-post-switch-recovery.md) reconciles switch evidence-persistence failure with current readbacks and original E2 grant | No attempted-stage resend, compensation, interrupted-owner takeover or new approval model; schedule/index/orphan failures remain | Deterministic repository evidence; live recovery remains unverified |
-| B5 High data durability | Termination-deleted root disk; no repository backup/restore; startup migrations under db_owner | Large overall; D4/D5 and recovery objectives; high data/schema risk | IMPORTANT, DEFERRED until deployed AWS near program end; no deep design now |
+| B5 High data durability - local increment completed | Root disk still termination-deleted; native Express backup/restore CLI and local proof now exist; startup migrations still use db_owner | Cloud storage/role/secret installation, app/KMS restore and recovery objectives remain unverified; D4 remains | [Local V2 increment](../../operations/sql-backup/README.md) authorized 2026-10-16; future AWS session and retention/RPO/RTO require explicit decisions |
 | B6 High conditional API security | Public writes and plaintext reads | Medium; domain/data policy first; high compatibility risk | Auth follows backend expansion |
 | B7 High observability — configuration corrected | [E7](e7-cloudwatch-alarms.md) fixes active dev/prod ECS namespace, NAT collection and gauge missing-data behavior; real metric/notification delivery remains unverified | Preserve bounded dimensions, protected ownership and sparse-error policy; no observability redesign | Provider-free repository evidence; live AWS validation remains separate |
 | B8 / E8 Medium artifacts — PARTIALLY_RESOLVED | E1 already protects exact immutable manifest evidence; [E8](e8-rollback-image-retention.md) removes automatic expiration from three protected application repositories and checks exact image availability | WP3 publishes untagged images, so untagged/count cleanup is unsafe; retained ECR storage is unbounded and no cleanup authority is added | Owner horizon/budget and evidence-driven cleanup remain unresolved; live retention/rollback is unverified |
@@ -257,3 +257,17 @@ worktree moved to CodexDrop. Backups/restore, PKI and Sentinel remain subsequent
 increments, not implemented by this runtime milestone. Reviews should close on
 material correctness/security/behavior evidence without reopening accepted
 observational boundaries for minor refinements.
+
+## V2 first local SQL backup/restore milestone (2026-10-16)
+
+The owner authorized local design/implementation and subsequently accepted the
+Microsoft SQL Server 2022 Express EULA for an isolated synthetic Docker test.
+This reopens the earlier D5 deferral only for this bounded increment; it does not
+authorize AWS/IAM changes, deployment, data loss, publication or an automatic DOWN.
+[The runbook](../../operations/sql-backup/README.md) defines finite acceptance and
+[validation](validation.md#sql-backuprestore-local-increment---2026-10-16) records
+native SQL versus mocked storage. Two AZ, SQL on EC2, E2/E13 and lifecycle remain.
+The proposed hourly/two-day-current/two-day-noncurrent/two-hour-stale defaults are
+uninstalled and unaccepted. RPO/RTO are undecided/unmeasured. Restored ciphertext
+still needs the original text KMS key and a genuine application/decryption trial.
+PKI, Sentinel, UI and unrelated hardening remain later increments.

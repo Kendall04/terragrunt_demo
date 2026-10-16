@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.12.35527.113 d17.12
@@ -7,12 +7,24 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "terragrunt-demo", "terragru
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "terragrunt_demo.Tests", "terragrunt-demo.Tests\terragrunt_demo.Tests.csproj", "{E867CB37-D104-46BA-A679-DE8C03FE8E7C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBackup", "..\operations\sql-backup\SqlBackup\SqlBackup.csproj", "{B60AE740-566E-4A1C-8DC7-5470E1A14201}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlBackup.Tests", "..\operations\sql-backup\SqlBackup.Tests\SqlBackup.Tests.csproj", "{B60AE740-566E-4A1C-8DC7-5470E1A14202}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B60AE740-566E-4A1C-8DC7-5470E1A14202}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B60AE740-566E-4A1C-8DC7-5470E1A14202}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B60AE740-566E-4A1C-8DC7-5470E1A14202}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B60AE740-566E-4A1C-8DC7-5470E1A14202}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B60AE740-566E-4A1C-8DC7-5470E1A14201}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B60AE740-566E-4A1C-8DC7-5470E1A14201}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B60AE740-566E-4A1C-8DC7-5470E1A14201}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B60AE740-566E-4A1C-8DC7-5470E1A14201}.Release|Any CPU.Build.0 = Release|Any CPU
 		{60759132-FDAC-4C95-8F10-42F847CE880F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{60759132-FDAC-4C95-8F10-42F847CE880F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{60759132-FDAC-4C95-8F10-42F847CE880F}.Release|Any CPU.ActiveCfg = Release|Any CPU

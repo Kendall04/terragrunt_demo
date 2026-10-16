@@ -21,5 +21,8 @@ Read [architecture](docs/architecture.md) for layer/state/network ownership,
 - Mocks for plan/validate are not deployment evidence. Init/validate/plan may write
   caches/locks/generated files and contact AWS. Check-only formatting requires
   explicit check flags; no AWS operation is implied by a validation request.
-- SQL Server stays on EC2. Durability implementation/deep design is deferred until
-  later deployed experiments; do not introduce backups/RDS as incidental cleanup.
+- SQL Server stays on EC2. The owner-authorized local V2
+  [backup/restore increment](../operations/sql-backup/README.md) is implemented;
+  its policies/units are uninstalled proposals. Cloud integration, real S3/KMS,
+  recovery targets and retention still need separate authorization/decisions.
+  Never apply its preview or introduce RDS as incidental cleanup.

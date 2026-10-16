@@ -308,5 +308,20 @@ class WorkflowTests(unittest.TestCase):
             self.assertNotIn(forbidden, raw)
 
 
+
+class SqlBackupSelectionTests(unittest.TestCase):
+    def test_sql_backup_code_tests_config_and_scheduling_run_app_acceptance_hygiene(self):
+        for path in ('operations/sql-backup/SqlBackup/NativeSql.cs',
+                     'operations/sql-backup/SqlBackup.Tests/ProtocolTests.cs',
+                     'operations/sql-backup/proposed-lab.json',
+                     'operations/sql-backup/sql-backup.service.in'):
+            selected = selector.classify([path])
+            self.assertTrue(all(selected[g] for g in ('app', 'acceptance', 'hygiene')))
+            self.assertFalse(selected['infra'])
+
+    def test_future_sql_backup_iac_cannot_skip_infrastructure_gate(self):
+        for path in ('operations/sql-backup/bucket.tf', 'operations/sql-backup/config.tf.json'):
+            self.assertTrue(all(selector.classify([path])[g] for g in selector.GATES))
+
 if __name__ == '__main__':
     unittest.main()
