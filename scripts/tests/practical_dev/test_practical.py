@@ -454,6 +454,32 @@ class Tests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'protected executors'):
             self.session.lambda_execution_history('e1-gateway-infra-dev',{})
 
+    def test_exact_dev_deployment_executors_use_bounded_live_logs(self):
+        self.all_up();self.shutdown();self.fake.log_history=True
+        proof=json.loads((self.session.directory/'shutdown-readback.json').read_text())
+        for name in ('e1-gateway-deploy-dev','e1-cleanup-recovery-cleanup-dev'):
+            with self.subTest(name=name):
+                current=copy.deepcopy(proof)
+                current['timeouts'][name]=600
+                result=self.session.lambda_execution_history(name,current)
+                self.assertEqual(result['function'],name)
+                self.assertEqual(result['executor_finality'],'NOT_CERTIFIED')
+                self.fake.log_unpaired=True
+                with self.assertRaisesRegex(ValueError,'unpaired'):
+                    self.session.lambda_execution_history(name,current)
+                self.fake.log_unpaired=False;self.fake.log_after=True
+                with self.assertRaisesRegex(ValueError,'after inhibition'):
+                    self.session.lambda_execution_history(name,current)
+                self.fake.log_after=False
+
+    def test_log_extension_does_not_admit_other_protected_functions(self):
+        for name in ('e1-gateway-release','e1-gateway-infra-dev','e1-gateway-deploy-prod','e1-cleanup-recovery-cleanup-prod'):
+            with self.subTest(name=name):
+                before=len(self.fake.calls)
+                with self.assertRaisesRegex(ValueError,'protected executors'):
+                    self.session.lambda_execution_history(name,{})
+                self.assertEqual(before,len(self.fake.calls))
+
     def test_positive_or_stale_metrics_cannot_fall_back_to_logs(self):
         self.all_up();self.shutdown();self.fake.log_history=True;original=self.fake.run
         for value in [dict(Maximum=1,Timestamp=time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime())),dict(Maximum=0,Timestamp='2000-01-01T00:00:00Z')]:

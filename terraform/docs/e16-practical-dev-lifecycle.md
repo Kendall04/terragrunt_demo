@@ -396,3 +396,46 @@ read adapter only; it adds no deployment authority or shutdown exception. The
 57 focused E16 tests pass, including real response-shaped terminal/active/missing
 field cases. Backend exclusivity, E2, E13 evidence/queue guards, reviewed plans
 and independent SQL-loss confirmation are unchanged.
+
+
+## Final DOWN: exact DEV log readers and unresolved historical SDC evidence
+
+The owner approved extending the existing START/REPORT alternative only to
+`e1-gateway-deploy-dev` and `e1-cleanup-recovery-cleanup-dev`. The same complete
+version/stream/page inventory, ordered START/REPORT pairing, inhibition timestamp,
+configured timeout and concurrency-zero checks apply. Other protected functions,
+PROD, incomplete logs and late executions remain rejected. This is supervised
+observation, never an executor-finality certificate. The 59 focused E16 tests
+pass, including the two exact names and rejection of other protected executors.
+Temporary observation permissions must be removed on completion or any stop.
+The real operator observation did not pass: ListVersionsByFunction returned an
+explicit AccessDenied despite the reviewed temporary reader grant. Readback and
+custom-policy simulation matched the intended scope; that simulation is not
+proof of effective live access. Both temporary installations were reconciled and
+removed immediately after their bounded read attempts. No permission expansion
+was used, and C3 is not reported as live-validated.
+
+The final DOWN has NOT been applied. Its historical SDC attempt
+`05fc796a-03ae-5e11-8d3b-64a61d144d5d` remains without a terminal observation.
+Native evidence read on 2026-10-16 UTC shows the retained FAILURE was written at
+01:09:46, before the later attempt at 01:10:51. The two Lambda invocations have
+REPORT records, but their errors expose only `E1_WP4D_CONTROL_FAILED`; they do
+not identify a pre-dispatch rejection. The complete queried CloudTrail window
+contains the independently authorized administrative SDC repair, without a
+handler ModifyInstanceAttribute event. That absence, missing ACK and the earlier
+FAILURE do not conclusively establish the later attempt's pre-dispatch outcome.
+The conditional owner approval for ABSENT cannot be used as proof of ABSENT.
+No reconciliation record was written; no historical FAILURE was changed.
+
+Owner authorization C2 was executed only for the exact historic SQS message
+`f81a8c2d-195d-4c13-98c6-e591ddc12257`, after authentic ID/body-hash and immutable
+S3 VersionId verification. SQS acknowledged its deletion using its current
+ReceiptHandle. The versioned archive and all FAILURE evidence remain retained.
+No purge or redrive occurred. An empty queue cannot replace effect reconciliation.
+
+C4 teardown grants were not installed while this material C1 gate remained
+unresolved. NAT remains at capacity one per slot with replacement processes
+suspended; ECS is drained and SQL stopped with EBS retained. These states do not
+mean DOWN or zero charges. Saved previews must be regenerated against a clean
+source commit before any future apply. Retain backend/locking, protected
+identities, neutral WP3/WP4, KMS/secrets/ECR and versioned evidence.

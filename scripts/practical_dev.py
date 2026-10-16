@@ -451,9 +451,9 @@ class Session:
         return dict(layer=layer,phase='NETWORK_ONLY_ADMIN_NAT_INSTALL_NEXT' if review['network_only'] else 'STATE_RECONCILED_NOT_FUNCTIONAL_HEALTH',next_action='down-plan' if review['down'] else 'up-plan',possible_charges=True)
 
     def lambda_execution_history(self,name,proof):
-        # DEV NAT-only supervised alternative when CloudWatch emits no metric.
+        # Exact DEV NAT/deployment executors; absence of metrics is not zero.
         # Live service reads, never an operator-supplied certificate or zero.
-        exact={f'e1-nat-recovery-nat-dev-{d.replace("_","-")}' for d in DUTIES}
+        exact={f'e1-nat-recovery-nat-dev-{d.replace("_","-")}' for d in DUTIES}|{'e1-gateway-deploy-dev','e1-cleanup-recovery-cleanup-dev'}
         require(name in exact,'metric absence: no log alternative for protected executors')
         from datetime import datetime
         versions=self.aws('lambda','list-versions-by-function','--function-name',name)
