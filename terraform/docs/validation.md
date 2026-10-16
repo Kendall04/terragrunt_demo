@@ -1081,3 +1081,19 @@ execution evidence directory. There is still no functioning qualified Terraform
 route for this session and no runtime billing start. A Linux authentication handoff,
 if chosen by the owner, must be performed by the human; this agent transferred no
 tokens, credentials or .aws files.
+
+At 2026-10-16 23:23 UTC the owner, through coordination, reported personally
+disabling Norton HTTPS inspection while retaining AutoProtect. The EKS task
+reported a successful Windows Terraform 1.13.4/AWS 5.100.0 schema check without
+credentials/backend. ECS was authorized to revalidate preparation/plan only,
+still without apply pending the historical UNKNOWN decision. The proposed fresh
+E16 init/plan invocation was rejected by automatic approval review before process
+creation: it classified the state-read flow and supported-CLI stderr capture as
+a bypass of the prior rejected sensitive diagnostic. This is not a newly observed
+Terraform/provider failure. No raw diagnostic was read, no new session directory
+or runtime was created, and no Norton/TLS/trust/authentication change was made by
+this agent. The existing plan's technical functionality remains unverified after
+the owner's Norton change. plan-revalidation-auto-review-rejection.json records
+the exact no-execution outcome. Do not route around the rejection; obtain explicit
+bounded approval for Terraform's normal remote-state consumption during init/plan,
+without raw diagnostic inspection, or use a human-produced sanitized plan summary.
