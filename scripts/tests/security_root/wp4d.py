@@ -78,6 +78,7 @@ def package_sources(binding):
     sources = list(SUPPORT + COMMON + RECOVERY)
     if binding.startswith("nat-recovery/nat-dev/"):
         sources.append("scripts/wp4d/dev_nat_objects.py")
+        sources.append("scripts/wp4d/dev_nat_guard.py")
     if binding.startswith("normal-delivery/"):
         sources += list(E3)
     if binding in ("normal-delivery/deploy-dev", "cleanup-recovery/cleanup-dev"):
@@ -113,6 +114,10 @@ def artifact(root, catalog, binding):
         files[name] = base64.b64encode(source).decode("ascii")
         name = "scripts/wp4d/adapters.py"
         source = base64.b64decode(files[name]) + b"\nfrom scripts.wp4d.dev_nat_objects import NatObjects as Objects\n"
+        files[name] = base64.b64encode(source).decode("ascii")
+        name = "scripts/recovery/nat.py"
+        source = base64.b64decode(files[name])
+        source += b"\nfrom scripts.wp4d.dev_nat_guard import controller as _dev_nat_guard\nNat = _dev_nat_guard(Nat)\n"
         files[name] = base64.b64encode(source).decode("ascii")
     if binding in ("normal-delivery/deploy-dev", "cleanup-recovery/cleanup-dev"):
         # Only these new immutable DEV packages select the approved correction.

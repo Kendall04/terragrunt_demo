@@ -239,3 +239,55 @@ fresh supported Linux E3 evidence are not claimed; no dependencies were installe
 No AWS API, Terraform provider initialization, deployment, push, fetch or PR occurred.
 One bounded self-check corrected the Terraform conditional type, Windows encoding,
 exact resource assertion and console readback issues described above.
+
+## Live DEV replacement trial and independent-duty guard correction
+
+On 2026-10-16 UTC, the owner authorized one replacement per DEV slot through
+its existing ASG with desired capacity unchanged at one. The original VPC,
+two public/two private subnets, two slots, launch-template version 2, EIPs and
+Lambda/EventBridge E13 architecture were preserved. This is observed DEV
+behavior; it does not establish PROD readiness or automatic cross-AZ failover.
+
+Slot A completed automatically: replacement membership and bootstrap were
+verified, all three action attempts had matching ACK/readback/SUCCESS receipts,
+and HTTPS from the original private subnet returned the slot's expected public
+source address. Slot B replaced successfully and recovered its EIP and route,
+but its SDC action failed before dispatch and retained an attempt without ACK.
+Its execution-failure message and FAILURE evidence remain intact. Under separate
+explicit owner authorization, an administrator changed only the replacement's
+SourceDestCheck to false. Private-subnet HTTPS then succeeded with B's expected
+public source address. **B is a manually repaired failed automatic trial**, not
+an automatic recovery success. No failed event was redriven or force-settled.
+
+The B timeline established a pre-dispatch race: the SDC intent saw no EIP
+association; the concurrent EIP duty completed its own association after the
+SDC attempt was retained. The original guard compared the entire context,
+including the other duties' mutable results, and rejected SDC before its EC2
+call. CloudTrail, the retained attempt and the missing ACK agree with this
+ordering; IAM readback did not identify a missing EC2 permission.
+
+The three DEV bundles now select `scripts/wp4d/dev_nat_guard.py` through the
+existing package overlay. Each guard still obtains a fully validated fresh
+ASG/EC2/ENI/VPC/subnet/AZ/spec context, requires identical protected membership,
+and rejects a change to its own mutation's prior state. The route duty also
+requires unchanged default-route existence. Only progress of the other two
+fixed duties is excluded from that comparison. Final operation-attributed
+readbacks, attempts/ACKs, no-blind-resend behavior and UNKNOWN retention remain
+unchanged. Common recovery code and every non-DEV-NAT package retain their
+original bytes and identities. There is no new coordinator, storage authority,
+EC2 action or retry path.
+
+Five focused tests exercise the actual emitted bundles: the original race,
+independent progress at plan/attempt persistence boundaries, rejection of own
+state/membership/route-existence changes, uncertain retries without another
+dispatch, and selection restricted to the three DEV packages. The NAT suite
+contains 45 tests. Offline passing tests do not prove that the installed runtime
+has changed or that a subsequent automatic replacement will succeed.
+
+Installation must use fresh content-addressed, versioned bundles and reviewed
+exact-version read bindings. Preserve earlier packages/Lambda versions, the
+failed B journal and its queue message. Verify configuration, numeric EventBridge
+targets and failure destinations before enabling delivery. Inhibiting delivery
+is not cancellation of an issued AWS effect. A fresh live replacement of the
+current instance requires its own destructive authorization; replaying the old
+failed operation is not an acceptable test. DEV remains running and billable.
