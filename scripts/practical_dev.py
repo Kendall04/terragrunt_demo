@@ -208,7 +208,7 @@ class Session:
             if listed['ids']:
                 observed=self.aws('codebuild','batch-get-builds','--ids',*listed['ids'])
                 require(not observed.get('buildsNotFound') and len(observed['builds'])==len(listed['ids']),'complete build observation')
-                require(all(not b['buildInProgress'] and b['buildStatus'] in ('SUCCEEDED','FAILED','STOPPED','TIMED_OUT','FAULT') for b in observed['builds']),'active ECS/lifecycle controller')
+                require(all(b['buildComplete'] is True and b['buildStatus'] in ('SUCCEEDED','FAILED','STOPPED','TIMED_OUT','FAULT') for b in observed['builds']),'active ECS/lifecycle controller')
 
     def root(self,layer):
         require(layer in UP,'original runtime DEV root only')

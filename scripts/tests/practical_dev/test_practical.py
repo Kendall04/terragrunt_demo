@@ -115,7 +115,7 @@ class Fake:
             value=dict(events=events,nextForwardToken='same-page-end')
         elif action=='list-projects':value=dict(projects=['e1-controller-'+n for n in p.BINDINGS])
         elif action=='list-builds-for-project':value=dict(ids=['build-one'] if self.busy else [])
-        elif action=='batch-get-builds':value=dict(builds=[dict(buildInProgress=True,buildStatus='IN_PROGRESS')],buildsNotFound=[])
+        elif action=='batch-get-builds':value=dict(builds=[dict(buildComplete=False,buildStatus='IN_PROGRESS')],buildsNotFound=[])
         elif action=='list-objects-v2':
             prefix=rest[rest.index('--prefix')+1]
             if prefix.startswith('e1/'):
@@ -254,6 +254,28 @@ class Tests(unittest.TestCase):
     def test_controller_active_rejected(self):
         self.fake.busy=True
         with self.assertRaisesRegex(ValueError,'active ECS'):self.session.prepare()
+    def test_native_terminal_codebuild_without_invented_progress_field(self):
+        self.fake.busy=True
+        original=self.fake.run
+        response={'buildComplete':True,'buildStatus':'SUCCEEDED'}
+        def run(args,cwd=None,data=None):
+            if 'batch-get-builds' in args:
+                return c.canonical(dict(builds=[response],buildsNotFound=[]))
+            return original(args,cwd,data)
+        self.fake.run=run
+        for status in ('SUCCEEDED','FAILED','STOPPED','TIMED_OUT','FAULT'):
+            response['buildStatus']=status
+            self.session.idle()
+        for response_value in ({'buildComplete':False,'buildStatus':'SUCCEEDED'},
+                               {'buildComplete':True,'buildStatus':'IN_PROGRESS'},
+                               {'buildComplete':True,'buildStatus':'UNKNOWN'}):
+            response.clear();response.update(response_value)
+            with self.assertRaisesRegex(ValueError,'active ECS'):
+                self.session.idle()
+        response.clear();response['buildStatus']='SUCCEEDED'
+        with self.assertRaises(KeyError):
+            self.session.idle()
+
     def test_real_plan_preview_and_exact_binary(self):
         review=self.session.prepare();self.assertIn('REAL_BINARY',review['preview']);self.session.apply(review['plan_id'],review['confirmation'])
         applied=[a for a in self.fake.calls if a[0]=='terraform' and a[2]=='apply'];plans=[a for a in self.fake.calls if a[0]=='terraform' and a[2]=='plan']

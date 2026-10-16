@@ -385,3 +385,14 @@ versions and old failed receipts. Once authentic state and AWS agree, initialize
 an ordinary new E16 session and review fresh destroy plans for only the remaining
 original DEV resources. No new resources, alternate state authority, force-unlock
 or unreviewed destroy retry is authorized by this reconciliation.
+
+## Final DEV teardown: native CodeBuild completion field
+
+The final teardown preflight found installed terminal WP4 builds where AWS returns
+`buildComplete`, not `buildInProgress`. E16 now checks `buildComplete is True`
+and the existing closed list of terminal statuses. Missing fields, active builds,
+unknown statuses and incomplete responses still block. This corrects the native
+read adapter only; it adds no deployment authority or shutdown exception. The
+57 focused E16 tests pass, including real response-shaped terminal/active/missing
+field cases. Backend exclusivity, E2, E13 evidence/queue guards, reviewed plans
+and independent SQL-loss confirmation are unchanged.
