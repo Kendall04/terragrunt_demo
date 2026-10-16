@@ -1,11 +1,14 @@
 # SQL backup/restore increment
 
-Status: local implementation; no AWS installation. The example configuration is
+Status: local implementation plus a real bounded S3/KMS component drill. No EC2
+service or scheduler is installed. The example configuration is
 **PROPOSED**, with synthetic ARNs that must be replaced before any cloud session.
 The local milestone did not accept retention, budget, RPO or RTO. On 2026-10-16
 the owner subsequently approved the bounded synthetic S3/KMS component drill
-and its proposed lab values. Its Linux authentication preflight is
-[blocked before resource creation](../../terraform/docs/validation.md#approved-s3kms-component-drill-preflight---2026-10-16).
+and its proposed lab values. The subsequent
+[real cloud component qualification](../../terraform/docs/validation.md#sql-s3kms-component-qualification---2026-10-16)
+used Windows AWS and Linux SQL without credential transfer; the Linux-profile
+preflight remains historical.
 RPO/RTO remain unmeasured; no schedule or AWS installation exists. The full
 EC2/cross-AZ proposal below remains outside that minimum component scope.
 
@@ -31,8 +34,10 @@ local fake client. The production S3 adapter requires `--aws`, selects only loca
 profile cnp-cert-dev, verifies account 341936017254, and uses us-east-1 with SDK
 write retries disabled. Future EC2 installation instead explicitly adds
 `--ec2-role` and must configure ExpectedEc2RoleName: STS verifies that exact
-assumed-role name in the same account. Neither credential mode was used against
-AWS in this increment; no temporary sessions are copied between machines.
+assumed-role name in the same account. The original local milestone did not use either mode against AWS. The later
+component drill used explicit minimum-role sessions on Windows; native Linux
+profile/EC2-role installation remains unverified. No sessions were copied between
+machines.
 
 Run the built SqlBackup DLL with `backup --config <private-config>` for local-only
 verification. SQL_BACKUP_CONNECTION_STRING and SQL_VERIFY_CONNECTION_STRING are
@@ -88,8 +93,9 @@ RPO would depend on successful interval plus backup/upload duration, and RTO mus
 be measured by an actual restore drill. No SLA is claimed. Local disk contains
 sensitive .bak data: run co-located with SQL as its mssql OS user on encrypted
 storage, dedicated private directories, sufficient free space and secret injection
-outside Terraform. Remote restore validates SQL only; actual KMS decryption and
-application /ready and POST/GET remain future AWS acceptance.
+outside Terraform. The CLI restore validates SQL only. The subsequent component drill separately
+proved real KMS decrypt of restored synthetic ciphertext; application /ready and
+POST/GET remain future full-application acceptance.
 
 
 ## Reproduce the isolated native SQL test

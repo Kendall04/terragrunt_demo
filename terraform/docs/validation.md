@@ -837,3 +837,86 @@ profile; repeat STS and require the exact approved account before any mutation.
 Do not solve this prerequisite by copying Windows sessions or creating another
 account's credentials. Record a fresh bounded four-hour execution window when
 resuming under this authorization, rather than silently extending this preflight.
+
+## SQL S3/KMS component qualification - 2026-10-16
+
+Result: COMPONENT_ACCEPTANCE_PASS, 36 consolidated component checks.
+The Linux-profile preflight above was superseded by supported Windows operations,
+without creating another login or transferring AWS credentials. Windows profile
+cnp-cert-dev verified account 341936017254 and human cnp-cert-admin; region was
+explicitly us-east-1. AssumeRole credentials lived only in Windows child-process
+memory, with 900-second sessions and roles bounded to 3,600 seconds. The existing
+profile's public CA bundle was applied to role-authenticated Windows children;
+TLS validation stayed enabled. SSH carried only public metadata and synthetic
+backup/ciphertext bytes, never AWS tokens, .aws files or SQL passwords.
+
+The temporary operator harness stayed outside Git. It used the actual production
+NativeSql and local Protocol backup on codex-vm, actual S3Store/Protocol.Check on
+Windows, and AWS CLI conditional PUT/versioned GET for cloud transport. This is
+real component integration, not execution of the monolithic co-located CLI or an
+installed EC2 service. No product source, Terraform, frozen E1/E2/E13/lifecycle
+contracts, persistent access keys or existing IAM/key policies were changed.
+
+Confirmed: Express 16.0.4265.3 COPY_ONLY/CHECKSUM/HEADERONLY/VERIFYONLY with a
+backup-only login (sysadmin=0, CREATE ANY DATABASE=0); two distinct native backups;
+real SSE-KMS conditional object writes with ExpectedBucketOwner and actual SHA-256
+readback; backup/manifest VersionIds; download of the first exact version after
+the second backup; isolated restore/CHECKDB and the known first row; real decrypt
+of restored synthetic ciphertext with the original text key; refusal of existing
+restore target and hash/native rejection of a truncated copy. The malformed
+HEADERONLY result failed closed with InvalidCastException; the harness originally
+caught too narrow an exception family and was corrected, without product changes.
+
+Actual production checker states MISSING, MAINTENANCE, UNKNOWN, STALE and HEALTHY
+passed. STALE used an explicitly authored old-timestamp fixture; no two-hour
+wall-clock monitoring or notification delivery is claimed. IAM negatives passed:
+producer List/Delete, observer Put, outside-prefix Put, wrong/missing SSE-KMS key,
+missing conditional header, overwrite (PreconditionFailed), missing version and
+session-policy-denied KMS Decrypt. Missing-version GET returned AccessDenied under
+the scoped permissions; a positive exact-version control passed. No deletion
+probe targeted a retained backup or version.
+
+Retained resources (outside DEV runtime teardown):
+
+| Resource | Exact identity |
+| --- | --- |
+| Private versioned S3 bucket | `terragrunt-demo-sql-backup-341936017254-fa48a32dc9` |
+| Lab prefix | `terragrunt-demo/dev/sql-backups/lab-fa48a32dc9/` |
+| Backup CMK | `arn:aws:kms:us-east-1:341936017254:key/30f01bb6-03b5-4e5f-b7a8-e304fe607ced` |
+| Backup alias | `alias/terragrunt-demo/dev/sql-backup-fa48a32dc9` |
+| Existing text key, used without policy changes | `arn:aws:kms:us-east-1:341936017254:key/50d3fe36-8128-4d09-ac13-8f5536a230a7` |
+
+S3 retains six objects totaling 9121293 bytes: two genuine backup/
+manifest pairs and one clearly labelled old-timestamp checker fixture pair.
+Current expiry is two days and noncurrent expiry two further days, with eventual
+processing; this is not a two-day erasure guarantee. No cloud backup/key was
+deleted. Both exact td-sql-lab producer/observer roles and inline policies were
+removed; new-CMK role-use statements were removed, keeping exact human key-policy
+administration for future authorized recovery. Post-cleanup IAM readbacks returned
+NoSuchEntity and key/bucket configuration readbacks passed. Synthetic Docker
+containers/volumes and local .bak/.bin data were retired; existing windrose SQL
+remained running. Logs, policy documents, receipts and hashes remain privately in
+`C:\CodexDrop\temp\terragrunt-demo-sql-cloud-fa48a32dc9`.
+
+The initial malformed KMS-tag request created no CMK (reconciled by exact unique
+description); its temporary roles were removed. Subsequent recoverable harness/
+trust/negative-expectation fixes reused the same retained bucket and CMK. Focused
+continuations uploaded no additional backup data. Prior attempt reports are kept,
+and final traffic counters describe only their own continuation, not total usage.
+The final evidence binds production assembly SHA-256 `296e9551d29ec6ee457cea3b5c93e65dc71b068475fbf9261215025ef423c472`.
+
+The retained-resource session ran 2026-10-16T16:16:41.044316+00:00 through
+2026-10-16T16:29:19.897003+00:00, within four hours. Approved incremental budget is USD 10
+including the first month, not an automatic AWS cap. Conservative first-30-day
+estimate remains USD 1.2574 before taxes using the approved upper bounds, despite
+actual retained data being only about 8.70 MiB.
+Residual new-CMK storage is approximately USD 1/month plus remaining S3/API use;
+existing project baseline charges are separate. No paid runtime was created.
+
+Hourly backup while UP, two-hour stale threshold and 2+2-day expiry are accepted
+lab values, not installed scheduling or guarantees. RPO <=70 minutes conditional
+on hourly success/<=10-minute completion, and component RTO <=30 minutes remain
+unmeasured objectives. Cross-AZ/EC2 recovery, app /ready and POST/GET, EC2-role
+installation, independent-host notification and full original DEV qualification
+remain outside this drill. Future restore needs a separately authorized scoped
+role/key-policy binding; retained data is not an automatic access grant.

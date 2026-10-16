@@ -87,7 +87,7 @@ mean low importance. Scope/dependencies below do not authorize implementation.
 | B2 / E2 High delivery — repository implementation; E2-R partial | [Environment mutation arbitration](e2-environment-mutation.md) coordinates protected delivery/recovery/lifecycle and generation-bound cleanup; [E2-R](e2r-owner-recovery.md) adds read-only interrupted-owner diagnosis | No timeout takeover; head CAS cannot cancel checked/in-flight calls; exact executor termination and remote quiescence cannot currently be verified, so administrative recovery stays BLOCKED | Provider-free repository evidence; live installation/termination/effect settlement remain unverified; E4 compensation remains deferred |
 | B3 High readiness — completed | Per-task one-shot readiness gate precedes promotion; the bounded ECS/ALB observation model and historical rather than continuous readiness are explicit | Preserve exact cohort/digest/target evidence, bounded failure, unchanged `/health`, fail-closed external evidence handling and immediate final revalidation | [Durable spec](../../specs/deployment-readiness-promotion/spec.md), [plan](../../specs/deployment-readiness-promotion/plan.md) and [reviewed evidence](validation.md#deployment-readiness-promotion--reviewed-evidence) complete the feature; optional hardening below is separate |
 | B4 / E4 High recovery — PARTIALLY_RESOLVED | [Bounded same-invocation continuation](e4-post-switch-recovery.md) reconciles switch evidence-persistence failure with current readbacks and original E2 grant | No attempted-stage resend, compensation, interrupted-owner takeover or new approval model; schedule/index/orphan failures remain | Deterministic repository evidence; live recovery remains unverified |
-| B5 High data durability - local increment completed | Root disk still termination-deleted; native Express backup/restore CLI and local proof now exist; startup migrations still use db_owner | Cloud storage/role/secret installation, app/KMS restore and recovery objectives remain unverified; D4 remains | [Local V2 increment](../../operations/sql-backup/README.md) authorized 2026-10-16; future AWS session and retention/RPO/RTO require explicit decisions |
+| B5 High data durability - local and bounded cloud component qualified | Root disk still termination-deleted; native Express backup/restore and real S3/KMS component proof exist; startup migrations still use db_owner | One retained private bucket/CMK; temporary roles retired; EC2 service, full-app/cross-AZ recovery and measured objectives remain pending; D4 remains | [Qualification](validation.md#sql-s3kms-component-qualification---2026-10-16); hourly/2+2-day/two-hour lab values accepted, RPO/RTO unmeasured |
 | B6 High conditional API security | Public writes and plaintext reads | Medium; domain/data policy first; high compatibility risk | Auth follows backend expansion |
 | B7 High observability — configuration corrected | [E7](e7-cloudwatch-alarms.md) fixes active dev/prod ECS namespace, NAT collection and gauge missing-data behavior; real metric/notification delivery remains unverified | Preserve bounded dimensions, protected ownership and sparse-error policy; no observability redesign | Provider-free repository evidence; live AWS validation remains separate |
 | B8 / E8 Medium artifacts — PARTIALLY_RESOLVED | E1 already protects exact immutable manifest evidence; [E8](e8-rollback-image-retention.md) removes automatic expiration from three protected application repositories and checks exact image availability | WP3 publishes untagged images, so untagged/count cleanup is unsafe; retained ECR storage is unbounded and no cleanup authority is added | Owner horizon/budget and evidence-driven cleanup remain unresolved; live retention/rollback is unverified |
@@ -285,3 +285,16 @@ The first Linux STS preflight was BLOCKED_BEFORE_CREATION because cnp-cert-dev
 does not exist on codex-vm; no AWS resource was created. See the
 [preflight evidence and resume condition](validation.md#approved-s3kms-component-drill-preflight---2026-10-16).
 The existing cross-AZ/full-application drill proposal remains a separate scope.
+
+## Bounded cloud component accepted - 2026-10-16
+
+The approved USD-10/four-hour synthetic session passed real S3/SSE-KMS/versioned
+download/native restore/text-key decrypt and minimum-role negative cases via
+Windows AWS plus Linux SQL. The earlier missing-Linux-profile blocker was
+resolved by that supported execution split without credential handoff. The
+[qualification and retained inventory](validation.md#sql-s3kms-component-qualification---2026-10-16)
+distinguish actual checks, authored freshness fixtures and untested deployment.
+One private versioned bucket and one backup CMK remain; temporary roles, key-use
+bindings and local runtime/data were retired. No existing text-key policy changed.
+Hourly/2+2-day/two-hour lab settings are accepted; RPO/RTO remain unmeasured,
+no scheduler is installed and cross-AZ/full-app qualification remains separate.
