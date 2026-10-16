@@ -2,7 +2,12 @@
 
 Status: local implementation; no AWS installation. The example configuration is
 **PROPOSED**, with synthetic ARNs that must be replaced before any cloud session.
-No retention, budget, RPO or RTO has been accepted or measured.
+The local milestone did not accept retention, budget, RPO or RTO. On 2026-10-16
+the owner subsequently approved the bounded synthetic S3/KMS component drill
+and its proposed lab values. Its Linux authentication preflight is
+[blocked before resource creation](../../terraform/docs/validation.md#approved-s3kms-component-drill-preflight---2026-10-16).
+RPO/RTO remain unmeasured; no schedule or AWS installation exists. The full
+EC2/cross-AZ proposal below remains outside that minimum component scope.
 
 Finite acceptance: native SQL Server 2022 **Express** COPY_ONLY/CHECKSUM backup;
 separate backup and verifier/restore SQL contexts; private bounded local staging;

@@ -271,3 +271,17 @@ The proposed hourly/two-day-current/two-day-noncurrent/two-hour-stale defaults a
 uninstalled and unaccepted. RPO/RTO are undecided/unmeasured. Restored ciphertext
 still needs the original text KMS key and a genuine application/decryption trial.
 PKI, Sentinel, UI and unrelated hardening remain later increments.
+
+## Bounded S3/KMS component session authorization - 2026-10-16
+
+The owner authorized the minimal synthetic component drill (one backup bucket,
+one dedicated CMK, two scoped temporary roles, local Express) under the four-hour
+window and subsequently confirmed USD 10 total including the first month of
+retained resources; the minimum-session estimate remains approximately USD 1.26.
+This does not authorize full
+DEV activation, changes to existing permissions/text-key policy, or unattended
+scheduling. Additional infrastructure needs its concrete impact reported first.
+The first Linux STS preflight was BLOCKED_BEFORE_CREATION because cnp-cert-dev
+does not exist on codex-vm; no AWS resource was created. See the
+[preflight evidence and resume condition](validation.md#approved-s3kms-component-drill-preflight---2026-10-16).
+The existing cross-AZ/full-application drill proposal remains a separate scope.

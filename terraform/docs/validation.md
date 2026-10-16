@@ -800,3 +800,40 @@ labelled containers/volume were retired. Free root space afterward was
 7651381248 bytes (about 7.13 GiB).
 `sql-lab-evidence.json`, `sql-integration.log` and the final TRX under
 `C:\CodexDrop\temp\terragrunt-demo-sql-backup` retain the detailed local proof.
+
+## Approved S3/KMS component drill preflight - 2026-10-16
+
+The owner approved a bounded component session: at most four hours, only
+cnp-cert-dev/account 341936017254/us-east-1, one dedicated private/versioned
+SSE-KMS backup bucket, one new backup CMK, two scoped temporary IAM roles and
+synthetic local SQL data. The owner subsequently confirmed an incremental budget
+of USD 10 total including the first month of retained resources (superseding
+the initial USD 2 proposal). The minimum-session estimate remains approximately
+USD 1.26 before taxes under its published assumptions: one CMK-month, at most
+3 GiB S3 for a month, 1,000 PUT/LIST plus 1,000 GET, 1,000 KMS requests and
+2 GiB outbound. This is an operator limit, not an automatic AWS spending cap.
+No full DEV UP, permanent scheduler, publication or additional infrastructure
+is part of this minimum session. Any necessary expansion must first explain
+its resources, principal/permissions, risk and cost. Keep backup objects/bucket
+and CMK after the drill; never delete an existing key or a permanent backup
+merely to remove residual charges.
+
+Preflight at 2026-10-16T15:54:10Z used AWS CLI 2.35.12 on Linux through SSH
+with the existing host configuration
+and attempted the read-only AWS CLI STS identity check on codex-vm, explicitly
+selecting profile cnp-cert-dev and region us-east-1. AWS CLI exited 1 before
+an authenticated identity could be established: the selected config profile
+could not be found. This is a missing Linux authentication prerequisite, not
+an IAM denial or proof of account access. No credentials/tokens were printed,
+copied or transferred. No bucket, CMK, role, grant, endpoint or AWS runtime was
+created or modified; no cloud resource retirement was necessary.
+
+Result: BLOCKED_BEFORE_CREATION. The existing local SQL/native and simulated
+storage evidence remains unchanged; real S3/SSE-KMS/download/restore and negative
+cloud cases remain unexecuted. The bounded session has not spent AWS resource
+budget. Existing retained project resources may continue their prior charges.
+Resume only after supported native Linux authentication provides the named
+profile; repeat STS and require the exact approved account before any mutation.
+Do not solve this prerequisite by copying Windows sessions or creating another
+account's credentials. Record a fresh bounded four-hour execution window when
+resuming under this authorization, rather than silently extending this preflight.
