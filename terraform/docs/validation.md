@@ -1238,3 +1238,19 @@ invocation or raw diagnostic fallback was attempted.
 
 Evidence: C:\CodexDrop\temp\terragrunt-demo-sql-ec2-step-plan-20261017,
 execution-result-metadata.json. The prior UNKNOWN remains unchanged.
+
+## Native runtime provider-lock repair - 2026-10-17
+
+The authorized in-memory diagnostic classified the global state-pull failure as
+PROVIDER_LOCK_CHECKSUM_MISMATCH, not a remote-state digest mismatch. Exact-profile
+STS verified the DEV operator; S3 HEAD verified the current global object (620
+bytes, AES256). No raw stderr/state was saved or displayed. Terraform 1.13.4 on
+windows_amd64 rejected the installed package against the existing lock.
+
+Official `terraform providers lock -platform=windows_amd64 -platform=linux_amd64`
+completed the five identical DEV runtime AWS locks, retaining version 5.100.0,
+constraints and every old hash, adding only origin-verified h1 entries. The origin
+packages were reported signed by HashiCorp. Isolated no-backend readonly init and
+provider-schema loading both passed; no IAM/TLS/backend change was needed. Source
+inventory was refreshed only for those five locks. Evidence: lock-completion-metadata.json
+in C:\CodexDrop\temp\terragrunt-demo-aws5100-native-lock-20261017.
