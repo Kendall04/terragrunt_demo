@@ -83,3 +83,20 @@ Review bundle:
 It contains wrapper.diff, e16-source.diff, local-review-manifest.json, the new
 UNKNOWN disposition/provenance and its non-sensitive prior-evidence reference.
 Tests use process mocks/hermetic fixtures only, never real Terraform or AWS.
+
+## Fixed failure-step metadata follow-up — 2026-10-17
+
+The corrected route was admitted by normal tool review and then failed technically;
+its generic failure code did not identify the failed step. The owner authorized
+a minimal metadata correction and the same bounded init/network-plan retry.
+The canonical entry now emits only an allowlisted step label and integer exit
+code on failure in discard-diagnostics mode. The wrapper accepts only that
+shape and maps all other failures to fixed labels; stderr remains DEVNULL.
+No error text, state or preview values are inspected or displayed. Default
+E16 behavior, identity/state/plan/teardown guards and the two actions are unchanged.
+
+Local verification uses hermetic E16 fixtures and seven wrapper mocks, including
+unexpected diagnostic text and untrusted metadata. The new review digest is
+`e649aed37ae4739a8162d93832c9b2b3a7d3e107751fb5da58fb97f320956062`. This source change authorizes no apply or runtime creation.
+A fresh normal-review invocation must bind this clean commit; another review
+rejection remains a stop condition. No raw diagnostic fallback is permitted.

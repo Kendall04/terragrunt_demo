@@ -4,6 +4,7 @@ Execution belongs in the approved, immutable GitHub entry job. A local terminal
 cannot supply trusted OIDC or install IAM. No direct Terraform/AWS fallback.
 """
 import argparse
+import json
 import os
 from pathlib import Path
 import sys
@@ -43,12 +44,27 @@ def select(action, raw):
     return identity
 
 
+def safe_e16_failure(error):
+    # Fixed labels and integer only. Never inspect str(error), stderr or state.
+    labels={layer+':terraform '+action:layer.upper()+'_TERRAFORM_'+action.upper()
+            for layer in ('global','data','platform','apps','edge')
+            for action in ('init','workspace','state','show','plan')}
+    labels.update({'terraform':'TERRAFORM_PREPARATION','git':'SOURCE_METADATA'})
+    stage=getattr(error,'stage',None)
+    step=labels.get(stage,'E16_PRECONDITION')
+    if isinstance(stage,str) and stage.startswith('AWS '):step='AWS_METADATA'
+    code=getattr(error,'code',1)
+    return dict(Status='FAILED',Step=step,ExitCode=code if type(code) is int else 1)
+
+
 def main(argv=None):
     selected = list(sys.argv[1:] if argv is None else argv)
     if selected[:1] == ['dev']:
         from scripts.practical_dev import main as supervised
         try:return supervised(selected[1:])
         except (ValueError, KeyError, OSError) as error:
+            if '--discard-diagnostics' in selected:
+                print(json.dumps(safe_e16_failure(error)));return 1
             print('E16 stopped: '+str(error)+'; preserve session/state, inspect status/residual, reconcile before a new reviewed plan. Possible EC2/Fargate/ALB/EBS/IPv4 charges.',file=sys.stderr)
             return 1
     parser = argparse.ArgumentParser(description=__doc__)

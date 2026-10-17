@@ -15,6 +15,18 @@ import sys
 REPO=Path(r'C:\CodexDrop\terragrunt_demo')
 PREVIOUS=Path(r'C:\CodexDrop\temp\terragrunt-demo-sql-ec2-live-20261016')
 ACTIONS=('init','bootstrap-network-plan')
+STEPS={'source':'SOURCE_METADATA','init':'E16_INIT','bootstrap-network-plan':'E16_NETWORK_PLAN'}
+SAFE_STEPS=set(STEPS.values())|{'LOCAL_PREPARATION','E16_PRECONDITION','AWS_METADATA','TERRAFORM_PREPARATION'}|{
+    layer+'_TERRAFORM_'+action for layer in ('GLOBAL','DATA','PLATFORM','APPS','EDGE') for action in ('INIT','WORKSPACE','STATE','SHOW','PLAN')}
+
+class StepFailure(Exception):
+    def __init__(self,step,code):
+        self.step=step if step in SAFE_STEPS else 'LOCAL_PREPARATION'
+        self.code=code if type(code) is int else 1
+
+def failure_metadata(error):
+    return {'Status':'FAILED','Step':error.step if isinstance(error,StepFailure) else 'LOCAL_PREPARATION',
+            'ExitCode':error.code if isinstance(error,StepFailure) else 1}
 
 def review():
     paths={'wrapper':Path(__file__),'entry':REPO/'scripts/original_dev.py','implementation':REPO/'scripts/practical_dev.py'}
@@ -30,7 +42,15 @@ def review():
 
 def checked(command,action):
     result=subprocess.run(command,cwd=REPO,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL,timeout=1200)
-    if result.returncode: raise ValueError('SUPPORTED_E16_ACTION_FAILED:'+action)
+    if result.returncode:
+        step=STEPS.get(action,'LOCAL_PREPARATION');code=result.returncode
+        if action in ACTIONS:
+            try:
+                safe=json.loads(result.stdout)
+                if safe.get('Step') in SAFE_STEPS and type(safe.get('ExitCode')) is int:step,code=safe['Step'],safe['ExitCode']
+            except (ValueError,UnicodeError,AttributeError):pass
+        raise StepFailure(step,code)
+    if action in ACTIONS:print(json.dumps({'Step':STEPS[action],'ExitCode':0}),flush=True)
     return result.stdout
 
 def execute_after_review(root,review_digest):
@@ -69,6 +89,5 @@ def main():
 if __name__=='__main__':
     try: print(json.dumps(main(),indent=2))
     except Exception as error:
-        code=str(error) if isinstance(error,ValueError) and str(error).isupper() else 'LOCAL_REVIEW_CANDIDATE_FAILED'
-        print(json.dumps({'Status':'FAILED','Code':code}))
+        print(json.dumps(failure_metadata(error)))
         raise SystemExit(1)

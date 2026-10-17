@@ -2435,11 +2435,13 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/original_dev.py": {
-      "sha256": "6b4ef1419610dd8deefaecd1c4e6e348ed990271a101cea0a832ee9f7c13a06a",
+      "sha256": "97e38d83d0fd53929738e7cf2f8bbc00872ef59a0e707e16c90de326d6564607",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          92
+          49,
+          52,
+          108
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -9628,30 +9630,31 @@
     },
     "operations/sql-backup/revalidate_ec2_plan_only.py": {
       "semantic_status": "UNVERIFIED",
-      "sha256": "78ff2b266a60f1ce469dbab2b17d43b1956fd07936b4b32bd87f36d0dc1d3c17",
+      "sha256": "e0c58685bae7a8e555226a6f82d0fc4403cfe065073b0d818a547048b4470c0b",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           15,
           16,
-          46
+          66
         ],
         "executable-dependency": [
-          20,
-          24,
-          31,
           32,
-          49
+          36,
+          43,
+          44,
+          69
         ]
       }
     },
     "scripts/tests/practical_dev/test_diagnostics.py": {
       "semantic_status": "UNVERIFIED",
-      "sha256": "5c510800ae9e3159461951fc9024e2cc19f172b41c2ef592972d76f6ec78b42b",
+      "sha256": "cffd36b99d67acc8bdcda0e1b1d9166865d6084c5a93204004209afbbbd8550a",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          38
+          39,
+          50
         ]
       }
     }

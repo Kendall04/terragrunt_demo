@@ -7,6 +7,7 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 from scripts import practical_dev as p
+from scripts import original_dev as entry
 
 CONFIG={'profile':'offline-fixture','region':'us-east-1'}
 
@@ -43,5 +44,20 @@ class DiagnosticDiscard(unittest.TestCase):
                 with patch.object(p,'Session',side_effect=AssertionError('session escape')):
                     with self.assertRaisesRegex(ValueError,'never apply or teardown'):
                         p.main([action,'--config',str(config),'--directory',str(Path(directory)/'unused'),'--discard-diagnostics'])
+
+class FixedStepMetadata(unittest.TestCase):
+    def test_known_stage_has_only_label_and_integer(self):
+        error=p.Failure(23,b'SECRET-SENTINEL','global:terraform state')
+        self.assertEqual({'Status':'FAILED','Step':'GLOBAL_TERRAFORM_STATE','ExitCode':23},entry.safe_e16_failure(error))
+    def test_unknown_stage_and_non_integer_cannot_escape(self):
+        error=SimpleNamespace(stage='SECRET-SENTINEL',code='SECRET-SENTINEL')
+        self.assertEqual({'Status':'FAILED','Step':'E16_PRECONDITION','ExitCode':1},entry.safe_e16_failure(error))
+    def test_metadata_does_not_read_exception_text_or_stderr(self):
+        class Unreadable:
+            stage='AWS synthetic metadata';code=2
+            def __str__(self):raise AssertionError('text read')
+            @property
+            def stderr(self):raise AssertionError('stderr read')
+        self.assertEqual({'Status':'FAILED','Step':'AWS_METADATA','ExitCode':2},entry.safe_e16_failure(Unreadable()))
 
 if __name__=='__main__':unittest.main(verbosity=2)
