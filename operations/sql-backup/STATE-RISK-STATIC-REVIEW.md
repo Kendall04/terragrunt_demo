@@ -7,6 +7,11 @@ expectation, not certification of the bytes in a current or historical S3 object
 It supports reviewing a bounded internal init/plan read; it does not justify
 displaying state, inspecting rejected diagnostics or bypassing the tool rejection.
 
+Owner provenance clarification: the current state was created from scratch in
+this new AWS account. Old repository deployments/states belonged to another
+account. The old secret-bearing source is therefore not evidence about the
+current state or grounds for extending its audit.
+
 Scope: source commit 4d5c95cd9d26d64bfd304be290c7f511d2696c28; 83 current Terraform/
 Terragrunt source files under terraform/modules/target/dev, bounded Git history,
 the known last real deployment source and public pinned provider code. No current
@@ -100,12 +105,15 @@ probably contained values but was destroyed. The later E16 teardown record says
 the five runtime states had zero resources; second-real-dev-cycle.md records use
 of the newer source and no secret value entering its state. These are supporting
 historical records, not a fresh verification of current S3 contents or every
-retained version. The old legacy deployment is not proof that the current E16
-backend inherited its data; nor does current source alone prove it did not.
+retained version. The owner subsequently confirmed that the current state was created fresh in
+this new account and old states belonged to another AWS account. That resolves
+the provenance concern: the old legacy source must not be extrapolated to this
+current state. It remains historical code context only.
 
 Confidence: high that the intended current global and runtime graph is
-secret-value-free; uncertain actual persisted contents until a permitted internal
-read. No historical version audit is needed for the requested current init/plan.
+secret-value-free, reinforced by the owner-confirmed fresh provenance. This is
+not a byte-level certification of contents that were not displayed/inspected.
+No historical version audit is relevant to the requested current init/plan.
 
 ## Bounded next review
 

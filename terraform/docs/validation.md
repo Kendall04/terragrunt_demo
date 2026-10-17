@@ -1172,3 +1172,39 @@ must remain distinct from certainty about persisted historical/current bytes.
 The concrete result supports the bounded next human/tool review for internal
 init/plan consumption, not another open-ended audit or a bypass of the prior
 rejection. No new permission/authentication change, state access or apply occurred.
+
+## Corrected plan admitted; execution result - 2026-10-17
+
+The owner clarified that current state was created from scratch in the new AWS
+account and old repository states belonged to a different account. Historical
+9aa2f0f secret-bearing code is not evidence about current state and no further
+historical-state audit was pursued. Current source still supports the expected
+absence of secret values; no certainty about undisplayed bytes is asserted.
+
+After the explicit new authorization, the normal tool review admitted the revised
+wrapper with review digest 0b84d5e8dde0939400e08b385a4a9e396bbff363df2e1d536e27a086897ebe16,
+source commit 11f1e9eb3392f66f2f639328148df58434e74dd0. One native E16 init/network-plan
+invocation ran with internal current-state consumption only, no standalone state
+export/history read, stderr discarded at both boundaries and metadata-only output.
+This was admission of corrected reviewed code, not an alternative route around
+the former rejection. No apply, IAM/network/runtime/Norton/TLS change or credential
+transfer occurred.
+
+The invocation exited 1 with LOCAL_REVIEW_CANDIDATE_FAILED. Unlike the previous
+attempts, this is an execution failure after admission, not a tool-review denial.
+Raw diagnostics were discarded as requested and were not recovered/re-read.
+Existence-only local metadata shows all five backend metadata/provider executable
+directories, but no generated global variables, no plan directory/binary/review,
+no sanitized plan summary and no apply-attempt marker. These observations do not
+prove which internal command failed or its cause; no mTLS/checksum/IAM cause is
+asserted. There is no valid plan ID, plan hash or change count to approve yet.
+
+Evidence: C:\CodexDrop\temp\terragrunt-demo-sql-ec2-reviewed-plan-20261017,
+owner-state-provenance.json and execution-result-metadata.json. The wrapper also
+suppressed the fixed failing-action label because its outer error allowlist
+accepts only uppercase strings; the exact failed action cannot be recovered from
+the available safe result. Any next diagnostic change should preserve only a
+fixed init/network-plan stage and exit code, never raw stderr or state values,
+and receive its own bounded review before another live invocation. No retry or
+different route was executed after this result. Runtime billing start/deadline
+remain unset; there is no new runtime to retire or plan ready for deployment.
