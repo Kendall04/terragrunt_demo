@@ -1208,3 +1208,33 @@ fixed init/network-plan stage and exit code, never raw stderr or state values,
 and receive its own bounded review before another live invocation. No retry or
 different route was executed after this result. Runtime billing start/deadline
 remain unset; there is no new runtime to retire or plan ready for deployment.
+
+## Fixed step result after admitted retry - 2026-10-17
+
+The owner authorized the minimal fixed-step/integer exit metadata correction and
+the same bounded init/network-plan invocation. Commit 4738093abf1b5557cacdef171d4f29ded6484e47
+was clean; review digest e649aed37ae4739a8162d93832c9b2b3a7d3e107751fb5da58fb97f320956062
+bound the wrapper and both E16 source files. All 71 E16 hermetic tests, seven
+wrapper mocks, source-inventory verification and current KDD links passed.
+
+Normal tool review admitted one invocation. It reported E16_INIT exit 0, then
+FAILED / GLOBAL_TERRAFORM_STATE / exit 1. The canonical source locates this at
+global `terraform state pull`, before `terraform show -json`, variable generation
+or plan creation. This is a technical execution failure, not a review rejection.
+No stderr was captured or recovered; no current/historical state or preview was
+displayed. Existing internal current-state consumption was the only state route.
+
+Existence-only metadata found all five backend metadata/provider executable
+directories, no generated variables, no plan directory and no plan summary.
+There is no plan ID, hash or change count to approve. No apply or runtime creation
+occurred; billing start and runtime deadline remain unset.
+
+The step and exit code do not identify an IAM, TLS, provider checksum or backend
+compatibility cause. None is claimed. The material prerequisite is to resolve
+the native Terraform/backend state-pull failure through a separately reviewed
+privacy-preserving diagnosis; a blind rerun, manual state export, guard relaxation
+or infrastructure apply is not supported by this evidence. No further live
+invocation or raw diagnostic fallback was attempted.
+
+Evidence: C:\CodexDrop\temp\terragrunt-demo-sql-ec2-step-plan-20261017,
+execution-result-metadata.json. The prior UNKNOWN remains unchanged.

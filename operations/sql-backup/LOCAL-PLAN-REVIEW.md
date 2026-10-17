@@ -100,3 +100,5 @@ unexpected diagnostic text and untrusted metadata. The new review digest is
 `e649aed37ae4739a8162d93832c9b2b3a7d3e107751fb5da58fb97f320956062`. This source change authorizes no apply or runtime creation.
 A fresh normal-review invocation must bind this clean commit; another review
 rejection remains a stop condition. No raw diagnostic fallback is permitted.
+
+The admitted retry result is recorded in [validation](../../terraform/docs/validation.md#fixed-step-result-after-admitted-retry---2026-10-17): init 0, global state pull 1, no plan. Evidence is execution-result-metadata.json in the fresh step-plan directory. No further live attempt was made.
