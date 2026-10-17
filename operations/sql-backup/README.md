@@ -291,3 +291,14 @@ No timer, credential or AWS security change was installed; the approved four-hou
 runtime window has not started. Automatic review rejected reading/storing the
 potentially sensitive diagnostic, so a human sanitized error summary or explicit
 bounded diagnostic approval is needed before that investigation continues.
+
+## Local human-review candidate - 2026-10-17
+
+The [concrete privacy diff and human step](LOCAL-PLAN-REVIEW.md) replace outer-only
+stderr discard with explicit discard in the canonical E16 process too, and
+metadata-only plan output. The wrapper defaults to review-only. These are local
+source edits and mocked checks, not a retry or tool-review clearance.
+The new bounded historical UNKNOWN disposition is recorded, preserving the journal,
+UNKNOWN and all other controls; it authorizes neither apply nor deletion. Exact
+binding to any fresh execution configuration remains necessary. Runtime is still
+absent and no four-hour billable-runtime window has started.

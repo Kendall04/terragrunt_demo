@@ -1097,3 +1097,49 @@ the owner's Norton change. plan-revalidation-auto-review-rejection.json records
 the exact no-execution outcome. Do not route around the rejection; obtain explicit
 bounded approval for Terraform's normal remote-state consumption during init/plan,
 without raw diagnostic inspection, or use a human-produced sanitized plan summary.
+
+## Local review of plan privacy and new UNKNOWN disposition - 2026-10-17
+
+Result: LOCAL_SOURCE_REVIEW_CANDIDATE_NOT_EXECUTED. After the second tool rejection,
+the owner requested continuing ECS after being told both blockers. The delegation
+explicitly limited this step to local code review/edits, a new bounded UNKNOWN
+disposition and human review, without another execution route or denied retry.
+No Terraform/AWS command, state/denied-diagnostic read, runtime, apply, authentication
+handoff or Norton/TLS change occurred in this task. The previous rejection remains
+operative until human/tool review of the revised source.
+
+The wrapper already discarded outer stderr; canonical E16 Process.run still
+captured inner stderr. The local candidate adds --discard-diagnostics for native
+init/UP-plan only, discards inner stderr rather than retaining it in Failure, and
+emits a closed metadata summary excluding state, preview values and confirmation
+strings. The wrapper is now import-safe, defaults to review-only and uses only
+the existing original_dev.py init/bootstrap-network-plan route. A source digest
+binds the candidate bytes but is not execution authority. No raw stdout/stderr
+logs are persisted by that wrapper. Existing private Terraform plan artifacts
+remain part of normal human plan review, not model-visible diagnostics.
+
+Local AST comparison verified unchanged identity/backend/E2-idle/source/exact-plan,
+apply, historical-disposition and shutdown-observation guard bodies. Tests are
+hermetic/fake-process only; 68 E16 tests and five wrapper mock tests passed,
+with zero failures/errors/skips and no live E16/Terraform invocation.
+[The local review instructions](../../operations/sql-backup/LOCAL-PLAN-REVIEW.md)
+give the exact human step and conditional command shape; do not execute it until
+the tool rejection is resolved. Review digest is
+0b84d5e8dde0939400e08b385a4a9e396bbff363df2e1d536e27a086897ebe16.
+
+A fresh local disposition for the current ECS backup attempt records the owner's
+continuation in the explained context and the explicit instruction to record it.
+historical_result remains UNKNOWN. It is bound to the existing local session/config
+and a digest referencing prior native metadata; no fresh cloud observation is
+claimed. The old authorization was not reused and no journal/outcome was modified.
+The companion provenance explicitly denies apply/deletion authority. A fresh
+execution configuration needs an exact technical binding within this same approved
+component scope; this is not permission for another session or a waiver of
+fresh native checks, E2/E13/ASG/controller/queue guards or SQL-loss confirmation.
+
+Evidence bundle: C:\CodexDrop\temp\terragrunt-demo-sql-ec2-local-review-20261017,
+including both diffs, source hashes, new UNKNOWN disposition/provenance, and a
+non-sensitive reference to the previous native observation. Program-shaped
+decision/evidence files are local under the existing session directory; they
+do not make that old session/source revision execute-ready. Runtime billing start
+and retirement deadline remain unset. No EKS resource or retained backup changed.

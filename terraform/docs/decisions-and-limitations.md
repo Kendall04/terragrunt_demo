@@ -355,3 +355,18 @@ Human sanitized diagnosis or explicit bounded diagnostic approval is needed.
 The four-hour billable-runtime window has not started; there is nothing new to
 retire. Preserve the installation approval and pause only for these material
 boundaries, without a cosmetic review loop or ceremonial synthetic final backup.
+
+## New bounded historical-risk disposition and local privacy review (2026-10-17)
+
+Following the explanation of both ECS blockers, the owner requested continuing,
+and the delegation explicitly instructed recording a new disposition for the
+current backup session. The preserved SDC result remains UNKNOWN; the new local
+record accepts only that historical-risk boundary, never deletion or apply.
+It does not copy the prior final-DOWN permission or weaken any other E16 guard.
+Actual execution/configuration needs exact technical binding and live checks.
+
+The second tool rejection remains a separate boundary. Only local code changes
+were prepared to discard diagnostics end-to-end and expose metadata-only plan
+output on the same E16 route. [Human review of the concrete diff](../../operations/sql-backup/LOCAL-PLAN-REVIEW.md)
+is required before any further init/plan attempt. No runtime, new authentication,
+cloud mutation or full installation reapproval is introduced by this local step.

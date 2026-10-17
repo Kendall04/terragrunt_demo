@@ -69,8 +69,10 @@ class Failure(ValueError):
 
 
 class Process:
-    def __init__(self,config,aws_config_file=None,terraform_wsl_bin=None,terraform_plugin_cache=None):
+    def __init__(self,config,aws_config_file=None,terraform_wsl_bin=None,terraform_plugin_cache=None,discard_diagnostics=False):
         self.config=config;self.aws_config_file=None;self.terraform_wsl_bin=terraform_wsl_bin;self.paths={};self.terraform_plugin_cache=None
+        self.discard_diagnostics=discard_diagnostics
+        require(not discard_diagnostics or (terraform_wsl_bin is None and terraform_plugin_cache is None),'discard-diagnostics review uses the existing native route only')
         if terraform_plugin_cache:
             cache=Path(terraform_plugin_cache).resolve()
             require(terraform_wsl_bin is not None and cache.is_dir() and not cache.is_symlink() and cache!=ROOT and ROOT not in cache.parents,
@@ -121,9 +123,9 @@ class Process:
         original=args
         if args[0]=='terraform' and self.terraform_wsl_bin:args=self.wsl_command(args,cwd)
         stage=(Path(cwd).name+':terraform '+original[2]) if original[0]=='terraform' and cwd else ('AWS '+args[8]+' '+args[9] if args[0]=='aws' else Path(args[0]).name)
-        try:result=subprocess.run(args,cwd=cwd,input=data,env=env,capture_output=True,timeout=1800)
+        try:result=subprocess.run(args,cwd=cwd,input=data,env=env,stdout=subprocess.PIPE,stderr=subprocess.DEVNULL if self.discard_diagnostics else subprocess.PIPE,timeout=1800)
         except subprocess.TimeoutExpired:raise Failure(-1,b'timeout; remote effect unknown',stage) from None
-        if result.returncode:raise Failure(result.returncode,result.stderr,stage)
+        if result.returncode:raise Failure(result.returncode,b'' if self.discard_diagnostics else result.stderr,stage)
         return result.stdout
 
 
@@ -417,7 +419,8 @@ class Session:
         review=dict(layer=layer,down=down,network_only=network_only,config_sha256=sha(c.canonical(self.config)),binary_sha256=sha(binary.read_bytes()),preview_sha256=sha(raw),
             variables_sha256=sha(file.read_bytes()),state={k:states[layer][k] for k in ('lineage','serial','sha256')})
         self.save(folder/'review.json',review)
-        return dict(plan_id=plan_id,layer=layer,preview=(folder/'preview.txt').read_text(),confirmation=self.confirmation(review),
+        summary=[dict(address=row['address'],type=row['type'],actions=row['change']['actions']) for row in changes if row.get('mode')!='data']
+        return dict(plan_id=plan_id,layer=layer,change_summary=summary,preview=(folder/'preview.txt').read_text(),confirmation=self.confirmation(review),
             sql_confirmation='PERMANENTLY LOSE DEV SQL '+review['binary_sha256'] if down and layer=='data' else None,phase='REVIEW_REQUIRED_NOT_EXECUTED')
 
     def confirmation(self,review):return ('DESTROY' if review['down'] else 'APPLY')+' DEV '+self.account+' '+self.region+' '+review['layer']+' '+review['binary_sha256']
@@ -753,6 +756,12 @@ class Session:
         return result
 
 
+def sanitized_plan_result(result):
+    # No plan values, preview text, state, confirmation strings or child stderr.
+    allowed=('stage','aws_verified','plan_id','layer','phase','change_summary')
+    return {key:result[key] for key in allowed if key in result}
+
+
 def main(argv=None,process=None):
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action',choices=('init','status','bootstrap-status','bootstrap-network-plan','up-plan','apply','down-plan','inhibit','review-inhibition','verify','residual'))
@@ -760,8 +769,10 @@ def main(argv=None,process=None):
     parser.add_argument('--layer',choices=DOWN,help='review an existing DEV layer before shutdown; apply still enforces reverse order')
     parser.add_argument('--plan-id');parser.add_argument('--confirm');parser.add_argument('--confirm-sql-loss')
     parser.add_argument('--aws-config-file',type=Path);parser.add_argument('--terraform-wsl-bin',type=Path);parser.add_argument('--terraform-plugin-cache',type=Path)
+    parser.add_argument('--discard-diagnostics',action='store_true',help='native init/UP-plan only; discard child stderr and emit metadata summary, never apply')
     args=parser.parse_args(argv);require(args.layer is None or args.action=='down-plan','--layer is only a DOWN preview selector');config=decode(args.config.read_bytes())
-    session=Session(config,args.directory,process or Process(config,args.aws_config_file,args.terraform_wsl_bin,args.terraform_plugin_cache))
+    require(not args.discard_diagnostics or args.action in ('init','bootstrap-network-plan','up-plan'),'discard-diagnostics permits init/UP-plan only, never apply or teardown')
+    session=Session(config,args.directory,process or Process(config,args.aws_config_file,args.terraform_wsl_bin,args.terraform_plugin_cache,discard_diagnostics=args.discard_diagnostics))
     if args.action=='init':result=session.initialize()
     elif args.action=='bootstrap-status':result=session.bootstrap_status()
     elif args.action=='up-plan':result=session.prepare()
@@ -771,4 +782,4 @@ def main(argv=None,process=None):
     elif args.action=='inhibit':result=session.inhibit(args.confirm)
     elif args.action=='review-inhibition':result=session.review_inhibition(args.confirm)
     else:result=getattr(session,args.action)()
-    print(json.dumps(result,indent=2));return 0
+    print(json.dumps(sanitized_plan_result(result) if args.discard_diagnostics else result,indent=2));return 0
