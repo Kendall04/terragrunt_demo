@@ -1143,3 +1143,32 @@ non-sensitive reference to the previous native observation. Program-shaped
 decision/evidence files are local under the existing session directory; they
 do not make that old session/source revision execute-ready. Runtime billing start
 and retirement deadline remain unset. No EKS resource or retained backup changed.
+
+## Source-only state risk assessment - 2026-10-17
+
+The owner requested determining from Terraform source whether state should contain
+secrets before any further access. This phase read only code, bounded Git history,
+KDD records and public pinned-provider source: no current/historical state, private
+plan or denied diagnostic was opened, and no Terraform/AWS command ran.
+[The assessment](../../operations/sql-backup/STATE-RISK-STATIC-REVIEW.md) concludes
+with high source-based confidence that current global/runtime states should not
+contain secret values. Global consists of network/monitoring metadata and exact
+published role/profile references; SQL template parameters are secret ARNs, with
+actual values fetched on EC2 outside Terraform. Current ECS inputs are public
+environment metadata/reference injection; secret values are bootstrapped outside
+Terraform. No value-bearing resource/data path was found in 83 current source
+files. sensitive=true and S3 encryption are not treated as proof of absence.
+
+The scope matters: E16 network-only prepare still reads all five current runtime
+states internally, not only global. Shared/secrets/security state and historical
+versions are not in that read path. Historical source 9aa2f0f really used
+random_password results and aws_secretsmanager_secret_version.secret_string for
+SA/app passwords and DB connection string; if applied that source would persist
+them. Those constructs are gone by f8c948c and the known c80257b real-UP source.
+The documented destroyed legacy state and later zero-resource runtime states
+support, but do not certify, present object contents. Current-code expectation
+must remain distinct from certainty about persisted historical/current bytes.
+
+The concrete result supports the bounded next human/tool review for internal
+init/plan consumption, not another open-ended audit or a bypass of the prior
+rejection. No new permission/authentication change, state access or apply occurred.
