@@ -392,3 +392,31 @@ not backend access proof. Public references:
 [Terraform 1.13 S3 sessions and lock permissions](https://developer.hashicorp.com/terraform/language/v1.13.x/backend/s3),
 [provider 5.100.0 volume tag placement](https://github.com/hashicorp/terraform-provider-aws/blob/v5.100.0/internal/service/ec2/ec2_instance.go),
 [AWS EC2 authorization data](https://servicereference.us-east-1.amazonaws.com/v1/ec2/ec2.json).
+
+
+### Corrective review contract: effective volume tags
+
+The concrete override above is mandatory for this authorization packet. The local
+`review-create` reviewer requires exact trial `volume_tags`; the optional nested
+root-device `tags` map may only be absent, null or {}. Nonempty nested tags,
+incorrect/missing/additional volume tags and arbitrary representations are refused.
+This correction passed 49 local tests (30 recovery, 13 authorization, six retirement).
+Encryption, size/type/delete-on-termination, metadata, credit, instance/profile/
+resource-tag and full-inventory/action checks remain in force. Offline integration
+fixtures exercise the actual authorization override through the CLI for all three
+optional-map shapes; they are not evaluated Terraform plans or IAM authority.
+
+Only local plan-review code changed. The existing runtime tar remains
+recovery-e1f8ee3.tar (`d745816853bb22a8e5be8df7155d0bdfd367deb31fd3ddeb05ce92eefd3fffa0`),
+with its original source commit/manifest unchanged. Its embedded prepare.py is an
+older snapshot: host.py imports only unchanged constants, require and trial from
+that module. The corrected reviewer runs from this checkout, never from the tar;
+it need not travel to EC2. Verify this import contract/content hashes locally.
+No new tar, SDK/provider copies or Linux execution are needed for this correction.
+Linux permissions/SSM/bootstrap/restore remain untested in this increment.
+
+Approval limits remain explicit: rollback is an operator hash/read/compare/restore
+procedure, not an atomic compare-and-swap. SSM permits arbitrary shell on the
+trial-tagged hosts; command content is bounded by reviewed procedure, not IAM.
+IAM enforces neither two hosts, TTL nor spending. The supervised plan/count,
+deadline/budget and exact reversible security edits still need execution consent.

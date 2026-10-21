@@ -159,7 +159,15 @@ def review_plan(document, root, action):
                 for field in ('root_block_device', 'metadata_options', 'credit_specification'):
                     require(len(after.get(field, [])) == 1, 'PLAN_HOST_CONTROL_MISSING')
                     for key, value in wanted[field][0].items():
+                        if field == 'root_block_device' and key == 'tags':
+                            continue  # Concrete override sends these tags in RunInstances.
                         require(after[field][0].get(key) == value, 'PLAN_HOST_CONTROL_CHANGED')
+                expected_tags = wanted.get('volume_tags', wanted['root_block_device'][0].get('tags'))
+                require(isinstance(expected_tags, dict) and after.get('volume_tags') == expected_tags,
+                        'PLAN_HOST_CONTROL_CHANGED')
+                # The provider can encode an unconfigured optional map as absent/null/{}.
+                # Nonempty nested tags would require forbidden post-launch retagging.
+                require(after['root_block_device'][0].get('tags') in (None, {}), 'PLAN_HOST_CONTROL_CHANGED')
     return {'Status': 'STRUCTURAL_PLAN_REVIEW_ONLY', 'Action': action, 'Objects': len(expected), 'LiveAuthorizationProven': False, 'AllowsCreation': False}
 
 

@@ -33,10 +33,16 @@ TARGET = dict(IDENTITY, instanceId='i-22222222222222222', availabilityZone='us-e
 
 
 def plan(action='create'):
-    return {'complete': True, 'resource_changes': [
+    result = {'complete': True, 'resource_changes': [
         {'address': kind + '.' + name, 'mode': 'managed', 'type': kind, 'name': name,
          'change': {'actions': [action], 'after': copy.deepcopy(value)}}
         for kind, items in ROOT['resource'].items() for name, value in items.items()]}
+    if action == 'create':
+        for change in result['resource_changes']:
+            if change['type'] == 'aws_instance':
+                after = change['change']['after']
+                after['volume_tags'] = after['root_block_device'][0].pop('tags')
+    return result
 
 
 def state():
@@ -172,6 +178,86 @@ class BlueprintTests(unittest.TestCase):
         next(c for c in p['resource_changes'] if c['type'] == 'aws_security_group')['change']['after']['egress'][0]['ipv6_cidr_blocks'] = ['::/0']
         with self.assertRaises(ValueError):
             prepare.review_plan(p, ROOT, 'create')
+
+    def test_effective_volume_tags_accept_only_absent_null_or_empty_nested_tags(self):
+        for left in ('absent', 'null', 'empty'):
+            for right in ('absent', 'null', 'empty'):
+                value = plan()
+                hosts = [c['change']['after'] for c in value['resource_changes'] if c['type'] == 'aws_instance']
+                for host, representation in zip(hosts, (left, right)):
+                    if representation != 'absent':
+                        host['root_block_device'][0]['tags'] = None if representation == 'null' else {}
+                with self.subTest(left=left, right=right):
+                    result = prepare.review_plan(value, ROOT, 'create')
+                    self.assertFalse(result['AllowsCreation'])
+                    self.assertFalse(result['LiveAuthorizationProven'])
+
+    def test_effective_volume_tags_reject_missing_wrong_extra_or_malformed_tags(self):
+        wanted = ROOT['resource']['aws_instance']['a']['root_block_device'][0]['tags']
+        for tags in (None, {}, dict(wanted, Trial='r20261021foreign'), dict(wanted, Extra='unexpected'),
+                     {k: v for k, v in wanted.items() if k != 'Purpose'}, [], 'invalid'):
+            value = plan()
+            host = next(c for c in value['resource_changes'] if c['address'] == 'aws_instance.a')['change']['after']
+            host['volume_tags'] = tags
+            with self.subTest(tags=tags), self.assertRaisesRegex(ValueError, '^PLAN_HOST_CONTROL_CHANGED$'):
+                prepare.review_plan(value, ROOT, 'create')
+        value = plan()
+        del next(c for c in value['resource_changes'] if c['address'] == 'aws_instance.a')['change']['after']['volume_tags']
+        with self.assertRaisesRegex(ValueError, '^PLAN_HOST_CONTROL_CHANGED$'):
+            prepare.review_plan(value, ROOT, 'create')
+
+    def test_effective_volume_tags_reject_nonempty_or_malformed_nested_tags(self):
+        wanted = ROOT['resource']['aws_instance']['a']['root_block_device'][0]['tags']
+        for tags in (wanted, dict(wanted, Extra='unexpected'), {'Trial': 'foreign'}, [], 'invalid', False, 0):
+            value = plan()
+            host = next(c for c in value['resource_changes'] if c['address'] == 'aws_instance.a')['change']['after']
+            host['root_block_device'][0]['tags'] = copy.deepcopy(tags)
+            with self.subTest(tags=tags), self.assertRaisesRegex(ValueError, '^PLAN_HOST_CONTROL_CHANGED$'):
+                prepare.review_plan(value, ROOT, 'create')
+
+    def test_effective_tag_normalization_preserves_all_host_controls(self):
+        cases = [('root_block_device', 'encrypted', False), ('root_block_device', 'volume_size', 31),
+                 ('root_block_device', 'volume_type', 'gp2'), ('root_block_device', 'delete_on_termination', False),
+                 ('metadata_options', 'http_tokens', 'optional'), ('credit_specification', 'cpu_credits', 'unlimited')]
+        for field, key, replacement in cases:
+            value = plan()
+            host = next(c for c in value['resource_changes'] if c['address'] == 'aws_instance.a')['change']['after']
+            host[field][0][key] = replacement
+            with self.subTest(field=field, key=key), self.assertRaises(ValueError):
+                prepare.review_plan(value, ROOT, 'create')
+        for field, replacement in [('instance_type', 't3.large'), ('associate_public_ip_address', True),
+                                   ('iam_instance_profile', 'foreign-profile'), ('tags', {'Trial': 'foreign'})]:
+            value = plan()
+            next(c for c in value['resource_changes'] if c['address'] == 'aws_instance.a')['change']['after'][field] = replacement
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                prepare.review_plan(value, ROOT, 'create')
+
+    def test_authorization_override_integrates_with_review_create_cli_offline(self):
+        # Faithful provider *tag-map shapes*, not an evaluated Terraform/AWS plan.
+        import authorization
+        original, _ = prepare.render(authorization.TRIAL, BOOT)
+        effective = copy.deepcopy(original)
+        for name, replacement in authorization.configuration()['provider_override.tf.json']['resource']['aws_instance'].items():
+            effective['resource']['aws_instance'][name].update(copy.deepcopy(replacement))
+        for representation in ('absent', 'null', 'empty'):
+            value = {'complete': True, 'resource_changes': [
+                {'address': kind + '.' + name, 'mode': 'managed', 'type': kind, 'name': name,
+                 'change': {'actions': ['create'], 'after': copy.deepcopy(config)}}
+                for kind, items in effective['resource'].items() for name, config in items.items()]}
+            for change in value['resource_changes']:
+                if change['type'] == 'aws_instance' and representation != 'absent':
+                    change['change']['after']['root_block_device'][0]['tags'] = None if representation == 'null' else {}
+            with self.subTest(representation=representation), tempfile.TemporaryDirectory() as directory:
+                path = Path(directory) / 'structural-plan.json'
+                path.write_text(json.dumps(value))
+                stream = io.StringIO()
+                args = ['prepare.py', 'review-create', '--trial', authorization.TRIAL, '--input', str(path)]
+                with patch.object(sys, 'argv', args), redirect_stdout(stream):
+                    prepare.main()
+                result = json.loads(stream.getvalue())
+                self.assertEqual(result['Objects'], 20)
+                self.assertFalse(result['AllowsCreation'])
+                self.assertFalse(result['LiveAuthorizationProven'])
 
     def test_retirement_includes_companion_resources(self):
         policy = prepare.retirement_policy(state(), NAME)
