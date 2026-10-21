@@ -549,3 +549,24 @@ NAT A/B recovery. This shutdown did not repeat those functional tests. The 62
 focused E16 tests and generated DEV policy/PROD/shared/source-inventory checks
 passed for the narrow preceding fixes; the 983-test historical gate was not
 rerun for this operational documentation closure.
+
+
+## Companion-resource preflight before later billable creation
+
+The [21 October SQL trial](e16-ec2-backup-trial-20261021.md) repeated a known
+operator-policy gap: DetachInternetGateway requires the VPC as well as IGW;
+DisassociateRouteTable requires subnets as well as route tables. Check all
+companion resources before the first cost, not just the primary object's action.
+Run the offline audit on current exported managed/inline policy documents:
+
+```sh
+python -B scripts/retirement_preflight.py --account ACCOUNT --region REGION --policy current-part-1.json current-part-2.json
+```
+
+A missing type returns a nonzero result and must be resolved/reviewed before UP.
+A complete structural result still requires actual ARN/context/Deny/boundary/SCP
+and live multi-resource authorization review. The tool never calls AWS, applies
+policies, grants creation, settles UNKNOWN or replaces any E16 execution guard.
+Checked-in legacy templates are useful negative regression fixtures, not evidence
+of installed permissions. The closed 21 October session cannot be resumed after
+its bindings were restored. No spending envelope or retirement deadline is renewed.

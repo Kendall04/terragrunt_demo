@@ -1254,3 +1254,21 @@ packages were reported signed by HashiCorp. Isolated no-backend readonly init an
 provider-schema loading both passed; no IAM/TLS/backend change was needed. Source
 inventory was refreshed only for those five locks. Evidence: lock-completion-metadata.json
 in C:\CodexDrop\temp\terragrunt-demo-aws5100-native-lock-20261017.
+
+
+## EC2 backup trial and offline retirement regression - 2026-10-21
+
+[The dated evidence](e16-ec2-backup-trial-20261021.md) records real EC2-role
+manual/05:00/06:00 backup success, bounded bootstrap recovery and PARTIAL/BLOCKED
+network retirement. It does not qualify cross-AZ restore/RPO/RTO or unattended
+bootstrap, nor erase the 13 residual resources or retained AWS costs. Runtime,
+temporary grants and removable overlays were independently checked at closure.
+
+`test_retirement_preflight.py` uses actual checked-in legacy operator documents
+as the negative fixture for the two omitted companion resource classes. Focused
+hermetic cases cover partial correction, separate Allow statements, wrong
+action/account/region, Deny, unscoped resource stars, wrappers, input preservation
+and the invariant that structural coverage never proves live authorization.
+It runs through the existing accidental-I/O audit guard: no AWS, Terraform, VM,
+socket or child process. These are offline preflight diagnostics, not a new
+permission gate/certificate or live IAM proof. No policy or limit was changed.

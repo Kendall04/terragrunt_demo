@@ -370,3 +370,18 @@ were prepared to discard diagnostics end-to-end and expose metadata-only plan
 output on the same E16 route. [Human review of the concrete diff](../../operations/sql-backup/LOCAL-PLAN-REVIEW.md)
 is required before any further init/plan attempt. No runtime, new authentication,
 cloud mutation or full installation reapproval is introduced by this local step.
+
+
+## EC2 role backup acceptance and partial retirement (2026-10-21)
+
+A new USD-3/four-hour owner-approved trial passed one manual and two real hourly
+EC2-role backups. Normal data retirement completed; global retirement stopped on
+missing VPC/subnet companion-resource IAM authorization, leaving 13 network objects.
+No denied operation was retried or bypassed. The owner deferred the new grant;
+the trial was aborted with runtime absent, original bindings restored, temporary
+permissions removed, controls inhibited and workflows disabled. Retained storage,
+keys, secrets and backend still cost money. [The dated record](e16-ec2-backup-trial-20261021.md)
+preserves source, actual timings, bootstrap recovery, state, residues and limits.
+The old USD-10 budget and failed plans are not reusable. Only local offline
+preflight regression work was authorized afterward, without policy application,
+new expenses or changes to E16 controls/limits.
