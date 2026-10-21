@@ -98,6 +98,80 @@ or existing-five-state access is implied. Retain the terminal empty state/eviden
    disk/data loss, retention, new budget/TTL and any narrow same-resource API
    fallback explicitly. If authority/retirement is incomplete, do not start.
 
+
+## Binding checkpoint and next consent - 2026-10-21
+
+Baseline: 855cd57; current artifact recovery-e1f8ee3.tar, SHA-256
+d745816853bb22a8e5be8df7155d0bdfd367deb31fd3ddeb05ce92eefd3fffa0.
+The 20-resource blueprint hash still matches the recorded schema validation.
+A fresh schema-only query used the retained central AWS 5.100.0 provider, without
+backend initialization, downloads or cache copies. Profile is a string reference;
+it does not create or own the retained IAM profile. The recorded 25+6 tests and
+Linux publish remain evidence; no live/Linux recovery or new build ran here.
+
+**Effective executor remains unbound.** The rendered provider names cnp-cert-dev
+but contains no assume_role binding. Historical STS returned cnp-cert-admin;
+that is not proof that runtime would use TerragruntDemoDevOperator. Select and
+review the legitimate runtime AND backend principal before remote planning; do
+not silently apply as administrator or change identity to bypass a denial.
+A source/config adjustment, if needed, requires its own narrow reviewed diff.
+
+The next requested authorization is only this bounded metadata block, starting
+with STS account 341936017254/profile cnp-cert-dev/region us-east-1. It has NOT run:
+
+| Binding | Exact read operations and bounded subjects |
+| --- | --- |
+| Identity/IAM | sts:GetCallerIdentity first; iam:GetUser for an IAM-user caller only, and its inline/attached-policy lists/documents; iam:GetRole/GetInstanceProfile, ListRolePolicies/GetRolePolicy, ListAttachedRolePolicies/GetPolicy/GetPolicyVersion for roles TerragruntDemoDevOperator/demo-dev-data-sql-ec2-role and profile demo-dev-data-sql-ec2-profile only, including their actual boundaries and referenced managed policies; GetContextKeysForPrincipalPolicy/SimulatePrincipalPolicy for those exact principals/actions/resources. Simulation alone does not establish SCP or explicit-Deny absence. |
+| AMI/AZ/compute | ec2:DescribeImages restricted to Canonical owner 099720109477/Ubuntu 22.04/x86_64/EBS; DescribeAvailabilityZones, DescribeInstanceTypeOfferings for t3.medium; GetEbsEncryptionByDefault/GetEbsDefaultKmsKeyId. DescribeInstances/InstanceAttribute/InstanceCreditSpecifications/Volumes/NetworkInterfaces/NatGateways/Addresses/Vpcs/VpcAttribute/Subnets/RouteTables/InternetGateways/SecurityGroups/Tags, plus DescribeSnapshots for the selected AMI snapshot IDs only, for project/trial filters or returned exact IDs. AMI metadata cannot prove a running SSM agent. |
+| Storage/keys | On the two exact buckets in prepare.py: GetBucketLocation, GetBucketVersioning, GetBucketEncryption, GetBucketPolicy, GetBucketLifecycleConfiguration, GetPublicAccessBlock and GetBucketOwnershipControls; HeadObject without ChecksumMode only for the proposed isolated state/lock and exact artifact key, prefix-limited ListObjectsV2/ListObjectVersions to detect collisions. kms:DescribeKey/GetKeyPolicy only for BACKUP_KEY/TEXT_KEY and the actual existing backend/EBS key if metadata identifies one. No backup or state-body download, decrypt, retention edit or key creation. |
+| Secrets/SSM | secretsmanager:DescribeSecret only for SA_SECRET and APP_SECRET exact ARNs in prepare.py; ssm:GetDocument AWS-RunShellScript, and DescribeInstanceInformation only for returned trial instance IDs if any. No GetSecretValue, SendCommand, StartSession or credential/config read. |
+| Existing fences/CI | events:DescribeRule e1-wp4-dev-nat-launch; lambda:GetFunctionConcurrency on e1-cleanup-recovery-cleanup-dev, e1-gateway-deploy-dev and e1-nat-recovery-nat-dev-{assign-eip,change-rt,disable-sdc}; GitHub GET only Kendall04/terragrunt_demo workflows 227405531/227408821 and their bounded queued/in-progress runs. Confirm the legitimate single operator independently; no unspecified E2 status call is included here, and no old receipt proves current ownership or permits re-enabling controls. |
+
+Resource constants are the exact [prepare.py](prepare.py) ARNs, not permission
+to enumerate other accounts, IAM identities, secrets or organization trees.
+If applicable SCP evidence is unavailable, obtain it from the owner and report
+the gap; do not infer it from simulation. DescribeVpcEndpoints was previously
+AWS-denied for the operator: review its capability, but do not redispatch that
+denied read without relevant changed-permission evidence. Administrator backup
+GetObject/KMS Decrypt and SSH/config restrictions are not reopened.
+
+This metadata block excludes Terraform remote init/plan: initializing a new S3
+state manager can write initial state/lock even before resource creation. The
+future approval must include exact backend state/lock writes and artifact
+publication separately from metadata reads. Metadata requests can themselves
+incur API charges; this local checkpoint authorizes neither them nor runtime.
+A HEAD 403 is UNKNOWN, not absence; existing keys or unverified access stop planning.
+
+Close indirect permissions before first cost: review ModifyVpcAttribute for DNS
+and provider-dependent ModifySubnetAttribute, SG default-egress revocation/new
+rules, CreateTags and multi-resource RunInstances (AMI, subnet, SG, ENI, volume,
+instance), plus PassRole only for the existing SQL role/ec2.amazonaws.com.
+Bind actual EBS/backend key permissions; any required KMS grant must identify
+its key/principal/service context explicitly. Provider schema proves field
+shape, not a complete API permission set. Include SSM command/observation,
+host secret reads, bootstrap egress and existing text/backup KMS/S3 flows.
+The normal destroy permissions and both companion resource classes remain
+mandatory; do not add the previously denied optional volume/EIP operations.
+
+The executable trial remains two private hosts in different AZs, one fresh
+synthetic backup and warm-target SQL/API restore, then normal withdrawal of the
+20 owned resources plus their incidental EBS/ENIs. Shared profile/role, keys,
+secrets, buckets/backend, Canonical AMI/snapshots and managed SSM policy are
+references, never additional destroy targets. Remove only approved policy Sids/
+inline additions after their dependent actions; compare full current policies
+before restoration and stop on another writer's changes. Preserve inherited
+2+2-day retention; a mismatch is a blocker, not permission to edit lifecycle.
+
+After metadata closes bindings, present ONE concrete lifecycle approval:
+effective principals and fresh plans; exact backend/artifact writes; temporary
+role/bucket/two-key/publisher additions and their removal; EC2-only reads of the
+two original secrets; Express EULA/host execution; synthetic disk/data loss and
+normal full teardown; retained originals/evidence; proposed NEW USD2/four hours,
+withdrawal by minute 150 with 90 minutes reserved. No cost envelope is approved
+here. Individual platform confirmations may still be required per sensitive
+action; grouped owner consent does not override a platform denial. No automatic
+API fallback or new permission outside that reviewed scope is implied.
+
 ## Package and explicit host sequence
 
 Publish existing API and SqlBackup projects separately as Linux x64 self-contained
