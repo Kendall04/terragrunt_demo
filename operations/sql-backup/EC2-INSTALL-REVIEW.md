@@ -1,6 +1,14 @@
 # EC2 SQL backup installation review - 2026-10-16
 
-Status: OWNER APPROVED; EXECUTION PAUSED BEFORE RUNTIME CREATION. This is the next ECS-track SQL
+Current reconciliation - 2026-10-21: the approved EC2 backup trial subsequently
+passed manual/two-hourly acceptance and completed retirement, including evening
+residual network removal. [The dated record](../../terraform/docs/e16-ec2-backup-trial-20261021.md)
+supersedes this preparation's resource/permission inventory, without changing its
+historical statements. [The new recovery packet](recovery/RUNBOOK.md) is a distinct
+LOCAL-ONLY proposal: two private SQL/API hosts, one NAT Gateway and no ALB/ECS.
+Its new backend/security/budget/lifecycle scope is not cloud-authorized.
+
+Historical status at 2026-10-16: OWNER APPROVED; EXECUTION PAUSED BEFORE RUNTIME CREATION. This is the next ECS-track SQL
 backup component, following local service commit b036141. Source preparation,
 local fixtures and AWS read-only inventory are authorized. The owner approved this grouped scope on 2026-10-16 at 22:37 UTC. The
 [execution checkpoint](../../terraform/docs/validation.md#approved-ec2-backup-execution-preflight---2026-10-16)

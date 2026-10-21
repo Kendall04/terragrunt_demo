@@ -1,7 +1,10 @@
 # SQL backup/restore increment
 
-Status: local implementation plus a real bounded S3/KMS component drill. No EC2
-service or scheduler is installed. The example configuration is
+Current status - 2026-10-21: native/S3-KMS component qualification and real
+EC2-role manual plus two hourly backups passed. The temporary service/runtime
+was retired; residual network closure and permission removal completed that
+evening. See [dated evidence](../../terraform/docs/e16-ec2-backup-trial-20261021.md).
+No EC2 service or scheduler is currently installed. The example configuration is
 **PROPOSED**, with synthetic ARNs that must be replaced before any cloud session.
 The local milestone did not accept retention, budget, RPO or RTO. On 2026-10-16
 the owner subsequently approved the bounded synthetic S3/KMS component drill
@@ -9,8 +12,9 @@ and its proposed lab values. The subsequent
 [real cloud component qualification](../../terraform/docs/validation.md#sql-s3kms-component-qualification---2026-10-16)
 used Windows AWS and Linux SQL without credential transfer; the Linux-profile
 preflight remains historical.
-RPO/RTO remain unmeasured; no schedule or AWS installation exists. The full
-EC2/cross-AZ proposal below remains outside that minimum component scope.
+RPO/RTO remain unmeasured. The older proposed AWS session below is historical;
+the [isolated recovery packet](recovery/RUNBOOK.md) prepares the remaining SQL/API
+cross-AZ proof without repeating hourly acceptance or recreating ECS delivery.
 
 Finite acceptance: native SQL Server 2022 **Express** COPY_ONLY/CHECKSUM backup;
 separate backup and verifier/restore SQL contexts; private bounded local staging;

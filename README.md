@@ -15,10 +15,14 @@ This repository is a demonstrated DEV system, not a production availability clai
 
 V2 continues locally. The owner-authorized .NET 10 LTS migration uses SDK
 10.0.402 and runtime 10.0.13, with [local qualification](terraform/docs/validation.md#net-10-lts-local-migration---2026-10-16).
-The dated AWS trials above used V1; .NET 10 has not been deployed to AWS.
-The first [V2 backup/restore increment](operations/sql-backup/README.md) now passes
-local SQL Server 2022 Express backup, restore and integrity checks. S3/KMS remain
-simulated and no cloud backup service is installed.
+The dated AWS trials above used V1; .NET 10 API has not been deployed to AWS.
+The [V2 backup/restore increment](operations/sql-backup/README.md) has native
+Express and real S3/KMS component evidence. The .NET 10 backup CLI also passed
+one manual and two actual hourly EC2-role jobs on October 21; its temporary
+runtime was retired and the residual network closed that evening. Cross-AZ
+SQL/API recovery and measured RPO/RTO remain pending. The
+[isolated recovery packet](operations/sql-backup/recovery/RUNBOOK.md) is local
+preparation only; it does not authorize or prove another AWS session.
 
 ## Architecture demonstrated
 

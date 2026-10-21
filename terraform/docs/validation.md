@@ -1272,3 +1272,43 @@ and the invariant that structural coverage never proves live authorization.
 It runs through the existing accidental-I/O audit guard: no AWS, Terraform, VM,
 socket or child process. These are offline preflight diagnostics, not a new
 permission gate/certificate or live IAM proof. No policy or limit was changed.
+
+
+## Isolated SQL/API cross-AZ recovery preparation - 2026-10-21
+
+Baseline c435eac preserves V1 and the October 21 backup acceptance/retirement.
+The morning PARTIAL/BLOCKED outcome above is historical: the separately approved
+13-object evening closure completed, with five empty runtime states and no locks;
+see the residual-only follow-up in the [trial record](e16-ec2-backup-trial-20261021.md).
+
+The [recovery packet](../../operations/sql-backup/recovery/RUNBOOK.md) creates no
+cloud resource during preparation. `prepare.py` renders a separate 20-resource
+root and scoped policy additions; structural create/delete checks never authorize
+creation. `host.py` defaults to plan-only. Its explicit future host actions produce
+synthetic data, a fresh versioned backup, source-stop receipt and cross-AZ restore
+with existing CLI CHECKDB plus real API marker/decrypt/read/write checks. There
+is no generic lifecycle engine, automatic gate, timer, cloud executor or targeting.
+
+Focused `python -m unittest -v test_recovery.py` uses fake host transports and an
+audit hook rejecting sockets/processes. It checks private topology/disks, plan
+scope/replacements, KMS/publisher/backend boundaries, exact companion-resource
+deletes, host/AZ/time binding, marker loss/readback and deterministic safe bundles.
+These are offline contracts, not a live recovery PASS. Terraform 1.13.4 schema
+validation uses the cached AWS 5.100.0 Windows provider with backend disabled,
+get disabled and a read-only local mirror. No AWS plan or fresh IAM simulation ran.
+The provider lock reuses the October 17 completed native lock, SHA-256
+901a282544168f6b5d1567b13c91e9009129a2bc0cc92bf4c934e140efdae904,
+including Linux and Windows h1 entries; original project locks stay unchanged.
+
+The initial Linux self-contained publish on isolated tracked-source copies
+stopped before restore/build because Windows SDKs were 9.0.101/10.0.301. This was
+resolved using an isolated workspace SDK 10.0.402 from official Microsoft release
+metadata, with its SHA-512 verified; the system SDK/pin stayed unchanged and no VM
+started. Both existing API and CLI published successfully for linux-x64 with
+self-contained runtime 10.0.13. NuGet initially failed in sandbox TLS; the normal
+HTTPS restore succeeded outside that restriction without disabling TLS validation.
+No API/CLI application source changed. The deterministic real archive binds the
+reviewed local package commit and every file; see the packet's local-validation.json.
+Fresh cloud plans/permissions and owner cloud approval remain prerequisites. RPO/RTO are methodology only: a future
+controlled marker-age bound and warm-target RTO do not prove hourly RPO or full
+ECS/cold-infrastructure recovery. No new AWS/IAM/state/secret/CI change occurred.
