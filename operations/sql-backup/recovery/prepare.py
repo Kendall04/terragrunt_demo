@@ -176,7 +176,9 @@ def retirement_policy(state, name):
             if r['type'] in ('aws_route', 'aws_route_table_association'):
                 continue
             require(a.get('tags', {}).get('Trial') == name, 'FOREIGN_RESOURCE')
-            ids.setdefault(r['type'], []).append(a['id'])
+            resource_ids = ids.setdefault(r['type'], [])
+            require(a['id'] not in resource_ids, 'DUPLICATE_RESOURCE_ID')
+            resource_ids.append(a['id'])
     expected = {'aws_vpc': 1, 'aws_internet_gateway': 1, 'aws_subnet': 3, 'aws_route_table': 3, 'aws_eip': 1, 'aws_nat_gateway': 1, 'aws_security_group': 1, 'aws_vpc_endpoint': 1, 'aws_instance': 2}
     require({k: len(v) for k, v in ids.items()} == expected, 'INCOMPLETE_RUNTIME_INVENTORY')
     names = {'aws_vpc': ('vpc', 'vpc-'), 'aws_internet_gateway': ('internet-gateway', 'igw-'), 'aws_subnet': ('subnet', 'subnet-'), 'aws_route_table': ('route-table', 'rtb-'), 'aws_eip': ('elastic-ip', 'eipalloc-'), 'aws_nat_gateway': ('natgateway', 'nat-'), 'aws_security_group': ('security-group', 'sg-'), 'aws_vpc_endpoint': ('vpc-endpoint', 'vpce-'), 'aws_instance': ('instance', 'i-')}

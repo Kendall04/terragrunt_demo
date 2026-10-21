@@ -72,6 +72,8 @@ or existing-five-state access is implied. Retain the terminal empty state/eviden
    `prepare.py review-create --trial ... --input plan.json` is a structural manual
    aid only, always `AllowsCreation:false`; review remaining provider-normalized
    values/unknowns, IDs, tags and exact ARNs. No target/replacement/foreign owner.
+   It does not validate evaluated AMI/AZ bindings or destroy before-state IDs,
+   tags and ownership; these remain independent mandatory preflight checks.
 4. Review creation operations: EC2 CreateVpc/Subnet/RouteTable/InternetGateway,
    AttachInternetGateway, AllocateAddress, CreateNatGateway, CreateSecurityGroup,
    Authorize/RevokeSecurityGroupEgress, CreateVpcEndpoint, CreateRoute,
@@ -90,6 +92,8 @@ or existing-five-state access is implied. Retain the terminal empty state/eviden
    `bind-retirement` consumes privately exported state and emits exact observed
    ARN additions for a complete runtime; it is not a live IAM evaluation, partial
    failure resolver or substitute for precreation withdrawal authority.
+   Duplicate-ID refusal proves distinct IDs per resource type, not canonical
+   addresses, installed authority or live ownership.
 6. Owner approves logical resources, security JSON, secret reads, synthetic
    disk/data loss, retention, new budget/TTL and any narrow same-resource API
    fallback explicitly. If authority/retirement is incomplete, do not start.

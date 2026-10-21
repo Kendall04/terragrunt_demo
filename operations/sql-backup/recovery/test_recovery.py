@@ -183,6 +183,41 @@ class BlueprintTests(unittest.TestCase):
         self.assertNotIn('ec2:DeleteVolume', statements)
         self.assertNotIn('ec2:DisassociateAddress', statements)
 
+    def test_duplicate_ids_within_each_multi_resource_type_refused(self):
+        for kind in ('aws_instance', 'aws_subnet', 'aws_route_table'):
+            value = state()
+            resource = next(r for r in value['resources'] if r['type'] == kind)
+            resource['instances'][1]['attributes']['id'] = resource['instances'][0]['attributes']['id']
+            with self.subTest(kind=kind), self.assertRaisesRegex(ValueError, '^DUPLICATE_RESOURCE_ID$'):
+                prepare.retirement_policy(value, NAME)
+
+    def test_duplicate_id_alias_across_state_blocks_refused(self):
+        for kind in ('aws_instance', 'aws_subnet', 'aws_route_table'):
+            value = state()
+            resource = next(r for r in value['resources'] if r['type'] == kind)
+            resource['instances'].pop()
+            alias = copy.deepcopy(resource)
+            alias['name'] = 'imported_alias'
+            alias['instances'] = [copy.deepcopy(resource['instances'][0])]
+            value['resources'].append(alias)
+            with self.subTest(kind=kind), self.assertRaisesRegex(ValueError, '^DUPLICATE_RESOURCE_ID$'):
+                prepare.retirement_policy(value, NAME)
+
+    def test_missing_second_host_refused_and_distinct_hosts_bound(self):
+        value = state()
+        resource = next(r for r in value['resources'] if r['type'] == 'aws_instance')
+        resource['instances'].pop()
+        with self.assertRaisesRegex(ValueError, '^INCOMPLETE_RUNTIME_INVENTORY$'):
+            prepare.retirement_policy(value, NAME)
+        value = state()
+        policy = prepare.retirement_policy(value, NAME)
+        statement = next(s for s in policy['Statement'] if s['Action'] == 'ec2:TerminateInstances')
+        expected = {f"arn:aws:ec2:{prepare.REGION}:{prepare.ACCOUNT}:instance/" + i['attributes']['id']
+                    for r in value['resources'] if r['type'] == 'aws_instance' for i in r['instances']}
+        self.assertEqual(len(expected), 2)
+        self.assertEqual(len(statement['Resource']), 2)
+        self.assertEqual(set(statement['Resource']), expected)
+
     def test_foreign_partial_retirement_state_refused(self):
         for modify in ('foreign', 'partial', 'deposed'):
             value = state()
