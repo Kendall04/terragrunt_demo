@@ -34,7 +34,10 @@ reusing it also preserves its broader original SA-bootstrap privilege. Secret
 values are read only in future authorized EC2 processes, never Terraform or output.
 Passwords are not rotated, copied into evidence or deleted.
 
-Generated `security-additions.json` proposes exact new trial-prefix object access,
+The generic renderer's `security-additions.json` is historical preparation, not
+the metadata-bound installation packet below. Its redundant bucket/text-key/
+publisher additions are superseded for this trial. It originally proposed
+new trial-prefix object access,
 backup CMK use restricted through regional S3/encryption context, direct
 Encrypt/Decrypt of the exact text CMK for the co-located API, and three scoped
 bucket denies. The text-key permission is a real temporary expansion, not assumed
@@ -82,7 +85,8 @@ or existing-five-state access is implied. Retain the terminal empty state/eviden
    default EBS encryption/KMS requirements. New IDs cannot be exact before create:
    any necessary create-resource ARN pattern/read `Resource:*` must be individually
    justified and region/request-tag constrained where the API supports it. No
-   broadly installed operator policy is supplied or certified by this local packet.
+   effective installed operator authority is certified by offline preparation.
+   The concrete temporary policy below needs live review and installation approval.
 5. Review withdrawal **before** first cost: TerminateInstances, DeleteNatGateway,
    ReleaseAddress, DeleteVpcEndpoints, DeleteSecurityGroup, DeleteRoute,
    DisassociateRouteTable on tables **and subnets**, DetachInternetGateway on IGW
@@ -164,7 +168,7 @@ before restoration and stop on another writer's changes. Preserve inherited
 
 After metadata closes bindings, present ONE concrete lifecycle approval:
 effective principals and fresh plans; exact backend/artifact writes; temporary
-role/bucket/two-key/publisher additions and their removal; EC2-only reads of the
+role/backend-bucket/backup-key additions and their removal; EC2-only reads of the
 two original secrets; Express EULA/host execution; synthetic disk/data loss and
 normal full teardown; retained originals/evidence; proposed NEW USD2/four hours,
 withdrawal by minute 150 with 90 minutes reserved. No cost envelope is approved
@@ -274,3 +278,117 @@ asynchronous expiry is not a deletion deadline. Do not delete historical objects
 keys, buckets, original roles/secrets or evidence. Retain sanitized receipts with
 actual scope, timings, independent readbacks and cost-estimate limits. A successful
 restore and successful lifecycle close are separate outcomes.
+
+
+## Metadata-bound temporary authorization packet - 2026-10-21
+
+`authorization.py --proposal <preflight-proposal.json> --evidence
+<preflight-readonly.json> --output <authorization-packet.json>` reads existing
+local metadata only and emits one finite installation/cycle/reversal packet.
+It executes no SDK, subprocess, credentials or cloud requests. Both permission
+flags remain false; its structural tests never certify installed IAM authority.
+The external reviewed packet SHA256 is
+`63a1e1b4870c4dbd57d51c3973f9513fc88e5e2362822878e54befb53f46d93e`.
+Keep that original packet unchanged during independent review. Full policy hashes
+use `prepare.encoded`: sorted JSON, indent 2, UTF-8, terminal newline.
+
+Bindings: trial `r20261021az1`, Canonical Ubuntu 22.04 AMI
+`ami-033ea4ff4a9c726dc`, source us-east-1a/use1-az1, restore us-east-1b/use1-az2;
+these are dated observations, not stock or SSM qualification. Source profile
+`cnp-cert-dev`, account 341936017254 and region us-east-1 remain explicit. Both
+provider and backend assume the existing TerragruntDemoDevOperator role, session
+name equal to trial, duration `1h`. They renew independently using the existing
+AWS SDK AssumeRole mechanism, with credentials only in memory. No trust,
+MaxSessionDuration, profile or credential files change. An SSM client must use
+the same SDK AssumeRole profile provider in memory (source_profile=cnp-cert-dev,
+duration_seconds=3600), not one manually exported STS result. Check effective
+identity and renewability before first cost and withdrawal; loss of source
+credentials stops new work. No administrator runtime fallback or deadline
+extension is implied. Live AssumeRole/renewal remains untested here.
+
+Copy `Configuration.provider_override.tf.json` alongside the existing rendered
+root, use `Configuration.backend-config` for partial backend configuration, and
+bind the included tfvars in the **default workspace only**. The override preserves
+all 20 resources and the encrypted 30-GB gp3/delete-on-termination roots. It moves
+root-device tags to equivalent `volume_tags`: provider 5.100.0 sends those in
+RunInstances instead of a subsequent CreateTags request. This avoids permission
+to adopt/tag arbitrary existing disks. Existing host/prepare binaries are
+unchanged: retain recovery-e1f8ee3.tar, SHA256
+`d745816853bb22a8e5be8df7155d0bdfd367deb31fd3ddeb05ce92eefd3fffa0`;
+the local authorization/config overlay is separate, with no new build or tar.
+
+Temporary edits, only after explicit execution approval and fresh baseline checks:
+
+1. The original security owner adds `Recoveryr20261021az1` inline to the operator
+   and SQL role using `Install` JSON. Check absent names, current policies and
+   aggregate inline quota first: the operator addition is 9,527 non-whitespace
+   JSON bytes against its shared 10,240-character quota; read-only preflight found
+   no inline policy. Preserve ten managed policies, trust and their explicit Deny.
+2. Backend: compare the full policy hash, then append **only** the new exact state
+   and `.tflock` ARNs to `E16NoOtherDevObjects.NotResource`. Preserve that Deny,
+   condition and ten original object exceptions. Identity grants Get/Put state,
+   Get/Put/Delete lock and trial-prefix listing; no state deletion or workspace
+   creation. Do not remove a global Deny or replace policies with addition fragments.
+3. Backup CMK: preserve the existing administrator statement and append exactly
+   two Sids: SQL-role GenerateDataKey/Decrypt through regional S3 for the new
+   prefix, and publisher crypto through S3 for the exact artifact/hash only.
+   Key-policy Resource:* means this enclosing CMK. No new KMS grant/CreateGrant
+   is installed. SQL inline adds trial-prefix S3 access, bounded backup crypto,
+   and **Encrypt only** on the exact text key; original Decrypt/secret reads remain.
+
+No backup-bucket/lifecycle, text-key policy or EBS-key policy change; no new user
+IAM policy, role, key or secret. Existing bucket conditions and 2-current +
+2-noncurrent-day asynchronous lifecycle cover new backup/artifact versions.
+Text Encrypt cannot distinguish synthetic plaintext and affects all sessions of
+the shared SQL role while installed. Existing legacy operator permissions also
+remain; only the additions are trial-scoped. These shared-role effects need consent.
+
+New taggable resources require exact Project/Purpose/Trial request tags; existing
+mutations require all three resource tags, including VPC/IGW and table/subnet
+companions. Future IDs cannot be exact before create. Incidental launch ENI
+permission is regional/AZ/no-public-IP scoped; the same request must authorize
+tagged subnet/SG, exact AMI/profile/type and encrypted root. Regional Describe and
+SSM receipt reads need Resource:* where APIs lack resource scoping. Plan/procedure
+review must constrain count, ports, credit mode, SSM command contents and cost;
+these JSON conditions do not enforce those dimensions. No standalone retagging,
+ingress, DeleteVolume, DisassociateAddress or alternative-principal fallback.
+
+`LifecycleDecision` preserves the finite sequence: fresh effective IAM/AMI/AZ/SSM/
+quota/retention/fence checks, full operator-bound locked plan, exact conditional
+artifact upload, two ready hosts, synthetic backup/quiesce/cross-AZ restore with
+CHECKDB/API proof, and immediate normal full-root withdrawal after proof or abort.
+Use bounded AWS-RunShellScript commands (600-second execution timeout), actual
+trial IDs and sanitized receipts; no secret values in command parameters/output.
+RPO/RTO and real cloud acceptance remain unmeasured. Effective IAM/SCP/resource
+policies, evaluated AMI/AZ and before-state destroy ownership remain live checks.
+
+Reverse after dependent host commands settle and normal teardown/readbacks:
+retain empty isolated state, verify absent lock/hosts/root disks/NAT/EIP/ENIs/
+endpoint/network, compare fresh policies to expected-after hashes, restore the
+two original full policies and remove both named inline policies. Verify absence/
+hashes and retained originals. Stop on other-writer drift instead of overwriting;
+finish independent allowed cleanup and report the exact blocker. Keep overlays
+until their dependent cleanup is complete. They persist until explicitly reversed;
+no scheduled IAM removal or automatic shutdown exists. Retained backup versions
+lose the trial crypto grant at reversal; their existing expiry is asynchronous.
+
+One grouped future execution decision must cover the two temporary inline policies,
+shared-role effects, exact backend exception and two CMK Sids with reversal;
+one-hour operator sessions/renewal; exact artifact/backend writes; bounded SSM,
+Express EULA and EC2-only original-secret reads; 20-resource creation/test/full
+withdrawal and synthetic disk/data/log loss; inherited S3 expiry and retained
+terminal state; proposed **NEW USD2 / four hours**, withdrawal by minute 150,
+90 minutes reserved. Estimate USD1.20 with contingency (USD0.5591 base); reprice
+dated October 21 inputs before dispatch. Begin the conservative clock before
+first billable trial write/create. This preparation grants no expenditure or
+cloud execution. Specific platform approvals may still block individual actions,
+including reversal; future approval is not guaranteed.
+
+Validation: 13 new authorization regressions + 25 existing recovery tests + six
+retirement regressions passed locally. Terraform 1.13.4 and cached provider
+5.100.0 validated the merged root: zero errors/warnings; no credential Configure,
+remote backend init or live plan. Backend HCL parsed through fmt stdin; this is
+not backend access proof. Public references:
+[Terraform 1.13 S3 sessions and lock permissions](https://developer.hashicorp.com/terraform/language/v1.13.x/backend/s3),
+[provider 5.100.0 volume tag placement](https://github.com/hashicorp/terraform-provider-aws/blob/v5.100.0/internal/service/ec2/ec2_instance.go),
+[AWS EC2 authorization data](https://servicereference.us-east-1.amazonaws.com/v1/ec2/ec2.json).
