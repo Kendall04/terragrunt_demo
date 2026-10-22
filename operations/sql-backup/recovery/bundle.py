@@ -52,7 +52,7 @@ def build(api, backup, output, commit):
             if path.is_file():
                 name = label + '/' + path.relative_to(directory).as_posix()
                 files[name] = (path.read_bytes(), 0o755 if path.name == executable or path.suffix == '.so' else 0o644)
-    for name in ('host.py', 'prepare.py'):
+    for name in ('host.py', 'prepare.py', 'verify_effective.py'):
         files[name] = (Path(__file__).with_name(name).read_bytes(), 0o644)
     require(sum(len(body) for body, _ in files.values()) <= 500000000, 'BUNDLE_TOO_LARGE')
     manifest = {'Status': 'LOCAL_ARTIFACT_NOT_DEPLOYED', 'SourceCommit': commit, 'Runtime': '10.0.13',

@@ -664,3 +664,66 @@ qualification, cloud call, installation, VM, tar, push or merge is performed.
 This helper is not wired into bootstrap, the old SSM recipe or an automatic
 acceptance gate. Those and frozen execution packages were not rewritten. The
 fourth cycle budget authorizes no further deployment.
+
+### Runtime precheck integration - local only, 2026-10-22
+
+The 712c001 helper was observation-only. Current host.source and host.restore now
+require the runtime adapter before DDL/API/backup/restore and before reading the
+app secret. Observation exit0, missing/old source evidence, partial flags or extra
+fields cannot satisfy this precondition. Quiesce/restore also require the source's
+bound precheck receipt. Real IMDS documents are reduced to the four host-binding
+fields for comparison; extra legitimate IMDS metadata is not mistaken for a
+different host. The original expected-instance/AZ and execution acknowledgements
+remain. Typed refusal preserves fixed stage/code/child exit in the host CLI.
+
+The adapter retains every persisted memory/IP/get/listener check and adds:
+
+1. MainPID/start ticks, SQL executable path and listener-owner process identities
+   sampled before and after the probe. PID reuse, executable/start/config changes
+   refuse. A child SQL process is accepted only if it owns the observed listener.
+2. One fresh read-only SQL query via tcp:127.0.0.1,1433, bounded to15s, using the
+   existing host-only SA environment boundary. SERVERPROPERTY(ProcessID) and this
+   connection's local address/port must match the bound SQL listener process.
+   No marker, old query receipt, cached result or alternate endpoint substitutes.
+3. A fixed projection of the initial kernel environment at /proc/<that SQL PID>/environ. Only exact presence and
+   equality of MSSQL_MEMORY_LIMIT_MB to2048 are returned; other names/values are
+   never assembled into records, serialized or logged. Transient4096-byte buffers
+   necessarily pass through Python RAM; zeroization is not guaranteed. Duplicate, oversized, absent, unreadable or unexpected values refuse. Linux permits
+   EOF without a final NUL; a partial key/value still cannot satisfy the exact match. No
+   environment variable is set and no SQL service setting/restart is performed.
+
+RUNTIME_PRECHECK_INPUTS_BOUND correlates the initial kernel input with a fresh
+query on a stable observed SQL process. InitialMemoryInputBoundToProcess is true,
+but MemoryRuntimePrecedenceProven remains false: [proc_pid_environ](https://man7.org/linux/man-pages/man5/proc_pid_environ.5.html)
+does not reflect later putenv/environ changes and cannot prove internal consumption. It is a precondition, not
+complete configuration consumption or recovery acceptance: receipts explicitly
+keep ConfigurationConsumptionProven=false, MemoryConsumptionMeasured=false and
+RecoveryAcceptance=false. No RSS, max_server_memory, allocated-memory counter or
+fixture is used as proof of the platform cap. In particular, an absent variable
+is not accepted just because the file says2048; that configuration path needs
+separate evidence/review. This can reject a valid file-only setup conservatively.
+The projection does not prove which internal SQL code consumed the input, nor
+provide an atomic snapshot or a guarantee against later process changes. If
+acceptance requires measured enforcement/consumption, that requirement remains
+unproven and must not be called PASS by an operator reading the precheck receipt.
+
+References: [SQL process identity](https://learn.microsoft.com/en-us/sql/t-sql/functions/serverproperty-transact-sql?view=sql-server-ver17),
+[connection endpoint](https://learn.microsoft.com/en-us/sql/t-sql/functions/connectionproperty-transact-sql?view=sql-server-ver17),
+[Linux proc identities](https://docs.kernel.org/filesystems/proc.html) and the memory
+precedence guidance linked above. Native SQL2022/Ubuntu package compatibility of
+these bindings is not established by fixtures. Unexpected native output refuses.
+
+bundle.build now includes verify_effective.py with its manifest hash beside
+host.py/prepare.py; its small deterministic bundle fixtures test inclusion. No
+production tar was generated or replaced. The retained recovery-e1f8ee3.tar and
+historical SSM recipes remain immutable and lack this new integration; they do
+not become qualified for it merely because source tests pass. Future packaging
+and execution would need separate review/authorization. No fifth packet exists.
+
+Three integration regressions were RED before wiring source/restore and GREEN
+afterwards. New fixtures exercise environment projection/canaries, query failures,
+PID/start/executable/config rotation, parent/child PID ownership, strict receipt
+shape and safe host diagnostics. These are local contracts, never native or AWS
+evidence. Run test_verify_effective separately: test_runtime_precheck imports the
+recovery suite's external-effect-denying audit hook. No AWS, installation, VM,
+runtime tar, push or merge is part of this increment; attempt4 remains closed.

@@ -18,6 +18,8 @@ import time
 import urllib.request
 import urllib.error
 
+import verify_effective as runtime_verify
+
 from prepare import ACCOUNT, REGION, BUCKET, BASE, BACKUP_KEY, TEXT_KEY, ROLE_NAME, SA_SECRET, APP_SECRET, require, trial
 
 
@@ -79,6 +81,17 @@ class Port:
             data=b'', method='PUT', headers={'X-aws-ec2-metadata-token-ttl-seconds': '60'}), timeout=3).read().decode()
         return json.loads(opener.open(urllib.request.Request('http://169.254.169.254/latest/dynamic/instance-identity/document',
             headers={'X-aws-ec2-metadata-token': token}), timeout=3).read())
+
+    def runtime_precheck(self, password):
+        def fresh_query():
+            env = dict(os.environ, SQLCMDPASSWORD=password)
+            try:
+                return subprocess.run(['/opt/mssql-tools18/bin/sqlcmd', '-S', 'tcp:127.0.0.1,1433', '-C', '-U', 'sa', '-d', 'master', '-l', '5', '-b', '-h', '-1', '-W'],
+                    env=env, input='SET NOCOUNT ON; SET XACT_ABORT ON;\n' + runtime_verify.FRESH_QUERY,
+                    capture_output=True, text=True, check=False, timeout=15)
+            finally:
+                env.pop('SQLCMDPASSWORD', None)
+        return runtime_verify.assess_runtime(runtime_verify.LocalPort(), fresh_query)
 
     def secret(self, arn):
         value = self.run(['aws', 'secretsmanager', 'get-secret-value', '--region', REGION, '--secret-id', arn,
@@ -149,8 +162,42 @@ class Port:
         return json.loads(self.run(command, env))
 
 
+
+class RuntimePrecheckFailure(ValueError):
+    def __init__(self, report):
+        super().__init__()
+        fallback = runtime_verify.failure('runtime_gate', runtime_verify.Problem('RUNTIME_PRECHECK_INCOMPLETE'))
+        if isinstance(report, dict) and report.get('Status') == 'REFUSED' and type(report.get('ExitCode')) is int:
+            stage, code = report.get('Stage'), report.get('Code')
+            if isinstance(stage, str) and stage in runtime_verify.STAGES and isinstance(code, str) and code in runtime_verify.CODES:
+                allowed_exit = {'READ_FAILED':74, 'READ_COMMAND_TIMEOUT':124, 'ENVIRONMENT_UNSUPPORTED':69}.get(code, 65)
+                safe = runtime_verify.failure(stage, runtime_verify.Problem(code, report.get('CommandExitCode')))
+                if code != 'COMMAND_EXIT_NONZERO': safe['ExitCode'] = allowed_exit
+                if safe['ExitCode'] == report.get('ExitCode'): fallback = safe
+        self.report = fallback
+
+
+def checked_runtime(port, identity, password):
+    binding = {k: identity[k] for k in ('accountId','region','instanceId','availabilityZone')}
+    bind_identity(binding, binding['instanceId'], binding['availabilityZone'])
+    report = port.runtime_precheck(password)
+    try: runtime_verify.require_runtime_precheck(report)
+    except runtime_verify.Problem: raise RuntimePrecheckFailure(report) from None
+    return dict(report, HostBinding=binding)
+
+
+def check_source_runtime(source_record):
+    report = source_record.get('RuntimePrecheck')
+    try: runtime_verify.require_runtime_precheck(report)
+    except runtime_verify.Problem: raise RuntimePrecheckFailure(report) from None
+    source = {k: source_record['Source'][k] for k in ('accountId','region','instanceId','availabilityZone')}
+    require(report.get('HostBinding') == source, 'SOURCE_RUNTIME_BINDING_MISMATCH')
+
+
 def source(port, name, config, backup, api, identity):
-    sa, app = port.secret(SA_SECRET), port.secret(APP_SECRET)
+    sa = port.secret(SA_SECRET)
+    runtime = checked_runtime(port, identity, sa)
+    app = port.secret(APP_SECRET)
     escaped = app.replace("'", "''")
     port.sql(sa, f"IF DB_ID(N'recoverydb') IS NOT NULL OR SUSER_ID(N'recovery_app') IS NOT NULL THROW 51000,'Existing source',1;\nGO\nCREATE DATABASE recoverydb;\nGO\nCREATE LOGIN recovery_app WITH PASSWORD=N'{escaped}';\nGO\nUSE recoverydb; CREATE USER recovery_app FOR LOGIN recovery_app; ALTER ROLE db_owner ADD MEMBER recovery_app;")
     before, after = name + '-before', name + '-after'
@@ -167,12 +214,13 @@ def source(port, name, config, backup, api, identity):
         post = port.http('POST', '/text', {'text': after})
         require(post['text'] == after, 'POST_BACKUP_MARKER_NOT_CONFIRMED')
     # No application process survives this action. SQL stays UP until explicit quiesce.
-    return {'Status': 'SOURCE_BACKED_UP', 'Trial': name, 'Source': identity, 'PreMarker': before,
+    return {'Status': 'SOURCE_BACKED_UP', 'Trial': name, 'Source': identity, 'RuntimePrecheck': runtime, 'PreMarker': before,
             'PreMarkerId': pre['id'], 'PreMarkerRequestUtc': requested, 'PreMarkerConfirmedUtc': committed, 'PostMarker': after,
             'PostMarkerConfirmedUtc': utc(), 'Receipt': receipt, 'CompletedUtc': utc()}
 
 
 def quiesce(port, source_record, identity):
+    check_source_runtime(source_record)
     require(source_record['Source']['instanceId'] == identity['instanceId'], 'WRONG_SOURCE_HOST')
     start = utc()
     port.run(['systemctl', 'stop', 'mssql-server'], timeout=60)
@@ -184,13 +232,16 @@ def quiesce(port, source_record, identity):
 
 
 def restore(port, name, config, backup, api, identity, source_record, failure):
+    check_source_runtime(source_record)
     require(source_record['Status'] == 'SOURCE_BACKED_UP' and source_record['Trial'] == name == failure['Trial'], 'WRONG_TRIAL')
     require(source_record['Source']['instanceId'] != identity['instanceId'] and source_record['Source']['availabilityZone'] != identity['availabilityZone'], 'CROSS_AZ_REQUIRED')
     require(failure['SourceInstanceId'] == source_record['Source']['instanceId'] and failure['ActiveState'] == 'inactive', 'SOURCE_QUIESCENCE_REQUIRED')
     m = source_record['Receipt']['Manifest']
     require(source_record['Receipt']['ManifestKey'].startswith(BASE + '/' + name + '/runs/'), 'MANIFEST_OUTSIDE_TRIAL')
     require(timestamp(source_record['PreMarkerRequestUtc']) <= timestamp(source_record['PreMarkerConfirmedUtc']) <= timestamp(m['StartedUtc']) <= timestamp(m['CompletedUtc']) <= timestamp(source_record['PostMarkerConfirmedUtc']) <= timestamp(failure['FailureDeclaredUtc']) <= timestamp(failure['SourceInactiveConfirmedUtc']) <= timestamp(utc()), 'INVALID_EVENT_ORDER')
-    sa, app = port.secret(SA_SECRET), port.secret(APP_SECRET)
+    sa = port.secret(SA_SECRET)
+    runtime = checked_runtime(port, identity, sa)
+    app = port.secret(APP_SECRET)
     target = 'recoverydb_restore_' + name
     result = port.backup(backup, config, sa, source_record)
     require(result['Status'] == 'RESTORED_CHECKDB_READABLE' and result['Rows'] >= 1, 'RESTORE_NOT_VERIFIED')
@@ -206,7 +257,7 @@ def restore(port, name, config, backup, api, identity, source_record, failure):
         ready = utc()
     return {'Status': 'TARGET_RECOVERED_REVIEW_EVIDENCE', 'Trial': name, 'Source': source_record['Source'], 'Target': identity,
             'ManifestVersion': source_record['Receipt']['ManifestVersion'], 'BackupVersion': m['BackupVersion'],
-            'Checkdb': result['Status'], 'ReadyAndDecryptedMarkersConfirmedUtc': ready,
+            'Checkdb': result['Status'], 'RuntimePrecheck': runtime, 'ReadyAndDecryptedMarkersConfirmedUtc': ready,
             'RtoWarmTargetSeconds': (timestamp(ready) - timestamp(failure['FailureDeclaredUtc'])).total_seconds(),
             'ControlledMarkerAgeUpperBoundSeconds': (timestamp(failure['FailureDeclaredUtc']) - timestamp(source_record['PreMarkerRequestUtc'])).total_seconds(),
             'RpoQualification': 'Controlled synthetic marker observation only; not hourly RPO or production workload proof.',
@@ -274,6 +325,8 @@ def main():
 if __name__ == '__main__':
     try:
         main()
+    except RuntimePrecheckFailure as e:
+        print(json.dumps(e.report)); raise SystemExit(e.report['ExitCode'])
     except Exception as e:
         print(json.dumps({'Status': 'FAILED_OR_UNKNOWN_REVIEW_BEFORE_RETRY', 'Code': str(e) if type(e) is ValueError and re.fullmatch('[A-Z_]+', str(e)) else type(e).__name__}))
         raise SystemExit(1)

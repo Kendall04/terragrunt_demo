@@ -61,6 +61,19 @@ class FakePort:
         self.restoring = False
         self.ready = True
 
+    def runtime_precheck(self, password):
+        # Contract fixture only. Never native/process/permission evidence.
+        return {'Status':'RUNTIME_PRECHECK_INPUTS_BOUND','Stage':'complete','ExitCode':0,
+            'PersistedMemoryPlatformCapMb':2048,'Ipv4Loopback1433Only':True,
+            'ListenerOwnedBySqlServiceProcessTree':True,'SqlQueryReadyMarkerPresent':True,
+            'ConfigStartCorrelationToleranceSeconds':1,
+            'RuntimePrecheckSatisfied':True,'InitialMemoryInputBoundToProcess':True,
+            'MemoryRuntimePrecedenceProven':False,'CurrentQueryReadinessProven':True,
+            'StableProcessBinding':True,'MemoryEnvironment':{'Presence':'PRESENT','ValueIsAllowed2048':True},
+            'ProcessBinding':{'MainPid':42,'SqlPid':42,'SqlStartTicks':500},
+            'MemoryConsumptionMeasured':False,'ConfigurationConsumptionProven':False,
+            'MemoryEvidenceKind':'INITIAL_ENVIRONMENT_PROJECTION','RecoveryAcceptance':False}
+
     def secret(self, arn):
         return 'Synthetic!not-a-real-password'
 
@@ -419,7 +432,10 @@ class BundleTests(unittest.TestCase):
                 output = root / f'out{i}.tar'
                 result = bundle.build(root / 'api', root / 'backup', output, 'a' * 40)
                 hashes.append(result['Sha256'])
-                self.assertEqual(bundle.inspect(output, result['Sha256'])['Runtime'], '10.0.13')
+                manifest = bundle.inspect(output, result['Sha256'])
+                self.assertEqual(manifest['Runtime'], '10.0.13')
+                self.assertIn('verify_effective.py', manifest['Files'])
+                self.assertEqual(manifest['Files']['verify_effective.py']['Sha256'], hashlib.sha256(Path(__file__).with_name('verify_effective.py').read_bytes()).hexdigest())
             self.assertEqual(hashes[0], hashes[1])
             with self.assertRaises(ValueError):
                 bundle.inspect(output, 'b' * 64)
