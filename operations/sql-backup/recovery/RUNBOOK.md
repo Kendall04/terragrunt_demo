@@ -608,3 +608,59 @@ push or merge was performed for this correction. The existing tar does not conta
 bootstrap and stays unchanged. Another cloud test needs separately approved scope,
 budget/window and freshly rendered/reviewed user_data and complete plans; this
 patch does not authorize it or make V2 PASS.
+
+### Configuration verifier diagnosis correction - 2026-10-22
+
+Attempt4 closed at 04:12:56 UTC as
+CLOSED_PARTIAL_EFFECTIVE_CONFIGURATION_UNVERIFIED: both SQL engines had query-ready
+markers, but the metadata verifier returned 65 twice. No backup, quiesce, restore
+or RPO/RTO measurement occurred. Its exact failed field remains UNKNOWN. Original
+packets, verifier, observations and closure are unchanged; that cycle is closed.
+
+The historical sanitizer was demonstrably wrong: [A-Z_]+ discarded authored codes
+with digits, omitted the stage, and could publish an arbitrary uppercase exception
+message as a code. Three RED regressions reproduce these defects. A separate
+22-case hermetic comparison against the immutable historical script reproduces
+missing exact stages and the canary leak; corrected cases retain safe stages.
+These fixtures do not identify which native field failed.
+
+[verify_effective.py](verify_effective.py) keeps diagnostics local and read-only.
+It uses fixed stage/code enums, permits digits only in authored allowlisted codes,
+maps exception types without messages and emits one JSON line with no stderr/raw
+command output. Read-command exits are preserved (negative signals mapped to
+128+signal); validation refusals use 65, read failures 74 and read timeouts 124.
+The original marker check outside Python now has a structured failure stage.
+Explicit checks replace assert, so Python -O cannot disable them. Tests cover all
+observation stages and branches, canaries in values/messages/stdout/stderr, child
+exits/signals, selected-query formats, process/fd races and end-of-snapshot changes.
+
+All previous strict checks remain: explicit persisted memory2048/IP127.0.0.1,
+matching selected gets, no unit drop-ins, current service/process, config/start
+correlation and SQL-owned IPv4 loopback1433 listeners. Selected-get parsing accepts
+only the prior scalar/single-field INI forms, now rejecting extra defaults/options,
+comments or arbitrary lines. Wrong value and unsupported representation have
+different codes. No additional format was accepted to force success. The native
+get output and exact package/CU were not retained; these formats are synthetic
+compatibility fixtures, not a demonstrated native output contract.
+
+The old EFFECTIVE_INITIAL_CONFIGURATION_OBSERVED claim was also too strong.
+Microsoft documents [initial setup variables](https://learn.microsoft.com/en-us/sql/linux/configure/environment-variables?view=sql-server-ver16),
+but [memory configuration guidance](https://learn.microsoft.com/en-us/sql/linux/configure/performance-best-practices-sql-server-memory?view=sql-server-ver16)
+states that MSSQL_MEMORY_LIMIT_MB takes precedence over mssql.conf. The saved file,
+selected get and approximate one-second boot-time correlation cannot rule out
+that override. A stored readiness marker also does not prove a fresh query on the
+current process. The helper therefore returns CONFIGURATION_OBSERVATION_ONLY,
+MemoryRuntimePrecedenceProven=false, CurrentQueryReadinessProven=false and
+RecoveryAcceptance=false, even when all observation checks succeed. Exit0 means
+observations completed, never acceptance. No environment/secret read or new SQL
+query was added. Missing settings or unsupported get output still refuse; neither
+proves the actual setup was wrong without native evidence. Loopback proof covers
+the observed SQL-owned listener on1433, not every possible SQL/network endpoint.
+
+Run test_verify_effective.py separately from test_recovery/test_authorization,
+whose audit hook forbids subprocesses. All new tests use in-memory metadata ports
+or mocked OS/command adapters, including the -O subprocess. No native Linux/SQL
+qualification, cloud call, installation, VM, tar, push or merge is performed.
+This helper is not wired into bootstrap, the old SSM recipe or an automatic
+acceptance gate. Those and frozen execution packages were not rewritten. The
+fourth cycle budget authorizes no further deployment.
