@@ -140,5 +140,32 @@ class AuthorizationScopeTests(unittest.TestCase):
             self.assertNotIn('tags', host['root_block_device'][0])
 
 
+class VpcDnsSelectorTests(unittest.TestCase):
+    """Case/scope comparisons only; never certify effective IAM or a new AWS call."""
+    def test_dns_selector_matches_documented_values_and_decoded_request(self):
+        statement = next(s for s in a.operator_policy()['Statement'] if s.get('Sid') == 'VpcDns')
+        values = statement['Condition']['StringEquals']['ec2:Attribute']
+        # Official AWS remediation policy uses these exact IAM attribute names.
+        self.assertEqual(values, ['EnableDnsSupport', 'EnableDnsHostnames'])
+        observed = 'EnableDnsHostnames'  # Sanitized real DecodeAuthorizationMessage, 2026-10-22.
+        self.assertNotIn(observed, ['enableDnsSupport', 'enableDnsHostnames'])
+        self.assertIn(observed, values)
+        self.assertEqual(statement['Action'], ['ec2:ModifyVpcAttribute'])
+        self.assertEqual(statement['Resource'], [a.EC2 + 'vpc/*'])
+        self.assertEqual(set(statement['Condition']), {'StringEquals'})
+        other_conditions = {k: v for k, v in statement['Condition']['StringEquals'].items() if k != 'ec2:Attribute'}
+        self.assertEqual(other_conditions, {'aws:RequestedRegion': a.p.REGION,
+            **{'aws:ResourceTag/' + k: v for k, v in a.TAGS.items()}})
+
+    def test_dns_selector_keeps_case_sensitive_two_attribute_boundary(self):
+        statement = next(s for s in a.operator_policy()['Statement'] if s.get('Sid') == 'VpcDns')
+        values = statement['Condition']['StringEquals']['ec2:Attribute']
+        for invalid in ('enableDnsSupport', 'enableDnsHostnames', 'ENABLE_DNS_HOSTNAMES',
+                        'EnableNetworkAddressUsageMetrics', '*', '', None, ' EnableDnsHostnames'):
+            with self.subTest(invalid=invalid):
+                self.assertNotIn(invalid, values)
+
+
+
 if __name__ == '__main__':
     unittest.main()

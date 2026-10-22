@@ -86,7 +86,7 @@ def operator_policy():
         add(action + 'Owned', ['ec2:' + action], kinds, existing)
     add('HostEgress', ['ec2:AuthorizeSecurityGroupEgress', 'ec2:RevokeSecurityGroupEgress'], ['security-group'], existing)
     dns = deepcopy(existing)
-    dns['StringEquals']['ec2:Attribute'] = ['enableDnsSupport', 'enableDnsHostnames']
+    dns['StringEquals']['ec2:Attribute'] = ['EnableDnsSupport', 'EnableDnsHostnames']
     add('VpcDns', ['ec2:ModifyVpcAttribute'], ['vpc'], dns)
     launch = deepcopy(request)
     launch['ForAllValues:StringEquals']['aws:TagKeys'].append('Name')

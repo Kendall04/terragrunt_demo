@@ -420,3 +420,37 @@ procedure, not an atomic compare-and-swap. SSM permits arbitrary shell on the
 trial-tagged hosts; command content is bounded by reviewed procedure, not IAM.
 IAM enforces neither two hosts, TTL nor spending. The supervised plan/count,
 deadline/budget and exact reversible security edits still need execution consent.
+
+
+### DNS authorization diagnosis and local correction - 2026-10-22
+
+The approved cloud attempt stopped at ModifyVpcAttribute (request
+`7e9505cf-530c-48d5-8cf8-9c4bff851a94`). Its two created resources were withdrawn,
+both temporary inline policies removed, and original backend/backup-key hashes
+restored; closure was verified at 00:29:25 UTC. No SQL/API recovery, host installer
+or new backup ran. That abort/denial remains historical evidence, not a PASS.
+
+One authorized, read-only STS DecodeAuthorizationMessage call as the existing
+cnp-cert-dev caller confirmed allowed=false, explicitDeny=false, zero matched
+statements, all three correct trial resource tags, and
+`ec2:Attribute=EnableDnsHostnames`. The template had required `enableDnsHostnames`.
+StringEquals is case sensitive. The official AWS remediation policy documents
+`EnableDnsSupport` and `EnableDnsHostnames` for this IAM condition. Local code now
+corrects only these two values; it preserves StringEquals, the selector, exact
+action, region, regional/account VPC ARN pattern and all three resource-tag limits.
+No broader attribute, case-insensitive comparison or IAM permission is added.
+
+Two regression tests first reproduced the old failures and then passed with the
+correction; they compare documented/observed selector strings and reject other
+attributes, old casing, missing and wildcard values. They do not simulate effective
+IAM/SCP authority. No ModifyVpcAttribute retry, installation or second cloud cycle
+was performed. This correction has no live acceptance evidence. The frozen packet
+SHA256 `63a1e1b4870c4dbd57d51c3973f9513fc88e5e2362822878e54befb53f46d93e`
+remains the original aborted-cycle evidence, not the corrected installation JSON.
+A future proposed packet must be regenerated/reviewed before any installation;
+do not reapply the old packet or reuse its failed plan. The runtime tar is unchanged
+because authorization.py is an offline module outside that archive.
+
+Sources: [AWS DNS condition example](https://docs.aws.amazon.com/aws-managed-policy/latest/reference/AWS-SSM-RemediationAutomation-ExecutionRolePolicy.html),
+[IAM StringEquals semantics](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_condition_operators.html#Conditions_String),
+[ModifyVpcAttribute API](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_ModifyVpcAttribute.html).
