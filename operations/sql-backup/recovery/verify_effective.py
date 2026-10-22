@@ -22,7 +22,7 @@ CODES = frozenset(('ENVIRONMENT_UNSUPPORTED', 'SQL_READY_MARKER_MISSING',
     'INVALID_COMMAND_EXIT_CODE', 'COMMAND_OUTPUT_INVALID', 'COMMAND_OUTPUT_TOO_LARGE',
     'CONFIG_SECTION_MISSING', 'CONFIG_OPTION_MISSING', 'CONFIG_PARSE_ERROR',
     'METADATA_INVALID', 'READ_FAILED', 'TEXT_INVALID', 'READ_COMMAND_TIMEOUT',
-    'UNEXPECTED_ERROR', 'INVALID_DIAGNOSTIC_CODE', 'INVALID_DIAGNOSTIC_STAGE', 'FILE_TOO_LARGE', 'ENVIRONMENT_TOO_LARGE', 'ENVIRONMENT_FORMAT_INVALID', 'MEMORY_ENV_DUPLICATE', 'MEMORY_ENV_ABSENT_REQUIRES_REVIEW', 'MEMORY_ENV_NOT_2048', 'MEMORY_PROJECTION_INVALID', 'PROCESS_IDENTITY_CHANGED', 'SQL_EXECUTABLE_MISMATCH', 'FRESH_QUERY_BINDING_INVALID', 'FRESH_QUERY_WRONG_PROCESS', 'RUNTIME_PRECHECK_INCOMPLETE'))
+    'UNEXPECTED_ERROR', 'INVALID_DIAGNOSTIC_CODE', 'INVALID_DIAGNOSTIC_STAGE', 'FILE_TOO_LARGE', 'ENVIRONMENT_TOO_LARGE', 'ENVIRONMENT_FORMAT_INVALID', 'MEMORY_ENV_DUPLICATE', 'MEMORY_ENV_INCOMPLETE', 'MEMORY_ENV_ABSENT_REQUIRES_REVIEW', 'MEMORY_ENV_NOT_2048', 'MEMORY_PROJECTION_INVALID', 'PROCESS_IDENTITY_CHANGED', 'SQL_EXECUTABLE_MISMATCH', 'FRESH_QUERY_BINDING_INVALID', 'FRESH_QUERY_WRONG_PROCESS', 'RUNTIME_PRECHECK_INCOMPLETE'))
 
 
 class Problem(Exception):
@@ -193,6 +193,7 @@ def project_memory_environment(stream):
         if total > 1_048_576: raise Problem('ENVIRONMENT_TOO_LARGE')
         for byte in chunk:
             if byte == 0:
+                if candidate and 0 < pos < len(prefix): raise Problem('MEMORY_ENV_INCOMPLETE')
                 if candidate and pos >= len(prefix):
                     count += 1
                     permitted = equal and pos - len(prefix) == len(expected)
@@ -205,11 +206,12 @@ def project_memory_environment(stream):
                 pos += 1
     # Linux documents NUL separators with an optional final NUL. EOF itself
     # terminates the last record; a partial/wrong selected value cannot match.
+    if candidate and 0 < pos < len(prefix): raise Problem('MEMORY_ENV_INCOMPLETE')
     if pos and candidate and pos >= len(prefix):
         count += 1
         permitted = equal and pos - len(prefix) == len(expected)
     if count > 1: raise Problem('MEMORY_ENV_DUPLICATE')
-    return {'Presence': 'PRESENT' if count else 'ABSENT', 'ValueIsAllowed2048': permitted if count else None}
+    return {'Presence': 'PRESENT' if count else 'ABSENT', 'ValueIsAllowed2048': permitted if count else None, 'Complete': True}
 
 
 class RuntimeVerifier(Verifier):
@@ -243,17 +245,19 @@ class RuntimeVerifier(Verifier):
         self.require(sql_pid in self._listener_pids and sql_pid in before[1], 'FRESH_QUERY_WRONG_PROCESS')
         self.stage = 'memory_environment'
         projection = self.port.memory_projection(sql_pid)
-        self.require(type(projection) is dict and set(projection) == {'Presence', 'ValueIsAllowed2048'}, 'MEMORY_PROJECTION_INVALID')
-        self.require(projection['Presence'] == 'PRESENT', 'MEMORY_ENV_ABSENT_REQUIRES_REVIEW')
-        self.require(projection['ValueIsAllowed2048'] is True, 'MEMORY_ENV_NOT_2048')
+        self.require(type(projection) is dict and set(projection) == {'Presence', 'ValueIsAllowed2048', 'Complete'} and projection['Complete'] is True, 'MEMORY_PROJECTION_INVALID')
+        present = projection['Presence'] == 'PRESENT'
+        self.require(present or (projection['Presence'] == 'ABSENT' and projection['ValueIsAllowed2048'] is None), 'MEMORY_PROJECTION_INVALID')
+        if present: self.require(projection['ValueIsAllowed2048'] is True, 'MEMORY_ENV_NOT_2048')
+        basis = 'FILE_AND_ALLOWED_INITIAL_ENV' if present else 'FILE_NO_INITIAL_ENV_OVERRIDE'
         self.stage = 'runtime_binding_after'
         self.require(self.binding() == before and self.port.mtime('/var/opt/mssql/mssql.conf') == self._config_time,
                      'PROCESS_IDENTITY_CHANGED')
         self.stage = 'complete'
         result.update(Status='RUNTIME_PRECHECK_INPUTS_BOUND', RuntimePrecheckSatisfied=True,
-            InitialMemoryInputBoundToProcess=True, MemoryRuntimePrecedenceProven=False,
+            InitialMemoryInputBoundToProcess=present, MemoryRuntimePrecedenceProven=False,
             CurrentQueryReadinessProven=True, StableProcessBinding=True,
-            MemoryEnvironment={'Presence':'PRESENT','ValueIsAllowed2048':True},
+            MemoryEnvironment=dict(projection), MemoryConfigurationBasis=basis,
             ProcessBinding={'MainPid':before[0], 'SqlPid':sql_pid, 'SqlStartTicks':before[1][sql_pid]},
             MemoryConsumptionMeasured=False, ConfigurationConsumptionProven=False, MemoryEvidenceKind='INITIAL_ENVIRONMENT_PROJECTION', RecoveryAcceptance=False)
         return result
@@ -267,21 +271,27 @@ def assess_runtime(port, query):
 
 def require_runtime_precheck(report):
     """Runtime input/readiness precondition only, never complete recovery proof."""
-    required = ('RuntimePrecheckSatisfied', 'InitialMemoryInputBoundToProcess',
+    required = ('RuntimePrecheckSatisfied',
                 'CurrentQueryReadinessProven', 'StableProcessBinding')
     keys = frozenset(('Status','Stage','ExitCode','PersistedMemoryPlatformCapMb','Ipv4Loopback1433Only',
         'ListenerOwnedBySqlServiceProcessTree','SqlQueryReadyMarkerPresent','ConfigStartCorrelationToleranceSeconds',
         'MemoryRuntimePrecedenceProven','CurrentQueryReadinessProven','RecoveryAcceptance','RuntimePrecheckSatisfied',
         'InitialMemoryInputBoundToProcess','StableProcessBinding','MemoryEnvironment','ProcessBinding',
-        'MemoryConsumptionMeasured','ConfigurationConsumptionProven','MemoryEvidenceKind'))
+        'MemoryConsumptionMeasured','ConfigurationConsumptionProven','MemoryEvidenceKind','MemoryConfigurationBasis'))
     if not isinstance(report, dict) or set(report) not in (keys, keys | {'HostBinding'}) or report.get('Status') != 'RUNTIME_PRECHECK_INPUTS_BOUND' or type(report.get('ExitCode')) is not int or report['ExitCode'] != 0 or report.get('Stage') != 'complete' or not all(report.get(k) is True for k in required):
         raise Problem('RUNTIME_PRECHECK_INCOMPLETE')
     binding = report.get('ProcessBinding', {})
     if type(binding) is not dict or set(binding) != {'MainPid','SqlPid','SqlStartTicks'} or any(type(value) is not int or value <= 1 for value in binding.values()):
         raise Problem('RUNTIME_PRECHECK_INCOMPLETE')
     projection = report.get('MemoryEnvironment')
-    if type(projection) is not dict or set(projection) != {'Presence','ValueIsAllowed2048'} or projection['Presence'] != 'PRESENT' or projection['ValueIsAllowed2048'] is not True:
+    if type(projection) is not dict or set(projection) != {'Presence','ValueIsAllowed2048','Complete'} or projection['Complete'] is not True:
         raise Problem('RUNTIME_PRECHECK_INCOMPLETE')
+    if projection['Presence'] == 'PRESENT':
+        valid = projection['ValueIsAllowed2048'] is True and report.get('InitialMemoryInputBoundToProcess') is True and report.get('MemoryConfigurationBasis') == 'FILE_AND_ALLOWED_INITIAL_ENV'
+    elif projection['Presence'] == 'ABSENT':
+        valid = projection['ValueIsAllowed2048'] is None and report.get('InitialMemoryInputBoundToProcess') is False and report.get('MemoryConfigurationBasis') == 'FILE_NO_INITIAL_ENV_OVERRIDE'
+    else: valid = False
+    if not valid: raise Problem('RUNTIME_PRECHECK_INCOMPLETE')
     if type(report.get('PersistedMemoryPlatformCapMb')) is not int or report['PersistedMemoryPlatformCapMb'] != 2048 or any(report.get(k) is not True for k in ('Ipv4Loopback1433Only','ListenerOwnedBySqlServiceProcessTree','SqlQueryReadyMarkerPresent')) or type(report.get('ConfigStartCorrelationToleranceSeconds')) is not int or report['ConfigStartCorrelationToleranceSeconds'] != 1:
         raise Problem('RUNTIME_PRECHECK_INCOMPLETE')
     if report.get('MemoryRuntimePrecedenceProven') is not False or report.get('MemoryConsumptionMeasured') is not False or report.get('ConfigurationConsumptionProven') is not False or report.get('MemoryEvidenceKind') != 'INITIAL_ENVIRONMENT_PROJECTION' or report.get('RecoveryAcceptance') is not False:

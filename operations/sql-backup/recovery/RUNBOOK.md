@@ -727,3 +727,29 @@ shape and safe host diagnostics. These are local contracts, never native or AWS
 evidence. Run test_verify_effective separately: test_runtime_precheck imports the
 recovery suite's external-effect-denying audit hook. No AWS, installation, VM,
 runtime tar, push or merge is part of this increment; attempt4 remains closed.
+
+### File-only configured memory precondition correction - local, 2026-10-22
+
+P2 review of0883ac6 found that requiring a PRESENT environment variable excluded
+the valid file-only configuration path. This increment supersedes that refusal;
+it does not infer the cause of any historical native failure.
+
+The same strict persisted2048 and selected-get2048 checks run first. A complete,
+readable initial-environment projection on the stable, fresh-query-bound SQL
+process may then be either PRESENT with exactly2048 or ABSENT with no selected
+value. The latter records InitialMemoryInputBoundToProcess=false and
+MemoryConfigurationBasis=FILE_NO_INITIAL_ENV_OVERRIDE; the former records true
+and FILE_AND_ALLOWED_INITIAL_ENV. Absence is not relabeled as an input present in
+the process. Complete=true is emitted only after a full bounded stream read.
+Unknown, missing/incomplete projection fields, duplicates, ambiguous partial
+target keys, unexpected values or contradictions refuse. File/get disagreement,
+loopback listener, fresh query and process/executable/starttime stability guards
+are unchanged. Reports keep runtime precedence, internal consumption measurement
+and recovery acceptance unproven; this is a configured-memory precondition.
+
+Three new regressions were RED against0883ac6 and GREEN after correction. Fixtures
+cover both permitted forms, a file-only source/quiesce/restore flow, contradictory
+reports and file/get values, and unknown/incomplete projections. Native causes,
+compatibility and consumption are not established by fixtures. This local change
+does not alter bootstrap, historical packets/closures/tar or authorize a new AWS
+cycle, VM, installation, publication or merge.

@@ -87,21 +87,72 @@ class IntegrationGuardTests(unittest.TestCase):
         self.assertEqual(p.commands,[])
 
 
+class FileOnlyRegressionTests(unittest.TestCase):
+    def test_file_only_2048_without_environment_override_is_configured_not_bound_input(self):
+        p=MetadataPort();p.raw_env=b'PASSWORD='+CANARY.encode()+b'\0'
+        r=v.assess_runtime(p,lambda:query());v.require_runtime_precheck(r)
+        self.assertFalse(r['InitialMemoryInputBoundToProcess'])
+        self.assertEqual(r['MemoryConfigurationBasis'],'FILE_NO_INITIAL_ENV_OVERRIDE')
+        self.assertEqual(r['MemoryEnvironment'],{'Presence':'ABSENT','ValueIsAllowed2048':None,'Complete':True})
+        self.assertFalse(r['ConfigurationConsumptionProven']);self.assertNotIn(CANARY,json.dumps(r))
+    def test_ambiguous_partial_memory_key_is_not_certified_absent(self):
+        for raw in (b'MSSQL_MEMORY_LIMIT_MB',b'MSSQL_MEMORY_LI\0'):
+            with self.assertRaises(v.Problem):v.project_memory_environment(io.BytesIO(raw))
+    def test_file_only_precheck_can_reach_existing_source_flow(self):
+        p=DrillPort()
+        def precheck(password):
+            metadata=MetadataPort();metadata.raw_env=b''
+            return v.assess_runtime(metadata,lambda:query())
+        p.runtime_precheck=precheck
+        r=host.source(p,NAME,None,None,None,IDENTITY)
+        self.assertEqual(r['Status'],'SOURCE_BACKED_UP')
+        self.assertFalse(r['RuntimePrecheck']['InitialMemoryInputBoundToProcess'])
+        failure=host.quiesce(p,r,IDENTITY)
+        restored=host.restore(p,NAME,None,None,None,TARGET,r,failure)
+        self.assertEqual(restored['Status'],'TARGET_RECOVERED_REVIEW_EVIDENCE')
+        self.assertEqual(restored['RuntimePrecheck']['MemoryConfigurationBasis'],'FILE_NO_INITIAL_ENV_OVERRIDE')
+        self.assertFalse(restored['RuntimePrecheck']['InitialMemoryInputBoundToProcess'])
+
+    def test_file_only_does_not_bypass_file_get_or_projection_consistency(self):
+        for kind,stage,code in [('file','config_memory','MEMORY_CAP_NOT_2048'),('get','get_memory','SELECTED_GET_VALUE_MISMATCH')]:
+            p=MetadataPort();p.raw_env=b''
+            if kind=='file':p.texts['/var/opt/mssql/mssql.conf']=p.texts['/var/opt/mssql/mssql.conf'].replace('2048','4096')
+            else:p.answers['memory.memorylimitmb']='4096'
+            called=[];r=v.assess_runtime(p,lambda:(called.append(1),query())[1])
+            self.assertEqual((r['Stage'],r['Code']),(stage,code));self.assertEqual(called,[])
+        import copy
+        p=MetadataPort();p.raw_env=b'';good=v.assess_runtime(p,lambda:query())
+        for key,value in [('InitialMemoryInputBoundToProcess',True),('MemoryConfigurationBasis','FILE_AND_ALLOWED_INITIAL_ENV'),
+                          ('MemoryEnvironment',{'Presence':'ABSENT','ValueIsAllowed2048':False,'Complete':True})]:
+            r=copy.deepcopy(good);r[key]=value
+            with self.assertRaises(v.Problem):v.require_runtime_precheck(r)
+
+    def test_unknown_incomplete_or_contradictory_projection_is_not_absence(self):
+        for projected in (None, {'Presence':'ABSENT','ValueIsAllowed2048':None},
+                          {'Presence':'ABSENT','ValueIsAllowed2048':None,'Complete':False},
+                          {'Presence':'UNKNOWN','ValueIsAllowed2048':None,'Complete':True},
+                          {'Presence':'ABSENT','ValueIsAllowed2048':False,'Complete':True}):
+            p=MetadataPort();p.memory_projection=lambda pid:projected
+            r=v.assess_runtime(p,lambda:query())
+            self.assertEqual((r['Stage'],r['Code']),('memory_environment','MEMORY_PROJECTION_INVALID'))
+            self.assertNotIn(CANARY,json.dumps(r))
+
+
 class ProjectionTests(unittest.TestCase):
     def project(self,raw):return v.project_memory_environment(io.BytesIO(raw))
     def test_only_permitted_presence_value_is_projected(self):
         for raw in (b'',b'PASSWORD='+CANARY.encode()+b'\0', b'MSSQL_MEMORY_LIMIT_MB_EXTRA=2048\0'):
-            r=self.project(raw);self.assertEqual(r,{'Presence':'ABSENT','ValueIsAllowed2048':None});self.assertNotIn(CANARY,json.dumps(r))
+            r=self.project(raw);self.assertEqual(r,{'Presence':'ABSENT','ValueIsAllowed2048':None,'Complete':True});self.assertNotIn(CANARY,json.dumps(r))
         for value,wanted in [(b'2048',True),(CANARY.encode(),False),(b'',False),(b'02048',False),(b'2048=secret',False)]:
             r=self.project(b'PASSWORD='+CANARY.encode()+b'\0MSSQL_MEMORY_LIMIT_MB='+value+b'\0TOKEN='+CANARY.encode()+b'\0')
-            self.assertEqual(r,{'Presence':'PRESENT','ValueIsAllowed2048':wanted});self.assertNotIn(CANARY,json.dumps(r))
+            self.assertEqual(r,{'Presence':'PRESENT','ValueIsAllowed2048':wanted,'Complete':True});self.assertNotIn(CANARY,json.dumps(r))
     def test_chunk_boundaries_duplicate_truncation_and_size(self):
         class Short(io.BytesIO):
             def read(self,n):return super().read(1)
         self.assertTrue(v.project_memory_environment(Short(b'X=x\0MSSQL_MEMORY_LIMIT_MB=2048\0'))['ValueIsAllowed2048'])
         self.assertTrue(self.project(b'X=x\0MSSQL_MEMORY_LIMIT_MB=2048')['ValueIsAllowed2048'])
         self.assertFalse(self.project(b'MSSQL_MEMORY_LIMIT_MB=204')['ValueIsAllowed2048'])
-        self.assertEqual(self.project(b'MSSQL_MEMORY_LIMIT_MB')['Presence'],'ABSENT')
+        with self.assertRaises(v.Problem):self.project(b'MSSQL_MEMORY_LIMIT_MB')
         for raw,code in [(b'MSSQL_MEMORY_LIMIT_MB=2048\0MSSQL_MEMORY_LIMIT_MB=2048\0','MEMORY_ENV_DUPLICATE'),
                          (b'MSSQL_MEMORY_LIMIT_MB=2048\0MSSQL_MEMORY_LIMIT_MB=2048','MEMORY_ENV_DUPLICATE'),(b'X='+b'x'*1048576+b'\0','ENVIRONMENT_TOO_LARGE')]:
             with self.assertRaises(v.Problem) as caught:self.project(raw)
@@ -158,9 +209,8 @@ class RuntimeTests(unittest.TestCase):
                            ('42|127.0.0.1|1434','FRESH_QUERY_BINDING_INVALID'),(CANARY,'FRESH_QUERY_BINDING_INVALID')]:
             p=MetadataPort();self.refused(p,lambda:query(value),'fresh_sql_query',code);self.assertEqual(p.environment_reads,0)
         self.refused(MetadataPort(),lambda:query(CANARY,17),'fresh_sql_query','COMMAND_EXIT_NONZERO',17)
-    def test_absent_wrong_or_unreadable_environment_never_certifies(self):
-        for raw,code in [(b'PASSWORD='+CANARY.encode()+b'\0','MEMORY_ENV_ABSENT_REQUIRES_REVIEW'),
-                         (b'MSSQL_MEMORY_LIMIT_MB='+CANARY.encode()+b'\0','MEMORY_ENV_NOT_2048')]:
+    def test_wrong_or_unreadable_environment_never_certifies(self):
+        for raw,code in [(b'MSSQL_MEMORY_LIMIT_MB='+CANARY.encode()+b'\0','MEMORY_ENV_NOT_2048')]:
             p=MetadataPort();p.raw_env=raw;self.refused(p,lambda:query(),'memory_environment',code)
         p=MetadataPort();p.memory_projection=lambda pid:(_ for _ in ()).throw(OSError(CANARY))
         self.refused(p,lambda:query(),'memory_environment','READ_FAILED',74)
