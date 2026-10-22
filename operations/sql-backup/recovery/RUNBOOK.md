@@ -454,3 +454,58 @@ because authorization.py is an offline module outside that archive.
 Sources: [AWS DNS condition example](https://docs.aws.amazon.com/aws-managed-policy/latest/reference/AWS-SSM-RemediationAutomation-ExecutionRolePolicy.html),
 [IAM StringEquals semantics](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_condition_operators.html#Conditions_String),
 [ModifyVpcAttribute API](https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_ModifyVpcAttribute.html).
+
+### Second attempt closure and local bootstrap correction - 2026-10-22
+
+The separately approved corrected-DNS cycle created 20 objects at 01:01:19 UTC,
+but both hosts failed bootstrap: the retained diagnostics show awscli installed,
+SQL engine/tools absent, and only a 26-byte fixed failure marker in the bootstrap
+log. No source backup, API recovery or RPO/RTO measurement ran. The suppressed
+APT output and missing file-mode evidence do not establish whether repository
+update, dependency resolution or installation failed. Do not label this V2 PASS.
+
+Local diagnosis found a concrete bootstrap gap: umask 077 applied when creating
+the public keyring, without a subsequent readable mode. APT requires Signed-By
+keyrings readable by its _apt user. The correction explicitly sets only the public
+keyring/source lists to 0644 and checks _apt readability. This fixes that gap;
+it is a plausible contributor, **not an observed root cause of the cloud failure**.
+See [APT Signed-By](https://manpages.debian.org/bookworm/apt/sources.list.5.en.html)
+and [GnuPG keyring permissions](https://www.gnupg.org/blog/20250827-new-repository.html#check-permissions-make-sure-the-gnupg-key-is-readable).
+
+Bootstrap now records fixed stage IDs, sanitized failure categories and original
+command exit codes. It checks root/Linux/x64/Ubuntu 22.04, package architecture,
+fresh SQL ownership, systemd, repository readability, package candidates/origin,
+dependency simulation and installed binaries/packages/service before reading SA.
+Public command output is classified in memory and discarded; it is never logged
+verbatim. Secret stages suppress all command output and use only fixed codes.
+The log stays 0600, tracing stays off, and SA/SQLCMDPASSWORD/probe are cleared on
+failure/readiness completion. EC2-only value reads and ACCEPT_EULA/Express intent
+remain; human consent does not prove completed runtime installation.
+
+The exact normal-owner teardown first got DisassociateAddress 403; it was not
+retried or granted. NAT deletion legitimately removed the association. Fresh
+metadata and a full-root one-delete plan then released the unassociated EIP.
+All owned runtime was absent, state serial 7 empty and lock absent before access
+reversal. Both inline policies were removed and backend/CMK original hashes read
+back; closure is 01:20:28 UTC. Later DescribeNatGateways and DescribeDhcpOptions
+were denied, not retried or read through another principal. NAT deletion/zero ENIs
+are evidenced before grant removal; the shared DHCP reference was outside all
+deletion plans, but its current direct state remains UNKNOWN. Original closure
+receipts are preserved; do not describe every final read as successful.
+
+Run `python operations/sql-backup/recovery/test_bootstrap.py -v` separately from
+`python -m unittest test_recovery test_authorization` in the recovery directory:
+the latter installs an audit hook that prohibits subprocesses. Bash fixtures
+reproduce the original silent failure and exercise the new diagnostics without
+executing bootstrap_main, installing SQL, using AWS or changing a VM. They do not
+prove real Linux permissions, repository availability, service setup or recovery.
+
+No new tar is needed: bootstrap is Terraform user_data, not a bundle member.
+Keep recovery-e1f8ee3.tar (d7458168...3fffa0) unchanged. Any future approved cycle
+needs newly rendered/reviewed user_data, packet and complete plan; neither frozen
+authorization JSON nor old plans authorize the changed bootstrap or another run.
+No third cycle, IAM repair or environment installation is included in this change.
+
+Local result: 14 Bash fixture tests, 45 recovery/authorization tests and 6 existing
+retirement tests passed (65 total), plus Bash syntax and git diff checks. This is
+offline contract evidence; native Ubuntu/SQL installation remains unqualified.
