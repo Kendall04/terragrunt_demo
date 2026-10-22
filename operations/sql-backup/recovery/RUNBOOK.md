@@ -509,3 +509,30 @@ No third cycle, IAM repair or environment installation is included in this chang
 Local result: 14 Bash fixture tests, 45 recovery/authorization tests and 6 existing
 retirement tests passed (65 total), plus Bash syntax and git diff checks. This is
 offline contract evidence; native Ubuntu/SQL installation remains unqualified.
+
+### Candidate repository binding correction - 2026-10-22
+
+Review of 4323783 found that a Microsoft URL on a lower-version row could falsely
+qualify a candidate from another repository. Before the parser change, two new
+regression methods produced 10 failing negative subcases: the old code returned
+success for foreign/missing/ambiguous candidate origins, wrong product/arch/suite,
+and the same decoy for tools and the ODBC dependency. This is an offline P2, not
+evidence establishing the earlier cloud install failure.
+
+check_candidates now requires one matching package header, one Version table and
+one exact candidate version block. Every repository row of that block must name
+the expected product, Jammy suite and amd64 Packages index. SQL engine requires
+the mssql-server-2022 repository; tools require prod. unixodbc-dev permits prod or
+the explicit official Jammy archive/security/region mirror URLs in the parser.
+Recognized Jammy security/update rows may coexist for the same dependency
+version; an unrecognized row, duplicate row/block or missing repository metadata
+refuses with 65. Installed dpkg status is not repository provenance. Lower-version
+rows cannot satisfy the candidate check. No cache output or URI is logged; cache
+command failure codes remain preserved. These are metadata checks, not a new
+authentication mechanism or proof of available packages/dependencies.
+
+After correction, 20 Bash fixture tests (including realistic installed/status and
+Jammy security/update tables), 45 recovery/authorization tests and 6 retirement
+tests pass, plus Bash syntax/diff checks. No SQL install, VM, AWS action, permission
+change, third deployment or tar generation was performed. The keyring issue stays
+a hypothesis about the prior failure, not an observed root cause.

@@ -96,9 +96,37 @@ check_candidates() {
     if policy=$(apt-cache policy "$package" 2>&1); then :; else rc=$?; return "$rc"; fi
     candidate=$(printf '%s\n' "$policy" | awk '/^[[:space:]]*Candidate:/ {print $2}')
     [[ "$candidate" =~ ^[0-9][A-Za-z0-9.+:~_-]*$ ]] || return 65
-    if [[ "$package" != unixodbc-dev ]]; then
-      [[ "$policy" == *https://packages.microsoft.com/ubuntu/22.04/* ]] || return 65
-    fi
+    # Bind repository rows to this exact candidate block, not any older version.
+    # dpkg status is installation metadata, never repository provenance.
+    if printf '%s\n' "$policy" | awk -v package="$package" -v candidate="$candidate" '
+      function allowed(uri, suite, arch, kind) {
+        sub(/\/$/, "", uri)
+        if (arch != "amd64" || kind != "Packages") return 0
+        if (package == "mssql-server")
+          return uri == "https://packages.microsoft.com/ubuntu/22.04/mssql-server-2022" && suite == "jammy/main"
+        if (uri == "https://packages.microsoft.com/ubuntu/22.04/prod" && suite == "jammy/main") return 1
+        if (package != "unixodbc-dev") return 0
+        return uri ~ /^https?:\/\/(archive\.ubuntu\.com|security\.ubuntu\.com|us-east-1\.ec2\.archive\.ubuntu\.com)\/ubuntu$/ && suite ~ /^jammy(-updates|-security)?\/main$/
+      }
+      $0 == package ":" { headers++; next }
+      $1 == "Version" && $2 == "table:" && NF == 2 { tables++; active = 0; next }
+      tables == 1 && $1 == "***" && NF == 3 && $3 ~ /^[0-9]+$/ {
+        active = ($2 == candidate); if (active) blocks++; next
+      }
+      tables == 1 && NF == 2 && $2 ~ /^[0-9]+$/ {
+        active = ($1 == candidate); if (active) blocks++; next
+      }
+      active && NF {
+        if (NF == 2 && $1 ~ /^[0-9]+$/ && $2 == "/var/lib/dpkg/status") { status++; next }
+        if ($1 ~ /^[0-9]+$/) {
+          sources++
+          if (NF != 5 || !allowed($2, $3, $4, $5) || seen[$2 FS $3 FS $4 FS $5]++) bad = 1
+          next
+        }
+        bad = 1
+      }
+      END { exit (headers == 1 && tables == 1 && blocks == 1 && sources >= 1 && status <= 1 && !bad ? 0 : 65) }
+    '; then :; else rc=$?; return "$rc"; fi
   done
 }
 

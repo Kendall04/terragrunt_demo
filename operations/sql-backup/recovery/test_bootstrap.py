@@ -4,6 +4,7 @@ Run separately from test_recovery.py, whose audit hook prohibits subprocesses.
 """
 import os
 from pathlib import Path
+import shlex
 import shutil
 import subprocess
 import tempfile
@@ -14,6 +15,20 @@ BASH = Path(r'C:\Program Files\Git\bin\bash.exe') if os.name == 'nt' else Path(s
 
 
 class BootstrapTests(unittest.TestCase):
+    def candidate_fixture(self, changed_package=None, changed_policy=None, installed=False):
+        policies = {}
+        for package in ('mssql-server', 'mssql-tools18', 'unixodbc-dev'):
+            version = {'mssql-server': '16.0.4236.2-2', 'mssql-tools18': '18.5.1.1-1', 'unixodbc-dev': '2.3.11-3'}[package]
+            origin = 'https://packages.microsoft.com/ubuntu/22.04/' + ('mssql-server-2022' if package == 'mssql-server' else 'prod')
+            policies[package] = (f'{package}:\n  Installed: {version if installed else "(none)"}\n  Candidate: {version}\n'
+                                 f'  Version table:\n {"***" if installed else "   "} {version} 500\n'
+                                 f'        500 {origin} jammy/main amd64 Packages\n' +
+                                 ('        100 /var/lib/dpkg/status\n' if installed else ''))
+        if changed_package:
+            policies[changed_package] = changed_policy
+        cases = '\n'.join(f'{package}) printf %s {shlex.quote(value)} ;;' for package, value in policies.items())
+        return self.run_bash('apt-cache() { case "$2" in\n' + cases + '\nesac; }\nrun_stage sql_candidates check_candidates')
+
     def run_bash(self, body, source=True):
         self.assertTrue(BASH.is_file(), 'Existing Bash required; do not install one for this suite')
         path = str(BOOT.resolve()).replace('\\', '/')
@@ -118,14 +133,79 @@ run_stage platform check_platform
                 self.assertEqual(result.returncode, code)
 
     def test_candidate_missing_or_wrong_repository_refuses_before_install(self):
-        for candidate, origin, code in [('16.0.1-1', 'https://packages.microsoft.com/ubuntu/22.04/prod', 0),
-                                        ('(none)', 'https://packages.microsoft.com/ubuntu/22.04/prod', 65),
+        for candidate, origin, code in [('16.0.1-1', 'https://packages.microsoft.com/ubuntu/22.04/mssql-server-2022', 0),
+                                        ('(none)', 'https://packages.microsoft.com/ubuntu/22.04/mssql-server-2022', 65),
                                         ('16.0.1-1', 'https://unrelated.invalid/ubuntu/22.04/prod', 65)]:
             with self.subTest(candidate=candidate, origin=origin):
-                result = self.run_bash(f'''apt-cache() {{ printf '%s\\n' '  Candidate: {candidate}' '  {origin}'; }}
-run_stage sql_candidates check_candidates''')
+                policy = f'mssql-server:\n  Installed: (none)\n  Candidate: {candidate}\n  Version table:\n     16.0.1-1 500\n        500 {origin} jammy/main amd64 Packages\n'
+                result = self.candidate_fixture('mssql-server', policy)
                 self.assertEqual(result.returncode, code)
                 self.assertNotIn('UNEXPECTED_EXTERNAL_COMMAND', result.stdout + result.stderr)
+
+    def test_realistic_candidate_and_installed_status_metadata_pass(self):
+        for installed in (False, True):
+            with self.subTest(installed=installed):
+                result = self.candidate_fixture(installed=installed)
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_candidate_origin_rejects_lower_microsoft_decoy_and_ambiguity(self):
+        allowed = '500 https://packages.microsoft.com/ubuntu/22.04/mssql-server-2022 jammy/main amd64 Packages'
+        foreign = '500 https://unrelated.invalid/sql jammy/main amd64 Packages'
+        cases = {
+            'foreign_candidate_lower_microsoft': f'     99.0.0-1 500\n        {foreign}\n     16.0.1-1 500\n        {allowed}\n',
+            'candidate_metadata_missing_lower_microsoft': f'     99.0.0-1 500\n     16.0.1-1 500\n        {allowed}\n',
+            'two_candidate_origins': f'     99.0.0-1 500\n        {allowed}\n        {foreign}\n',
+            'two_candidate_blocks': f'     99.0.0-1 500\n        {allowed}\n     99.0.0-1 500\n        {allowed}\n',
+            'duplicate_candidate_origin': f'     99.0.0-1 500\n        {allowed}\n        {allowed}\n',
+            'installed_status_without_repository': f' *** 99.0.0-1 100\n        100 /var/lib/dpkg/status\n     16.0.1-1 500\n        {allowed}\n',
+            'no_candidate_block': f'     16.0.1-1 500\n        {allowed}\n',
+            'wrong_microsoft_product': '     99.0.0-1 500\n        500 https://packages.microsoft.com/ubuntu/22.04/prod jammy/main amd64 Packages\n',
+            'wrong_architecture': f'     99.0.0-1 500\n        {allowed.replace("amd64", "arm64")}\n',
+            'wrong_distribution': f'     99.0.0-1 500\n        {allowed.replace("jammy/main", "noble/main")}\n',
+        }
+        for name, table in cases.items():
+            with self.subTest(case=name):
+                result = self.candidate_fixture('mssql-server', 'mssql-server:\n  Installed: (none)\n  Candidate: 99.0.0-1\n  Version table:\n' + table)
+                self.assertEqual(result.returncode, 65, result.stdout + result.stderr)
+                self.assertNotIn('unrelated.invalid', result.stdout + result.stderr)
+
+    def test_candidate_metadata_required_for_tools_and_odbc_dependency(self):
+        for package in ('mssql-tools18', 'unixodbc-dev'):
+            with self.subTest(package=package):
+                result = self.candidate_fixture(package, f'{package}:\n  Installed: (none)\n  Candidate: 99.0.0-1\n  Version table:\n     99.0.0-1 500\n        500 https://unrelated.invalid/sql jammy/main amd64 Packages\n     18.5.1.1-1 500\n        500 https://packages.microsoft.com/ubuntu/22.04/prod jammy/main amd64 Packages\n')
+                self.assertEqual(result.returncode, 65)
+
+    def test_candidate_table_requires_one_matching_package_header(self):
+        table = '     16.0.1-1 500\n        500 https://packages.microsoft.com/ubuntu/22.04/mssql-server-2022 jammy/main amd64 Packages\n'
+        policies = ['mssql-server:\n  Candidate: 16.0.1-1\n' + table,
+                    'unrelated-package:\n  Candidate: 16.0.1-1\n  Version table:\n' + table,
+                    'mssql-server:\n  Candidate: 16.0.1-1\n  Version table:\n' + table + '  Version table:\n']
+        for policy in policies:
+            with self.subTest(policy=policy):
+                result = self.candidate_fixture('mssql-server', policy)
+                self.assertEqual(result.returncode, 65)
+
+    def test_odbc_candidate_official_jammy_metadata_passes(self):
+        for uri, suite in [('http://us-east-1.ec2.archive.ubuntu.com/ubuntu', 'jammy-updates/main'),
+                           ('http://archive.ubuntu.com/ubuntu', 'jammy/main'),
+                           ('http://security.ubuntu.com/ubuntu', 'jammy-security/main')]:
+            with self.subTest(uri=uri):
+                result = self.candidate_fixture('unixodbc-dev', f'unixodbc-dev:\n  Installed: (none)\n  Candidate: 2.3.9-5ubuntu0.1\n  Version table:\n     2.3.9-5ubuntu0.1 500\n        500 {uri} {suite} amd64 Packages\n')
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_odbc_candidate_can_have_only_recognized_security_and_update_sources(self):
+        result = self.candidate_fixture('unixodbc-dev', '''unixodbc-dev:
+  Installed: 2.3.9-5ubuntu0.1
+  Candidate: 2.3.9-5ubuntu0.1
+  Version table:
+ *** 2.3.9-5ubuntu0.1 500
+        500 http://us-east-1.ec2.archive.ubuntu.com/ubuntu jammy-updates/main amd64 Packages
+        500 http://security.ubuntu.com/ubuntu jammy-security/main amd64 Packages
+        100 /var/lib/dpkg/status
+     2.3.9-5 500
+        500 http://archive.ubuntu.com/ubuntu jammy/main amd64 Packages
+''')
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_repository_unreadable_by_apt_is_a_separate_stage(self):
         result = self.run_bash('''
