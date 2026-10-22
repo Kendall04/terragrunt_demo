@@ -150,7 +150,14 @@ read_sa_secret() {
   [[ -n "$SA_PASS" && "$SA_PASS" != None ]] || return 65
 }
 
-setup_sql() { ACCEPT_EULA=Y MSSQL_PID=Express MSSQL_SA_PASSWORD="$SA_PASS" timeout 180 /opt/mssql/bin/mssql-conf -n setup; }
+require_sql_inactive() {
+  local state rc
+  if state=$(systemctl show mssql-server --property=ActiveState --value 2>/dev/null); then :; else rc=$?; return "$rc"; fi
+  [[ "$state" == inactive ]] || return 65
+}
+
+# Initial setup starts SQL. Supply settings before that first start, not after it.
+setup_sql() { ACCEPT_EULA=Y MSSQL_PID=Express MSSQL_SA_PASSWORD="$SA_PASS" MSSQL_MEMORY_LIMIT_MB=2048 MSSQL_IP_ADDRESS=127.0.0.1 timeout 180 /opt/mssql/bin/mssql-conf -n setup; }
 
 wait_sql() {
   local attempt rc=1
@@ -192,13 +199,10 @@ bootstrap_main() {
   run_stage sql_dependencies timeout 60 apt-get -s install mssql-server mssql-tools18 unixodbc-dev
   run_stage sql_packages install_sql_packages
   run_stage sql_installation check_sql_installation
+  run_stage sql_before_setup require_sql_inactive
   # Only EC2 reads values. Secret stages never classify or print command output.
   secret_stage sa_secret read_sa_secret
   secret_stage express_setup setup_sql
-  secret_stage sql_start systemctl start mssql-server
-  secret_stage sql_memory /opt/mssql/bin/mssql-conf set memory.memorylimitmb 2048
-  secret_stage sql_loopback /opt/mssql/bin/mssql-conf set network.ipaddress 127.0.0.1
-  secret_stage sql_restart systemctl restart mssql-server
   STAGE=sql_readiness
   echo RECOVERY_STAGE_START stage=sql_readiness
   wait_sql

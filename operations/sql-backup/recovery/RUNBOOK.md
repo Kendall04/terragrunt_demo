@@ -559,3 +559,52 @@ for both actual host strings and dollar/percent/CRLF edge cases. This proves HCL
 JSON template evaluation, not an EC2 installation, remote plan or recovery PASS.
 No new tar is needed; bootstrap travels as user_data and host.py imports only
 unchanged constants/require/trial from the tar's old prepare.py.
+
+### Initial SQL start ordering correction - 2026-10-22
+
+Attempt3-retry1 reached sql_restart on both hosts. Sanitized observations at
+02:46:51 UTC and 02:51:46 UTC showed deactivating; the latter additionally showed
+SubState=stop-sigterm and TimeoutStopUSec=30min. This establishes a pending stop
+within restart, not a pending new start. The allowance is not elapsed duration or
+root cause. Result=success/ExecMainStatus=0 and the successful observation command
+do not prove restart completion or database readiness. No pre-setup/pre-restart
+native state snapshot, exact package version or shutdown milestones were retained.
+The code order and stage receipts prove setup, explicit start and late memory/IP
+configuration completed; they do not prove that SQL had accepted queries then.
+
+Microsoft documents [initial-setup environment variables](https://learn.microsoft.com/en-us/sql/linux/configure/environment-variables?view=sql-server-ver16)
+including MSSQL_MEMORY_LIMIT_MB/MSSQL_IP_ADDRESS, and [setup followed by service
+verification](https://learn.microsoft.com/en-us/sql/linux/install-upgrade/quickstart-install-ubuntu?view=sql-server-ver16&tabs=ubuntu2204).
+The previous late configuration needed a restart to take effect. Bootstrap now
+supplies the same 2048 MB and loopback values during initial setup, which starts
+SQL; it removes the redundant explicit start and subsequent reconfiguration/restart.
+After package/unit validation, sql_before_setup requires ActiveState=inactive
+before reading SA. Unexpected active/transitional/failed states refuse with 65;
+query failures retain their code. No service is stopped to force this precondition.
+Existing EULA/Express intent, environment-only password, setup timeout and SQL
+readiness/final active checks remain. No kill or unit timeout change was added.
+
+This avoids an unnecessary bootstrap stop, but does not establish why SIGTERM
+stalled. A future authorized native run must verify effective memory/loopback
+configuration and query readiness. It must also validate the existing host.py
+quiesce stop before restore: that required stop is unchanged and remains unproven.
+For diagnosis if it stalls, capture fixed service state/job fields and UTC plus
+monotonic start/stop timestamps before/after setup and quiesce, package/CU version,
+and only allowlisted SQL startup/shutdown milestones/error numbers and resource
+pressure indicators. Never publish raw journal/errorlog or secret values. Without
+that evidence, do not attribute the stall to memory, first-start work or systemd's
+30-minute allowance. No new diagnostic collector is implemented in this patch.
+
+Three new regression methods were RED before correction (8 failed assertions and
+1 missing-helper error), then GREEN. All 23 Bash fixture tests, 45 recovery/access
+tests, 6 retirement tests and 3 real provider-free Terraform template tests pass
+(77 total), plus Bash syntax and diff checks. Terraform verifies both hosts get
+exactly the new bootstrap bytes. Fixtures/Git Bash do not qualify native Ubuntu,
+SQL configuration persistence, readiness, graceful stop or recovery.
+
+Closure 03:21:09 UTC remains CLOSED_PARTIAL_BOOTSTRAP_NO_RECOVERY. Closed receipts
+and frozen packets stay unchanged. No AWS call, installation, VM, tar generation,
+push or merge was performed for this correction. The existing tar does not contain
+bootstrap and stays unchanged. Another cloud test needs separately approved scope,
+budget/window and freshly rendered/reviewed user_data and complete plans; this
+patch does not authorize it or make V2 PASS.

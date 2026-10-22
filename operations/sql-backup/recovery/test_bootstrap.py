@@ -271,6 +271,40 @@ wait_sql
                 if code:
                     self.assertIn('exit=6 category=SQL_NOT_READY', result.stdout)
 
+    def test_setup_supplies_initial_memory_and_loopback_before_service_start(self):
+        result = self.run_bash('''
+SA_PASS=fixture-secret
+timeout() { [[ "$ACCEPT_EULA" == Y && "$MSSQL_PID" == Express && "$MSSQL_SA_PASSWORD" == fixture-secret && "$MSSQL_MEMORY_LIMIT_MB" == 2048 && "$MSSQL_IP_ADDRESS" == 127.0.0.1 && "$*" != *fixture-secret* ]]; }
+secret_stage express_setup setup_sql
+''')
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertNotIn('fixture-secret', result.stdout + result.stderr)
+
+    def test_pre_setup_requires_inactive_and_never_changes_service_state(self):
+        for state, code in [('inactive', 0), ('active', 65), ('activating', 65),
+                            ('deactivating', 65), ('failed', 65), ('unknown', 65)]:
+            with self.subTest(state=state):
+                result = self.run_bash(f'''
+systemctl() {{ [[ "$*" == 'show mssql-server --property=ActiveState --value' ]] || return 99; echo {state}; }}
+run_stage sql_before_setup require_sql_inactive
+''')
+                self.assertEqual(result.returncode, code, result.stdout + result.stderr)
+                self.assertNotIn('UNEXPECTED_EXTERNAL_COMMAND', result.stdout + result.stderr)
+        result = self.run_bash('systemctl() { return 42; }\nrun_stage sql_before_setup require_sql_inactive')
+        self.assertEqual(result.returncode, 42)
+
+    def test_main_has_one_setup_start_without_post_start_configuration_or_restart(self):
+        body = BOOT.read_text()
+        main = body.split('bootstrap_main() {', 1)[1]
+        self.assertLess(main.index('run_stage sql_before_setup require_sql_inactive'), main.index('secret_stage sa_secret'))
+        self.assertLess(main.index('secret_stage express_setup setup_sql'), main.index('wait_sql'))
+        for forbidden in ('systemctl start mssql-server', 'systemctl stop mssql-server',
+                          'systemctl restart mssql-server', 'mssql-conf set memory.memorylimitmb',
+                          'mssql-conf set network.ipaddress'):
+            self.assertNotIn(forbidden, main)
+        self.assertIn('run_stage sql_active systemctl is-active --quiet mssql-server', main)
+
+
 
 if __name__ == '__main__':
     unittest.main()
