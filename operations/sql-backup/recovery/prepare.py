@@ -38,6 +38,8 @@ def trial(value):
 def render(name, bootstrap):
     trial(name)
     tags = {'Project': 'terragrunt-demo', 'Purpose': 'v2-recovery', 'Trial': name}
+    # One HCL JSON template layer; input is raw Bash, never pre-escaped text.
+    user_data = bootstrap.replace('${', '$${').replace('%{', '%%{')
     resources = {}
 
     def add(kind, key, **args):
@@ -67,7 +69,7 @@ def render(name, bootstrap):
     for key in ('a', 'b'):
         add('aws_instance', key, ami='${var.sql_ami_id}', instance_type='t3.medium', subnet_id=ref('aws_subnet', key),
             associate_public_ip_address=False, iam_instance_profile='demo-dev-data-sql-ec2-profile',
-            vpc_security_group_ids=[ref('aws_security_group', 'host')], user_data=bootstrap, user_data_replace_on_change=True,
+            vpc_security_group_ids=[ref('aws_security_group', 'host')], user_data=user_data, user_data_replace_on_change=True,
             metadata_options=[{'http_tokens': 'required', 'http_endpoint': 'enabled'}], credit_specification=[{'cpu_credits': 'standard'}],
             root_block_device=[{'volume_size': 30, 'volume_type': 'gp3', 'encrypted': True, 'delete_on_termination': True, 'tags': tags}],
             tags=dict(tags, Name=name + '-' + key), depends_on=['aws_route.public', 'aws_route.a', 'aws_route.b',

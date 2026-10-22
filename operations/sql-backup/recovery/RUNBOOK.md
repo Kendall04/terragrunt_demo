@@ -536,3 +536,26 @@ Jammy security/update tables), 45 recovery/authorization tests and 6 retirement
 tests pass, plus Bash syntax/diff checks. No SQL install, VM, AWS action, permission
 change, third deployment or tar generation was performed. The keyring issue stays
 a hypothesis about the prior failure, not an observed root cause.
+
+### Literal bootstrap representation correction - 2026-10-22
+
+Attempt3 stopped before apply: Terraform rejected Bash ${db:Status-Status} inside
+the JSON user_data template. No runtime was created; inline/backend/CMK changes
+were reversed and read back at closure 02:15:27 UTC. Approved packet 6e41c8c0...88acc
+and that closure remain immutable. This local representation error is separate
+from the earlier, still-undetermined native SQL installation failure.
+
+render now escapes one Terraform template layer only in raw bootstrap text:
+${ becomes $${ and %{ becomes %%{. Terraform resource/variable references elsewhere
+are unchanged. Never pre-escape bootstrap or feed previously rendered text back
+as raw Bash. Literal raw $${ / %%{ sequences are also preserved after evaluation,
+rather than skipped or normalized. bootstrap.sh and its effect are unchanged.
+
+Run test_terraform_templates.py separately: real Terraform1.13.4 creates a small
+provider-free local output plan, never apply, with isolated temporary data and
+scrubbed AWS/TF environment. Before correction two equality tests failed; after
+correction all three pass, including raw-error reproduction, byte/SHA equality
+for both actual host strings and dollar/percent/CRLF edge cases. This proves HCL
+JSON template evaluation, not an EC2 installation, remote plan or recovery PASS.
+No new tar is needed; bootstrap travels as user_data and host.py imports only
+unchanged constants/require/trial from the tar's old prepare.py.
