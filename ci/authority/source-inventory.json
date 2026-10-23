@@ -9739,6 +9739,18 @@
       "declarations": [],
       "signals": {},
       "semantic_status": "UNVERIFIED"
+    },
+    "operations/integrations/verify_sources.py": {
+      "sha256": "0f4f2da89461315f85c133067e6680de9426e9b33dc90f9084bfa74edbadbe68",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "operations/integrations/generate_fixtures.py": {
+      "sha256": "1f5bc7f50c526a95f50076e244ca425b0aba07d7b9268db7ce0a98ba2ae0bc46",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged"

@@ -54,3 +54,15 @@ signal/component-binding); Windows 14 PASS / one POSIX-only skip. No service
 installation, cloud check or external notification was performed.
 
 - [x] Observer/signal tests integrated into repo-hygiene source before provider-lock checks/tool installs; no dependency/cloud requirement. Hosted execution remains unrun.
+
+## Upstream integration checkpoint — 2026-10-23
+
+- [x] Pinned private Sentinel/PKI sources obtained after owner login; origins and
+  revisions verified. No credentials copied or upstream validation scripts run.
+- [x] Actual local observer-to-Sentinel ingress, reducer, receipts, audit and
+  pending outbox: 34 checks, including attention/dedup/recovered candidate.
+- [ ] Backup-domain recovery/classification, authenticated transport, durable
+  storage/delivery and real email. Recovery candidate audit is not NAT recovery.
+- [ ] PKI two-identity mTLS/rotation consumer qualification (next increment).
+
+See [consumer scope and reproduction](../operations/integrations/README.md).

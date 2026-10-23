@@ -112,3 +112,12 @@ checker are required. This closes the missing source-level CI coverage for this
 local observer; hosted workflow execution remains unrun and full hygiene retains
 its independent provider-lock/source-inventory blockers. Focused wiring tests keep
 both explicit commands and conservative change selection in place.
+
+## Real Sentinel consumer qualification — 2026-10-23
+
+The [pinned consumer adapter](../integrations/README.md) now exercises the actual
+Sentinel in-process ingress, reducer, receipts/audits and pending outbox with 34
+checks. Suppressed observations bypass it; recovered candidates are recorded
+without inventing NAT recovery. Upstream memory persistence is a test fake.
+Backup-specific recovery policy, authenticated transport, durable delivery and
+real email remain open; no timer/service is installed or artifact replaced.

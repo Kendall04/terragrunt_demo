@@ -32,9 +32,10 @@ its separate integrity addendum preserves the disclosed mutable checkpoint issue
 
 The concrete blockers are:
 
-- **Sources:** real pinned PKI and Sentinel APIs/packages are unavailable in the
-  reviewed local roots. Required mTLS rotation/rejection and alarms/logs/email
-  integrations are not implemented. IAM auditor prepare/apply/CI integration,
+- **Integration:** real pinned PKI and Sentinel sources are now available after
+  owner-completed GCM login. The local Sentinel ingress increment below is
+  qualified; mTLS rotation/rejection, backup-domain policy and real alarms/logs/email
+  delivery remain open. IAM auditor prepare/apply/CI integration,
   V2 availability/cost choices and inherited security findings remain open.
 - **AWS acceptance:** a clean unchanged systemd/remote backup/restore/API cycle,
   independent UP/DOWN and real alert delivery remain unqualified. A next cycle
@@ -231,3 +232,19 @@ Independently, repo-hygiene source now invokes the existing observer and signal/
 component-binding tests before known provider reproducibility/tool-install steps.
 This closes their missing source-level automatic coverage, without running a remote
 workflow, changing E11 gate selection, installing anything or accepting full CI.
+
+## Actual Sentinel ingress qualification — 2026-10-23
+
+Source access is resolved: Sentinel 0e8fc55333ddde3b9816885915310a7e69f3de45 and
+PKI 29a3dfc70a0b1646388c0229212898b4be164afe were read/cloned through the renewed
+existing Kendall04 session. Earlier unavailability sections are historical.
+Origins and pins are recorded in [upstream-sources.json](../../operations/integrations/upstream-sources.json).
+
+The [consumer adapter](../../operations/integrations/README.md) connects real observer
+candidates to ISourceNormalizer and actual Sentinel ingress/reducer/receipt/audit/
+outbox components. 34 focused checks pass; build has zero warnings/errors, with
+no package download or cloud call. The upstream memory store is explicitly fake.
+A recovered candidate is audited, not falsely treated as NAT recovery/resolution.
+A backup-specific evaluation policy, authenticated transport, persistent delivery,
+region qualification and a real notification provider remain unimplemented. No
+AWS, email, timer, upstream source change, archive rebuild or remote workflow.
