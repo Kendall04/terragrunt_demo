@@ -7,6 +7,52 @@ and [log](https://chatgpt.com/space/page_1b0bc56020908191a7d18292c70468c6)
 were read successfully. Their seven phases and user-added criteria remain open
 where evidence is missing; the Page itself was not edited by this worker.
 
+## Consolidated acceptance summary
+
+These are scoped completed increments; ECS and the Page's seven phases remain
+partially complete. Historical AWS evidence is not a fresh live inventory.
+
+| Deliverable | Measured evidence | Acceptance boundary |
+| --- | --- | --- |
+| Controlled cross-AZ SQL/API experiment | az6 backup, quiesce, restore, CHECKDB, decryption and read/write passed with live repairs; prepared-target RTO **142.630783 s** | Does not prove an unchanged artifact/host lifecycle, cold AZ replacement, full ECS availability or general RPO/RTO |
+| Runtime retirement and temporary access reversal | Native resources absent at **04:48:29.371929Z**, security reversal at **04:48:54.620428Z**, closure **04:49:25.460974Z** on 2026-10-23 | Recorded az6 closure; no new AWS cycle or budget reset. Conditional reboot policy was never installed and no reboot occurred |
+| Corrected backup component and release binding | Source b2bf8d8 local Linux publication; CLI unit suite **62 PASS / 1 native SQL integration skip**; actual local CLI receipt replays cover FAILED/MISSING/STALE; old recovery tar rejected by payload guard | Captured stale metadata is historical; failure/missing inputs are synthetic. No live scheduler, Sentinel transport, alarm or confirmed email |
+| Product Demo and custom explorer | **14** isolated Chrome checks; **10** portable Node tests; **35** CI-selection tests and **2** focused wiring checks; loopback-only, synthetic/historical status | Browser proof is bounded; Node source guards do not certify accessibility. Explorer is hand-authored, actual Archify output remains open |
+| Reproducibility investigation | Five DEV/PROD differences are one native Windows h1; all **15** published release zh values verified and installed cache h1 reproduced. Existing lock tests **1 PASS / 1 FAIL** | Original authenticated receipt/verified archive missing in inspected evidence; canonical package review required. Full prior reproducibility suite **26 PASS / 1 FAIL**, not green CI |
+
+Artifact lineage remains explicit: immutable 65c7901 recovery tar SHA256
+`ece30607405bdaf65ea29d6396591bab7048b72b99e5d75f5cd8ea8c21846d6b`
+contains 623 files and the staging/timestamp repairs. The later b2bf8d8 backup
+component manifest SHA256 is
+`b0a98b236d25fa2d0bcc72269ac42e294276c53603f48945bc99ecfb3664c978`.
+They are distinct inputs; no combined new recovery tar or new AWS execution is
+claimed. az6 closure SHA256 is
+`988d7917f9e2bf92129a7cd9ca3aad91b4b01b6591ea42aeb9019b224e5ffdbb`;
+its separate integrity addendum preserves the disclosed mutable checkpoint issue.
+
+The concrete blockers are:
+
+- **Sources:** real pinned PKI and Sentinel APIs/packages are unavailable in the
+  reviewed local roots. Required mTLS rotation/rejection and alarms/logs/email
+  integrations are not implemented. IAM auditor prepare/apply/CI integration,
+  V2 availability/cost choices and inherited security findings remain open.
+- **AWS acceptance:** a clean unchanged systemd/remote backup/restore/API cycle,
+  independent UP/DOWN and real alert delivery remain unqualified. A next cycle
+  needs concrete artifact/plan, create-and-retire access and budget review;
+  the original aggregate USD 2 is not renewed by local progress.
+- **CI/release:** the lock equality failure and 30 existing source-inventory
+  findings remain; no hosted workflow/actionlint result is claimed. New repository,
+  actual CI/OIDC release, Archify export and remaining Page delivery are pending.
+
+The [lock provenance review](e14b-toolchain-reproducibility.md#native-lock-provenance-follow-up---2026-10-23)
+and [portfolio checklist](../../portfolio/ACCEPTANCE.md) identify the narrow next
+gates. The bounded migration search found no matching provider ZIP/receipt among
+815 source ZIP members or nine selected evidence entries. All eight existing
+protected lifecycle package identities still reproduce; their generator's lock
+input remains historical. Dependent normalization is stopped pending the exact
+missing evidence and canonical package review; no operation was denied or left
+with an uncertain outcome. Do not repeat broad searches or silently weaken tests.
+
 ## Implemented local increment
 
 The actual remote-enabled Protocol.Check could return HEALTHY from a recent

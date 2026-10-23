@@ -253,3 +253,18 @@ The two existing lock tests were rerun: platform/version/hash-presence PASS;
 DEV/PROD equality FAIL. The remaining 30 source-inventory findings stay scoped.
 The external local assessment is `provider-lock-provenance/assessment.json` in the
 worker evidence directory, with the official text metadata and per-file hashes.
+
+
+The final bounded existing-evidence search inspected the ECS migration ZIP's 815
+member names, its nine selected evidence entries and existing ECS/toolchain
+metadata. No original provider ZIP or lock-completion receipt was found in that
+scope. It did not read credentials, unpack more caches or inspect EKS content.
+The five generated PROD locks match their current files; the five generated DEV
+locks omit the later native h1. All eight currently recorded WP5 package SHA256
+identities reproduce exactly. This confirms that copying the h1 into locks alone
+would not be a consistent generator/package correction. The local search receipt
+is `provider-lock-provenance/bounded-existing-evidence-search.json`, SHA256
+`cfba543fb2f6252961bdac7b5a72e356f169083e98e830d10eb6cf2b078740ba`.
+The dependent change is stopped pending the stated missing artifact and canonical
+review; it was not denied and no mutation has an uncertain outcome. See the
+[consolidated ECS checkpoint](v2-local-completion.md#consolidated-acceptance-summary).
