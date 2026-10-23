@@ -2,6 +2,9 @@
 import argparse,copy,hashlib,json,re,subprocess,sys
 from pathlib import Path
 HERE=Path(__file__).resolve().parent
+# SNS resource policies accept this service-specific action set, not arbitrary IAM actions.
+# https://docs.aws.amazon.com/sns/latest/dg/sns-access-policy-language-api-permissions-reference.html
+SNS_TOPIC_POLICY_ACTIONS=['sns:AddPermission', 'sns:DeleteTopic', 'sns:GetDataProtectionPolicy', 'sns:GetTopicAttributes', 'sns:ListSubscriptionsByTopic', 'sns:ListTagsForResource', 'sns:Publish', 'sns:PutDataProtectionPolicy', 'sns:RemovePermission', 'sns:SetTopicAttributes', 'sns:Subscribe']
 ref=lambda n:{'Ref':n}
 get=lambda n:{'Fn::GetAtt':[n,'Arn']}
 policy=lambda statements:{'Version':'2012-10-17','Statement':statements}
@@ -29,7 +32,7 @@ def build(scope,source,package_sha=None):
  original=json.loads((source/'tools/aws-sandbox/cloudformation.json').read_text(encoding='utf-8'))['Resources']
  resources={n:copy.deepcopy(original[n]) for n in ['Sentinel','Archive']}
  resources['Sentinel']['Properties'].update(TableName=run,Tags=tags)
- resources['Archive']['Properties'].update(BucketName=b['archiveBucket'],Tags=tags)
+ resources['Archive']['Properties'].update(BucketName=b['archiveBucket'],Tags=tags,VersioningConfiguration={'Status':'Enabled'})
  for name in ['Sentinel','Archive']:resources[name].update(DeletionPolicy='Retain',UpdateReplacePolicy='Retain')
  params={
   'NotificationEmail':{'Type':'String','AllowedPattern':r'[^\s@]+@[^\s@]+\.[^\s@]+','NoEcho':True,'Description':'Owner supplied/consented email; confirmation is performed by the owner.'},
@@ -70,6 +73,14 @@ def build(scope,source,package_sha=None):
   {'Effect':'Deny','Principal':'*','Action':'sqs:*','Resource':queues,'Condition':{'Bool':{'aws:SecureTransport':'false','aws:PrincipalIsAWSService':'false'}}},
   {'Effect':'Deny','Principal':'*','Action':'sqs:*','Resource':queues,'Condition':{'ArnNotEquals':{'aws:PrincipalArn':[operator,role('cfn'),role('ingest-role')]},'Bool':{'aws:PrincipalIsAWSService':'false'}}},
   {'Effect':'Deny','Principal':'*','Action':'sqs:SendMessage','Resource':queues[0],'Condition':{'ArnNotEquals':{'aws:PrincipalArn':operator}}}])}}
+ # SQS requires exactly one Resource per statement. Preserve the same two
+ # queue attachments and exact Deny semantics, with no extra logical resource.
+ original_statements=resources['QueuePolicy']['Properties']['PolicyDocument']['Statement']
+ expanded=[]
+ for statement in original_statements:
+  for resource in statement['Resource'] if isinstance(statement['Resource'],list) else [statement['Resource']]:
+   expanded.append(dict(copy.deepcopy(statement),Resource=resource))
+ resources['QueuePolicy']['Properties']['PolicyDocument']['Statement']=expanded
  for component in ['ingest','dispatch']:
   cap=component.capitalize()
   resources[cap+'Logs']={'Type':'AWS::Logs::LogGroup','Properties':{'LogGroupName':'/aws/lambda/'+run+'-'+component,'RetentionInDays':ref('LogRetentionDays'),'Tags':tags}}
@@ -84,10 +95,12 @@ def build(scope,source,package_sha=None):
   'Properties':{'EventSourceArn':get('Queue'),'FunctionName':get('IngestFunction'),'BatchSize':5,'FunctionResponseTypes':['ReportBatchItemFailures'],
    'ScalingConfig':{'MaximumConcurrency':2},'Enabled':False,'Tags':tags}}
  resources['Topic']={'Type':'AWS::SNS::Topic','Properties':{'TopicName':run+'-notices','Tags':tags}}
- resources['TopicPolicy']={'Type':'AWS::SNS::TopicPolicy','Properties':{'Topics':[ref('Topic')],'PolicyDocument':policy([
-  {'Effect':'Deny','Principal':'*','Action':'sns:Publish','Resource':topic,'Condition':{'ArnNotEquals':{'aws:PrincipalArn':role('dispatch-role')}}},
-  {'Effect':'Deny','Principal':'*','Action':'sns:*','Resource':topic,'Condition':{'Bool':{'aws:SecureTransport':'false','aws:PrincipalIsAWSService':'false'}}}])}}
+ resources['TopicPolicy']={'Type':'AWS::SNS::TopicPolicy','Properties':{'Topics':[ref('Topic')],'PolicyDocument':dict(policy([
+  {'Sid':'OnlyDispatchMayPublish','Effect':'Deny','Principal':'*','Action':'sns:Publish','Resource':topic,'Condition':{'ArnNotEquals':{'aws:PrincipalArn':role('dispatch-role')}}},
+  {'Sid':'RequireTlsForSupportedTopicActions','Effect':'Deny','Principal':'*','Action':SNS_TOPIC_POLICY_ACTIONS,'Resource':topic,'Condition':{'Bool':{'aws:SecureTransport':'false','aws:PrincipalIsAWSService':'false'}}}]),Id=run+'-topic-policy')}}
  resources['Subscription']={'Type':'AWS::SNS::Subscription','Properties':{'TopicArn':ref('Topic'),'Protocol':'email','Endpoint':ref('NotificationEmail')}}
+ # Confirmation is created only after all other base resources/policies pass.
+ resources['Subscription']['DependsOn']=[n for n in resources if n not in ['Subscription','IngestFunction','DispatchFunction','Mapping']]
  for resource in resources.values():resource.setdefault('Condition','BoundEnvironment')
  main={'AWSTemplateFormatVersion':'2010-09-09','Description':'ECS synthetic backup signal trial; offline reviewed, no deployment authorized','Parameters':params,'Conditions':conditions,
   'Rules':{'RuntimePackagePublished':{'RuleCondition':{'Fn::Equals':[ref('DeployRuntime'),'true']},'Assertions':[{'Assert':{'Fn::Not':[{'Fn::Equals':[ref('PackageVersion'),'BASE_ONLY_UNPUBLISHED']}]},'AssertDescription':'Runtime requires the actual recorded version of the immutable published package.'}]}},'Resources':resources,'Outputs':{'Table':{'Value':run,'Condition':'BoundEnvironment'},'Bucket':{'Value':ref('Archive'),'Condition':'BoundEnvironment'},

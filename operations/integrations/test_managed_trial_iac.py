@@ -68,4 +68,29 @@ class TrialContract(unittest.TestCase):
   self.assertIn('RuntimePackagePublished',frozen['Rules']);self.assertRaises(ValueError,iac.build,self.scope,self.source,'untrusted-key')
  def test_templates_below_inline_cloudformation_limit(self):
   for n in ['trial-template.json','bootstrap-template.json']:self.assertLess(len(json.dumps(self.products[n],indent=2).encode()),51200)
+ def test_sns_resource_policy_native_action_grammar_and_isolation(self):
+  p=self.main['Resources']['TopicPolicy']['Properties']['PolicyDocument'];ss=p['Statement']
+  self.assertEqual(p['Id'],self.trial_id+'-topic-policy');self.assertEqual(len({s['Sid'] for s in ss}),2)
+  self.assertTrue(all(s['Effect']=='Deny' for s in ss))
+  publisher,tls=ss;self.assertEqual(publisher['Action'],'sns:Publish')
+  self.assertEqual(publisher['Condition']['ArnNotEquals']['aws:PrincipalArn'],'arn:aws:iam::'+self.scope['account']+':role/'+self.trial_id+'-dispatch-role')
+  self.assertEqual(tls['Action'],iac.SNS_TOPIC_POLICY_ACTIONS);self.assertEqual(len(tls['Action']),11)
+  self.assertNotIn('sns:*',tls['Action']);self.assertNotIn('sns:Unsubscribe',tls['Action']);self.assertNotIn('sns:ConfirmSubscription',tls['Action'])
+  self.assertEqual(tls['Condition'],{'Bool':{'aws:SecureTransport':'false','aws:PrincipalIsAWSService':'false'}})
+  self.assertTrue(all(s['Resource']=='arn:aws:sns:'+self.scope['region']+':'+self.scope['account']+':'+self.trial_id+'-notices' for s in ss))
+ def test_sqs_each_statement_has_one_exact_resource_without_extra_resource(self):
+  self.assertEqual(len(self.main['Resources']),16);self.assertNotIn('DlqPolicy',self.main['Resources'])
+  p=self.main['Resources']['QueuePolicy']['Properties'];self.assertEqual(p['Queues'],[{'Ref':'Queue'},{'Ref':'Dlq'}])
+  statements=p['PolicyDocument']['Statement'];self.assertEqual(len(statements),5)
+  exact={'arn:aws:sqs:'+self.scope['region']+':'+self.scope['account']+':'+self.trial_id+'-'+suffix for suffix in ['ingestion','dlq']}
+  self.assertTrue(all(s['Effect']=='Deny' and isinstance(s['Resource'],str) and s['Resource'] in exact for s in statements))
+  self.assertEqual(sum(s['Action']=='sqs:SendMessage' for s in statements),1)
+  for r in exact:self.assertEqual(sum(s['Resource']==r for s in statements),3 if r.endswith('-ingestion') else 2)
+  self.assertEqual(set(self.main['Resources']['Subscription']['DependsOn']),set(self.main['Resources'])-{'Subscription','IngestFunction','DispatchFunction','Mapping'})
+ def test_archive_is_explicitly_versioned_with_existing_cfn_permission(self):
+  archive=self.main['Resources']['Archive'];self.assertEqual(archive['Properties']['VersioningConfiguration'],{'Status':'Enabled'})
+  self.assertEqual(archive['DeletionPolicy'],'Retain');self.assertEqual(len(self.main['Resources']),16)
+  ss=self.boot['Resources']['ExecutionRole']['Properties']['Policies'][0]['PolicyDocument']['Statement']
+  versioning=[s for s in ss if 's3:PutBucketVersioning' in s['Action']]
+  self.assertEqual(len(versioning),1);self.assertEqual(versioning[0]['Resource'],'arn:aws:s3:::'+self.scope['bindings']['archiveBucket'])
 if __name__=='__main__':unittest.main()
