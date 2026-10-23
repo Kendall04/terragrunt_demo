@@ -71,7 +71,7 @@ class FakePort:
             'MemoryRuntimePrecedenceProven':False,'CurrentQueryReadinessProven':True,
             'StableProcessBinding':True,'MemoryEnvironment':{'Presence':'PRESENT','ValueIsAllowed2048':True,'Complete':True},
             'MemoryConfigurationBasis':'FILE_AND_ALLOWED_INITIAL_ENV',
-            'ProcessBinding':{'MainPid':42,'SqlPid':42,'SqlStartTicks':500},
+            'ProcessBinding':{'MainPid':42,'KernelSqlPid':42,'KernelSqlStartTicks':500,'SqlReportedProcessId':42,'ListenerInode':700},
             'MemoryConsumptionMeasured':False,'ConfigurationConsumptionProven':False,
             'MemoryEvidenceKind':'INITIAL_ENVIRONMENT_PROJECTION','RecoveryAcceptance':False}
 

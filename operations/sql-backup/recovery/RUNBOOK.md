@@ -850,3 +850,79 @@ Getter compatibility is native-proven; the full precheck, memory consumption and
 cross-AZ recovery remain unqualified. No new artifact was built/qualified or
 published. Resolve the process identity mismatch with bounded native evidence
 before the next trial; preserve the closed AWS receipt, originals and budgets.
+
+### Proposed kernel endpoint binding correction - offline, 2026-10-23
+
+The recovery requirement is a fresh authenticated query on the locally configured
+SQL listener/process. Numeric equality between SERVERPROPERTY(ProcessID) and a
+Linux PID was an unqualified implementation assumption, not an application or
+backup/restore requirement. Actual pinned SQL16.0.4305.5 Express returned380 while
+the kernel main/listener PIDs were16/18 and their host namespace mappings677/693.
+All recorded identities were stable. This disproves that equality in the tested
+environment; it does not establish an undocumented SQLPAL translation or prove
+that EC2 exhibits the same relationship.
+
+Microsoft's [CONNECTIONPROPERTY contract](https://learn.microsoft.com/en-us/sql/t-sql/functions/connectionproperty-transact-sql?view=sql-server-ver16)
+defines the server address and port targeted by that specific TCP connection.
+The existing host adapter always launches a new authenticated sqlcmd connection
+to tcp:127.0.0.1,1433 with a fixed read-only query. The proposed helper joins that
+supported endpoint to kernel observation rather than treating SQL's process
+number as a /proc path. SERVERPROPERTY(ProcessID) remains a separate diagnostic.
+
+The proposed before/after snapshots require exactly one loopback1433 listener,
+the same socket inode and exactly one descriptor owner in the current SQL
+service process tree. MainPID, actual listener PID, sqlservr executable paths and
+start ticks must remain stable; config time must also remain unchanged. Another
+listener, a shared descriptor, missing/foreign owner, non-loopback endpoint,
+new socket inode or restart refuses. The exact2048 environment projection uses
+only that kernel listener PID. Reports separate KernelSqlPid/KernelSqlStartTicks,
+SqlReportedProcessId and ListenerInode. Old binding shapes cannot satisfy the new
+consumer contract. No PID is whitelisted or equated to a parent/child by fiat.
+
+The captured PID regression is RED against1325f6a and GREEN with this proposal.
+The PID/query/start values are native observations; fixture socket inode and
+other kernel metadata remain explicitly synthetic. Ten added tests cover the
+positive case, actual source adapter, wrong endpoints/process ownership,
+ambiguous listeners, socket replacement and process restart/executable races.
+The focused suites are82 recovery/integration plus27 verifier tests PASS.
+
+This remains a proposed local correction, not native execution of the new
+binding, EC2/systemd proof or recovery acceptance. Snapshots provide bounded
+before/after observation, not an atomic or continuous process/socket attestation.
+They do not establish behavior between observations or after the precheck; those
+limits also applied to the earlier identity snapshots. Internal memory
+consumption/precedence and RecoveryAcceptance remain false. Original receipts,
+artifacts, cloud resources and budgets are untouched. No AWS/container run or
+runtime artifact build/publication was performed for this proposal. One focused
+native validation of the grounded contract remains before artifact qualification.
+
+
+### Native kernel endpoint binding validation - 2026-10-23
+
+The six-file endpoint/socket-owner correction above is now integrated following
+one focused native test in the existing pinned official SQL16.0.4305.5 Express
+image. Actual production host.Port().runtime_precheck passed, with kernel main17,
+listener19/start651/inode5428 and separately reported SQL ProcessID372. The real
+wrong-port1434 connection refused with fresh_sql_query/COMMAND_EXIT_NONZERO/1.
+One owned SIGTERM restart changed main17/start538 to282/start1789 and a fresh
+native SELECT proved the new engine ready. The in-flight precheck refused at
+memory_environment/READ_FAILED/74 while retaining the old listener identity.
+
+The raw harness incorrectly required this negative to reach the later
+runtime_binding_after/PROCESS_IDENTITY_CHANGED check, so its final assertion
+failed. The immutable raw receipt SHA256 is
+264dcfda975d32d61aa43a723dc00648d5f301b2f78da824ac797a028c5a63eb.
+A separate bounded review validated the actual required positive, wrong-endpoint
+and restart-refusal evidence; evaluation SHA256 is
+c61664a40aeaca1ce7ccf485b8a7bfa6a0dc712528558f19fc4b8b7177030527.
+No production condition was changed to alter that outcome and no second
+container was run. The extra positive-after-restart stage was not executed and
+is not claimed. Normal cleanup removed the container, no OOM/forced PID action.
+
+Only actual owned direct-launch service fields/marker adapt the container's lack
+of systemd. SQL/config/getters, executable/start identities, socket inode/owner,
+initial2048 environment projection and authenticated queries were native. This
+does not qualify EC2 systemd/drop-ins/bootstrap, the native file-only environment
+branch, API/backup/restore, memory consumption or cross-AZ recovery. Snapshot
+limitations remain; no atomic/continuous attestation is claimed. Originals and
+closed AWS receipts/budgets are preserved. No AWS action or budget reset occurred.

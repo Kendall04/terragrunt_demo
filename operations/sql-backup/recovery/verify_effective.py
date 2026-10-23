@@ -154,6 +154,7 @@ class Verifier:
                     self.require(fields[9] in inodes, 'LISTENER_NOT_SQL_SERVICE')
                     listeners.append(fields[9]); self._listener_pids.update(inode_pids[fields[9]])
         self.require(bool(listeners), 'NO_SQL_LISTENER')
+        self._listener_inodes = frozenset(listeners)
         self.stage = 'stability'
         self.require(p.mtime('/var/opt/mssql/mssql.conf') == before and int(self.prop('MainPID')) == pid and self.prop('ActiveState') == 'active', 'SERVICE_CHANGED_DURING_OBSERVATION')
         self.stage = 'complete'
@@ -231,9 +232,38 @@ class RuntimeVerifier(Verifier):
         self.require(self.prop('ActiveState') == 'active', 'SQL_NOT_ACTIVE')
         main = int(self.prop('MainPID'))
         self.require(main == self._main_pid, 'PROCESS_IDENTITY_CHANGED')
+        # Re-read the kernel endpoint and its descriptor owner, not a SQLPAL ID.
+        # Exactly one listener/owner is required; shared/reuse-port ambiguity fails.
+        inodes = []
+        for family in ('tcp', 'tcp6'):
+            for row in self.port.text('/proc/net/' + family).splitlines()[1:]:
+                fields = row.split()
+                if len(fields) < 10: raise ValueError()
+                address, port = fields[1].split(':')
+                if fields[3] == '0A' and int(port, 16) == 1433:
+                    self.require(family == 'tcp' and address == '0100007F', 'NON_LOOPBACK_LISTENER')
+                    self.require(fields[9].isdecimal() and int(fields[9]) > 0, 'METADATA_INVALID')
+                    inodes.append(fields[9])
+        self.require(bool(inodes), 'NO_SQL_LISTENER')
+        self.require(len(inodes) == 1, 'LISTENER_NOT_SQL_SERVICE')
+        self.require(frozenset(inodes) == self._listener_inodes, 'PROCESS_IDENTITY_CHANGED')
+        pids, pending = {main}, [main]
+        while pending:
+            parent = pending.pop()
+            for value in self.port.text(f'/proc/{parent}/task/{parent}/children').split():
+                child = int(value)
+                if child <= 1: raise ValueError()
+                if child not in pids: pids.add(child); pending.append(child)
+        owners = set()
+        for pid in pids:
+            for fd in self.port.children(f'/proc/{pid}/fd'):
+                try: target = self.port.link(fd)
+                except FileNotFoundError: continue
+                if target == 'socket:[' + inodes[0] + ']': owners.add(pid)
+        self.require(len(owners) == 1 and owners == self._listener_pids, 'LISTENER_NOT_SQL_SERVICE')
         tokens = {pid: self.token(pid) for pid in self._listener_pids | {main}}
         self.require(tokens[main] == self._main_ticks, 'PROCESS_IDENTITY_CHANGED')
-        return main, tokens
+        return main, tokens, (next(iter(owners)), int(inodes[0]))
 
     def verify(self):
         result = super().verify()
@@ -242,8 +272,12 @@ class RuntimeVerifier(Verifier):
         answer = self.command_result(self.query()).strip()
         match = re.fullmatch(r'([1-9][0-9]{0,9})\|127\.0\.0\.1\|1433', answer)
         self.require(match is not None, 'FRESH_QUERY_BINDING_INVALID')
-        sql_pid = int(match[1])
-        self.require(sql_pid in self._listener_pids and sql_pid in before[1], 'FRESH_QUERY_WRONG_PROCESS')
+        # SQL reports its own process identity; native Linux observations show
+        # it need not equal either container or host kernel PID. The authenticated
+        # fresh session's supported CONNECTIONPROPERTY endpoint is joined to the
+        # unique, stable kernel listener instead. Never use the logical ID in /proc.
+        sql_reported_pid = int(match[1])
+        sql_pid = before[2][0]
         self.stage = 'memory_environment'
         projection = self.port.memory_projection(sql_pid)
         self.require(type(projection) is dict and set(projection) == {'Presence', 'ValueIsAllowed2048', 'Complete'} and projection['Complete'] is True, 'MEMORY_PROJECTION_INVALID')
@@ -259,7 +293,8 @@ class RuntimeVerifier(Verifier):
             InitialMemoryInputBoundToProcess=present, MemoryRuntimePrecedenceProven=False,
             CurrentQueryReadinessProven=True, StableProcessBinding=True,
             MemoryEnvironment=dict(projection), MemoryConfigurationBasis=basis,
-            ProcessBinding={'MainPid':before[0], 'SqlPid':sql_pid, 'SqlStartTicks':before[1][sql_pid]},
+            ProcessBinding={'MainPid':before[0], 'KernelSqlPid':sql_pid, 'KernelSqlStartTicks':before[1][sql_pid],
+                            'SqlReportedProcessId':sql_reported_pid, 'ListenerInode':before[2][1]},
             MemoryConsumptionMeasured=False, ConfigurationConsumptionProven=False, MemoryEvidenceKind='INITIAL_ENVIRONMENT_PROJECTION', RecoveryAcceptance=False)
         return result
 
@@ -282,7 +317,7 @@ def require_runtime_precheck(report):
     if not isinstance(report, dict) or set(report) not in (keys, keys | {'HostBinding'}) or report.get('Status') != 'RUNTIME_PRECHECK_INPUTS_BOUND' or type(report.get('ExitCode')) is not int or report['ExitCode'] != 0 or report.get('Stage') != 'complete' or not all(report.get(k) is True for k in required):
         raise Problem('RUNTIME_PRECHECK_INCOMPLETE')
     binding = report.get('ProcessBinding', {})
-    if type(binding) is not dict or set(binding) != {'MainPid','SqlPid','SqlStartTicks'} or any(type(value) is not int or value <= 1 for value in binding.values()):
+    if type(binding) is not dict or set(binding) != {'MainPid','KernelSqlPid','KernelSqlStartTicks','SqlReportedProcessId','ListenerInode'} or any(type(value) is not int or value <= 0 for value in binding.values()) or any(binding[key] <= 1 for key in ('MainPid','KernelSqlPid')):
         raise Problem('RUNTIME_PRECHECK_INCOMPLETE')
     projection = report.get('MemoryEnvironment')
     if type(projection) is not dict or set(projection) != {'Presence','ValueIsAllowed2048','Complete'} or projection['Complete'] is not True:

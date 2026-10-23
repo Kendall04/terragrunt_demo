@@ -276,8 +276,8 @@ class RuntimeTests(unittest.TestCase):
                 else:p.times=[1000_000_000_001]
                 return query()
             r=self.check(p,action);self.assertEqual(r['Status'],'REFUSED');self.assertEqual(r['Stage'],'runtime_binding_after')
-    def test_fresh_query_wrong_pid_ip_port_format_and_raw_failure(self):
-        for value,code in [('43|127.0.0.1|1433','FRESH_QUERY_WRONG_PROCESS'),('42|0.0.0.0|1433','FRESH_QUERY_BINDING_INVALID'),
+    def test_fresh_query_wrong_ip_port_format_and_raw_failure(self):
+        for value,code in [('42|0.0.0.0|1433','FRESH_QUERY_BINDING_INVALID'),
                            ('42|127.0.0.1|1434','FRESH_QUERY_BINDING_INVALID'),(CANARY,'FRESH_QUERY_BINDING_INVALID')]:
             p=MetadataPort();self.refused(p,lambda:query(value),'fresh_sql_query',code);self.assertEqual(p.environment_reads,0)
         self.refused(MetadataPort(),lambda:query(CANARY,17),'fresh_sql_query','COMMAND_EXIT_NONZERO',17)
