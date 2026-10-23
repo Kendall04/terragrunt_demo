@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "status": "PROPOSAL_ONLY_NOT_AUTHORIZED_NOT_DEPLOYABLE",
-  "authoredAgainstCommit": "ae6807630284ac37d83f7fdbf40a4fab7cffa7a2",
+  "status": "LOCAL_QUALIFIED_EXTERNAL_DECISIONS_AND_AWS_VALIDATION_PENDING",
+  "authoredAgainstCommit": "1ba82c2d5c25482e4fd70533c1f3cf4df127d739",
   "runId": "ecs-sentinel-r20261023b1",
   "account": "341936017254",
   "region": "us-east-1",
@@ -23,7 +23,7 @@
     "queueArn": "arn:aws:sqs:us-east-1:341936017254:ecs-sentinel-r20261023b1-ingestion",
     "archiveBucket": "ecs-sentinel-r20261023b1-341936017254",
     "emailRecipient": null,
-    "notificationProvider": "PROPOSED_SNS_STANDARD_NOT_IMPLEMENTED",
+    "notificationProvider": "SNS_STANDARD_SDK_ADAPTER_LOCAL_DOUBLE_TESTED_NO_SEND",
     "backupPolicyParameters": null,
     "storageLimits": null
   },
@@ -42,12 +42,12 @@
     "DispatchFunction": "AWS::Lambda::Function (.NET10/x86, 512MB/15s; manual bounded invocation)",
     "Mapping": "AWS::Lambda::EventSourceMapping (disabled initially, batch5, partial ACK, concurrency2)",
     "Topic": "AWS::SNS::Topic (conditional on owner provider choice)",
-    "Subscription": "AWS::SNS::Subscription (email; owner confirmation required)"
+    "Subscription": "AWS::SNS::Subscription (email; owner confirmation required)",
+    "TopicPolicy": "AWS::SNS::TopicPolicy (only exact dispatch publisher; TLS)"
   },
   "outsideStack": [
-    "CloudFormation stack object ecs-sentinel-r20261023b1",
-    "dedicated CloudFormation execution role ecs-sentinel-r20261023b1-cfn",
-    "temporary named inline policies on the specifically admitted existing operator, backed up and reversed"
+    "Two CloudFormation stack control-plane objects: ecs-sentinel-r20261023b1 and ecs-sentinel-r20261023b1-bootstrap",
+    "Exactly named temporary inline policy on admitted existing operator; snapshot and reverse"
   ],
   "runtimePermissionProposal": {
     "trialSender": [
@@ -60,15 +60,6 @@
       }
     ],
     "ingest": [
-      {
-        "Effect": "Allow",
-        "Action": [
-          "sqs:ReceiveMessage",
-          "sqs:DeleteMessage",
-          "sqs:GetQueueAttributes"
-        ],
-        "Resource": "arn:aws:sqs:us-east-1:341936017254:ecs-sentinel-r20261023b1-ingestion"
-      },
       {
         "Effect": "Allow",
         "Action": [
@@ -89,6 +80,15 @@
             "dynamodb:LeadingKeys": "false"
           }
         }
+      },
+      {
+        "Effect": "Allow",
+        "Action": [
+          "sqs:ReceiveMessage",
+          "sqs:DeleteMessage",
+          "sqs:GetQueueAttributes"
+        ],
+        "Resource": "arn:aws:sqs:us-east-1:341936017254:ecs-sentinel-r20261023b1-ingestion"
       },
       {
         "Effect": "Allow",
@@ -124,28 +124,6 @@
       {
         "Effect": "Allow",
         "Action": [
-          "dynamodb:Query"
-        ],
-        "Resource": [
-          "arn:aws:dynamodb:us-east-1:341936017254:table/ecs-sentinel-r20261023b1",
-          "arn:aws:dynamodb:us-east-1:341936017254:table/ecs-sentinel-r20261023b1/index/Due",
-          "arn:aws:dynamodb:us-east-1:341936017254:table/ecs-sentinel-r20261023b1/index/Active",
-          "arn:aws:dynamodb:us-east-1:341936017254:table/ecs-sentinel-r20261023b1/index/Cleanup"
-        ],
-        "Condition": {
-          "ForAllValues:StringEquals": {
-            "dynamodb:LeadingKeys": [
-              "NS#4ebefbe15b843f4db70b623238a3f1115219cfa6a437ffc71aa9fb86d6306f65"
-            ]
-          },
-          "Null": {
-            "dynamodb:LeadingKeys": "false"
-          }
-        }
-      },
-      {
-        "Effect": "Allow",
-        "Action": [
           "s3:GetObject",
           "s3:PutObject"
         ],
@@ -154,17 +132,17 @@
       {
         "Effect": "Allow",
         "Action": [
-          "logs:CreateLogStream",
-          "logs:PutLogEvents"
+          "sns:Publish"
         ],
-        "Resource": "arn:aws:logs:us-east-1:341936017254:log-group:/aws/lambda/ecs-sentinel-r20261023b1-dispatch:log-stream:*"
+        "Resource": "arn:aws:sns:us-east-1:341936017254:ecs-sentinel-r20261023b1-notices"
       },
       {
         "Effect": "Allow",
         "Action": [
-          "sns:Publish"
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
         ],
-        "Resource": "arn:aws:sns:us-east-1:341936017254:ecs-sentinel-r20261023b1-notices"
+        "Resource": "arn:aws:logs:us-east-1:341936017254:log-group:/aws/lambda/ecs-sentinel-r20261023b1-dispatch:log-stream:*"
       }
     ]
   },
@@ -176,18 +154,14 @@
     "ses:*"
   ],
   "decisionsRequired": [
-    "recipient and SNS consent/provider",
-    "trial audit/receipt/effect/archive/log/queue retention and export/delete consent",
-    "policy freshness/budget/check interval/hold/owner",
-    "exact final sender principal and operator authority"
+    "owner email address/consent and SNS sender-label acceptance",
+    "accept or override recommended synthetic notice/retention/policy parameters",
+    "new USD1 and exact temporary access plus destructive synthetic retirement"
   ],
   "technicalGates": [
-    "compile exact locked AWS SDK dependencies; no cache substitution",
-    "backup-aware Lambda batch bridge, normalizer/policy and per-invocation store token",
-    "same explicit StorageLimits to store and processor",
-    "backup-only effect routing and real notification ACK provider",
-    "us-east-1 host qualification; do not bypass Ohio-only managed host",
-    "generate and review final original-template slice plus full create/delete policies/ChangeSet"
+    "Complete exact AWS identity/effective create-delete authority and change set checks after new approval",
+    "Record immutable upload version, owner-confirmed subscription and native receipt/archive/notice proof",
+    "No native AWS or inbox qualification is claimed by local SDK doubles"
   ],
   "awsCalls": 0,
   "timersInstalled": false,
@@ -209,5 +183,32 @@
     "cloudFormationExecutionRole": "ecs-sentinel-r20261023b1-cfn",
     "mappingUuid": null,
     "subscriptionArn": null
+  },
+  "bootstrapResources": {
+    "IngestBoundary": "AWS::IAM::ManagedPolicy ecs-sentinel-r20261023b1-ingest-boundary",
+    "DispatchBoundary": "AWS::IAM::ManagedPolicy ecs-sentinel-r20261023b1-dispatch-boundary",
+    "ExecutionRole": "AWS::IAM::Role ecs-sentinel-r20261023b1-cfn"
+  },
+  "recommendedOnlyNotInstalled": {
+    "SenderLabel": "ECS Backup Trial",
+    "NotificationMode": "EscalationAndRecovery",
+    "Owner": "Kendall04",
+    "EvidenceSeconds": 300,
+    "BudgetSeconds": 600,
+    "CheckSeconds": 60,
+    "HoldSeconds": 0,
+    "DedupSeconds": 86400,
+    "SignalAgeSeconds": 3600,
+    "AuditSeconds": 86400,
+    "EffectSeconds": 86400,
+    "QueueRetentionSeconds": 3600,
+    "DlqRetentionSeconds": 86400,
+    "LogRetentionDays": 1,
+    "NotificationEmail": null,
+    "maximumWindowHours": 24,
+    "targetFinishHours": 2,
+    "plannedNoticeIntents": 2,
+    "maximumPublishAttemptsPerIntent": 3,
+    "cloudPreservation": "Export/hash locally then delete admitted synthetic cloud state/archives; original backup2+2 days unchanged"
   }
 }

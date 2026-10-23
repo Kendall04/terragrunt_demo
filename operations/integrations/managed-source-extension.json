@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "upstreamCommit": "0e8fc55333ddde3b9816885915310a7e69f3de45",
+  "file": "src/Sentinel.Worker.Lambda/Function.cs",
+  "baseSha256": "2c45b9cbe6b46b5f299763b58f9641fe37a0a801cc71c60473e3d9a8f73f172e",
+  "replacements": [
+    {
+      "before": "    private readonly Func<IngestionProcessor> processor;",
+      "after": "    private readonly Func<IngestionProcessor> processor;\n    private readonly Func<string,string,string,DateTimeOffset,CancellationToken,MessageResult?>? processMessage;"
+    },
+    {
+      "before": "    private Function(Func<IngestionProcessor> processor, Func<DateTimeOffset> clock, string? queueArn, Action<BatchObservation>? observeBatch) {",
+      "after": "    // Consumer extension: preserve original transport/batch/deadline, permit an explicit suppression ACK.\n    public Function(IngestionProcessor processor, Func<string,string,string,DateTimeOffset,CancellationToken,MessageResult?> processMessage,\n        Func<DateTimeOffset> clock, string queueArn, Action<BatchObservation>? observeBatch = null)\n        : this(processor,clock,queueArn,observeBatch) { this.processMessage=processMessage??throw new ArgumentNullException(nameof(processMessage)); }\n    private Function(Func<IngestionProcessor> processor, Func<DateTimeOffset> clock, string? queueArn, Action<BatchObservation>? observeBatch) {"
+    },
+    {
+      "before": "            var result = processor().Process(message.Body, message.MessageId, runId, clock(), token);\n            if (result.Retry) failures.Add(new() { ItemIdentifier = message.MessageId });",
+      "after": "            var result = processMessage is null ? processor().Process(message.Body, message.MessageId, runId, clock(), token)\n                : processMessage(message.Body,message.MessageId,runId,clock(),token);\n            if (result?.Retry==true || (result is null && token.IsCancellationRequested))\n                failures.Add(new() { ItemIdentifier = message.MessageId });"
+    }
+  ]
+}

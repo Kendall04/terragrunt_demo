@@ -137,7 +137,7 @@ a completion requirement or a deployed microservice. No CA installation or
 existing API/database/KMS/runtime/IaC change is part of it.
 
 
-### Operational path review and cancellation boundary - 2026-10-23
+### Historical operational path review and cancellation boundary - 2026-10-23
 
 [One bounded operational trace and trial proposal](OPERATIONAL-TRIAL.md) identifies
 reusable original DynamoDB/S3 adapters, exact schema/host incompatibilities and
@@ -161,3 +161,55 @@ remain immutable historical evidence. The small current
 changed source, exact upstream review and new 61-check receipt. Browser/observer
 suites were not repeated for this C#-only correction and operational documentation;
 prior UI qualification remains separate. This manifest is not a cloud release.
+
+
+## Managed trial implementation - local close 2026-10-23
+
+The [current operational guide](OPERATIONAL-TRIAL.md) supersedes missing-dependency/
+host-adapter statements in the historical checkpoint. Ecs.Backup.Managed now
+composes the original Lambda batch handler, DynamoStore, outbox/fences and S3
+archive with backup normalization/policy and a minimal SDK SNS Publish adapter.
+The original checkout stays pinned/clean; prepare_managed_source.py stages tracked
+source and exactly the checked managed-source-extension.json hook. No full upstream
+framework is copied into ECS. NuGet locks pin restored official packages.
+
+Managed checks use original DynamoDB/S3 adapters against upstream offline SDK
+doubles; they do not prove AWS persistence or inbox delivery. The original61 memory-
+fake checks remain distinct. Unknown SNS outcomes stay unknown, including a lost
+durable completion after a known Publish response; retries may duplicate. Original
+durable max3 attempts is tested. Unsupported backup probes stay pending, and no
+NAT worker/provider is attached. Trial/account/region/resource bindings and expiry
+are explicit. The public demo/Archify historical status is unchanged.
+
+Offline commands (installed .NET10/Python, original upstream checkout):
+
+```text
+python -I -B prepare_managed_source.py --source <PINNED_SENTINEL> --output <NEW_STAGING>
+dotnet restore Ecs.Backup.Managed.Tests/Ecs.Backup.Managed.Tests.csproj --locked-mode --configfile <PUBLIC_NUGET_ONLY_CONFIG> -p:SentinelSourceRoot=<NEW_STAGING> --artifacts-path <OUT> --disable-parallel -m:1 -nr:false
+dotnet build Ecs.Backup.Managed.Tests/Ecs.Backup.Managed.Tests.csproj --no-restore -c Release -p:SentinelSourceRoot=<NEW_STAGING> --artifacts-path <OUT> -m:1 -nr:false
+dotnet <OUT>/bin/Ecs.Backup.Managed.Tests/release/Ecs.Backup.Managed.Tests.dll <FIXTURES>
+python -I -B -m unittest discover -s . -p test_managed_trial_iac.py -v
+```
+
+The last command requires SENTINEL_SOURCE_ROOT pointing to the original pinned
+checkout. Use the installed SDK; no toolchain upgrade. On Windows allow only
+needed non-secret OS/program paths, disable node reuse for this invocation and
+preserve required ProgramFiles/ProgramData/ALLUSERSPROFILE variables; no AWS or
+NuGet credentials are needed. Explicit nuget.org-only config is shown by the local
+qualification receipt. Lock/content hashes must not change on locked restore.
+
+The small deterministic ZIP is created by package_managed.py from the single
+managed publish output; PDBs, configs/keys, API/SQL/PKI binaries and unrelated files
+are refused. Its manifest pins committed source, upstream/patch and each binary.
+managed_trial_iac.py reuses original table/index/archive definitions and emits the
+16-resource main template,3-IAM bootstrap, bounded temporary policies and unset
+owner decisions; --package-sha256 freezes its PackageKey. None of these tools
+executes AWS, installs a timer, subscribes an address or sends mail.
+
+Local evidence integrity note: a61-case rerun reused the earlier operational-
+preparation output directory accidentally. Original qualification JSON was restored
+only after exact committed-hash verification; original tests.log also matches.
+The old build.log was overwritten and cannot be revalidated against its original
+hash. Its expected hash and this discrepancy are preserved in the new evidence
+addendum. Historical manifests/closures and all AWS receipts/large archives remain
+unchanged; no blanket historical-integrity claim is made.

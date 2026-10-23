@@ -1,243 +1,250 @@
-# Sentinel/backups: minimum operational trial proposal
+# ECS backup signal pipeline: local implementation and one-cycle review
 
-Status: **local preparation only; NOT DEPLOYABLE or authorized to execute**.
-Review date: 2026-10-23. ECS base `ae6807630284ac37d83f7fdbf40a4fab7cffa7a2`.
-No AWS calls, credentials, services/timers, publication or email were used here.
-The [scope/permission matrix](OPERATIONAL-SCOPE-PROPOSAL.json) has concrete proposed
-names and deliberately unresolved decisions. It is not a CloudFormation template
-or an installable IAM policy. Existing closed recovery cycles stay closed.
+**LOCAL QUALIFICATION ONLY. The AWS cycle is NOT APPROVED and has not run.**
+This document supersedes the initial preparation at commit1ba82c2; its historical
+scope/receipt remains in Git. PKI is outside ECS scope. API, original recovery
+artifacts/states/backups, EKS, production and original backup2+2-day retention
+remain outside this trial.
 
-## One bounded source trace
+## Implemented and checked
 
-Pinned source: `Kendall04/reliability-sentinel`, commit
-`0e8fc55333ddde3b9816885915310a7e69f3de45`, local checkout
-`task-3/integrations/reliability-sentinel`. [Source pin](upstream-sources.json)
-and `verify_sources.py` verify origin, HEAD and tracked cleanliness without fetch.
-All upstream paths below are relative to that commit. PKI is outside ECS scope.
+`Ecs.Backup.Managed` composes the actual Sentinel IngestionProcessor, reducer,
+transactional DynamoStore, outbox/fences, DeferredCheckAdapter and immutable
+S3ArchiveAdapter. The original SQS Function retains source/queue validation,
+batch5, unique IDs, partial ACK and cancellation. A single explicit consumer hook
+permits validated suppression ACKs; it is applied only to a verified staging copy
+of pinned Sentinel0e8fc55333ddde3b9816885915310a7e69f3de45. The original checkout
+stays unchanged. No reducer/outbox or backend is replaced.
 
-| Stage | Existing original implementation | Actual ECS gap |
-| --- | --- | --- |
-| Observation | ECS `operations/sql-backup/observer.py`, producer/check CLI, private dedupe state and inert units | Real independent host/role/receipt failure ingestion/expected-UP/cadence remain uninstalled. `replay` is synthetic. Actual `run` requires EC2-role/IMDS and a real check command; it cannot be relabeled a Lambda-native remote check. |
-| Authenticated ingress | `src/Sentinel.Worker.Lambda/Function.cs`: exact SQS ARN/source, unique IDs, batch limit 5, partial ACK, deadline token; AWS role credentials | JSON producer/account labels are not authentication. A dedicated IAM-only sender + exclusive SQS queue must bind the configured subject/key. Host accepts only IngestionProcessor; ECS BackupIngress suppression-aware facade is not connected. |
-| Normalize/evaluate | ECS ObserverNormalizer/BackupIngress/BackupIncidentPolicy; original IngestionProcessor/SignalProcessor/IncidentReducer | Original RuntimeComposition hardcodes NatRecoveryEvaluator and EventBridge/native NAT normalizers. No-catalog route accepts synthetic EventBridge envelopes, not raw observer JSON. Passing Emit=false directly gives poison/retry instead of valid suppression; dropping every Emit=false loses the required second genuine HEALTHY confirmation. |
-| Durable state/receipt/audit/outbox | `src/Sentinel.Persistence.DynamoDb/{DynamoStore,PhysicalLayout,DynamoQueries,CommitValidation}.cs` | Original store is reusable, not NAT-specific. Replace the current **memory fake**, keep original transactional CAS/receipt reconciliation. Pass identical explicit StorageLimits to DynamoStore **and** SignalProcessor: existing managed composition omits the store argument and otherwise retains defaults. |
-| Dispatch/archive | Original `OutboxDispatcher`, `EffectRouter`, `DeferredCheckAdapter`, `S3ArchiveAdapter` | Original lease/fence/known-result completion and immutable conditional S3 PUT + checksum/readback are reusable. Backup-only scope/epoch validation and host wiring remain. DeferredCheckAdapter performs logical evaluation only; it does not run an observer/checker. Functional-probe work has no backup worker; preserve/report it pending, never ACK it as executed or send it to NAT. |
-| Notice | OperationalWorker routes EscalateIncident to **SimulatedNotification**, other incident effects to AuditAcknowledgement | There is **no real email provider** in pinned source. Resolve ACK is an audit ACK, not a recovery email. A small real provider adapter and explicit escalation/recovery notification choice are still required; provider acceptance is not inbox receipt or exactly-once delivery. |
+The receiver binds account, region, function ARN, queue, subject, key, table,
+namespace, archive prefix and topic explicitly. Actual AWS_REGION must equal the
+configured region; no CLI profile, alternate endpoint or implicit Ohio fallback.
+Only LOCAL_RECEIPT_REPLAY is accepted by this trial host. Normalizer reads and
+commit operations use the same invocation cancellation/store retention. Cancellation
+also respects trial expiry. A genuine later unchanged HEALTHY observation can
+reach the original reducer for confirmation; normal suppression remains a no-op.
 
-Schema/host boundaries found in this single review:
+The SNS adapter calls the real SDK Publish contract with a fixed topic and
+sanitized fields. HTTP200 plus a bounded MessageId confirms **SNS acceptance only**,
+not delivery to an inbox. Unknown client/service/timeout outcomes remain unknown;
+403 is permanent and causes no alternate access attempt. SDK publish retries are
+zero; the original durable dispatcher permits at most3 attempts per effect,
+including critical effects. Lost completion persistence after SNS acceptance can
+cause duplicates. Tests demonstrate that case, and that a fourth attempt stops.
 
-- Observer JSON schema1, source `SqlBackup.Observer`, Delivery=NONE remains truthful
-  even when its receiver later delivers an alert. Never impersonate `aws.*` or
-  `sentinel.synthetic`. Adapter metadata is generic and fits original persistence.
-- Physical DynamoDB schema3 vs logical stored snapshot schema2 is an intentional
-  adapter distinction. Keep the original serializer/revision/receipt identity.
-  New candidate business IDs use v2; no implicit migration of old stores.
-- ServiceCatalog is **nat-asg only**, permits NAT resource ARN kinds and requires
-  positive ProbeSpacing. Backup policy uses zero unused probe spacing and one
-  unused required pass; RuntimeConfiguration requires at least two. Do not fake
-  a NAT service or weaken the original catalog to insert backups.
-- Operational CloudConfiguration explicitly requires **us-east-2**. Its sandbox
-  configuration window also maxes at 60 minutes. ECS uses **us-east-1**. The thin
-  backup composition needs explicit region/binding qualification; these validators
-  must not be bypassed or an old NAT deployment reused unchanged. The 24-hour user
-  ceiling is not a reason to silently change a runtime schema/time contract.
-- Original defaults: receipt/signal age 7 days, audit 90 days, effects 30 days;
-  queues 4/14 days, logs 7 days, retained table/bucket. They are not owner decisions
-  for this new trial. Physical `Expires` uses **UTC ticks**, not epoch seconds:
-  **do not enable DynamoDB TTL on it**. Original Cleanup index/store controls remain.
-  Deleting a stack with Retain does not mean storage is gone.
+No NAT provider/RecoveryCheckWorker/WorkActivation is connected. Namespace/key/
+policy gates precede external effects, runtime boundaries contain no EC2/ASG/IAM/
+secret/KMS permissions, and an unimplemented functional probe stays visibly pending.
+The original libraries contain NAT implementations; their presence is not a wired
+runtime path. Logical due checks reuse DeferredCheckAdapter and do not run a remote
+backup checker. Archive ACK requires original immutable PUT/checksum/readback.
 
-Local correction in this increment: BackupIngress forwards the invocation token,
-checks cancellation before and after suppression reads and retries a cancelled
-message, including normally suppressed HEALTHY. **61 real-component in-process
-checks PASS**, zero build warnings/errors, installed toolchain/cache only.
-Persistence is still upstream memory fake; no SDK persistence test is implied.
-The SDK proxy must independently bind the invocation token for every actual I/O.
-Normalizer receipt/head reads need the same per-invocation store budget; do not
-share an expired token through a warm static normalizer. The local facade still
-uses runId=ecs-backup-local; the future managed bridge must supply actual receiver
-invocation correlation, not mistake that local label for authenticated identity.
+Qualification: managed-host/real-adapter tests use **upstream offline SDK doubles**,
+not DynamoDB/S3 services. Existing61 observer/policy memory-fake checks are separate.
+Exact NuGet dependencies are locked, restored from nuget.org into the shared cache:
+Core4.0.102.10, DynamoDB4.0.107.1, S3 4.0.104.2, SNS4.0.100.17,
+Lambda.Core3.3.0, SQSEvents3.0.1, Serialization.SystemTextJson3.0.1.
+No framework SDK, container or other toolchain was installed. Initial NuGet path
+failures were resolved with required Windows path variables and single non-reused
+MSBuild processing; no processes were killed.
 
-## First useful cycle: durable signal pipeline, no EC2 recreation
+## Exact proposed inventory
 
-Proposed run `ecs-sentinel-r20261023b1`, account341936017254/us-east-1.
-Feed at most 20 synthetic observer receipts from the actual replay/transition
-implementation through SigV4 SQS, original reducer/DynamoDB receipts/outbox,
-original S3 archive and a real notice adapter **after** its decisions/tests are
-complete. Distinct subject/key and fresh namespace in the JSON matrix; no original
-ECS/EKS table, state, backup prefix, bucket, queue or role is reused.
+Account **341936017254**, region **us-east-1**, run **ecs-sentinel-r20261023b1**.
+Main stack name equals run. These are19 proposed AWS resources across two stacks;
+the two stack objects themselves are additional control-plane objects.
 
-The original phase5 IaC supplies table/index/bucket/queue/role/mapping patterns;
-`tools/continuous_iac.py` is a 42-resource NAT shadow blueprint, not an ECS ready
-installer. Extract only the reviewed slice. Proposed inventory: **15 template
-resources**, including two optional SNS resources, plus a dedicated CF execution
-role and stack object. Table with Due/Active/Cleanup indexes; private versioned
-SSE-S3 archive bucket/policy; Standard managed-SSE queue/DLQ/policy; two .NET10
-512MB/15s Lambdas, two log groups and two roles; one initially disabled SQS mapping;
-conditional SNS topic/email subscription. Inline policies are embedded, not extra
-managed-policy resources. Code package lives under the trial bucket's `packages/`
-prefix. No NAT/VPC/EC2/SQL, custom KMS key, Scheduler/timer, public HTTP endpoint,
-new business service or unrelated account resources. Operator manually invokes a
-bounded dispatcher; no continuous scheduling claim.
+| Main logical ID | AWS type / physical identity |
+| --- | --- |
+| Sentinel | DynamoDB table `ecs-sentinel-r20261023b1`, original PK/SK and Due/Active/Cleanup indexes; on-demand |
+| Archive | Private versioned SSE-S3 bucket `ecs-sentinel-r20261023b1-341936017254` |
+| ArchivePolicy | TLS/identity-scoped bucket policy on that bucket |
+| Queue | SQS Standard `ecs-sentinel-r20261023b1-ingestion`, managed SSE |
+| Dlq | SQS Standard `ecs-sentinel-r20261023b1-dlq`, exclusive source redrive |
+| QueuePolicy | Own queue/DLQ policy; direct input sender restricted to admitted operator |
+| IngestLogs | `/aws/lambda/ecs-sentinel-r20261023b1-ingest` |
+| DispatchLogs | `/aws/lambda/ecs-sentinel-r20261023b1-dispatch` |
+| IngestRole | IAM `ecs-sentinel-r20261023b1-ingest-role`, bounded inline runtime policy |
+| DispatchRole | IAM `ecs-sentinel-r20261023b1-dispatch-role`, bounded inline runtime policy |
+| IngestFunction | Lambda `ecs-sentinel-r20261023b1-ingest`, .NET10/x86,512MB,15s, concurrency2 |
+| DispatchFunction | Lambda `ecs-sentinel-r20261023b1-dispatch`, .NET10/x86,512MB,15s, concurrency1; manual bounded calls |
+| Mapping | SQS→ingest mapping, AWS-assigned UUID, batch5, partial ACK, maximum concurrency2; initially disabled |
+| Topic | SNS Standard `ecs-sentinel-r20261023b1-notices` |
+| TopicPolicy | TLS/publisher policy permitting only dispatch role to publish |
+| Subscription | Email subscription on that topic, owner address/confirmation pending |
 
-This qualifies **transport and durable incident pipeline only**. It does not
-qualify real remote backup checks, timer independence, missed producer detection,
-SQL recovery/RPO/RTO or the full ECS deployment. Unrouted backup read-check work
-must stay visible pending; no false all-outbox-drained claim. A later real
-observer trial needs its separately reviewed host/permissions/cadence.
+Bootstrap stack `ecs-sentinel-r20261023b1-bootstrap` contains exactly:
 
-## Access delta, including deletion
+1. `IngestBoundary`: managed policy `ecs-sentinel-r20261023b1-ingest-boundary`.
+2. `DispatchBoundary`: managed policy `ecs-sentinel-r20261023b1-dispatch-boundary`.
+3. `ExecutionRole`: `ecs-sentinel-r20261023b1-cfn`, trusted only by CloudFormation.
 
-Nothing below is installed or currently effective. Existing cnp-cert-dev identity
-and intended TerragruntDemoDevOperator must be revalidated only in a future
-admitted execution. A denial is reported, not bypassed by another principal.
-The JSON matrix spells **exact proposed runtime ARNs and action lists**, plus
-resource names; unknown mapping/subscription identities stay null:
+The previous15-resource proposal lacked a topic publisher-isolation policy. The
+16th main resource closes that gap. Boundaries limit the two new runtime roles even
+if an inline policy is changed. CF execution cannot alter those boundaries or its
+own policy, remove runtime boundaries, or pass any other role. No existing role
+with proven matching trust/boundaries is available in the local evidence; reusing
+the broad operator as CF execution would widen service trust. Retain these3 rather
+than weaken security to reduce a confirmation. No network/SQL/ECS business service,
+CA, Scheduler/timer, EventBridge bus, custom KMS key or historical resource is added.
 
-- Sender: only sqs:SendMessage to the trial queue. No InvokeFunction permission
-  for ingress, AWS profile fallback or credentials on the observer host.
-- Ingress: own queue ReceiveMessage/DeleteMessage/GetQueueAttributes; namespace-
-  bound table GetItem/PutItem/UpdateItem/DeleteItem/ConditionCheckItem; own log
-  streams/events. No Scan, other namespaces or outbound notice privileges.
-- Dispatch: same table item operations plus Query of its table/three indexes;
-  GetObject/PutObject only its immutable archive prefix; own logs; conditional
-  sns:Publish to its exact topic. No S3 original backup access or KMS permissions.
-- Both new Lambda trusts are only lambda.amazonaws.com. No EC2/ASG/NAT, Secrets
-  Manager, SES or IAM runtime grant. Exclusive sender/consumer queue policy and
-  TLS-only bucket/queue policies supplement identity grants.
+## Principals, permissions and installation stages
 
-[DynamoDB transactional IAM](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/transaction-apis-iam.html)
-authorizes the constituent item actions; do not invent IAM actions named
-TransactWriteItems/TransactGetItems. Use ForAllValues:StringEquals LeadingKeys
-plus a non-null guard on item/query access. Preserve original namespace partition
-keys, including GSI queries; test positive and foreign-namespace refusal.
+Future Windows profile `cnp-cert-dev` must first prove actual account/principal.
+Normal execution is **TerragruntDemoDevOperator** in341936017254. Existing
+`cnp-cert-admin` is required only for the explicitly reviewed bootstrap and named
+operator temporary-policy installation/reversal. Neither is assumed or used now.
+A denial is reported; no unplanned principal or permission expansion is a fallback.
 
-Provisioning/retirement scope to compile from the **final** template, not grant
-wildcard administrator rights:
+The renderer produces exact JSON templates and separate operator/bootstrap scope
+policies. Main CF execution rights include creation, inspection and deletion of
+only the named table, bucket, queues, logs, functions, topic/subscription and two
+runtime roles. IAM role creation requires its exact boundary; PassRole permits
+only those two roles to lambda.amazonaws.com. The operator may pass only the
+new CF role to cloudformation.amazonaws.com. No managed administrator attachment.
 
-| Target | Temporary create/read path | Retirement/reversal path |
-| --- | --- | --- |
-| Exact named stack + trial change sets | cloudformation CreateStack/CreateChangeSet/DescribeChangeSet/ExecuteChangeSet/DescribeStacks/DescribeStackEvents/DescribeStackResource/ListStackResources/GetTemplate | DeleteChangeSet/DeleteStack, then terminal describe; PassRole only dedicated CF role with PassedToService=cloudformation.amazonaws.com |
-| Dedicated CF role; two exact runtime roles | iam CreateRole/GetRole/TagRole/PutRolePolicy/GetRolePolicy, ListRolePolicies/ListAttachedRolePolicies; CF PassRole only those two roles to lambda.amazonaws.com | DeleteRolePolicy/DeleteRole; restore any changed existing inline policy from original hash and read back; no managed attachment or new principal fallback |
-| Exact table/indexes | dynamodb CreateTable/DescribeTable/TagResource/ListTagsOfResource; runtime item/query rights above; UpdateTable only if final settings require it | DeleteTable and describe disappearance; export via namespace Query before deletion; no original table alteration |
-| Exact bucket and own objects | S3 bucket create/configure/tag/version/encryption/public-access/ownership/TLS policy; package Put/Get only packages/; archive permissions above | ListBucket/ListBucketVersions, GetObject/GetObjectVersion for evidence, DeleteObject/DeleteObjectVersion for **all own versions/delete markers**, delete own bucket policy/bucket; original buckets excluded |
-| Exact queue/DLQ | sqs CreateQueue/GetQueueAttributes/SetQueueAttributes/TagQueue/ListQueueTags plus own inspection Receive/Delete permissions | DeleteQueue/GetQueueAttributes; preserve poison/DLQ receipts before deletion; no blanket PurgeQueue |
-| Two exact functions/mapping | lambda CreateFunction/GetFunction/GetFunctionConfiguration/TagResource/GetFunctionConcurrency/PutFunctionConcurrency plus Create/Get/UpdateEventSourceMapping; InvokeFunction only dispatch for admitted operator | Disable mapping, DeleteEventSourceMapping/DeleteFunction/DeleteFunctionConcurrency; verify no mapping/function remains; no AddPermission/public URL/VPC role |
-| Two exact log groups | logs CreateLogGroup/PutRetentionPolicy/TagResource/DescribeLogStreams/GetLogEvents; runtime own stream writes | DeleteLogGroup after bounded local export/hash; do not claim retention auto-deletes it |
-| Conditional exact topic/subscription | sns CreateTopic/GetTopicAttributes/SetTopicAttributes/TagResource/Subscribe/ListSubscriptionsByTopic/GetSubscriptionAttributes | Unsubscribe/DeleteTopic/read back absence. Owner confirms subscription; no unilateral ConfirmSubscription or address inference. |
+Runtime grants are minimal: ingress consumes its queue, performs namespace-bound
+Dynamo item transactions and writes its own logs. Dispatch performs namespace-bound
+Dynamo transactions, immutable Get/Put on its archive prefix, SNS Publish on its
+single topic and its logs. The manual dispatcher needs no Dynamo Scan/Query or
+NAT rights. The operator can send the finite input set, invoke dispatch, inspect
+own logs/queue/topic, read/query the namespace, upload/read the package, export and
+delete only the two trial S3 prefixes and their versions, and delete the retained
+trial table/bucket after preservation. Namespace LeadingKeys includes a non-null
+guard. Transaction APIs authorize constituent item actions, not fictional IAM
+TransactWriteItems actions.
 
-**Not yet an exact installable provisioner policy:** AWS assigns mapping and
-subscription ARNs at creation, and some list/create operations lack resource ARN
-scoping. Their narrow service-supported conditions/necessary Resource=* exceptions,
-S3 configuration IAM action mapping, full final CF resource requirements and the
-named operator policy before/after hashes must be compiled/reviewed with the final
-change set. Do not install broad grants to discover them. No existing backend,
-state lock or KMS policy exceptions are proposed. No need to reinstall az6 policies.
+Service-driven wildcard exceptions are explicit: creating a mapping requires
+Resource=* with exact lambda:FunctionArn/region; assigned mapping UUID actions stay
+function-bound. CF also has regional DescribeLogGroups metadata listing because
+that provider read has no resource-level scope; no foreign log-content permission.
+Mapping tagging is limited to this run's requested tags and known
+CloudFormation tag keys; it grants no foreign mapping update/delete. SNS subscription
+read/delete IAM is scoped to the **topic ARN**, not a guessed subscription ARN.
 
-## Admission, assertions and retirement
+Future admitted stages, one approved cycle:
 
-Before asking for execution approval, close these **specific** gates:
+1. Record account/principal, expiry, existing named inline-policy bytes/hash and
+   effective authority/inline-size capacity. Confirm neither stack/resource names
+   exist and that the complete create/delete scope is effective. Keep originals.
+2. Bootstrap only the3 own IAM resources and add the exact named temporary operator
+   policy. Read back hashes. The operator policy affects every session of that role
+   until reversed. No existing backend/lock/KMS policy changes are needed.
+3. Create the main base with DeployRuntime=false. This creates the bucket before
+   package publication. Upload exactly the locally pinned ZIP under
+   `packages/<ZIP_SHA256>.zip`; record version and compare returned SHA/bytes.
+4. Review/execute the main UPDATE change set with DeployRuntime=true and actual
+   PackageVersion. A rule forbids the base-only placeholder; final rendering fixes
+   PackageKey to the one qualified digest. Mapping remains disabled.
+5. Owner confirms the subscription. Confirm its own topic/address/status by the
+   exact configured principal, then enable only the known own mapping. No short
+   like-dependent admission cutoff. Start the finite fresh receipt sequence.
 
-1. Build the exact pinned managed AWS slice. Required cache gaps are
-   AWSSDK.DynamoDBv2 4.0.107.1 / Core4.0.102.10 and Lambda.Core3.3.0,
-   SQSEvents3.0.1, Serialization.SystemTextJson3.0.1. Reviewed caches lack them
-   (only older Lambda packages/S3 exist). No download/version substitution ran.
-   SNS provider is also absent. A controlled dependency restore is a separate
-   next local step; never execute unknown remote scripts.
-2. Small upstream-host bridge/consumer composition must preserve exact SQS
-   authorization/batch/deadline and suppression ACK semantics, reuse the original
-   DynamoStore with explicit StorageLimits, BackupIncidentPolicy and fenced
-   dispatcher. Add tests for region/config binding, foreign source/queue/key,
-   partial batch, deadline/uncertain commit and unsupported work. No NAT worker
-   or native-NAT catalog attached. Runtime absence of EC2/ASG permissions provides
-   a second boundary; test the source path too.
-3. Choose real email provider/recipient and confirm ownership/consent, notice
-   policy for escalation **and recovery**, and retry/dedup limits. Proposed SNS
-   Standard is an option, not an existing integration. Store provider MessageId
-   in the original dispatch receipt where supported; unknown acceptance retries
-   can duplicate email. Never mark Confirmed after timeout or claim inbox receipt.
-4. Owner decides trial evidence retention/export and deletion, policy parameters
-   and logical owner. Existing 1h producer/2h freshness/2+2-day backup retention
-   stay unchanged. Observer timer frequency/expected-UP/host are future install
-   decisions, not silently selected by this replay trial.
-5. Generate exact small template, deterministic package manifest and plan/changeset,
-   temporary create **and delete** policies, current authority, resource ownership
-   and cost checkpoint. Review new access/spend/destructive consent as one bundle.
+This is not a saved AWS change set or an effective-permission certification. Those
+are future admission checks inside the new reviewed cycle, not performed locally.
+CloudFormation/native deletion behavior still needs the actual trial. If a service
+needs an unlisted permission, stop that action and report it; preserve boundaries.
 
-After admission, record start/paid-resource times immediately. Target finish in
-2 hours, allow up to4 hours including a substantial cleanup reserve; overall
-ceiling **24h**. No minute-level approval cutoff; late human confirmation simply
-means re-check current plan/authority before starting. There is no automatic
-spend cutoff. Stop input and retire early on unresolvable security/authority
-failure or projected envelope overrun; ordinary recoverable bugs can be diagnosed
-live within the admitted reserve, without expanding scope.
+## Recommended synthetic defaults and bounded notice plan
 
-Single finite assertion set: FAILED/MISSING/STALE opens incident; unchanged/reminder
-retains epoch and one escalation; exact duplicate after a fresh runtime retains
-receipt/audit/revision; UNKNOWN cannot heal; fresh recovery and required second
-healthy observation close the proper epoch; recurrence opens new epoch; old/tied/
-expired positive cannot heal it. Check malformed/foreign queue/key/NAT poison has
-no unauthorized writes; original archive byte/digest readback; dispatcher known
-ACK vs unknown result; inspect pending unsupported work; human independently
-confirms the designated notice arrived. Counterfactual AWS denials are modeled
-locally first, not repeatedly attempted against unrelated resources.
+These are **recommendations for one grouped decision**, not installed defaults or
+changes to producer contracts. Templates require explicit values for them.
 
-Retirement order: disable mapping and sender; wait for in-flight processing/leases,
-record unresolved work/uncertainties; read/export/hash namespace state, receipts,
-audits, outbox and exact S3 archive versions plus logs/DLQ evidence to local storage;
-verify archive bytes/receipt lineage before destructive cleanup. Preserve original
-recovery evidence/states/backups unchanged. If new retention requires retained
-cloud data, report its exact names/cost/deletion date as residuals, not CLOSED CLEAN.
-Otherwise delete only admitted synthetic objects/versions/delete markers, table,
-queues, mapping/functions/logs, topic/subscription and own policies/roles; delete
-stack and dedicated CF role in dependency order. Retain defaults require explicit
-owned-resource reconciliation. No force cleanup, state edits, clearing pending
-rows to fabricate success, or unrelated prune. Reverse every temporary existing-
-role change and verify prior hash. Terminal targeted inventory must verify all
-owned resources/permissions absent or explicitly retained; uncertain delete needs
-read-only reconciliation before any retry. No NAT deletion is involved in this cycle.
+| Parameter | Recommended trial value |
+| --- | --- |
+| NotificationEmail | Owner supplies address and consent; never inferred/stored in Git |
+| SenderLabel | `ECS Backup Trial`; this labels subject/body, not a custom From address |
+| NotificationMode | EscalationAndRecovery |
+| Owner | Kendall04 as logical incident owner |
+| EvidenceSeconds / BudgetSeconds / CheckSeconds / HoldSeconds | 300 /600 /60 /0, synthetic policy only; no periodic task installed |
+| DedupSeconds / SignalAgeSeconds | 86400 /3600 |
+| AuditSeconds / EffectSeconds | 86400 /86400 |
+| QueueRetentionSeconds / DlqRetentionSeconds | 3600 /86400 |
+| LogRetentionDays | 1 |
+| StartsAt / ExpiresAt | Actual admitted start, at most24h later; aim finish within2h and preserve cleanup reserve |
+| PackageKey / PackageVersion | Qualified digest key / actual new S3 version, internal publication receipts |
 
-## New budget proposal; prior allocations are not a balance
+SNS owns the email From address. If a custom sender identity is required, that is
+outside this SNS trial; no SES/domain identity/credential is configured here.
+Logical24h retention is a ceiling for expiry eligibility if storage remains, not
+an AWS TTL guarantee. Normal proposal: export/hash synthetic evidence locally and
+explicitly authorize deletion of these new cloud records at trial end, without
+changing original SQL backup2+2-day preservation. If owner chooses cloud retention
+instead, identify exact residuals/deletion date/cost and do not report CLOSED CLEAN.
 
-Earlier USD2+USD1+USD1 caps and the closed az5/az6 USD2 aggregate are **historical
-authorizations**, not measured spend or a reusable allowance. No billing lookup
-was performed; actual past charges/credits and remaining balances are unknown.
-This new pipeline cycle needs **new explicit budget approval**.
+Generate receipts using the existing actual observer transition with explicit
+`--subject sql-backup-trial --anchor-utc <first-send-UTC>`; historical test defaults
+stay unchanged. Do not submit a future ObservedUtc before its time. Send only the
+first episode: failed, duplicate failed, unchanged/reminder, missing, stale,
+unknown, recovered, baseline healthy and recovered redelivery; optional sanitized
+poison negative. At most20 messages. FAILED/MISSING/STALE share one incident;
+UNKNOWN cannot heal it. Expect **one escalation and one recovery notice**, plus
+one subscription confirmation. Do not send recurrence fixtures in this mail trial.
+At most3 Publish attempts per each of the2 notice effects (6 planned attempts);
+SNS transport/internal retries can still duplicate delivery. Inspect the original
+outbox/message IDs; do not deliberately inject ambiguous real mail outcomes.
 
-Propose **USD1 new**, only after the above gates and actual plan are ready. Model
-below assumes us-east-1, no free tier/credits, no EC2/NAT/VPC/custom KMS, at most20
-input records, 200 total Lambda invocations (512MB,15s worst case), and bounded
-manual dispatch/retries. A future approved notice policy must bound actual sends
-(the cost reserve of100 deliveries is not permission to send100 messages). Counts include provisioning/inspection where relevant;
-these are operating envelopes, not AWS-enforced billing caps. Count consumed
-DynamoDB transaction units and GSI writes, not just API requests.
+Reconstruct runtime between duplicate deliveries to test durable receipts. Check
+state/receipt/audit identity, original archive byte readback and SNS MessageId;
+operator-received email is separate human evidence. Unsupported functional probes
+remain pending; never label them executed or an entire outbox drained. This proves
+synthetic durable signal plumbing, not remote backup checks, independent host/timer
+operation, producer failure coverage, SQL restore/RPO/RTO or whole ECS availability.
 
-| Meter/envelope | Reviewed tariff or explicit reserve | USD |
-| --- | --- | ---: |
-| Lambda200 x15s x0.5GB +200 requests | 0.0000166667/GB-s +0.20/million | 0.025041 |
-| DynamoDB20000 WRU incl transaction/GSI +10000 RRU | 0.625/million writes +0.125/million reads | 0.013750 |
-| DynamoDB20MB, conservatively full month | 0.25/GB-month (ignore free tier) | 0.005000 |
-| SQS100000 requests,64KiB accounting | 0.40/million Standard | 0.040000 |
-| SNS100 publishes +100 email deliveries | 0.50/million +2/100000 deliveries | 0.002050 |
-| Logs10MB ingest +full-month storage | 0.50/GB +0.03/GB-month | 0.005300 |
-| S3 packages/archive/versions/requests | explicit USD0.02 reserve, not quoted tariff | 0.020000 |
-| Bounded export/data-transfer rounding | explicit USD0.01 reserve | 0.010000 |
-| **Modeled envelope** | conditional on these counts/settings | **0.121141** |
+## Retirement and original preservation
 
-USD1 leaves margin; it is not a guarantee against runaway input, retained data,
-changed regional prices or taxes. Recheck S3 request/transfer details and exact
-package size in the final budget. Use original capacity accounting and local
-counters, input cap, no schedule and concurrency2; disable input before any
-projected overrun. Do not repeatedly poll billing (which can lag) as a cost guard.
-Any additional scope/budget requires a new decision, not reuse of old trial money.
+Stop sender and disable mapping first. Wait for in-flight processing and leases;
+record unresolved/uncertain work instead of clearing rows. Export/read-back/hash
+namespace head/evidence/receipts/audit/outbox, exact archive/package versions,
+logs and DLQ evidence to local storage. No secret values are present by design.
 
-Official sources consulted 2026-10-23:
-[Lambda](https://aws.amazon.com/lambda/pricing/),
-[DynamoDB](https://aws.amazon.com/dynamodb/pricing/),
-[SQS pricing](https://aws.amazon.com/sqs/pricing/) and
-[AWS SQS rate example](https://aws.amazon.com/blogs/aws-cloud-financial-management/aws-price-list-gets-a-natural-language-upgrade-introducing-the-aws-pricing-mcp-server/),
-[SNS FAQ](https://aws.amazon.com/sns/faqs/),
-[S3](https://aws.amazon.com/s3/pricing/),
-[CloudWatch](https://aws.amazon.com/cloudwatch/pricing/).
-The small scope/manifest are reproducible preparation; they are neither a saved
-AWS plan nor evidence of effective permissions or a delivered notice.
+Delete the main stack and wait through terminal state. Original definitions retain
+Sentinel table and Archive bucket deliberately: after verified local preservation
+and the bundled destructive consent, **the operator has exact native DeleteTable,
+DeleteObject/DeleteObjectVersion and DeleteBucket rights for them**. Reconcile own
+versions/delete markers, then targeted absence. No PurgeQueue, ForceDelete, state
+surgery, boundary removal or unrelated cleanup. Preserve unexpected keys and report
+rather than broadening deletion. All original ECS/EKS resources remain excluded.
+
+After runtime roles are gone, delete bootstrap stack: CF role and its two boundary
+policies. Reverse the named operator policy to its exact prior bytes (or remove
+only the policy this cycle introduced), read back hash, verify no session retains
+new effective access after propagation. Targeted residual checks cover stack
+objects, functions/mapping/roles/boundaries, queues/DLQ, topic/subscription, logs,
+table and every S3 version. A retained or uncertain resource is a residual, not a
+clean close. Record actual creation/retirement/reversal times and final inventory.
+
+## Cost and authority boundary
+
+Propose **USD1 NEW**, not yet approved. Previous trial allocations are closed;
+actual historical spend/credits remain unknown and no billing call ran. The old
+az5/az6 USD2 aggregate is not reopened or reset.
+
+Without free tier/credits, conservative small-use model: Lambda200 invocations
+including30s billed-duration allowance at512MB ≈USD0.050041; Dynamo20000 WRU plus
+10000 RRU ≈0.01375 and20MB full-month storage0.005; SQS100000 requests0.04;
+SNS100 Publish/email-delivery allowance0.00205; logs10MB ingest/full-month storage
+0.0053; explicit S3 request/storage reserve0.02 and export/rounding reserve0.01.
+**Modeled total ≈USD0.147**, with margin inside proposed USD1. The100-notification
+pricing reserve is not permission to send100 messages. No EC2/NAT/PITR/custom
+metrics/alarms or provisioned concurrency. Exact retained size/taxes can vary.
+
+Sources reviewed2026-10-23: [Lambda](https://aws.amazon.com/lambda/pricing/)
+(0.0000166667/GB-s,0.20/million requests),
+[DynamoDB](https://aws.amazon.com/dynamodb/pricing/)
+(0.625/million WRU,0.125/million RRU,0.25/GB-month),
+[AWS SQS rate example](https://aws.amazon.com/blogs/aws-cloud-financial-management/aws-price-list-gets-a-natural-language-upgrade-introducing-the-aws-pricing-mcp-server/)
+(0.40/million Standard requests),
+[SNS FAQ](https://aws.amazon.com/sns/faqs/)
+(0.50/million Publish,2/100000 email deliveries),
+[CloudWatch](https://aws.amazon.com/cloudwatch/pricing/) and
+[S3](https://aws.amazon.com/s3/pricing/).
+[Publish contract](https://docs.aws.amazon.com/sns/latest/api/API_Publish.html),
+[transaction IAM](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/transaction-apis-iam.html),
+[Lambda mapping authorization](https://docs.aws.amazon.com/service-authorization/latest/reference/list_lambda.html),
+[SNS topic/subscription IAM](https://docs.aws.amazon.com/service-authorization/latest/reference/list_sns.html).
+
+Input/invocation limits and a manual cleanup reserve are operating controls, not
+an automatic AWS billing cap. Account/region, exact access, code digest, email
+consent, deletion/preservation, recommended parameters and USD1 must be reviewed
+as one future bundle. Nothing in local readiness authorizes that execution.

@@ -128,3 +128,24 @@ The proposed replay cycle qualifies durable signal plumbing, not remote backup
 checking, full independent periodic observation or SQL recovery. Original NAT
 workers remain disconnected. PKI stays outside ECS scope. Original UI/Archify and
 closed recovery receipts are preserved; neither are relabeled as live operation.
+
+
+## Managed pipeline local close - 2026-10-23
+
+- [x] Actual original SQS host/ACK consumer hook, backup composition, explicit
+  account/region/function binding, invocation/expiry cancellation and scoped store.
+- [x] Original DynamoDB transactional adapter, receipt/audit/outbox and immutable
+  S3 archive exercised with SDK doubles; minimal SNS SDK adapter tested for known
+  acceptance, unknown results, lost completion duplicates and max3 attempts.
+- [x] Exact packages restored/locked from nuget.org; no global version upgrade.
+- [x] Offline16-resource main/3-IAM bootstrap templates and bounded create/test/
+  retire policies; qualified small local package/source manifest. No deployment.
+- [ ] Owner email/consent and recommended synthetic parameters; new USD1/access/
+  destructive-retirement bundle not approved. Actual change set/effective authority,
+  Lambda/AWS adapters and inbox receipt still require the admitted trial.
+
+This is synthetic replay plumbing. Independent real backup host/timer, remote
+producer/check failure coverage, real SQL/API recovery without manual repair and
+remaining project CI/release/hosting gates stay separate. PKI is outside scope.
+[Current operational guide](../operations/integrations/OPERATIONAL-TRIAL.md)
+contains exact resources, principals, suggested parameters and retirement order.
