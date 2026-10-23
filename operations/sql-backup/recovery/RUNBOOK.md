@@ -926,3 +926,63 @@ does not qualify EC2 systemd/drop-ins/bootstrap, the native file-only environmen
 branch, API/backup/restore, memory consumption or cross-AZ recovery. Snapshot
 limitations remain; no atomic/continuous attestation is claimed. Originals and
 closed AWS receipts/budgets are preserved. No AWS action or budget reset occurred.
+
+
+### Controlled SQL/API cross-AZ recovery and closure - 2026-10-23
+
+The admitted r20261023az6 trial used a1e6060 and artifact SHA256
+2d59ce9834deb84924cb1badfa0b3fdb4be8f7b4f99839a24844b25756a42d9a.
+Both actual EC2/systemd native prechecks passed with the file-only memory input
+basis, stable kernel listener ownership and separately reported SQL logical PIDs.
+Source SSM appeared naturally; the separately approved one-host reboot policy
+was never installed and no reboot was executed.
+
+Two ordinary failures were reconciled live, preserving original STARTED markers,
+failed receipts and exact backup/source lineage. First, mkdir(parents=True) left
+/var/opt/mssql/backup owned by root0700 above mssql-owned staging directories.
+The source database/login and one API marker existed, but the backup CLI could
+not read its config. Only the new private parent was changed to mssql0700 on the
+two owned hosts. The continuation retained the database, repeated no DDL, and
+created fresh timed pre/post markers. Second, Ubuntu's Python 3.10 rejected the
+actual .NET StartedUtc value 2026-10-23T04:41:29.5627332+00:00. Read-only diagnosis
+proved no target database/login or restore file existed. A distinct continuation
+checked event ordering at exact 100 ns precision, then adapted timestamp parsing
+in memory. Sealed artifact bytes and original timestamps were unchanged.
+
+Native backup checksum and S3 exact-version receipts passed. After source SQL
+was confirmed inactive, the other AZ restored that version, passed CHECKDB,
+decrypted/read the pre-backup marker, excluded the post-backup marker, and wrote
+and read a new API marker. Warm-target RTO was 142.630783 seconds, including the
+diagnosis pause; the controlled marker-age upper bound was 20.296562 seconds.
+This proves the controlled SQL/API component drill with explicit live repairs,
+not the unmodified host workflow, hourly RPO, production traffic, cold-AZ/full
+ECS recovery or internal SQL memory consumption/precedence.
+
+Retirement began immediately after proof. The owned NAT was deleted first;
+native NAT-ENI absence and EIP unassociation preceded the fresh saved full-root
+19-delete destroy. Native resource/root-volume/ENI absence, managed state 0 and
+lock absence were confirmed at 04:48:29UTC. Exact backend/KMS originals were
+restored and the two temporary inline grants removed/read back at 04:48:54UTC.
+No DisassociateAddress retry, DeleteVolume, state surgery, forced PID cleanup,
+EKS mutation or new budget was used. Original az5 evidence/state and original
+state versions/backups/retention 2+2 days remain preserved. USD 2 is the aggregate
+approved envelope, not a measured bill; the conservative combined reserve was
+USD 1.95 and no budget/T0 reset occurred. New retained objects expire under the
+existing asynchronous lifecycle.
+
+The local correction now explicitly owns the private staging parent before
+creating its children and refuses foreign/shared/symlink/existing-trial paths.
+Timestamp parsing supports 1-7 fractional digits on Python 3.10, while event-order
+comparison retains the seventh digit as integer 100 ns ticks. Duration reporting
+uses a microsecond projection; malformed timestamps and reversed submicrosecond
+events refuse. Seven captured/POSIX regressions and the affected contract suites
+pass: Windows 89 tests (3 POSIX skips), verifier 27 separately, and all 7 focused tests
+in existing Ubuntu 24.04. Early combined execution hit sandbox-temp permissions
+and the suite's intentional external-process audit hook; final commands used an
+owned TEMP and ran verifier separately. No installation/build/daemon change.
+The checked-in correction is local-tested; it is not a newly published or native
+SQL-qualified artifact. Preserve the original successful repaired trial receipts
+instead of retroactively attributing this source to its immutable artifact.
+
+Immutable closure receipt SHA256: `988d7917f9e2bf92129a7cd9ca3aad91b4b01b6591ea42aeb9019b224e5ffdbb`; closed at04:49:25UTC.
+Terminal state VersionId: `JrH4aZ1_HeCozCsizjXx4LLcuNA0MWoF`, serial3, managed0.

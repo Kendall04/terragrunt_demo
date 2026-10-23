@@ -1350,3 +1350,27 @@ SQL-reported PID was not retained and that mismatch remains unresolved. The
 container does not qualify EC2 systemd/drop-ins/bootstrap, memory consumption or
 recovery. All owned containers were gracefully stopped/removed, no OOM, AWS
 calls or shared daemon/toolchain changes. No new artifact is qualified.
+
+
+## Controlled SQL/API cross-AZ recovery with reconciled repairs - 2026-10-23
+
+The [dated execution and local correction](../../operations/sql-backup/recovery/RUNBOOK.md#controlled-sqlapi-cross-az-recovery-and-closure---2026-10-23)
+records r20261023az6: native EC2/systemd prechecks, verified backup, source SQL
+quiescence, exact-version restore/CHECKDB in the other AZ, API decryption and
+read/write. Warm-target RTO 142.630783 s and controlled marker-age bound 20.296562 s
+include actual observations. The source needed a private staging-parent ownership
+repair; restore needed in-memory Python 3.10/.NET7digit timestamp compatibility.
+Original failures/STARTED markers remain preserved; DDL was not replayed.
+This is controlled component proof with explicit repairs, not unmodified workflow,
+hourly RPO, production workload, full ECS/cold-AZ recovery or memory enforcement.
+
+All owned runtime resources/root volumes/ENIs were natively absent and state/lock
+empty at 04:48:29UTC; exact temporary security reversal/readback at 04:48:54UTC.
+Original states, az5 closure and backup retention 2+2 days were preserved; no EKS
+resources or budget reset. The original aggregate USD 2 authorization is not a
+billing measurement. The local host correction and seven regressions address
+private-parent ownership and preserve 100 ns event ordering while accepting .NET
+timestamp precision on Python 3.10. Affected suites:89Windows tests (3 POSIX skips),
+27 verifier separately, all 7 focused tests on actual Ubuntu 24.04 POSIX paths.
+No new artifact was published/qualified for this local correction; trial lineage
+continues to bind a1e6060 and the original immutable artifact plus explicit repairs.

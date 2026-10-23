@@ -28,9 +28,49 @@ def utc():
 
 
 def timestamp(value):
-    parsed = dt.datetime.fromisoformat(value.replace('Z', '+00:00'))
-    require(parsed.tzinfo is not None, 'UTC_OFFSET_REQUIRED')
-    return parsed
+    # .NET round-trip timestamps may have seven fractional digits. Python3.10
+    # accepts at most six; durations project below one microsecond while ordering
+    # below retains the original seventh digit instead of silently losing it.
+    require(isinstance(value, str), 'INVALID_TIMESTAMP')
+    match = re.fullmatch(r'(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.(\d{1,7}))?(Z|[+-]\d{2}:\d{2})?', value)
+    require(match is not None, 'INVALID_TIMESTAMP')
+    require(match[3] is not None, 'UTC_OFFSET_REQUIRED')
+    fraction = match[2] or ''
+    projected = match[1] + ('.' + fraction[:6] if fraction else '') + match[3]
+    return dt.datetime.fromisoformat(projected.replace('Z', '+00:00'))
+
+
+def timestamp_ticks(value):
+    parsed = timestamp(value).astimezone(dt.timezone.utc)
+    delta = parsed - dt.datetime(1970, 1, 1, tzinfo=dt.timezone.utc)
+    fraction = re.search(r'\.(\d{1,7})', value)
+    last = int(fraction[1][6]) if fraction and len(fraction[1]) == 7 else 0
+    return ((delta.days * 86400 + delta.seconds) * 1000000 + delta.microseconds) * 10 + last
+
+
+def event_order(*values):
+    ticks = [timestamp_ticks(value) for value in values]
+    return all(left <= right for left, right in zip(ticks, ticks[1:]))
+
+
+def create_staging(name, user):
+    directories = [Path(options(name)[field]) for field in ('StagingDirectory', 'RestoreDirectory')]
+    parent = directories[0].parent
+    require(parent.is_absolute(), 'SAFE_ABSOLUTE_PATH_REQUIRED')
+    require(all(directory.parent == parent for directory in directories), 'STAGING_PARENT_MISMATCH')
+    require(not any(path.is_symlink() for path in (parent, *parent.parents)), 'SAFE_ABSOLUTE_PATH_REQUIRED')
+    require(all(not directory.exists() and not directory.is_symlink() for directory in directories), 'EXISTING_STAGING_REQUIRES_REVIEW')
+    if not parent.exists():
+        # Never leave a root0700 intermediate directory above mssql-owned children.
+        parent.mkdir(mode=0o700)
+        os.chown(parent, user.pw_uid, user.pw_gid)
+    stat = parent.stat()
+    require(parent.is_dir() and stat.st_uid == user.pw_uid and stat.st_gid == user.pw_gid
+            and stat.st_mode & 0o777 == 0o700, 'PRIVATE_SQL_STAGING_PARENT_REQUIRED')
+    for directory in directories:
+        directory.mkdir(mode=0o700)
+        os.chown(directory, user.pw_uid, user.pw_gid)
+    return directories[0] / 'backup-config.json'
 
 
 def bind_identity(identity, expected_instance, expected_az):
@@ -238,7 +278,7 @@ def restore(port, name, config, backup, api, identity, source_record, failure):
     require(failure['SourceInstanceId'] == source_record['Source']['instanceId'] and failure['ActiveState'] == 'inactive', 'SOURCE_QUIESCENCE_REQUIRED')
     m = source_record['Receipt']['Manifest']
     require(source_record['Receipt']['ManifestKey'].startswith(BASE + '/' + name + '/runs/'), 'MANIFEST_OUTSIDE_TRIAL')
-    require(timestamp(source_record['PreMarkerRequestUtc']) <= timestamp(source_record['PreMarkerConfirmedUtc']) <= timestamp(m['StartedUtc']) <= timestamp(m['CompletedUtc']) <= timestamp(source_record['PostMarkerConfirmedUtc']) <= timestamp(failure['FailureDeclaredUtc']) <= timestamp(failure['SourceInactiveConfirmedUtc']) <= timestamp(utc()), 'INVALID_EVENT_ORDER')
+    require(event_order(source_record['PreMarkerRequestUtc'], source_record['PreMarkerConfirmedUtc'], m['StartedUtc'], m['CompletedUtc'], source_record['PostMarkerConfirmedUtc'], failure['FailureDeclaredUtc'], failure['SourceInactiveConfirmedUtc'], utc()), 'INVALID_EVENT_ORDER')
     sa = port.secret(SA_SECRET)
     runtime = checked_runtime(port, identity, sa)
     app = port.secret(APP_SECRET)
@@ -304,14 +344,9 @@ def main():
             require(executable is not None and executable.is_absolute() and executable.is_file()
                     and not any(p.is_symlink() or p.stat().st_mode & 0o022 for p in (executable, *executable.parents)), 'REVIEWED_EXECUTABLE_REQUIRED')
             require(isinstance(expected, str) and re.fullmatch('[0-9a-f]{64}', expected) and hashlib.sha256(executable.read_bytes()).hexdigest() == expected, 'EXECUTABLE_HASH_MISMATCH')
-        for field in ('StagingDirectory', 'RestoreDirectory'):
-            directory = Path(options(a.trial)[field])
-            require(not directory.exists(), 'EXISTING_STAGING_REQUIRES_REVIEW')
-            directory.mkdir(mode=0o700, parents=True)
-            import pwd
-            user = pwd.getpwnam('mssql')
-            os.chown(directory, user.pw_uid, user.pw_gid)
-        config = Path(options(a.trial)['StagingDirectory']) / 'backup-config.json'
+        import pwd
+        user = pwd.getpwnam('mssql')
+        config = create_staging(a.trial, user)
         private_write(config, options(a.trial))
         os.chown(config, user.pw_uid, user.pw_gid)
         if a.action == 'source':
