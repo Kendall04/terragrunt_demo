@@ -82,6 +82,7 @@ Use the same SDK/environment for build and execution; set
 DOTNET_CLI_TELEMETRY_OPTOUT=1 and DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1. Nothing runs a
 normal ECS API startup, database migration, KMS request or host service.
 
-PKI consumer qualification follows separately, using public upstream APIs and only
-ephemeral test material. No upstream Production profile, AWS signer, persistent CA
-or credential custody is accepted by this Sentinel increment.
+PKI runtime integration is **paused** after the owner clarified that ECS has one
+application and no business HTTP peer. The preserved [compatibility experiment](PKI-EXPERIMENT.md)
+is NOT ACCEPTED and is not an existing/deployed microservice. It installs no CA
+and changes no existing API, database/KMS or runtime/IaC contract.
