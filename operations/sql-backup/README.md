@@ -314,3 +314,44 @@ The new bounded historical UNKNOWN disposition is recorded, preserving the journ
 UNKNOWN and all other controls; it authorizes neither apply nor deletion. Exact
 binding to any fresh execution configuration remains necessary. Runtime is still
 absent and no four-hour billable-runtime window has started.
+
+
+## Local signal and versioned component qualification - 2026-10-23
+
+`SqlBackup build-info` returns only component/revision/informational version;
+no config, SQL credential or AWS resolution. A Linux-x64 self-contained publish
+must pin runtime10.0.13 and SourceRevisionId to the reviewed clean Git commit.
+`local_release.py create` inventories every published file and binds that binary
+identity to the commit. `verify` requires BOTH the separately pinned manifest
+SHA256 and source commit. `verify-bundle` additionally checks the full archive
+SHA256 and compares every backup file/source binding in its bundle manifest.
+Old manifests, substituted DLLs and older bundles refuse. These are local
+preparation gates; no automatic AWS/CI enforcement or signed attestation is claimed.
+The next trial's concrete packet must pin and invoke this check before publication
+and execution. Old65c7901 is preserved and cannot be called the current component.
+
+`replay-check --config <config> --receipts <captured-receipt-array> --expected-up true`
+executes the real Protocol.Check with a read-only captured-metadata store, never
+S3/SQL. Output explicitly says LOCAL_RECEIPT_REPLAY/RemoteStorageObserved:false.
+Use original captured receipt metadata to qualify parsing/staleness; an empty
+array demonstrates only missing captured evidence, not actual remote absence.
+A staged synthetic FAILED Attempt tests producer-failure precedence; label it as
+such and preserve originals. No restore/download/write is supported by this store;
+--aws/--ec2-role refuse in replay mode. Live checking remains the existing explicit
+--aws path and needs its own authorized observation and independent failure domain.
+
+`signals.py health --receipt <Health.json> --observed-at <UTC> --exit-code <0-or-1>`
+or `signals.py job --receipt <last-job.json> --observed-at <UTC>` renders bounded
+sanitized local log JSON from existing source-defined fields. Status/code/exit
+must match; unknown/future/oversized/duplicate/private-field inputs refuse.
+STARTED, UNKNOWN and OPERATOR_RESUMED are never success. Every output says
+LOCAL_RECEIPT_REPLAY, Delivery:NONE, SentinelIntegrated:false and
+RemediationAllowed:false. This is not a Sentinel API or email sender.
+
+Inspection found existing service stdout/stderr/private last-job state and inert
+CloudPreview monitoring proposals, but no backup metric/log forwarding, independent
+periodic checker or confirmed notification channel. Existing ordinary infrastructure
+SNS/alarm declarations do not install backup producers/observers. Real alert
+delivery still needs those bindings, maintenance/freshness semantics and explicit
+installation/channel approval; private Sentinel source/contracts remain unavailable.
+No cloud permission, external email, upload or deployment was configured here.

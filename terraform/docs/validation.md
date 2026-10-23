@@ -1412,3 +1412,16 @@ failure publication, independent missing/stale observation and notification rema
 pending. No alarm/Sentinel/email, AWS action, deployment, publish or archive rebuild.
 Artifact 65c7901 stays immutable and does not contain this later compiled health fix.
 PKI/Sentinel source/package availability gates are documented without invented APIs.
+
+
+## Local backup signal and release binding - 2026-10-23
+
+The [local qualification surface](../../operations/sql-backup/README.md#local-signal-and-versioned-component-qualification---2026-10-23)
+adds metadata-only build identity, a source/hash-pinned component inventory and
+old-bundle/substituted-DLL rejection. An explicit read-only captured-receipt replay
+invokes Protocol.Check with RemoteStorageObserved:false; it never certifies live
+remote absence. Local signal JSON is bounded/sanitized, has no external delivery,
+and never treats STARTED/UNKNOWN/resume as success. Existing service receipts are
+the source contract; no Sentinel API or email implementation is invented. Actual
+publication/output hashes and captured receipt cases remain in a separate local
+qualification receipt, without rewriting old65c7901 or creating another301MB tar.

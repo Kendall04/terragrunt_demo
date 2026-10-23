@@ -8,14 +8,24 @@ public static class Program
     {
         try
         {
-            if (args.Length < 3 || !new[] {"backup", "restore", "check", "cleanup", "cloud-preview"}.Contains(args[0])) throw new BackupFailure("USAGE_REQUIRED");
+            // Metadata only: bind published binaries without credentials or AWS.
+            if (args.Length > 0 && args[0] == "build-info")
+            {
+                if (args.Length != 1) throw new BackupFailure("INVALID_ARGUMENT");
+                var version = System.Reflection.CustomAttributeExtensions.GetCustomAttribute<System.Reflection.AssemblyInformationalVersionAttribute>(typeof(Program).Assembly)?.InformationalVersion ?? "UNBOUND";
+                var suffix = version.Split('+').Last();
+                var commit = System.Text.RegularExpressions.Regex.IsMatch(suffix, "^[a-f0-9]{40}$") ? suffix : "UNBOUND";
+                Console.WriteLine(JsonSerializer.Serialize(new { Component = "SqlBackup", SourceCommit = commit, InformationalVersion = version }));
+                return 0;
+            }
+            if (args.Length < 3 || !new[] {"backup", "restore", "check", "replay-check", "cleanup", "cloud-preview"}.Contains(args[0])) throw new BackupFailure("USAGE_REQUIRED");
             var values = new Dictionary<string, string>(); bool aws = false, ec2Role = false, localSql = false;
             for (int i = 1; i < args.Length; i++)
             {
                 if (args[i] == "--aws") { if (aws) throw new BackupFailure("DUPLICATE_ARGUMENT"); aws = true; continue; }
                 if (args[i] == "--ec2-role") { if (ec2Role) throw new BackupFailure("DUPLICATE_ARGUMENT"); ec2Role = true; continue; }
                 if (args[i] == "--local-sql-self-signed") { if (localSql) throw new BackupFailure("DUPLICATE_ARGUMENT"); localSql = true; continue; }
-                if (!new[] {"--config", "--manifest-key", "--manifest-version", "--target", "--expected-up"}.Contains(args[i]) || i + 1 >= args.Length || !values.TryAdd(args[i], args[++i])) throw new BackupFailure("INVALID_ARGUMENT");
+                if (!new[] {"--config", "--manifest-key", "--manifest-version", "--target", "--expected-up", "--receipts"}.Contains(args[i]) || i + 1 >= args.Length || !values.TryAdd(args[i], args[++i])) throw new BackupFailure("INVALID_ARGUMENT");
             }
             if (!values.TryGetValue("--config", out var config)) throw new BackupFailure("CONFIG_REQUIRED");
             var options = JsonFiles.Read<Options>(config); options.Validate();
@@ -23,9 +33,12 @@ public static class Program
             if (args[0] == "cloud-preview") { Console.WriteLine(JsonSerializer.Serialize(CloudPreview.Render(options), JsonFiles.Format)); return 0; }
             using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(options.TimeoutSeconds));
             var ct = deadline.Token;
+            if (args[0] == "replay-check" && (aws || ec2Role)) throw new BackupFailure("REPLAY_NO_CLOUD");
             if (args[0] == "check" && values.GetValueOrDefault("--expected-up") == "false")
             { Console.WriteLine(JsonSerializer.Serialize(new Health("MAINTENANCE", "NOT_EXPECTED_UP"))); return 0; }
-            IStore? store = aws ? await S3Store.Connect(options, ec2Role, ct) : null;
+            IStore? store = args[0] == "replay-check"
+                ? ReceiptReplayStore.Load(options, values.GetValueOrDefault("--receipts") ?? throw new BackupFailure("RECEIPTS_REQUIRED"))
+                : aws ? await S3Store.Connect(options, ec2Role, ct) : null;
             NativeSql? engine = null;
             if (args[0] is "backup" or "restore")
             {
@@ -55,7 +68,9 @@ public static class Program
             else
             {
                 if (!values.TryGetValue("--expected-up", out var expected) || !bool.TryParse(expected, out var up)) throw new BackupFailure("EXPECTED_UP_REQUIRED");
-                var health = await protocol.Check(up, ct); Console.WriteLine(JsonSerializer.Serialize(health));
+                var health = await protocol.Check(up, ct);
+                if (args[0] == "replay-check") Console.WriteLine(JsonSerializer.Serialize(new { Evaluation = "LOCAL_RECEIPT_REPLAY", RemoteStorageObserved = false, Health = health }));
+                else Console.WriteLine(JsonSerializer.Serialize(health));
                 return health.Status is "HEALTHY" or "MAINTENANCE" ? 0 : 1;
             }
             return 0;
