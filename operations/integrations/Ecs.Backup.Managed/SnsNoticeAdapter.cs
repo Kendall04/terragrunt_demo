@@ -21,11 +21,13 @@ public sealed class SnsNoticeAdapter(IAmazonSimpleNotificationService sns,Backup
   if(token.IsCancellationRequested)return new(DeliveryStatus.RetryableFailure,"Publish not attempted; invocation cancelled.");
   var status=execution.Audit.SourceMetadata?.GetValueOrDefault("backupStatus")??"UNKNOWN";
   if(status is not ("FAILED" or "MISSING" or "STALE" or "UNKNOWN" or "HEALTHY"))return new(DeliveryStatus.PermanentFailure,"Invalid sanitized backup status.");
-  var payload=DomainJson.Serialize(new {schemaVersion=1,source="Ecs.Backup.Sentinel",senderLabel=settings.SenderLabel,service=settings.Key.Service,
-   scope=settings.Key.Scope,incidentId=intent.IncidentId,epoch=intent.Epoch,effectId=execution.Entry.Id,kind=intent.Kind.ToString(),backupStatus=status,
-   acceptance="SNS_PUBLISH_ONLY_NOT_INBOX_RECEIPT",syntheticTrial=true});
+  var evidence=new BackupNoticeEvidence(1,"Ecs.Backup.Sentinel",settings.SenderLabel,settings.Key.Service,settings.Key.Scope,
+   intent.IncidentId,intent.Epoch,execution.Entry.Id,intent.Kind.ToString(),status,"SNS_PUBLISH_ONLY_NOT_INBOX_RECEIPT",true);
+  var payload=DomainJson.Serialize(evidence);
+  var content=BackupNoticeText.Format(evidence,execution.Audit.SourceMetadata?.GetValueOrDefault("backupCode"),execution.Audit.Signal.ObservedAt);
   try {
-   var response=sns.PublishAsync(new PublishRequest {TopicArn=settings.TopicArn,Subject=settings.SenderLabel+" backup "+status,Message=payload},token).GetAwaiter().GetResult();
+   var response=sns.PublishAsync(new PublishRequest {TopicArn=settings.TopicArn,Subject=content.Subject,Message=content.Message,
+    MessageAttributes=new(){["BackupEvidence"]=new(){DataType="String",StringValue=payload}}},token).GetAwaiter().GetResult();
    return response.HttpStatusCode==HttpStatusCode.OK && Regex.IsMatch(response.MessageId??"","^[a-zA-Z0-9-]{1,128}$")
     ?new(DeliveryStatus.Confirmed,"SNS accepted message "+response.MessageId+"; inbox delivery unverified.")
     :new(DeliveryStatus.Unknown,"SNS acceptance unproven; preserve same outbox identity.");

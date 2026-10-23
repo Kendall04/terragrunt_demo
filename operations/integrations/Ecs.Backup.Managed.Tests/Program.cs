@@ -64,6 +64,23 @@ var dispatch=d.Dispatch([escalation.Id]);
 Check("original outbox records known SNS publish ACK",dispatch.Single().Completion==CompletionStatus.Recorded && d.Store.ReadEffect(escalation.Id)!.Status==OutboxStatus.Confirmed);
 Check("SNS request is only exact topic with no recipient override",d.Sns.Requests.Count==1 && d.Sns.Requests[0].TopicArn==d.Settings.TopicArn && d.Sns.Requests[0].TargetArn is null && d.Sns.Requests[0].PhoneNumber is null);
 Check("SNS body sanitized and honest about synthetic acceptance",d.Sns.Requests[0].Message.Contains("SNS_PUBLISH_ONLY_NOT_INBOX_RECEIPT") && !d.Sns.Requests[0].Message.Contains("Password"));
+var failedRequest=d.Sns.Requests[0];
+Check("email starts with a visible synthetic warning",failedRequest.Message.StartsWith("PRUEBA SINTÉTICA\n") && failedRequest.Subject.StartsWith("PRUEBA SINTETICA | "));
+Check("email is plain text rather than the internal JSON",!failedRequest.Message.TrimStart().StartsWith('{') && !failedRequest.Message.Contains("<html") && failedRequest.MessageStructure is null);
+Check("readable facts precede technical identifiers",failedRequest.Message.IndexOf("Estado:")<failedRequest.Message.IndexOf("Servicio:") && failedRequest.Message.IndexOf("Motivo registrado:")<failedRequest.Message.IndexOf("DATOS TÉCNICOS") && failedRequest.Message.IndexOf("DATOS TÉCNICOS")<failedRequest.Message.IndexOf("Efecto:"));
+var structured=DomainJson.Deserialize<BackupNoticeEvidence>(failedRequest.MessageAttributes["BackupEvidence"].StringValue);
+Check("structured sanitized evidence remains internal",failedRequest.MessageAttributes["BackupEvidence"].DataType=="String" && structured.SyntheticTrial && structured.SchemaVersion==1 && structured.EffectId==escalation.Id && structured.BackupStatus=="FAILED");
+Check("failed reason comes from validated observer code",failedRequest.Message.Contains("LAST_ATTEMPT_FAILED") && failedRequest.Message.Contains("El observador informó un intento fallido."));
+Check("human email separates evidence from inbox acceptance",failedRequest.Message.Contains("no acredita recepción en el buzón") && failedRequest.Message.Contains("no acredita un fallo real ni una restauración SQL"));
+foreach(var (status,code,state) in new[]{("FAILED","LAST_ATTEMPT_FAILED","FALLO"),("MISSING","NO_REMOTE_COMMIT","AUSENTE"),("STALE","REMOTE_BACKUP_TOO_OLD","ANTIGUO"),("UNKNOWN","REMOTE_STORAGE_NOT_CHECKED","SIN DATOS SUFICIENTES"),("HEALTHY","RECENT_REMOTE_COMMIT","SANO")}) {
+ var rendered=BackupNoticeText.Format(structured with {BackupStatus=status},code,DateTimeOffset.Parse("2026-10-23T17:00:00Z"));
+ Check("readable "+status+" uses only compatible observed facts",rendered.Message.Contains("Estado: "+state) && rendered.Message.Contains("Código del recibo: "+code) && !rendered.Message.Contains("NO_DISPONIBLE"));
+}
+var hidden=BackupNoticeText.Format(structured,"Password=synthetic-do-not-leak",DateTimeOffset.Parse("2026-10-23T17:00:00Z"));
+Check("incompatible raw reason is not rendered or invented",!hidden.Message.Contains("synthetic-do-not-leak") && hidden.Message.Contains("NO_DISPONIBLE") && hidden.Message.Contains("no se infiere una causa"));
+var maxTitle=BackupNoticeText.Format(structured with {SenderLabel=new string('x',40)},"LAST_ATTEMPT_FAILED",DateTimeOffset.Parse("2026-10-23T17:00:00Z"));
+Check("SNS title fits byte limit and has no controls",System.Text.Encoding.UTF8.GetByteCount(maxTitle.Subject)<=100 && !maxTitle.Subject.Any(char.IsControl));
+await Reject("renderer cannot relabel a non-synthetic notice",()=>Task.Run(()=>BackupNoticeText.Format(structured with {SyntheticTrial=false},"LAST_ATTEMPT_FAILED",DateTimeOffset.Parse("2026-10-23T17:00:00Z"))));
 d.Dispatch([escalation.Id]);Check("confirmed durable outbox does not publish twice",d.Sns.Requests.Count==1);
 var archiveResult=d.Dispatch([archive.Id]);Check("original S3 archive confirms only after readback",archiveResult[0].Completion==CompletionStatus.Recorded && d.S3.Objects.Count==1 && d.S3.Gets.Count==1 && d.Store.ReadAudit(archive.AuditId)!.ArchivedAt is not null);
 Check("archive prefix and SSE-S3 stay trial-local",d.S3.Puts.All(x=>x.Key.StartsWith(d.Settings.Archive.Prefix+"/") && x.ServerSideEncryptionMethod==ServerSideEncryptionMethod.AES256));
@@ -108,6 +125,12 @@ var region2=r.Settings with {Region="us-east-2"};region2.Validate();Check("regio
 env=Rig.Environment(r.Settings);env.Remove("SENTINEL_AUDIT_SECONDS");await Reject("missing retention not inferred",()=>Task.Run(()=>BackupSettings.Read(env.GetValueOrDefault)));
 env=Rig.Environment(r.Settings);env["AWS_PROFILE"]="unusable-local-profile";await Reject("profile fallback refused without credential read",()=>Task.Run(()=>BackupSettings.Read(env.GetValueOrDefault)));
 await Reject("invalid dispatch IDs refused before SDK writes",()=>Task.Run(()=>d.Dispatch(["untrusted"])));
+if(Environment.GetEnvironmentVariable("ECS_MAIL_EXAMPLES_DIR") is {Length:>0} examples) {
+ Directory.CreateDirectory(examples);
+ File.WriteAllText(Path.Combine(examples,"failed.txt"),d.Sns.Requests[0].Subject+"\n\n"+d.Sns.Requests[0].Message+"\n");
+ File.WriteAllText(Path.Combine(examples,"recovery.txt"),d.Sns.Requests[1].Subject+"\n\n"+d.Sns.Requests[1].Message+"\n");
+ File.WriteAllText(Path.Combine(examples,"structured-evidence.json"),d.Sns.Requests[0].MessageAttributes["BackupEvidence"].StringValue+"\n");
+}
 Console.WriteLine(DomainJson.Serialize(new {status="PASS",tests=cases.Count,cases,persistence="ORIGINAL_DYNAMOSTORE_WITH_UPSTREAM_OFFLINE_SDK_DOUBLE",archive="ORIGINAL_S3_ADAPTER_WITH_UPSTREAM_OFFLINE_SDK_DOUBLE",notification="SNS_PUBLISH_SDK_DOUBLE_ONLY",emailSent=false,awsCalls=0,natProvidersConnected=false}));
 
 sealed class Rig {
