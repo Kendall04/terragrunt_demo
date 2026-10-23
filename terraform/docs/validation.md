@@ -1312,3 +1312,41 @@ reviewed local package commit and every file; see the packet's local-validation.
 Fresh cloud plans/permissions and owner cloud approval remain prerequisites. RPO/RTO are methodology only: a future
 controlled marker-age bound and warm-target RTO do not prove hourly RPO or full
 ECS/cold-infrastructure recovery. No new AWS/IAM/state/secret/CI change occurred.
+
+## Native recovery getter correction - 2026-10-23
+
+The closed `r20261023az5` trial proved creation and bounded retirement of20 owned
+resources, native NAT/EIP reconciliation, empty terminal state/lock absence and
+exact temporary security reversal. Source refused before DDL/API/backup at
+`get_memory / SELECTED_GET_FORMAT_UNSUPPORTED`; cross-AZ recovery remains unproven.
+The [dated runbook entry](../../operations/sql-backup/recovery/RUNBOOK.md#native-selected-get-cli-correction---local-2026-10-23)
+records closure, package/source hashes and the native-compatible local correction.
+
+The exact SQL16.0.4305.5-1 Microsoft package's CLI/get functions, evaluated offline
+against synthetic configuration, reproduced the captured70-byte stdout hash.
+The defect was dotted `get section.key` instead of `get section key`, plus omission
+of its exact `key : value` formatter. Only command arguments and strict selected
+value parsing changed. The error output remains rejected; memory2048, loopback,
+PID/listener stability, fresh query and complete initial-environment projection
+requirements and unproven consumption flags remain intact.
+
+Three added native-protocol/source-path regressions first failed against the old
+helper. The final focused suite is72 recovery/authorization/runtime tests plus27
+verifier tests PASS, including negative native messages/keys/values/extra output.
+No SQL engine, package installation, AWS request or new runtime artifact is part
+of this offline correction. It neither requalifies the old tar nor proves native
+corrected precheck, backup/restore, API or RPO/RTO acceptance.
+
+
+### Native official SQL image checkpoint - 2026-10-23
+
+The [native checkpoint](../../operations/sql-backup/recovery/RUNBOOK.md#official-image-native-qualification-checkpoint---2026-10-23)
+records actual SQL2022 Express16.0.4305.5 startup/query and production getter
+PASS against the exact pinned official image/package source. This supersedes
+only the preceding offline-only getter limit. An explicitly adapted direct
+launch configuration/process/listener observation passed; the production host
+precheck refused at fresh_sql_query/FRESH_QUERY_WRONG_PROCESS. The native
+SQL-reported PID was not retained and that mismatch remains unresolved. The
+container does not qualify EC2 systemd/drop-ins/bootstrap, memory consumption or
+recovery. All owned containers were gracefully stopped/removed, no OOM, AWS
+calls or shared daemon/toolchain changes. No new artifact is qualified.

@@ -1,5 +1,6 @@
 """Hermetic metadata fixtures, not native SQL/Ubuntu/authority evidence."""
 import contextlib
+import hashlib
 import io
 import json
 from pathlib import Path
@@ -13,6 +14,7 @@ import verify_effective as v
 CANARY = 'AWS_SECRET_ACCESS_KEY'
 CONFIG = '[memory]\nmemorylimitmb = 2048\n[network]\nipaddress = 127.0.0.1\n'
 ROW = '0: 0100007F:0599 00000000:0000 0A 0:0 00:0 0 0 0 700 1'
+NATIVE_GET = json.loads((Path(__file__).parent / 'fixtures/mssql-conf-16.0.4305.5-1.json').read_text())
 
 
 class FakePort:
@@ -55,10 +57,70 @@ class FakePort:
             if isinstance(value, Exception): raise value
             return types.SimpleNamespace(returncode=self.exit, stdout=value, stderr=self.stderr)
         if args[:2] == ['/opt/mssql/bin/mssql-conf', 'get']:
-            value = self.answers[args[2]]
+            if len(args) != 4: raise AssertionError('Selected get requires separate section/key')
+            value = self.answers['.'.join(args[2:])]
             if isinstance(value, Exception): raise value
             return types.SimpleNamespace(returncode=self.exit, stdout=value, stderr=self.stderr)
         raise RuntimeError(CANARY)
+
+
+class NativeGetProtocol:
+    """Package-derived argument/output protocol; never runs SQL or the utility."""
+    def __init__(self):
+        super().__init__()
+        self.answers = {'.'.join(row['Args'][1:]): row['Stdout'] for row in NATIVE_GET['CorrectSeparateCalls']}
+
+    def run(self, args):
+        if args[:2] != ['/opt/mssql/bin/mssql-conf', 'get']:
+            return super().run(args)
+        self.calls.append(args)
+        if len(args) == 3 and args[2] in ('memory.memorylimitmb', 'network.ipaddress'):
+            value = NATIVE_GET['WrongDottedCalls'][0]['Stdout']
+        elif len(args) == 4 and '.'.join(args[2:]) in self.answers:
+            value = self.answers['.'.join(args[2:])]
+        else:
+            raise AssertionError('Unexpected selected command or section enumeration')
+        return types.SimpleNamespace(returncode=self.exit, stdout=value, stderr=self.stderr)
+
+
+class NativeGetPort(NativeGetProtocol, FakePort):
+    pass
+
+
+class NativeSelectedGetTests(unittest.TestCase):
+    def test_native_colon_values_use_exact_separate_section_and_key_arguments(self):
+        for memory, ip in [('memorylimitmb : 2048\n', 'ipaddress : 127.0.0.1\n'),
+                           ('memorylimitmb\t:\t2048\r\n', 'ipaddress:127.0.0.1\r\n')]:
+            p = NativeGetPort(); p.answers = {'memory.memorylimitmb': memory, 'network.ipaddress': ip}
+            report = v.assess(p)
+            self.assertEqual(report['Status'], 'CONFIGURATION_OBSERVATION_ONLY')
+            selected = [a for a in p.calls if a[0].endswith('mssql-conf')]
+            self.assertEqual(selected, [['/opt/mssql/bin/mssql-conf', 'get', 'memory', 'memorylimitmb'],
+                                        ['/opt/mssql/bin/mssql-conf', 'get', 'network', 'ipaddress']])
+            self.assertFalse(report['MemoryRuntimePrecedenceProven'])
+            self.assertFalse(report['RecoveryAcceptance'])
+
+    def test_exact_native_70_byte_error_is_never_accepted_as_a_value(self):
+        row = NATIVE_GET['WrongDottedCalls'][0]; body = row['Stdout'].encode()
+        self.assertEqual(len(body), 70)
+        self.assertEqual(hashlib.sha256(body).hexdigest(), 'da1b908f33cd2edc41fa90195a3ea55188a8ca1bdf2fbb4642fd6ed5823f40f1')
+        p = NativeGetPort(); p.answers['memory.memorylimitmb'] = row['Stdout']
+        report = v.assess(p)
+        self.assertEqual((report['Stage'], report['Code']), ('get_memory', 'SELECTED_GET_FORMAT_UNSUPPORTED'))
+        self.assertNotIn(row['Stdout'].strip(), json.dumps(report))
+
+    def test_colon_format_refuses_wrong_keys_values_extra_lines_and_canaries(self):
+        for key, stage, selected, other, bad in [
+            ('memory.memorylimitmb', 'get_memory', 'memorylimitmb : 2048', 'ipaddress : 127.0.0.1', 'memorylimitmb : 4096'),
+            ('network.ipaddress', 'get_ip', 'ipaddress : 127.0.0.1', 'memorylimitmb : 2048', 'ipaddress : 0.0.0.0')]:
+            for value in [bad, other, '', selected+'\n'+other, selected+'\n'+selected,
+                          '#warning\n'+selected, selected+' #'+CANARY, selected+'\n'+CANARY,
+                          selected.replace(' : ', ' = '), selected.upper(), '\x1b[0m'+selected]:
+                with self.subTest(key=key, value=value):
+                    p = NativeGetPort(); p.answers[key] = value; report = v.assess(p)
+                    expected = 'SELECTED_GET_VALUE_MISMATCH' if value == bad else 'SELECTED_GET_FORMAT_UNSUPPORTED'
+                    self.assertEqual((report['Stage'], report['Code']), (stage, expected))
+                    self.assertNotIn(CANARY, json.dumps(report))
 
 
 class DiagnosticRegressionTests(unittest.TestCase):

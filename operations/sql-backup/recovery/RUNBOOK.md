@@ -753,3 +753,100 @@ reports and file/get values, and unknown/incomplete projections. Native causes,
 compatibility and consumption are not established by fixtures. This local change
 does not alter bootstrap, historical packets/closures/tar or authorize a new AWS
 cycle, VM, installation, publication or merge.
+
+### Native selected-get CLI correction - local, 2026-10-23
+
+The approved `r20261023az5` cycle created all20 resources and completed SQL
+bootstrap on both hosts. The current artifact passed its member/hash/mode checks
+on both. Source then refused at `get_memory / SELECTED_GET_FORMAT_UNSUPPORTED`
+before its DDL, app-secret read, API or backup. No quiesce/restore/RPO/RTO followed.
+Normal retirement deleted the owned NAT first, observed native EIP unassociation,
+then applied a fresh19-delete full-root plan. Runtime/root disks/ENIs were absent,
+terminal state empty and lock absent at01:59:02UTC. The two inline policies and
+backend/backup-key edits were reversed/read back at02:00:33; retained originals
+and2+2-day rules matched at02:05. This is a successful bounded retirement trial,
+not a recovery PASS. Its immutable closure SHA256 is
+`6123ba5b7d5e8aad3687d4dcabad510c928fa160dd8b4094afdb5d3721303173`.
+
+The native diagnosis retained a70-byte stdout hash, not raw unknown output. An
+offline check downloaded the exact official Microsoft `mssql-server16.0.4305.5-1`
+Debian package, verified published size/SHA256
+`3fbd4e3d2ad41e9abf9195b22a2dd213632ce4eeac6da3f806bc9d8f7369385a`,
+and extracted public configuration source without installation or engine execution.
+Its actual `initializeCommandLine`, `getSettings`, `handleGet` and `processCommands`
+functions reproduced the captured bytes exactly with synthetic configuration:
+`No setting for the given option found in '/var/opt/mssql/mssql.conf'.` plus LF,
+SHA256 `da1b908f33cd2edc41fa90195a3ea55188a8ca1bdf2fbb4642fd6ed5823f40f1`.
+
+There were two local contract defects. `get` takes separate section/key arguments;
+the old dotted argument was interpreted as a nonexistent section and returned
+that message with exit0. Correct calls are `mssql-conf get memory memorylimitmb`
+and `mssql-conf get network ipaddress`. The package formatter returns one
+`memorylimitmb : 2048` or `ipaddress : 127.0.0.1` line. The helper now uses those
+arguments and accepts only the exact selected key, colon and expected numeric
+value, with horizontal whitespace. Prior strict scalar/single-field INI forms
+remain supported. Error text, wrong keys/values, multiple rows, comments and
+canaries still refuse. No fallback to defaults, skipped getter or relaxed
+memory/listener/PID/fresh-query/environment guard was added.
+
+The checked-in package-derived fixture records old/correct arguments, output
+bytes and provenance. Three new regressions were RED against the old helper;
+72 recovery/authorization/runtime tests and27 verifier tests are now GREEN.
+The full source adapter and source/quiesce/restore fixture flow use the native
+argument/formatter protocol, fresh-query port and file-only memory path. These
+are offline fixtures: internal memory consumption/precedence remains unproven,
+and the corrected helper still needs native execution. Frozen receipts, the
+closed cycle, original artifacts and budgets are unchanged; the old archive is
+not qualified for this source change. No AWS call, new tar or redeployment ran
+for the fix. The older attempt4 cause remains UNKNOWN.
+
+Primary references: [exact Microsoft package](https://packages.microsoft.com/ubuntu/22.04/mssql-server-2022/pool/main/m/mssql-server/mssql-server_16.0.4305.5-1_amd64.deb),
+[official package index](https://packages.microsoft.com/ubuntu/22.04/mssql-server-2022/dists/jammy/main/binary-amd64/Packages.gz)
+and [configuration documentation](https://learn.microsoft.com/en-us/sql/linux/configure/mssql-conf?view=sql-server-ver16).
+The documentation distinguishes configuration-file inspection from runtime
+behavior; the package's actual CLI implementation establishes the selected-get
+syntax and formatter used here.
+
+For a subsequent authorized live cycle, the owner now permits ordinary fixes and
+retests while test infrastructure remains live within its original budget/window
+and protected retirement reserve. An ordinary recoverable refusal need not cause
+immediate teardown. Record changed source/hash bindings and reconcile issued or
+partial effects before a bounded retry; never blindly bypass STARTED markers.
+Denials, uncertain effects and new security/resource/spend scope still require
+their applicable disposition. This already-closed cycle is not recreated and
+its clock/budget does not reset.
+
+### Official image native qualification checkpoint - 2026-10-23
+
+The corrected selected-get calls subsequently passed against real SQL Server
+2022 Express16.0.4305.5 in the official
+`mcr.microsoft.com/mssql/server:2022-CU27-GDR1-ubuntu-22.04` amd64 image, pinned to
+`sha256:cf8f0ab2ebe61feec2eed2629061a07d247f791c2a8ddda74a4ac9f06a291718`.
+Its three CLI/get modules matched the exact Debian package source hashes. The
+image omits dpkg metadata; native SELECT established engine version and Express
+edition. The old dotted call reproduced the exact70-byte error/hash; the actual
+production `Verifier.selected` accepted both native21/22-byte selected lines.
+
+One container ran at a time within3GiB/2CPU, with synthetic stdin-only password,
+network none, no published ports, mounts or persistent volumes. SQL's observed
+`cap_net_bind_service=ep` file capability required retaining NET_BIND_SERVICE
+within the otherwise reduced Docker default capability set. No privileged mode,
+SYS_ADMIN, SYS_PTRACE, daemon/builder/toolchain change or AWS call was used.
+
+The unadapted EC2 port refused at service_state because this image has no systemd.
+A separately identified direct-launch adapter supplied only the actual owned
+ActiveState/MainPID/DropInPaths and a marker after real query readiness. Native
+configuration/getter/process/listener observation then passed, with2048 and
+loopback1433. The production host precheck still refused at
+`fresh_sql_query / FRESH_QUERY_WRONG_PROCESS /65`: native kernel main PID16,
+listener PID18, stable executable/start tokens. The SQL-reported PID value was
+not retained, so its mismatch cause remains unresolved. No PID/query guard was
+relaxed, and container adaptation does not prove EC2 systemd/drop-in/bootstrap.
+
+Normal SIGTERM/wait cleanup removed all owned containers with no OOM. The final
+local receipt SHA256 is
+`1e4d599e6010cecb6b9f4dc91a6d29297307e02b4db7eac4141d992cf33a2714`.
+Getter compatibility is native-proven; the full precheck, memory consumption and
+cross-AZ recovery remain unqualified. No new artifact was built/qualified or
+published. Resolve the process identity mismatch with bounded native evidence
+before the next trial; preserve the closed AWS receipt, originals and budgets.

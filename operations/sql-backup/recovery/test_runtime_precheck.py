@@ -6,7 +6,7 @@ import unittest
 from unittest.mock import patch
 
 import verify_effective as v
-from test_verify_effective import FakePort as ObservationPort, CANARY
+from test_verify_effective import FakePort as ObservationPort, CANARY, NativeGetProtocol, NATIVE_GET
 import host
 from test_recovery import FakePort as DrillPort, NAME, IDENTITY, TARGET
 
@@ -85,6 +85,78 @@ class IntegrationGuardTests(unittest.TestCase):
         p.commands.clear();p.runtime_precheck=lambda password:v.assess(ObservationPort())
         with self.assertRaises(ValueError):host.restore(p,NAME,None,None,None,TARGET,source,failure)
         self.assertEqual(p.commands,[])
+
+
+class NativeMetadataPort(NativeGetProtocol, MetadataPort):
+    pass
+
+
+class NativeCliSourceIntegrationTests(unittest.TestCase):
+    def install_precheck(self, drill, records, answers=None):
+        def precheck(password):
+            metadata = NativeMetadataPort()
+            metadata.raw_env = b'OTHER_PASSWORD='+CANARY.encode()+b'\0'
+            if answers: metadata.answers.update(answers)
+            fresh_queries = []
+            def child(args, **kwargs):
+                self.assertIn('tcp:127.0.0.1,1433', args)
+                self.assertIn(v.FRESH_QUERY, kwargs['input'])
+                self.assertEqual(kwargs['env']['SQLCMDPASSWORD'], password)
+                self.assertNotIn(password, str(args)+kwargs['input'])
+                fresh_queries.append(1)
+                return query()
+            with patch.object(v, 'LocalPort', return_value=metadata), patch.object(host.subprocess, 'run', side_effect=child):
+                report = host.Port().runtime_precheck(password)
+            records.append((metadata, report, fresh_queries))
+            return report
+        drill.runtime_precheck = precheck
+
+    def test_native_cli_full_source_precheck_reaches_backup_without_consumption_claim(self):
+        p = DrillPort(); records = []; secrets = []; original = p.secret
+        p.secret = lambda arn: (secrets.append(arn), original(arn))[1]
+        self.install_precheck(p, records)
+        result = host.source(p, NAME, None, None, None, IDENTITY)
+        self.assertEqual(result['Status'], 'SOURCE_BACKED_UP')
+        self.assertEqual(secrets, [host.SA_SECRET, host.APP_SECRET])
+        self.assertEqual(records[0][2], [1])
+        self.assertTrue(result['RuntimePrecheck']['CurrentQueryReadinessProven'])
+        self.assertEqual(result['RuntimePrecheck']['MemoryConfigurationBasis'], 'FILE_NO_INITIAL_ENV_OVERRIDE')
+        for field in ('InitialMemoryInputBoundToProcess', 'MemoryRuntimePrecedenceProven',
+                      'ConfigurationConsumptionProven', 'MemoryConsumptionMeasured', 'RecoveryAcceptance'):
+            self.assertFalse(result['RuntimePrecheck'][field])
+        self.assertNotIn(CANARY, json.dumps(result))
+
+    def test_native_cli_source_quiesce_restore_flow_keeps_real_adapter_and_host_binding(self):
+        p = DrillPort(); records = []; self.install_precheck(p, records)
+        source = host.source(p, NAME, None, None, None, IDENTITY)
+        failure = host.quiesce(p, source, IDENTITY)
+        restored = host.restore(p, NAME, None, None, None, TARGET, source, failure)
+        self.assertEqual(restored['Status'], 'TARGET_RECOVERED_REVIEW_EVIDENCE')
+        self.assertEqual(len(records), 2)
+        self.assertEqual(restored['RuntimePrecheck']['HostBinding'], TARGET)
+        for metadata, report, fresh in records:
+            self.assertEqual(fresh, [1]); v.require_runtime_precheck(report)
+            selected = [a for a in metadata.calls if a[0].endswith('mssql-conf')]
+            self.assertEqual([a[2:] for a in selected], [['memory', 'memorylimitmb'], ['network', 'ipaddress']])
+            self.assertFalse(report['ConfigurationConsumptionProven'])
+            self.assertFalse(report['RecoveryAcceptance'])
+        self.assertFalse(restored['FullEcsRecoveryProven'])
+
+    def test_native_missing_or_malformed_value_stops_source_before_app_secret_ddl_and_query(self):
+        for value, code in [(NATIVE_GET['WrongDottedCalls'][0]['Stdout'], 'SELECTED_GET_FORMAT_UNSUPPORTED'),
+                            ('memorylimitmb : 4096\n', 'SELECTED_GET_VALUE_MISMATCH'),
+                            ('memorylimitmb : 2048\npassword='+CANARY, 'SELECTED_GET_FORMAT_UNSUPPORTED')]:
+            with self.subTest(code=code):
+                p = DrillPort(); records = []; secrets = []; original = p.secret
+                p.secret = lambda arn: (secrets.append(arn), original(arn))[1]
+                self.install_precheck(p, records, {'memory.memorylimitmb': value})
+                with self.assertRaises(host.RuntimePrecheckFailure) as caught:
+                    host.source(p, NAME, None, None, None, IDENTITY)
+                self.assertEqual((caught.exception.report['Stage'], caught.exception.report['Code']), ('get_memory', code))
+                self.assertEqual(secrets, [host.SA_SECRET]); self.assertEqual(p.commands, [])
+                self.assertEqual(records[0][2], [])
+                self.assertEqual(records[0][0].environment_reads, 0)
+                self.assertNotIn(CANARY, json.dumps(caught.exception.report))
 
 
 class FileOnlyRegressionTests(unittest.TestCase):

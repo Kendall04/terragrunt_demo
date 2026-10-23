@@ -92,14 +92,15 @@ class Verifier:
     def prop(self, name):
         return self.command(['systemctl', 'show', 'mssql-server', '--property=' + name, '--value'])
     def selected(self, section, key, expected):
-        value = self.command(['/opt/mssql/bin/mssql-conf', 'get', section + '.' + key])
-        # Two previously allowed forms, now exact: no arbitrary INI/defaults,
-        # extra options/comments, or raw lines used as diagnostic codes.
+        value = self.command(['/opt/mssql/bin/mssql-conf', 'get', section, key])
+        # SQL16 get takes separate section/key args and prints "key : value".
+        # Keep the prior scalar/INI forms exact; never accept errors/extra rows.
         scalar = r'[0-9]+' if section == 'memory' else r'[0-9]{1,3}(?:\.[0-9]{1,3}){3}'
         if re.fullmatch(scalar, value): parsed = value
         else:
             ini = r'\[' + re.escape(section) + r'\][ \t]*\r?\n[ \t]*' + re.escape(key) + r'[ \t]*=[ \t]*(' + scalar + ')'
-            match = re.fullmatch(ini, value)
+            pair = re.escape(key) + r'[ \t]*:[ \t]*(' + scalar + ')'
+            match = re.fullmatch(pair, value) or re.fullmatch(ini, value)
             self.require(match is not None, 'SELECTED_GET_FORMAT_UNSUPPORTED')
             parsed = match[1]
         self.require(parsed == expected, 'SELECTED_GET_VALUE_MISMATCH')
