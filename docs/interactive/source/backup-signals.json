@@ -1,0 +1,159 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Backups locales · contrato de señales",
+    "locale": "es",
+    "output": "docs/interactive/backup-signals.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/Kendall04/terragrunt_demo",
+      "revision": "19b1f5e538bbd8f63c882335c1dd76edffab462b",
+      "link_mode": "local-only"
+    }
+  },
+  "components": [
+    {
+      "id": "producer",
+      "type": "backend",
+      "label": "Productor backup",
+      "sublabel": "Resultado del intento",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        178,
+        72
+      ],
+      "sources": [
+        {
+          "path": "terraform/docs/v2-local-completion.md",
+          "line": 57,
+          "end_line": 71
+        }
+      ]
+    },
+    {
+      "id": "receipt",
+      "type": "database",
+      "label": "Recibo local",
+      "sublabel": "Último fallo conservado",
+      "pos": [
+        380,
+        40
+      ],
+      "size": [
+        178,
+        72
+      ],
+      "sources": [
+        {
+          "path": "terraform/docs/v2-local-completion.md",
+          "line": 57,
+          "end_line": 71
+        }
+      ]
+    },
+    {
+      "id": "checker",
+      "type": "backend",
+      "label": "Evaluador CLI",
+      "sublabel": "Freshness + intento",
+      "pos": [
+        720,
+        40
+      ],
+      "size": [
+        178,
+        72
+      ],
+      "sources": [
+        {
+          "path": "terraform/docs/v2-local-completion.md",
+          "line": 81,
+          "end_line": 94
+        }
+      ]
+    },
+    {
+      "id": "signal",
+      "type": "backend",
+      "label": "JSON sanitizado",
+      "sublabel": "FAILED/MISSING/STALE",
+      "pos": [
+        720,
+        300
+      ],
+      "size": [
+        178,
+        72
+      ],
+      "sources": [
+        {
+          "path": "terraform/docs/v2-local-completion.md",
+          "line": 81,
+          "end_line": 108
+        }
+      ]
+    },
+    {
+      "id": "evidence",
+      "type": "database",
+      "label": "Replay de evidencia",
+      "sublabel": "Sin entrega externa",
+      "pos": [
+        380,
+        300
+      ],
+      "size": [
+        178,
+        72
+      ],
+      "sources": [
+        {
+          "path": "terraform/docs/v2-local-completion.md",
+          "line": 15,
+          "end_line": 21
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "from": "producer",
+      "to": "receipt",
+      "label": "último intento",
+      "variant": "default"
+    },
+    {
+      "from": "receipt",
+      "to": "checker",
+      "label": "verificar",
+      "variant": "default"
+    },
+    {
+      "from": "checker",
+      "to": "signal",
+      "label": "clasificar",
+      "variant": "default"
+    },
+    {
+      "from": "signal",
+      "to": "evidence",
+      "label": "salida local",
+      "variant": "default"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "amber",
+      "title": "Alcance y estado",
+      "items": [
+        "Es un contrato local y replay; no es un monitor live de S3.",
+        "Ausencia y fallo son sintéticos; la antigüedad usa metadata histórica.",
+        "Programación independiente, Sentinel y correo siguen pendientes."
+      ]
+    }
+  ]
+}

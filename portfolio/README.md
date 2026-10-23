@@ -48,9 +48,9 @@ Unresolved teardown is reported; no PID discovery or forced cleanup is used.
 
 ## Provenance and bounded quality review
 
-This is a hand-authored repository explorer, not an Archify-generated/exported
-diagram. Its HTML/JavaScript facts cite the repository documents. The Page's
-Archify-specific deliverable remains open; the UI explicitly labels this origin.
+The component inspector is hand-authored and labelled separately. Five authentic
+Archify-generated diagrams now complement it; their provenance and original
+JSON/HTML are recorded in docs/interactive. No AWS live status is implied.
 
 Keyboard navigation moves focus to the newly visible heading, offers a skip link
 and native focusable buttons, names diagram groups/components and announces demo
@@ -68,7 +68,7 @@ node --test portfolio/test-contract.mjs
 ```
 
 No browser, Playwright, EKS checkout, package install or external connection is
-needed for this suite. Ten Node tests cover DEMO/history/provenance/data contracts,
+needed for this suite. Fourteen Node tests cover DEMO/history/provenance/data contracts,
 navigation/accessibility source invariants, actual repository facts, allowlisted
 GET/HEAD/CSP, mutation refusal, unintended files/encoded traversal and invalid or
 external absolute targets. Negative inputs are in-memory copies; the HTTP cases
@@ -83,7 +83,7 @@ selection; no gate was narrowed or bypassed. Hosted workflows were not run.
 Source-policy checks are regression guards, not an arbitrary-JavaScript sandbox
 or substitute for the separate 14-check Chrome keyboard/mobile qualification.
 
-Current local results: Node 10 PASS; CI selection 35 PASS; reproducibility 26 PASS and
+Current local results: Node 14 PASS; CI selection 35 PASS; reproducibility 26 PASS and
 one existing failure in test_dev_prod_aws_lock_identity_and_explicit_dev_provider_selection.
 All 14 lock inputs and the original test source match base 0e08e5d. AWS blocks in
 global/data/platform/apps/edge differ between DEV/PROD despite version 5.100.0.
@@ -95,3 +95,26 @@ The existing source inventory was updated only for the reviewed hygiene workflow
 and new source-wiring test, retaining UNVERIFIED semantic disposition. The other
 30 existing inventory findings remain unresolved; freshness hashes are not
 security acceptance or permission evidence. No broad inventory refresh occurred.
+
+
+## Authentic Archify diagrams - current
+
+The demo now embeds [five official Archify-generated views](../docs/interactive/README.md)
+above the separate hand-authored inspector. V1 and az6 are retired history, backup
+signals are local replay, and the V2 integration map is explicitly pending. Original
+Archify HTML/JSON, MIT credit and pins are retained; no upstream implementation is
+vendored into the portfolio. The component inspector remains separate from generated diagrams.
+
+The host keeps script-src self and connect-src none. Only five diagram routes get
+an inline-script presentation CSP inside an opaque sandbox without same-origin;
+links/private source metadata are removed and downloads are hidden. EKS's existing
+camera adapter is reused with checked anchors; no EKS file/process was changed.
+Node tests now total 14 PASS; integrated Chrome checks total 15 PASS, including all
+five diagrams at 1440/390px with visible SVG nodes, zoom/reset and keyboard focus.
+Three page views still pass 320/390/768px overflow/focus checks. No external requests,
+console errors, dependency install, AWS or remote workflow. Full prior CI blockers
+remain scoped; this does not certify full WCAG or whole-project acceptance.
+
+![ECS demo with authentic Archify diagrams](screenshots/archify-desktop.png)
+
+[Mobile az6 overview](screenshots/archify-mobile.png) · [Acceptance](ACCEPTANCE.md)

@@ -1,0 +1,4 @@
+docs/interactive/*.html text eol=lf whitespace=-blank-at-eol
+docs/interactive/*.txt text eol=lf
+docs/interactive/source/*.json text eol=lf
+portfolio/archify-pins.json text eol=lf

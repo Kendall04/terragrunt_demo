@@ -17,7 +17,7 @@ partially complete. Historical AWS evidence is not a fresh live inventory.
 | Controlled cross-AZ SQL/API experiment | az6 backup, quiesce, restore, CHECKDB, decryption and read/write passed with live repairs; prepared-target RTO **142.630783 s** | Does not prove an unchanged artifact/host lifecycle, cold AZ replacement, full ECS availability or general RPO/RTO |
 | Runtime retirement and temporary access reversal | Native resources absent at **04:48:29.371929Z**, security reversal at **04:48:54.620428Z**, closure **04:49:25.460974Z** on 2026-10-23 | Recorded az6 closure; no new AWS cycle or budget reset. Conditional reboot policy was never installed and no reboot occurred |
 | Corrected backup component and release binding | Source b2bf8d8 local Linux publication; CLI unit suite **62 PASS / 1 native SQL integration skip**; actual local CLI receipt replays cover FAILED/MISSING/STALE; old recovery tar rejected by payload guard | Captured stale metadata is historical; failure/missing inputs are synthetic. No live scheduler, Sentinel transport, alarm or confirmed email |
-| Product Demo and custom explorer | **14** isolated Chrome checks; **10** portable Node tests; **35** CI-selection tests and **2** focused wiring checks; loopback-only, synthetic/historical status | Browser proof is bounded; Node source guards do not certify accessibility. Explorer is hand-authored, actual Archify output remains open |
+| Product Demo and custom explorer | **14** isolated Chrome checks; **10** portable Node tests; **35** CI-selection tests and **2** focused wiring checks; loopback-only, synthetic/historical status | Browser proof is bounded; Node source guards do not certify accessibility. Explorer is hand-authored, five Archify diagrams now generated in the later increment |
 | Reproducibility investigation | Five DEV/PROD differences are one native Windows h1; all **15** published release zh values verified and installed cache h1 reproduced. Existing lock tests **1 PASS / 1 FAIL** | Original authenticated receipt/verified archive missing in inspected evidence; canonical package review required. Full prior reproducibility suite **26 PASS / 1 FAIL**, not green CI |
 
 Artifact lineage remains explicit: immutable 65c7901 recovery tar SHA256
@@ -42,7 +42,7 @@ The concrete blockers are:
   the original aggregate USD 2 is not renewed by local progress.
 - **CI/release:** the lock equality failure and 30 existing source-inventory
   findings remain; no hosted workflow/actionlint result is claimed. New repository,
-  actual CI/OIDC release, Archify export and remaining Page delivery are pending.
+  actual CI/OIDC release and remaining Page delivery are pending.
 
 The [lock provenance review](e14b-toolchain-reproducibility.md#native-lock-provenance-follow-up---2026-10-23)
 and [portfolio checklist](../../portfolio/ACCEPTANCE.md) identify the narrow next
@@ -171,9 +171,24 @@ double public API or installed integration claim.
 | 3 Security/PCI lessons | Inherited findings need concrete prioritized remediation; no compliance claim |
 | 4 PKI | Required reusable upstream integration, two identities, AWS emission/rotation and rejection/failure tests remain open |
 | 5 Sentinel | Required real alarms/logs classification and email/periodic-operation qualification remain open; no general repair authority |
-| 6 Product Demo/Archify Explorer | Local Product Demo and custom architecture explorer: 14 bounded quality checks, synthetic/historical only. Not Archify-generated; actual Archify output and release/live scope remain pending. See portfolio/ACCEPTANCE.md |
+| 6 Product Demo/Archify Explorer | Local Product Demo, five authentic Archify views and a separate custom inspector: 15 Chrome checks and 14 Node tests; historical/local/future scopes explicit. Release/live scope remains pending. See portfolio/ACCEPTANCE.md |
 | 7 Repository/release | New repository preserving old, Kendall authorship for new commits, real CI/OIDC, README/screenshots remain required; no push/repository creation/identity change performed now |
 
 The IAM auditor's prepare/apply/CI integration remains an open concrete task:
 the manual structural auditor is not automatic prevention or effective AWS IAM
 proof. This increment does not modify E16, its approved contracts or EKS.
+
+
+## Authentic Archify portfolio increment - 2026-10-23
+
+[Five generated diagrams](../../docs/interactive/README.md) now complement the
+hand-authored inspector: V1 application, V1 networking, historical az6, local backup
+signals and future integrations. Official Archify 3.1.0 from pinned upstream
+1c2b42d passed all four finalizer gates for every original. Integrated Chrome
+qualification passed 15 checks (all five maps on desktop/mobile, visible SVG nodes,
+zoom/reset, keyboard focus, opaque iframe, zero external requests/errors); Node
+contracts passed 14. Browser/server closed normally. Representative captures were
+visually inspected; mobile text uses zoom. The [acceptance checkpoint](../../portfolio/ACCEPTANCE.md)
+links source/HTML hashes and screenshots. This replaces the earlier custom-only
+Archify gap, without accepting PKI/Sentinel, unchanged cloud recovery, hosted CI or
+release. No EKS resources/processes, AWS, pushes or workflows changed.

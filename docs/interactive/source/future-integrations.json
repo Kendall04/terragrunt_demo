@@ -1,0 +1,159 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "V2 objetivo · integraciones pendientes",
+    "locale": "es",
+    "output": "docs/interactive/future-integrations.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/Kendall04/terragrunt_demo",
+      "revision": "19b1f5e538bbd8f63c882335c1dd76edffab462b",
+      "link_mode": "local-only"
+    }
+  },
+  "components": [
+    {
+      "id": "api_a",
+      "type": "backend",
+      "label": "Servicio A objetivo",
+      "sublabel": "PENDIENTE mTLS",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        178,
+        72
+      ],
+      "sources": [
+        {
+          "path": "terraform/docs/v2-local-completion.md",
+          "line": 35,
+          "end_line": 38
+        }
+      ]
+    },
+    {
+      "id": "api_b",
+      "type": "backend",
+      "label": "Servicio B objetivo",
+      "sublabel": "PENDIENTE identidad",
+      "pos": [
+        400,
+        40
+      ],
+      "size": [
+        178,
+        72
+      ],
+      "sources": [
+        {
+          "path": "terraform/docs/v2-local-completion.md",
+          "line": 35,
+          "end_line": 38
+        }
+      ]
+    },
+    {
+      "id": "sentinel",
+      "type": "backend",
+      "label": "Reliability Sentinel",
+      "sublabel": "PENDIENTE integración",
+      "pos": [
+        760,
+        40
+      ],
+      "size": [
+        178,
+        72
+      ],
+      "sources": [
+        {
+          "path": "terraform/docs/v2-local-completion.md",
+          "line": 35,
+          "end_line": 38
+        }
+      ]
+    },
+    {
+      "id": "pki",
+      "type": "security",
+      "label": "Service Identity PKI",
+      "sublabel": "PENDIENTE rotación",
+      "pos": [
+        400,
+        310
+      ],
+      "size": [
+        178,
+        72
+      ],
+      "sources": [
+        {
+          "path": "terraform/docs/v2-local-completion.md",
+          "line": 35,
+          "end_line": 38
+        }
+      ]
+    },
+    {
+      "id": "email",
+      "type": "external",
+      "label": "Correo al operador",
+      "sublabel": "PENDIENTE entrega",
+      "pos": [
+        760,
+        310
+      ],
+      "size": [
+        178,
+        72
+      ],
+      "sources": [
+        {
+          "path": "terraform/docs/v2-local-completion.md",
+          "line": 35,
+          "end_line": 40
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "from": "api_a",
+      "to": "api_b",
+      "label": "objetivo mTLS",
+      "variant": "security"
+    },
+    {
+      "from": "pki",
+      "to": "api_b",
+      "label": "identidad objetivo",
+      "variant": "security"
+    },
+    {
+      "from": "api_b",
+      "to": "sentinel",
+      "label": "logs / alarmas",
+      "variant": "default"
+    },
+    {
+      "from": "sentinel",
+      "to": "email",
+      "label": "notificar objetivo",
+      "variant": "default"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "amber",
+      "title": "Alcance y estado",
+      "items": [
+        "Objetivo futuro separado: ninguna conexión de este mapa se declara desplegada.",
+        "Reutilizar las fuentes PKI y Sentinel reales; hoy no están disponibles localmente.",
+        "Sentinel clasifica cobertura HA y aviso; no obtiene reparación general."
+      ]
+    }
+  ]
+}

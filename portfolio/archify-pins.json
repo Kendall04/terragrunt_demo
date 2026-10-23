@@ -1,0 +1,15 @@
+{
+  "generator": "Archify 3.1.0",
+  "upstream": "https://github.com/tt-a1i/archify",
+  "upstreamCommit": "1c2b42d660e4a7571813fb43839c79e3e9ca7720",
+  "toolZipSha256": "ffedc53390c9da6e859f41e432c5d2d0615a23cf00a503181f07efbba88a7ce8",
+  "sourceCommit": "19b1f5e538bbd8f63c882335c1dd76edffab462b",
+  "sourceMode": "local-only sparse fixture sharing migrated objects; historical URL from README; no GitHub availability claim",
+  "originalSha256": {
+    "v1-platform": "8638dadb59b8cc5ef26d0f0fdfb063010f05d63be43b3278488d2e5bbb9b40dd",
+    "v1-network": "c2a3f7973b625f665324c309eef523168a9928b7ad7d576914ca553cc67b7624",
+    "az6-recovery": "9499e2f87b99200d9b7fd0b9196caf82964a8e7b9a42aefd2113a48289f474d1",
+    "backup-signals": "0508e9897fd8326cecf4ecf632ec5e702b8f429d51c25ae2ae6747c7551d842f",
+    "future-integrations": "54014ee395c3d98445146d6067d2efee06957c59583185021032b590a5d4c4a7"
+  }
+}

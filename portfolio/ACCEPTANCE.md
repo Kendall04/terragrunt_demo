@@ -1,9 +1,13 @@
 # Local portfolio acceptance checkpoint
 
-This is local UI evidence, not complete UI/ECS acceptance. The final isolated
-browser receipt records 14 checks PASS at 2026-10-23T07:15:37.083Z; SHA256:
-`923ed7bc5d0f5c05303126a0d0ea6455506effa88e0a79aa519450240345ff2e`. The [test source](test-browser.mjs) defines the checks.
-The earlier failed focus regression receipt is preserved, not counted as PASS.
+This is local UI evidence, not complete UI/ECS acceptance. Current final isolated
+Chrome receipt records **15 checks PASS** at 2026-10-23T17:31:18.062Z; SHA256:
+`f52419d64df43ae03f238f3a729f009fe2259fbfc956bede73fba083c33a0c82`. The [test source](test-browser.mjs) covers all five
+Archify diagrams at desktop/mobile, native zoom/reset/keyboard focus, visible SVG
+nodes and opaque iframe isolation. No external requests/errors; browser/server closed.
+Earlier clipping captures and a failed hidden-index geometry assertion are retained
+outside the repository; they do not count as final acceptance. Previous 14-check
+inspector evidence remains historical, separate from this new qualification.
 
 - [x] Memory-only Product Demo: submit/reset, explicit synthetic data, literal text handling.
 - [x] Source-backed V1/az6 historical navigation with distinct scopes and RTO limits.
@@ -11,8 +15,8 @@ The earlier failed focus regression receipt is preserved, not counted as PASS.
 - [x] All three views at 320/390/768px without document overflow.
 - [x] Explicit DEMO/no-live status; PKI/Sentinel pending; custom explorer provenance.
 - [x] No external requests or console errors; fresh browser/server closed normally.
-- [ ] Actual Archify-generated/exported diagrams. Current HTML/JS explorer is hand-authored, not Archify output.
-- [x] Portable Node contract/server suite wired into repo-hygiene source; 10 local tests PASS, no packages/browser required.
+- [x] Five authentic Archify 3.1.0 outputs integrated; pinned sources/HTML and finalizer gates recorded in [generation evidence](../docs/interactive/GENERATION.json). The inspector remains explicitly hand-authored.
+- [x] Portable Node contract/server suite wired into repo-hygiene source; 14 local tests PASS, no packages/browser required.
 - [ ] Full CI/hygiene acceptance: hosted execution unrun and existing DEV/PROD provider-lock identity failure and 30 pre-existing source-inventory findings remain; no gate was skipped.
 - [ ] Hosted/new repository and real CI/OIDC release scope from the Page. No hosting or remote change performed.
 
@@ -33,5 +37,4 @@ checksums plus the current cache content hash. Equality remains blocked pending 
 original authenticated receipt/already available official archive and deliberate
 canonical-generator/package-identity review. Recover that evidence first; preserve
 the native DEV hash, provider 5.100.0 and exact protected validation. No binary
-download, initialization or broad audit is implied. Actual Archify output and
-PKI/Sentinel source/access remain separate open gates.
+download, initialization or broad audit is implied. PKI/Sentinel source/access and real hosting/release remain separate open gates.

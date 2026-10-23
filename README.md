@@ -187,3 +187,11 @@ infrastructure controls or live mode. V1 and the scoped az6 experiment are separ
 historical topologies; PKI/Sentinel remain pending. The guide includes the existing
 workspace-local Node command and isolated browser-test instructions. No hosting,
 new repository, CI/CD or whole-V2 acceptance is implied by this UI.
+
+
+## Local Product Demo and Archify
+
+Run the [local portfolio](portfolio/README.md) for a synthetic Product Demo and
+[five authentic Archify diagrams](docs/interactive/README.md). Views distinguish
+retired V1/az6, local backup evidence and pending V2 integrations; none query AWS.
+See the [current acceptance boundary](portfolio/ACCEPTANCE.md) and screenshots.

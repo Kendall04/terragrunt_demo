@@ -1,3 +1,6 @@
+import {createHash} from 'node:crypto';
+import {adaptArchify,archifyPresentation} from './archify.mjs';
+import {archifyCatalog} from './archify-catalog.mjs';
 import test,{before,after} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
@@ -49,4 +52,23 @@ test('mutation requests cannot change demo/source state',async()=>{
 test('invalid or external absolute request targets refuse without proxying',async()=>{
  for(const route of ['http://[','http://example.invalid/source/architecture','//example.invalid/source/architecture'])assert.equal((await request(route)).status,400,route);
  assert.equal((await request('/')).status,200);
+});
+
+test('five genuine pinned Archify artifacts preserve honest historical/local/future scopes',async()=>{
+ assert.equal(archifyCatalog.length,5);assert.match(archifyCatalog[4].mode,/PENDIENTE/);
+ const pins=JSON.parse(await read('archify-pins.json'));assert.equal(pins.generator,'Archify 3.1.0');
+ for(const item of archifyCatalog){const raw=await readFile(new URL('../docs/interactive/'+item.id+'.html',import.meta.url));assert.equal(createHash('sha256').update(raw).digest('hex'),pins.originalSha256[item.id]);assert.match(raw.toString(),/name="generator" content="archify 3.1.0"/);}
+});
+test('presentation refuses changed bytes and active resource mutants',async()=>{
+ const raw=await readFile(new URL('../docs/interactive/v1-platform.html',import.meta.url));
+ assert.throws(()=>adaptArchify(raw,'0'.repeat(64)),/Unreviewed/);
+ for(const suffix of ['<script src="https://example.invalid/x.js"></script>',"<script>fetch('https://example.invalid')</script>",'<iframe src="/other"></iframe>']){const changed=Buffer.concat([raw,Buffer.from(suffix)]);assert.throws(()=>adaptArchify(changed,createHash('sha256').update(changed).digest('hex')),/Unexpected active/);}
+});
+test('only isolated presentation routes served; original source and generator stay private',async()=>{
+ for(const item of archifyCatalog){const res=await request('/diagrams/'+item.id);assert.equal(res.status,200,item.id);assert.match(res.headers['content-security-policy'],/connect-src 'none'/);assert.match(res.headers['content-security-policy'],/frame-src 'none'/);assert.match(res.text,/"verified":false,"repository":null/);assert.doesNotMatch(res.text,/<a[^>]*href=|Kendall04|C:\\Users/);assert.equal((await request('/diagrams/'+item.id,'HEAD')).text,'');}
+ for(const route of ['/diagrams/unknown','/docs/interactive/v1-platform.html','/docs/interactive/source/v1-platform.json','/archify.mjs','/archify-pins.json','/diagrams/../server.mjs'])assert.equal((await request(route)).status,404,route);
+});
+test('host stays no-connect and diagram sandbox has no same-origin permission',async()=>{
+ assert.match(input.html,/sandbox="allow-scripts"/);assert.doesNotMatch(input.html,/allow-same-origin|allow-top-navigation/);
+ const res=await request('/');assert.match(res.headers['content-security-policy'],/frame-src 'self'/);assert.doesNotMatch(res.headers['content-security-policy'],/unsafe-inline/);
 });

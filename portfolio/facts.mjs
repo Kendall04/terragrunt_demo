@@ -1,5 +1,5 @@
 // Public source facts, not a live inventory or telemetry feed.
-export const portfolioContract={mode:'demo',data:'synthetic-memory',liveConnected:false,provenance:'hand-authored-not-archify'};
+export const portfolioContract={mode:'demo',data:'synthetic-memory',liveConnected:false,provenance:'archify-3.1.0-with-hand-authored-inspector'};
 export const topologies={
  original:{mode:'historical',flow:'API Gateway → VPC Link → ALB → API → SQL\nAPI ↔ KMS · dependencia de cifrado',label:'TOPOLOGÍA ORIGINAL V1',note:'La plataforma original fue desplegada y retirada. Blue/green son slots de una aplicación. Egreso mediante NAT Instances; esta vista no representa el ensayo az6.',nodes:[
  ['gateway','API Gateway','EDGE','Entrada HTTP pública hacia el VPC Link.','No se consulta su estado actual.','architecture'],

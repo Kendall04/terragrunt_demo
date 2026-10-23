@@ -1,4 +1,6 @@
 import http from 'node:http';
+import {archifyPresentation,diagramPolicy} from './archify.mjs';
+import {archifyCatalog} from './archify-catalog.mjs';
 import {readFile} from 'node:fs/promises';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import path from 'node:path';
@@ -6,7 +8,7 @@ const root=path.dirname(fileURLToPath(import.meta.url));
 const routes=new Map([
  ['/', ['index.html','text/html']], ['/index.html',['index.html','text/html']],
  ['/style.css',['style.css','text/css']], ['/app.mjs',['app.mjs','text/javascript']],
- ['/facts.mjs',['facts.mjs','text/javascript']], ['/favicon.svg',['favicon.svg','image/svg+xml']],
+ ['/facts.mjs',['facts.mjs','text/javascript']], ['/archify-catalog.mjs',['archify-catalog.mjs','text/javascript']], ['/favicon.svg',['favicon.svg','image/svg+xml']],
  ['/source/architecture',['../terraform/docs/architecture.md','text/plain']],
  ['/source/recovery',['../operations/sql-backup/recovery/RUNBOOK.md','text/plain']],
  ['/source/backup',['../operations/sql-backup/README.md','text/plain']],
@@ -14,7 +16,7 @@ const routes=new Map([
 ]);
 export function createServer(){
  return http.createServer(async(req,res)=>{
-  res.setHeader('Content-Security-Policy',"default-src 'self'; connect-src 'none'; img-src 'self' data:; style-src 'self'; script-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'");
+  res.setHeader('Content-Security-Policy',"default-src 'self'; connect-src 'none'; img-src 'self' data:; style-src 'self'; script-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'; frame-src 'self'");
   res.setHeader('X-Content-Type-Options','nosniff');
   res.setHeader('Cache-Control','no-store');
   res.setHeader('Referrer-Policy','no-referrer');
@@ -29,6 +31,12 @@ export function createServer(){
   let url;
   try{url=new URL(req.url,'http://127.0.0.1');}
   catch{res.writeHead(400);res.end('Invalid request target');return;}
+  const diagram=archifyCatalog.find(item=>url.pathname==='/diagrams/'+item.id);
+  if(diagram){
+   try{const body=await archifyPresentation(diagram.id);res.setHeader('Content-Security-Policy',diagramPolicy);res.setHeader('Content-Type','text/html; charset=utf-8');res.writeHead(200);res.end(req.method==='HEAD'?undefined:body);}
+   catch{res.writeHead(503);res.end('Diagram unavailable or integrity mismatch');}
+   return;
+  }
   const route=routes.get(url.pathname);
   if(!route){res.writeHead(404);res.end('Not found');return;}
   try{
