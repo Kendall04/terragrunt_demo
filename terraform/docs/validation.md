@@ -1521,3 +1521,16 @@ The existing source inventory was updated only for the reviewed hygiene workflow
 and new source-wiring test, retaining UNVERIFIED semantic disposition. The other
 30 existing inventory findings remain unresolved; freshness hashes are not
 security acceptance or permission evidence. No broad inventory refresh occurred.
+
+
+## Bounded provider-lock provenance - 2026-10-23
+
+The [exact review](e14b-toolchain-reproducibility.md#native-lock-provenance-follow-up---2026-10-23)
+traces five DEV-only h1 additions to b1f5063, confirms all 15 unchanged zh values
+against official AWS 5.100.0 text metadata and reproduces the Windows cache h1
+without executing providers. Five exact-difference assertions PASS. The two
+existing lock tests return one PASS / one equality FAIL; no validation was relaxed.
+Locks, provider versions, retired sources, canonical generators and package
+identities remain unchanged. Missing evidence and generator admission dependencies
+are explicit; this result does not claim reproducibility is fixed. No provider
+binary download, Terraform initialization, AWS, workflow or push occurred.

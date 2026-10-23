@@ -27,10 +27,11 @@ Chrome; it does not certify complete WCAG or actual screen-reader coverage.
 
 ## Next executable local task
 
-Reconcile the existing DEV/PROD AWS lock identity discrepancy in a dedicated local
-review while preserving provider 5.100.0, verified platform checksums and protected
-contracts; first establish why the committed blocks differ, then make only a
-justified offline correction and rerun the existing failing test. No provider
-download, init/plan, new permission or AWS call is implied. Portable UI CI wiring
-is now implemented locally; actual Archify generation/export and PKI/Sentinel
-source/access dependencies remain separate open gates.
+The [bounded provenance review](../terraform/docs/e14b-toolchain-reproducibility.md#native-lock-provenance-follow-up---2026-10-23)
+identified DEV's single Windows h1 addition and confirmed all 15 official release
+checksums plus the current cache content hash. Equality remains blocked pending the
+original authenticated receipt/already available official archive and deliberate
+canonical-generator/package-identity review. Recover that evidence first; preserve
+the native DEV hash, provider 5.100.0 and exact protected validation. No binary
+download, initialization or broad audit is implied. Actual Archify output and
+PKI/Sentinel source/access remain separate open gates.

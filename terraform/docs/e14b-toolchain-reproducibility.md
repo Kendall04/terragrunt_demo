@@ -204,3 +204,52 @@ Only --check is an offline installer invocation. Invoking it with tool names
 downloads and writes executables; no local installation is authorized merely by
 this documentation. E14 overall must remain PARTIALLY_RESOLVED while these gaps
 remain.
+
+
+## Native lock provenance follow-up - 2026-10-23
+
+The current DEV/PROD AWS equality failure has one exact cause in global, data,
+platform, apps and edge: commit `b1f506329a30c96bd134134ea1d4d1297256becc`
+added only `h1:H3mU/7URhP0uCRGK8jeQRKxx2XFzEqLiOq/L2Bbiaxs=` to DEV.
+Removing that single line in memory makes each AWS block identical to PROD.
+Versions 5.100.0, constraints `~> 5.50`, the older h1 and all 15 zh values agree.
+The fresh read-only [official versioned manifest](https://releases.hashicorp.com/terraform-provider-aws/5.100.0/terraform-provider-aws_5.100.0_SHA256SUMS)
+confirms every existing zh (14 ZIPs plus the release manifest JSON), including
+linux_amd64 and windows_amd64. No provider
+archive was downloaded or provider/Terraform binary executed in this follow-up.
+
+The original commit's [native repair record](validation.md#native-runtime-provider-lock-repair---2026-10-17)
+reports origin-signed multi-platform lock generation and successful Windows
+readonly initialization/schema loading. Fresh hashing of the existing two-file
+windows_amd64 cache reproduces the added DEV h1 exactly. The calculation follows
+[Terraform 1.13.4 PackageHashV1](https://github.com/hashicorp/terraform/blob/v1.13.4/internal/getproviders/hash.go)
+and its pinned [Go x/mod 0.25.0 Hash1 implementation](https://github.com/golang/mod/blob/v0.25.0/sumdb/dirhash/hash.go).
+This is a content-identity check of existing inert files, not new official-package
+or signature verification. The raw lock-completion receipt is absent at its
+historically cited C:\CodexDrop path; the inspected cache contains extracted files,
+not the original ZIP. These bounded observations do not claim a whole-disk search.
+
+Two concrete dependencies remain before normalizing PROD:
+
+1. Recover the existing authenticated completion receipt or an already available
+   official Windows archive matching zh
+   `9f8b909d3ec50ade83c8062290378b1ec553edef6a447c56dadc01a99f4eaa93`,
+   so its contents can independently bind the h1 to the official package.
+   The [HashiCorp lock specification](https://developer.hashicorp.com/terraform/language/files/dependency-lock#new-provider-package-checksums)
+   distinguishes archive and content hashes; an extracted cache alone cannot
+   recreate the original archive identity.
+2. Review a deliberately admitted canonical lock input/generator and exact
+   protected package identities. `wp5.configuration` currently derives locks from
+   the immutable retired shared lock; editing PROD locks alone would not make its
+   generated lifecycle packages reproduce the new bytes. Keep retired sources,
+   readonly initialization, exact package admission and validation unchanged until
+   that correction is concretely reviewed.
+
+Do not remove DEV's native hash to restore textual equality: that risks the
+previously demonstrated Windows-cache verification failure. Do not bypass the
+existing equality test or refresh unrelated inventory to manufacture acceptance.
+No lock, provider version, generator, protected package or test was changed here.
+The two existing lock tests were rerun: platform/version/hash-presence PASS;
+DEV/PROD equality FAIL. The remaining 30 source-inventory findings stay scoped.
+The external local assessment is `provider-lock-provenance/assessment.json` in the
+worker evidence directory, with the official text metadata and per-file hashes.
