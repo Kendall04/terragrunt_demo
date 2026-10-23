@@ -175,3 +175,15 @@ approved teardown. Retained storage and security services mean **DOWN is not $0*
 - [Kendall Fernandez](https://www.linkedin.com/in/kendall-fernandez-fernandez-b4930b174)
 - [kendallffernandez@gmail.com](mailto:kendallffernandez@gmail.com)
 - Costa Rica; remote Cloud / DevOps / Platform Engineering work.
+
+
+## Local Product Demo and Architecture Explorer
+
+The [portfolio](portfolio/README.md) is a dependency-free local UI: synthetic
+memory-only message interaction, architecture component navigation and explicit
+historical/pending evidence. Run `node portfolio/server.mjs` from this repository
+and open http://127.0.0.1:4181. It has no AWS/backend connection, credentials,
+infrastructure controls or live mode. V1 and the scoped az6 experiment are separate
+historical topologies; PKI/Sentinel remain pending. The guide includes the existing
+workspace-local Node command and isolated browser-test instructions. No hosting,
+new repository, CI/CD or whole-V2 acceptance is implied by this UI.

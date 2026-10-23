@@ -1460,3 +1460,25 @@ execution. Automatic AWS/CI wiring is not installed. Live producer log forwardin
 independent periodic missing/stale checking and confirmed human email/Sentinel
 delivery remain open, together with unchanged full EC2/systemd/remote-restore/API
 acceptance. No external email or unavailable Sentinel API was configured.
+
+
+## Local ECS portfolio UI - 2026-10-23
+
+The [local portfolio](../../portfolio/README.md) implements Product Demo,
+Architecture Explorer and an evidence view without packages/build steps or AWS.
+Static facts cite actual architecture/recovery contracts. Explicit DEMO/historical
+labels, separate V1 NAT Instances versus az6 NAT Gateway, prepared-target RTO
+limits and pending PKI/Sentinel prevent live/full-recovery claims. Messages are
+synthetic and memory-only; textContent prevents markup execution. A read-only
+loopback server serves only explicit asset/four source-document routes, rejects
+mutation routes and blocks network connections via CSP.
+
+Final isolated-browser run: 12 checks PASS using existing Playwright 1.64.1 and
+Chrome 155.0.8059.86, no install or personal session. Covered seed/empty validation,
+submit/reset/XSS text, keyboard/node/flow/topology navigation, source allowlist,
+historical/pending labels, desktop/mobile screenshots and mobile overflow. No
+console errors or external requests. Browser and own ephemeral loopback server
+closed normally at 2026-10-23T07:03:51.285Z; no forced PID cleanup. Screenshots were
+visually reviewed. Prior two receipts are preserved but not added to the count.
+This is local UI evidence, not a live API/AWS/PKI/Sentinel integration, hosted
+portfolio, accessibility certification or completion of the remaining Page phases.

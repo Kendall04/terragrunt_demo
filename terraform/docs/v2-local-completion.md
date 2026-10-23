@@ -109,7 +109,7 @@ currently callable/consumable APIs.
 | Service Identity PKI/mTLS/rotation | Program.cs DI and IEncryptionService; a second real service/identity is needed for service-to-service mTLS, preserving SQL/KMS semantics | Obtain the real pinned upstream source or licensed packages and contracts; historical review names commit 29a3dfc and alpha 0.1.0-alpha.1. Confirm .NET 10 compatibility, remote authenticated enrollment/custody/revocation and AWS signer integration before implementation. Do not clone its CA/rotation framework, invent APIs or disguise LocalDevelopment as production |
 | Reliability Sentinel alarms/logs/email | CLI health JSON, producer service exit/last-attempt, recovery receipts and existing native alarms/logs | Obtain real upstream source/contracts; historical review names commit 0e8fc55, nat-asg catalog and synthetic route only. Qualify us-east-1 host/region, real ECS/SQL/backup/PKI domains and notification/email implementation. Never label real events sentinel.synthetic or map them falsely to NAT; E13 remains the NAT remediator |
 
-The [architecture review](v2-architecture-review.md#5-integración-service-identity-pki)
+The [architecture review](v2-architecture-review.md#5-integraciÃ³n-service-identity-pki)
 retains the earlier design/source boundaries. PKI needs real identity, invalid-
 certificate rejection and continuous-load rotation/drain/recovery evidence.
 Sentinel must classify existing HA coverage versus developer email, not general
@@ -125,7 +125,7 @@ double public API or installed integration claim.
 | 3 Security/PCI lessons | Inherited findings need concrete prioritized remediation; no compliance claim |
 | 4 PKI | Required reusable upstream integration, two identities, AWS emission/rotation and rejection/failure tests remain open |
 | 5 Sentinel | Required real alarms/logs classification and email/periodic-operation qualification remain open; no general repair authority |
-| 6 Product Demo/Archify Explorer | Minimal UI and diagrams must distinguish live state from historical evidence; no new AWS admin console |
+| 6 Product Demo/Archify Explorer | Local Product Demo, architecture navigation and evidence view implemented with 12 isolated-browser checks; synthetic/historical only, no hosting or live backend. See portfolio/README.md |
 | 7 Repository/release | New repository preserving old, Kendall authorship for new commits, real CI/OIDC, README/screenshots remain required; no push/repository creation/identity change performed now |
 
 The IAM auditor's prepare/apply/CI integration remains an open concrete task:
