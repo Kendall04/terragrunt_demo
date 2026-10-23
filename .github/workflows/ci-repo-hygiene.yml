@@ -22,6 +22,13 @@ jobs:
           node -e "if (Number(process.versions.node.split('.')[0]) < 20) throw new Error('Existing Node 20+ required; no installation performed')"
           node --test portfolio/test-contract.mjs
 
+      - name: Validate backup observer and signal contracts (offline)
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B -m unittest discover -s operations/sql-backup -p test_observer.py -v
+          python3 -I -B -m unittest discover -s operations/sql-backup -p test_local_signals.py -v
+
       - name: Test infrastructure and CI reproducibility
         run: python3 -I -B -m unittest discover -s scripts/tests/reproducibility -v
 

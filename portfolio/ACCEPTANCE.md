@@ -52,3 +52,5 @@ readiness, not new AWS or delivery acceptance. Archify captures remain unchanged
 Observer local verification: Linux 24 PASS (15 new observer + nine existing
 signal/component-binding); Windows 14 PASS / one POSIX-only skip. No service
 installation, cloud check or external notification was performed.
+
+- [x] Observer/signal tests integrated into repo-hygiene source before provider-lock checks/tool installs; no dependency/cloud requirement. Hosted execution remains unrun.

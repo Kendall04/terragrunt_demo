@@ -1,4 +1,4 @@
-"""Source wiring only; never execute hosted workflows or install Node."""
+"""Source wiring only; never execute hosted workflows or install tools."""
 import importlib.util
 from pathlib import Path
 import unittest
@@ -23,5 +23,21 @@ class PortfolioHygieneTests(unittest.TestCase):
         self.assertIn('Existing Node 20+ required',step)
         for install in ('npm ','npx ','setup-node','apt-get','curl '):self.assertNotIn(install,step)
         self.assertNotIn('id-token:',source)
+
+    def test_backup_observer_paths_select_hygiene_without_gate_narrowing(self):
+        for name in ('observer.py','signals.py','test_observer.py','test_local_signals.py','sql-backup-observer.service.in','sql-backup-observer.timer.in'):
+            self.assertTrue(selection.classify(['operations/sql-backup/'+name])['hygiene'])
+
+    def test_backup_observer_and_signal_suites_run_before_known_repro_blocker(self):
+        source=(ROOT/'.github/workflows/ci-repo-hygiene.yml').read_text(encoding='utf-8')
+        start=source.index('      - name: Validate backup observer and signal contracts')
+        end=source.index('      - name:',start+1);step=source[start:end]
+        self.assertLess(start,source.index('      - name: Test infrastructure and CI reproducibility'))
+        self.assertLess(start,source.index('      - name: Install verified hygiene tools'))
+        for name in ('test_observer.py','test_local_signals.py'):
+            self.assertIn('python3 -I -B -m unittest discover -s operations/sql-backup -p '+name+' -v',step)
+        for forbidden in ('pip install','npm ','npx ','systemctl','aws ','--aws','configure-aws-credentials','id-token:'):
+            self.assertNotIn(forbidden,step)
+        self.assertIn('set -euo pipefail',step)
 
 if __name__=='__main__':unittest.main()

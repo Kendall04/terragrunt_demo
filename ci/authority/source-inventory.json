@@ -815,39 +815,41 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/ci-repo-hygiene.yml": {
-      "sha256": "b2d8c0645516050a70a40d558466872ad1670553d32a52a6a3a7f8610d6e3b8b",
+      "sha256": "f73044e6241738061335e28995c1740211181217465d8947f588536278a09242",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          29,
-          41,
-          44,
-          71,
-          116,
-          117,
-          118,
-          134,
-          135,
-          136,
-          164,
-          167
+          36,
+          48,
+          51,
+          78,
+          123,
+          124,
+          125,
+          141,
+          142,
+          143,
+          171,
+          174
         ],
         "executable-dependency": [
           16,
           29,
-          38,
-          44,
+          30,
+          36,
+          45,
           51,
-          70,
-          82,
-          83,
-          85,
-          99,
-          105,
-          121,
-          123,
-          145,
-          147
+          58,
+          77,
+          89,
+          90,
+          92,
+          106,
+          112,
+          128,
+          130,
+          152,
+          154
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -9659,15 +9661,22 @@
       }
     },
     "scripts/tests/reproducibility/test_portfolio_hygiene.py": {
-      "sha256": "51060f18f8db8441f5b8b946d2a96baf1601a4ece27f72817d4f7117230b398d",
+      "sha256": "72f743dc3f91582b0d49146bcd904c54af2d61008ee54ea32b45207e3fe3fd55",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
-          25
+          25,
+          39
+        ],
+        "launch-or-mutation": [
+          39
         ],
         "executable-dependency": [
           7,
-          17
+          17,
+          28,
+          32,
+          37
         ]
       },
       "semantic_status": "UNVERIFIED"

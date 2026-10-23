@@ -101,3 +101,14 @@ POSIX-only skip**. The real Python replay entrypoint passed missing -> suppresse
 repeat -> healthy recovery. Knowledge links/immutable E1 checks and diff checks
 passed; hosted CI, real AWS checks and actual timer/notification operation did not
 run. The pre-existing provider-lock and 30 source-inventory findings remain scoped.
+
+
+## CI source integration
+
+The repo-hygiene source now runs the exact observer and existing local signal/
+component-binding suites before provider reproducibility and optional tool installs.
+No dependencies, SQL server, AWS credentials, service installation or real cloud
+checker are required. This closes the missing source-level CI coverage for this
+local observer; hosted workflow execution remains unrun and full hygiene retains
+its independent provider-lock/source-inventory blockers. Focused wiring tests keep
+both explicit commands and conservative change selection in place.

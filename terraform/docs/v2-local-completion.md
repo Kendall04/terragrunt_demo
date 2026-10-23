@@ -205,3 +205,29 @@ Deployment outside the SQL failure domain, real role/config, producer ingestion,
 periodic operation and durable Sentinel/email delivery remain unqualified. Emit
 means a local candidate; it is not a delivery ACK. No AWS or service installation;
 original archives, component manifests and Archify captures are intact.
+
+
+## Upstream access and observer CI checkpoint — 2026-10-23
+
+A single bounded laptop check found no PKI/Sentinel checkout in known project,
+migration or worker integration locations. Git Credential Manager lists existing
+account Kendall04; gh is not installed. One noninteractive ls-remote per exact repo
+failed: service-identity-pki authentication/access failure, reliability-sentinel no
+available noninteractive credential. No login, token read/copy, new access setup,
+other-principal retry, private connector retry or source clone occurred. This does
+not prove that either repository is absent.
+
+Both sources remain required. Minimum unblock: renew the existing Kendall04 Git
+session and allow read access to those two repos, or provide their versioned source
+bundles locally; never send credentials. No repeated access search is planned.
+First bounded integration after source availability: inspect the pinned Sentinel
+actual input types, map existing observer FAILED/MISSING/STALE/RECOVERED candidates
+with UNKNOWN/dedup semantics and test its real local ingress without sending email.
+Then inspect the actual PKI .NET compatibility/DI/enrollment and two-identity mTLS
+contracts; preserve existing KMS encryption and SQL semantics. No APIs are invented
+while upstream types remain unseen.
+
+Independently, repo-hygiene source now invokes the existing observer and signal/
+component-binding tests before known provider reproducibility/tool-install steps.
+This closes their missing source-level automatic coverage, without running a remote
+workflow, changing E11 gate selection, installing anything or accepting full CI.
