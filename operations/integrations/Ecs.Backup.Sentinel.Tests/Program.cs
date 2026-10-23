@@ -93,6 +93,15 @@ var denied=natWorker.Dispatch(probe.Id,"negative-routing-test");
 Check("real NAT catalog rejects backup correlation key",denied.Detail=="Catalog mismatch." && route.Store.ReadEffect(probe.Id)!.Status==OutboxStatus.PermanentFailure);
 Check("rejected NAT route never invokes provider",trap.Calls==0);
 
+// Expired invocations must retry even a valid suppressed candidate; no false queue ACK.
+using var cancelled=new CancellationTokenSource();cancelled.Cancel();
+var timedOut=new Rig();
+var cancelledFailure=timedOut.Send(fixtures["failed"],token:cancelled.Token);
+Check("cancelled failure retries before any write",cancelledFailure is {Retry:true,Failure:FailureClass.Transient,Code:"cancelled-before-confirmation"} && timedOut.History.IsEmpty && timedOut.Effects.IsEmpty && timedOut.Store.Read(StorageKeys.Aggregate(timedOut.Key)) is null);
+var cancelledHealthy=timedOut.Send(fixtures["baseline"],advance:false,token:cancelled.Token);
+Check("cancelled suppressed healthy is not acknowledged",cancelledHealthy is {Retry:true,Failure:FailureClass.Transient,Code:"cancelled-before-confirmation"} && timedOut.History.IsEmpty && timedOut.Effects.IsEmpty);
+Check("fresh invocation can process retried failure",timedOut.Send(fixtures["failed"]) is {Retry:false,Status:ProcessingStatus.Committed} && timedOut.Head.State==IncidentState.ESCALATED);
+
 var before=r.History.Length;
 foreach(var (name,field,value) in new (string,string,JsonNode?)[]{("wrong subject","Subject",JsonValue.Create("other")),("secret field","Password",JsonValue.Create("synthetic-private")),("false live claim","SentinelIntegrated",JsonValue.Create(true)),("false remediation","RemediationAllowed",JsonValue.Create(true)),("wrong pair","Code",JsonValue.Create("NO_REMOTE_COMMIT")),("future time","ObservedUtc",JsonValue.Create("2099-01-01T00:00:00Z")),("wrong emit type","Emit",JsonValue.Create("true")),("invented transport","Delivery",JsonValue.Create("EMAIL"))}) {
  var result=r.Send(Change(fixtures["failed"],field,value),false);
@@ -125,9 +134,9 @@ sealed class Rig {
   var processor=new IngestionProcessor(Normalizer,Options,_=>new(new SignalProcessor(Store,new IncidentReducer(new BackupIncidentPolicy(Key)),StorageLimits.Default)),_=>Policy,
     contexts:now=>new(now,"ecs-backup-observer-v2",[],[]));ingress=new(Normalizer,processor);
  }
- public MessageResult? Send(string body,bool advance=true) {
+ public MessageResult? Send(string body,bool advance=true,CancellationToken token=default) {
   if(advance) {var observed=DateTimeOffset.Parse(JsonNode.Parse(body)!["ObservedUtc"]!.GetValue<string>()).AddSeconds(1);if(observed>Now)Now=observed;}
-  return ingress.Process(body,"local-message",Now);
+  return ingress.Process(body,"local-message",Now,token);
  }
  public Incident Head=>Store.Read(StorageKeys.Aggregate(Key))!.Head;
  public System.Collections.Immutable.ImmutableArray<AuditRecord> History=>Store.History(StorageKeys.Aggregate(Key));

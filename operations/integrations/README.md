@@ -46,7 +46,7 @@ TransactionalMemoryStore. No reducer/outbox is copied. The memory store survives
 reconstruction of the processor in this test, not OS/process termination. It is
 explicitly an upstream fake, not DynamoDB or durable filesystem storage.
 
-**58 checks passed** with actual ingress/reducer/receipt/audit/outbox components:
+**61 checks passed** with actual ingress/reducer/receipt/audit/outbox components:
 opening and persistent incidents, one escalation intent per episode, reminders,
 redelivery after processor reconstruction, UNKNOWN, recovery, recurrence, old
 recovery replay after a new epoch, second-observation confirmation, late/tied/
@@ -135,3 +135,29 @@ application, blue/green release slots, no business HTTP peer. The preserved
 [historical compatibility experiment](PKI-EXPERIMENT.md) is NOT ACCEPTED and is not
 a completion requirement or a deployed microservice. No CA installation or
 existing API/database/KMS/runtime/IaC change is part of it.
+
+
+### Operational path review and cancellation boundary - 2026-10-23
+
+[One bounded operational trace and trial proposal](OPERATIONAL-TRIAL.md) identifies
+reusable original DynamoDB/S3 adapters, exact schema/host incompatibilities and
+missing real notification transport. The [review-only scope matrix](OPERATIONAL-SCOPE-PROPOSAL.json)
+contains proposed names/runtime grants, not an installable policy or cloud plan.
+Nothing is deployed, no timer is installed and no new budget is authorized.
+
+BackupIngress now accepts/forwards the existing invocation CancellationToken and
+retries cancellation before or after suppression reads. A cancelled valid HEALTHY
+candidate cannot produce a false suppression ACK; cancelled failure creates no
+state/audit/outbox and a fresh invocation can process its retry. The affected
+suite passes 61 checks, zero build warnings/errors; original memory fake and
+in-process transport only. A first new test used an unrelated healthy fixture to
+advance time beyond failure freshness; correcting that artificial clock made the
+chronological retry test valid. Its initial failed log is preserved. No production
+freshness assertion was relaxed. Actual SDK I/O still needs scoped budget binding.
+
+The prior local-regression-manifest.json and its original 58-check/full-UI receipt
+remain immutable historical evidence. The small current
+[operational preparation manifest](operational-preparation-manifest.json) pins the
+changed source, exact upstream review and new 61-check receipt. Browser/observer
+suites were not repeated for this C#-only correction and operational documentation;
+prior UI qualification remains separate. This manifest is not a cloud release.

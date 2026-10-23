@@ -100,11 +100,17 @@ public sealed class ObserverNormalizer(string subject, CorrelationKey key,ITrans
 
 /// <summary>Suppress unchanged observations except a fresh recovery confirmation required by the real reducer.</summary>
 public sealed class BackupIngress(ObserverNormalizer normalizer, IngestionProcessor processor) {
-    public MessageResult? Process(string body, string messageId, DateTimeOffset receivedAt) {
-        try { if (!normalizer.ShouldProcess(normalizer.Read(body,processor.Options,receivedAt),receivedAt)) return null; }
+    public MessageResult? Process(string body, string messageId, DateTimeOffset receivedAt, CancellationToken token=default) {
+        try {
+            token.ThrowIfCancellationRequested();
+            var process=normalizer.ShouldProcess(normalizer.Read(body,processor.Options,receivedAt),receivedAt);
+            token.ThrowIfCancellationRequested();
+            if (!process) return null;
+        }
+        catch(OperationCanceledException) {return new(true,FailureClass.Transient,"cancelled-before-confirmation",null);}
         catch (Exception e) when (e is JsonException or InvalidOperationException or KeyNotFoundException or FormatException or ArgumentException or OverflowException) { }
         catch(IOException) {return new(true,FailureClass.Transient,"backup-store-read",null);}
         catch(TimeoutException) {return new(true,FailureClass.Transient,"backup-store-read-timeout",null);}
-        return processor.Process(body,messageId,"ecs-backup-local",receivedAt);
+        return processor.Process(body,messageId,"ecs-backup-local",receivedAt,token);
     }
 }

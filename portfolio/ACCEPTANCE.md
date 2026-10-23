@@ -104,3 +104,27 @@ persistencia/ACK duraderos, rol/host/cadencia y worker de backups, región/prove
 de correo reales; ciclo SQL/API/restore sin reparación manual con plan de creación/
 retiro y presupuesto revisados. Hosting/release/CI reales y bloqueos existentes
 siguen abiertos. PKI está fuera de alcance, no forma parte de estos bloqueos.
+
+
+## Operational preparation checkpoint - 2026-10-23
+
+- [x] Single source-backed trace: observer, authenticated SQS host, original
+  DynamoDB transactional state/receipts/audits/outbox, immutable S3 archive, notice.
+- [x] Minimal invocation-cancellation propagation and three focused regressions:
+  **61 checks PASS**, zero build warnings/errors. Persistence remains the upstream
+  memory fake, no AWS SDK persistence or email acceptance claimed.
+- [x] [Small cycle proposal](../operations/integrations/OPERATIONAL-TRIAL.md),
+  review-only runtime grant matrix and source manifest, including cleanup and
+  separate proposed **new USD1** allowance. No money/access/deployment authorized.
+- [ ] Backup-aware managed-host composition/batch bridge, exact dependency cache,
+  region/config qualification, real durable/notice adapters wired and tested.
+- [ ] Owner decisions: email recipient/provider/consent, escalation/recovery notice
+  policy, trial evidence retention/export/delete, actual observer host/cadence/
+  expected-UP/owner. Existing producer schedule/2+2-day backup retention unchanged.
+- [ ] Final generated template/change set, effective create/delete authority,
+  reversible temporary policies and one specifically admitted integrated cycle.
+
+The proposed replay cycle qualifies durable signal plumbing, not remote backup
+checking, full independent periodic observation or SQL recovery. Original NAT
+workers remain disconnected. PKI stays outside ECS scope. Original UI/Archify and
+closed recovery receipts are preserved; neither are relabeled as live operation.
