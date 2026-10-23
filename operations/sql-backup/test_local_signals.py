@@ -41,13 +41,17 @@ class ReleaseTests(unittest.TestCase):
     def test_archive_cannot_substitute_old_source_or_binary(self):
         with tempfile.TemporaryDirectory() as tmp:
             directory=Path(tmp);commit,digest=self.make(directory);component=release.verify(directory,digest,commit)
-            for case in ('matching','old-source','old-dll'):
+            for case in ('matching','old-source','old-dll','old-payload'):
                 value={'SourceCommit':commit,'Files':{'backup/'+name:row.copy() for name,row in component['Files'].items()}}
                 if case=='old-source':value['SourceCommit']='b'*40
                 if case=='old-dll':value['Files']['backup/SqlBackup.dll']['Sha256']='0'*64
                 path=directory/(case+'.tar');body=json.dumps(value).encode()
                 with tarfile.open(path,'w') as stream:
                     entry=tarfile.TarInfo('bundle-manifest.json');entry.size=len(body);stream.addfile(entry,io.BytesIO(body))
+                    for name in component['Files']:
+                        data=(directory/name).read_bytes()
+                        if case=='old-payload' and name=='SqlBackup.dll':data=b'old-payload'
+                        entry=tarfile.TarInfo('backup/'+name);entry.size=len(data);stream.addfile(entry,io.BytesIO(data))
                 if case=='matching':self.assertEqual(release.verify_bundle(path,release.sha(path),component),component)
                 else:
                     with self.assertRaisesRegex(release.Refused,'BUNDLE_COMPONENT_MISMATCH'):release.verify_bundle(path,release.sha(path),component)

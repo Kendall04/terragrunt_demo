@@ -45,8 +45,15 @@ def verify_bundle(archive, archive_sha, component):
         entry=stream.getmember('bundle-manifest.json')
         if not entry.isfile() or entry.size>1048576: raise Refused('BUNDLE_MANIFEST_REQUIRED')
         value=json.loads(stream.extractfile(entry).read())
-    bound={name.removeprefix('backup/'):{'Bytes':row['Bytes'],'Sha256':row['Sha256']} for name,row in value['Files'].items() if name.startswith('backup/')}
-    if value.get('SourceCommit')!=component['SourceCommit'] or bound!=component['Files']: raise Refused('BUNDLE_COMPONENT_MISMATCH')
+        bound={name.removeprefix('backup/'):{'Bytes':row['Bytes'],'Sha256':row['Sha256']} for name,row in value['Files'].items() if name.startswith('backup/')}
+        if value.get('SourceCommit')!=component['SourceCommit'] or bound!=component['Files']: raise Refused('BUNDLE_COMPONENT_MISMATCH')
+        for name,row in bound.items():
+            entries=[item for item in stream.getmembers() if item.name=='backup/'+name]
+            if len(entries)!=1 or not entries[0].isfile() or entries[0].size!=row['Bytes']: raise Refused('BUNDLE_COMPONENT_MISMATCH')
+            digest=hashlib.sha256()
+            with stream.extractfile(entries[0]) as body:
+                for chunk in iter(lambda:body.read(1048576),b''):digest.update(chunk)
+            if digest.hexdigest()!=row['Sha256']: raise Refused('BUNDLE_COMPONENT_MISMATCH')
     return component
 
 def main():

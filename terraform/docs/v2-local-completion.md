@@ -60,8 +60,10 @@ Artifact 65c7901 SHA256:
 ece30607405bdaf65ea29d6396591bab7048b72b99e5d75f5cd8ea8c21846d6b.
 Its 623 files remain untouched. It includes the actual private-parent and seven-
 digit timestamp repairs, but not the subsequent backup-health change above.
-That new compiled change is unit-tested only and needs a fresh pinned publish/
-qualification before inclusion in a future artifact. No huge archive was rebuilt
+The subsequent b2bf8d8 component now has a pinned local Linux publication and
+captured-receipt signal qualification; see the current local release checkpoint
+in the backup README. It still needs inclusion in an inspected future artifact
+and live acceptance, and must not be attributed to the old65c7901 tar. No huge archive was rebuilt
 or duplicated for this increment; do not label the old tar as the current HEAD.
 
 1. Select one reviewed immutable artifact/source pair and a fresh owner-approved

@@ -355,3 +355,38 @@ SNS/alarm declarations do not install backup producers/observers. Real alert
 delivery still needs those bindings, maintenance/freshness semantics and explicit
 installation/channel approval; private Sentinel source/contracts remain unavailable.
 No cloud permission, external email, upload or deployment was configured here.
+
+
+### Published corrected component and receipt qualification - 2026-10-23
+
+Clean source b2bf8d82938e690561a85e45b3ab9e2a383413cf was locally published as
+Linux-x64 self-contained .NET 10.0.13 using existing cached packages only and an
+offline NuGet source list. The component has 237 files / 133344738 bytes; no application
+archive was created. Its executable build-info reports that exact compiled Git
+revision without config or credentials. Component DLL SHA256:
+d84141e91939f41042f7cb3c0a243e9036a82a676108849da31d556b17571d88.
+Versioned local manifest SHA256:
+b0a98b236d25fa2d0bcc72269ac42e294276c53603f48945bc99ecfb3664c978.
+
+The actual published Linux executable passed three replay cases through the real
+Protocol.Check and local log renderer: FAILED, MISSING and STALE all produced
+nonzero CLI status and ATTENTION with Delivery:NONE. Stale uses the unchanged az6
+captured receipt, now older than 2 h; failed uses that actual metadata plus an
+explicit synthetic local FAILED attempt; missing uses an explicit empty captured
+list, not live S3 absence. Every replay says RemoteStorageObserved:false; no SQL,
+API, AWS or notification call was made. Original receipts remain untouched.
+
+Full CLI suite: 62 PASS / 1 native SQL integration skip. Nine focused Python tests cover
+status/exit/maintenance/unknown/privacy and manifest/source/DLL/extra-file/payload
+substitution. The real old 65c7901 tar remains unchanged and was refused with
+BUNDLE_COMPONENT_MISMATCH by the current pinned component gate. Archive binding
+checks actual backup payload bytes as well as declared manifest hashes. This gate
+does not replace whole-bundle hygiene/inspection, IAM review or live acceptance.
+
+The qualification tooling/doc commit may be later than the compiled component:
+pin the actual b2bf8d8 source and manifest above, never infer them from latest HEAD.
+The next concrete artifact packet must invoke verify-bundle before upload and
+execution. Automatic AWS/CI wiring is not installed. Live producer log forwarding,
+independent periodic missing/stale checking and confirmed human email/Sentinel
+delivery remain open, together with unchanged full EC2/systemd/remote-restore/API
+acceptance. No external email or unavailable Sentinel API was configured.
