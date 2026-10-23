@@ -1374,3 +1374,21 @@ timestamp precision on Python 3.10. Affected suites:89Windows tests (3 POSIX ski
 27 verifier separately, all 7 focused tests on actual Ubuntu 24.04 POSIX paths.
 No new artifact was published/qualified for this local correction; trial lineage
 continues to bind a1e6060 and the original immutable artifact plus explicit repairs.
+
+
+## New recovery artifact native component qualification - 2026-10-23
+
+The [native component checkpoint](../../operations/sql-backup/recovery/RUNBOOK.md#new-artifact-native-local-backup-component---2026-10-23)
+qualifies artifact 65c7901's actual private staging helper and published local
+backup CLI against SQL 16.0.4305.5 Express/Python 3.10 from empty synthetic state.
+Native checksum/SHA256 and actual seven-digit .NET timestamp ordering passed.
+An explicitly manual SQL restore with the source database OFFLINE passed CHECKDB
+and marker/read/write checks in the same engine. It does not execute the CLI's
+remote restore or full systemd/EC2/S3/KMS/API/cross-AZ workflow. Service prechecks
+refused service_state/READ_FAILED/74; guards remain intact and the finer cause is
+not claimed. One harness-only hashing compatibility failure before SQL effects
+and its corrected retry remain preserved. Both containers normally removed,
+no OOM/force, AWS calls, builds, settings changes, archive duplication or spend.
+The exact immutable artifact and native receipt/assessment hashes are in the
+runbook. The measured AWS prepared-target RTO remains 142.630783 s; no hourly RPO,
+production workload or whole-ECS recovery claim is added.

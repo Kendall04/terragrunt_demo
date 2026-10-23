@@ -986,3 +986,42 @@ instead of retroactively attributing this source to its immutable artifact.
 
 Immutable closure receipt SHA256: `988d7917f9e2bf92129a7cd9ca3aad91b4b01b6591ea42aeb9019b224e5ffdbb`; closed at04:49:25UTC.
 Terminal state VersionId: `JrH4aZ1_HeCozCsizjXx4LLcuNA0MWoF`, serial3, managed0.
+
+
+### New artifact native local backup component - 2026-10-23
+
+The reproducible artifact from 65c7901, SHA256
+ece30607405bdaf65ea29d6396591bab7048b72b99e5d75f5cd8ea8c21846d6b,
+was streamed into one isolated cached SQL 16.0.4305.5 Express container. All 623
+files matched. From absent staging/database state, the unmodified create_staging
+helper created the private mssql UID10001 parent/children/config without manual repair.
+The exact published CLI ran local backup without --aws and returned LOCAL_VERIFIED;
+native checksum verification and backup SHA256 passed. Actual manifest timestamps
+2026-10-23T05:08:27.9444697+00:00 and 2026-10-23T05:08:28.1584589+00:00 were accepted
+and ordered by the new helper on native Python 3.10.
+
+With the synthetic source database OFFLINE, an explicitly manual native SQL
+RESTORE WITH MOVE/CHECKSUM/STOP_ON_ERROR/RECOVERY passed CHECKDB, read the pre-backup
+marker, excluded the later marker and wrote/read a new row. This was one SQL
+engine and two databases, not a separate host/AZ or the production remote CLI
+restore. That command requires exact remote storage; no fake S3/KMS/IMDS service
+or encrypted API was introduced. Both unadapted and direct-launch service checks
+refused service_state/READ_FAILED/74 in this container. The finer cause was not
+captured. No guard was relaxed and the full recovery host flow did not run past
+that refusal. EC2 systemd/bootstrap, credentials/remote exact-version restore,
+S3/KMS/API and the unchanged full host workflow remain the acceptance gap.
+
+The first local attempt failed in the test harness before any SQL DDL/backup:
+Python 3.10 lacks hashlib.file_digest. Its immutable failed receipt is preserved;
+the harness used portable streaming SHA256 for one bounded retry. Both containers
+were removed through normal same-user SIGTERM, no force/OOM or daemon/security/
+network changes. The existing 3 GiB / 2 CPU/network-none/no-mount bounds were retained;
+EKS confirmed no WSL work and the window was released at 05:08:32.865015UTC.
+No AWS calls, rebuild, new archive, upload, budget reset, push or merge occurred.
+The original controlled AWS prepared-target RTO 142.630783 s remains historical
+measured evidence, not a local/full-ECS/RPO claim.
+
+Native component assessment SHA256:
+0cb0065f6862059d7970bf37efcd207e5c3918b83b50425265e14e01c311e52b.
+Raw successful native receipt SHA256:
+6e9d0dceaa93c2574b41d34abe4d1aa62644769515cdd17462215de29eff7940.
