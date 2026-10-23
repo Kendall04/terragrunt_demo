@@ -2,157 +2,179 @@
   "schema_version": 1,
   "diagram_type": "architecture",
   "meta": {
-    "title": "V2 objetivo · integraciones pendientes",
+    "title": "Backups y Sentinel · local / pendiente",
     "locale": "es",
     "output": "docs/interactive/future-integrations.html",
     "quality_profile": "showcase",
     "repository": {
       "url": "https://github.com/Kendall04/terragrunt_demo",
-      "revision": "19b1f5e538bbd8f63c882335c1dd76edffab462b",
+      "revision": "5afa45ee3dd3d2068be42dc4a355444d5658a9c3",
       "link_mode": "local-only"
     }
   },
   "components": [
     {
-      "id": "api_a",
+      "id": "observer",
       "type": "backend",
-      "label": "Servicio A objetivo",
-      "sublabel": "PENDIENTE mTLS",
+      "label": "Observador de backups",
+      "sublabel": "LOCAL · ejecución finita",
       "pos": [
         40,
         40
       ],
       "size": [
-        178,
-        72
+        210,
+        74
       ],
       "sources": [
         {
-          "path": "terraform/docs/v2-local-completion.md",
-          "line": 35,
-          "end_line": 38
+          "path": "operations/sql-backup/observer.py",
+          "line": 107,
+          "end_line": 143
         }
       ]
     },
     {
-      "id": "api_b",
+      "id": "adapter",
       "type": "backend",
-      "label": "Servicio B objetivo",
-      "sublabel": "PENDIENTE identidad",
+      "label": "Adaptador de eventos",
+      "sublabel": "LOCAL · JSON sanitario",
       "pos": [
-        400,
+        420,
         40
       ],
       "size": [
-        178,
-        72
+        210,
+        74
       ],
       "sources": [
         {
-          "path": "terraform/docs/v2-local-completion.md",
-          "line": 35,
-          "end_line": 38
+          "path": "operations/integrations/Ecs.Backup.Sentinel/ObserverNormalizer.cs",
+          "line": 67,
+          "end_line": 94
         }
       ]
     },
     {
       "id": "sentinel",
       "type": "backend",
-      "label": "Reliability Sentinel",
-      "sublabel": "PENDIENTE integración",
+      "label": "Sentinel in-process",
+      "sublabel": "LOCAL · incidente / dedupe",
       "pos": [
-        760,
+        800,
         40
       ],
       "size": [
-        178,
-        72
+        220,
+        74
       ],
       "sources": [
         {
-          "path": "terraform/docs/v2-local-completion.md",
-          "line": 35,
-          "end_line": 38
+          "path": "operations/integrations/Ecs.Backup.Sentinel/BackupIncidentPolicy.cs",
+          "line": 7,
+          "end_line": 47
         }
       ]
     },
     {
-      "id": "pki",
-      "type": "security",
-      "label": "Service Identity PKI",
-      "sublabel": "PENDIENTE rotación",
+      "id": "memory",
+      "type": "database",
+      "label": "Estado y outbox",
+      "sublabel": "FAKE · en memoria",
       "pos": [
-        400,
-        310
+        800,
+        300
       ],
       "size": [
-        178,
-        72
+        220,
+        74
       ],
       "sources": [
         {
-          "path": "terraform/docs/v2-local-completion.md",
-          "line": 35,
-          "end_line": 38
+          "path": "operations/integrations/Ecs.Backup.Sentinel.Tests/Program.cs",
+          "line": 111,
+          "end_line": 134
         }
       ]
     },
     {
-      "id": "email",
+      "id": "installation",
+      "type": "backend",
+      "label": "Integración operativa",
+      "sublabel": "PENDIENTE · storage / worker",
+      "pos": [
+        420,
+        300
+      ],
+      "size": [
+        230,
+        74
+      ],
+      "sources": [
+        {
+          "path": "operations/integrations/README.md",
+          "line": 103,
+          "end_line": 115
+        }
+      ]
+    },
+    {
+      "id": "operator",
       "type": "external",
-      "label": "Correo al operador",
-      "sublabel": "PENDIENTE entrega",
+      "label": "Aviso al operador",
+      "sublabel": "PENDIENTE · correo real",
       "pos": [
-        760,
-        310
+        40,
+        300
       ],
       "size": [
-        178,
-        72
+        210,
+        74
       ],
       "sources": [
         {
-          "path": "terraform/docs/v2-local-completion.md",
-          "line": 35,
-          "end_line": 40
+          "path": "operations/integrations/README.md",
+          "line": 103,
+          "end_line": 115
         }
       ]
     }
   ],
   "connections": [
     {
-      "from": "api_a",
-      "to": "api_b",
-      "label": "objetivo mTLS",
-      "variant": "security"
+      "from": "observer",
+      "to": "adapter",
+      "label": "JSON de salud"
     },
     {
-      "from": "pki",
-      "to": "api_b",
-      "label": "identidad objetivo",
-      "variant": "security"
-    },
-    {
-      "from": "api_b",
+      "from": "adapter",
       "to": "sentinel",
-      "label": "logs / alarmas",
-      "variant": "default"
+      "label": "ingreso local"
     },
     {
       "from": "sentinel",
-      "to": "email",
-      "label": "notificar objetivo",
-      "variant": "default"
+      "to": "memory",
+      "label": "prueba de commit"
+    },
+    {
+      "from": "memory",
+      "to": "installation",
+      "label": "pendiente instalar"
+    },
+    {
+      "from": "installation",
+      "to": "operator",
+      "label": "correo pendiente"
     }
   ],
   "cards": [
     {
       "dot": "amber",
-      "title": "Alcance y estado",
+      "title": "Alcance de la evidencia",
       "items": [
-        "Objetivo futuro separado: ninguna conexión de este mapa se declara desplegada.",
-        "Reutilizar las fuentes PKI y Sentinel reales; hoy no están disponibles localmente.",
-        "Sentinel clasifica cobertura HA y aviso; no obtiene reparación general."
+        "Flujo local probado con observaciones sintéticas; no es un monitor instalado.",
+        "Persistencia fake y outbox pendiente; ningún dispatcher operativo conectado.",
+        "Sin entrega de correo, reparación NAT ni métricas de tráfico/latencia medidas."
       ]
     }
   ]

@@ -288,3 +288,31 @@ NAT bindings are rejected before any transaction/outbox enqueue; an actual
 NAT-only catalog rejects backup work before its provider (zero calls). No
 operational dispatcher is configured. The isolated rejection test is not an
 installed dispatcher, notification transport or durable-persistence qualification.
+
+## Historical deployment evidence for the portfolio
+
+The [qualified DEV delivery record](deployment.md#protected-delivery-rollback-and-automatic-cleanup)
+records A-to-B-to-A using two different application image digests (lines 774–812).
+Both images passed readiness and SQL/KMS POST/GET; after rollback A read and
+decrypted text written by B. Promotion/rollback and automatic cleanup have native
+protected success receipts. This is historical unchanged-schema application/key/
+database compatibility, **not rollback of migrations or database backup/restore**,
+and not a claim of currently live infrastructure. The portfolio's guided tour
+keeps memory-only DEMO, V1 architecture, deployment history, prepared-target az6
+with two repairs, local observability and real pending installation distinct.
+
+## Bounded regression closure — 2026-10-23
+
+Observer 15 and signals/release binding 9 Linux tests pass; Sentinel 58, Node 16,
+CI source-wiring 4 and isolated Chrome 16 pass. Poisoned legacy NAT bindings are
+refused before state/audit/outbox persistence. A real NAT catalog/worker negative
+case rejects backup work before its provider; no operational dispatcher is wired.
+
+The fifth authentic Archify map now represents local backup/Sentinel and pending
+installation. PKI/second-service proposal is preserved privately in Git history,
+not the current tour. UI adds only guided presentation and qualified historical
+A→B→A evidence, no API features. The [small source/recipe manifest](../../operations/integrations/local-regression-manifest.json)
+includes no large binaries. These are local acceptance scopes, not durable
+storage, real email, live AWS observation or hosted CI. Deployment/unchanged
+recovery require their admitted plan, IAM create+retire and budget; original USD2
+is not renewed. No cloud, timer install, remote workflow, push or EKS change.

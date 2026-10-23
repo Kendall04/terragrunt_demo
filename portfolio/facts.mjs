@@ -5,7 +5,7 @@ export const topologies={
  ['gateway','API Gateway','EDGE','Entrada HTTP pública hacia el VPC Link.','No se consulta su estado actual.','architecture'],
  ['link','VPC Link','EDGE','Conecta la entrada con el ALB interno.','No expone la aplicación ni SQL directamente.','architecture'],
  ['alb','ALB interno','GLOBAL','Encamina HTTP:8080 hacia el color activo.','El control de forwarding pertenece a delivery.','architecture'],
- ['ecs','API en Fargate','APPS / DELIVERY','Una API .NET; blue/green permiten promoción y rollback por digest.','PKI/mTLS y un segundo servicio no se declaran implementados.','architecture'],
+ ['ecs','API en Fargate','APPS / DELIVERY','Una API .NET; blue/green permiten promoción y rollback por digest.','PKI/mTLS y un segundo servicio quedan fuera de alcance de ECS.','architecture'],
  ['sql','SQL Server en EC2','DATA','SQL privado por TCP:1433. El texto se persiste cifrado.','No se ha ejecutado una consulta SQL desde esta UI.','architecture'],
  ['kms','AWS KMS','SECURITY','El backend usa el cliente KMS para cifrar y descifrar.','Esta demo no cifra ni usa claves. KMS no es PKI TLS.','architecture']
  ]},

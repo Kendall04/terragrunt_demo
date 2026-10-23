@@ -68,19 +68,55 @@
     },
     {
       "id": "future-integrations",
-      "sourceSha256": "fbf4c9592d6bfb10eb73d5da14dedc2ada58d588e1caabcbc77710360a9ad89b",
-      "htmlSha256": "54014ee395c3d98445146d6067d2efee06957c59583185021032b590a5d4c4a7",
+      "sourceSha256": "f3c051490ef57bf0ca9d6abb495d7abc1e931a63dc3b66662bdb5bb0aa7bb305",
+      "htmlSha256": "7d156e1220fa67cef9523068f8f6c5c7f04fd2afee5efd5bc68e5d26f60ed47a",
       "gates": {
         "validate": "pass",
         "deliver": "pass",
         "check": "pass",
         "browser-check": "pass"
       },
-      "finalizerSummarySha256": "71aef6df908373c8f149cf4c9565d87b66993b7f12cfd4d1d1ab8f54f44f9cd1",
-      "diagnosticCount": 0
+      "finalizerSummarySha256": "d2196ea2ac274f1668c9757d86970b19ba92e92c6914618a39394877b9f56286",
+      "diagnosticCount": 0,
+      "sourceCommit": "5afa45ee3dd3d2068be42dc4a355444d5658a9c3",
+      "supersededProposal": {
+        "preservedGitCommit": "5afa45ee3dd3d2068be42dc4a355444d5658a9c3",
+        "htmlPath": "docs/interactive/future-integrations.html",
+        "htmlSha256": "54014ee395c3d98445146d6067d2efee06957c59583185021032b590a5d4c4a7",
+        "sourceSha256": "fbf4c9592d6bfb10eb73d5da14dedc2ada58d588e1caabcbc77710360a9ad89b",
+        "reason": "Superseded proposal includes PKI/second service now outside ECS; preserved in Git, not in public traversal"
+      }
     }
   ],
   "integratedBrowser": {
+    "finishedUtc": "2026-10-23T19:25:44.224Z",
+    "sha256": "7fc6ef0c16db2551c1bcefc492873755937a56339e88c71431d6a30859e3a8be",
+    "checksPassed": 16,
+    "chrome": "155.0.8059.86",
+    "diagramWidths": [
+      1440,
+      390
+    ],
+    "allThreeViewWidths": [
+      320,
+      390,
+      768
+    ],
+    "allSvgNodesInitiallyVisible": true,
+    "nativeZoomAndReset": true,
+    "nativeSvgKeyboardFocus": true,
+    "guidedTourVerified": true,
+    "externalRequests": 0,
+    "consoleErrors": 0,
+    "opaqueIframeVerified": true,
+    "browserClosed": true,
+    "serverClosed": true
+  },
+  "nodeTestsPassed": 16,
+  "perceptualReview": "New fifth diagram desktop/mobile plus desktop product/tour and full desktop Archify portfolio inspected. Mobile overview requires native zoom; not complete accessibility certification.",
+  "noAwsPushHostingOrRemoteWorkflow": true,
+  "perDiagramCommitMeaning": "sourceCommitByDiagram or per-diagram sourceCommit overrides the original common sourceCommit; prior four generated originals unchanged.",
+  "previousIntegratedBrowser": {
     "finishedUtc": "2026-10-23T17:31:18.062Z",
     "sha256": "f52419d64df43ae03f238f3a729f009fe2259fbfc956bede73fba083c33a0c82",
     "checksPassed": 15,
@@ -102,8 +138,5 @@
     "opaqueIframeVerified": true,
     "browserClosed": true,
     "serverClosed": true
-  },
-  "nodeTestsPassed": 14,
-  "perceptualReview": "Representative final desktop portfolio, desktop networking/backup and mobile az6/future captures inspected. Mobile overview requires native zoom for text.",
-  "noAwsPushHostingOrRemoteWorkflow": true
+  }
 }

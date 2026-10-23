@@ -184,7 +184,7 @@ memory-only message interaction, architecture component navigation and explicit
 historical/pending evidence. Run `node portfolio/server.mjs` from this repository
 and open http://127.0.0.1:4181. It has no AWS/backend connection, credentials,
 infrastructure controls or live mode. V1 and the scoped az6 experiment are separate
-historical topologies; PKI/Sentinel remain pending. The guide includes the existing
+historical topologies; Sentinel delivery remains pending and PKI is outside ECS scope. The guide includes the existing
 workspace-local Node command and isolated browser-test instructions. No hosting,
 new repository, CI/CD or whole-V2 acceptance is implied by this UI.
 
@@ -193,5 +193,5 @@ new repository, CI/CD or whole-V2 acceptance is implied by this UI.
 
 Run the [local portfolio](portfolio/README.md) for a synthetic Product Demo and
 [five authentic Archify diagrams](docs/interactive/README.md). Views distinguish
-retired V1/az6, local backup evidence and pending V2 integrations; none query AWS.
+retired V1/az6, historical A-to-B-to-A delivery, local backup observability and pending installation; none query AWS.
 See the [current acceptance boundary](portfolio/ACCEPTANCE.md) and screenshots.

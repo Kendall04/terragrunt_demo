@@ -3,6 +3,6 @@ export const archifyCatalog=[
  {id:'v1-platform',title:'01 · Aplicación V1',mode:'HISTÓRICO · RETIRADO',note:'API Gateway, ALB privado, Fargate, SQL y KMS. Un color activo; sin PKI/mTLS.'},
  {id:'v1-network',title:'02 · Red V1',mode:'HISTÓRICO · RETIRADO',note:'NAT Instances de la plataforma original, no el NAT Gateway del ensayo.'},
  {id:'az6-recovery',title:'03 · Recuperación az6',mode:'HISTÓRICO · RETIRADO',note:'SQL/API en dos EC2 privadas. RTO con destino preparado: 142,63 s; dos reparaciones. Sin ECS ni ALB.'},
- {id:'backup-signals',title:'04 · Señales de backup',mode:'LOCAL · REPLAY',note:'Evaluación y JSON locales. Sin monitor live, observador periódico ni correo.'},
- {id:'future-integrations',title:'05 · Objetivo V2',mode:'OBJETIVO · PENDIENTE',note:'PKI/mTLS, segundo servicio y Sentinel/correo son requisitos pendientes; no están desplegados.'}
+ {id:'backup-signals',title:'04 · Señales de backup',mode:'LOCAL · REPLAY',note:'Evaluación y JSON locales. Sin monitor live, temporizador instalado ni correo.'},
+ {id:'future-integrations',title:'05 · Backups y Sentinel',mode:'LOCAL · INSTALACIÓN PENDIENTE',note:'Observador, política y outbox probados en memoria. Persistencia real, worker y correo siguen pendientes. Sin dispatcher operativo ni reparación NAT; PKI fuera de alcance de ECS.'}
 ];

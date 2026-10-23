@@ -6,7 +6,7 @@ Cinco HTML generados por **Archify 3.1.0**, no dibujos propios atribuidos a Arch
 2. [Red V1 histórica](v1-network.html): red privada y NAT Instances; sin failover entre zonas demostrado.
 3. [Ensayo az6 retirado](az6-recovery.html): SQL/API entre zonas; destino preparado, dos reparaciones; no ECS/ALB.
 4. [Señales locales de backup](backup-signals.html): recibos y evaluación local, sin entrega externa.
-5. [Objetivo V2 pendiente](future-integrations.html): PKI/mTLS y Sentinel/correo requeridos, no desplegados.
+5. [Backups y Sentinel](future-integrations.html): observador/adaptador/política local con memoria de prueba; instalación, persistencia real y correo pendientes. PKI fuera de ECS.
 
 La [demo local](../../portfolio/README.md) integra los cinco con cámara/zoom y
 etiquetas de estado. Los JSON editables están en source/. [GENERATION.json](GENERATION.json)
@@ -35,3 +35,15 @@ node <archify>/bin/archify.mjs finalize architecture docs/interactive/source/<id
 Revisar fuentes/recibos antes de actualizar portfolio/archify-pins.json. No admitir
 bytes nuevos cambiando solo el hash. Los recibos locales delivery.json se conservan
 ignorados por contener rutas de máquina; no son una instalación ni autorización AWS.
+
+## Regeneración del quinto mapa — 2026-10-23
+
+Archify oficial 3.1.0 regeneró el HTML y pasó validate/deliver/check/browser-check
+contra fuente local fijada a 5afa45ee3dd3d2068be42dc4a355444d5658a9c3.
+Los otros cuatro originales no cambiaron. GENERATION.json y archify-pins.json
+registran el nuevo commit por diagrama y los hashes derivados del recibo real.
+La propuesta anterior (PKI/segundo servicio) queda preservada en Git en ese commit,
+con hashes registrados, fuera del recorrido público. No se editaron HTML generado
+ni metadatos para simular validación. La exclusión es una decisión del propietario,
+no una integración completada. El visor integrado volvió a pasar Chrome desktop/
+móvil, aislamiento y cero tráfico externo; las capturas nuevas fueron inspeccionadas.

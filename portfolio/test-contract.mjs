@@ -11,6 +11,14 @@ import {assertPortfolioContract} from './contract.mjs';
 const read=name=>readFile(new URL(name,import.meta.url),'utf8');
 const input={html:await read('index.html'),app:await read('app.mjs'),css:await read('style.css'),contract:portfolioContract,topologies};
 test('DEMO/history, source facts, navigation and accessible source contracts',()=>assertPortfolioContract(input));
+test('guided evidence path and historical distinct-image rollback preserve scope',async()=>{
+ const deployment=await read('../terraform/docs/deployment.md');
+ assert.match(deployment,/sha256:ca7d92532/);assert.match(deployment,/sha256:7aa96288/);assert.match(deployment,/A also read\/decrypted the text written by B/);
+ assert.match(input.html,/A → B → A/);assert.match(input.html,/continuidad SQL\/KMS/);assert.match(input.html,/No revierte migraciones/);
+ for(const step of ['demo','v1','deployment','az6','observability','pending'])assert(input.html.includes(`data-tour="${step}"`));
+ assert.match(input.html,/Persistencia de prueba en memoria/);assert.match(input.html,/PKI fuera de alcance de ECS/);
+});
+
 test('external requests and injected third-party assets fail policy',()=>{
  for(const app of [input.app+"\nfetch('https://example.invalid')",input.app+'\nnew WebSocket("wss://example.invalid")'])assert.throws(()=>assertPortfolioContract({...input,app}));
  for(const html of [input.html+'<script src="https://example.invalid/a.js"></script>',input.html+'<img src="//example.invalid/x">'])assert.throws(()=>assertPortfolioContract({...input,html}));
@@ -22,6 +30,10 @@ test('false live data/provenance and live topology labels fail policy',()=>{
  assert.throws(()=>assertPortfolioContract({...input,contract:{...portfolioContract,provenance:'archify-generated'}}));
  const changed=structuredClone(topologies);changed.az6.mode='live';assert.throws(()=>assertPortfolioContract({...input,topologies:changed}));
 });
+test('reintroducing PKI as an ECS completion requirement fails current scope',()=>{
+ assert.throws(()=>assertPortfolioContract({...input,html:input.html.replace('PKI fuera de alcance de ECS','PKI requerida para ECS')}));
+});
+
 test('removing navigation focus, skip link or live announcements fails contract',()=>{
  assert.throws(()=>assertPortfolioContract({...input,app:input.app.replace('if(moveFocus)','if(false)')}));
  assert.throws(()=>assertPortfolioContract({...input,html:input.html.replace('class="skip-link"','class="removed"')}));
@@ -54,10 +66,10 @@ test('invalid or external absolute request targets refuse without proxying',asyn
  assert.equal((await request('/')).status,200);
 });
 
-test('five genuine pinned Archify artifacts preserve honest historical/local/future scopes',async()=>{
- assert.equal(archifyCatalog.length,5);assert.match(archifyCatalog[4].mode,/PENDIENTE/);
+test('five genuine pinned Archify artifacts preserve historical/local and pending-installation scopes',async()=>{
+ assert.equal(archifyCatalog.length,5);assert.match(archifyCatalog[4].mode,/LOCAL.*PENDIENTE/);assert.match(archifyCatalog[4].note,/PKI fuera de alcance de ECS/);assert.doesNotMatch(archifyCatalog[4].note,/son requisitos pendientes/);
  const pins=JSON.parse(await read('archify-pins.json'));assert.equal(pins.generator,'Archify 3.1.0');
- for(const item of archifyCatalog){const raw=await readFile(new URL('../docs/interactive/'+item.id+'.html',import.meta.url));assert.equal(createHash('sha256').update(raw).digest('hex'),pins.originalSha256[item.id]);assert.match(raw.toString(),/name="generator" content="archify 3.1.0"/);}
+ for(const item of archifyCatalog){const raw=await readFile(new URL('../docs/interactive/'+item.id+'.html',import.meta.url));assert.equal(createHash('sha256').update(raw).digest('hex'),pins.originalSha256[item.id]);assert.match(raw.toString(),/name="generator" content="archify 3.1.0"/);if(item.id==='future-integrations'){assert.doesNotMatch(raw.toString(),/Service Identity PKI|Servicio B objetivo/);assert.match(raw.toString(),/Sentinel in-process/);}}
 });
 test('presentation refuses changed bytes and active resource mutants',async()=>{
  const raw=await readFile(new URL('../docs/interactive/v1-platform.html',import.meta.url));

@@ -87,3 +87,20 @@ PKI is outside ECS scope, not a remaining acceptance requirement. Preserve its
 unaccepted experiment and historical requirements separately. The fifth public
 Archify view is being regenerated for actual backup/Sentinel scope; no second
 application is introduced. API functionality stays unchanged.
+
+## Cierre local de regresión — 2026-10-23
+
+Aceptado localmente: 15 observer + 9 signals/release-binding Linux; 58 Sentinel
+in-process; 16 Node; 4 CI-wiring; 16 Chrome checks. Rechazo explícito de política
+con bindings NAT antes de cualquier enqueue; worker NAT real rechaza la clave
+backup antes del proveedor (cero llamadas). No dispatcher operativo conectado.
+
+Quinto mapa regenerado por Archify auténtico, sin PKI/segundo servicio. Recorrido
+breve y evidencia histórica A→B→A añadidos sin modificar API. Fuente/evidencia:
+[manifiesto pequeño](../operations/integrations/local-regression-manifest.json).
+
+Requiere ensayo integrado y decisión de despliegue: ingesta autenticada,
+persistencia/ACK duraderos, rol/host/cadencia y worker de backups, región/proveedor
+de correo reales; ciclo SQL/API/restore sin reparación manual con plan de creación/
+retiro y presupuesto revisados. Hosting/release/CI reales y bloqueos existentes
+siguen abiertos. PKI está fuera de alcance, no forma parte de estos bloqueos.

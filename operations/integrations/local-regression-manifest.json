@@ -1,0 +1,277 @@
+{
+  "schemaVersion": 1,
+  "scope": "LOCAL observer + Sentinel backup policy + static Archify portfolio; source recipe, not cloud release",
+  "authoredAgainstCommit": "5afa45ee3dd3d2068be42dc4a355444d5658a9c3",
+  "sourceSnapshotSha256": "d626fd301bf545b572105387d6ef10c1544aaea273acee2153d60ddb633774f0",
+  "sources": {
+    "docs/interactive/GENERATION.json": {
+      "sha256": "b99ae25eeb1e7392a3080d7b8c4b03424423ad824a71903f870c7348ea11751a",
+      "normalization": "UTF8-LF",
+      "bytes": 5508
+    },
+    "docs/interactive/az6-recovery.html": {
+      "sha256": "9499e2f87b99200d9b7fd0b9196caf82964a8e7b9a42aefd2113a48289f474d1",
+      "normalization": "exact",
+      "bytes": 817153
+    },
+    "docs/interactive/backup-signals.html": {
+      "sha256": "0508e9897fd8326cecf4ecf632ec5e702b8f429d51c25ae2ae6747c7551d842f",
+      "normalization": "exact",
+      "bytes": 814045
+    },
+    "docs/interactive/future-integrations.html": {
+      "sha256": "7d156e1220fa67cef9523068f8f6c5c7f04fd2afee5efd5bc68e5d26f60ed47a",
+      "normalization": "exact",
+      "bytes": 817067
+    },
+    "docs/interactive/source/az6-recovery.json": {
+      "sha256": "82a5eeccb6c44a9163c1c5e77f927abed89ff641385e16f72fffc04a4ae7bfca",
+      "normalization": "exact",
+      "bytes": 3707
+    },
+    "docs/interactive/source/backup-signals.json": {
+      "sha256": "7da299616f2ccf92207fc1aa49064b759442f53777bfdadb30d0fc88f80c654e",
+      "normalization": "exact",
+      "bytes": 3229
+    },
+    "docs/interactive/source/future-integrations.json": {
+      "sha256": "f3c051490ef57bf0ca9d6abb495d7abc1e931a63dc3b66662bdb5bb0aa7bb305",
+      "normalization": "exact",
+      "bytes": 3986
+    },
+    "docs/interactive/source/v1-network.json": {
+      "sha256": "019d052a2f302c46724c9ac98acb7ccd4261eb9cadb3b0d9390962433dbe4aea",
+      "normalization": "exact",
+      "bytes": 3526
+    },
+    "docs/interactive/source/v1-platform.json": {
+      "sha256": "c64ffbd3b7fec8b93addc73645cd213a8455bd4480ead71fc44afde3ccf6d276",
+      "normalization": "exact",
+      "bytes": 3526
+    },
+    "docs/interactive/v1-network.html": {
+      "sha256": "c2a3f7973b625f665324c309eef523168a9928b7ad7d576914ca553cc67b7624",
+      "normalization": "exact",
+      "bytes": 816743
+    },
+    "docs/interactive/v1-platform.html": {
+      "sha256": "8638dadb59b8cc5ef26d0f0fdfb063010f05d63be43b3278488d2e5bbb9b40dd",
+      "normalization": "exact",
+      "bytes": 816750
+    },
+    "operations/integrations/Ecs.Backup.Sentinel.Tests/Ecs.Backup.Sentinel.Tests.csproj": {
+      "sha256": "1cc8c8bed77c3ad3a97ccbea4b72e2f8ce1d80091d27122f52f5c2f3eb09654c",
+      "normalization": "UTF8-LF",
+      "bytes": 489
+    },
+    "operations/integrations/Ecs.Backup.Sentinel.Tests/Program.cs": {
+      "sha256": "33e5d3381304bdddc12691898f6c06b3b7d21caa1c1cfa1fafe30b71d3a83c83",
+      "normalization": "UTF8-LF",
+      "bytes": 13806
+    },
+    "operations/integrations/Ecs.Backup.Sentinel/BackupIncidentPolicy.cs": {
+      "sha256": "f9d8f842a370396577ccdce37e7ff1fe55c472a90f308027f98d14b41bd1f404",
+      "normalization": "UTF8-LF",
+      "bytes": 4662
+    },
+    "operations/integrations/Ecs.Backup.Sentinel/Ecs.Backup.Sentinel.csproj": {
+      "sha256": "d60fdcddd765148b0f44e86651b037bc4489a4354674c7bec6ef2d6e9d01a35d",
+      "normalization": "UTF8-LF",
+      "bytes": 576
+    },
+    "operations/integrations/Ecs.Backup.Sentinel/ObserverNormalizer.cs": {
+      "sha256": "bd63229fe2dfd09550e5cdc4d206af5f6456980703fa7eef8950c06693e57e70",
+      "normalization": "UTF8-LF",
+      "bytes": 9333
+    },
+    "operations/integrations/generate_fixtures.py": {
+      "sha256": "15bb5b44183a2f4eb6f3bb099d2607a5a0250546b8b73484c5c116099c422051",
+      "normalization": "UTF8-LF",
+      "bytes": 1871
+    },
+    "operations/integrations/upstream-sources.json": {
+      "sha256": "2ad1704d6ab989a9cbbd195cb58acc5e8a511bc0c191c18b0681b389576b7fac",
+      "normalization": "UTF8-LF",
+      "bytes": 353
+    },
+    "operations/integrations/verify_sources.py": {
+      "sha256": "0f4f2da89461315f85c133067e6680de9426e9b33dc90f9084bfa74edbadbe68",
+      "normalization": "UTF8-LF",
+      "bytes": 1115
+    },
+    "operations/sql-backup/README.md": {
+      "sha256": "7ddccffe0fd63a821fc68caaa58de28182534a01620084d7d7e68d5ee83fbe21",
+      "normalization": "UTF8-LF",
+      "bytes": 27777
+    },
+    "operations/sql-backup/local_release.py": {
+      "sha256": "77146b950b20da1cbe5c00c73d03b1d555a4c941d96e1f54f66cb04dc6d21822",
+      "normalization": "UTF8-LF",
+      "bytes": 5102
+    },
+    "operations/sql-backup/observer.py": {
+      "sha256": "80e90a00d45530b02ef8601bac18e78605ff851449cd6a00ed1689a0a90dc53d",
+      "normalization": "UTF8-LF",
+      "bytes": 10304
+    },
+    "operations/sql-backup/recovery/RUNBOOK.md": {
+      "sha256": "13bfb4b80fbf036ca78b460d190bf47e711a877707ac38e5f89640f444c6e305",
+      "normalization": "UTF8-LF",
+      "bytes": 73066
+    },
+    "operations/sql-backup/signals.py": {
+      "sha256": "da1da8b85777717ed89fc59dab4130435e4be38734c4506458f21ea291b5f2fb",
+      "normalization": "UTF8-LF",
+      "bytes": 4392
+    },
+    "operations/sql-backup/sql-backup-observer.service.in": {
+      "sha256": "36be08efb16b0df78e7f72c7bae2100aa3f980089e9cc7d0baccbe16537084d0",
+      "normalization": "UTF8-LF",
+      "bytes": 1099
+    },
+    "operations/sql-backup/sql-backup-observer.timer.in": {
+      "sha256": "3d51ccba1c76fb7c9641286c701c224ee6b5e1dd8123b935bbf7ecb0a8320441",
+      "normalization": "UTF8-LF",
+      "bytes": 280
+    },
+    "operations/sql-backup/test_local_signals.py": {
+      "sha256": "80cb17d68fffc1eff5c5281bab73da7618400352dd558a212890c7b77b9a5b2d",
+      "normalization": "UTF8-LF",
+      "bytes": 6703
+    },
+    "operations/sql-backup/test_observer.py": {
+      "sha256": "b653a6bf49101d7d2e0b4bbcb6667c2a2d538d2ec1d204d9f6f00e5eef086344",
+      "normalization": "UTF8-LF",
+      "bytes": 11717
+    },
+    "portfolio/app.mjs": {
+      "sha256": "c24a123ee57815ac00b8d3e82b6d3312191b2386d0ac010ae03d68f4806389b3",
+      "normalization": "UTF8-LF",
+      "bytes": 5802
+    },
+    "portfolio/archify-catalog.mjs": {
+      "sha256": "a8c46ffe18dc9fe6374b7019bf308d360bb22682a9e9297ebdd015a7befe4237",
+      "normalization": "UTF8-LF",
+      "bytes": 1065
+    },
+    "portfolio/archify-pins.json": {
+      "sha256": "effb134aca3019944a4fcde02631b05f3c31cf3eab00fa699b8b0c9c92dfb855",
+      "normalization": "UTF8-LF",
+      "bytes": 1003
+    },
+    "portfolio/archify-viewport.mjs": {
+      "sha256": "8cee22254ca91d0c709a2991d5611dbdcaa56b88db0eee27d483145eac3dbff7",
+      "normalization": "UTF8-LF",
+      "bytes": 5744
+    },
+    "portfolio/archify.mjs": {
+      "sha256": "cf216e46a921f0f7d25309f1a55610365b4c0dab7a43dc1b5ab3e47092455ae3",
+      "normalization": "UTF8-LF",
+      "bytes": 2309
+    },
+    "portfolio/contract.mjs": {
+      "sha256": "3d32812cf70342d36e2a3cdb0a510bdb540a530dbba5ac3b4a8a1c779750eff0",
+      "normalization": "UTF8-LF",
+      "bytes": 2965
+    },
+    "portfolio/facts.mjs": {
+      "sha256": "666fb198d0bb9a0d6e9abbf4eaa6ab43ca5e645003e0f2a66fce3e41aebacb5e",
+      "normalization": "UTF8-LF",
+      "bytes": 2700
+    },
+    "portfolio/favicon.svg": {
+      "sha256": "8f5105609e635b443fdc27f316a70f01e24bdbad7340ac15466c7d529e41c660",
+      "normalization": "UTF8-LF",
+      "bytes": 221
+    },
+    "portfolio/index.html": {
+      "sha256": "36c75746283fd29ce0e7f622b9ab4cae2eb35be8ace520b981c0cdc7e3acf5e8",
+      "normalization": "UTF8-LF",
+      "bytes": 9646
+    },
+    "portfolio/server.mjs": {
+      "sha256": "f226fc68cb82b4393498106b345d1c32765d3badd3b9aabc135fae9dd08963b8",
+      "normalization": "UTF8-LF",
+      "bytes": 3269
+    },
+    "portfolio/style.css": {
+      "sha256": "9d52a89264fc038dbdacb218bc8dc94e523bbd4034b731dca3b4b9345414c992",
+      "normalization": "UTF8-LF",
+      "bytes": 13271
+    },
+    "portfolio/test-browser.mjs": {
+      "sha256": "c365fd7c5fc73053644f40be83ec850ffabe8d04010437d5fae2452c092060dc",
+      "normalization": "UTF8-LF",
+      "bytes": 11744
+    },
+    "portfolio/test-contract.mjs": {
+      "sha256": "3402beed24f534517a2fc1f924379d8624f4b618bbf45dff1d45bf73c33b96fb",
+      "normalization": "UTF8-LF",
+      "bytes": 9031
+    },
+    "terraform/docs/architecture.md": {
+      "sha256": "f9ab1a98590e2627e2d9bf2ef7f98eff4b15235866dee716e51dacc7d92dcb41",
+      "normalization": "UTF8-LF",
+      "bytes": 18122
+    },
+    "terraform/docs/v2-local-completion.md": {
+      "sha256": "9cc8a16ae95667567cfe0c05ff25fbc256793bdb940cf1470597bf1950b572b7",
+      "normalization": "UTF8-LF",
+      "bytes": 23640
+    }
+  },
+  "upstreamSources": {
+    "sentinel": {
+      "origin": "https://github.com/Kendall04/reliability-sentinel.git",
+      "commit": "0e8fc55333ddde3b9816885915310a7e69f3de45"
+    },
+    "pki": {
+      "origin": "https://github.com/Kendall04/service-identity-pki.git",
+      "commit": "29a3dfc70a0b1646388c0229212898b4be164afe"
+    }
+  },
+  "pkiIncluded": false,
+  "largeBinariesIncluded": false,
+  "awsCalls": 0,
+  "operationalDispatcherConnected": false,
+  "installedTimers": false,
+  "localResults": {
+    "observerLinux": 15,
+    "signalsBindingLinux": 9,
+    "sentinel": 58,
+    "node": 16,
+    "hygieneWiring": 4,
+    "chrome": 16,
+    "externalRequests": 0,
+    "consoleErrors": 0,
+    "browserAndServerClosedNormally": true
+  },
+  "recipes": {
+    "observer": "python3 -I -B -m unittest discover -s operations/sql-backup -p test_observer.py -v (existing Linux Python, private temporary dirs)",
+    "signals": "python3 -I -B -m unittest discover -s operations/sql-backup -p test_local_signals.py -v",
+    "sentinel": [
+      "python3 -I -B operations/integrations/verify_sources.py --sentinel-root \"$SENTINEL_SOURCE_ROOT\"",
+      "python3 -I -B operations/integrations/generate_fixtures.py --observer-root operations/sql-backup --output \"$OUT/fixtures\"",
+      "dotnet build operations/integrations/Ecs.Backup.Sentinel.Tests/Ecs.Backup.Sentinel.Tests.csproj -c Release --artifacts-path \"$OUT/artifacts\" -p:SentinelSourceRoot=\"$SENTINEL_SOURCE_ROOT\" --source \"$EMPTY_LOCAL_FEED\" -p:NuGetAudit=false -m:1",
+      "dotnet \"$OUT/artifacts/bin/Ecs.Backup.Sentinel.Tests/release/Ecs.Backup.Sentinel.Tests.dll\" \"$OUT/fixtures\""
+    ],
+    "portfolioNode": "node --test portfolio/test-contract.mjs",
+    "portfolioBrowser": "PLAYWRIGHT_MODULE and CHROME_EXECUTABLE point to already installed tools; UI_EVIDENCE_DIRECTORY must be new/empty; node portfolio/test-browser.mjs"
+  },
+  "runtimeSelections": {
+    "dotnetSdk": "10.0.402",
+    "node": "24.18.0 (suite supports >=20)",
+    "linuxPython": "existing Ubuntu-24.04 Python 3",
+    "chrome": "155.0.8059.86",
+    "archify": "official 3.1.0, tool origin/ZIP pinned in docs/interactive/GENERATION.json"
+  },
+  "notQualified": [
+    "durable persistence/dispatch ACK",
+    "authenticated actual producer ingestion",
+    "periodic host/role/config/cadence installation",
+    "real AWS region and email provider",
+    "unchanged SQL/API cross-AZ trial without manual repairs",
+    "hosted CI/release/hosting; existing provider-lock and source-inventory blockers"
+  ],
+  "preservedHistory": "PKI experiment and superseded fifth map retained in Git; outside ECS current public path and completion scope"
+}
