@@ -1,9 +1,12 @@
-# ECS upstream integrations — local consumer qualification
+# ECS upstream integrations — local and historical native qualification
 
 The sources are private, independently versioned repositories. No framework source
 is copied into ECS, no upstream scripts run, and no package is published. Verified
 Git references qualify Sentinel locally; the paused PKI experiment consumes local
-packages. Neither is a deployed integration or hosted CI result.
+packages. PKI stays outside ECS scope. Sentinel subsequently passed a bounded
+synthetic AWS replay trial; it has been fully retired and is not a permanent
+deployment or hosted CI result. See [native evidence and Terraform/Terragrunt
+direction](NATIVE-TRIAL-2026-10-23.md).
 
 ## Provenance
 

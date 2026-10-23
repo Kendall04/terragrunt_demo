@@ -1,16 +1,14 @@
 # ECS backup signal pipeline: local implementation and one-cycle review
 
-**LOCAL QUALIFICATION ONLY. A narrow retirement-policy amendment is ready for grouped consent, not installed.
-The AWS cycle is NOT APPROVED and has not run.**
+**HISTORICAL PREPARATION BELOW. The approved synthetic cycle completed and was fully retired at 2026-10-23T23:10:35UTC. No permanent integration is installed.**
 
-[Part4 amendment, diff, hashes, tests and rollback](trial-review/part4-amendment/AMENDMENT.md)
-excepts only this trial bucket from DeleteBucket Deny. Current AWS Part4 remains unchanged.
-Its five-version limit also requires explicit consent to preserve/replace nondefault v1;
-effective v5 rollback is exact, historical VersionId/CreateDate rollback is impossible.
-This document supersedes the initial preparation at commit1ba82c2; its historical
-scope/receipt remains in Git. PKI is outside ECS scope. API, original recovery
-artifacts/states/backups, EKS, production and original backup2+2-day retention
-remain outside this trial.
+[Native trial, source boundaries, remaining probes and Terraform/Terragrunt plan](NATIVE-TRIAL-2026-10-23.md)
+is the current acceptance summary. Both owner inbox receipts were recorded; full
+outbox draining and actual periodic backup production remain unaccepted. Both
+mapping callback supplements were removed, original Part4 v5 restored and archived
+v1 content recreated as nondefault v7. Original backups2+2, ECS/EKS/demo remain
+preserved. The preapproval statements below describe their historical checkpoint;
+they do not deny the later recorded approval or authorize another cycle.
 
 ## Implemented and checked
 

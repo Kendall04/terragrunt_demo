@@ -171,3 +171,31 @@ are occupied; original v5 permissions and all document contents can be restored,
 but historical VersionId/CreateDate cannot. NewUSD1 proposal and original16+3
 resources are unchanged. Owner email/notification consent and actual AWS integrated
 qualification remain pending. This does not mark ECS or inbox delivery complete.
+
+
+## Native Sentinel replay and retirement — 2026-10-23 23:10 UTC
+
+This checkpoint supersedes the earlier preparation-only status for the synthetic
+trial; those sections remain historical. PKI remains outside ECS scope.
+
+- [x] 10 SQS messages, one resolved backup incident, 7 durable receipts/audits and
+  all 7 immutable S3 archives read back using original Sentinel components.
+- [x] One FAILED and one recovery notice accepted by SNS, one attempt each;
+  owner separately supplied both inbox receipts. No formatting resend.
+- [x] Main/bootstrap retired, synthetic versions/bucket/table deleted and native
+  absence verified; original Part4 v5 restored, archived v1 CONTENT restored as
+  nondefault v7; operator inline, roles/boundaries and both Get/Delete supplements
+  removed. Closure 23:10:35 UTC, same new USD 1 allowance, actual invoice unknown.
+- [x] Readable synthetic-only SNS plain-text format: 70 local managed checks PASS,
+  zero build warnings/errors, commit 9115721. Not uploaded or deployed.
+- [ ] Full outbox draining: export retains 6 RequestFunctionalProbe,
+  2 ScheduleRecoveryCheck and2 RecordIncidentEvidence Pending, not cancelled.
+- [ ] Real periodic observer/publisher and dispatcher installation, genuine
+  CHECK_COMMAND_RESULT admission and a supported read-only probe contract.
+- [ ] Final Terraform/Terragrunt module and real plan/destroy/IAM lifecycle trial;
+  CI/release/hosting and clean SQL/API recovery without manual repairs remain
+  separate project gates. No new deployment is authorized by this checklist.
+
+[Integration/code provenance, limits and final single-IaC plan](../operations/integrations/NATIVE-TRIAL-2026-10-23.md).
+The native replay remains a historical synthetic milestone, not live portfolio
+telemetry or complete ECS acceptance.
