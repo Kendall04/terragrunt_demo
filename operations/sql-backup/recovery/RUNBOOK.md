@@ -1,8 +1,17 @@
 # V2 SQL/API cross-AZ recovery packet
 
-Status: **LOCAL PREPARATION ONLY**. V1 delivery remains accepted. The October 21
-manual/two-hourly backup acceptance is historical PASS; no recovery or cloud
-lifecycle PASS follows from these files, generated JSON or offline fixtures.
+Current checkpoint - 2026-10-23: **controlled SQL/API cross-AZ proof closed;
+unchanged full workflow acceptance pending**. Az6 passed with two explicit live
+repairs and clean retirement. Artifact 65c7901 is reproducible; its new staging
+helper and local-backup CLI passed native SQL, followed by an explicitly manual
+SQL restore. The complete EC2/systemd/remote-restore/encrypted-API path without
+manual repairs remains pending. No AWS cycle or budget is authorized by this file.
+
+The [local completion checkpoint](../../../terraform/docs/v2-local-completion.md)
+maps the current Page criteria, actual tests, backup-health improvement and
+unavailable PKI/Sentinel source gates. V1 delivery and the October 21 manual/two
+hourly backup acceptance retain their historical scope. Earlier dated proposals
+below remain historical; generated plans and offline fixtures are not live proof.
 
 This is one finite drill, not a lifecycle framework. It exposes a Terraform root,
 public security additions, explicit host actions and sanitized receipt JSON for a

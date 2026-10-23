@@ -101,12 +101,11 @@ public sealed partial class Protocol(Options options, ISqlEngine? sql, IStore? s
     public async Task<Health> Check(bool expectedUp, CancellationToken ct)
     {
         if (!expectedUp) return new("MAINTENANCE", "NOT_EXPECTED_UP");
-        if (store == null)
-        {
-            var statePath = Path.Combine(options.StagingDirectory, "last-attempt.json");
-            if (File.Exists(statePath) && JsonFiles.Read<Attempt>(statePath).Stage == "FAILED") return new("FAILED", "LAST_ATTEMPT_FAILED");
-            return new("UNKNOWN", "REMOTE_STORAGE_NOT_CHECKED");
-        }
+        // A recent committed backup remains recoverable, but must not hide a
+        // later failed producer attempt when this checker can read its state.
+        var statePath = Path.Combine(options.StagingDirectory, "last-attempt.json");
+        if (File.Exists(statePath) && JsonFiles.Read<Attempt>(statePath).Stage == "FAILED") return new("FAILED", "LAST_ATTEMPT_FAILED");
+        if (store == null) return new("UNKNOWN", "REMOTE_STORAGE_NOT_CHECKED");
         DateTimeOffset? latest = null;
         foreach (var key in await store.Manifests(ct))
         {

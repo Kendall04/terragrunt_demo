@@ -76,10 +76,18 @@ or cleanup. It does not rebind the application or replace the source.
 `check --config <config> --expected-up true` exposes local failure/UNKNOWN;
 adding `--aws` checks committed manifests from an independent host. It returns
 nonzero for FAILED/MISSING/STALE/UNKNOWN. `--expected-up false` reports maintenance.
-The independent checker must remain outside the SQL host failure domain. Native
-service logs/exit status expose immediate failure; missing remote commits expose
-absence. CloudWatch wiring and real human notification remain pending. No fake
-notification or Sentinel integration is installed.
+The independent checker must remain outside the SQL host failure domain. When
+the configured local last-attempt.json is FAILED, both local and remote-enabled
+checks now return FAILED/LAST_ATTEMPT_FAILED, even if an older remote commit is
+still recent. Maintenance suppresses the signal without erasing failure evidence;
+a later verified backup clears it through the normal attempt-state transition.
+An independent host without that local file can only assess remote freshness:
+HEALTHY/RECENT_REMOTE_COMMIT does not prove no later producer failure occurred.
+It therefore still needs a separate producer failure signal from service logs/
+exit status. Missing/stale remote commits expose absence independently. CloudWatch
+wiring, periodic independent execution and real human/email notification remain
+pending; no fake notification or Sentinel integration is installed. See the
+[consumer state contract](../../terraform/docs/v2-local-completion.md#backup-alert-consumer-contract).
 
 `cloud-preview --config proposed-lab.json` emits reviewable bucket/encryption,
 retention and least-privilege policy proposals. It creates nothing. Bucket and

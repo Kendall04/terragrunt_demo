@@ -1392,3 +1392,23 @@ no OOM/force, AWS calls, builds, settings changes, archive duplication or spend.
 The exact immutable artifact and native receipt/assessment hashes are in the
 runbook. The measured AWS prepared-target RTO remains 142.630783 s; no hourly RPO,
 production workload or whole-ECS recovery claim is added.
+
+
+## Local entrypoint and backup-health completion increment - 2026-10-23
+
+Four production host.main entrypoint contracts PASS on actual private POSIX paths
+with explicit synthetic SQL/API/AWS ports: clean source/quiesce/restore, seven-digit
+manifest preservation, durable failure/no replay, identity/hash/staging refusal.
+The [completion checkpoint](v2-local-completion.md) binds the Page scope and exact
+native/fixture/remaining acceptance boundaries.
+
+The remote-enabled checker previously ignored local FAILED attempts when an older
+remote success was recent. Three new regressions reproduced false HEALTHY before
+the correction. The full backup CLI suite now has 56 PASS / 1 explicit native-SQL skip,
+including five new alert-signal cases. Expected-DOWN maintenance preserves failure
+evidence; a subsequent verified backup clears it normally. An independent observer
+without the local attempt file still proves remote freshness only, so real producer
+failure publication, independent missing/stale observation and notification remain
+pending. No alarm/Sentinel/email, AWS action, deployment, publish or archive rebuild.
+Artifact 65c7901 stays immutable and does not contain this later compiled health fix.
+PKI/Sentinel source/package availability gates are documented without invented APIs.

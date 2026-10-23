@@ -385,3 +385,19 @@ preserves source, actual timings, bootstrap recovery, state, residues and limits
 The old USD-10 budget and failed plans are not reusable. Only local offline
 preflight regression work was authorized afterward, without policy application,
 new expenses or changes to E16 controls/limits.
+
+
+## V2 local recovery entrypoints and backup failure signal (2026-10-23)
+
+The owner requested continued local progress from the project Pages with no new
+AWS spend/access. The controlled az6 SQL/API cross-AZ milestone remains scoped;
+it does not close V2. Four actual-POSIX/hermetic-port production-entrypoint tests
+now cover the clean path and no-replay/identity/hash/staging boundaries. A real
+checker defect was reproduced: recent remote success hid a later local failed
+attempt when remote storage was configured. The minimal correction gives that
+observed local failure precedence after expected-UP; maintenance and later-success
+transitions are preserved. Full CLI suite 56 PASS / 1 native SQL skip. No CloudWatch,
+Sentinel or email installation is implied. See [current local completion and
+source gates](v2-local-completion.md). PKI/mTLS/rotation and Sentinel remain owner
+requirements; missing local upstream sources cannot be replaced by fabricated APIs.
+No AWS mutation/spend, new archive, push/merge or Git identity change occurred.
