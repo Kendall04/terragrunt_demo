@@ -1482,3 +1482,18 @@ closed normally at 2026-10-23T07:03:51.285Z; no forced PID cleanup. Screenshots 
 visually reviewed. Prior two receipts are preserved but not added to the count.
 This is local UI evidence, not a live API/AWS/PKI/Sentinel integration, hosted
 portfolio, accessibility certification or completion of the remaining Page phases.
+
+
+## Bounded portfolio keyboard/provenance quality pass - 2026-10-23
+
+The [UI acceptance checklist](../../portfolio/ACCEPTANCE.md) records 14 final browser
+checks, including all three views at 320/390/768px. Fixed view-change heading focus,
+skip-link versus view-history routing, accessible names/groups, invalid-input state
+and status announcements. The initial repeated-mobile-navigation focus failure
+and its normal teardown receipt remain preserved. Corrected final run 14 PASS;
+zero external requests/console errors; browser/server closed normally at
+2026-10-23T07:15:37.083Z. No new dependency, cache install, AWS or hosting.
+The UI and guide now say custom repository explorer, NOT Archify-generated.
+Actual Archify generation/export stays open, alongside PKI/Sentinel source access
+and the remaining live/release acceptance. This is a bounded Chrome DOM/focus/
+responsive check, not full accessibility or whole-project certification.

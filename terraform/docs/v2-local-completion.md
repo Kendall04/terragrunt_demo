@@ -125,7 +125,7 @@ double public API or installed integration claim.
 | 3 Security/PCI lessons | Inherited findings need concrete prioritized remediation; no compliance claim |
 | 4 PKI | Required reusable upstream integration, two identities, AWS emission/rotation and rejection/failure tests remain open |
 | 5 Sentinel | Required real alarms/logs classification and email/periodic-operation qualification remain open; no general repair authority |
-| 6 Product Demo/Archify Explorer | Local Product Demo, architecture navigation and evidence view implemented with 12 isolated-browser checks; synthetic/historical only, no hosting or live backend. See portfolio/README.md |
+| 6 Product Demo/Archify Explorer | Local Product Demo and custom architecture explorer: 14 bounded quality checks, synthetic/historical only. Not Archify-generated; actual Archify output and release/live scope remain pending. See portfolio/ACCEPTANCE.md |
 | 7 Repository/release | New repository preserving old, Kendall authorship for new commits, real CI/OIDC, README/screenshots remain required; no push/repository creation/identity change performed now |
 
 The IAM auditor's prepare/apply/CI integration remains an open concrete task:

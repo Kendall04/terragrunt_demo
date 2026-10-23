@@ -44,3 +44,16 @@ server/profile. It verifies synthetic CRUD/reset/XSS text handling, architecture
 selection/scope, source links, historical/pending labels, mobile overflow and
 desktop/mobile screenshots. A nonempty evidence destination refuses overwrite.
 Unresolved teardown is reported; no PID discovery or forced cleanup is used.
+
+
+## Provenance and bounded quality review
+
+This is a hand-authored repository explorer, not an Archify-generated/exported
+diagram. Its HTML/JavaScript facts cite the repository documents. The Page's
+Archify-specific deliverable remains open; the UI explicitly labels this origin.
+
+Keyboard navigation moves focus to the newly visible heading, offers a skip link
+and native focusable buttons, names diagram groups/components and announces demo
+message/validation changes. The browser test covers three views at 320/390/768px,
+labels and focused navigation. This is a bounded functional review, not a complete
+WCAG or assistive-technology certification. See ACCEPTANCE.md for remaining scope.
