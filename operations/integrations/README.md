@@ -213,3 +213,14 @@ The old build.log was overwritten and cannot be revalidated against its original
 hash. Its expected hash and this discrepancy are preserved in the new evidence
 addendum. Historical manifests/closures and all AWS receipts/large archives remain
 unchanged; no blanket historical-integrity claim is made.
+
+
+## Frozen local deliverable
+
+[Managed release manifest](managed-release-manifest.json) pins the committed code,
+small ZIP, binary hashes,56 managed/61 existing/13 IaC checks and generated
+[main template](trial-review/trial-template.json),
+[bootstrap template](trial-review/bootstrap-template.json) and exact policies.
+The package is local only; all external execution remains unapproved.
+Temporary operator inline policy name for the proposal is ecs-sentinel-r20261023b1;
+preflight snapshots/readback must preserve any pre-existing policy of that name.
