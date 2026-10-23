@@ -121,3 +121,13 @@ checks. Suppressed observations bypass it; recovered candidates are recorded
 without inventing NAT recovery. Upstream memory persistence is a test fake.
 Backup-specific recovery policy, authenticated transport, durable delivery and
 real email remain open; no timer/service is installed or artifact replaced.
+
+## Local incident policy follow-up — 2026-10-23
+
+The [real consumer policy](../integrations/README.md#backup-observer-incident-policy)
+now qualifies opening/persistence/recovery/UNKNOWN and recurrence with 54 checks
+through original Sentinel components. Escalation/resolution are pending outbox
+intentions; no delivery, worker or durable database is claimed. A second genuine
+healthy observation may confirm AUTO_RECOVERED; normal suppression stays.
+Explicit test parameters change no installed cadence/freshness/retention.
+AWS installation, backup-check worker routing and real email remain open.

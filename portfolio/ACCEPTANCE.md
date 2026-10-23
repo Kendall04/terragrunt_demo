@@ -63,6 +63,20 @@ installation, cloud check or external notification was performed.
   pending outbox: 34 checks, including attention/dedup/recovered candidate.
 - [ ] Backup-domain recovery/classification, authenticated transport, durable
   storage/delivery and real email. Recovery candidate audit is not NAT recovery.
-- [ ] PKI two-identity mTLS/rotation consumer qualification (next increment).
+- [ ] PKI runtime integration PAUSED for architectural scope: ECS has one API,
+  blue/green are its release slots, and no internal business HTTP peer exists.
+  [Preserved experiment](../operations/integrations/PKI-EXPERIMENT.md) is NOT ACCEPTED;
+  no second microservice was added to justify it.
 
 See [consumer scope and reproduction](../operations/integrations/README.md).
+
+## Backup incident policy — local acceptance 2026-10-23
+
+- [x] Actual consumer IRecoveryEvaluator with original Sentinel reducer/receipts/
+  audit/outbox: **54 checks** for open/persistent/recovered/UNKNOWN episodes,
+  reminders, deduplication and recurrence. No NAT functional assessment or repair.
+- [ ] Durable persistence, authenticated real ingestion, periodic installation,
+  backup check-worker routing, supported AWS region and actual email delivery.
+
+Source policy uses synthetic local parameters and upstream memory persistence.
+No AWS/install/workflow ran; no producer cadence or 2+2-day retention changed.

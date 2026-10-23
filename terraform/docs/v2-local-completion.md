@@ -170,7 +170,7 @@ double public API or installed integration claim.
 | 1 Architecture/pipelines | V2 availability and cost decisions plus actual pipeline changes still need their scoped disposition |
 | 2 SQL recovery/alerts | Controlled az6 and local components accepted only in their stated scope; unchanged flow, independent UP/DOWN, general targets, real failure/missing/stale alert delivery remain open |
 | 3 Security/PCI lessons | Inherited findings need concrete prioritized remediation; no compliance claim |
-| 4 PKI | Required reusable upstream integration, two identities, AWS emission/rotation and rejection/failure tests remain open |
+| 4 PKI | Runtime integration paused for architectural scope: one API with blue/green release slots and no business HTTP peer; preserved experiment NOT ACCEPTED; no artificial microservice |
 | 5 Sentinel | Required real alarms/logs classification and email/periodic-operation qualification remain open; no general repair authority |
 | 6 Product Demo/Archify Explorer | Local Product Demo, five authentic Archify views and a separate custom inspector: 15 Chrome checks and 14 Node tests; historical/local/future scopes explicit. Release/live scope remains pending. See portfolio/ACCEPTANCE.md |
 | 7 Repository/release | New repository preserving old, Kendall authorship for new commits, real CI/OIDC, README/screenshots remain required; no push/repository creation/identity change performed now |
@@ -248,3 +248,29 @@ A recovered candidate is audited, not falsely treated as NAT recovery/resolution
 A backup-specific evaluation policy, authenticated transport, persistent delivery,
 region qualification and a real notification provider remain unimplemented. No
 AWS, email, timer, upstream source change, archive rebuild or remote workflow.
+
+## Owner scope clarification and useful local policy — 2026-10-23
+
+ECS has **one application**: blue/green release slots of the same .NET API.
+[Current topology](architecture.md#current-contract--topology-and-networking) and
+Program.cs show API-to-SQL via EF/SQLClient and AWS KMS SDK; no business HTTP
+service-to-service peer exists. Backup CLI/observer/library do not create one.
+PKI runtime is paused pending a genuine need/scope decision; the requirement is
+not silently cancelled and no microservice is invented. Unique experimental
+code/material and failed receipts remain in the [unaccepted compatibility
+experiment](../../operations/integrations/PKI-EXPERIMENT.md); existing API/IaC unchanged.
+
+The [backup policy](../../operations/integrations/README.md#backup-observer-incident-policy)
+replaces the earlier unqualified guard using actual IRecoveryEvaluator.
+**54 checks** pass through original ingress/reducer/receipts/audit/pending outbox:
+open/persistent/recovered episodes, UNKNOWN, reminders, deduplication across
+reconstruction/recurrence and refusal of old/tied/expired positives.
+Observation parameters are explicit fixtures, not installed contracts. No NAT
+repair/evaluator; legacy shape has unused compatibility values and backup-scoped
+read-probe intents, never executed. Upstream source remains intact.
+
+This supersedes the earlier 34-check guard's inability to assess observer recovery,
+not AWS/delivery gates: independent host/role/config/cadence, authenticated input,
+backup worker mapping, durable storage/ACK, actual alarm/log ingestion, region
+support and real email. No cloud spend/IAM/timer/workflow/push/archive rebuild.
+Native SQL/API recovery acceptance remains unchanged.

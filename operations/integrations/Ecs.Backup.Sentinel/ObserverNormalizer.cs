@@ -3,13 +3,14 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Sentinel.Application;
 using Sentinel.Core;
 using Sentinel.Ingestion;
 
 namespace Ecs.Backup.Sentinel;
 
 /// <summary>Consumer adapter for the real ISourceNormalizer extension point. No EventBridge impersonation.</summary>
-public sealed class ObserverNormalizer(string subject, CorrelationKey key) : ISourceNormalizer {
+public sealed class ObserverNormalizer(string subject, CorrelationKey key,ITransactionalStore store,RecoveryPolicy policy) : ISourceNormalizer {
     public const string Producer = "SqlBackup.Observer";
     private static readonly string[] Fields = ["SchemaVersion","Source","Subject","ObservedUtc","Status","Code","Severity","LastSuccessUtc","ProducerFailureCoverage","Emit","Reason","Delivery","SentinelIntegrated","RemediationAllowed","Evaluation","CheckInvoked"];
     private static readonly Dictionary<string,string> Pairs = new() {
@@ -52,18 +53,44 @@ public sealed class ObserverNormalizer(string subject, CorrelationKey key) : ISo
             coverage is not ("NOT_PROVIDED" or "LOCAL_RECEIPT_ONLY")) throw new JsonException();
         return new(emit,status,code,reason,observed,last,evaluation,coverage,invoked);
     }
+    private string EventId(Candidate c)=>DomainJson.StableId("ecs-backup-observer-v2",subject,DomainJson.Serialize(c));
+    public bool ShouldProcess(Candidate c,DateTimeOffset receivedAt) {
+        if(c.Emit)return true;
+        if(c.Status!="HEALTHY" || c.Reason!="UNCHANGED")return false;
+        var id=EventId(c);var signal=new NormalizedSignal(1,id,Producer,key,SignalKind.Evidence,c.Observed,c.Observed,receivedAt,[]);
+        if(store.ReadReceipt(StorageKeys.Receipt(signal),receivedAt) is not null)return true; // Confirmed replay still deduplicates upstream.
+        var head=store.Read(StorageKeys.Aggregate(key))?.Head;
+        // The upstream reducer requires a second genuine observation to close AUTO_RECOVERED.
+        return head is {State:IncidentState.AUTO_RECOVERED,RecoveryConfirmedAt:not null} &&
+            c.Observed>head.RecoveryConfirmedAt && c.Observed>=head.RecoveryConfirmedAt+policy.ResolutionHold;
+    }
     public AdmissionResult Normalize(string body, IngestionOptions options, DateTimeOffset receivedAt) {
         try {
             var c=Read(body,options,receivedAt);
-            if (!c.Emit) return new(Admission.UnknownEvent,null,null,"observer-suppressed");
-            var id=DomainJson.StableId("ecs-backup-observer-v1",subject,DomainJson.Serialize(c));
+            if (!ShouldProcess(c,receivedAt)) return new(Admission.UnknownEvent,null,null,"observer-suppressed");
+            var id=EventId(c);
             var kind=c.Status=="HEALTHY"?SignalKind.Evidence:c.Status=="UNKNOWN"?SignalKind.TelemetryLost:SignalKind.Failure;
-            // No fabricated NAT evidence, epoch, critical service impact or privileged Resolve.
-            var signal=new NormalizedSignal(1,id,Producer,key,kind,c.Observed,c.Observed,receivedAt,[],
-                kind==SignalKind.Failure?id:null);
+            var signal=new NormalizedSignal(1,id,Producer,key,kind,c.Observed,c.Observed,receivedAt,[],kind==SignalKind.Failure?id:null);
             var metadata=ImmutableDictionary<string,string>.Empty.Add("backupStatus",c.Status).Add("backupCode",c.Code)
                 .Add("backupReason",c.Reason).Add("evaluation",c.Evaluation).Add("producerFailureCoverage",c.FailureCoverage)
                 .Add("lastSuccessUtc",c.LastSuccess?.ToString("O",CultureInfo.InvariantCulture)??"none");
+            var receipt=store.ReadReceipt(StorageKeys.Receipt(signal),receivedAt);
+            if(receipt is not null) {
+                // Preserve the exact original epoch/evidence across redelivery, recurrence and CAS races.
+                var audit=store.ReadAudit(StorageKeys.Audit(StorageKeys.Aggregate(key),receipt.Revision));
+                if(audit is null)throw new IngestionException(FailureClass.Transient,"backup-receipt-audit-unavailable");
+                if(audit.Signal.Id!=id || audit.Signal.Source!=Producer || audit.Signal.Key!=key ||
+                    DomainJson.Fingerprint(audit.Signal)!=receipt.Fingerprint)
+                    throw new IngestionException(FailureClass.Security,"backup-receipt-binding");
+                signal=audit.Signal with {ReceivedAt=receivedAt};
+            } else if(c.Status!="UNKNOWN") {
+                var head=store.Read(StorageKeys.Aggregate(key))?.Head;
+                var epoch=head is null?1:head.State==IncidentState.RESOLVED && kind==SignalKind.Failure && c.Observed>head.ResolvedAt?head.Epoch+1:head.Epoch;
+                var evidence=new RecoveryEvidence(DomainJson.StableId(id,"backup-health"),EvidenceKind.Readiness,key.Scope,Producer,epoch,
+                    "backup-health/"+c.Status,c.LastSuccess??c.Observed,c.Observed,c.Observed+policy.EvidenceMaxAge,new() {Ready=c.Status=="HEALTHY"});
+                signal=signal with {Evidence=[evidence]};
+            }
+            // No NAT capacity/EIP/route facts, critical impact, infrastructure mutation or privileged Resolve.
             return new(Admission.Valid,signal,new(id,id,Producer,null),"backup-observer-normalized",metadata);
         } catch (Exception e) when (e is JsonException or InvalidOperationException or KeyNotFoundException or FormatException or ArgumentException or OverflowException) {
             return new(Admission.Malformed,null,null,"backup-observer-contract");
@@ -71,11 +98,13 @@ public sealed class ObserverNormalizer(string subject, CorrelationKey key) : ISo
     }
 }
 
-/// <summary>Suppressed observations never enter/retry ingestion. Emitted ones use real Sentinel receipt/commit logic.</summary>
+/// <summary>Suppress unchanged observations except a fresh recovery confirmation required by the real reducer.</summary>
 public sealed class BackupIngress(ObserverNormalizer normalizer, IngestionProcessor processor) {
     public MessageResult? Process(string body, string messageId, DateTimeOffset receivedAt) {
-        try { if (!normalizer.Read(body,processor.Options,receivedAt).Emit) return null; }
+        try { if (!normalizer.ShouldProcess(normalizer.Read(body,processor.Options,receivedAt),receivedAt)) return null; }
         catch (Exception e) when (e is JsonException or InvalidOperationException or KeyNotFoundException or FormatException or ArgumentException or OverflowException) { }
+        catch(IOException) {return new(true,FailureClass.Transient,"backup-store-read",null);}
+        catch(TimeoutException) {return new(true,FailureClass.Transient,"backup-store-read-timeout",null);}
         return processor.Process(body,messageId,"ecs-backup-local",receivedAt);
     }
 }
