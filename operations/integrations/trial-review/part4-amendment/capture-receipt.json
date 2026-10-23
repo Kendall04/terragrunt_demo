@@ -1,0 +1,128 @@
+{
+  "StartedUtc": "2026-10-23T21:05:29.178796+00:00",
+  "Profile": "cnp-cert-dev",
+  "PolicyArn": "arn:aws:iam::341936017254:policy/TerragruntDemoDevOperatorPart4",
+  "Calls": [
+    {
+      "Operation": "get_caller_identity",
+      "Target": "caller identity",
+      "Outcome": "READ_OK"
+    },
+    {
+      "Operation": "get_policy",
+      "Target": "arn:aws:iam::341936017254:policy/TerragruntDemoDevOperatorPart4",
+      "Outcome": "READ_OK"
+    },
+    {
+      "Operation": "get_policy_version",
+      "Target": "arn:aws:iam::341936017254:policy/TerragruntDemoDevOperatorPart4",
+      "Outcome": "READ_OK"
+    },
+    {
+      "Operation": "list_policy_versions",
+      "Target": "arn:aws:iam::341936017254:policy/TerragruntDemoDevOperatorPart4",
+      "Outcome": "READ_OK"
+    },
+    {
+      "Operation": "list_entities_for_policy",
+      "Target": "arn:aws:iam::341936017254:policy/TerragruntDemoDevOperatorPart4",
+      "Outcome": "READ_OK"
+    }
+  ],
+  "Mutations": 0,
+  "AssumeRoleCalls": 0,
+  "Identity": {
+    "Account": "341936017254",
+    "Arn": "arn:aws:iam::341936017254:user/cnp-cert-admin",
+    "UserId": "AIDAU7HHZR5TGLGKSTEKJ"
+  },
+  "OriginalCanonicalSha256": "2dee64162063bf48daa6be793a92399fd8383104cd102078ae4bd7427a7876e2",
+  "OriginalFileSha256": "f494b2d1915b9659c013ef955e83eb85f02ef2d02248ef142022ce42f8aaac8d",
+  "PolicyMetadata": {
+    "PolicyName": "TerragruntDemoDevOperatorPart4",
+    "PolicyId": "ANPAU7HHZR5TP35BFFDNU",
+    "Arn": "arn:aws:iam::341936017254:policy/TerragruntDemoDevOperatorPart4",
+    "Path": "/",
+    "DefaultVersionId": "v5",
+    "AttachmentCount": 1,
+    "PermissionsBoundaryUsageCount": 0,
+    "IsAttachable": true,
+    "CreateDate": "2026-10-13 20:47:33+00:00",
+    "UpdateDate": "2026-10-13 23:05:39+00:00",
+    "Tags": [
+      {
+        "Key": "Project",
+        "Value": "terragrunt_demo"
+      },
+      {
+        "Key": "Environment",
+        "Value": "dev"
+      }
+    ]
+  },
+  "Versions": {
+    "Versions": [
+      {
+        "VersionId": "v5",
+        "IsDefaultVersion": true,
+        "CreateDate": "2026-10-13 23:05:39+00:00"
+      },
+      {
+        "VersionId": "v4",
+        "IsDefaultVersion": false,
+        "CreateDate": "2026-10-13 22:40:23+00:00"
+      },
+      {
+        "VersionId": "v3",
+        "IsDefaultVersion": false,
+        "CreateDate": "2026-10-13 21:49:17+00:00"
+      },
+      {
+        "VersionId": "v2",
+        "IsDefaultVersion": false,
+        "CreateDate": "2026-10-13 21:39:57+00:00"
+      },
+      {
+        "VersionId": "v1",
+        "IsDefaultVersion": false,
+        "CreateDate": "2026-10-13 20:47:33+00:00"
+      }
+    ],
+    "IsTruncated": false,
+    "ResponseMetadata": {
+      "RequestId": "f679cffa-30b1-4423-ae3b-1bb2fe4fd7b4",
+      "HTTPStatusCode": 200,
+      "HTTPHeaders": {
+        "date": "Fri, 23 Oct 2026 21:05:30 GMT",
+        "x-amzn-requestid": "f679cffa-30b1-4423-ae3b-1bb2fe4fd7b4",
+        "content-type": "text/xml",
+        "content-length": "1192"
+      },
+      "RetryAttempts": 0
+    }
+  },
+  "Entities": {
+    "PolicyGroups": [],
+    "PolicyUsers": [],
+    "PolicyRoles": [
+      {
+        "RoleName": "TerragruntDemoDevOperator",
+        "RoleId": "AROAU7HHZR5TGPL7QPJQV"
+      }
+    ],
+    "IsTruncated": false,
+    "ResponseMetadata": {
+      "RequestId": "c7c8b988-7a7f-4c54-9f33-faf295f90c1f",
+      "HTTPStatusCode": 200,
+      "HTTPHeaders": {
+        "date": "Fri, 23 Oct 2026 21:05:30 GMT",
+        "x-amzn-requestid": "c7c8b988-7a7f-4c54-9f33-faf295f90c1f",
+        "content-type": "text/xml",
+        "content-length": "533"
+      },
+      "RetryAttempts": 0
+    }
+  },
+  "CompletedUtc": "2026-10-23T21:05:30.371898+00:00",
+  "Status": "BASELINE_CAPTURED_READ_ONLY"
+}

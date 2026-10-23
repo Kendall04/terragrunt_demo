@@ -1,7 +1,12 @@
 # ECS backup signal pipeline: local implementation and one-cycle review
 
-**LOCAL QUALIFICATION ONLY. AWS read-only preflight found a retirement blocker.
+**LOCAL QUALIFICATION ONLY. A narrow retirement-policy amendment is ready for grouped consent, not installed.
 The AWS cycle is NOT APPROVED and has not run.**
+
+[Part4 amendment, diff, hashes, tests and rollback](trial-review/part4-amendment/AMENDMENT.md)
+excepts only this trial bucket from DeleteBucket Deny. Current AWS Part4 remains unchanged.
+Its five-version limit also requires explicit consent to preserve/replace nondefault v1;
+effective v5 rollback is exact, historical VersionId/CreateDate rollback is impossible.
 This document supersedes the initial preparation at commit1ba82c2; its historical
 scope/receipt remains in Git. PKI is outside ECS scope. API, original recovery
 artifacts/states/backups, EKS, production and original backup2+2-day retention

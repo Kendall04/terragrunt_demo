@@ -157,3 +157,17 @@ The temporary Allow cannot override it. Current cycle is **not ready for consent
 until retirement is corrected/reviewed. No deletion, IAM change, role assumption,
 creation or email occurred. Direct SQS Price List confirms USD0.04/100000 Standard
 requests; the new USD1 proposal is unchanged. See the current operational guide.
+
+
+### Narrow retirement amendment prepared — not installed
+
+The original read-only preflight remains valid: current Part4 denies own-bucket
+retirement. The [local amendment](../operations/integrations/trial-review/part4-amendment/AMENDMENT.md)
+is limited to one literal bucket, preserves all other statements, and passed15
+offline tests plus16 applicable captured IAM custom-simulation cases. No real
+DeleteBucket/IAM mutation/AssumeRole occurred. Installing it requires the same
+grouped cycle consent plus historical v1 substitution because all five versions
+are occupied; original v5 permissions and all document contents can be restored,
+but historical VersionId/CreateDate cannot. NewUSD1 proposal and original16+3
+resources are unchanged. Owner email/notification consent and actual AWS integrated
+qualification remain pending. This does not mark ECS or inbox delivery complete.

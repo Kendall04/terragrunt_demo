@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "READONLY_PREFLIGHT_NO_GO_STORAGE_RETIREMENT",
+  "status": "LOCAL_AMENDMENT_READY_FOR_GROUPED_CONSENT_NOT_INSTALLED",
   "createdUtc": "2026-10-23T20:43:22.479347+00:00",
   "codeSourceCommit": "8f7eba925f4c7117c10855cc8a409692377c6768",
   "sourceFilesSha256": {
@@ -279,7 +279,7 @@
     "details": "task-3/sentinel-managed-qualification/evidence-integrity-addendum.json"
   },
   "remainingExternal": [
-    "Current retained-bucket teardown plan is blocked by operator explicitDeny; local retirement correction/review required before approval. No bypass authorized.",
+    "Grouped consent for exact Part4 amendment and archived nondefault v1 substitution; current AWS deny remains installed until approved changes. No alternate principal.",
     "owner email address/consent and SNS sender-label acceptance",
     "accept/override explicit recommended trial parameters, new USD1 and temporary create/test/delete grants",
     "current identity/effective authority, actual immutable upload version, native AWS change set/runtime/retirement qualification",
@@ -294,7 +294,7 @@
     "full hosted CI or project completion"
   ],
   "sourceHashScope": "UTF8-LF Git blobs at codeSourceCommit; delivery-only docs/review metadata are a later commit, not a code rebuild.",
-  "generatedTemplateValidation": "Offline structural/contract checks only; no CloudFormation ValidateTemplate, IAM simulation or change set executed.",
+  "generatedTemplateValidation": "Earlier CloudFormation ValidateTemplate passed both frozen templates; Part4 amendment has focused IAM custom-policy simulation only, not native apply/delete or complete future authority proof.",
   "readOnlyPreflight": {
     "receipt": "operations/integrations/readonly-preflight.json",
     "sha256": "b88e0c51ffa16215b790a63f87413509aa58cab55d7ba959f7e6fc1430d07755",
@@ -311,5 +311,21 @@
       "attemptedOtherPrincipal": false,
       "effect": "Current main template retains bucket; proposed native operator deletion cannot complete. Temporary Allow does not override this deny. Teardown plan must be corrected/reviewed before one execution consent."
     }
+  },
+  "policyAmendment": {
+    "manifest": "operations/integrations/trial-review/part4-amendment/manifest.json",
+    "sha256": "1d991aafd6353093fa327405be5c23f94b58641f90aae946fcc31ccdd6595b31",
+    "reviewContentSha256": "0cbb8c23c8ad035e9d269df473212a7efc7c01f5978b89ca829cdfa011b6e408",
+    "readyForGroupedConsent": true,
+    "installed": false,
+    "versionCapacityConsequence": {
+      "used": 5,
+      "limit": 5,
+      "preservedVersion": "v1",
+      "originalDefaultNeverDeleted": "v5",
+      "requiredAdditionalConsent": "Temporarily delete archived nondefault v1; restore its exact content at closure under a new VersionId/CreateDate. Original metadata cannot be restored exactly.",
+      "effectivePolicyRollback": "Select preserved original v5; remove trial version and restore archived v1 content as nondefault; v2-v4 unchanged."
+    },
+    "note": "Original readonly-preflight and its NO_GO result are historical and unchanged. This proposal can resolve it only after explicit grouped consent and actual installation."
   }
 }

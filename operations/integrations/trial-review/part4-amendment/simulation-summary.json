@@ -1,0 +1,115 @@
+{
+  "Status": "PASS_CAPTURED_CUSTOM_SIMULATION_ONLY",
+  "PassedApplicableCases": 16,
+  "ExcludedInvalidActionResourceCrossProducts": 18,
+  "Cases": [
+    {
+      "Case": "original-plus-temporary-allow",
+      "Action": "s3:DeleteBucket",
+      "Resource": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254",
+      "Decision": "explicitDeny"
+    },
+    {
+      "Case": "proposal-alone",
+      "Action": "s3:DeleteBucket",
+      "Resource": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254",
+      "Decision": "implicitDeny"
+    },
+    {
+      "Case": "proposal-plus-temporary-allow-bucket-matrix",
+      "Action": "s3:DeleteBucket",
+      "Resource": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254",
+      "Decision": "allowed"
+    },
+    {
+      "Case": "proposal-plus-temporary-allow-bucket-matrix",
+      "Action": "s3:DeleteBucket",
+      "Resource": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254-other",
+      "Decision": "explicitDeny"
+    },
+    {
+      "Case": "proposal-plus-temporary-allow-bucket-matrix",
+      "Action": "s3:DeleteBucket",
+      "Resource": "arn:aws:s3:::ecs-sentinel-r20261023b2-341936017254",
+      "Decision": "explicitDeny"
+    },
+    {
+      "Case": "proposal-plus-temporary-allow-bucket-matrix",
+      "Action": "s3:DeleteBucket",
+      "Resource": "arn:aws:s3:::ecs-sentinel-r20261023b1-111111111111",
+      "Decision": "explicitDeny"
+    },
+    {
+      "Case": "proposal-plus-temporary-allow-bucket-matrix",
+      "Action": "s3:DeleteBucket",
+      "Resource": "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1",
+      "Decision": "explicitDeny"
+    },
+    {
+      "Case": "proposal-plus-temporary-allow-bucket-matrix",
+      "Action": "s3:DeleteBucket",
+      "Resource": "arn:aws:s3:::e1-wp4-dev-341936017254-us-east-1",
+      "Decision": "explicitDeny"
+    },
+    {
+      "Case": "proposal-plus-temporary-allow-bucket-matrix",
+      "Action": "s3:DeleteBucket",
+      "Resource": "arn:aws:s3:::unrelated-bucket",
+      "Decision": "explicitDeny"
+    },
+    {
+      "Case": "proposal-plus-temporary-allow-bucket-matrix",
+      "Action": "s3:DeleteBucket",
+      "Resource": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254/object",
+      "Decision": "explicitDeny"
+    },
+    {
+      "Case": "proposal-other-denies-retained",
+      "Action": "iam:CreateRole",
+      "Resource": "arn:aws:iam::341936017254:role/ecs-sentinel-r20261023b1-ingest-role",
+      "Decision": "explicitDeny"
+    },
+    {
+      "Case": "proposal-other-denies-retained",
+      "Action": "iam:PutRolePolicy",
+      "Resource": "arn:aws:iam::341936017254:role/ecs-sentinel-r20261023b1-ingest-role",
+      "Decision": "explicitDeny"
+    },
+    {
+      "Case": "proposal-other-denies-retained",
+      "Action": "iam:AttachRolePolicy",
+      "Resource": "arn:aws:iam::341936017254:role/ecs-sentinel-r20261023b1-ingest-role",
+      "Decision": "explicitDeny"
+    },
+    {
+      "Case": "proposal-other-denies-retained",
+      "Action": "s3:PutBucketPolicy",
+      "Resource": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254",
+      "Decision": "explicitDeny"
+    },
+    {
+      "Case": "proposal-other-denies-retained",
+      "Action": "kms:ScheduleKeyDeletion",
+      "Resource": "arn:aws:kms:us-east-1:341936017254:key/00000000-0000-4000-8000-000000000000",
+      "Decision": "explicitDeny"
+    },
+    {
+      "Case": "proposal-other-denies-retained",
+      "Action": "secretsmanager:DeleteSecret",
+      "Resource": "arn:aws:secretsmanager:us-east-1:341936017254:secret:synthetic-no-secret-value-000000",
+      "Decision": "explicitDeny"
+    }
+  ],
+  "StandaloneImplicitDenyMissingUnrelatedAllowContexts": [
+    "aws:RequestTag/Environment",
+    "s3:prefix",
+    "aws:RequestTag/Project"
+  ],
+  "Limits": [
+    "Four SimulateCustomPolicy calls; source role and attached Part4 unchanged.",
+    "No real DeleteBucket, AssumeRole, IAM mutation or full effective-policy/SCP proof.",
+    "Proposal-alone implicitDeny lists contexts from unchanged other-action allows; no new Allow is proved by exact structural tests."
+  ],
+  "ActualDeleteRequests": 0,
+  "CloudMutations": 0
+}

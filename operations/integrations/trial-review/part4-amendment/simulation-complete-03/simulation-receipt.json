@@ -1,0 +1,139 @@
+{
+  "StartedUtc": "2026-10-23T21:08:50.284181+00:00",
+  "Profile": "cnp-cert-dev",
+  "Mutations": 0,
+  "ActualDeleteRequests": 0,
+  "AssumeRoleCalls": 0,
+  "Calls": [
+    {
+      "Operation": "GetCallerIdentity",
+      "Outcome": "READ_OK"
+    },
+    {
+      "Operation": "REUSE_CAPTURED_RESULT",
+      "Name": "original-plus-temporary-allow",
+      "Outcome": "READ_OK",
+      "Evaluations": 1
+    },
+    {
+      "Operation": "REUSE_CAPTURED_RESULT",
+      "Name": "proposal-alone",
+      "Outcome": "READ_OK",
+      "Evaluations": 1
+    },
+    {
+      "Operation": "REUSE_CAPTURED_RESULT",
+      "Name": "proposal-plus-temporary-allow-bucket-matrix",
+      "Outcome": "READ_OK",
+      "Evaluations": 1
+    },
+    {
+      "Operation": "SimulateCustomPolicy",
+      "Name": "proposal-other-denies-retained",
+      "Outcome": "READ_OK",
+      "Evaluations": 6
+    }
+  ],
+  "Evaluations": [
+    {
+      "Case": "original-plus-temporary-allow",
+      "Action": "s3:DeleteBucket",
+      "Resource": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254",
+      "Expected": "explicitDeny",
+      "Actual": "explicitDeny",
+      "MissingContextValues": []
+    },
+    {
+      "Case": "proposal-alone",
+      "Action": "s3:DeleteBucket",
+      "Resource": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254",
+      "Expected": "implicitDeny",
+      "Actual": "implicitDeny",
+      "MissingContextValues": [
+        "aws:RequestTag/Environment",
+        "s3:prefix",
+        "aws:RequestTag/Project"
+      ]
+    },
+    {
+      "Case": "proposal-plus-temporary-allow-bucket-matrix",
+      "Action": "s3:DeleteBucket",
+      "Resource": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254",
+      "Expected": "allowed",
+      "Actual": "allowed",
+      "MissingContextValues": []
+    },
+    {
+      "Case": "proposal-plus-temporary-allow-bucket-matrix",
+      "Action": "s3:DeleteBucket",
+      "Resource": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254-other",
+      "Expected": "explicitDeny",
+      "Actual": "explicitDeny",
+      "MissingContextValues": []
+    },
+    {
+      "Case": "proposal-plus-temporary-allow-bucket-matrix",
+      "Action": "s3:DeleteBucket",
+      "Resource": "arn:aws:s3:::ecs-sentinel-r20261023b2-341936017254",
+      "Expected": "explicitDeny",
+      "Actual": "explicitDeny",
+      "MissingContextValues": []
+    },
+    {
+      "Case": "proposal-plus-temporary-allow-bucket-matrix",
+      "Action": "s3:DeleteBucket",
+      "Resource": "arn:aws:s3:::ecs-sentinel-r20261023b1-111111111111",
+      "Expected": "explicitDeny",
+      "Actual": "explicitDeny",
+      "MissingContextValues": []
+    },
+    {
+      "Case": "proposal-plus-temporary-allow-bucket-matrix",
+      "Action": "s3:DeleteBucket",
+      "Resource": "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1",
+      "Expected": "explicitDeny",
+      "Actual": "explicitDeny",
+      "MissingContextValues": []
+    },
+    {
+      "Case": "proposal-plus-temporary-allow-bucket-matrix",
+      "Action": "s3:DeleteBucket",
+      "Resource": "arn:aws:s3:::e1-wp4-dev-341936017254-us-east-1",
+      "Expected": "explicitDeny",
+      "Actual": "explicitDeny",
+      "MissingContextValues": []
+    },
+    {
+      "Case": "proposal-plus-temporary-allow-bucket-matrix",
+      "Action": "s3:DeleteBucket",
+      "Resource": "arn:aws:s3:::unrelated-bucket",
+      "Expected": "explicitDeny",
+      "Actual": "explicitDeny",
+      "MissingContextValues": []
+    },
+    {
+      "Case": "proposal-plus-temporary-allow-bucket-matrix",
+      "Action": "s3:DeleteBucket",
+      "Resource": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254/object",
+      "Expected": "explicitDeny",
+      "Actual": "explicitDeny",
+      "MissingContextValues": []
+    },
+    {
+      "Case": "proposal-other-denies-retained",
+      "Action": "iam:CreateRole",
+      "Resource": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254",
+      "Expected": "explicitDeny",
+      "Actual": "implicitDeny",
+      "MissingContextValues": []
+    }
+  ],
+  "Status": "STOPPED_NO_RETRY",
+  "Identity": {
+    "Account": "341936017254",
+    "Arn": "arn:aws:iam::341936017254:user/cnp-cert-admin",
+    "UserId": "AIDAU7HHZR5TGLGKSTEKJ"
+  },
+  "ExceptionType": "AssertionError",
+  "Code": null
+}
