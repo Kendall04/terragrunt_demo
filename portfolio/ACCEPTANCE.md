@@ -13,7 +13,7 @@ inspector evidence remains historical, separate from this new qualification.
 - [x] Source-backed V1/az6 historical navigation with distinct scopes and RTO limits.
 - [x] Skip link, heading focus on view changes, keyboard node selection, accessible textbox/node/group names and action/validation announcements.
 - [x] All three views at 320/390/768px without document overflow.
-- [x] Explicit DEMO/no-live status; PKI/Sentinel pending; custom explorer provenance.
+- [x] Explicit DEMO/no-live status; Sentinel delivery pending; PKI outside ECS scope; custom explorer provenance.
 - [x] No external requests or console errors; fresh browser/server closed normally.
 - [x] Five authentic Archify 3.1.0 outputs integrated; pinned sources/HTML and finalizer gates recorded in [generation evidence](../docs/interactive/GENERATION.json). The inspector remains explicitly hand-authored.
 - [x] Portable Node contract/server suite wired into repo-hygiene source; 14 local tests PASS, no packages/browser required.
@@ -21,7 +21,7 @@ inspector evidence remains historical, separate from this new qualification.
 - [ ] Hosted/new repository and real CI/OIDC release scope from the Page. No hosting or remote change performed.
 
 Separately open ECS gates: full unchanged EC2/systemd/remote-restore/API recovery,
-deployed independent observer/live alert forwarding/confirmed email, PKI/mTLS/rotation and
+deployed independent observer/live alert forwarding/confirmed email and
 Sentinel integration. PKI/Sentinel implementation sources/packages were unavailable
 in the previously reviewed local roots; actual pinned contracts/access remain
 required. Do not invent upstream APIs or mark those integrations complete.
@@ -37,7 +37,7 @@ checksums plus the current cache content hash. Equality remains blocked pending 
 original authenticated receipt/already available official archive and deliberate
 canonical-generator/package-identity review. Recover that evidence first; preserve
 the native DEV hash, provider 5.100.0 and exact protected validation. No binary
-download, initialization or broad audit is implied. PKI/Sentinel source/access and real hosting/release remain separate open gates.
+download, initialization or broad audit is implied. Source access is resolved; real Sentinel delivery and hosting/release remain open. PKI is outside ECS scope.
 
 
 ## Independent observer increment
@@ -63,8 +63,8 @@ installation, cloud check or external notification was performed.
   pending outbox: 34 checks, including attention/dedup/recovered candidate.
 - [ ] Backup-domain recovery/classification, authenticated transport, durable
   storage/delivery and real email. Recovery candidate audit is not NAT recovery.
-- [ ] PKI runtime integration PAUSED for architectural scope: ECS has one API,
-  blue/green are its release slots, and no internal business HTTP peer exists.
+- Outside scope by explicit owner decision: PKI. ECS has one API, blue/green are
+  its release slots, and no internal business HTTP peer exists.
   [Preserved experiment](../operations/integrations/PKI-EXPERIMENT.md) is NOT ACCEPTED;
   no second microservice was added to justify it.
 
@@ -80,3 +80,10 @@ See [consumer scope and reproduction](../operations/integrations/README.md).
 
 Source policy uses synthetic local parameters and upstream memory persistence.
 No AWS/install/workflow ran; no producer cadence or 2+2-day retention changed.
+
+## Current owner scope — 2026-10-23 19:07:56 UTC
+
+PKI is outside ECS scope, not a remaining acceptance requirement. Preserve its
+unaccepted experiment and historical requirements separately. The fifth public
+Archify view is being regenerated for actual backup/Sentinel scope; no second
+application is introduced. API functionality stays unchanged.

@@ -46,7 +46,7 @@ TransactionalMemoryStore. No reducer/outbox is copied. The memory store survives
 reconstruction of the processor in this test, not OS/process termination. It is
 explicitly an upstream fake, not DynamoDB or durable filesystem storage.
 
-**54 checks passed** with actual ingress/reducer/receipt/audit/outbox components:
+**58 checks passed** with actual ingress/reducer/receipt/audit/outbox components:
 opening and persistent incidents, one escalation intent per episode, reminders,
 redelivery after processor reconstruction, UNKNOWN, recovery, recurrence, old
 recovery replay after a new epoch, second-observation confirmation, late/tied/
@@ -84,7 +84,12 @@ consumer supplies explicitly unused compatibility values and backup scope labels
 never AWS NAT/EIP/route bindings or successful NAT facts. It never invokes
 NatRecoveryEvaluator. Generic ScheduleRecoveryCheck/RequestFunctionalProbe intents
 are scoped to the backup observer; no worker/provider/dispatcher executes them.
-Do **not** attach these to NAT workers. Future installation needs the backup
+Changed legacy NAT bindings are now rejected with backup-policy-scope before any
+incident/audit/outbox commit. The explicit negative regression first failed, then
+passed with no queued effects. A real NAT-only catalog also rejects a committed
+backup job before its trap provider is called (zero provider calls). No operational
+dispatcher is configured or running; that worker invocation exists only in the
+isolated negative test. Do **not** attach backup jobs to NAT workers. Installation needs the backup
 read-check worker mapping; no infrastructure repair actions exist here.
 
 Observation max age, incident budget, check interval, confirmation hold and logical
@@ -125,7 +130,8 @@ Use the same SDK/environment for build and execution; set
 DOTNET_CLI_TELEMETRY_OPTOUT=1 and DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1. Nothing runs a
 normal ECS API startup, database migration, KMS request or host service.
 
-PKI runtime integration is **paused** after the owner clarified that ECS has one
-application and no business HTTP peer. The preserved [compatibility experiment](PKI-EXPERIMENT.md)
-is NOT ACCEPTED and is not an existing/deployed microservice. It installs no CA
-and changes no existing API, database/KMS or runtime/IaC contract.
+PKI is **outside ECS scope** by explicit owner decision on 2026-10-23: one
+application, blue/green release slots, no business HTTP peer. The preserved
+[historical compatibility experiment](PKI-EXPERIMENT.md) is NOT ACCEPTED and is not
+a completion requirement or a deployed microservice. No CA installation or
+existing API/database/KMS/runtime/IaC change is part of it.

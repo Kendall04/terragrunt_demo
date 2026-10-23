@@ -1,4 +1,4 @@
-# PKI experiment — NOT ACCEPTED; ECS runtime integration PAUSED
+# Historical PKI experiment — NOT ACCEPTED; OUTSIDE ECS SCOPE
 
 Owner architectural clarification, 2026-10-23: ECS contains **one application**.
 Blue/green are deployment slots of that same API, not two microservices. The
@@ -12,8 +12,9 @@ and [API composition](../../demo-api/terragrunt-demo/Program.cs).
 not part of the existing API solution, startup, task definition, deployment or
 architecture. Their text-api/recovery-observer identities are test fixtures; no
 second application/service was created in ECS. Do not wire or deploy them merely
-to justify PKI. The roadmap requirement remains subject to a genuine consumer
-boundary and an explicit architectural scope decision.
+to justify PKI. The owner explicitly excluded PKI from ECS on 2026-10-23 at 19:07:56 UTC.
+It is not a remaining ECS completion gate. This supersedes the earlier paused
+roadmap requirement; keep the experiment/history, without a public product route.
 
 ## Provenance and measured result
 
@@ -46,7 +47,7 @@ loopback port, never creates a CA/client key, and uses explicit null client
 selection. It exited without a JSON receipt in 08; the parent then failed parsing
 empty stdout. The child failure cause is unresolved. It is **not** a successful
 no-certificate rejection test. No subsequent run is authorized by this document.
-PKI runtime work is paused by the owner scope clarification.
+PKI runtime work is excluded from ECS by the explicit owner decision.
 
 ## Preservation and cleanup
 

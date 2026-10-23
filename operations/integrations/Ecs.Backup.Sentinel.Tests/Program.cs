@@ -3,6 +3,7 @@ using Sentinel.Core;
 using Sentinel.Application;
 using Sentinel.Ingestion;
 using Sentinel.Persistence.Fakes;
+using Sentinel.Observability;
 using System.Text.Json.Nodes;
 
 var fixtures=Directory.GetFiles(args.Single(),"*.json").ToDictionary(p=>Path.GetFileNameWithoutExtension(p)!,File.ReadAllText);
@@ -72,6 +73,26 @@ Check("unrelated NAT readiness is not backup recovery",assessment.Status==Recove
 var wrongEpoch=unrelated with {Epoch=hydrated.Epoch+1,Generation="backup-health/HEALTHY"};
 Check("wrong epoch evidence is not recovery",new BackupIncidentPolicy(late.Key).Assess(hydrated with {Evidence=[wrongEpoch]},late.Policy,new(late.Now,"test",[],[])).Status==RecoveryStatus.InsufficientEvidence);
 
+// Poisoned legacy fields must fail before any incident/audit/outbox transaction.
+var poisoned=new Rig(p=>p with {Nat=p.Nat with {GroupScope="nat-asg-a",ExpectedEipIdentity="eip-nat-a",RouteScopes=["nat-route-a"]}});
+var blocked=poisoned.Send(fixtures["failed"]);
+Check("legacy NAT bindings rejected before backup commit",blocked is {Retry:true,Failure:FailureClass.Security,Code:"backup-policy-scope"});
+Check("poisoned policy enqueues no NAT or other effects",poisoned.Store.Read(StorageKeys.Aggregate(poisoned.Key)) is null && poisoned.Effects.IsEmpty && poisoned.History.IsEmpty);
+
+// A real NAT-only catalog must reject a committed backup read-probe before touching its provider.
+var route=new Rig();route.Send(fixtures["failed"]);
+var probe=route.Effects.First(e=>e.Intent?.Kind==EffectKind.RequestFunctionalProbe);route.Now=probe.DueAt.AddSeconds(1);
+var natKey=new CorrelationKey("nat-service","zone-a","nat-egress");
+var natPolicy=route.Policy with {Version=new("nat-negative-v1"),ProbeSpacing=TimeSpan.FromSeconds(1),Nat=new(1,"nat-asg-a","nat-instance-a","eip-nat-a",["nat-route-a"],["nat-automation"])};
+var natCatalog=new ServiceCatalog(1,"ecs-backup-observer-v2","000000000000","us-east-1","ecs-demo","local",
+ [new("nat-service",natKey,"nat-asg",natPolicy,[new(ResourceKind.CloudWatchAlarm,"arn:aws:cloudwatch:us-east-1:000000000000:alarm:synthetic-nat")],[],"nat-negative-provider",TimeSpan.FromMinutes(1),["RequestFunctionalProbe"])]);
+natCatalog.Validate();var trap=new TrapNatProvider();
+var natWorker=new RecoveryCheckWorker(route.Store,new SignalProcessor(route.Store,new IncidentReducer(new BackupIncidentPolicy(route.Key)),StorageLimits.Default),natCatalog,
+ new Dictionary<string,IEvidenceProvider>{{"nat-negative-provider",trap}},DispatchPolicy.Default,()=>route.Now);
+var denied=natWorker.Dispatch(probe.Id,"negative-routing-test");
+Check("real NAT catalog rejects backup correlation key",denied.Detail=="Catalog mismatch." && route.Store.ReadEffect(probe.Id)!.Status==OutboxStatus.PermanentFailure);
+Check("rejected NAT route never invokes provider",trap.Calls==0);
+
 var before=r.History.Length;
 foreach(var (name,field,value) in new (string,string,JsonNode?)[]{("wrong subject","Subject",JsonValue.Create("other")),("secret field","Password",JsonValue.Create("synthetic-private")),("false live claim","SentinelIntegrated",JsonValue.Create(true)),("false remediation","RemediationAllowed",JsonValue.Create(true)),("wrong pair","Code",JsonValue.Create("NO_REMOTE_COMMIT")),("future time","ObservedUtc",JsonValue.Create("2099-01-01T00:00:00Z")),("wrong emit type","Emit",JsonValue.Create("true")),("invented transport","Delivery",JsonValue.Create("EMAIL"))}) {
  var result=r.Send(Change(fixtures["failed"],field,value),false);
@@ -94,8 +115,9 @@ sealed class Rig {
  public TransactionalMemoryStore Store=null!;
  public ObserverNormalizer Normalizer=null!;
  private BackupIngress ingress=null!;
- public Rig() {
+ public Rig(Func<RecoveryPolicy,RecoveryPolicy>? alter=null) {
   Policy=BackupIncidentPolicy.Create(Key,TimeSpan.FromMinutes(5),TimeSpan.FromMinutes(30),TimeSpan.FromMinutes(1),TimeSpan.Zero,"developer");
+  if(alter is not null)Policy=alter(Policy);
   Options=new("000000000000","us-east-1","ecs-demo","local",[ObserverNormalizer.Producer],[Key]);Restart();
  }
  public void Restart() {
@@ -110,4 +132,9 @@ sealed class Rig {
  public Incident Head=>Store.Read(StorageKeys.Aggregate(Key))!.Head;
  public System.Collections.Immutable.ImmutableArray<AuditRecord> History=>Store.History(StorageKeys.Aggregate(Key));
  public System.Collections.Immutable.ImmutableArray<OutboxEntry> Effects=>Store.Effects(StorageKeys.Aggregate(Key));
+}
+
+sealed class TrapNatProvider : IEvidenceProvider {
+ public int Calls {get;private set;}
+ public EvidenceObservation Observe(EvidenceRequest request,CancellationToken cancellationToken) {Calls++;throw new InvalidOperationException("NAT_PROVIDER_MUST_NOT_RUN");}
 }

@@ -170,7 +170,7 @@ double public API or installed integration claim.
 | 1 Architecture/pipelines | V2 availability and cost decisions plus actual pipeline changes still need their scoped disposition |
 | 2 SQL recovery/alerts | Controlled az6 and local components accepted only in their stated scope; unchanged flow, independent UP/DOWN, general targets, real failure/missing/stale alert delivery remain open |
 | 3 Security/PCI lessons | Inherited findings need concrete prioritized remediation; no compliance claim |
-| 4 PKI | Runtime integration paused for architectural scope: one API with blue/green release slots and no business HTTP peer; preserved experiment NOT ACCEPTED; no artificial microservice |
+| 4 PKI | OUTSIDE ECS SCOPE by owner decision 2026-10-23 19:07:56 UTC; historical experiment preserved, not accepted or a completion gate |
 | 5 Sentinel | Required real alarms/logs classification and email/periodic-operation qualification remain open; no general repair authority |
 | 6 Product Demo/Archify Explorer | Local Product Demo, five authentic Archify views and a separate custom inspector: 15 Chrome checks and 14 Node tests; historical/local/future scopes explicit. Release/live scope remains pending. See portfolio/ACCEPTANCE.md |
 | 7 Repository/release | New repository preserving old, Kendall authorship for new commits, real CI/OIDC, README/screenshots remain required; no push/repository creation/identity change performed now |
@@ -274,3 +274,17 @@ not AWS/delivery gates: independent host/role/config/cadence, authenticated inpu
 backup worker mapping, durable storage/ACK, actual alarm/log ingestion, region
 support and real email. No cloud spend/IAM/timer/workflow/push/archive rebuild.
 Native SQL/API recovery acceptance remains unchanged.
+
+## Superseding owner decision — 2026-10-23 19:07:56 UTC
+
+PKI is **outside ECS scope**, not pending integration or completion. Earlier
+sections preserve history and are superseded on that requirement. One API and
+blue/green release slots remain; no business HTTP microservice is added. The
+unaccepted PKI experiment stays preserved and outside the public demo route.
+See the [owner decision](decisions-and-limitations.md#owner-scope-revision--ecs-portfolio-2026-10-23).
+
+The bounded no-NAT regression now passes 58 Sentinel checks. Altered legacy
+NAT bindings are rejected before any transaction/outbox enqueue; an actual
+NAT-only catalog rejects backup work before its provider (zero calls). No
+operational dispatcher is configured. The isolated rejection test is not an
+installed dispatcher, notification transport or durable-persistence qualification.

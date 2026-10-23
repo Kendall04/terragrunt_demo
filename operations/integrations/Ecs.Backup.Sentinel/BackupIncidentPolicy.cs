@@ -1,4 +1,5 @@
 using Sentinel.Core;
+using Sentinel.Ingestion;
 
 namespace Ecs.Backup.Sentinel;
 
@@ -17,6 +18,13 @@ public sealed class BackupIncidentPolicy(CorrelationKey key) : IRecoveryEvaluato
             ResolutionHold:confirmationHold);
     }
     public RecoveryAssessment Assess(Incident incident,RecoveryPolicy policy,EvaluationContext context) {
+        var legacy=policy.Nat;
+        if(legacy.ExpectedCapacity!=1 || legacy.GroupScope!=key.Scope || legacy.InstanceScope!=key.Scope ||
+            legacy.ExpectedEipIdentity!="unused-by-backup-evaluator" || legacy.RouteScopes.IsDefault || legacy.AutomationScopes.IsDefault ||
+            !legacy.RouteScopes.SequenceEqual([key.Scope]) || !legacy.AutomationScopes.SequenceEqual([ObserverNormalizer.Producer]))
+            throw new IngestionException(FailureClass.Security,"backup-policy-scope");
+        // Throw before the original SignalProcessor prepares/commits anything; no poisoned NAT target reaches an outbox.
+
         var observations=incident.Evidence.Where(e=>e.Source==ObserverNormalizer.Producer && e.Scope==key.Scope &&
             incident.Key==key && e.Epoch==incident.Epoch && e.ObservedAt<=context.Now &&
             ((e.Kind==EvidenceKind.Readiness &&

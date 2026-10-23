@@ -401,3 +401,18 @@ Sentinel or email installation is implied. See [current local completion and
 source gates](v2-local-completion.md). PKI/mTLS/rotation and Sentinel remain owner
 requirements; missing local upstream sources cannot be replaced by fabricated APIs.
 No AWS mutation/spend, new archive, push/merge or Git identity change occurred.
+
+
+## Owner scope revision — ECS portfolio, 2026-10-23
+
+The owner explicitly confirmed at 19:07:56 UTC that **PKI is outside ECS scope**.
+ECS contains one .NET application; blue/green are release slots, not different
+microservices. API-to-SQL and AWS KMS SDK calls do not create a service-to-service
+HTTP boundary for the PKI library. No service will be invented to justify mTLS.
+The historical, unaccepted local PKI experiment is preserved separately; it is
+not a remaining completion gate and is outside the public demonstration route.
+
+Keep the API's product scope unchanged during the local regression/presentation
+increment. A simple API may serve the CV objective by demonstrating real delivery,
+recovery and infrastructure complexity through honest Archify diagrams and demo
+evidence. Any future API product expansion needs its own justified scope.
