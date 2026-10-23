@@ -1497,3 +1497,27 @@ The UI and guide now say custom repository explorer, NOT Archify-generated.
 Actual Archify generation/export stays open, alongside PKI/Sentinel source access
 and the remaining live/release acceptance. This is a bounded Chrome DOM/focus/
 responsive check, not full accessibility or whole-project certification.
+
+
+## Portable portfolio CI contracts - 2026-10-23
+
+Ten Node standard-library tests PASS for actual source facts, DEMO/history/no-live/
+non-Archify provenance, navigation/accessibility source invariants and read-only
+loopback server behavior. In-memory negative cases reject external requests/assets,
+false live status, removed focus/skip/status contracts; actual HTTP tests reject
+mutations, unintended repo files, encoded traversal and external/malformed targets.
+No DOM/browser certification is inferred; prior Chrome qualification remains separate.
+The repo-hygiene source now runs the suite before existing checks with an existing
+Node 20+ requirement, no installer/credential/remote execution. CI selection 35 PASS.
+
+Reproducibility suite: 26 PASS / 1 FAIL. The unchanged existing
+test_dev_prod_aws_lock_identity_and_explicit_dev_provider_selection finds differing
+DEV/PROD AWS blocks in global/data/platform/apps/edge. All 14 lock files and the test
+source equal base 0e08e5d; provider versions remain 5.100.0. No lock edit or skipped
+test disguises this blocker. Full hygiene/hosted CI is not accepted. See the
+[portfolio acceptance checkpoint](../../portfolio/ACCEPTANCE.md) for next scope.
+
+The existing source inventory was updated only for the reviewed hygiene workflow
+and new source-wiring test, retaining UNVERIFIED semantic disposition. The other
+30 existing inventory findings remain unresolved; freshness hashes are not
+security acceptance or permission evidence. No broad inventory refresh occurred.

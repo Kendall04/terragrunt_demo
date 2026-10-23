@@ -12,7 +12,8 @@ The earlier failed focus regression receipt is preserved, not counted as PASS.
 - [x] Explicit DEMO/no-live status; PKI/Sentinel pending; custom explorer provenance.
 - [x] No external requests or console errors; fresh browser/server closed normally.
 - [ ] Actual Archify-generated/exported diagrams. Current HTML/JS explorer is hand-authored, not Archify output.
-- [ ] Portable frontend checks integrated into repository CI; current browser runner is local and uses an explicitly supplied existing Playwright package.
+- [x] Portable Node contract/server suite wired into repo-hygiene source; 10 local tests PASS, no packages/browser required.
+- [ ] Full CI/hygiene acceptance: hosted execution unrun and existing DEV/PROD provider-lock identity failure and 30 pre-existing source-inventory findings remain; no gate was skipped.
 - [ ] Hosted/new repository and real CI/OIDC release scope from the Page. No hosting or remote change performed.
 
 Separately open ECS gates: full unchanged EC2/systemd/remote-restore/API recovery,
@@ -26,10 +27,10 @@ Chrome; it does not certify complete WCAG or actual screen-reader coverage.
 
 ## Next executable local task
 
-Create `portfolio/test-contract.mjs` using Node's built-in test runner for source
-fact/provenance/label contracts and read-only server routes, then wire its explicit
-command into the existing repo-hygiene workflow source. That workflow currently
-has no portfolio check. This removes reliance on the EKS checkout for the portable
-CI gate; browser qualification remains separate. Run it locally first, without
-dependencies, hosting, workflow execution, push or AWS. Archify generation requires
-an actual generator/source/export; this custom view cannot substitute for it.
+Reconcile the existing DEV/PROD AWS lock identity discrepancy in a dedicated local
+review while preserving provider 5.100.0, verified platform checksums and protected
+contracts; first establish why the committed blocks differ, then make only a
+justified offline correction and rerun the existing failing test. No provider
+download, init/plan, new permission or AWS call is implied. Portable UI CI wiring
+is now implemented locally; actual Archify generation/export and PKI/Sentinel
+source/access dependencies remain separate open gates.

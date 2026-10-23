@@ -57,3 +57,41 @@ and native focusable buttons, names diagram groups/components and announces demo
 message/validation changes. The browser test covers three views at 320/390/768px,
 labels and focused navigation. This is a bounded functional review, not a complete
 WCAG or assistive-technology certification. See ACCEPTANCE.md for remaining scope.
+
+
+## Portable checks and CI source wiring
+
+Run from the repository root with the existing Node 20+ runtime:
+
+```text
+node --test portfolio/test-contract.mjs
+```
+
+No browser, Playwright, EKS checkout, package install or external connection is
+needed for this suite. Ten Node tests cover DEMO/history/provenance/data contracts,
+navigation/accessibility source invariants, actual repository facts, allowlisted
+GET/HEAD/CSP, mutation refusal, unintended files/encoded traversal and invalid or
+external absolute targets. Negative inputs are in-memory copies; the HTTP cases
+contact only an owned ephemeral 127.0.0.1 server that closes in the test after-hook.
+Malformed/absolute request targets now return 400 rather than escaping the async
+server callback or being accepted as proxy-form requests.
+
+The new step in ci-repo-hygiene.yml runs this suite before the existing checks,
+requires an already available Node 20+, installs nothing and adds no credential/
+deployment permission. Unknown portfolio paths retain conservative existing CI
+selection; no gate was narrowed or bypassed. Hosted workflows were not run.
+Source-policy checks are regression guards, not an arbitrary-JavaScript sandbox
+or substitute for the separate 14-check Chrome keyboard/mobile qualification.
+
+Current local results: Node 10 PASS; CI selection 35 PASS; reproducibility 26 PASS and
+one existing failure in test_dev_prod_aws_lock_identity_and_explicit_dev_provider_selection.
+All 14 lock inputs and the original test source match base 0e08e5d. AWS blocks in
+global/data/platform/apps/edge differ between DEV/PROD despite version 5.100.0.
+No locks/pins were edited or test disabled. Full repo-hygiene is NOT green until
+that independent baseline discrepancy is reconciled and the full checks rerun.
+Actionlint was not available on the current PATH; no linter was installed.
+
+The existing source inventory was updated only for the reviewed hygiene workflow
+and new source-wiring test, retaining UNVERIFIED semantic disposition. The other
+30 existing inventory findings remain unresolved; freshness hashes are not
+security acceptance or permission evidence. No broad inventory refresh occurred.

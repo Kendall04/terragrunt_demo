@@ -15,6 +15,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
 
+      - name: Validate local portfolio contracts (no dependencies or browser)
+        shell: bash
+        run: |
+          set -euo pipefail
+          node -e "if (Number(process.versions.node.split('.')[0]) < 20) throw new Error('Existing Node 20+ required; no installation performed')"
+          node --test portfolio/test-contract.mjs
+
       - name: Test infrastructure and CI reproducibility
         run: python3 -I -B -m unittest discover -s scripts/tests/reproducibility -v
 
