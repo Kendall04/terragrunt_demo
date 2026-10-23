@@ -9671,6 +9671,65 @@
         ]
       },
       "semantic_status": "UNVERIFIED"
+    },
+    "operations/sql-backup/observer.py": {
+      "sha256": "80e90a00d45530b02ef8601bac18e78605ff851449cd6a00ed1689a0a90dc53d",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          122,
+          133,
+          150,
+          153
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "operations/sql-backup/test_observer.py": {
+      "sha256": "b653a6bf49101d7d2e0b4bbcb6667c2a2d538d2ec1d204d9f6f00e5eef086344",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          74,
+          79,
+          104,
+          106
+        ],
+        "executable-dependency": [
+          78,
+          79,
+          81,
+          84,
+          92,
+          129,
+          130,
+          131,
+          133,
+          134,
+          138
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "operations/sql-backup/sql-backup-observer.service.in": {
+      "sha256": "36be08efb16b0df78e7f72c7bae2100aa3f980089e9cc7d0baccbe16537084d0",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          15,
+          19
+        ],
+        "executable-dependency": [
+          19
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "operations/sql-backup/sql-backup-observer.timer.in": {
+      "sha256": "3d51ccba1c76fb7c9641286c701c224ee6b5e1dd8123b935bbf7ecb0a8320441",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged"

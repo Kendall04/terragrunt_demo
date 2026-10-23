@@ -192,3 +192,16 @@ visually inspected; mobile text uses zoom. The [acceptance checkpoint](../../por
 links source/HTML hashes and screenshots. This replaces the earlier custom-only
 Archify gap, without accepting PKI/Sentinel, unchanged cloud recovery, hosted CI or
 release. No EKS resources/processes, AWS, pushes or workflows changed.
+
+
+## Independent backup observer — local implementation 2026-10-23
+
+The [observer](../../operations/sql-backup/OBSERVER.md) performs a finite fresh
+existing check independently of backup creation, validates health/job receipts and
+persists change/reminder/recovery deduplication. Inert service/timer templates leave
+cadence, reminders and expected-UP explicit; producer interval, freshness and 2+2
+day retention are unchanged. This closes the missing local implementation only.
+Deployment outside the SQL failure domain, real role/config, producer ingestion,
+periodic operation and durable Sentinel/email delivery remain unqualified. Emit
+means a local candidate; it is not a delivery ACK. No AWS or service installation;
+original archives, component manifests and Archify captures are intact.

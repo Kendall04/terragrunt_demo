@@ -1,0 +1,9 @@
+# INERT: cadence and reminder choices must be reviewed; no default silently selected.
+[Unit]
+Description=Independent backup observer schedule (uninstalled)
+[Timer]
+OnCalendar=@OBSERVER_ON_CALENDAR@
+Persistent=true
+Unit=sql-backup-observer.service
+[Install]
+WantedBy=timers.target

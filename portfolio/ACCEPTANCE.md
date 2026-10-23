@@ -21,7 +21,7 @@ inspector evidence remains historical, separate from this new qualification.
 - [ ] Hosted/new repository and real CI/OIDC release scope from the Page. No hosting or remote change performed.
 
 Separately open ECS gates: full unchanged EC2/systemd/remote-restore/API recovery,
-live alert forwarding/independent schedule/confirmed email, PKI/mTLS/rotation and
+deployed independent observer/live alert forwarding/confirmed email, PKI/mTLS/rotation and
 Sentinel integration. PKI/Sentinel implementation sources/packages were unavailable
 in the previously reviewed local roots; actual pinned contracts/access remain
 required. Do not invent upstream APIs or mark those integrations complete.
@@ -38,3 +38,17 @@ original authenticated receipt/already available official archive and deliberate
 canonical-generator/package-identity review. Recover that evidence first; preserve
 the native DEV hash, provider 5.100.0 and exact protected validation. No binary
 download, initialization or broad audit is implied. PKI/Sentinel source/access and real hosting/release remain separate open gates.
+
+
+## Independent observer increment
+
+- [x] Finite fresh check independent of backup creation, persistent change/reminder/recovery deduplication and sanitized local JSON candidates.
+- [x] Inert independent service/timer proposals; cadence/reminders/expected-UP decisions explicit, no SQL dependency or installation.
+- [ ] Actual independent host/role/config, authenticated producer failure ingestion, timer operation and real Sentinel/mail delivery.
+
+See the [observer runbook](../operations/sql-backup/OBSERVER.md). This is local
+readiness, not new AWS or delivery acceptance. Archify captures remain unchanged.
+
+Observer local verification: Linux 24 PASS (15 new observer + nine existing
+signal/component-binding); Windows 14 PASS / one POSIX-only skip. No service
+installation, cloud check or external notification was performed.

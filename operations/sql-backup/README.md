@@ -85,7 +85,7 @@ An independent host without that local file can only assess remote freshness:
 HEALTHY/RECENT_REMOTE_COMMIT does not prove no later producer failure occurred.
 It therefore still needs a separate producer failure signal from service logs/
 exit status. Missing/stale remote commits expose absence independently. CloudWatch
-wiring, periodic independent execution and real human/email notification remain
+wiring, deployed periodic independent execution and real human/email notification remain
 pending; no fake notification or Sentinel integration is installed. See the
 [consumer state contract](../../terraform/docs/v2-local-completion.md#backup-alert-consumer-contract).
 
@@ -390,3 +390,14 @@ execution. Automatic AWS/CI wiring is not installed. Live producer log forwardin
 independent periodic missing/stale checking and confirmed human email/Sentinel
 delivery remain open, together with unchanged full EC2/systemd/remote-restore/API
 acceptance. No external email or unavailable Sentinel API was configured.
+
+
+## Independent periodic observer — local implementation 2026-10-23
+
+The [observer runbook](OBSERVER.md) and observer.py implement a finite fresh
+read-only check, persistent condition/reminder deduplication and recovery candidates.
+Separate inert service/timer proposals have no SQL dependency and leave cadence,
+reminders and expected-UP authority explicit. Nothing was installed. Missing,
+stale, failed, recovered, maintenance and unknown are covered locally. Real role,
+producer ingestion, independent timer operation, Sentinel and mail remain pending.
+Producer interval, freshness and retention remain unchanged.
