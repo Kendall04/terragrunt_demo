@@ -33,7 +33,7 @@ def main():
   payload[path.name]=data
  if not {'Ecs.Backup.Managed.dll','Ecs.Backup.Managed.deps.json','Ecs.Backup.Managed.runtimeconfig.json'}<=payload.keys():raise SystemExit('MISSING_LAMBDA_ENTRY_FILES')
  lock=a.repo/'operations/integrations/Ecs.Backup.Managed/packages.lock.json'
- metadata={'schemaVersion':1,'sourceCommit':actual,'upstreamCommit':receipt['upstreamCommit'],'sourceExtensionSha256':receipt['extensionSha256'],
+ metadata={'integrationContractVersion':'ecs-backup-managed-v2','supportedModes':['synthetic-trial','observer-check'],'dispatchHandlers':['Handler','Reconcile'],'schemaVersion':1,'sourceCommit':actual,'upstreamCommit':receipt['upstreamCommit'],'sourceExtensionSha256':receipt['extensionSha256'],
   'managedLockSha256':digest(lock.read_bytes().replace(b'\r\n',b'\n')),'entries':{k:{'sha256':digest(v),'bytes':len(v)} for k,v in payload.items()},
   'runtime':'framework-dependent .NET10; no native Lambda execution claimed','handlerAssembly':'Ecs.Backup.Managed','awsCalls':0,'secretsScan':'publish allowlist + credential-shaped patterns, no findings; not a universal secret detector'}
  payload['ecs-managed-build.json']=(json.dumps(metadata,indent=2)+'\n').encode()

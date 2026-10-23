@@ -22,9 +22,9 @@ public sealed class SnsNoticeAdapter(IAmazonSimpleNotificationService sns,Backup
   var status=execution.Audit.SourceMetadata?.GetValueOrDefault("backupStatus")??"UNKNOWN";
   if(status is not ("FAILED" or "MISSING" or "STALE" or "UNKNOWN" or "HEALTHY"))return new(DeliveryStatus.PermanentFailure,"Invalid sanitized backup status.");
   var evidence=new BackupNoticeEvidence(1,"Ecs.Backup.Sentinel",settings.SenderLabel,settings.Key.Service,settings.Key.Scope,
-   intent.IncidentId,intent.Epoch,execution.Entry.Id,intent.Kind.ToString(),status,"SNS_PUBLISH_ONLY_NOT_INBOX_RECEIPT",true);
+   intent.IncidentId,intent.Epoch,execution.Entry.Id,intent.Kind.ToString(),status,"SNS_PUBLISH_ONLY_NOT_INBOX_RECEIPT",settings.Mode=="synthetic-trial");
   var payload=DomainJson.Serialize(evidence);
-  var content=BackupNoticeText.Format(evidence,execution.Audit.SourceMetadata?.GetValueOrDefault("backupCode"),execution.Audit.Signal.ObservedAt);
+  var content=BackupNoticeText.Format(evidence,execution.Audit.SourceMetadata?.GetValueOrDefault("backupCode"),execution.Audit.Signal.ObservedAt,settings.Mode=="observer-check");
   try {
    var response=sns.PublishAsync(new PublishRequest {TopicArn=settings.TopicArn,Subject=content.Subject,Message=content.Message,
     MessageAttributes=new(){["BackupEvidence"]=new(){DataType="String",StringValue=payload}}},token).GetAwaiter().GetResult();

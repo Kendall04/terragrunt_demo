@@ -21,7 +21,7 @@ public static class BackupComposition {
   MessageResult? Process(string body,string messageId,string invocation,DateTimeOffset received,CancellationToken budget) {
    try {
     budget.ThrowIfCancellationRequested();
-    if(normalizer.Read(body,processor.Options,received).Evaluation!="LOCAL_RECEIPT_REPLAY")
+    if(normalizer.Read(body,processor.Options,received).Evaluation!=(settings.Mode=="synthetic-trial"?"LOCAL_RECEIPT_REPLAY":"CHECK_COMMAND_RESULT"))
      return new(true,FailureClass.Security,"synthetic-replay-only",null);
    } catch(OperationCanceledException) {return new(true,FailureClass.Transient,"cancelled-before-confirmation",null);}
    catch(Exception e) when(e is System.Text.Json.JsonException or InvalidOperationException or ArgumentException or FormatException or KeyNotFoundException or OverflowException) {

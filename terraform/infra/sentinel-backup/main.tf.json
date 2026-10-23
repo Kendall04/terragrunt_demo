@@ -1,0 +1,90 @@
+{
+  "terraform": {
+    "required_version": "= 1.13.4",
+    "backend": {
+      "s3": {
+        "encrypt": true,
+        "use_lockfile": true
+      }
+    },
+    "required_providers": {
+      "aws": {
+        "source": "hashicorp/aws",
+        "version": "= 6.30.0"
+      }
+    }
+  },
+  "provider": {
+    "aws": {
+      "region": "${var.config.region}",
+      "allowed_account_ids": [
+        "${var.config.account}"
+      ]
+    }
+  },
+  "variable": {
+    "config": {
+      "type": "object({ account = string, region = string, run_id = string, project = string, subject = string, scope = string, owner = string, mode = string, starts_at = string, expires_at = string, sender_label = string, notification_mode = string, email = string, sender_role_arn = string, lifecycle_principal_arn = string, artifact_path = string, artifact_manifest_path = string, artifact_sha256 = string, source_commit = string, upstream_commit = string, evidence_seconds = number, budget_seconds = number, check_seconds = number, hold_seconds = number, dedup_seconds = number, signal_age_seconds = number, audit_seconds = number, effect_seconds = number, log_retention_days = number, queue_retention_seconds = number, dlq_retention_seconds = number })",
+      "nullable": false,
+      "validation": [
+        {
+          "condition": "${can(regex(\"^ecs-sentinel-[a-z0-9-]{1,24}$\",var.config.run_id)) && can(regex(\"^[0-9]{12}$\",var.config.account)) && can(regex(\"^[a-z]{2}(-[a-z]+)+-[0-9]$\",var.config.region))}",
+          "error_message": "Explicit isolated run/account/region required."
+        },
+        {
+          "condition": "${var.config.mode == \"synthetic-trial\" || var.config.mode == \"observer-check\"}",
+          "error_message": "Only explicitly selected synthetic replay or observer-check admission."
+        },
+        {
+          "condition": "${can(regex(\"^[a-f0-9]{64}$\",var.config.artifact_sha256)) && can(regex(\"^[a-f0-9]{40}$\",var.config.source_commit)) && var.config.upstream_commit == \"0e8fc55333ddde3b9816885915310a7e69f3de45\"}",
+          "error_message": "Exact immutable artifact/source and original Sentinel revision required."
+        },
+        {
+          "condition": "${contains([1,3,5,7,14,30],var.config.log_retention_days) && var.config.queue_retention_seconds >= 60 && var.config.dlq_retention_seconds >= var.config.queue_retention_seconds && var.config.dlq_retention_seconds <= 1209600}",
+          "error_message": "Choose explicit bounded log/queue retention; DLQ cannot expire first."
+        },
+        {
+          "condition": "${can(regex(\"^[a-z0-9][a-z0-9._-]{0,63}$\",var.config.project)) && can(regex(\"^[a-z0-9][a-z0-9._-]{0,63}$\",var.config.subject))}",
+          "error_message": "ASCII project/subject binding required for cross-language namespace identity."
+        },
+        {
+          "condition": "${var.config.evidence_seconds > 0 && var.config.budget_seconds > 0 && var.config.check_seconds > 0 && var.config.hold_seconds >= 0 && var.config.signal_age_seconds > 0 && var.config.dedup_seconds >= var.config.signal_age_seconds && var.config.audit_seconds > 0 && var.config.effect_seconds > 0}",
+          "error_message": "Explicit positive retention/evaluation bounds required; dedup covers signal age."
+        },
+        {
+          "condition": "${can(regex(\"^arn:aws:iam::[0-9]{12}:role/\",var.config.sender_role_arn)) && split(\":\",var.config.sender_role_arn)[4] == var.config.account && can(regex(\"^arn:aws:iam::[0-9]{12}:(role|user)/\",var.config.lifecycle_principal_arn)) && split(\":\",var.config.lifecycle_principal_arn)[4] == var.config.account}",
+          "error_message": "Select existing same-account sender role and separate lifecycle principal."
+        },
+        {
+          "condition": "${try(timecmp(var.config.expires_at,var.config.starts_at)>0 && timecmp(var.config.expires_at,timeadd(var.config.starts_at,\"24h\"))<=0,false)}",
+          "error_message": "Current managed runtime is finite: explicit UTC start/expiry within24h. No permanent schedule is silently authorized."
+        },
+        {
+          "condition": "${try(jsondecode(file(var.config.artifact_manifest_path)).zipSha256 == var.config.artifact_sha256 && jsondecode(file(var.config.artifact_manifest_path)).sourceCommit == var.config.source_commit && jsondecode(file(var.config.artifact_manifest_path)).upstreamCommit == var.config.upstream_commit && jsondecode(file(var.config.artifact_manifest_path)).integrationContractVersion == \"ecs-backup-managed-v2\" && contains(jsondecode(file(var.config.artifact_manifest_path)).supportedModes,var.config.mode),false)}",
+          "error_message": "New v2 qualified artifact manifest must match mode/digest/source; old trial binaries are refused."
+        }
+      ]
+    },
+    "enable_ingestion": {
+      "type": "bool",
+      "default": false
+    },
+    "allow_data_retirement": {
+      "type": "bool",
+      "default": false
+    }
+  },
+  "module": {
+    "pipeline": {
+      "source": "./modules/pipeline",
+      "config": "${var.config}",
+      "enable_ingestion": "${var.enable_ingestion}",
+      "allow_data_retirement": "${var.allow_data_retirement}"
+    }
+  },
+  "output": {
+    "pipeline": {
+      "value": "${module.pipeline}"
+    }
+  }
+}

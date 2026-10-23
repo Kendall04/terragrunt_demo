@@ -28,6 +28,8 @@ jobs:
           set -euo pipefail
           python3 -I -B -m unittest discover -s operations/sql-backup -p test_observer.py -v
           python3 -I -B -m unittest discover -s operations/sql-backup -p test_local_signals.py -v
+          python3 -I -B -m unittest discover -s operations/sql-backup -p test_sentinel_publish.py -v
+          python3 -I -B -m unittest discover -s operations/integrations -p test_terraform_pipeline.py -v
 
       - name: Test infrastructure and CI reproducibility
         run: python3 -I -B -m unittest discover -s scripts/tests/reproducibility -v

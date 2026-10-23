@@ -9,9 +9,9 @@ public sealed record BackupNoticeEvidence(int SchemaVersion,string Source,string
  string IncidentId,long Epoch,string EffectId,string Kind,string BackupStatus,string Acceptance,bool SyntheticTrial);
 
 public static class BackupNoticeText {
- public static (string Subject,string Message) Format(BackupNoticeEvidence evidence,string? code,DateTimeOffset observed) {
-  if(!evidence.SyntheticTrial || evidence.SchemaVersion!=1 || evidence.Source!="Ecs.Backup.Sentinel")
-   throw new ArgumentException("Only explicit synthetic backup notices are supported.");
+ public static (string Subject,string Message) Format(BackupNoticeEvidence evidence,string? code,DateTimeOffset observed,bool allowObserverCheck=false) {
+  if((!evidence.SyntheticTrial && !allowObserverCheck) || (evidence.SyntheticTrial && allowObserverCheck) || evidence.SchemaVersion!=1 || evidence.Source!="Ecs.Backup.Sentinel")
+   throw new ArgumentException("Explicit matching backup observation mode required.");
   var state=evidence.BackupStatus switch {
    "FAILED"=>"FALLO (FAILED)","MISSING"=>"AUSENTE (MISSING)","STALE"=>"ANTIGUO (STALE)",
    "UNKNOWN"=>"SIN DATOS SUFICIENTES (UNKNOWN)","HEALTHY"=>"SANO (HEALTHY)",
@@ -28,14 +28,14 @@ public static class BackupNoticeText {
   var safeCode=code==expected?expected:"NO_DISPONIBLE";
   static string Line(string value)=>value.Replace('\r',' ').Replace('\n',' ').Replace('\t',' ');
   var title=evidence.Kind=="ResolveIncident"?"Backup recuperado":"Atencion de backup";
-  var subject="PRUEBA SINTETICA | "+Line(evidence.SenderLabel)+" | "+title;
+  var subject=(evidence.SyntheticTrial?"PRUEBA SINTETICA | ":"BACKUP | ")+Line(evidence.SenderLabel)+" | "+title;
   if(Encoding.UTF8.GetByteCount(subject)>100)throw new ArgumentException("Bounded SNS subject required.");
   var message=string.Join("\n",new[]{
-   "PRUEBA SINTÉTICA",Line(evidence.SenderLabel)+" — "+title,"",
+   evidence.SyntheticTrial?"PRUEBA SINTÉTICA":"OBSERVACIÓN DE BACKUP",Line(evidence.SenderLabel)+" — "+title,"",
    "Estado: "+state,"Servicio: "+Line(evidence.Service),"Alcance: "+Line(evidence.Scope),
    "Motivo registrado: "+reason,"Código del recibo: "+safeCode,
    "Observado (UTC): "+observed.ToUniversalTime().ToString("O",CultureInfo.InvariantCulture),"",
-   "Se han reproducido recibos sintéticos. Esto no acredita un fallo real ni una restauración SQL.",
+   evidence.SyntheticTrial?"Se han reproducido recibos sintéticos. Esto no acredita un fallo real ni una restauración SQL.":"El estado procede del observador de backups. No acredita una restauración SQL.",
    "No se ha ejecutado reparación automática de infraestructura.","",
    "DATOS TÉCNICOS","Incidente: "+Line(evidence.IncidentId),"Episodio: "+evidence.Epoch.ToString(CultureInfo.InvariantCulture),
    "Efecto: "+Line(evidence.EffectId),"Tipo: "+Line(evidence.Kind),"Origen: "+Line(evidence.Source),"",

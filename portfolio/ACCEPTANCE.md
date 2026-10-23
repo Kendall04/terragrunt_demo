@@ -199,3 +199,22 @@ trial; those sections remain historical. PKI remains outside ECS scope.
 [Integration/code provenance, limits and final single-IaC plan](../operations/integrations/NATIVE-TRIAL-2026-10-23.md).
 The native replay remains a historical synthetic milestone, not live portfolio
 telemetry or complete ECS acceptance.
+
+
+## Terraform integration local increment — after native trial closure
+
+- [x] Isolated single-owner Terraform/Terragrunt source; no CloudFormation or existing-root migration.
+- [x] Explicit observer-check admission and truthful readable notices; original Sentinel components.
+- [x] Durable one-candidate SQS publisher, explicit attempt/expiry bounds, stop on access denial;
+  inert replacement units only, no installed timer/role/publisher.
+- [x] 85 managed offline checks, 15 publisher tests and 12 Terraform source-contract tests.
+  Original observer regression: 14 PASS, one POSIX-specific skip on Windows; 9 signal tests PASS.
+- [x] Original-store multi-page reconciliation cancels obsolete probes after closure;
+  active unsupported probes remain pending, no fake result or NAT action.
+- [ ] Official provider6.30 platform checksum/lock/schema qualification (.NET10 incompatibility
+  isolated from existing AWS5.100 roots); actual Terraform validate/plan/destroy not accepted.
+- [ ] Durable continuation owner for automatic dispatch scheduling; service-neutral upstream
+  probe policy and observer-death watchdog; real Linux installation/IAM/transport/inbox trial.
+
+[Runbook and exact boundaries](../terraform/infra/sentinel-backup/README.md).
+No new AWS cycle/spend/access or hosted CI execution occurred in this local increment.

@@ -43,7 +43,8 @@ public static class BackupDispatch {
   foreach(var id in ids) {
    token.ThrowIfCancellationRequested();var entry=store.ReadEffect(id);
    if(entry is null || entry.AggregateKey!=StorageKeys.Aggregate(settings.Key)) {results.Add(new(id,null,"Absent or foreign backup work; no claim."));continue;}
-   if(entry.Kind==WorkKind.DomainEffect && (entry.Intent is null || !routes.ContainsKey(entry.Intent.Kind))) {
+   if(entry.Kind==WorkKind.DomainEffect && (entry.Intent is null || !routes.ContainsKey(entry.Intent.Kind)) &&
+     store.Read(entry.AggregateKey)?.Head.State!=IncidentState.RESOLVED) {
     // No NAT RecoveryCheckWorker or provider. Unsupported work remains visible, not falsely completed.
     results.Add(new(id,null,"Unsupported backup work preserved pending; no provider invoked."));continue;
    }

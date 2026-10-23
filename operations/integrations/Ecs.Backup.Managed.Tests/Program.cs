@@ -23,6 +23,7 @@ async Task Reject(string name,Func<Task> action) {try {await action();throw new 
 string Change(string body,string field,JsonNode? value) {var node=JsonNode.Parse(body)!.AsObject();node[field]=value;return node.ToJsonString();}
 var r=new Rig();
 Check("explicit test settings validate",r.Settings.Dynamo.Namespace.StartsWith("NS#"));
+Check("namespace matches Terraform JSON SHA256 contract",r.Settings.Dynamo.Namespace=="NS#a44c67745b62d912a7ba254fc0ac38100716f3869e2ac3ed72929c74878c4654" && r.Settings.Archive.Prefix=="sentinel/v3/a44c67745b62d912a7ba254fc0ac38100716f3869e2ac3ed72929c74878c4654");
 var result=await r.Send(fixtures["failed"]);
 Check("original SQS Lambda ACKs committed failure",result.BatchItemFailures.Count==0 && r.Head.State==IncidentState.ESCALATED);
 Check("original DynamoStore commits physical schema3 transactions",r.Ddb.Inner.Writes.Count>0 && r.Ddb.Inner.Rows.Values.Where(x=>x.ContainsKey("Data")).All(x=>x["Schema"].N=="3"));
@@ -131,6 +132,33 @@ if(Environment.GetEnvironmentVariable("ECS_MAIL_EXAMPLES_DIR") is {Length:>0} ex
  File.WriteAllText(Path.Combine(examples,"recovery.txt"),d.Sns.Requests[1].Subject+"\n\n"+d.Sns.Requests[1].Message+"\n");
  File.WriteAllText(Path.Combine(examples,"structured-evidence.json"),d.Sns.Requests[0].MessageAttributes["BackupEvidence"].StringValue+"\n");
 }
+
+// Real observer admission is opt-in; neither direction can relabel replay as a genuine check.
+var real=new Rig();real.Settings=real.Settings with {Mode="observer-check"};real.Restart();
+Check("real observer mode rejects synthetic replay",(await real.Send(fixtures["failed"])).BatchItemFailures.Count==1 && real.Ddb.Inner.Rows.Count==0);
+string ActualCheck(string body)=>Change(Change(body,"Evaluation",JsonValue.Create("CHECK_COMMAND_RESULT")),"CheckInvoked",JsonValue.Create(true));
+Check("explicit real observer mode accepts checked receipt",(await real.Send(ActualCheck(fixtures["failed"]))).BatchItemFailures.Count==0 && real.Head.State==IncidentState.ESCALATED);
+real.Dispatch([real.Effects.Single(x=>x.Intent?.Kind==EffectKind.EscalateIncident).Id]);
+Check("real observer notice is not mislabeled synthetic",!real.Sns.Requests[0].Subject.Contains("PRUEBA") && real.Sns.Requests[0].Message.StartsWith("OBSERVACIÓN DE BACKUP") && !DomainJson.Deserialize<BackupNoticeEvidence>(real.Sns.Requests[0].MessageAttributes["BackupEvidence"].StringValue).SyntheticTrial);
+var realEnv=Rig.Environment(real.Settings);realEnv["SENTINEL_MODE"]="observer-check";
+Check("real observer mode survives explicit settings read",BackupSettings.Read(realEnv.GetValueOrDefault).Mode=="observer-check");
+realEnv["SENTINEL_MODE"]="auto";await Reject("unknown runtime mode fails closed",()=>Task.Run(()=>BackupSettings.Read(realEnv.GetValueOrDefault)));
+await Reject("real notice opt-in cannot relabel synthetic evidence",()=>Task.Run(()=>BackupNoticeText.Format(structured,"LAST_ATTEMPT_FAILED",real.Now,true)));
+var activeReconcile=new Rig();await activeReconcile.Send(fixtures["failed"]);activeReconcile.Now=activeReconcile.Now.AddSeconds(61);
+var activeProbeIds=activeReconcile.Effects.Where(x=>x.Intent?.Kind==EffectKind.RequestFunctionalProbe).Select(x=>x.Id).ToArray();
+var tick=activeReconcile.Reconcile();
+Check("active functional probe remains unsupported, not successful",tick.UnsupportedActiveProbes>0 && activeProbeIds.All(id=>activeReconcile.Store.ReadEffect(id) is {Status:OutboxStatus.Pending,Attempts:0}));
+Check("reconcile discovery and dispatch use invocation cancellation",activeReconcile.Ddb.Tokens.All(x=>x.CanBeCanceled));
+var closedReconcile=new Rig();await closedReconcile.Send(fixtures["failed"]);await closedReconcile.Send(fixtures["missing"]);await closedReconcile.Send(fixtures["stale"]);await closedReconcile.Send(fixtures["unknown"]);await closedReconcile.Send(fixtures["recovered"]);closedReconcile.Now=closedReconcile.Now.AddSeconds(121);
+string? cursor=null;var pages=0;
+do {var page=closedReconcile.Reconcile(cursor);cursor=page.Continuation;if(++pages>20)throw new Exception("Unbounded discovery");}while(cursor is not null);
+Check("bounded discovery progresses over multiple original directory pages",pages>1);
+Check("closed episode reconciles every due original outbox item",closedReconcile.Effects.All(x=>x.Status is OutboxStatus.Confirmed or OutboxStatus.Cancelled));
+Check("obsolete probes are cancelled without a probe result",closedReconcile.Effects.Where(x=>x.Intent?.Kind==EffectKind.RequestFunctionalProbe).All(x=>x.Status==OutboxStatus.Cancelled && x.Attempts==0));
+Check("late failure notice cancelled after recovery, only recovery sent",closedReconcile.Sns.Requests.Count==1 && closedReconcile.Store.ReadEffect(closedReconcile.Effects.Single(e=>e.Intent?.Kind==EffectKind.EscalateIncident).Id)!.Status==OutboxStatus.Cancelled && DomainJson.Deserialize<BackupNoticeEvidence>(closedReconcile.Sns.Requests[0].MessageAttributes["BackupEvidence"].StringValue).Kind=="ResolveIncident");
+var emptyReconcile=new Rig();Check("empty directory has no external effects",emptyReconcile.Reconcile().Results.Length==0 && emptyReconcile.Sns.Requests.Count==0);
+await Reject("foreign discovery cursor refused",()=>Task.Run(()=>emptyReconcile.Reconcile(Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("{\"PK\":\"foreign\",\"SK\":\"W#a\"}")))));
+
 Console.WriteLine(DomainJson.Serialize(new {status="PASS",tests=cases.Count,cases,persistence="ORIGINAL_DYNAMOSTORE_WITH_UPSTREAM_OFFLINE_SDK_DOUBLE",archive="ORIGINAL_S3_ADAPTER_WITH_UPSTREAM_OFFLINE_SDK_DOUBLE",notification="SNS_PUBLISH_SDK_DOUBLE_ONLY",emailSent=false,awsCalls=0,natProvidersConnected=false}));
 
 sealed class Rig {
@@ -147,6 +175,7 @@ sealed class Rig {
  public async Task<SQSBatchResponse> Send(string body) {var at=DateTimeOffset.Parse(JsonNode.Parse(body)!["ObservedUtc"]!.GetValue<string>()).AddSeconds(1);if(at>Now)Now=at;return await Ingest.Handler(Batch(body),Context("ingest"));}
  public Context Context(string component,TimeSpan? remaining=null)=>new(Settings.FunctionArn(component),remaining??TimeSpan.FromSeconds(30));
  public DispatchResult[] Dispatch(string[] ids)=>new DispatchFunction(()=>Settings,_=>new(Ddb,S3,Sns),()=>Now).Handler(new(ids),Context("dispatch"));
+ public BackupReconcileResult Reconcile(string? cursor=null)=>new DispatchFunction(()=>Settings,_=>new(Ddb,S3,Sns),()=>Now).Reconcile(new(cursor),Context("dispatch"));
  public static Dictionary<string,string?> Environment(BackupSettings c)=>new(){["AWS_REGION"]=c.Region,["SENTINEL_REGION"]=c.Region,["SENTINEL_MODE"]="synthetic-trial",["SENTINEL_RUN_ID"]=c.RunId,["SENTINEL_ACCOUNT"]=c.Account,["SENTINEL_PROJECT"]=c.Project,["SENTINEL_CONSUMER"]=c.Consumer,["SENTINEL_SUBJECT"]=c.Subject,["SENTINEL_SERVICE"]=c.Key.Service,["SENTINEL_SCOPE"]=c.Key.Scope,["SENTINEL_FAILURE_SIGNATURE"]=c.Key.FailureSignature,["SENTINEL_OWNER"]=c.Owner,["SENTINEL_EVIDENCE_SECONDS"]="300",["SENTINEL_BUDGET_SECONDS"]="1800",["SENTINEL_CHECK_SECONDS"]="60",["SENTINEL_HOLD_SECONDS"]="0",["SENTINEL_DEDUP_SECONDS"]="86400",["SENTINEL_SIGNAL_AGE_SECONDS"]="86400",["SENTINEL_AUDIT_SECONDS"]="86400",["SENTINEL_EFFECT_SECONDS"]="86400",["SENTINEL_SENDER_LABEL"]=c.SenderLabel,["SENTINEL_NOTIFICATION_MODE"]=c.NotificationMode,["SENTINEL_STARTS_AT"]="2026-10-23T16:00:00Z",["SENTINEL_EXPIRES_AT"]="2026-10-24T16:00:00Z",["SENTINEL_QUEUE_ARN"]=c.QueueArn,["SENTINEL_TABLE"]=c.Dynamo.Table,["SENTINEL_TOPIC_ARN"]=c.TopicArn,["SENTINEL_BUCKET"]=c.Archive.Bucket,["SENTINEL_NAMESPACE"]=c.Dynamo.Namespace,["SENTINEL_ARCHIVE_PREFIX"]=c.Archive.Prefix};
 }
 // Original emulator insists on TOTAL for GetItem; production scoped proxy requests INDEXES.

@@ -227,3 +227,11 @@ small ZIP, binary hashes,56 managed/61 existing/13 IaC checks and generated
 The package is local only; all external execution remains unapproved.
 Temporary operator inline policy name for the proposal is ecs-sentinel-r20261023b1;
 preflight snapshots/readback must preserve any pre-existing policy of that name.
+
+
+## Final Terraform integration — local increment
+
+[Single-owner Terraform/Terragrunt source and next-test matrix](../../terraform/infra/sentinel-backup/README.md)
+adds explicit real-check admission, finite durable publisher and bounded original-store
+reconciliation. It is not deployed. The historical native trial and its ten exported
+pending effects remain immutable; newer local cancellation tests do not rewrite it.

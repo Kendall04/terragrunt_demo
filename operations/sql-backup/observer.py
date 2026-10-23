@@ -104,7 +104,7 @@ def save(path,value):
     finally:
         if temporary.exists(): temporary.unlink()
 
-def run(args,runner=subprocess.run,clock=lambda:dt.datetime.now(dt.timezone.utc)):
+def run(args,runner=subprocess.run,clock=lambda:dt.datetime.now(dt.timezone.utc),before_state_save=None):
     config=safe_path(args.config)
     with config.open('rb') as stream: raw=stream.read(65537)
     if len(raw)>65536: raise Refused('CONFIG_TOO_LARGE')
@@ -139,6 +139,7 @@ def run(args,runner=subprocess.run,clock=lambda:dt.datetime.now(dt.timezone.utc)
         state,event=transition(current,observed,previous,args.subject,scope,args.repeat_after_seconds)
         event['Evaluation']='EXPECTED_UP_FALSE' if args.expected_up=='false' else 'LOCAL_RECEIPT_REPLAY' if args.action=='replay' else 'CHECK_COMMAND_RESULT'
         event['CheckInvoked']=args.action=='run' and args.expected_up=='true'
+        if before_state_save is not None: before_state_save(state,event)
         save(state_path,state)
         return event
 

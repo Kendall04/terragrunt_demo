@@ -1,0 +1,9 @@
+# INERT: owner supplies cadence; original backup2+2-day retention unchanged.
+[Unit]
+Description=Independent backup observer and SQS publisher schedule
+[Timer]
+OnCalendar=@OBSERVER_ON_CALENDAR@
+Persistent=true
+Unit=sql-backup-sentinel-producer.service
+[Install]
+WantedBy=timers.target
