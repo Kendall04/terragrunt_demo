@@ -149,3 +149,11 @@ producer/check failure coverage, real SQL/API recovery without manual repair and
 remaining project CI/release/hosting gates stay separate. PKI is outside scope.
 [Current operational guide](../operations/integrations/OPERATIONAL-TRIAL.md)
 contains exact resources, principals, suggested parameters and retirement order.
+
+
+Read-only admission update: identity/names/quotas and actual template syntax checks
+passed, but operator explicitDeny blocks DeleteBucket for the retained trial bucket.
+The temporary Allow cannot override it. Current cycle is **not ready for consent**
+until retirement is corrected/reviewed. No deletion, IAM change, role assumption,
+creation or email occurred. Direct SQS Price List confirms USD0.04/100000 Standard
+requests; the new USD1 proposal is unchanged. See the current operational guide.

@@ -1,6 +1,7 @@
 # ECS backup signal pipeline: local implementation and one-cycle review
 
-**LOCAL QUALIFICATION ONLY. The AWS cycle is NOT APPROVED and has not run.**
+**LOCAL QUALIFICATION ONLY. AWS read-only preflight found a retirement blocker.
+The AWS cycle is NOT APPROVED and has not run.**
 This document supersedes the initial preparation at commit1ba82c2; its historical
 scope/receipt remains in Git. PKI is outside ECS scope. API, original recovery
 artifacts/states/backups, EKS, production and original backup2+2-day retention
@@ -233,8 +234,10 @@ Sources reviewed2026-10-23: [Lambda](https://aws.amazon.com/lambda/pricing/)
 (0.0000166667/GB-s,0.20/million requests),
 [DynamoDB](https://aws.amazon.com/dynamodb/pricing/)
 (0.625/million WRU,0.125/million RRU,0.25/GB-month),
-[AWS SQS rate example](https://aws.amazon.com/blogs/aws-cloud-financial-management/aws-price-list-gets-a-natural-language-upgrade-introducing-the-aws-pricing-mcp-server/)
-(0.40/million Standard requests),
+[SQS Pricing](https://aws.amazon.com/sqs/pricing/) and
+[official us-east-1 Price List](https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AWSQueueService/current/us-east-1/index.json)
+(SKU8RN6B8U4MERHRXP3, version20260911124607: USD0.0000004000/request;
+100000 x0.0000004 =USD0.04; no free tier, no MessageGroupId/fair-queue surcharge),
 [SNS FAQ](https://aws.amazon.com/sns/faqs/)
 (0.50/million Publish,2/100000 email deliveries),
 [CloudWatch](https://aws.amazon.com/cloudwatch/pricing/) and
@@ -248,3 +251,27 @@ Input/invocation limits and a manual cleanup reserve are operating controls, not
 an automatic AWS billing cap. Account/region, exact access, code digest, email
 consent, deletion/preservation, recommended parameters and USD1 must be reviewed
 as one future bundle. Nothing in local readiness authorizes that execution.
+
+
+## Read-only admission finding - 2026-10-23
+
+[Exact preflight receipt](readonly-preflight.json): cnp-cert-dev resolved to
+arn:aws:iam::341936017254:user/cnp-cert-admin. Both templates passed actual
+CloudFormation ValidateTemplate (CAPABILITY_NAMED_IAM); all consulted names were
+absent/free. IAM has capacity for3 roles/2 policies and the4572-character temporary
+operator inline policy fits10240 without replacing existing policies. Operator
+sessions max3600s; future renewal must use the same admitted role, not expand it.
+
+**NOT READY for execution consent using the current retirement packet:** IAM
+simulation with the exact proposed temporary policy returned explicitDeny for
+s3:DeleteBucket on arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254, from existing
+TerragruntDemoDevOperatorPart4. CreateStack/DeleteStack simulations being allowed
+do not cure the native retained-bucket deletion path. No actual DeleteBucket,
+role assumption, permission change or alternate-principal attempt occurred.
+This needs a corrected, reviewed retirement plan before approval; this preflight
+has not changed the templates, principals or policies to bypass the deny.
+
+Official runtime documentation supports dotnet10/AL2023. The existing Python
+SDK's Runtime enum lacks dotnet10; the planned CloudFormation-body route does not
+use that enum. No SDK upgrade or native runtime qualification is inferred.
+The direct SQS tariff leaves the USD0.147 model/USD1 proposal unchanged.

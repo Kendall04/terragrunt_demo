@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "LOCAL_READY_FOR_REVIEW_AWS_CYCLE_NOT_APPROVED",
+  "status": "READONLY_PREFLIGHT_NO_GO_STORAGE_RETIREMENT",
   "createdUtc": "2026-10-23T20:43:22.479347+00:00",
   "codeSourceCommit": "8f7eba925f4c7117c10855cc8a409692377c6768",
   "sourceFilesSha256": {
@@ -213,11 +213,26 @@
     "sources": [
       "https://aws.amazon.com/lambda/pricing/",
       "https://aws.amazon.com/dynamodb/pricing/",
-      "https://aws.amazon.com/blogs/aws-cloud-financial-management/aws-price-list-gets-a-natural-language-upgrade-introducing-the-aws-pricing-mcp-server/",
       "https://aws.amazon.com/sns/faqs/",
       "https://aws.amazon.com/cloudwatch/pricing/",
-      "https://aws.amazon.com/s3/pricing/"
-    ]
+      "https://aws.amazon.com/s3/pricing/",
+      "https://aws.amazon.com/sqs/pricing/",
+      "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AWSQueueService/current/us-east-1/index.json"
+    ],
+    "sqsDirectPricing": {
+      "pricingPage": "https://aws.amazon.com/sqs/pricing/",
+      "officialRateSource": "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AWSQueueService/current/us-east-1/index.json",
+      "publicationDate": "2026-09-11T12:46:07Z",
+      "offerVersion": "20260911124607",
+      "sku": "8RN6B8U4MERHRXP3",
+      "unit": "Requests",
+      "usdPerRequest": "0.0000004000",
+      "plannedRequests": 100000,
+      "costUsd": "0.0400000000",
+      "freeTierAssumed": false,
+      "messageGroupIdProposed": false,
+      "rawOfferSha256": "787061c859b2ed47c2249b0b54516230b9d245b76ab41d87ce11f449a27813dc"
+    }
   },
   "qualification": {
     "managedSdkDoubleTests": 56,
@@ -264,6 +279,7 @@
     "details": "task-3/sentinel-managed-qualification/evidence-integrity-addendum.json"
   },
   "remainingExternal": [
+    "Current retained-bucket teardown plan is blocked by operator explicitDeny; local retirement correction/review required before approval. No bypass authorized.",
     "owner email address/consent and SNS sender-label acceptance",
     "accept/override explicit recommended trial parameters, new USD1 and temporary create/test/delete grants",
     "current identity/effective authority, actual immutable upload version, native AWS change set/runtime/retirement qualification",
@@ -278,5 +294,22 @@
     "full hosted CI or project completion"
   ],
   "sourceHashScope": "UTF8-LF Git blobs at codeSourceCommit; delivery-only docs/review metadata are a later commit, not a code rebuild.",
-  "generatedTemplateValidation": "Offline structural/contract checks only; no CloudFormation ValidateTemplate, IAM simulation or change set executed."
+  "generatedTemplateValidation": "Offline structural/contract checks only; no CloudFormation ValidateTemplate, IAM simulation or change set executed.",
+  "readOnlyPreflight": {
+    "receipt": "operations/integrations/readonly-preflight.json",
+    "sha256": "b88e0c51ffa16215b790a63f87413509aa58cab55d7ba959f7e6fc1430d07755",
+    "awsReadOnlyCalls": 45,
+    "mutations": 0,
+    "readyForConsent": false,
+    "blocker": {
+      "hypotheticalAction": "s3:DeleteBucket",
+      "target": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254",
+      "principal": "arn:aws:iam::341936017254:role/TerragruntDemoDevOperator",
+      "decision": "explicitDeny",
+      "sourcePolicy": "TerragruntDemoDevOperatorPart4",
+      "actualDeleteRequested": false,
+      "attemptedOtherPrincipal": false,
+      "effect": "Current main template retains bucket; proposed native operator deletion cannot complete. Temporary Allow does not override this deny. Teardown plan must be corrected/reviewed before one execution consent."
+    }
+  }
 }
