@@ -57,3 +57,18 @@ The captured console contains no AccessDenied/Unauthorized entry; it is cloud-in
 4. Keep the ECS recovery/live package blocked until this transport gate is resolved or a genuinely different architecture is openly reviewed; no covert execution-route change. In parallel, local application-network/cutover work may proceed without AWS, preserving original runtime ownership.
 
 No new framework, production change or IAM patch follows from this diagnosis. It narrows the failing boundary and excludes concrete wrong assumptions; it does not claim an exact failing key or an E2E fix that evidence cannot support.
+
+## Customer API exhaustion and smallest external request
+
+Follow-up native reads at18:02UTC called ListCommands and ListCommandInvocations(Details=true) for both exact IDs. Both succeeded. [Preserved complete diagnostic metadata](fixtures/ssm-b2-command-metadata.json) records returned field names and output hashes without command parameters/body. This is in addition to GetCommandInvocation and CloudTrail correlation above.
+
+- Command aggregate: Failed/Failed; TargetCount1, CompletedCount1, **ErrorCount0**, DeliveryTimedOutCount0.
+- **Node invocation**: Failed/**AccessDenied**. Thus classification is not inferred only from the plugin label. AWS defines this invocation status as the initiating principal lacking target access.
+- Plugin: ObserverControl, Failed/AccessDenied, ResponseCode−1, no response start/finish and0 output bytes. This does not show a shell/plugin program error.
+- CloudWatchOutputEnabled=false, blank log group, blank S3 bucket/key and blank output URLs. There is no referenced remote command-output log to fetch. No extra authorization trace field was returned.
+
+The relevant ordinary surviving APIs are now covered: GetCommandInvocation, ListCommandInvocations, ListCommands, CloudTrail LookupEvents, IAM role/policy metadata. None of their observed responses exposes the asynchronous evaluated condition keys or failed statement. GetDocument now targets a retired document; agent logs lived on the deleted disk and were not exported. Querying a different host/role, Automation execution API, STS DecodeAuthorizationMessage without an encoded message, or a current-principal simulation cannot reconstruct that decision. We did not invent such a trace or enable logging after the fact.
+
+**Smallest next step:** use the [prepared draft](SSM-B2-SUPPORT-DRAFT.md) to ask AWS SSM for its retained per-target authorization decision, if a technical-support channel already exists. No case is opened or message sent by this work, and Support is not guaranteed to retain or release internal context. We cannot categorically prove only Support has it; it is the remaining provider-facing route after the accessible documented customer evidence above. If unavailable, retain root cause as unknown and design any future diagnostic trial openly for approval, with the same principal/document constraints. Independent local Sentinel/recovery work need not wait; native E2E must not be advertised as passed.
+
+[Official support-plan documentation](https://docs.aws.amazon.com/awssupport/latest/user/aws-support-plans.html) distinguishes Basic account/billing help from technical support; Business Support+, Enterprise and Unified Operations provide technical cases. Existing Developer/Business/On-Ramp plans may continue under their transition rules until2027. **This account's support entitlement was not queried or verified.** Do not open an account/billing case as a workaround for technical support, silently subscribe/upgrade, or charge support fees to the proposedUSD4 trial. The draft is evidence-only and can also be reviewed by the owner/admin without sending it.

@@ -1,0 +1,227 @@
+{
+  "AtUtc": "2026-10-24T18:02:47.540294+00:00",
+  "Identity": "arn:aws:iam::341936017254:user/cnp-cert-admin",
+  "Mutations": 0,
+  "Records": [
+    {
+      "CommandId": "a3894787-1d3d-430a-9d6d-900578376935",
+      "DocumentName": "ecs-sentinel-r20261024b2-observer-control",
+      "DocumentVersion": "1",
+      "RequestedDateTime": "2026-10-24 00:09:13.226000-06:00",
+      "ExpiresAfter": "2026-10-24 00:12:43.226000-06:00",
+      "Status": "Failed",
+      "StatusDetails": "Failed",
+      "TargetCount": 1,
+      "CompletedCount": 1,
+      "ErrorCount": 0,
+      "DeliveryTimedOutCount": 0,
+      "ServiceRole": "",
+      "CloudWatchOutputConfig": {
+        "CloudWatchLogGroupName": "",
+        "CloudWatchOutputEnabled": false
+      },
+      "OutputS3BucketName": "",
+      "OutputS3KeyPrefix": "",
+      "OutputS3Region": "us-east-1",
+      "RecordKind": "Commands",
+      "AvailableFieldNames": [
+        "AlarmConfiguration",
+        "CloudWatchOutputConfig",
+        "CommandId",
+        "Comment",
+        "CompletedCount",
+        "DeliveryTimedOutCount",
+        "DocumentName",
+        "DocumentVersion",
+        "ErrorCount",
+        "ExpiresAfter",
+        "InstanceIds",
+        "MaxConcurrency",
+        "MaxErrors",
+        "NotificationConfig",
+        "OutputS3BucketName",
+        "OutputS3KeyPrefix",
+        "OutputS3Region",
+        "Parameters",
+        "RequestedDateTime",
+        "ServiceRole",
+        "Status",
+        "StatusDetails",
+        "TargetCount",
+        "Targets",
+        "TimeoutSeconds",
+        "TriggeredAlarms"
+      ]
+    },
+    {
+      "CommandId": "a3894787-1d3d-430a-9d6d-900578376935",
+      "InstanceId": "i-009e213ec6cf1e3cb",
+      "DocumentName": "ecs-sentinel-r20261024b2-observer-control",
+      "DocumentVersion": "1",
+      "RequestedDateTime": "2026-10-24 00:09:13.312000-06:00",
+      "Status": "Failed",
+      "StatusDetails": "AccessDenied",
+      "ServiceRole": "",
+      "CloudWatchOutputConfig": {
+        "CloudWatchLogGroupName": "",
+        "CloudWatchOutputEnabled": false
+      },
+      "RecordKind": "CommandInvocations",
+      "AvailableFieldNames": [
+        "CloudWatchOutputConfig",
+        "CommandId",
+        "CommandPlugins",
+        "Comment",
+        "DocumentName",
+        "DocumentVersion",
+        "InstanceId",
+        "InstanceName",
+        "NotificationConfig",
+        "RequestedDateTime",
+        "ServiceRole",
+        "StandardErrorUrl",
+        "StandardOutputUrl",
+        "Status",
+        "StatusDetails"
+      ],
+      "Plugins": [
+        {
+          "Name": "ObserverControl",
+          "Status": "Failed",
+          "StatusDetails": "AccessDenied",
+          "ResponseCode": -1,
+          "ResponseStartDateTime": null,
+          "ResponseFinishDateTime": null,
+          "StandardOutputUrl": "",
+          "StandardErrorUrl": "",
+          "OutputS3BucketName": "",
+          "OutputS3KeyPrefix": "",
+          "OutputS3Region": "",
+          "OutputBytes": 0,
+          "OutputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    },
+    {
+      "CommandId": "e5d894d1-1ce7-4d49-8c4f-bd8a72f5ede3",
+      "DocumentName": "ecs-sentinel-r20261024b2-observer-control",
+      "DocumentVersion": "1",
+      "RequestedDateTime": "2026-10-24 00:40:56.770000-06:00",
+      "ExpiresAfter": "2026-10-24 00:44:26.770000-06:00",
+      "Status": "Failed",
+      "StatusDetails": "Failed",
+      "TargetCount": 1,
+      "CompletedCount": 1,
+      "ErrorCount": 0,
+      "DeliveryTimedOutCount": 0,
+      "ServiceRole": "",
+      "CloudWatchOutputConfig": {
+        "CloudWatchLogGroupName": "",
+        "CloudWatchOutputEnabled": false
+      },
+      "OutputS3BucketName": "",
+      "OutputS3KeyPrefix": "",
+      "OutputS3Region": "us-east-1",
+      "RecordKind": "Commands",
+      "AvailableFieldNames": [
+        "AlarmConfiguration",
+        "CloudWatchOutputConfig",
+        "CommandId",
+        "Comment",
+        "CompletedCount",
+        "DeliveryTimedOutCount",
+        "DocumentName",
+        "DocumentVersion",
+        "ErrorCount",
+        "ExpiresAfter",
+        "InstanceIds",
+        "MaxConcurrency",
+        "MaxErrors",
+        "NotificationConfig",
+        "OutputS3BucketName",
+        "OutputS3KeyPrefix",
+        "OutputS3Region",
+        "Parameters",
+        "RequestedDateTime",
+        "ServiceRole",
+        "Status",
+        "StatusDetails",
+        "TargetCount",
+        "Targets",
+        "TimeoutSeconds",
+        "TriggeredAlarms"
+      ]
+    },
+    {
+      "CommandId": "e5d894d1-1ce7-4d49-8c4f-bd8a72f5ede3",
+      "InstanceId": "i-009e213ec6cf1e3cb",
+      "DocumentName": "ecs-sentinel-r20261024b2-observer-control",
+      "DocumentVersion": "1",
+      "RequestedDateTime": "2026-10-24 00:40:56.854000-06:00",
+      "Status": "Failed",
+      "StatusDetails": "AccessDenied",
+      "ServiceRole": "",
+      "CloudWatchOutputConfig": {
+        "CloudWatchLogGroupName": "",
+        "CloudWatchOutputEnabled": false
+      },
+      "RecordKind": "CommandInvocations",
+      "AvailableFieldNames": [
+        "CloudWatchOutputConfig",
+        "CommandId",
+        "CommandPlugins",
+        "Comment",
+        "DocumentName",
+        "DocumentVersion",
+        "InstanceId",
+        "InstanceName",
+        "NotificationConfig",
+        "RequestedDateTime",
+        "ServiceRole",
+        "StandardErrorUrl",
+        "StandardOutputUrl",
+        "Status",
+        "StatusDetails"
+      ],
+      "Plugins": [
+        {
+          "Name": "ObserverControl",
+          "Status": "Failed",
+          "StatusDetails": "AccessDenied",
+          "ResponseCode": -1,
+          "ResponseStartDateTime": null,
+          "ResponseFinishDateTime": null,
+          "StandardOutputUrl": "",
+          "StandardErrorUrl": "",
+          "OutputS3BucketName": "",
+          "OutputS3KeyPrefix": "",
+          "OutputS3Region": "",
+          "OutputBytes": 0,
+          "OutputSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      ]
+    }
+  ],
+  "Calls": [
+    {
+      "Api": "list_commands",
+      "CommandId": "a3894787-1d3d-430a-9d6d-900578376935",
+      "Status": "READ_OK"
+    },
+    {
+      "Api": "list_command_invocations",
+      "CommandId": "a3894787-1d3d-430a-9d6d-900578376935",
+      "Status": "READ_OK"
+    },
+    {
+      "Api": "list_commands",
+      "CommandId": "e5d894d1-1ce7-4d49-8c4f-bd8a72f5ede3",
+      "Status": "READ_OK"
+    },
+    {
+      "Api": "list_command_invocations",
+      "CommandId": "e5d894d1-1ce7-4d49-8c4f-bd8a72f5ede3",
+      "Status": "READ_OK"
+    }
+  ]
+}
