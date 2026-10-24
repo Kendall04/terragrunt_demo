@@ -404,10 +404,10 @@ def service_plan(value):
                                   'PlaintextConnectionStringIncluded':False},
             'RendererArguments':['bash','scripts/render-demo-api-taskdef.sh','--env','dev','--region',REGION,
                 '--account-id',ACCOUNT,'--color',color,'--image-uri',release['image_uri'],'--db-secret-id',
-                conn['SecretArn']+':::'+conn['VersionId'],'--kms-key-id',TEXT_KEY,'--output','candidate-taskdef.review.json'],
+                conn['SecretArn']+':::'+conn['VersionId'],'--kms-key-id',TEXT_KEY,'--recovery','--output','candidate-taskdef.review.json'],
             'GatewayRequest':normal_request,'RollbackRequest':rollback_request,
             'ProposedTaskEnvironmentAppend':[{'name':'Database__RunMigrationsOnStartup','value':'false'}],
-            'TaskTemplateAutomaticallyChanged':False,
+            'TaskTemplateAutomaticallyChanged':False,'RecoveryProfileEnforcedByRenderer':True,
             'RequiredTaskRoles':{'Execution':f'arn:aws:iam::{ACCOUNT}:role/demo-dev-app-api-{color}-exec-role',
                                  'Task':f'arn:aws:iam::{ACCOUNT}:role/demo-dev-app-api-{color}-task-role'},
             'IamReviewOnly':{'ExecutionRole':['GetSecretValue exact connection ARN/version','Decrypt connection-secret key '+conn['SecretKeyArn']],
@@ -421,20 +421,58 @@ def service_plan(value):
                      'mark-service-ready-and-measure-total-RTO','owner-LIVE-window','retire-owned-runtime'],
             'RollbackRule':'Only schema-compatible image against the SAME restored endpoint/version; never old terminated SQL.',
             'PublicChecks':{'BaseUrl':value['PublicUrl'],'BeforeMarkingReady':True,'BeforeTrafficSwitch':False,
+                            'Requests':[{'Method':'GET','Path':'/ready','Expectation':'Healthy SQL/KMS dependencies'},
+                                        {'Method':'GET','Path':'/text?page=1&pageSize=100','Expectation':'Verified restored marker decrypted'},
+                                        {'Method':'POST','Path':'/text','Expectation':'One new unique synthetic marker returned'},
+                                        {'Method':'GET','Path':'/text?page=1&pageSize=100','Expectation':'Same new marker ID and plaintext read back'}],
+                            'MarkerBindings':'Require verified restore receipt and fresh POST result; do not infer from HTTP 200',
                             'Required':['/ready dependency check','decrypt recovered marker','fresh POST /text','read same marker']},
             'BlockingLiveGates':['Supplied metadata is not native proof or an acquired E2 token',
                 'Current recovery verifier/bootstrap is loopback-only: private-listener mode needs review/qualification',
                 'Current WP4 caller cannot override a secret: protected installed binding must pin the reviewed version',
                 'Verify Fargate Linux platform >=1.4.0 for secret version selection',
-                'Existing template defaults startup migrations: protected recovery variant must disable them',
+                'Protected installed WP4 binding must select the recovery profile with startup migrations disabled; renderer alone does not change it',
                 'Schema compatibility must come from protected qualified release and restore facts, not caller assertions',
                 'Existing E3 plus public API checks and same-VPC routes/NACLs need native receipts',
                 'SSM transport, full resource plan/IAM/budget not approved here']}
 
 
+
+def service_taskdef(value, candidate):
+    """Check the complete rendered projection; never emits or registers a task."""
+    plan = service_plan(value)
+    template_path = Path(__file__).resolve().parents[3] / 'demo-api/deploy/task-definition.template.json'
+    expected = json.loads(template_path.read_text(encoding='utf-8'))
+    color = value['Delivery']['candidate_color']
+    family = 'demo-dev-app-api-' + color
+    expected.update(family=family, executionRoleArn=plan['RequiredTaskRoles']['Execution'],
+                    taskRoleArn=plan['RequiredTaskRoles']['Task'])
+    env = {'AWS_REGION':REGION, 'APP_ENV':'dev', 'DEPLOYMENT':color, 'KMS_KEY_ID':TEXT_KEY}
+    for i, container in enumerate(expected['containerDefinitions']):
+        name = family + ('-readiness-probe' if i else '')
+        container.update(name=name, image=value['Release']['image_uri'])
+        container['logConfiguration']['options'].update({
+            'awslogs-group':'/aws/ecs/' + family, 'awslogs-region':REGION,
+            'awslogs-stream-prefix':name})
+    app = expected['containerDefinitions'][0]
+    for row in app['environment']:
+        row['value'] = env[row['name']]
+    app['environment'] = [row for row in app['environment'] if row['name'] != 'Database__RunMigrationsOnStartup']
+    app['environment'].append({'name':'Database__RunMigrationsOnStartup','value':'false'})
+    app['secrets'][0]['valueFrom'] = plan['ConnectionMetadata']['SecretReference']
+    require(candidate == expected, 'RECOVERY_TASKDEF_NOT_EXACT_REVIEWED_PROJECTION')
+    return {'Status':'OFFLINE_RECOVERY_TASKDEF_REVIEW_PASS','Trial':value['Trial'],
+            'TaskDefinitionSha256':hashlib.sha256(encoded(candidate)).hexdigest(),
+            'TemplateLfSha256':hashlib.sha256(template_path.read_bytes().replace(b'\r\n',b'\n')).hexdigest(),
+            'ServiceInputSha256':plan['InputSha256'],'RequiresNewTasks':True,
+            'RequiredLinuxFargatePlatform':'>=1.4.0; native installed platform still unverified',
+            'StartupMigrations':False,'AllowsActivation':False,'EvidenceAuthenticated':False,
+            'AwsExecuted':False,'PublicApiRecoveryProven':False}
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('action', choices=['render', 'review-create', 'review-delete', 'bind-retirement', 'timeline', 'publisher', 'cold-plan', 'cold-review', 'bind-cold-retirement', 'service-plan'])
+    p.add_argument('action', choices=['render', 'review-create', 'review-delete', 'bind-retirement', 'timeline', 'publisher', 'cold-plan', 'cold-review', 'bind-cold-retirement', 'service-plan', 'service-taskdef'])
     p.add_argument('--trial', required=True)
     p.add_argument('--output', type=Path)
     p.add_argument('--input', type=Path)
@@ -442,10 +480,12 @@ def main():
     p.add_argument('--sha256')
     p.add_argument('--evidence', type=Path)
     a = p.parse_args()
-    if a.action == 'service-plan':
+    if a.action in ('service-plan','service-taskdef'):
         value = json.loads(a.input.read_text(encoding='utf-8'))
         require(value['Trial'] == a.trial, 'WRONG_TRIAL')
-        print(json.dumps(service_plan(value), indent=2))
+        require(a.action != 'service-taskdef' or a.evidence is not None, 'RENDERED_TASKDEF_REQUIRED')
+        result = service_plan(value) if a.action == 'service-plan' else service_taskdef(value, json.loads(a.evidence.read_text(encoding='utf-8')))
+        print(json.dumps(result, indent=2))
         return
     if a.action == 'bind-cold-retirement':
         print(json.dumps(retirement_policy(json.loads(a.input.read_text(encoding='utf-8')), a.trial, cold=True), indent=2))

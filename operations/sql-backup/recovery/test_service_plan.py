@@ -46,6 +46,26 @@ def fixture():
       'PublicApiId':'abc123def4','PublicUrl':f'https://abc123def4.execute-api.{prepare.REGION}.amazonaws.com'}
 
 
+def synthetic_taskdef(value):
+    """Synthetic review fixture, never labelled as renderer output or native ECS."""
+    color = value['Delivery']['candidate_color']
+    name = 'demo-dev-app-api-' + color
+    x = json.loads((Path(__file__).resolve().parents[3] / 'demo-api/deploy/task-definition.template.json').read_text(encoding='utf-8'))
+    x.update(family=name,executionRoleArn=f'arn:aws:iam::{prepare.ACCOUNT}:role/{name}-exec-role',
+             taskRoleArn=f'arn:aws:iam::{prepare.ACCOUNT}:role/{name}-task-role')
+    for index,c in enumerate(x['containerDefinitions']):
+        c['name'] = name + ('-readiness-probe' if index else '')
+        c['image'] = value['Release']['image_uri']
+        c['logConfiguration']['options'] = {'awslogs-group':'/aws/ecs/' + name,
+            'awslogs-region':prepare.REGION,'awslogs-stream-prefix':c['name']}
+    x['containerDefinitions'][0]['environment'] = [
+        {'name':'AWS_REGION','value':prepare.REGION},{'name':'APP_ENV','value':'dev'},
+        {'name':'DEPLOYMENT','value':color},{'name':'KMS_KEY_ID','value':prepare.TEXT_KEY},
+        {'name':'Database__RunMigrationsOnStartup','value':'false'}]
+    x['containerDefinitions'][0]['secrets'][0]['valueFrom'] = value['Connection']['SecretArn'] + ':::' + value['Connection']['VersionId']
+    return x
+
+
 class ServicePlanTests(unittest.TestCase):
     def test_real_gateway_validator_and_renderer_arguments_without_authority(self):
         v=fixture();result=prepare.service_plan(v)
@@ -58,6 +78,40 @@ class ServicePlanTests(unittest.TestCase):
         self.assertFalse(result['PublicChecks']['BeforeTrafficSwitch'])
         self.assertTrue(result['PublicChecks']['BeforeMarkingReady'])
         self.assertTrue(any('migrations' in x for x in result['BlockingLiveGates']))
+
+    def test_taskdef_review_binds_profile_image_roles_secret_and_inert_cli(self):
+        v=fixture();candidate=synthetic_taskdef(v)
+        result=prepare.service_taskdef(v,candidate)
+        self.assertFalse(result['AllowsActivation']);self.assertFalse(result['EvidenceAuthenticated'])
+        self.assertFalse(result['PublicApiRecoveryProven']);self.assertTrue(result['RequiresNewTasks'])
+        self.assertEqual(result['Status'],'OFFLINE_RECOVERY_TASKDEF_REVIEW_PASS')
+        plan=prepare.service_plan(v)
+        self.assertIn('--recovery',plan['RendererArguments'])
+        self.assertTrue(plan['RecoveryProfileEnforcedByRenderer'])
+        self.assertEqual([r['Method'] for r in plan['PublicChecks']['Requests']],['GET','GET','POST','GET'])
+        with tempfile.TemporaryDirectory() as d:
+            inp=Path(d)/'input.json';inp.write_text(json.dumps(v),encoding='utf-8')
+            task=Path(d)/'task.json';task.write_text(json.dumps(candidate),encoding='utf-8')
+            with patch.object(sys,'argv',['prepare.py','service-taskdef','--trial',v['Trial'],'--input',str(inp),'--evidence',str(task)]),redirect_stdout(io.StringIO()) as out:
+                prepare.main()
+            self.assertEqual(json.loads(out.getvalue())['TaskDefinitionSha256'],result['TaskDefinitionSha256'])
+
+    def test_taskdef_review_rejects_migrations_secret_drift_probe_privileges_or_command_override(self):
+        v=fixture()
+        for change in (
+            lambda x:x['containerDefinitions'][0]['environment'][-1].update(value='true'),
+            lambda x:x['containerDefinitions'][0]['environment'].pop(),
+            lambda x:x['containerDefinitions'][0]['secrets'][0].update(valueFrom=v['Connection']['SecretArn']),
+            lambda x:x['containerDefinitions'][0]['secrets'][0].update(valueFrom=v['Connection']['SecretArn']+':::'+'e'*32),
+            lambda x:x.update(taskRoleArn=x['executionRoleArn']),
+            lambda x:x['containerDefinitions'][1].update(essential=True),
+            lambda x:x['containerDefinitions'][1].update(environment=[{'name':'DB_CONN_STRING','value':'SYNTHETIC_PRIVATE'}]),
+            lambda x:x['containerDefinitions'][1].update(image='unrelated:latest'),
+            lambda x:x['containerDefinitions'][0].update(command=['unexpected']),
+            lambda x:x['containerDefinitions'][0]['environment'].append({'name':'DB_CONN_STRING','value':'SYNTHETIC_PRIVATE'})):
+            candidate=synthetic_taskdef(v);change(candidate)
+            with self.assertRaisesRegex(ValueError,'RECOVERY_TASKDEF_NOT_EXACT_REVIEWED_PROJECTION'):
+                prepare.service_taskdef(v,candidate)
 
     def test_unfenced_wrong_source_stale_and_prepared_receipts_refuse(self):
         for change in (

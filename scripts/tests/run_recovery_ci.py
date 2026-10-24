@@ -17,7 +17,8 @@ POSIX = os.name == 'posix'
 ROOT = Path(__file__).resolve().parents[2]
 RECOVERY = ROOT / 'operations/sql-backup/recovery'
 SUITES = ('test_recovery.py', 'test_cold_path.py', 'test_cold_execution.py',
-          'test_host_entrypoints.py', 'test_bootstrap.py', 'test_service_plan.py')
+          'test_host_entrypoints.py', 'test_bootstrap.py', 'test_service_plan.py',
+          'test_service_renderer.py')
 CHILD = r'''
 import json,sys,unittest
 loader=unittest.TestLoader()

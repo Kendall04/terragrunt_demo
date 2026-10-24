@@ -11,16 +11,20 @@ IMAGE_URI=""
 DB_SECRET_ID=""
 KMS_KEY_ID=""
 OUTPUT_FILE=""
+RECOVERY_MODE=false
 TEMPLATE_FILE="$ROOT_DIR/demo-api/deploy/task-definition.template.json"
 
 usage() {
   cat <<'EOF'
 Usage:
   scripts/render-demo-api-taskdef.sh --env ENV --region REGION --account-id ACCOUNT \
-    --color blue|green --image-uri ECR_URI@sha256:... --db-secret-id ARN --output FILE
+    --color blue|green --image-uri ECR_URI@sha256:... --db-secret-id ARN --output FILE [--recovery]
 
 Renders the versioned Demo API ECS task definition template. The rendered output
 is suitable for aws ecs register-task-definition --cli-input-json file://FILE.
+--recovery is an offline dev profile: it requires a pinned connection-secret
+version and exact KMS key ARN, and disables startup migrations only on the app.
+It neither selects an installed WP4 binding nor registers or switches anything.
 EOF
 }
 
@@ -68,6 +72,10 @@ parse_args() {
         TEMPLATE_FILE="${2:-}"
         shift 2
         ;;
+      --recovery)
+        RECOVERY_MODE=true
+        shift
+        ;;
       --output)
         OUTPUT_FILE="${2:-}"
         shift 2
@@ -106,6 +114,14 @@ validate_args() {
     die "--db-secret-id must be a full Secrets Manager ARN."
   fi
 
+  if [ "$RECOVERY_MODE" = true ]; then
+    [ "$ENV_NAME" = dev ] || die "Recovery profile is currently reviewed for dev only."
+    [[ "$AWS_REGION_NAME" =~ ^[a-z]{2}-[a-z]+-[0-9]$ ]] || die "Invalid recovery region."
+    [[ "$DB_SECRET_ID" =~ ^arn:aws:secretsmanager:${AWS_REGION_NAME}:${ACCOUNT_ID}:secret:[A-Za-z0-9/_+=.@-]+:::[A-Za-z0-9-]{32,64}$ ]] || die "Recovery requires an exact same-account/region secret version."
+    [[ "$IMAGE_URI" =~ ^${ACCOUNT_ID}\.dkr\.ecr\.${AWS_REGION_NAME}\.amazonaws\.com/[a-z0-9][a-z0-9._/-]*@sha256:[a-f0-9]{64}$ ]] || die "Recovery image must belong to this account and region."
+    [[ "$KMS_KEY_ID" =~ ^arn:aws:kms:${AWS_REGION_NAME}:${ACCOUNT_ID}:key/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$ ]] || die "Recovery requires an explicit same-account/region KMS key ARN."
+  fi
+
   [ -f "$TEMPLATE_FILE" ] || die "Template file not found: $TEMPLATE_FILE"
   [ -n "$OUTPUT_FILE" ] || die "--output is required."
 
@@ -132,6 +148,7 @@ render_task_definition() {
   mkdir -p "$output_dir"
 
   jq \
+    --argjson recovery_mode "$RECOVERY_MODE" \
     --arg family "$app_name" \
     --arg container_name "$app_name" \
     --arg probe_name "$probe_name" \
@@ -161,6 +178,11 @@ render_task_definition() {
       | set_env("APP_ENV"; $app_env)
       | set_env("DEPLOYMENT"; $deployment)
       | set_env("KMS_KEY_ID"; $kms_key_id)
+      | if $recovery_mode then
+          .containerDefinitions[0].environment |=
+            (map(select(.name != "Database__RunMigrationsOnStartup"))
+             + [{"name":"Database__RunMigrationsOnStartup","value":"false"}])
+        else . end
       | .containerDefinitions[0].secrets[0].valueFrom = $db_secret_id
       | .containerDefinitions[0].logConfiguration.options["awslogs-group"] = $log_group
       | .containerDefinitions[0].logConfiguration.options["awslogs-region"] = $aws_region
@@ -178,4 +200,6 @@ main() {
   render_task_definition
 }
 
-main "$@"
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+  main "$@"
+fi
