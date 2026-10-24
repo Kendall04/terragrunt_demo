@@ -33,13 +33,13 @@
     "operations/sql-backup/signals.py": "da1da8b85777717ed89fc59dab4130435e4be38734c4506458f21ea291b5f2fb",
     "operations/sql-backup/sql-backup-sentinel-producer.service.in": "3cd26e6e7b9af768e9fed107e6168cb6953661ef6b82fe8dd026548e78485f6b",
     "operations/sql-backup/sql-backup-sentinel-producer.timer.in": "4314991cd68c4175efa4619ad57912d9015b4c1505869d3a682651bba6389280",
-    "portfolio/ACCEPTANCE.md": "66159ed496786892451cb792026e2c74fe9f3f05810b17fe2069af2dd235e21b",
+    "portfolio/ACCEPTANCE.md": "504d74ab33d3182802a8ec2571fe29868f4f4a18cca0ed886d5b0c950a202514",
     "terraform/infra/sentinel-backup/.terraform.lock.hcl": "be1182b2f765f01c210a0d1327471dd5cd3cc316acd9f11edb8c959888b5fe3d",
     "terraform/infra/sentinel-backup/main.tf.json": "497b87017e026287279010a3a4b3805fd997fba2713d86491f6b043c20b0d35e",
     "terraform/infra/sentinel-backup/modules/pipeline/main.tf.json": "4391fc279f214758a1bd11ab2d95a35373991069d1019b620f3cec56d278743f",
-    "terraform/infra/sentinel-backup/NEXT-INTEGRATED-TRIAL.md": "186002df293539e50f269d1361a2a7529cbabbf9becfdab23cca568c705942cb",
+    "terraform/infra/sentinel-backup/NEXT-INTEGRATED-TRIAL.md": "bae346b8f1826fb9d338afd158c348710025c41b286f7dcb02d3e45a294346e8",
     "terraform/infra/sentinel-backup/provider-qualification.json": "0a8d981846a652a15520fef38d5a298b4266d6a485afa794f07f5b0c27789939",
-    "terraform/infra/sentinel-backup/README.md": "0e9caea925812acd13ea5d5830cd05d87a6c5c8507d93a37acda644d833c9b64",
+    "terraform/infra/sentinel-backup/README.md": "224727f390a058549d238ebab90c42a645f5f3691791d310386f1cbcb0bd4f3f",
     "terraform/live/sentinel-backup/terragrunt.hcl": "bf9996ba541fef94dc31c834ee03571c6a743b9584da15a2b1397af71d310474"
   },
   "verified": {
@@ -90,5 +90,13 @@
     "Historical 10 Pending trial effects remain immutable",
     "Observer host slice and immutable distribution not yet implemented",
     "No budget/authority carryover from closed trials"
-  ]
+  ],
+  "qualifiedArtifact": {
+    "sourceCommit": "bcac19fe8ab61f54f2fe6f6f2055ea0739a04cd6",
+    "zipSha256": "a361c2b56b6949260f8d709e1318bd4da96399313932343d4998fe53b02260d2",
+    "zipBytes": 1490593,
+    "zipMembers": 22,
+    "uploaded": false,
+    "nativeLambdaV3Accepted": false
+  }
 }

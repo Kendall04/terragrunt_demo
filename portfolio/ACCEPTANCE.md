@@ -248,3 +248,13 @@ recommends a separate small observer, explicitly outside the current26/29-resour
 No host, source-read grant, backend or new spend is selected/created by this checklist.
 Old USD1 and ECS recovery allowances are closed; a new cycle requires its own scope.
 PKI remains OUT of ECS scope. No EKS/demo/SQL changes, remote CI, push or hosting.
+
+
+Artifact qualification from runtime/source commit `bcac19fe8ab61f54f2fe6f6f2055ea0739a04cd6`:
+fresh no-restore build 0 warnings/errors,104 PASS, local publish21 files/noPDB;
+strict deterministic ZIP22 members,1,490,593 bytes, SHA256
+`a361c2b56b6949260f8d709e1318bd4da96399313932343d4998fe53b02260d2`.
+Manifest/source entry hashes and staged original-Sentinel receipt verified. ZIP is local,
+not uploaded and not native v3 Lambda acceptance. Later proposal-only documentation
+clarifies Lambda's own asynchronous retries despite EventBridge target retry0; it does
+not alter these compiled sources. NewUSD2 model is a proposal, not admitted authority.

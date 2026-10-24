@@ -113,8 +113,9 @@ migration guard remains. Expected-down disables watchdog evaluation, not fake re
 Enable expected-UP only with reviewed matching producer cadence/heartbeat configuration.
 
 Optional EventBridge scheduling invokes only the dispatch function through its exact
-rule ARN and account. No target retry is added; the next reviewed tick resumes the
-durable page. The existing application remains one business API. All units/flags are
+rule ARN and account. Target retry is zero, but Lambda asynchronous error retries
+and duplicate delivery remain possible; the durable cursor/lease still applies. The
+next reviewed tick can resume the durable page. The existing application remains one business API. All units/flags are
 uninstalled/disabled until a future admitted cycle.
 
 Active RequestFunctionalProbe work is explicitly UNSUPPORTED: no attempt, no claimed

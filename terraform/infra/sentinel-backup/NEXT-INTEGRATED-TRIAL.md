@@ -205,15 +205,20 @@ Conservative24h modeled envelope (bounds must be checked during execution):
 - t3.micro STANDARD24h * USD0.0104 =0.2496; IPv4 24h *0.005 =0.12.
 -8GiB gp3, modeled upper rate0.10/GB-month =0.0267/day (confirm regional PriceList before
   admission; official page's0.08 example is not a regional quote). No surplus CPU fee.
-- <=1,440 dispatcher ticks plus<=20 ingest invocations,512MiB,15s each:
-  <=10,950 GB-s *0.0000166667 + request fees <0.184; no provisioned concurrency.
+- Model1,440 dispatcher ticks *3 Lambda executions (default2 asynchronous retries) plus
+  20 observations *3 producer attempts *5 SQS receives =300 ingest executions,512MiB,15s:
+  4,620 executions,34,650 GB-s *0.0000166667 + request fees <0.579. Target retry0 does NOT
+  disable Lambda asynchronous retries. This is a planning scenario, not a strict bound:
+  AWS documents duplicate delivery and longer retries for throttling/system errors.
+  Inspect invocations/age/queue growth and disable schedule/mapping on sustained failure.
+  No provisioned concurrency. See [actual retry semantics](https://docs.aws.amazon.com/lambda/latest/dg/invocation-async-error-handling.html).
 - Provision USD0.75 combined reserve for transactional DDB/index/storage, SQS long polls/
   retries, S3 requests/storage, two SNS emails/possible duplicates, KMS reads, logs and
   small transfer. It is a planning reserve, not a fabricated service tariff. Bound20
   observations,6 publication attempts,<=1MiB receipts/exports and<=50MiB logs; monitor
   observed capacity/queue growth, do not assume outbox scan pages cost zero.
 
-Modeled sum <=1.331, rounded USD2 gives0.669 contingency. Taxes and unbounded failures
+Modeled sum approximately1.726, rounded USD2 leaves about0.274 contingency. Taxes and unbounded failures
 are not silently declared covered by this estimate; actual bill remains unknown until
 billing. Retire earlier if projected spend threatens the allowance. A true new SQL
 backup/restore, new KMS key, endpoints/NAT or larger host needs a revised model/scope.
