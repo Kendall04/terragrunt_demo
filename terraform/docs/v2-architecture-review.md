@@ -1,5 +1,7 @@
 # V2 — revisión de arquitectura y pipelines
 
+> Actualización de diseño del 24 de octubre: [arquitectura y pipelines V2](v2-architecture-pipelines-20261024.md). Recomendaciones locales con evidencia az6/b1/b2; no cambia la historia ni autoriza operaciones.
+
 **2026-10-16 · Solo análisis; recomendaciones, no instalación ni autorización AWS.**
 Base V1 preservada: `061710aded14d4716e7488073a2da5387395e0a0`;
 rama `feat/v2-architecture-review`. El proyecto continúa: este encargo abre el

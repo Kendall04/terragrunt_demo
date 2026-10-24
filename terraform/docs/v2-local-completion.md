@@ -1,5 +1,7 @@
 # V2 local completion checkpoint - 2026-10-23
 
+> Actualización de diseño del 24 de octubre: [arquitectura y pipelines V2](v2-architecture-pipelines-20261024.md). Recomendaciones locales con evidencia az6/b1/b2; no cambia la historia ni autoriza operaciones.
+
 This is a bounded local implementation/evidence checkpoint, not deployment or
 permission to reset the original aggregate USD 2. The owner asks to advance both
 projects from their respective Pages. The [ECS Page](https://chatgpt.com/space/page_6ad2223a7ed88191be14aba8886d669d)
