@@ -14,7 +14,7 @@ An isolated public subnet with an ephemeral public IPv4 provides outbound HTTPS;
 no NAT, EIP, endpoints, ALB or application-service deployment is needed. Use SSM for
 bounded operator commands, not remote-shell credentials. Pin/review the official AMI
 and a hashed, existing-toolchain host bundle before the saved plan; no AMI selected yet.
-The host slice below is a proposal, NOT implemented by the current pipeline module.
+The optional host module is implemented and qualified locally, still uninstalled: see modules/observer/README.md. It is OFF by default.
 
 Why: Program.cs constructs NativeSql only for backup/restore. Protocol.Check reads
 versioned KMS-protected manifests and local attempt state, so SQL is unnecessary.
@@ -54,16 +54,17 @@ Pilot16 + bootstrap3 used a CloudFormation execution role and combined S3 proper
 TF splits S3 properties, owns code and Lambda roles directly. Counts are IaC addresses,
 not an equal count of separately billed services. No CloudFormation role in final path.
 
-The proposed observer slice adds12 addresses: VPC, IGW, subnet, route table, default
+The optional observer slice adds14 addresses: VPC, IGW, subnet, route table, default
 internet route, association, SG, IAM boundary, IAM role, role inline policy, instance
-profile, EC2 instance. Thus the full recommended isolated trial is41 addresses, NOT29.
+profile, EC2 instance, restricted SSM Command document and immutable host-code object. Thus the full recommended isolated trial is43 addresses, NOT29.
 Embedded root EBS, ENI/public IP, default VPC-created objects and SSM managed-node entry
 are indirect dependencies to inventory/retire too. Reusing an existing suitable host
-could remove these12, but none is assumed live or available. Do not touch EKS networks.
-Host code distribution must use a reviewed exact-object read grant; current archive
-bucket policy excludes that role. Prefer an existing artifact bucket's isolated new
-object if its actual policy permits; otherwise prepare a strictly scoped amendment
-or a separately counted bucket BEFORE consent. No wildcard bucket-policy bypass.
+could remove the host/network/profile addresses (not assumed available), but none is assumed live or available. Do not touch EKS networks.
+Host code distribution reuses the pipeline bucket with one own versioned object.
+The bucket policy denies the observer all other resources and every action except
+GetObjectVersion on that exact object. No new distribution bucket or broad reader
+exception. The source module remains sole bucket owner; observer owns only its object.
+
 
 ## Exact runtime permissions and lifecycle review
 
@@ -86,7 +87,7 @@ backup key via s3.us-east-1.amazonaws.com and exact original encryption-context 
 s3:GetObjectVersion on exact immutable host-code version. No backup Put/Delete, SQL,
 secret read or KMS encryption/generation. SSM channel actions ssmmessages:CreateControlChannel,
 CreateDataChannel, OpenControlChannel, OpenDataChannel require Resource '*'; ssm:UpdateInstanceInformation
-requires its supported scope. These regional metadata/channel capabilities must be disclosed;
+is limited to exact Trial-tagged EC2 using the documented ssm:resourceTag scope. These regional metadata/channel capabilities must be disclosed;
 do not claim the UUID/instance condition constrains actions that AWS does not support.
 Host has no SNS Publish or Dynamo access. An admin diagnostic channel is a separate
 operator action, not host permission to execute NAT/EC2 operations.
@@ -120,9 +121,10 @@ asking for the grouped consent. Read/create/update/delete action checklist:
   RunInstances exact reviewed AMI, type, subnet/SG/profile and required ownership tags;
   Terminate only owned instance. No Reboot permission is silently included. No DeleteVolume
   workaround: root delete-on-termination, native wait/reconcile for ENI/IP/volume release.
-- SSM bounded SendCommand/GetCommandInvocation on exact host and reviewed document;
-  DescribeInstanceInformation and DeregisterManagedInstance if native cleanup leaves own
-  stale row. No access to other managed nodes or arbitrary maintenance documents.
+- SSM bounded SendCommand on own document and Trial-tagged host; GetCommandInvocation/
+  DescribeInstanceInformation require explicitly disclosed regional metadata scope.
+  No DeregisterManagedInstance on EC2 i-* (API supports activation mi-*/eks_c:*);
+  report any stale SSM row separately. No arbitrary shell or other maintenance documents.
 - Existing backend: exact new state key + .tflock Get/Put/Delete, required prefix ListBucket,
   existing backend key KMS context only if required. Preserve terminal state; no new backend.
 
@@ -188,7 +190,8 @@ queue counts, receipt/audit/incident/outbox/cursor/heartbeat + archive/version h
 SNS Publish/inbox distinction. Export UNKNOWN/active work too. Review saved destroy against
 same state lineage and ONLY owned resources. Set allow_data_retirement only with approved
 irreversible deletion. Export/delete only synthetic owned versions; force_destroy=false.
-Remove observer/its SSM row/embedded volume/ENI/IP, mapping/Lambdas/rule/queues/topic/logs,
+Remove observer/embedded volume/ENI/IP, mapping/Lambdas/rule/queues/topic/logs;
+report any retained SSM service-metadata row honestly, never invent its deletion; remove
 table/bucket/code and host network in dependency order. No NAT disassociation workaround.
 Remove all trial roles/boundaries/profile and temporary lifecycle/backend/KMS grants;
 restore originals/default policy documents, preserve replaced version contents and disclose
@@ -246,9 +249,13 @@ The current rule is NOT priced using EventBridge Scheduler's free tier.
     DATOS TECNICOS: incidente/episodio/efecto/tipo/origen
     Entrega: la aceptacion de SNS no acredita recepcion en el buzon.
 
-Remaining implementation gate: observer host slice and bounded artifact-distribution
-policy, exact retained-manifest/backend/AMI identity and effective lifecycle IAM plan.
-These are not present in26/29 and must not be hidden in the final approval packet.
-Material owner decision is the grouped NEW spend/access/read-of-originals/destructive
-retirement/email/24h cycle, not cosmetic parameters. This document requests no consent
-and launches nothing. PKI/new API features remain out of scope.
+Local host/distribution implementation is complete with provider/schema/mock plans and
+Windows/WSL tests. The source still does not qualify native AL2023/bootstrap/SSM or AWS
+policy enforcement. READONLY-PREFLIGHT.json specifies the remaining coordinated metadata
+reads: public AMI selector+DescribeImages, canonical AWS-managed EBS key, exact retained
+original manifest/policies and effective operator/backend policy snapshots. No new read
+was executed. After those identities are reconciled, render minimal IAM deltas and native
+saved create/destroy plans for ONE grouped approval. required-capabilities.json is a
+review contract, not an installed or already-effective IAM grant. Material owner decision
+is new spend/access/read-of-originals/destructive retirement/email/24h scope. No consent
+is requested here. PKI and new API features remain out of scope.

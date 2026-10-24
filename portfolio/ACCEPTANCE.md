@@ -258,3 +258,31 @@ Manifest/source entry hashes and staged original-Sentinel receipt verified. ZIP 
 not uploaded and not native v3 Lambda acceptance. Later proposal-only documentation
 clarifies Lambda's own asynchronous retries despite EventBridge target retry0; it does
 not alter these compiled sources. NewUSD2 model is a proposal, not admitted authority.
+
+
+## Optional observer host/distribution — local increment 2026-10-24
+
+- [x] Compared WSL session to EC2: not equal identity/independence/SSM proof. No credential
+  transfer or change to existing checker/publisher role contract. Recommend dedicated EC2.
+- [x] OFF-by-default single-owner host module14 addresses; scheduled pipeline29 +host14 =43.
+  No SQL/NAT/inbound ports/new CMK, no second distribution bucket. One versioned object
+  and strict bucket read-version exception; no host list/latest/mutation on pipeline bucket.
+- [x] AMI requires official standard AL2023 x86/available image; canonical enabled AWS-managed
+  EBS key explicit, not inherited customer key. Public HTTPS egress risk is disclosed.
+- [x] Exact same boundary/host inline: manifest-only read/decrypt and one queue Send;
+  SSM own-document and tagged heartbeat; regional channel wildcard disclosed. No NAT action.
+- [x] Hashed component/runtime/source bundle, inert systemd timer and constrained SSM controls;
+  known-idle service and pending-spool guard before mode changes, no force cleanup.
+- [x] 20 host/archive/source tests on Windows and WSL;13 Terraform source tests; actual
+  provider validate and2 native mock-provider plans. Native checker build-info in WSL
+  matches original b2bf8d8, not proof of AL2023 ABI or authenticated AWS checker operation.
+- [ ] Coordinated read-only identities/policy/retention preflight in READONLY-PREFLIGHT.json;
+  no new private query executed. Native saved plan/effective create+delete scope remains.
+- [ ] EC2 bootstrap/SSM/timer/S3/SQS/durable lifecycle qualification and new grouped consent.
+  Proposed NEW USD2/24h is not approved; previous budgets remain closed. New SNS confirmation
+  and actual inbox evidence are needed. Unsupported active probes remain Pending, not passed.
+
+EC2 i-* is not an input to DeregisterManagedInstance; stale AWS SSM metadata, if any, is
+reported separately after actual instance/disk/ENI retirement. No fake native absence.
+The prior bcac19f Lambda ZIP and3f67d8b evidence remain immutable; this host has separate
+bundle/source lineage. No Lambda rebuild, AWS, timer installation, push or remote workflow.

@@ -89,6 +89,18 @@
         "condition": "${!var.enable_dispatch_schedule || can(regex(\"^rate\\\\(([1-9]|[1-5][0-9]|60) minutes?\\\\)$\",var.dispatch_schedule_expression))}",
         "error_message": "Enable only with an explicitly reviewed rate of1..60 minutes."
       }
+    },
+    "enable_observer": {
+      "type": "bool",
+      "default": false
+    },
+    "observer": {
+      "type": "object({ ami_id=string, ebs_key_arn=string, availability_zone=string, bundle_path=string, bundle_manifest_path=string, bundle_sha256=string, bundle_source_commit=string, backup_bucket=string, backup_prefix=string, missing_prefix=string, backup_key_arn=string, text_key_arn=string, database=string, max_age_hours=number, cadence_seconds=number, publish_attempts=number })",
+      "default": null,
+      "validation": {
+        "condition": "${!var.enable_observer || var.observer!=null}",
+        "error_message": "Explicit reviewed observer inputs required when enabled."
+      }
     }
   },
   "module": {
@@ -98,12 +110,25 @@
       "enable_ingestion": "${var.enable_ingestion}",
       "allow_data_retirement": "${var.allow_data_retirement}",
       "enable_dispatch_schedule": "${var.enable_dispatch_schedule}",
-      "dispatch_schedule_expression": "${var.dispatch_schedule_expression}"
+      "dispatch_schedule_expression": "${var.dispatch_schedule_expression}",
+      "distribution_reader": "${var.enable_observer ? {role_arn=var.config.sender_role_arn,key=\"observer-packages/${var.observer.bundle_sha256}.tar.gz\"} : null}"
+    },
+    "observer": {
+      "source": "./modules/observer",
+      "count": "${var.enable_observer ? 1 : 0}",
+      "config": "${var.config}",
+      "host": "${var.observer}",
+      "depends_on": [
+        "module.pipeline"
+      ]
     }
   },
   "output": {
     "pipeline": {
       "value": "${module.pipeline}"
+    },
+    "observer": {
+      "value": "${var.enable_observer ? module.observer[0] : null}"
     }
   }
 }

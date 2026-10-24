@@ -75,6 +75,10 @@
         "condition": "${!var.enable_dispatch_schedule || can(regex(\"^rate\\\\(([1-9]|[1-5][0-9]|60) minutes?\\\\)$\",var.dispatch_schedule_expression))}",
         "error_message": "Enable only with an explicitly reviewed rate of1..60 minutes."
       }
+    },
+    "distribution_reader": {
+      "type": "object({role_arn=string,key=string})",
+      "default": null
     }
   },
   "locals": {
@@ -479,7 +483,7 @@
     "aws_s3_bucket_policy": {
       "archive": {
         "bucket": "${aws_s3_bucket.archive.id}",
-        "policy": "${jsonencode({Version=\"2012-10-17\",Statement=[{Effect=\"Deny\",Principal=\"*\",Action=\"s3:*\",Resource=[\"arn:aws:s3:::${local.bucket_name}\",\"arn:aws:s3:::${local.bucket_name}/*\"],Condition={Bool={\"aws:SecureTransport\"=\"false\",\"aws:PrincipalIsAWSService\"=\"false\"}}},{Effect=\"Deny\",Principal=\"*\",Action=\"s3:*\",Resource=[\"arn:aws:s3:::${local.bucket_name}\",\"arn:aws:s3:::${local.bucket_name}/*\"],Condition={ArnNotEquals={\"aws:PrincipalArn\"=[var.config.lifecycle_principal_arn,local.role_arns.dispatch]},Bool={\"aws:PrincipalIsAWSService\"=\"false\"}}}]})}"
+        "policy": "${jsonencode({Version=\"2012-10-17\",Statement=concat([{Effect=\"Deny\",Principal=\"*\",Action=\"s3:*\",Resource=[\"arn:aws:s3:::${local.bucket_name}\",\"arn:aws:s3:::${local.bucket_name}/*\"],Condition={Bool={\"aws:SecureTransport\"=\"false\",\"aws:PrincipalIsAWSService\"=\"false\"}}},{Effect=\"Deny\",Principal=\"*\",Action=\"s3:*\",Resource=[\"arn:aws:s3:::${local.bucket_name}\",\"arn:aws:s3:::${local.bucket_name}/*\"],Condition={ArnNotEquals={\"aws:PrincipalArn\"=concat([var.config.lifecycle_principal_arn,local.role_arns.dispatch],var.distribution_reader==null?[]:[var.distribution_reader.role_arn])},Bool={\"aws:PrincipalIsAWSService\"=\"false\"}}}],jsondecode(var.distribution_reader==null?\"[]\":jsonencode([{Effect=\"Deny\",Principal=\"*\",Action=\"s3:*\",NotResource=\"arn:aws:s3:::${local.bucket_name}/${var.distribution_reader.key}\",Condition={ArnEquals={\"aws:PrincipalArn\"=var.distribution_reader.role_arn}}},{Effect=\"Deny\",Principal=\"*\",NotAction=[\"s3:GetObjectVersion\"],Resource=\"arn:aws:s3:::${local.bucket_name}/${var.distribution_reader.key}\",Condition={ArnEquals={\"aws:PrincipalArn\"=var.distribution_reader.role_arn}}}])))})}"
       }
     },
     "aws_cloudwatch_event_rule": {
@@ -537,6 +541,9 @@
     },
     "artifact_version": {
       "value": "${aws_s3_object.code.version_id}"
+    },
+    "distribution_policy_json": {
+      "value": "${aws_s3_bucket_policy.archive.policy}"
     }
   }
 }

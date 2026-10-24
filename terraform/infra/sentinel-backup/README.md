@@ -6,10 +6,12 @@ CloudFormation stack, state, backup bucket or IAM role is imported or modified h
 
 The isolated administrator-owned root follows the repository's separation from ordinary
 TARGET lifecycle: Terraform owns the two runtime roles/boundaries and all resources in
-this module. It requires separately selected lifecycle and existing EC2 sender identities.
+this module. It requires selected lifecycle and sender identities. With the optional observer
+module the dedicated sender role is created explicitly; pipeline-only use selects an existing role.
 The sender's one-queue SendMessage policy is an OUTPUT PROPOSAL, never an attachment
 silently installed on an existing role. There is no CloudFormation execution role,
-business service, CA, NAT provider, EC2 instance or new authentication mechanism.
+business service, CA, NAT provider or new authentication mechanism. The pipeline-only
+module has no EC2; the OFF-by-default observer module is described below.
 
 ## Ownership and immutable code
 
@@ -129,7 +131,8 @@ A service-neutral upstream probe-capability policy remains the right permanent f
 Periodic independent observations supply actual backup-health evidence in this increment.
 They do NOT prove restoration. The watchdog code is local-qualified only; no schedule/unit is installed. No guarantee covers
 failure of Sentinel itself; an independent host/location and its checker-read role remain
-unselected and require explicit review. Neither is provisioned by this module.
+subject to explicit identity/access review. Neither is provisioned by the pipeline module;
+the optional observer module provides its own host/role under separate opt-in.
 
 ## Lifecycle and next integrated test matrix
 
@@ -168,3 +171,12 @@ Local tests do not satisfy those AWS/installation/durability gates. Prior2+2-day
 original states/evidence, prior synthetic-trial receipts, EKS/demo and PKI scope are unchanged.
 
 [Next integrated trial proposal](NEXT-INTEGRATED-TRIAL.md) separates the locally qualified pipeline from the unimplemented observer-host slice; it grants no deployment authority.
+
+## Optional observer host local increment
+
+The OFF-by-default [observer module](modules/observer/README.md) now provides its own
+network/instance/profile and restricted SSM control, reusing one versioned code object
+in the pipeline bucket. Full scheduled source inventory43, pipeline-only29/base26.
+No installed host/timer or AWS access. [Coordinated reads](READONLY-PREFLIGHT.json) and
+[required capability contract](required-capabilities.json) precede any exact grant or
+new consent. The Lambda ZIP bcac19f is unchanged; the host has a separate bundle lineage.
