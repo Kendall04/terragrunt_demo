@@ -1,5 +1,25 @@
 # Local portfolio acceptance checkpoint
 
+
+## Current correction — b2 retired, partial (2026-10-24)
+
+This dated result supersedes the earlier "not admitted/not deployed" b2 proposal notes
+below; they remain historical preparation evidence. [Native b2 outcome and SSM postmortem](../operations/integrations/NATIVE-TRIAL-2026-10-24.md).
+
+- [x] Grouped cycle approved;43 resources created; official AL2023 bootstrapped qualified
+  bundle with timer inert; confirmed SNS; real Lambda/DynamoDB empty cursor execution.
+- [x] Export, own-data retirement and Terraform destroy;28 native absence checks,
+  empty terminal state preserved; all five access deltas and supplements reverted.
+- [ ] Real periodic observer/manifest/checker/SQS/outbox/recovery/inbox path in b2:
+  SSM twice AccessDenied/-1 before script execution;0 events/0 notices; exact cause unresolved.
+- [x] Offline result gate/regressions reject accepted-only, denied, replayed/misbinding
+  and incomplete results. Synthetic successful fixtures are not native qualification.
+- [x] Demo distinguishes historical b1 inbox proof from b2 partial clean retirement.
+  Authentic fifth Archify map remains a labelled pre-b2 design snapshot; no generated
+  diagram/hash is hand-edited. No live AWS connection, PKI or new API behavior.
+
+No resources retained, further AWS cycle/spend/access or broad IAM fix authorized.
+
 This is local UI evidence, not complete UI/ECS acceptance. Current final isolated
 Chrome receipt records **15 checks PASS** at 2026-10-23T17:31:18.062Z; SHA256:
 `f52419d64df43ae03f238f3a729f009fe2259fbfc956bede73fba083c33a0c82`. The [test source](test-browser.mjs) covers all five

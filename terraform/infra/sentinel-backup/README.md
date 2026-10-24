@@ -188,3 +188,12 @@ AMI-unselected/preflight-pending and unchanged-Lambda statements above. The meta
 preflight completed without mutation; bounded send/notice code requires NEW qualified
 artifacts. Earlier qualification receipts remain immutable historical evidence. No
 consent, deployment or successful AWS observer execution is implied.
+
+## Executed b2 status — 2026-10-24
+
+The [b2 trial](../../../operations/integrations/NATIVE-TRIAL-2026-10-24.md) created43
+resources and closed cleanly at07:01:54UTC, restoring original access. Native
+AL2023 bootstrap, Lambda/DynamoDB cursor and teardown were demonstrated. SSM
+authorization remained blocked; periodic producer/checker/SQS/notice acceptance
+is not established. Earlier proposal/qualification documents are dated snapshots,
+not current deployment authority. No live resources or new budget are implied.

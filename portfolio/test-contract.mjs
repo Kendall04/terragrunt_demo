@@ -16,14 +16,15 @@ test('guided evidence path and historical distinct-image rollback preserve scope
  assert.match(deployment,/sha256:ca7d92532/);assert.match(deployment,/sha256:7aa96288/);assert.match(deployment,/A also read\/decrypted the text written by B/);
  assert.match(input.html,/A → B → A/);assert.match(input.html,/continuidad SQL\/KMS/);assert.match(input.html,/No revierte migraciones/);
  for(const step of ['demo','v1','deployment','az6','observability','pending'])assert(input.html.includes(`data-tour="${step}"`));
- assert.match(input.html,/10 efectos Pending/);assert.match(input.html,/LOCAL · NO DESPLEGADO/);assert.match(input.html,/PKI fuera de alcance de ECS/);
+ assert.match(input.html,/10 efectos Pending/);assert.match(input.html,/B2 PARCIAL Y RETIRADO/);assert.match(input.html,/PKI fuera de alcance de ECS/);
 });
 
 test('Sentinel pilot, local target and real backup freshness are distinct',async()=>{
  const trial=await read('../operations/integrations/NATIVE-TRIAL-2026-10-23.md');
  assert.match(trial,/owner separately supplied both inbox receipts/);assert.match(trial,/10 Pending effects/);
  assert.match(input.html,/7 recibos y 7 auditorías/);assert.match(input.html,/ambos avisos se acreditaron en el buzón/);
- assert.match(input.html,/todavía no está desplegada ni autorizada/);assert.match(input.html,/168 h/);assert.match(input.html,/no prueba frescura de 2 h/);
+ assert.match(input.html,/0 eventos y 0 avisos/);assert.match(input.html,/SSM rechazó ambos comandos/);assert.match(input.html,/B2 creó 43 recursos/);assert.match(input.html,/168 h/);assert.match(input.html,/no prueba frescura de 2 h/);
+ const b2=await read('../operations/integrations/NATIVE-TRIAL-2026-10-24.md');assert.match(b2,/CLOSED_CLEAN_PARTIAL_ACCEPTANCE/);assert.match(b2,/07:01:54/);assert.match(b2,/Root cause: UNRESOLVED/);
  assert.doesNotMatch(input.html,/Sentinel y correo real\.<|Observación y notificaciones reales siguen pendientes|Persistencia de prueba en memoria/);
 });
 

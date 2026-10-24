@@ -153,3 +153,8 @@ email is performed by the web. The sealed review packet is unchanged.
 Current refresh: Node17/Chrome16 PASS, normal browser/server shutdown; fifth map and
 evidence captures inspected. [Evidence capture](screenshots/evidence-20261024.png) and
 [Sentinel map](screenshots/sentinel-20261024.png) show current scoped results.
+
+Current b2 result supersedes the older next-trial labels above:43 resources created and
+retired; SSM authorization blocked execution,0 events/0 notices. The b1 inbox evidence
+remains separate. Source route `/source/sentinel-next` now serves the b2 postmortem,
+not an unexecuted proposal. Fifth Archify bytes remain an explicit pre-b2 design snapshot.

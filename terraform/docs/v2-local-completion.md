@@ -316,3 +316,12 @@ includes no large binaries. These are local acceptance scopes, not durable
 storage, real email, live AWS observation or hosted CI. Deployment/unchanged
 recovery require their admitted plan, IAM create+retire and budget; original USD2
 is not renewed. No cloud, timer install, remote workflow, push or EKS change.
+
+## Observer b2 outcome — 2026-10-24
+
+[Native b2 postmortem](../../operations/integrations/NATIVE-TRIAL-2026-10-24.md):43
+resources created/retired,28 native absence checks and all temporary access reverted.
+AL2023 bundle bootstrap and durable empty Lambda cursor passed. SSM pre-execution
+authorization failed twice;0 events/0 notices. Offline receipt regressions do not
+qualify the periodic observer. Original b1 synthetic inbox proof stays valid and
+separate; no complete ECS acceptance or new AWS authority follows.

@@ -109,4 +109,49 @@ class HostTests(unittest.TestCase):
     def test_control_document_cannot_accept_arbitrary_shell(self):
         x=json.loads((TF/'modules/observer/main.tf.json').read_text());s=x['resource']['aws_ssm_document']['observer_control']['content'];self.assertIn('allowedValues',s);self.assertIn('allowedPattern',s);self.assertNotIn('commands=',s);self.assertIn('observer_host.py control --action',s)
 
+
+class SsmReceiptTests(unittest.TestCase):
+    def test_captured_b2_denials_are_not_execution_even_after_accepted_command_id(self):
+        from ssm_execution import require_status_execution
+        fixture=json.loads((Path(__file__).parent/'fixtures/ssm-b2-status.json').read_text())
+        self.assertEqual(len(fixture['records']),2)
+        for row in fixture['records']:
+            self.assertEqual(row['result']['StatusDetails'],'AccessDenied')
+            self.assertEqual(row['result']['ResponseCode'],-1)
+            self.assertFalse(row['result']['ExecutionStartDateTime'])
+            with self.assertRaisesRegex(ValueError,'NOT_EXECUTED'):require_status_execution(row['intent'],row['accepted'],row['result'])
+    def good(self):
+        # Constructed contract fixture, never claimed as native SSM success.
+        intent={'action':'status','instance':'i-test','document':'own-doc','documentVersion':'1','atUtc':'2026-10-24T06:00:00Z'}
+        accepted={'commandId':'synthetic-command'}
+        result={'CommandId':'synthetic-command','InstanceId':'i-test','DocumentName':'own-doc','DocumentVersion':'1','PluginName':'ObserverControl','Status':'Success','StatusDetails':'Success','ResponseCode':0,'ExecutionStartDateTime':'2026-10-24T06:00:01Z','ExecutionEndDateTime':'2026-10-24T06:00:02Z','StandardOutputContent':json.dumps({'status':'OBSERVED','timerActive':False,'serviceActiveOrUncertain':False,'mode':'healthy','timerStartedByTerraform':False})}
+        return intent,accepted,result
+    def test_synthetic_valid_status_is_only_status_proof(self):
+        from ssm_execution import require_status_execution
+        self.assertEqual(require_status_execution(*self.good()),{'execution':'CONFIRMED_STATUS_ONLY','timerActive':False,'mode':'healthy','backupAcceptance':False})
+    def test_wrong_identity_step_version_or_accepted_only_is_refused(self):
+        from ssm_execution import require_status_execution
+        for field,value in [('CommandId','other'),('InstanceId','other'),('DocumentName','other'),('DocumentVersion','2'),('PluginName','Other'),('StatusDetails','AccessDenied'),('ResponseCode',-1)]:
+            intent,accepted,result=self.good();result[field]=value
+            with self.subTest(field=field),self.assertRaises(ValueError):require_status_execution(intent,accepted,result)
+        intent,accepted,result=self.good()
+        with self.assertRaises(ValueError):require_status_execution(intent,accepted,{})
+        with self.assertRaises(ValueError):require_status_execution(None,accepted,result)
+        with self.assertRaises(ValueError):require_status_execution(intent,[],result)
+    def test_missing_times_replayed_result_and_missing_provenance_refused(self):
+        from ssm_execution import require_status_execution
+        for field,value in [('ExecutionStartDateTime',''),('ExecutionStartDateTime','2026-10-24T05:59:59Z'),('ExecutionEndDateTime','2026-10-24T05:00:00Z'),('DocumentName',None),('StandardOutputContent','not json')]:
+            intent,accepted,result=self.good();result[field]=value
+            with self.subTest(field=field),self.assertRaises(ValueError):require_status_execution(intent,accepted,result)
+    def test_arbitrary_output_or_systemd_acceptance_is_not_observed_status(self):
+        from ssm_execution import require_status_execution
+        for payload in [{'status':'SYSTEMD_ACCEPTED_NOT_BACKUP_PROOF'}, {'status':'OBSERVED','timerActive':'false'}, []]:
+            intent,accepted,result=self.good();result['StandardOutputContent']=json.dumps(payload)
+            with self.assertRaises(ValueError):require_status_execution(intent,accepted,result)
+    def test_gate_is_offline_and_does_not_change_host_bundle_inputs(self):
+        import ssm_execution
+        text=Path(ssm_execution.__file__).read_text()
+        self.assertNotIn('import boto',text);self.assertNotIn('import subprocess',text);self.assertNotIn('import socket',text)
+        self.assertNotIn('ssm_execution.py',Path(h.__file__).read_text())
+
 if __name__=='__main__':unittest.main()
