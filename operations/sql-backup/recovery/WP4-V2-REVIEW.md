@@ -235,3 +235,9 @@ Final follow-up regression: 40 WP4D tests (including seven installed-bundle case
 and 53 emergency/cleanup/recovery tests passed, with zero skips. The seven new
 cases were rerun after tightening two negative assertions; they are counted once.
 No production validator was relaxed and no native cloud/SQL test ran.
+
+## Consolidated next execution gate
+
+The historical projection follow-up and the single remaining LIVE checklist are
+in [ECS-LIVE-READINESS.md](ECS-LIVE-READINESS.md). It supersedes the pending local
+projection item above without changing historical evidence or native approval.
