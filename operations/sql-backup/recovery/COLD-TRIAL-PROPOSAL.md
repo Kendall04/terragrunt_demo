@@ -63,3 +63,49 @@ Official consulted sources: [VPC NAT/IPv4 pricing](https://aws.amazon.com/vpc/pr
 ## Remaining admission blockers
 
 This is executable/reviewable local source, not a sealed approval packet: (a) artifact qualification and AMI/native package graph, (b) proven permitted execution transport after b2, (c) current IAM/backend/KMS originals and exact deltas, (d) native plan/IDs and real fencing traces, (e) viewing method. Full Fargate cutover additionally requires application-network SQL reachability, connection-secret refresh, task replacement/readiness and public API receipt. Do not silently add those resources or use this estimate to fund them. A real zone failure still blocks if exact source termination cannot be confirmed; independent durable fencing authority would require a separate architecture decision. No mandatory-access bypass or new budget follows from this proposal.
+
+## Focused preflight completion — local, 2026-10-24
+
+The four previously Windows-skipped POSIX host-main tests now **PASS4/4** using existing Ubuntu-24.04 root/Python3 and `/opt/codex-artifacts`, temporary fixtures cleaned normally. No package installation, AWS, SQL engine, agent, host service or credential access. These are filesystem/main-entrypoint tests with fake ports, not native SQL or SSM proof. The earlier Windows skip result remains historical, superseded only for this POSIX gate.
+
+### Exact small artifact and preserved binary inputs
+
+Local delivery directory: `C:\Users\PC-2024-01\Documents\Codex\2026-10-22\task-3\cold-c884930-preflight`.
+
+- `cold-helpers-c884930.zip`: **27111 bytes**, SHA256`c5cb8ddecd2439192399da8eca73ba112298a74bcfc7313164d9caf6a1fe5db3`. Deterministic Git blobs from c884930: host.py, prepare.py, verify_effective.py, bootstrap.sh (includes5110f5c).
+- `artifact-lock.json`, `api-payload-manifest.json`, `backup-payload-manifest.json`: bind all helper hashes and existing383 API files /237 backup files. Each actual file was rehashed and size-checked against its preserved qualified manifest. API source diff6b2ea75→c884930 and backup compiled-input diffb2bf8d8→c884930 were empty. Backup embedded build identity remains b2bf8d8; do not relabel it as freshly compiled c884930.
+- The compiled sources and existing caches were reused: no rebuild, install, extra binary payload copy or large archive. Original recovery tar and receipts remain untouched. This is an exact **composite input lock and helper overlay**, not a materialized all-in-one deployment archive or native qualification of this composition. Final assembly/installation must validate these manifests before any future use; do not promise an upload-ready approved runtime from this ZIP alone.
+
+### Offline IAM deltas anchored to saved originals
+
+`access-review.json` binds raw/canonical hashes and original paths under `observer-host-work/access-delta`. Originals were read at b2 admission around05:40UTC and its closure07:01:54UTC attests restoration; no fresh AWS read was performed. Current policies/attachments/boundaries/key versions remain UNKNOWN.
+
+| Local proposed file | SHA256 | Exact change |
+| --- | --- | --- |
+| backend.proposed.NOT-INSTALLABLE.json | ffb2c2f163b5fe28ba50b9b8ca8c158e396aade69764bbe0bc267fe20b821ffd | Four exact exceptions in E16NoOtherDevObjects for the two trial states+locks; additive own Get/Put, lock Delete and exact List prefixes. Every other original statement preserved |
+| backup-key.proposed.NOT-INSTALLABLE.json | 0f9047e8262704bf40cfa4bac8f4138fdcddb6f1346ba37321eb2b9a9c1abf5b | Append SQL role GenerateDataKey/Decrypt through S3 for only source/target new prefixes; original statements unchanged |
+| sql-role-read-addition.NOT-INSTALLABLE.json | 371a63e6cf9c0ca993d86cd8d557f94a76e0ab9d6ee091182b0093f6924c8eeb | DescribeInstances, Resource*, regionus-east-1; regional metadata exposure, not resource mutation |
+
+Part4v5 and Part7v3: **no modification proposed** for these deltas; their existing IAM/bucket/key-delete denies are not removed. Workload role changes are administrator preparation, never operator PutRolePolicy against its existing Deny. No policy-version eviction assumed. Default workspace only for this cycle: contrary to the broader initial candidate description, non-default workspace prefixes are NOT excepted. State deletion remains ungranted; only lock deletion.
+
+Local assertions verified preservation of all other original backend/key statements, exactly four new backend exceptions and no wildcard/workspace object exception. The three files intentionally have no bound approved expiry and are labelled NOT-INSTALLABLE: timed identity/resource-policy conditions, originals freshness and reversal must be completed before any install. No claim of automatic exception removal at expiry. Missing source snapshots: complete current SQL role inline/boundary and application text-key policy; fetch metadata only in a separately authorized read-only admission, never infer Allows from these additive documents. Operator create/delete/pass-role/SSM and quota checks also remain necessary. These deltas do not solve b2 authorization.
+
+### Transport: specific preflight instead of an execution promise
+
+Retain the planned same-principal, exact custom SSM document/instance route. No AWS-RunShellScript substitution, new principal, wildcard admin, retry of a denied command or alternate bootstrap control path is introduced here. b2 accepted SendCommand but terminal AccessDenied/−1 had no script start; the approved context supplement failed to resolve it. The exact policy evaluation cause is still not demonstrated.
+
+Minimum future read-only admission: compare identity/account/role and all effective role policies/boundaries/session constraints with originals; retrieve exact custom document owner/ARN/version/hash; correlate preserved SendCommand and invocation details (name/version/plugin/target/error/times) with **existing** CloudTrail/agent authorization evidence if available and already permitted. Inspect only sanitized metadata/errors, not credentials, command secret output or application values. IAM simulation may corroborate supplied context but cannot discover the actual denied context or prove asynchronous agent authorization. Do not enable logging/services or change agent settings as an incidental read.
+
+If those reads cannot demonstrate the denied evaluation and a specific approved correction, **stop before creating paid resources**. Required next action is obtaining the exact denied authorization trace (or an administrator review using existing logs), followed by a narrowly reviewed fix. A healthy SSM registration or successful static simulation does not clear this gate. One retry would require new relevant evidence that addresses the known non-executed rejection. This proposal therefore remains NOT ADMISSIBLE for live rather than promising that the transport works.
+
+### What the two phases are, and what full ECS LIVE adds
+
+30 creations are **two sequential phases of one scenario**, not two successful recovery scenarios: source15 creates a new synthetic DB, writes markers and commits a versioned backup (not a new EBS snapshot); then exact source termination; target15 creates from zero and restores. SAME/CROSS are modes; the next candidate runs one mode, not both for the price of one. Retained originals outside those two new prefixes, states and tagged IDs are never source teardown targets. The disposable source is expressly included in the proposed destructive consent, not an ordinary historical/production DB.
+
+The isolated runner never reports full ECS recovery. Minimum full-service integration plan, to implement/review separately without expanding this candidate:
+
+1. Use the existing application's private SQL networking contract, with SQL1433 allowed only from the application task SG. A replacement in a different isolated VPC with ingress empty cannot serve those tasks. Prefer restoring into the application VPC/subnet under one Terraform owner; do not add peering or import resources merely to preserve the disposable test template.
+2. Preserve a single SQL writer and obtain exact source fencing; restore/check schema and decrypt markers before promoting application traffic. Keep app-text KMS and SQL credentials distinct from backup encryption. Change the connection reference outside Terraform secret values.
+3. Through WP4/E2 delivery ownership, create fresh candidate task revision(s)/connections, verify each candidate SQL/KMS `/ready` and public API write/read/decrypt, then move ALB traffic. Terraform must not compete for task/count/listener fields. Existing image rollback cannot rewind DB/schema.
+4. Show the actual public API/web to Kendall and the existing Archify views with honest historical labels during the reserved window; signal LIVE only when the public deployed service responds. Static local demo or loopback evidence alone cannot satisfy that request. Measure total request→publicAPI readiness and separately record cold-host time.
+5. Produce the complete infrastructure/delivery plan including currently-down application/network layers, actual resource counts, policies and a new costed envelope before asking consent. The 30-object/USD4 estimate excludes this full-service reconstruction and cannot fund extra Fargate/routing resources silently. Until that plan and transport proof exist, prefer the local gates and do not request approval for an incomplete LIVE promise.

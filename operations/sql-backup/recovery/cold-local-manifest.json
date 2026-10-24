@@ -12,7 +12,7 @@
     "test_cold_execution.py": "b82b95c40666b44b030a2e97b21cc735e6d0d18f8b11bd7d1302bbdd70b83960",
     "test_cold_path.py": "88c7394a75ee0cba619eb0607f32ab300e957a3ca3edef5e8500aa219969e9e3",
     "bootstrap.sh": "31f0839749dbf7169d2b11dc91a20f08f5cd4df15298d11c7a5d170579c18dc1",
-    "COLD-TRIAL-PROPOSAL.md": "a0fbf2ac563ca29a9a06391920147f0ec822459ce64fdd07844dc5f368904bb4"
+    "COLD-TRIAL-PROPOSAL.md": "d3d6cdb9eeef3a15cca57b46fafe461a570ae58cd670a9a6c90d35cd8448a327"
   },
   "Tests": {
     "ColdExecution": {
@@ -29,6 +29,11 @@
     },
     "PosixEntrypointOnWindows": {
       "Skip": 4
+    },
+    "PosixEntrypointWsl": {
+      "Pass": 4,
+      "Skip": 0,
+      "Kind": "POSIX filesystem with doubles"
     }
   },
   "Proposal": {
@@ -37,5 +42,7 @@
     "ResourcesPerRoot": 15,
     "NewBudgetUsd": 4,
     "Approved": false
-  }
+  },
+  "SubsequentCodeCommit": "c884930b44c7181476f6309b2420924bb1aa82c8",
+  "ReadinessReceiptSha256": "520f13adbefc9f0a62f30dab4e2a4f0521e0fbafb2ec1b154dbc88c6e4aa60a2"
 }
