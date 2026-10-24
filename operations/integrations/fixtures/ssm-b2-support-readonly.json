@@ -1,0 +1,11 @@
+{
+  "AtUtc": "2026-10-24T18:05:36.063861+00:00",
+  "Identity": "arn:aws:iam::341936017254:user/cnp-cert-admin",
+  "Operation": "support:DescribeServices",
+  "NoCaseCreated": true,
+  "NoSubscriptionChanged": true,
+  "Status": "SubscriptionRequiredException",
+  "Message": "Amazon Web Services Premium Support Subscription is required to use this service.",
+  "SupportApiTechnicalCatalogAccessible": false,
+  "ExactPlan": "UNKNOWN; API failure does not by itself exclude legacy Developer technical cases via console"
+}
