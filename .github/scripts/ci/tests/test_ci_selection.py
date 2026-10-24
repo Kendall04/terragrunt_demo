@@ -319,9 +319,50 @@ class SqlBackupSelectionTests(unittest.TestCase):
             self.assertTrue(all(selected[g] for g in ('app', 'acceptance', 'hygiene')))
             self.assertFalse(selected['infra'])
 
+    def test_cold_recovery_paths_select_actual_explicit_suite_job(self):
+        for path in ('operations/sql-backup/recovery/prepare.py',
+                     'operations/sql-backup/recovery/host.py',
+                     'operations/sql-backup/recovery/test_cold_path.py',
+                     'operations/sql-backup/recovery/test_cold_execution.py',
+                     'operations/sql-backup/recovery/test_host_entrypoints.py'):
+            selected = selector.classify([path])
+            self.assertIn('hygiene', workflow_jobs(selected))
+        hygiene = (ROOT / '.github/workflows/ci-repo-hygiene.yml').read_text()
+        self.assertIn('run: python3 -I -B scripts/tests/run_recovery_ci.py', hygiene)
+        self.assertNotIn('scripts/tests/run_recovery_ci.py --list', hygiene)
+
     def test_future_sql_backup_iac_cannot_skip_infrastructure_gate(self):
         for path in ('operations/sql-backup/bucket.tf', 'operations/sql-backup/config.tf.json'):
             self.assertTrue(all(selector.classify([path])[g] for g in selector.GATES))
+
+class RecoveryRunnerTests(unittest.TestCase):
+    def invoke_fixture(self, body):
+        from contextlib import redirect_stdout, redirect_stderr
+        from unittest.mock import patch
+        import io
+        spec = importlib.util.spec_from_file_location('recovery_ci', ROOT / 'scripts/tests/run_recovery_ci.py')
+        runner = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(runner)
+        with tempfile.TemporaryDirectory(prefix='ecs-runner-contract-') as directory:
+            path = Path(directory)
+            if body is not None:
+                (path / 'test_fixture.py').write_text(body, encoding='utf-8')
+            with patch.object(runner, 'RECOVERY', path), patch.object(runner, 'SUITES', ('test_fixture.py',)), \
+                 patch.object(sys, 'argv', ['run_recovery_ci.py']), \
+                 patch.object(runner, 'POSIX', True), redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+                return runner.main()
+
+    def test_zero_skipped_and_failed_suites_cannot_report_pass(self):
+        bodies = [None,
+                  'import unittest\nclass T(unittest.TestCase):\n @unittest.skip("fixture")\n def test_skip(self): pass\n',
+                  'import unittest\nclass T(unittest.TestCase):\n def test_failure(self): self.fail("fixture")\n']
+        for body in bodies:
+            with self.subTest(body=body):
+                self.assertNotEqual(self.invoke_fixture(body), 0)
+
+    def test_discovered_success_is_actually_executed(self):
+        self.assertEqual(self.invoke_fixture('import unittest\nclass T(unittest.TestCase):\n def test_success(self): self.assertTrue(True)\n'), 0)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,7 +1,9 @@
 """Production host.main entrypoints with real private POSIX paths and fake ports.
 
 No engine/API/AWS/subprocess execution. These tests do not prove native recovery.
-The explicit existing scratch root avoids group-writable /tmp executable parents.
+The explicit private scratch avoids group-writable /tmp executable parents.
+Root admission is mocked only alongside fake ports; actual UID/GID own fixture paths.
+The production host root requirement is unchanged; GitHub CI needs no sudo.
 """
 from contextlib import redirect_stdout
 import datetime as dt
@@ -46,12 +48,12 @@ class EntrypointPort(FakePort):
         return result
 
 
-@unittest.skipUnless(os.name == 'posix' and getattr(os, 'geteuid', lambda: -1)() == 0,
-                     'Explicit POSIX root filesystem fixture; not Windows/native SQL evidence')
+@unittest.skipUnless(os.name == 'posix',
+                     'POSIX filesystem fixture; no native SQL or actual root operation')
 class HostEntrypointTests(unittest.TestCase):
     def setUp(self):
         import pwd
-        scratch = Path('/opt/codex-artifacts')
+        scratch = Path(os.environ.get('ECS_RECOVERY_TEST_SCRATCH', '/opt/codex-artifacts'))
         self.assertTrue(scratch.is_dir(), 'Use the existing approved local fixture root; do not install anything')
         self.temp = tempfile.TemporaryDirectory(prefix='ecs-host-entry-', dir=scratch)
         self.addCleanup(self.temp.cleanup)
@@ -99,6 +101,7 @@ class HostEntrypointTests(unittest.TestCase):
         with patch.object(sys, 'argv', args), patch.object(host, 'Port', return_value=port), \
                 patch.object(host, 'options', return_value=options), patch.object(host, 'utc', self.clock), \
                 patch.object(self.pwd, 'getpwnam', return_value=self.user), \
+                patch.object(os, 'geteuid', return_value=0), \
                 patch.dict(os.environ, {}, clear=True), redirect_stdout(output):
             host.main()
         return directory / (action + '-receipt.json'), output.getvalue()

@@ -51,6 +51,8 @@ run_stage() { shift; "$@"; }
     def test_normal_secret_consumers_keep_cli_contract(self):
         text = (BOOT.parents[3] / 'terraform/infra/data/user_data.sh').read_text(encoding='utf-8')
         helper = text[text.index('get_secret_value() {'):text.index('SA_PASS="$(get_secret_value')]
+        # Keep the production helper's diagnostic file inside this fixture only.
+        helper = helper.replace('/tmp/sql-secret-fetch-error.log', '"$FIXTURE_DIR/sql-secret-fetch-error.log"')
         result = self.run_bash(helper + '''
 REGION=us-east-1
 aws() {

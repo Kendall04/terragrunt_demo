@@ -335,3 +335,7 @@ See the [executable offline commands, fencing limit and next-trial gates](../../
 ## Cold restore write barrier and single-target retirement
 
 The subsequent local implementation adds native-read adapters (not executed against AWS), restore checks before write enable and one-target retirement binding. See [trial scope/cost and admission blockers](../../operations/sql-backup/recovery/COLD-TRIAL-PROPOSAL.md) and [small source manifest](../../operations/sql-backup/recovery/cold-local-manifest.json). Local tests3+7+30 PASS, POSIX entrypoints4 SKIP on Windows. Proposed30 creations/USD4 is isolated SQL/loopback API recovery, not an approved cycle or full deployed ECS cutover. Shared-instance-role DescribeInstances scope, b2 execution transport, native source generation/fencing, actual plan and viewing access remain to qualify. No AWS trial was started.
+
+## Explicit cold recovery CI
+
+Local workflow diff now invokes `scripts/tests/run_recovery_ci.py` from repo hygiene. Existing WSL unprivileged execution:71 PASS/0SKIP, including four POSIX tests; CI selector/runner contracts38 PASS with empty/skip/failure rejection. [Evidence](../../operations/sql-backup/recovery/cold-ci-qualification.json) contains actual discovered test IDs and hashes. No remote CI, push, install, SQL/AWS execution or root requirement change. Full hosted CI and inherited gates remain separately unverified. Support console required login; stopped without login, plan remains unknown.
