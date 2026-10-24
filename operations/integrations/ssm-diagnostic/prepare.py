@@ -123,6 +123,9 @@ def build(output,baselines):
     def save(name,value):
         p=output/name;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(json.dumps(value,indent=2)+'\n' if not isinstance(value,str) else value,encoding='utf-8')
     for k in ['part4','part7','backend']:save('originals/'+k+'.json',baselines[k])
+    # Operator-side exporter only: no client construction or cloud invocation.
+    for name in ['evidence_export.py','collector.py']:
+        save('operator/'+name,(HERE/name).read_text(encoding='utf-8'))
     for name,x in [('bootstrap',bootstrap()),('runtime',runtime())]:
         save(name+'/main.tf.json',x);save(name+'/backend.s3.json',backend(name));save(name+'/.terraform.lock.hcl',(ROOT/'terraform/infra/sentinel-backup/.terraform.lock.hcl').read_text())
     save('runtime/bootstrap.sh.tftpl',boot_script());save('access/operator-template.NOT-INSTALLABLE.json',operator_policy());save('access/backend-template.NOT-INSTALLABLE.json',amend_backend(baselines['backend']));save('document.json',document());save('access/node-runtime.json',node_policy());save('send-command.template.NOT-EXECUTED.json',{'DocumentName':RUN+'-observer-control','DocumentVersion':'1','DocumentHash':'__NATIVE_DOCUMENT_HASH_SHA256__','DocumentHashType':'Sha256','InstanceIds':['__VERIFIED_INSTANCE_ID__'],'Parameters':{'Action':['status']},'TimeoutSeconds':60,'CloudWatchOutputConfig':{'CloudWatchLogGroupName':GROUP,'CloudWatchOutputEnabled':True},'MaxConcurrency':'1','MaxErrors':'0'})

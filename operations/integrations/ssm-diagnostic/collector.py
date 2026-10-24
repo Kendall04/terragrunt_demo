@@ -26,10 +26,11 @@ def sanitize(data):
     for line in data.decode('utf-8','replace').splitlines()[-128:]:
         codes=[v for v in CODES if re.search(r'\b'+v+r'\b',line)]
         actions=[v for v in ACTIONS if re.search(r'\b'+v+r'\b',line)]
-        if not codes and not actions:continue
+        command_ids=sorted(set(re.findall(r'(?i)\bcommand(?:[ \t_-]*id)?[ =:\[\]\"\-]+('+UUID+r')\b',line)))[:4]
+        request_ids=sorted(set(re.findall(r'(?i)\brequest(?:[ \t_-]*id)?[ =:\[\]\"\-]+('+UUID+r')\b',line)))[:4]
+        if not codes and not actions and not command_ids and not request_ids:continue
         rows.append({'lineSha256':hashlib.sha256(line.encode()).hexdigest(),'codes':codes,'actions':actions,
-          'commandIds':sorted(set(re.findall(r'(?i)\bcommand(?:id)?[ =:\[\]"\-]+('+UUID+r')\b',line)))[:4],
-          'requestIds':sorted(set(re.findall(r'(?i)\brequest(?:id)?[ =:\[\]"\-]+('+UUID+r')\b',line)))[:4]})
+          'commandIds':command_ids,'requestIds':request_ids})
         if len(rows)==32:break
     return rows
 

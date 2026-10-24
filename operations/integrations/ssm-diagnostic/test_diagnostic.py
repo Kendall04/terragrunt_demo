@@ -140,6 +140,9 @@ class PacketTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             p=Path(d)/'packet';m=prepare.build(p,self.originals());self.assertEqual(json.loads((p/'inventory.json').read_text())['Count'],14)
             for name,digest in m['FilesSha256Lf'].items():self.assertEqual(prepare.sha((p/name).read_bytes().replace(b'\r\n',b'\n')),digest)
+            for name in ['evidence_export.py','collector.py']:
+                self.assertEqual((p/'operator'/name).read_bytes().replace(b'\r\n',b'\n'),(HERE/name).read_bytes().replace(b'\r\n',b'\n'))
+                self.assertIn('operator/'+name,m['FilesSha256Lf'])
             c=json.loads((p/'cost.json').read_text());self.assertLess(c['TotalConservativeUsd'],1);self.assertEqual(c['Status'],'PROPOSED_NEW_BUDGET_NOT_APPROVED');self.assertEqual(c['PaidHoursIncludingCleanupReserve'],5.5)
             with self.assertRaises(ValueError):prepare.build(p,self.originals())
 if __name__=='__main__':unittest.main()
