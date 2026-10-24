@@ -140,8 +140,32 @@ Prioridad: (1) instalación mínima reproducible y evidencia de dependencias; (2
 
 ### Cotejo final con la investigación histórica
 
-El investigador recuperó la [retirada exacta de diez paquetes y comprobación SQL](https://chatgpt.com/c/6ac03927-1efc-83e8-9828-0d23dc500245?messageId=1950c572-0fe9-496e-a3b8-e6c267514183) y la [corrección de receta con cuatro regresiones](https://chatgpt.com/c/6ac03927-1efc-83e8-9828-0d23dc500245?messageId=4f40135f-4c5f-4e11-b2c3-cc8557c04573). Según esa evidencia aportada, Última Milla preservó CLI, SQL active, puerto1433 y SELECT1; no hubo prueba de recreación AMI. En ECS sólo queda confirmado el mismo patrón de instalación, no aquellos diez paquetes. Residuos dpkg `rc` no equivalen a paquetes instalados.
+El investigador recuperó la [retirada exacta de diez paquetes y comprobación SQL](https://chatgpt.com/c/6ac03927-1efc-83e8-9828-0d23dc500245?messageId=1950c572-0fe9-496e-a3b8-e6c267514183) y la [corrección de receta con cuatro regresiones](https://chatgpt.com/c/6ac03927-1efc-83e8-9828-0d23dc500245?messageId=4f40135f-4c5f-4e11-b2c3-cc8557c04573). Kendall precisó que él retiró manualmente esos paquetes; no fue una limpieza automática del bootstrap. Según esa evidencia aportada, la retirada preservó CLI, SQL active, puerto1433 y SELECT1; no hubo prueba de recreación AMI. En ECS sólo queda confirmado el mismo patrón de instalación, no aquellos diez paquetes. Residuos dpkg `rc` no equivalen a paquetes instalados.
 
 La [regresión al revertir el hardening para desbloquear CD](https://chatgpt.com/c/6ac86dd2-7c2c-83e8-8968-9d65f1772704?messageId=b98b85e3-3aa4-488b-9274-8547f0173edf) refuerza separar receta, artefacto, apply y runtime: no revertir seguridad para obtener un plan sin diferencias. La [denegación NAT contextual](https://chatgpt.com/c/6ac86dd2-7c2c-83e8-8968-9d65f1772704?messageId=4e7f3ee7-f4d9-417c-aeaf-1cee25fa7024) aporta un método, no un permiso aplicable a ECS: comprobar principal efectivo y contexto, conservar negativos y no presentar mocks/admin como ejecución del workload. El resumen histórico de kernel/reboot contiene versiones contradictorias; no se utiliza para afirmar kernel vulnerable ni actualizado en ECS. En una cualificación futura, separar versión de paquete instalada de kernel cargado y postchecks tras reinicio autorizado.
 
 **Camino crítico proporcional:** cerrar primero la receta CLI mínima y sus regresiones; después cualificar el artefacto/host y recuperación desde cero. Clasificar los controles actuales de imagen por digest/non-root y secretos fuera de state como implementados en fuente; API sencilla y una SQL como límites aceptados de demo; paquetes transitivos, TLS SQL, permisos de migración y observador AWS como pendientes de cualificación/corrección. No convertir esa clasificación en aceptación de vulnerabilidades desconocidas. El cierre de diseño de hoy no depende de activar escáneres de pago ni de perseguir cero findings.
+### Precisión del propietario y cobertura de todas las instalaciones
+
+Kendall confirma que la ausencia posterior de paquetes gráficos en Última Milla se debió a su **retirada manual**, y señala las recomendaciones aceptadas por el User Data como origen a corregir. No atribuir esa limpieza a automatismos ni extrapolar la cadena histórica awscli como única causa posible en ECS.
+
+El cotejo de los scripts shell, plantillas y Dockerfiles versionados encontró estos puntos APT relevantes; ninguno fija `--no-install-recommends` ni una política Install-Recommends en esas fuentes:
+
+| Ruta y línea en la base revisada | Operación | Tratamiento recomendado |
+| --- | --- | --- |
+| `terraform/infra/data/user_data.sh:27` | Base: curl, CA, gnupg, lsb-release, software-properties-common, awscli | Separar CLI y revisar recomendaciones de todos los paquetes base, no sólo awscli |
+| mismo archivo:83 | mssql-server | Comparar grafo con/sin recomendaciones y probar instalación/configuración nativa antes de cambiar opciones |
+| mismo archivo:99 | mssql-tools18, unixodbc-dev | Conservar sqlcmd/driver necesarios; distinguir dependencias obligatorias, recomendaciones y paquete dev pedido explícitamente |
+| `operations/sql-backup/recovery/bootstrap.sh:134` | Motor, tools y unixodbc-dev | Aplicar la misma política cualificada que al bootstrap normal; no dejar una ruta que reintroduzca extras |
+| mismo archivo:194 | Base: curl, CA, gnupg, awscli | Mismo criterio de base mínima |
+| mismo archivo:199 | Simulación APT de paquetes SQL | Mantener argumentos equivalentes a la instalación real tras cualquier cambio |
+
+Los `apt-get update` sólo actualizan índices. Los Dockerfiles revisados no añaden instalaciones APT, pero eso no acredita ausencia de paquetes heredados de sus imágenes base. La búsqueda de fuente tampoco descubre la configuración APT de una AMI, scripts externos o un host modificado manualmente. La corrección de origen propuesta cubre **todas** las instalaciones anteriores: política explícita de recomendaciones, lista directa justificada y comprobación del grafo resuelto, preservando Depends y componentes SQL/ODBC requeridos. Separar awscli es un primer cambio pequeño, no cierre de toda la superficie. No se ha cambiado ninguna receta ni desinstalado nada en este encargo de diseño.
+
+### Ventana de revisión LIVE del próximo ciclo
+
+Nueva condición del propietario: reservar una ventana para que Kendall vea ECS funcionando y avisarle **antes de retirar**. El plan del siguiente ciclo autorizado debe incluir esa ventana dentro de su presupuesto y plazo, además de la reserva de limpieza; no comienza ningún despliegue por esta anotación.
+
+Recomiendo reservar 30 minutos de demostración después de readiness y pruebas mínimas, ajustados al cálculo de coste del plan. Avisar al llegar a ese estado con enlace accesible, alcance realmente LIVE y hora prevista de retirada. Mostrar web, diagramas existentes y recorrido por API/infra/avisos efectivamente probados; una web sintética o diagrama histórico no se etiqueta como backend vivo. El diagrama final conjunto aplazado no se reactiva por esta condición.
+
+Si Kendall no responde, mantener sólo la ventana presupuestada y retirar a tiempo; avisar del cierre y conservar evidencias para revisión posterior. No esperar indefinidamente ni consumir la reserva de teardown. Si un fallo impide llegar a LIVE o el presupuesto no deja margen, comunicar qué falló y retirar conforme al plan, sin inventar disponibilidad ni reiniciar el presupuesto. La siguiente aprobación debe mostrar esa ventana junto al coste total y la retirada, sin introducir un corte corto dependiente de un like.
