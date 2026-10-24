@@ -122,16 +122,17 @@ class Port:
         return json.loads(opener.open(urllib.request.Request('http://169.254.169.254/latest/dynamic/instance-identity/document',
             headers={'X-aws-ec2-metadata-token': token}), timeout=3).read())
 
-    def runtime_precheck(self, password):
+    def runtime_precheck(self, password, expected_ip='127.0.0.1'):
+        runtime_verify.checked_endpoint(expected_ip)
         def fresh_query():
             env = dict(os.environ, SQLCMDPASSWORD=password)
             try:
-                return subprocess.run(['/opt/mssql-tools18/bin/sqlcmd', '-S', 'tcp:127.0.0.1,1433', '-C', '-U', 'sa', '-d', 'master', '-l', '5', '-b', '-h', '-1', '-W'],
+                return subprocess.run(['/opt/mssql-tools18/bin/sqlcmd', '-S', 'tcp:' + expected_ip + ',1433', '-C', '-U', 'sa', '-d', 'master', '-l', '5', '-b', '-h', '-1', '-W'],
                     env=env, input='SET NOCOUNT ON; SET XACT_ABORT ON;\n' + runtime_verify.FRESH_QUERY,
                     capture_output=True, text=True, check=False, timeout=15)
             finally:
                 env.pop('SQLCMDPASSWORD', None)
-        return runtime_verify.assess_runtime(runtime_verify.LocalPort(), fresh_query)
+        return runtime_verify.assess_runtime(runtime_verify.LocalPort(), fresh_query, expected_ip)
 
     def confirm_cold_fence(self, request, target_identity):
         """Native reads only, never terminate or assume a different role. No retries."""
@@ -163,6 +164,55 @@ class Port:
         if hasattr(self, 'record_fence'):
             self.record_fence(receipt)
         return receipt
+
+    def application_network(self, value, identity):
+        """Exact future native reads; no SG/IAM/config mutation or alternate role."""
+        from prepare import PROFILE, service_plan
+        service_plan(value)
+        source, target = value['ColdReceipt']['Source'], value['ColdReceipt']['Target']
+        net, fence = value['Network'], value['ColdReceipt']['ColdFence']
+        require(all(identity[k] == target[k] for k in ('accountId','region','instanceId','availabilityZone')), 'LISTENER_TARGET_IDENTITY_MISMATCH')
+        caller = json.loads(self.run(['aws','sts','get-caller-identity','--output','json'],timeout=20))
+        require(caller['Account'] == ACCOUNT and caller['Arn'] == f'arn:aws:sts::{ACCOUNT}:assumed-role/{ROLE_NAME}/' + identity['instanceId'], 'LISTENER_ROLE_IDENTITY_MISMATCH')
+        doc = json.loads(self.run(['aws','ec2','describe-instances','--region',REGION,'--instance-ids',source['instanceId'],identity['instanceId'],'--output','json'],timeout=20))
+        reservations = doc.get('Reservations',[])
+        require(reservations and all(r.get('OwnerId') == ACCOUNT for r in reservations), 'LISTENER_INSTANCE_ACCOUNT_MISMATCH')
+        rows = [i for r in reservations for i in r.get('Instances',[])]
+        require(len(rows) == 2 and {i['InstanceId'] for i in rows} == {source['instanceId'],target['instanceId']}, 'LISTENER_INSTANCE_INVENTORY_MISMATCH')
+        by_id = {i['InstanceId']:i for i in rows};old,node = by_id[source['instanceId']],by_id[target['instanceId']]
+        require(old['State']['Name'] == 'terminated' and old['Placement']['AvailabilityZone'] == source['availabilityZone']
+                and timestamp(old['LaunchTime']) == timestamp(fence['SourceLaunchUtc']), 'LISTENER_SOURCE_FENCE_UNCERTAIN')
+        require(node['State']['Name'] == 'running' and node['Placement']['AvailabilityZone'] == target['availabilityZone']
+                and timestamp(node['LaunchTime']) == timestamp(fence['TargetLaunchUtc']), 'LISTENER_TARGET_GENERATION_MISMATCH')
+        require(node.get('VpcId') == net['AppVpcId'] and node.get('PrivateIpAddress') == net['DbPrivateIp']
+                and not node.get('PublicIpAddress') and node.get('IamInstanceProfile',{}).get('Arn') == PROFILE
+                and {t['Key']:t['Value'] for t in node.get('Tags',[])}.get('Trial') == value['Trial'], 'LISTENER_NATIVE_NETWORK_MISMATCH')
+        require([g['GroupId'] for g in node.get('SecurityGroups',[])] == [net['DbSgId']], 'LISTENER_EXTRA_SECURITY_GROUP')
+        interfaces = node.get('NetworkInterfaces',[])
+        require(len(interfaces) == 1 and interfaces[0].get('PrivateIpAddress') == net['DbPrivateIp']
+                and interfaces[0].get('VpcId') == net['DbVpcId'] and interfaces[0].get('SubnetId') == node.get('SubnetId')
+                and [g['GroupId'] for g in interfaces[0].get('Groups',[])] == [net['DbSgId']]
+                and not interfaces[0].get('Association') and not interfaces[0].get('Ipv6Addresses')
+                and [a['PrivateIpAddress'] for a in interfaces[0].get('PrivateIpAddresses',[])] == [net['DbPrivateIp']]
+                and not any(a.get('Association') for a in interfaces[0].get('PrivateIpAddresses',[])), 'LISTENER_INTERFACE_SCOPE_MISMATCH')
+        subnets = json.loads(self.run(['aws','ec2','describe-subnets','--region',REGION,'--subnet-ids',node['SubnetId'],'--output','json'],timeout=20))['Subnets']
+        require(len(subnets) == 1 and subnets[0].get('SubnetId') == node['SubnetId']
+                and subnets[0].get('OwnerId') == ACCOUNT and subnets[0].get('VpcId') == net['AppVpcId']
+                and subnets[0].get('CidrBlock') == net['DbSubnetCidr'] and subnets[0].get('MapPublicIpOnLaunch') is False, 'LISTENER_SUBNET_MISMATCH')
+        groups = json.loads(self.run(['aws','ec2','describe-security-groups','--region',REGION,'--group-ids',net['DbSgId'],net['TaskSgId'],'--output','json'],timeout=20))['SecurityGroups']
+        require(len(groups) == 2 and {g['GroupId'] for g in groups} == {net['DbSgId'],net['TaskSgId']}
+                and all(g.get('OwnerId') == ACCOUNT and g.get('VpcId') == net['AppVpcId'] for g in groups), 'LISTENER_SECURITY_GROUP_OWNER_MISMATCH')
+        ingress = next(g for g in groups if g['GroupId'] == net['DbSgId'])['IpPermissions']
+        require(len(ingress) == 1, 'LISTENER_SQL_INGRESS_MISMATCH')
+        rule = ingress[0];pairs = rule.get('UserIdGroupPairs',[])
+        require(rule.get('IpProtocol') == 'tcp' and rule.get('FromPort') == rule.get('ToPort') == 1433
+                and not any(rule.get(k) for k in ('IpRanges','Ipv6Ranges','PrefixListIds'))
+                and len(pairs) == 1 and pairs[0].get('GroupId') == net['TaskSgId']
+                and pairs[0].get('UserId') == ACCOUNT, 'LISTENER_SQL_INGRESS_MISMATCH')
+        return {'SourceInstanceId':source['instanceId'],'SourceLaunchUtc':fence['SourceLaunchUtc'],
+                'SourceState':'terminated','TargetInstanceId':identity['instanceId'],'TargetLaunchUtc':fence['TargetLaunchUtc'],
+                'VpcId':node['VpcId'],'SubnetId':node['SubnetId'],'PrivateIp':node['PrivateIpAddress'],
+                'DbSgId':net['DbSgId'],'TaskSgId':net['TaskSgId'], 'SingleTaskSgSql1433IngressOnly':True}
 
     def secret(self, arn):
         value = self.run(['aws', 'secretsmanager', 'get-secret-value', '--region', REGION, '--secret-id', arn,
@@ -248,11 +298,11 @@ class RuntimePrecheckFailure(ValueError):
         self.report = fallback
 
 
-def checked_runtime(port, identity, password):
+def checked_runtime(port, identity, password, expected_ip='127.0.0.1'):
     binding = {k: identity[k] for k in ('accountId','region','instanceId','availabilityZone')}
     bind_identity(binding, binding['instanceId'], binding['availabilityZone'])
-    report = port.runtime_precheck(password)
-    try: runtime_verify.require_runtime_precheck(report)
+    report = port.runtime_precheck(password) if expected_ip == '127.0.0.1' else port.runtime_precheck(password, expected_ip=expected_ip)
+    try: runtime_verify.require_runtime_precheck(report, expected_ip)
     except runtime_verify.Problem: raise RuntimePrecheckFailure(report) from None
     return dict(report, HostBinding=binding)
 
@@ -263,6 +313,31 @@ def check_source_runtime(source_record):
     except runtime_verify.Problem: raise RuntimePrecheckFailure(report) from None
     source = {k: source_record['Source'][k] for k in ('accountId','region','instanceId','availabilityZone')}
     require(report.get('HostBinding') == source, 'SOURCE_RUNTIME_BINDING_MISMATCH')
+
+
+
+
+def check_application_network(port, value, identity):
+    from prepare import application_listener_plan
+    plan = application_listener_plan(value)
+    return {'Status':'APPLICATION_NETWORK_OBSERVATION_ONLY','Trial':value['Trial'],
+            'ServiceInputSha256':plan['ServiceInputSha256'],
+            'NetworkBinding':port.application_network(value,identity),'ObservedUtc':utc(),
+            'AllowsHostChanges':False,'AllowsActivation':False,'FullEcsRecoveryProven':False}
+
+
+def check_application_listener(port, value, identity):
+    """Read-only post-transition qualification, never a listener activation command."""
+    from prepare import application_listener_plan
+    plan = application_listener_plan(value)
+    before = port.application_network(value, identity)
+    runtime = checked_runtime(port, identity, port.secret(SA_SECRET), plan['ProposedEndpoint'])
+    after = port.application_network(value, identity)
+    require(after == before, 'LISTENER_NETWORK_CHANGED_DURING_OBSERVATION')
+    return {'Status':'APPLICATION_LISTENER_OBSERVATION_ONLY','Trial':value['Trial'],
+            'ServiceInputSha256':plan['ServiceInputSha256'],'NetworkBinding':after,
+            'RuntimePrecheck':runtime,'ObservedUtc':utc(),'AllowsActivation':False,
+            'PublicApiRecoveryProven':False,'FullEcsRecoveryProven':False}
 
 
 def source(port, name, config, backup, api, identity):
@@ -357,12 +432,13 @@ def restore(port, name, config, backup, api, identity, source_record, failure, c
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('action', choices=['source', 'quiesce', 'restore'])
+    p.add_argument('action', choices=['source', 'quiesce', 'restore', 'listener-network-check', 'listener-check'])
     p.add_argument('--trial', required=True)
     p.add_argument('--directory', type=Path, required=True)
     p.add_argument('--source', type=Path)
     p.add_argument('--failure', type=Path)
     p.add_argument('--cold-request', type=Path)
+    p.add_argument('--listener-plan', type=Path)
     p.add_argument('--backup', type=Path)
     p.add_argument('--api', type=Path)
     p.add_argument('--backup-sha256')
@@ -373,6 +449,7 @@ def main():
     p.add_argument('--expected-az')
     a = p.parse_args()
     trial(a.trial)
+    require(a.listener_plan is None or a.action in ('listener-network-check','listener-check'), 'LISTENER_PLAN_ACTION_MISMATCH')
     if not a.execute:
         print(json.dumps({'Status': 'HOST_PLAN_ONLY', 'Action': a.action, 'AllowsCreation': False, 'ReadsSecrets': False}))
         return
@@ -392,7 +469,12 @@ def main():
     port.record_fence = record_fence
     identity = port.identity()
     bind_identity(identity, a.expected_instance_id, a.expected_az)
-    if a.action == 'quiesce':
+    if a.action in ('listener-network-check','listener-check'):
+        require(a.listener_plan is not None, 'EXPLICIT_LISTENER_PLAN_REQUIRED')
+        value = json.loads(a.listener_plan.read_text(encoding='utf-8'))
+        require(value['Trial'] == a.trial, 'WRONG_TRIAL')
+        result = check_application_network(port,value,identity) if a.action == 'listener-network-check' else check_application_listener(port, value, identity)
+    elif a.action == 'quiesce':
         source_record = json.loads(a.source.read_text())
         require(source_record['Trial'] == a.trial, 'WRONG_TRIAL')
         result = quiesce(port, source_record, identity)

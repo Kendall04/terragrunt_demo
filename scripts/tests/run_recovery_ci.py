@@ -18,7 +18,8 @@ ROOT = Path(__file__).resolve().parents[2]
 RECOVERY = ROOT / 'operations/sql-backup/recovery'
 SUITES = ('test_recovery.py', 'test_cold_path.py', 'test_cold_execution.py',
           'test_host_entrypoints.py', 'test_bootstrap.py', 'test_service_plan.py',
-          'test_service_renderer.py')
+          'test_service_renderer.py', 'test_verify_effective.py', 'test_runtime_precheck.py',
+          'test_kernel_query_binding.py', 'test_private_listener.py')
 CHILD = r'''
 import json,sys,unittest
 loader=unittest.TestLoader()

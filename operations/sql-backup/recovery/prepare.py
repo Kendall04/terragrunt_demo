@@ -438,6 +438,24 @@ def service_plan(value):
 
 
 
+
+def application_listener_plan(value):
+    """Explicit post-restore listener transition plan; no setting/service executor."""
+    service = service_plan(value)
+    return {'Status':'APPLICATION_LISTENER_PLAN_ONLY','Trial':value['Trial'],
+            'ServiceInputSha256':service['InputSha256'], 'Network':value['Network'],
+            'Source':value['ColdReceipt']['Source'],'Target':value['ColdReceipt']['Target'],
+            'DefaultUnchanged':'127.0.0.1','ProposedEndpoint':value['Network']['DbPrivateIp'],
+            'ReviewedHostSteps':[['systemctl','stop','mssql-server'],
+                ['/opt/mssql/bin/mssql-conf','set','network.ipaddress',value['Network']['DbPrivateIp']],
+                ['systemctl','start','mssql-server']],
+            'BeforeAnyHostChange':['Reconfirm exact source terminated and target incarnation; no uncertain fencing',
+                                  'Verify exact native VPC/SG ingress and private-only node',
+                                  'Separate future approval of host changes and complete lifecycle required'],
+            'AfterHostChange':'host.py listener-check with this service input; then protected config and new Fargate tasks',
+            'AllowsHostChanges':False,'AllowsActivation':False,'EvidenceAuthenticated':False,'AwsExecuted':False}
+
+
 def service_taskdef(value, candidate):
     """Check the complete rendered projection; never emits or registers a task."""
     plan = service_plan(value)
@@ -472,7 +490,7 @@ def service_taskdef(value, candidate):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('action', choices=['render', 'review-create', 'review-delete', 'bind-retirement', 'timeline', 'publisher', 'cold-plan', 'cold-review', 'bind-cold-retirement', 'service-plan', 'service-taskdef'])
+    p.add_argument('action', choices=['render', 'review-create', 'review-delete', 'bind-retirement', 'timeline', 'publisher', 'cold-plan', 'cold-review', 'bind-cold-retirement', 'service-plan', 'service-taskdef', 'listener-plan'])
     p.add_argument('--trial', required=True)
     p.add_argument('--output', type=Path)
     p.add_argument('--input', type=Path)
@@ -480,11 +498,11 @@ def main():
     p.add_argument('--sha256')
     p.add_argument('--evidence', type=Path)
     a = p.parse_args()
-    if a.action in ('service-plan','service-taskdef'):
+    if a.action in ('service-plan','service-taskdef','listener-plan'):
         value = json.loads(a.input.read_text(encoding='utf-8'))
         require(value['Trial'] == a.trial, 'WRONG_TRIAL')
         require(a.action != 'service-taskdef' or a.evidence is not None, 'RENDERED_TASKDEF_REQUIRED')
-        result = service_plan(value) if a.action == 'service-plan' else service_taskdef(value, json.loads(a.evidence.read_text(encoding='utf-8')))
+        result = application_listener_plan(value) if a.action == 'listener-plan' else service_plan(value) if a.action == 'service-plan' else service_taskdef(value, json.loads(a.evidence.read_text(encoding='utf-8')))
         print(json.dumps(result, indent=2))
         return
     if a.action == 'bind-cold-retirement':

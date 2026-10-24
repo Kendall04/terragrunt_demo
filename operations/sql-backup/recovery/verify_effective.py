@@ -4,19 +4,20 @@ No AWS calls or recovery acceptance claim. Imports are inert; fixtures are not l
 Never format exception messages, child output, config or environment in reports.
 """
 import configparser
+import ipaddress
 import json
 import os
 from pathlib import Path
 import re
 import subprocess
 
-STAGES = frozenset(('environment', 'bootstrap_marker', 'service_state',
+STAGES = frozenset(('endpoint_profile', 'environment', 'bootstrap_marker', 'service_state',
     'service_overrides', 'service_pid', 'config_file', 'config_memory', 'config_ip',
     'get_memory', 'get_ip', 'process_start', 'config_time', 'process_tree',
     'socket_ownership', 'listeners', 'stability', 'complete', 'verification_internal', 'runtime_binding_before', 'runtime_binding_after', 'fresh_sql_query', 'memory_environment', 'runtime_gate'))
 CODES = frozenset(('ENVIRONMENT_UNSUPPORTED', 'SQL_READY_MARKER_MISSING',
     'SQL_NOT_ACTIVE', 'UNEXPECTED_UNIT_OVERRIDE', 'INVALID_MAIN_PID',
-    'MEMORY_CAP_NOT_2048', 'IP_NOT_LOOPBACK', 'SELECTED_GET_FORMAT_UNSUPPORTED', 'SELECTED_GET_VALUE_MISMATCH',
+    'MEMORY_CAP_NOT_2048', 'IP_NOT_LOOPBACK', 'IP_NOT_EXPECTED', 'INVALID_LISTENER_ENDPOINT', 'UNEXPECTED_SQL_LISTENER', 'SELECTED_GET_FORMAT_UNSUPPORTED', 'SELECTED_GET_VALUE_MISMATCH',
     'CONFIG_AFTER_CURRENT_START', 'NON_LOOPBACK_LISTENER', 'LISTENER_NOT_SQL_SERVICE',
     'NO_SQL_LISTENER', 'SERVICE_CHANGED_DURING_OBSERVATION', 'COMMAND_EXIT_NONZERO',
     'INVALID_COMMAND_EXIT_CODE', 'COMMAND_OUTPUT_INVALID', 'COMMAND_OUTPUT_TOO_LARGE',
@@ -59,6 +60,17 @@ def failure(stage, error):
     return report
 
 
+def checked_endpoint(value):
+    if value == '127.0.0.1': return value
+    try:
+        address = ipaddress.ip_address(value)
+        private = any(address in ipaddress.ip_network(c) for c in ('10.0.0.0/8','172.16.0.0/12','192.168.0.0/16'))
+        if address.version != 4 or not private or str(address) != value: raise ValueError()
+    except (ValueError, TypeError):
+        raise Problem('INVALID_LISTENER_ENDPOINT') from None
+    return value
+
+
 class LocalPort:
     def guard(self): return os.name == 'posix' and os.uname().sysname == 'Linux' and os.geteuid() == 0
     def text(self, path):
@@ -78,7 +90,10 @@ class LocalPort:
 
 
 class Verifier:
-    def __init__(self, port): self.port, self.stage = port, 'environment'
+    def __init__(self, port, expected_ip='127.0.0.1'):
+        self.port, self.stage = port, 'environment'
+        self.expected_ip = checked_endpoint(expected_ip)
+        self.kernel_address = ipaddress.IPv4Address(self.expected_ip).packed[::-1].hex().upper()
     def require(self, condition, code):
         if not condition: raise Problem(code)
     def command(self, args):
@@ -116,9 +131,9 @@ class Verifier:
         before = p.mtime('/var/opt/mssql/mssql.conf'); self._config_time = before
         cfg = configparser.ConfigParser(interpolation=None); cfg.read_string(p.text('/var/opt/mssql/mssql.conf'))
         self.stage = 'config_memory'; self.require(cfg.getint('memory', 'memorylimitmb') == 2048, 'MEMORY_CAP_NOT_2048')
-        self.stage = 'config_ip'; self.require(cfg.get('network', 'ipaddress') == '127.0.0.1', 'IP_NOT_LOOPBACK')
+        self.stage = 'config_ip'; self.require(cfg.get('network', 'ipaddress') == self.expected_ip, 'IP_NOT_LOOPBACK' if self.expected_ip == '127.0.0.1' else 'IP_NOT_EXPECTED')
         self.stage = 'get_memory'; self.selected('memory', 'memorylimitmb', '2048')
-        self.stage = 'get_ip'; self.selected('network', 'ipaddress', '127.0.0.1')
+        self.stage = 'get_ip'; self.selected('network', 'ipaddress', self.expected_ip)
         self.stage = 'process_start'
         boot = [x.split()[1] for x in p.text('/proc/stat').splitlines() if x.startswith('btime ')]
         if len(boot) != 1: raise ValueError()
@@ -150,7 +165,7 @@ class Verifier:
                 if len(fields) < 10: raise ValueError()
                 address, port = fields[1].split(':')
                 if fields[3] == '0A' and int(port, 16) == 1433:
-                    self.require(family == 'tcp' and address == '0100007F', 'NON_LOOPBACK_LISTENER')
+                    self.require(family == 'tcp' and address == self.kernel_address, 'NON_LOOPBACK_LISTENER' if self.expected_ip == '127.0.0.1' else 'UNEXPECTED_SQL_LISTENER')
                     self.require(fields[9] in inodes, 'LISTENER_NOT_SQL_SERVICE')
                     listeners.append(fields[9]); self._listener_pids.update(inode_pids[fields[9]])
         self.require(bool(listeners), 'NO_SQL_LISTENER')
@@ -158,11 +173,14 @@ class Verifier:
         self.stage = 'stability'
         self.require(p.mtime('/var/opt/mssql/mssql.conf') == before and int(self.prop('MainPID')) == pid and self.prop('ActiveState') == 'active', 'SERVICE_CHANGED_DURING_OBSERVATION')
         self.stage = 'complete'
-        return {'Status': 'CONFIGURATION_OBSERVATION_ONLY', 'Stage': self.stage, 'ExitCode': 0,
-                'PersistedMemoryPlatformCapMb': 2048, 'Ipv4Loopback1433Only': True,
+        result = {'Status': 'CONFIGURATION_OBSERVATION_ONLY', 'Stage': self.stage, 'ExitCode': 0,
+                'PersistedMemoryPlatformCapMb': 2048, 'Ipv4Loopback1433Only': self.expected_ip == '127.0.0.1',
                 'ListenerOwnedBySqlServiceProcessTree': True, 'SqlQueryReadyMarkerPresent': True,
                 'ConfigStartCorrelationToleranceSeconds': 1,
                 'MemoryRuntimePrecedenceProven': False, 'CurrentQueryReadinessProven': False, 'RecoveryAcceptance': False}
+        if self.expected_ip != '127.0.0.1':
+            result.update(ExpectedSqlEndpoint=self.expected_ip, ExpectedEndpoint1433Only=True)
+        return result
 
 
 def assess(port):
@@ -217,8 +235,8 @@ def project_memory_environment(stream):
 
 
 class RuntimeVerifier(Verifier):
-    def __init__(self, port, query):
-        super().__init__(port); self.query = query
+    def __init__(self, port, query, expected_ip='127.0.0.1'):
+        super().__init__(port, expected_ip); self.query = query
 
     def token(self, pid):
         raw = self.port.text(f'/proc/{pid}/stat')
@@ -241,7 +259,7 @@ class RuntimeVerifier(Verifier):
                 if len(fields) < 10: raise ValueError()
                 address, port = fields[1].split(':')
                 if fields[3] == '0A' and int(port, 16) == 1433:
-                    self.require(family == 'tcp' and address == '0100007F', 'NON_LOOPBACK_LISTENER')
+                    self.require(family == 'tcp' and address == self.kernel_address, 'NON_LOOPBACK_LISTENER' if self.expected_ip == '127.0.0.1' else 'UNEXPECTED_SQL_LISTENER')
                     self.require(fields[9].isdecimal() and int(fields[9]) > 0, 'METADATA_INVALID')
                     inodes.append(fields[9])
         self.require(bool(inodes), 'NO_SQL_LISTENER')
@@ -270,7 +288,7 @@ class RuntimeVerifier(Verifier):
         self.stage = 'runtime_binding_before'; before = self.binding()
         self.stage = 'fresh_sql_query'
         answer = self.command_result(self.query()).strip()
-        match = re.fullmatch(r'([1-9][0-9]{0,9})\|127\.0\.0\.1\|1433', answer)
+        match = re.fullmatch(r'([1-9][0-9]{0,9})\|' + re.escape(self.expected_ip) + r'\|1433', answer)
         self.require(match is not None, 'FRESH_QUERY_BINDING_INVALID')
         # SQL reports its own process identity; native Linux observations show
         # it need not equal either container or host kernel PID. The authenticated
@@ -299,14 +317,16 @@ class RuntimeVerifier(Verifier):
         return result
 
 
-def assess_runtime(port, query):
-    verifier = RuntimeVerifier(port, query)
+def assess_runtime(port, query, expected_ip='127.0.0.1'):
+    try: verifier = RuntimeVerifier(port, query, expected_ip)
+    except Exception as error: return failure('endpoint_profile', error)
     try: return verifier.verify()
     except Exception as error: return failure(verifier.stage, error)
 
 
-def require_runtime_precheck(report):
+def require_runtime_precheck(report, expected_ip='127.0.0.1'):
     """Runtime input/readiness precondition only, never complete recovery proof."""
+    expected_ip = checked_endpoint(expected_ip)
     required = ('RuntimePrecheckSatisfied',
                 'CurrentQueryReadinessProven', 'StableProcessBinding')
     keys = frozenset(('Status','Stage','ExitCode','PersistedMemoryPlatformCapMb','Ipv4Loopback1433Only',
@@ -314,6 +334,7 @@ def require_runtime_precheck(report):
         'MemoryRuntimePrecedenceProven','CurrentQueryReadinessProven','RecoveryAcceptance','RuntimePrecheckSatisfied',
         'InitialMemoryInputBoundToProcess','StableProcessBinding','MemoryEnvironment','ProcessBinding',
         'MemoryConsumptionMeasured','ConfigurationConsumptionProven','MemoryEvidenceKind','MemoryConfigurationBasis'))
+    if expected_ip != '127.0.0.1': keys = keys | {'ExpectedSqlEndpoint','ExpectedEndpoint1433Only'}
     if not isinstance(report, dict) or set(report) not in (keys, keys | {'HostBinding'}) or report.get('Status') != 'RUNTIME_PRECHECK_INPUTS_BOUND' or type(report.get('ExitCode')) is not int or report['ExitCode'] != 0 or report.get('Stage') != 'complete' or not all(report.get(k) is True for k in required):
         raise Problem('RUNTIME_PRECHECK_INCOMPLETE')
     binding = report.get('ProcessBinding', {})
@@ -328,7 +349,9 @@ def require_runtime_precheck(report):
         valid = projection['ValueIsAllowed2048'] is None and report.get('InitialMemoryInputBoundToProcess') is False and report.get('MemoryConfigurationBasis') == 'FILE_NO_INITIAL_ENV_OVERRIDE'
     else: valid = False
     if not valid: raise Problem('RUNTIME_PRECHECK_INCOMPLETE')
-    if type(report.get('PersistedMemoryPlatformCapMb')) is not int or report['PersistedMemoryPlatformCapMb'] != 2048 or any(report.get(k) is not True for k in ('Ipv4Loopback1433Only','ListenerOwnedBySqlServiceProcessTree','SqlQueryReadyMarkerPresent')) or type(report.get('ConfigStartCorrelationToleranceSeconds')) is not int or report['ConfigStartCorrelationToleranceSeconds'] != 1:
+    if type(report.get('PersistedMemoryPlatformCapMb')) is not int or report['PersistedMemoryPlatformCapMb'] != 2048 or any(report.get(k) is not True for k in ('ListenerOwnedBySqlServiceProcessTree','SqlQueryReadyMarkerPresent')) or type(report.get('ConfigStartCorrelationToleranceSeconds')) is not int or report['ConfigStartCorrelationToleranceSeconds'] != 1:
+        raise Problem('RUNTIME_PRECHECK_INCOMPLETE')
+    if report.get('Ipv4Loopback1433Only') is not (expected_ip == '127.0.0.1') or (expected_ip != '127.0.0.1' and (report.get('ExpectedSqlEndpoint') != expected_ip or report.get('ExpectedEndpoint1433Only') is not True)):
         raise Problem('RUNTIME_PRECHECK_INCOMPLETE')
     if report.get('MemoryRuntimePrecedenceProven') is not False or report.get('MemoryConsumptionMeasured') is not False or report.get('ConfigurationConsumptionProven') is not False or report.get('MemoryEvidenceKind') != 'INITIAL_ENVIRONMENT_PROJECTION' or report.get('RecoveryAcceptance') is not False:
         raise Problem('RUNTIME_PRECHECK_INCOMPLETE')
