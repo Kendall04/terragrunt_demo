@@ -173,7 +173,7 @@ def review_plan(document, root, action):
     return {'Status': 'STRUCTURAL_PLAN_REVIEW_ONLY', 'Action': action, 'Objects': len(expected), 'LiveAuthorizationProven': False, 'AllowsCreation': False}
 
 
-def retirement_policy(state, name):
+def retirement_policy(state, name, cold=False):
     """Bind exact observed IDs; freshness/ownership must still be checked live."""
     trial(name)
     ids = {}
@@ -190,6 +190,8 @@ def retirement_policy(state, name):
             require(a['id'] not in resource_ids, 'DUPLICATE_RESOURCE_ID')
             resource_ids.append(a['id'])
     expected = {'aws_vpc': 1, 'aws_internet_gateway': 1, 'aws_subnet': 3, 'aws_route_table': 3, 'aws_eip': 1, 'aws_nat_gateway': 1, 'aws_security_group': 1, 'aws_vpc_endpoint': 1, 'aws_instance': 2}
+    if cold:
+        expected.update(aws_subnet=2, aws_route_table=2, aws_instance=1)
     require({k: len(v) for k, v in ids.items()} == expected, 'INCOMPLETE_RUNTIME_INVENTORY')
     names = {'aws_vpc': ('vpc', 'vpc-'), 'aws_internet_gateway': ('internet-gateway', 'igw-'), 'aws_subnet': ('subnet', 'subnet-'), 'aws_route_table': ('route-table', 'rtb-'), 'aws_eip': ('elastic-ip', 'eipalloc-'), 'aws_nat_gateway': ('natgateway', 'nat-'), 'aws_security_group': ('security-group', 'sg-'), 'aws_vpc_endpoint': ('vpc-endpoint', 'vpce-'), 'aws_instance': ('instance', 'i-')}
 
@@ -313,7 +315,7 @@ def cold_path(request, evidence=None):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('action', choices=['render', 'review-create', 'review-delete', 'bind-retirement', 'timeline', 'publisher', 'cold-plan', 'cold-review'])
+    p.add_argument('action', choices=['render', 'review-create', 'review-delete', 'bind-retirement', 'timeline', 'publisher', 'cold-plan', 'cold-review', 'bind-cold-retirement'])
     p.add_argument('--trial', required=True)
     p.add_argument('--output', type=Path)
     p.add_argument('--input', type=Path)
@@ -321,6 +323,9 @@ def main():
     p.add_argument('--sha256')
     p.add_argument('--evidence', type=Path)
     a = p.parse_args()
+    if a.action == 'bind-cold-retirement':
+        print(json.dumps(retirement_policy(json.loads(a.input.read_text(encoding='utf-8')), a.trial, cold=True), indent=2))
+        return
     if a.action in ('cold-plan', 'cold-review'):
         request = json.loads(a.input.read_text(encoding='utf-8'))
         require(request['Trial'] == a.trial, 'WRONG_TRIAL')

@@ -133,6 +133,37 @@ class Port:
                 env.pop('SQLCMDPASSWORD', None)
         return runtime_verify.assess_runtime(runtime_verify.LocalPort(), fresh_query)
 
+    def confirm_cold_fence(self, request, target_identity):
+        """Native reads only, never terminate or assume a different role. No retries."""
+        source = request['SourceRecord']['Source']
+        caller = json.loads(self.run(['aws', 'sts', 'get-caller-identity', '--output', 'json'], timeout=20))
+        require(caller['Account'] == ACCOUNT and
+                caller['Arn'].startswith(f'arn:aws:sts::{ACCOUNT}:assumed-role/{ROLE_NAME}/'),
+                'FENCE_READER_IDENTITY_MISMATCH')
+        document = json.loads(self.run(['aws', 'ec2', 'describe-instances', '--region', REGION,
+                   '--instance-ids', source['instanceId'], target_identity['instanceId'], '--output', 'json'], timeout=20))
+        reservations = document.get('Reservations', [])
+        require(reservations and all(r.get('OwnerId') == ACCOUNT for r in reservations), 'FENCE_ACCOUNT_MISMATCH')
+        instances = [i for r in reservations for i in r.get('Instances', [])]
+        require(len(instances) == 2 and len({i['InstanceId'] for i in instances}) == 2, 'FENCE_INVENTORY_INCOMPLETE')
+        items = {i['InstanceId']: i for i in instances}
+        old, new = items[source['instanceId']], items[target_identity['instanceId']]
+        require(old['State']['Name'] == 'terminated', 'SOURCE_TERMINATION_NOT_CONFIRMED')
+        require(timestamp(old['LaunchTime']) == timestamp(request['SourceLaunchUtc'])
+                and old['Placement']['AvailabilityZone'] == source['availabilityZone'], 'SOURCE_GENERATION_MISMATCH')
+        tags = {t['Key']: t['Value'] for t in new.get('Tags', [])}
+        require(new['State']['Name'] == 'running' and tags.get('Trial') == request['Trial']
+                and new['Placement']['AvailabilityZone'] == request['TargetAz']
+                and new['ImageId'] == request['SqlAmiId'], 'TARGET_GENERATION_MISMATCH')
+        require(event_order(request['RecoveryRequestedUtc'], new['LaunchTime'], utc()), 'PREPARED_TARGET_FORBIDDEN')
+        receipt = {'Status': 'EXACT_SOURCE_TERMINATED', 'Source': source, 'Target': target_identity,
+                'SourceLaunchUtc': old['LaunchTime'], 'TargetLaunchUtc': new['LaunchTime'],
+                'ObservedUtc': utc(), 'ControlPlaneSha256': hashlib.sha256(json.dumps(document, sort_keys=True).encode()).hexdigest(),
+                'Basis': 'Native STS and EC2 reads under the instance role; not an AZ-outage guarantee.'}
+        if hasattr(self, 'record_fence'):
+            self.record_fence(receipt)
+        return receipt
+
     def secret(self, arn):
         value = self.run(['aws', 'secretsmanager', 'get-secret-value', '--region', REGION, '--secret-id', arn,
                           '--query', 'SecretString', '--output', 'text'], timeout=20).rstrip('\n')
@@ -271,22 +302,38 @@ def quiesce(port, source_record, identity):
             'FailureDeclaredUtc': start, 'SourceInactiveConfirmedUtc': utc(), 'ActiveState': active}
 
 
-def restore(port, name, config, backup, api, identity, source_record, failure):
+def restore(port, name, config, backup, api, identity, source_record, failure, cold_request=None):
     check_source_runtime(source_record)
-    require(source_record['Status'] == 'SOURCE_BACKED_UP' and source_record['Trial'] == name == failure['Trial'], 'WRONG_TRIAL')
-    require(source_record['Source']['instanceId'] != identity['instanceId'] and source_record['Source']['availabilityZone'] != identity['availabilityZone'], 'CROSS_AZ_REQUIRED')
-    require(failure['SourceInstanceId'] == source_record['Source']['instanceId'] and failure['ActiveState'] == 'inactive', 'SOURCE_QUIESCENCE_REQUIRED')
+    fence = None
     m = source_record['Receipt']['Manifest']
-    require(source_record['Receipt']['ManifestKey'].startswith(BASE + '/' + name + '/runs/'), 'MANIFEST_OUTSIDE_TRIAL')
-    require(event_order(source_record['PreMarkerRequestUtc'], source_record['PreMarkerConfirmedUtc'], m['StartedUtc'], m['CompletedUtc'], source_record['PostMarkerConfirmedUtc'], failure['FailureDeclaredUtc'], failure['SourceInactiveConfirmedUtc'], utc()), 'INVALID_EVENT_ORDER')
+    if cold_request is None:
+        require(source_record['Status'] == 'SOURCE_BACKED_UP' and source_record['Trial'] == name == failure['Trial'], 'WRONG_TRIAL')
+        require(source_record['Source']['instanceId'] != identity['instanceId'] and source_record['Source']['availabilityZone'] != identity['availabilityZone'], 'CROSS_AZ_REQUIRED')
+        require(failure['SourceInstanceId'] == source_record['Source']['instanceId'] and failure['ActiveState'] == 'inactive', 'SOURCE_QUIESCENCE_REQUIRED')
+        require(source_record['Receipt']['ManifestKey'].startswith(BASE + '/' + name + '/runs/'), 'MANIFEST_OUTSIDE_TRIAL')
+        require(event_order(source_record['PreMarkerRequestUtc'], source_record['PreMarkerConfirmedUtc'], m['StartedUtc'], m['CompletedUtc'], source_record['PostMarkerConfirmedUtc'], failure['FailureDeclaredUtc'], failure['SourceInactiveConfirmedUtc'], utc()), 'INVALID_EVENT_ORDER')
+    else:
+        from prepare import cold_path
+        require(cold_request['Trial'] == name and cold_request['SourceRecord'] == source_record, 'COLD_REQUEST_SOURCE_MISMATCH')
+        require(source_record['Source']['instanceId'] != identity['instanceId'], 'FRESH_TARGET_REQUIRED')
+        require(identity['availabilityZone'] == cold_request['TargetAz'], 'WRONG_TARGET_AZ')
+        cold_path(dict(cold_request, NowUtc=utc()))
+        fence = port.confirm_cold_fence(cold_request, identity)
+        failure = {'FailureDeclaredUtc': cold_request['RecoveryRequestedUtc']}
+
     sa = port.secret(SA_SECRET)
     runtime = checked_runtime(port, identity, sa)
     app = port.secret(APP_SECRET)
     target = 'recoverydb_restore_' + name
-    result = port.backup(backup, config, sa, source_record)
+    restore_record = dict(source_record, Trial=name) if cold_request is not None else source_record
+    result = port.backup(backup, config, sa, restore_record)
     require(result['Status'] == 'RESTORED_CHECKDB_READABLE' and result['Rows'] >= 1, 'RESTORE_NOT_VERIFIED')
     escaped = app.replace("'", "''")
+    if cold_request is not None:
+        fence = port.confirm_cold_fence(cold_request, identity)
     port.sql(sa, f"IF SUSER_ID(N'recovery_app') IS NOT NULL THROW 51000,'Existing target login',1; CREATE LOGIN recovery_app WITH PASSWORD=N'{escaped}'; USE [{target}]; ALTER USER recovery_app WITH LOGIN=recovery_app;")
+    if cold_request is not None:
+        fence = port.confirm_cold_fence(cold_request, identity)
     with port.api(api, app, target, False):
         rows = port.http('GET', '/text?page=1&pageSize=100')
         require(any(r['id'] == source_record['PreMarkerId'] and r['text'] == source_record['PreMarker'] for r in rows), 'RECOVERED_MARKER_MISSING')
@@ -295,10 +342,14 @@ def restore(port, name, config, backup, api, identity, source_record, failure):
         require(port.http('POST', '/text', {'text': probe})['text'] == probe, 'RESTORED_WRITE_FAILED')
         require(any(r['text'] == probe for r in port.http('GET', '/text?page=1&pageSize=100')), 'RESTORED_READ_FAILED')
         ready = utc()
-    return {'Status': 'TARGET_RECOVERED_REVIEW_EVIDENCE', 'Trial': name, 'Source': source_record['Source'], 'Target': identity,
+    if cold_request is not None:
+        fence = port.confirm_cold_fence(cold_request, identity)
+    return {'ColdFence': fence, 'RecoveryMode': cold_request['Mode'] if cold_request else 'CROSS_AZ_PREPARED',
+            'RtoColdHostSeconds': (timestamp(ready) - timestamp(cold_request['RecoveryRequestedUtc'])).total_seconds() if cold_request else None,
+            'DeployedEcsApiProven': False, 'Status': 'TARGET_RECOVERED_REVIEW_EVIDENCE', 'Trial': name, 'Source': source_record['Source'], 'Target': identity,
             'ManifestVersion': source_record['Receipt']['ManifestVersion'], 'BackupVersion': m['BackupVersion'],
             'Checkdb': result['Status'], 'RuntimePrecheck': runtime, 'ReadyAndDecryptedMarkersConfirmedUtc': ready,
-            'RtoWarmTargetSeconds': (timestamp(ready) - timestamp(failure['FailureDeclaredUtc'])).total_seconds(),
+            'RtoWarmTargetSeconds': (timestamp(ready) - timestamp(failure['FailureDeclaredUtc'])).total_seconds() if cold_request is None else None,
             'ControlledMarkerAgeUpperBoundSeconds': (timestamp(failure['FailureDeclaredUtc']) - timestamp(source_record['PreMarkerRequestUtc'])).total_seconds(),
             'RpoQualification': 'Controlled synthetic marker observation only; not hourly RPO or production workload proof.',
             'FullEcsRecoveryProven': False, 'CloudLifecycleClosed': False}
@@ -311,6 +362,7 @@ def main():
     p.add_argument('--directory', type=Path, required=True)
     p.add_argument('--source', type=Path)
     p.add_argument('--failure', type=Path)
+    p.add_argument('--cold-request', type=Path)
     p.add_argument('--backup', type=Path)
     p.add_argument('--api', type=Path)
     p.add_argument('--backup-sha256')
@@ -333,6 +385,11 @@ def main():
     # Durable local STARTED marker remains on failure/unknown; never blind replay.
     private_write(output.with_suffix('.started'), {'Trial': a.trial, 'Action': a.action, 'Utc': utc()})
     port = Port()
+    fence_index = [0]
+    def record_fence(receipt):
+        private_write(a.directory / ('fence-' + str(fence_index[0]) + '.json'), receipt)
+        fence_index[0] += 1
+    port.record_fence = record_fence
     identity = port.identity()
     bind_identity(identity, a.expected_instance_id, a.expected_az)
     if a.action == 'quiesce':
@@ -347,12 +404,17 @@ def main():
         import pwd
         user = pwd.getpwnam('mssql')
         config = create_staging(a.trial, user)
-        private_write(config, options(a.trial))
+        cold_request = json.loads(a.cold_request.read_text()) if a.cold_request else None
+        require(cold_request is None or a.action == 'restore', 'COLD_RESTORE_ONLY')
+        cfg = options(a.trial)
+        if cold_request is not None:
+            cfg['Prefix'] = options(cold_request['SourceRecord']['Trial'])['Prefix']
+        private_write(config, cfg)
         os.chown(config, user.pw_uid, user.pw_gid)
         if a.action == 'source':
             result = source(port, a.trial, config, a.backup, a.api, identity)
         else:
-            result = restore(port, a.trial, config, a.backup, a.api, identity, json.loads(a.source.read_text()), json.loads(a.failure.read_text()))
+            result = restore(port, a.trial, config, a.backup, a.api, identity, json.loads(a.source.read_text()), json.loads(a.failure.read_text()) if a.failure else None, cold_request)
     private_write(output, result)
     print(json.dumps({'Status': result['Status'] if 'Status' in result else 'SOURCE_QUIESCENT', 'Receipt': str(output)}))
 
