@@ -47,9 +47,21 @@
   "Part7ChangeProposed": false,
   "CloudOriginalsFresh": false,
   "InstallablePolicies": false,
-  "BlockingGate": "b2 SSM AccessDenied/-1 exact evaluation trace/correction not proven; no retry or alternate control path",
+  "BlockingGate": "Exact SSM per-target asynchronous authorization decision unavailable; API/session/document bindings and installed supplement now native-confirmed. No retry or alternate path.",
   "Scenario": "Two sequential 15-object source/target phases, ONE chosen AZ mode; disposable synthetic source only",
   "WholeEcsLiveProven": false,
   "FullFargateLiveIncludedInUsd4": false,
-  "AwsExecuted": false
+  "AwsExecuted": false,
+  "SsmDiagnosis": "operations/integrations/SSM-B2-DIAGNOSIS-20261024.md",
+  "SsmNativeEvidence": "operations/integrations/fixtures/ssm-b2-native-investigation.json",
+  "SsmInvestigationMutations": 0,
+  "ObservedOperatorFields": {
+    "ReadAtUtc": "2026-10-24T17:57:51.103864+00:00",
+    "Part4Default": "v5",
+    "Part7Default": "v3",
+    "BothEqualSavedOriginals": true,
+    "InlineNames": [],
+    "Boundary": null,
+    "AllOtherEffectivePolicyState": "NOT_INFERRED"
+  }
 }

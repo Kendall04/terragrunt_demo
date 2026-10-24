@@ -121,3 +121,9 @@ The six new receipt tests run within the existing host CI recipe. No browser tes
 AWS query, simulator, installation, provider initialization or build was run by this
 follow-up. Previous Chrome16 results remain historical, not relabelled as current.
 Generated Archify HTML/pins and sealed trial artifacts are unchanged.
+
+## Native read-only SSM investigation — 2026-10-24 follow-up
+
+[Focused diagnosis and native evidence](SSM-B2-DIAGNOSIS-20261024.md) now correlates real CloudTrail SendCommand/AssumeRole/PutRolePolicy/GetDocument events with fresh GetCommandInvocation readbacks. Both API requests were accepted by the intended operator with exact document/version/hash/instance; target authorization failed before execution. The installed06:39 supplement exactly matches the preserved canonical policy hash;06:40:55 created a fresh session without passed session restrictions before retry06:40:56. It was not merely an uninstalled proposal. No exact failing condition is exposed by available events; service-side target authorization trace remains the next specific evidence needed. No command retry or AWS mutation occurred.
+
+Fresh IAM metadata independently shows no operator boundary/inline, ten attached policies, Part4v5/Part7v3 equal saved originals. This validates only those observed fields today, not all historical effective policies. The complete sanitized fixture and raw local evidence hashes are preserved. No public IP, credentials or command bodies are committed.
