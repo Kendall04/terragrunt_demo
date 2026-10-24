@@ -151,11 +151,48 @@ Check("active functional probe remains unsupported, not successful",tick.Unsuppo
 Check("reconcile discovery and dispatch use invocation cancellation",activeReconcile.Ddb.Tokens.All(x=>x.CanBeCanceled));
 var closedReconcile=new Rig();await closedReconcile.Send(fixtures["failed"]);await closedReconcile.Send(fixtures["missing"]);await closedReconcile.Send(fixtures["stale"]);await closedReconcile.Send(fixtures["unknown"]);await closedReconcile.Send(fixtures["recovered"]);closedReconcile.Now=closedReconcile.Now.AddSeconds(121);
 string? cursor=null;var pages=0;
-do {var page=closedReconcile.Reconcile(cursor);cursor=page.Continuation;if(++pages>20)throw new Exception("Unbounded discovery");}while(cursor is not null);
+do {var page=closedReconcile.Reconcile();cursor=page.Continuation;if(++pages>20)throw new Exception("Unbounded discovery");}while(cursor is not null);
 Check("bounded discovery progresses over multiple original directory pages",pages>1);
 Check("closed episode reconciles every due original outbox item",closedReconcile.Effects.All(x=>x.Status is OutboxStatus.Confirmed or OutboxStatus.Cancelled));
 Check("obsolete probes are cancelled without a probe result",closedReconcile.Effects.Where(x=>x.Intent?.Kind==EffectKind.RequestFunctionalProbe).All(x=>x.Status==OutboxStatus.Cancelled && x.Attempts==0));
 Check("late failure notice cancelled after recovery, only recovery sent",closedReconcile.Sns.Requests.Count==1 && closedReconcile.Store.ReadEffect(closedReconcile.Effects.Single(e=>e.Intent?.Kind==EffectKind.EscalateIncident).Id)!.Status==OutboxStatus.Cancelled && DomainJson.Deserialize<BackupNoticeEvidence>(closedReconcile.Sns.Requests[0].MessageAttributes["BackupEvidence"].StringValue).Kind=="ResolveIncident");
+// Original physical layout + SDK transactions, one namespaced control item, no new store.
+var cpRig=new Rig();var cp=new BackupCursorStore(cpRig.Ddb,cpRig.Settings);
+using var cpToken=new CancellationTokenSource();
+var cpClaim=cp.Acquire("worker-1",cpRig.Now,cpToken.Token)!;
+Check("durable cursor lease prevents simultaneous tick",cp.Acquire("worker-2",cpRig.Now,cpToken.Token) is null);
+var nextCursor=Convert.ToBase64String(System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(new Dictionary<string,string>{{"PK",cpRig.Settings.Dynamo.Namespace},{"SK","W#example"}}));
+Check("different checkpoint worker cannot release a live lease",!cp.Complete(cpClaim with {Record=cpClaim.Record with {Worker="foreign-worker"}},null,cpRig.Now,cpToken.Token));
+Check("cursor commits after known completed page",cp.Complete(cpClaim,nextCursor,cpRig.Now,cpToken.Token));
+var cpRestart=new BackupCursorStore(cpRig.Ddb,cpRig.Settings);var restarted=cpRestart.Acquire("worker-2",cpRig.Now,cpToken.Token)!;
+Check("cursor survives host reconstruction",restarted.Record.Continuation==nextCursor);
+Check("stale cursor owner cannot advance progress",!cp.Complete(cpClaim,null,cpRig.Now,cpToken.Token));
+Check("expired cursor owner cannot advance progress",!cpRestart.Complete(restarted,null,cpRig.Now.AddSeconds(30),cpToken.Token));
+var afterCrash=cpRestart.Acquire("worker-3",cpRig.Now.AddSeconds(31),cpToken.Token)!;
+Check("expired lease retries same unadvanced page",afterCrash.Record.Continuation==nextCursor);
+await Reject("foreign persisted cursor cannot be stored",()=>Task.Run(()=>cpRestart.Complete(afterCrash,Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("{\"PK\":\"foreign\",\"SK\":\"W#x\"}")),cpRig.Now.AddSeconds(31),cpToken.Token)));
+
+// Real upstream watchdog, explicit expected-UP/deadline, real store with SDK doubles.
+var wd=new Rig();wd.Settings=wd.Settings with {Mode="observer-check",ObserverDeadlineSeconds=60,ObserverExpectedUp=true};wd.Restart();
+wd.Now=wd.Settings.StartsAt.AddSeconds(59);wd.Reconcile();
+Check("watchdog waits for explicit telemetry deadline",wd.Store.Read(StorageKeys.Aggregate(wd.Settings.Key)) is null);
+wd.Now=wd.Settings.StartsAt.AddMinutes(31);wd.Reconcile();
+Check("missing observer becomes UNKNOWN, never backup failure or recovery",wd.Head.State==IncidentState.ESCALATED && wd.Sns.Requests.Single().Message.Contains("OBSERVER_HEARTBEAT_EXPIRED") && !wd.Sns.Requests.Single().Message.Contains("FALLO (FAILED)"));
+var watchdogRevision=wd.Head.Revision;wd.Reconcile();
+Check("same watchdog window deduplicates original receipt",wd.Head.Revision==watchdogRevision && wd.Sns.Requests.Count==1);
+Check("actual UNKNOWN heartbeat is durably ACKed",(await wd.Send(ActualCheck(fixtures["unknown"]))).BatchItemFailures.Count==0);wd.Reconcile();
+Check("alive UNKNOWN observer does not heal incident",wd.Head.State==IncidentState.ESCALATED);
+Check("actual recovery observation is durably ACKed",(await wd.Send(ActualCheck(fixtures["recovered"]))).BatchItemFailures.Count==0);
+Check("watchdog and ingress share one explicit catalog",wd.Head.CatalogVersion==BackupSettings.CatalogVersion);
+Check("fresh actual healthy check heals observer-loss incident",wd.Head.State==IncidentState.RESOLVED);
+var hb=new BackupHeartbeatStore(wd.Ddb,wd.Settings);var newest=hb.Read(CancellationToken.None)!.ObservedAt;
+hb.Touch(newest.AddSeconds(-1),CancellationToken.None);
+Check("late observation cannot regress heartbeat",hb.Read(CancellationToken.None)!.ObservedAt==newest);
+var maintenanceWd=new Rig();maintenanceWd.Settings=maintenanceWd.Settings with {Mode="observer-check",ObserverDeadlineSeconds=60,ObserverExpectedUp=false};maintenanceWd.Restart();maintenanceWd.Reconcile();
+Check("expected-down watchdog is disabled without fake success",maintenanceWd.Store.Read(StorageKeys.Aggregate(maintenanceWd.Settings.Key)) is null);
+var forgedWd=new Rig();forgedWd.Settings=forgedWd.Settings with {Mode="observer-check",ObserverDeadlineSeconds=60,ObserverExpectedUp=true};forgedWd.Restart();
+Check("external sender cannot forge trusted watchdog source",(await forgedWd.Send(Change(ActualCheck(fixtures["failed"]),"Source",JsonValue.Create(Ecs.Backup.Sentinel.BackupIncidentPolicy.WatchdogProducer)))).BatchItemFailures.Count==1 && forgedWd.Ddb.Inner.Rows.Count==0);
+
 var emptyReconcile=new Rig();Check("empty directory has no external effects",emptyReconcile.Reconcile().Results.Length==0 && emptyReconcile.Sns.Requests.Count==0);
 await Reject("foreign discovery cursor refused",()=>Task.Run(()=>emptyReconcile.Reconcile(Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("{\"PK\":\"foreign\",\"SK\":\"W#a\"}")))));
 

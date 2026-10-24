@@ -41,7 +41,7 @@ public sealed class IngestFunction {
 }
 public sealed record DispatchRequest(string[] EffectIds);
 public sealed record ReconcileRequest(string? Continuation=null);
-public sealed record BackupReconcileResult(DispatchResult[] Results,string? Continuation,int UnsupportedActiveProbes);
+public sealed record BackupReconcileResult(DispatchResult[] Results,string? Continuation,int UnsupportedActiveProbes,string Outcome="Completed",bool CursorSaved=true);
 public sealed class DispatchFunction {
  private readonly Func<BackupSettings> settings;private readonly Func<BackupSettings,ManagedClients> clients;private readonly Func<DateTimeOffset> clock;
  private ManagedClients? warm;
@@ -52,12 +52,18 @@ public sealed class DispatchFunction {
   using var token=ManagedRuntime.Budget(context,config.ExpiresAt-clock());var sdk=warm??=clients(config);
   using var scoped=new ScopedDynamoClient(sdk.Dynamo,token.Token);
   var store=new global::Sentinel.Persistence.DynamoDb.DynamoStore(scoped,config.Dynamo with {PageSize=20},config.Storage);
-  token.Token.ThrowIfCancellationRequested();var page=store.Discover(clock(),request.Continuation);
+  if(request.Continuation is not null)throw new ArgumentException("External cursor override forbidden.");
+  var checkpoints=new BackupCursorStore(scoped,config);var claim=checkpoints.Acquire(context.AwsRequestId,clock(),token.Token);
+  if(claim is null)return new([],null,0,"LeaseBusy",false);
+  var watched=BackupObserverWatchdog.Evaluate(config,scoped,clock(),token.Token);
+  if(watched is not null && watched.Status is not (ProcessingStatus.Committed or ProcessingStatus.Duplicate or ProcessingStatus.Ignored))
+   throw new InvalidOperationException("Watchdog persistence unconfirmed; cursor not advanced.");
+  token.Token.ThrowIfCancellationRequested();var page=store.Discover(clock(),claim.Record.Continuation);
   var ids=page.Items.Where(e=>e.AggregateKey==StorageKeys.Aggregate(config.Key)).Select(e=>e.Id).ToArray();
   var blocked=page.Items.Count(e=>e.AggregateKey==StorageKeys.Aggregate(config.Key) && e.Intent?.Kind==EffectKind.RequestFunctionalProbe && store.Read(e.AggregateKey)?.Head.State!=IncidentState.RESOLVED);
   var results=ids.Length==0?[]:BackupDispatch.Run(config,sdk.Dynamo,sdk.Archive,sdk.Notices,ids,context.AwsRequestId,clock,token.Token);
-  // Caller persists/passes cursor; no automatic scheduling or complete-drain claim.
-  return new(results,page.Continuation,blocked);
+  var saved=checkpoints.Complete(claim,page.Continuation,clock(),token.Token);
+  return new(results,page.Continuation,blocked,saved?"Completed":"LeaseLost",saved);
  }
  public DispatchResult[] Handler(DispatchRequest request,ILambdaContext context) {
   var config=settings();config.ValidateInvocation(context.InvokedFunctionArn,"dispatch",clock());

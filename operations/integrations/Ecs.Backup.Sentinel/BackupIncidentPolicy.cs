@@ -5,13 +5,14 @@ namespace Ecs.Backup.Sentinel;
 
 /// <summary>Read-only backup-observer assessment using the real Sentinel evaluator extension point.</summary>
 public sealed class BackupIncidentPolicy(CorrelationKey key) : IRecoveryEvaluator {
+    public const string WatchdogProducer="SqlBackup.Observer.Watchdog";
     public static RecoveryPolicy Create(CorrelationKey key,TimeSpan observationMaxAge,TimeSpan recoveryBudget,
         TimeSpan checkInterval,TimeSpan confirmationHold,string owner) {
         if(observationMaxAge<=TimeSpan.Zero || recoveryBudget<=TimeSpan.Zero || checkInterval<=TimeSpan.Zero ||
             confirmationHold<TimeSpan.Zero || string.IsNullOrWhiteSpace(owner)) throw new ArgumentException("Explicit backup policy bounds/owner required.");
         // Legacy upstream schema requires Nat settings even for another evaluator. These are NOT AWS bindings or NAT facts.
         // Only a backup-scoped read-probe intent may be produced; no dispatcher/provider is installed by this consumer.
-        var version="ecs-backup-v1-"+DomainJson.StableId(DomainJson.Serialize(key),observationMaxAge.Ticks.ToString(System.Globalization.CultureInfo.InvariantCulture),recoveryBudget.Ticks.ToString(System.Globalization.CultureInfo.InvariantCulture),checkInterval.Ticks.ToString(System.Globalization.CultureInfo.InvariantCulture),confirmationHold.Ticks.ToString(System.Globalization.CultureInfo.InvariantCulture),owner);
+        var version="ecs-backup-v2-"+DomainJson.StableId(DomainJson.Serialize(key),observationMaxAge.Ticks.ToString(System.Globalization.CultureInfo.InvariantCulture),recoveryBudget.Ticks.ToString(System.Globalization.CultureInfo.InvariantCulture),checkInterval.Ticks.ToString(System.Globalization.CultureInfo.InvariantCulture),confirmationHold.Ticks.ToString(System.Globalization.CultureInfo.InvariantCulture),owner);
         return new(new(version),recoveryBudget,observationMaxAge,checkInterval,TimeSpan.Zero,
             TimeSpan.Zero,observationMaxAge,1,TimeSpan.Zero,
             new(1,key.Scope,key.Scope,"unused-by-backup-evaluator",[key.Scope],[ObserverNormalizer.Producer]),owner,null,
@@ -25,7 +26,7 @@ public sealed class BackupIncidentPolicy(CorrelationKey key) : IRecoveryEvaluato
             throw new IngestionException(FailureClass.Security,"backup-policy-scope");
         // Throw before the original SignalProcessor prepares/commits anything; no poisoned NAT target reaches an outbox.
 
-        var observations=incident.Evidence.Where(e=>e.Source==ObserverNormalizer.Producer && e.Scope==key.Scope &&
+        var observations=incident.Evidence.Where(e=>(e.Source==ObserverNormalizer.Producer || e.Source==WatchdogProducer && e.Kind==EvidenceKind.Telemetry && e.Facts.TelemetryAvailable==false) && e.Scope==key.Scope &&
             incident.Key==key && e.Epoch==incident.Epoch && e.ObservedAt<=context.Now &&
             ((e.Kind==EvidenceKind.Readiness &&
                 ((e.Generation=="backup-health/HEALTHY" && e.Facts.Ready==true) ||

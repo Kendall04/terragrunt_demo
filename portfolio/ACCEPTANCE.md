@@ -218,3 +218,33 @@ telemetry or complete ECS acceptance.
 
 [Runbook and exact boundaries](../terraform/infra/sentinel-backup/README.md).
 No new AWS cycle/spend/access or hosted CI execution occurred in this local increment.
+
+
+## Managed v3 / provider / periodic reconciliation local qualification - 2026-10-24
+
+This supersedes the preceding LOCAL provider/cursor/watchdog blockers only; historical
+native trial exports remain immutable (including its 10 Pending work items).
+
+- [x] AWS6.27.0 minimum dotnet10 SDK boundary, official Windows ZIP checksum and detached
+  signature verified with renewed SAME HashiCorp key; one central binary, Terraform-generated
+  Windows lock, real schema and root validate: zero errors/warnings. No backend/AWS access.
+- [x] Publish excludes main/transitive symbols; strict ZIP allowlist still rejects them.
+  Contract v3 rejects old manifests; source/upstream/entry hashes remain explicit.
+- [x] 104 managed offline tests: original DynamoDB/S3 adapters with upstream SDK doubles,
+  no AWS/email. Durable cursor lease/revision/owner, restart/foreign/expired-worker checks;
+  monotonic observer heartbeat, UNKNOWN watchdog, shared catalog and genuine recovery.
+- [x] 13 Terraform source checks; publisher15 and observer15 PASS on existing WSL Linux,
+  including private-directory/symlink behavior; signals9 PASS. No units installed.
+- [x] Opt-in exact rule/account dispatch permission; schedule OFF by default. Base26,
+  schedule29 resources. Runtime boundaries exclude EC2/NAT/IAM/KMS/secrets.
+- [ ] Native v3 Lambda/cursor/watchdog durability, real installed periodic checker/SQS,
+  independent-host failure and final Terraform create/destroy/effective IAM remain unproven.
+- [ ] Active unsupported probe intents remain visible Pending without attempt/provider;
+  closed-episode obsolete intents cancel via original CAS. No claim of permanent upstream
+  service-neutral probes or historical full outbox drainage.
+
+The [single next-trial proposal](../terraform/infra/sentinel-backup/NEXT-INTEGRATED-TRIAL.md)
+recommends a separate small observer, explicitly outside the current26/29-resource module.
+No host, source-read grant, backend or new spend is selected/created by this checklist.
+Old USD1 and ECS recovery allowances are closed; a new cycle requires its own scope.
+PKI remains OUT of ECS scope. No EKS/demo/SQL changes, remote CI, push or hosting.

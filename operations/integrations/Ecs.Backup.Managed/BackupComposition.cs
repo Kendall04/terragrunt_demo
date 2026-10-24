@@ -16,18 +16,29 @@ public static class BackupComposition {
   var normalizer=new ObserverNormalizer(settings.Subject,settings.Key,store,settings.Policy);
   var processor=new IngestionProcessor(normalizer,new(settings.Account,settings.Region,settings.Project,settings.Environment,[ObserverNormalizer.Producer],[settings.Key]),
    _=>new(new SignalProcessor(store,new IncidentReducer(new BackupIncidentPolicy(settings.Key)),settings.Storage)),_=>settings.Policy,observer,
-   at=>new(at,"ecs-backup-observer-v2",[],[]));
+   at=>new(at,BackupSettings.CatalogVersion,[],[]));
   var ingress=new BackupIngress(normalizer,processor);
   MessageResult? Process(string body,string messageId,string invocation,DateTimeOffset received,CancellationToken budget) {
+   ObserverNormalizer.Candidate candidate;
    try {
     budget.ThrowIfCancellationRequested();
-    if(normalizer.Read(body,processor.Options,received).Evaluation!=(settings.Mode=="synthetic-trial"?"LOCAL_RECEIPT_REPLAY":"CHECK_COMMAND_RESULT"))
+    candidate=normalizer.Read(body,processor.Options,received);
+    if(candidate.Evaluation!=(settings.Mode=="synthetic-trial"?"LOCAL_RECEIPT_REPLAY":"CHECK_COMMAND_RESULT"))
      return new(true,FailureClass.Security,"synthetic-replay-only",null);
    } catch(OperationCanceledException) {return new(true,FailureClass.Transient,"cancelled-before-confirmation",null);}
    catch(Exception e) when(e is System.Text.Json.JsonException or InvalidOperationException or ArgumentException or FormatException or KeyNotFoundException or OverflowException) {
     return new(true,FailureClass.Poison,"backup-observer-contract",null);
    }
-   return ingress.Process(body,messageId,received,budget,invocation);
+   var result=ingress.Process(body,messageId,received,budget,invocation);
+   if(settings.ObserverDeadlineSeconds>0 && (result is null || !result.Retry)) {
+    try {
+     if(!new BackupHeartbeatStore(scoped,settings).Touch(candidate.Observed,budget))
+      return new(true,FailureClass.Transient,"heartbeat-conflict",null);
+    } catch(Exception e) when(e is OperationCanceledException or IOException or TimeoutException or IngestionException) {
+     return new(true,FailureClass.Transient,"heartbeat-unconfirmed",null);
+    }
+   }
+   return result;
   }
   return new Function(processor,Process,clock,settings.QueueArn);
  }

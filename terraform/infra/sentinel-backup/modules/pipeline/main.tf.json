@@ -4,13 +4,13 @@
     "required_providers": {
       "aws": {
         "source": "hashicorp/aws",
-        "version": "= 6.30.0"
+        "version": "= 6.27.0"
       }
     }
   },
   "variable": {
     "config": {
-      "type": "object({ account = string, region = string, run_id = string, project = string, subject = string, scope = string, owner = string, mode = string, starts_at = string, expires_at = string, sender_label = string, notification_mode = string, email = string, sender_role_arn = string, lifecycle_principal_arn = string, artifact_path = string, artifact_manifest_path = string, artifact_sha256 = string, source_commit = string, upstream_commit = string, evidence_seconds = number, budget_seconds = number, check_seconds = number, hold_seconds = number, dedup_seconds = number, signal_age_seconds = number, audit_seconds = number, effect_seconds = number, log_retention_days = number, queue_retention_seconds = number, dlq_retention_seconds = number })",
+      "type": "object({ account = string, region = string, run_id = string, project = string, subject = string, scope = string, owner = string, mode = string, starts_at = string, expires_at = string, sender_label = string, notification_mode = string, email = string, sender_role_arn = string, lifecycle_principal_arn = string, artifact_path = string, artifact_manifest_path = string, artifact_sha256 = string, source_commit = string, upstream_commit = string, evidence_seconds = number, budget_seconds = number, check_seconds = number, hold_seconds = number, dedup_seconds = number, signal_age_seconds = number, audit_seconds = number, effect_seconds = number, log_retention_days = number, queue_retention_seconds = number, dlq_retention_seconds = number, watchdog_seconds = optional(number,0), observer_expected_up = optional(bool,false) })",
       "nullable": false,
       "validation": [
         {
@@ -34,20 +34,24 @@
           "error_message": "ASCII project/subject binding required for cross-language namespace identity."
         },
         {
-          "condition": "${var.config.evidence_seconds > 0 && var.config.budget_seconds > 0 && var.config.check_seconds > 0 && var.config.hold_seconds >= 0 && var.config.signal_age_seconds > 0 && var.config.dedup_seconds >= var.config.signal_age_seconds && var.config.audit_seconds > 0 && var.config.effect_seconds > 0}",
-          "error_message": "Explicit positive retention/evaluation bounds required; dedup covers signal age."
+          "condition": "${var.config.evidence_seconds > 0 && var.config.budget_seconds > 0 && var.config.check_seconds > 0 && var.config.hold_seconds >= 0 && var.config.signal_age_seconds > 0 && var.config.dedup_seconds >= var.config.signal_age_seconds && var.config.audit_seconds > 0 && var.config.effect_seconds > 0 && floor(var.config.evidence_seconds) == var.config.evidence_seconds && floor(var.config.budget_seconds) == var.config.budget_seconds && floor(var.config.check_seconds) == var.config.check_seconds && floor(var.config.hold_seconds) == var.config.hold_seconds && floor(var.config.dedup_seconds) == var.config.dedup_seconds && floor(var.config.signal_age_seconds) == var.config.signal_age_seconds && floor(var.config.audit_seconds) == var.config.audit_seconds && floor(var.config.effect_seconds) == var.config.effect_seconds}",
+          "error_message": "Explicit integer retention/evaluation seconds required; dedup covers signal age."
         },
         {
           "condition": "${can(regex(\"^arn:aws:iam::[0-9]{12}:role/\",var.config.sender_role_arn)) && split(\":\",var.config.sender_role_arn)[4] == var.config.account && can(regex(\"^arn:aws:iam::[0-9]{12}:(role|user)/\",var.config.lifecycle_principal_arn)) && split(\":\",var.config.lifecycle_principal_arn)[4] == var.config.account}",
           "error_message": "Select existing same-account sender role and separate lifecycle principal."
         },
         {
-          "condition": "${try(timecmp(var.config.expires_at,var.config.starts_at)>0 && timecmp(var.config.expires_at,timeadd(var.config.starts_at,\"24h\"))<=0,false)}",
+          "condition": "${can(regex(\"Z$\",var.config.starts_at)) && can(regex(\"Z$\",var.config.expires_at)) && try(timecmp(var.config.expires_at,var.config.starts_at)>0 && timecmp(var.config.expires_at,timeadd(var.config.starts_at,\"24h\"))<=0,false)}",
           "error_message": "Current managed runtime is finite: explicit UTC start/expiry within24h. No permanent schedule is silently authorized."
         },
         {
-          "condition": "${try(jsondecode(file(var.config.artifact_manifest_path)).zipSha256 == var.config.artifact_sha256 && jsondecode(file(var.config.artifact_manifest_path)).sourceCommit == var.config.source_commit && jsondecode(file(var.config.artifact_manifest_path)).upstreamCommit == var.config.upstream_commit && jsondecode(file(var.config.artifact_manifest_path)).integrationContractVersion == \"ecs-backup-managed-v2\" && contains(jsondecode(file(var.config.artifact_manifest_path)).supportedModes,var.config.mode),false)}",
-          "error_message": "New v2 qualified artifact manifest must match mode/digest/source; old trial binaries are refused."
+          "condition": "${try(jsondecode(file(var.config.artifact_manifest_path)).zipSha256 == var.config.artifact_sha256 && jsondecode(file(var.config.artifact_manifest_path)).sourceCommit == var.config.source_commit && jsondecode(file(var.config.artifact_manifest_path)).upstreamCommit == var.config.upstream_commit && jsondecode(file(var.config.artifact_manifest_path)).integrationContractVersion == \"ecs-backup-managed-v3\" && contains(jsondecode(file(var.config.artifact_manifest_path)).supportedModes,var.config.mode),false)}",
+          "error_message": "New v3 qualified artifact manifest must match mode/digest/source; old trial binaries are refused."
+        },
+        {
+          "condition": "${var.config.watchdog_seconds >= 0 && var.config.watchdog_seconds <= 86400 && floor(var.config.watchdog_seconds)==var.config.watchdog_seconds && (var.config.watchdog_seconds==0 || var.config.mode==\"observer-check\")}",
+          "error_message": "Explicit watchdog deadline requires observer-check mode;0 disables it. Expected-UP is separately explicit."
         }
       ]
     },
@@ -58,6 +62,19 @@
     "allow_data_retirement": {
       "type": "bool",
       "default": false
+    },
+    "enable_dispatch_schedule": {
+      "type": "bool",
+      "default": false
+    },
+    "dispatch_schedule_expression": {
+      "type": "string",
+      "nullable": true,
+      "default": null,
+      "validation": {
+        "condition": "${!var.enable_dispatch_schedule || can(regex(\"^rate\\\\(([1-9]|[1-5][0-9]|60) minutes?\\\\)$\",var.dispatch_schedule_expression))}",
+        "error_message": "Enable only with an explicitly reviewed rate of1..60 minutes."
+      }
     }
   },
   "locals": {
@@ -356,7 +373,9 @@
             "SENTINEL_DEDUP_SECONDS": "${tostring(var.config.dedup_seconds)}",
             "SENTINEL_SIGNAL_AGE_SECONDS": "${tostring(var.config.signal_age_seconds)}",
             "SENTINEL_AUDIT_SECONDS": "${tostring(var.config.audit_seconds)}",
-            "SENTINEL_EFFECT_SECONDS": "${tostring(var.config.effect_seconds)}"
+            "SENTINEL_EFFECT_SECONDS": "${tostring(var.config.effect_seconds)}",
+            "SENTINEL_WATCHDOG_SECONDS": "${tostring(var.config.watchdog_seconds)}",
+            "SENTINEL_OBSERVER_EXPECTED_UP": "${tostring(var.config.observer_expected_up)}"
           }
         },
         "tags": "${local.tags}",
@@ -418,7 +437,9 @@
             "SENTINEL_DEDUP_SECONDS": "${tostring(var.config.dedup_seconds)}",
             "SENTINEL_SIGNAL_AGE_SECONDS": "${tostring(var.config.signal_age_seconds)}",
             "SENTINEL_AUDIT_SECONDS": "${tostring(var.config.audit_seconds)}",
-            "SENTINEL_EFFECT_SECONDS": "${tostring(var.config.effect_seconds)}"
+            "SENTINEL_EFFECT_SECONDS": "${tostring(var.config.effect_seconds)}",
+            "SENTINEL_WATCHDOG_SECONDS": "${tostring(var.config.watchdog_seconds)}",
+            "SENTINEL_OBSERVER_EXPECTED_UP": "${tostring(var.config.observer_expected_up)}"
           }
         },
         "tags": "${local.tags}",
@@ -459,6 +480,39 @@
       "archive": {
         "bucket": "${aws_s3_bucket.archive.id}",
         "policy": "${jsonencode({Version=\"2012-10-17\",Statement=[{Effect=\"Deny\",Principal=\"*\",Action=\"s3:*\",Resource=[\"arn:aws:s3:::${local.bucket_name}\",\"arn:aws:s3:::${local.bucket_name}/*\"],Condition={Bool={\"aws:SecureTransport\"=\"false\",\"aws:PrincipalIsAWSService\"=\"false\"}}},{Effect=\"Deny\",Principal=\"*\",Action=\"s3:*\",Resource=[\"arn:aws:s3:::${local.bucket_name}\",\"arn:aws:s3:::${local.bucket_name}/*\"],Condition={ArnNotEquals={\"aws:PrincipalArn\"=[var.config.lifecycle_principal_arn,local.role_arns.dispatch]},Bool={\"aws:PrincipalIsAWSService\"=\"false\"}}}]})}"
+      }
+    },
+    "aws_cloudwatch_event_rule": {
+      "dispatch": {
+        "count": "${var.enable_dispatch_schedule ? 1 : 0}",
+        "name": "${local.name}-dispatch",
+        "schedule_expression": "${var.dispatch_schedule_expression}",
+        "state": "ENABLED",
+        "tags": "${local.tags}"
+      }
+    },
+    "aws_cloudwatch_event_target": {
+      "dispatch": {
+        "count": "${var.enable_dispatch_schedule ? 1 : 0}",
+        "rule": "${aws_cloudwatch_event_rule.dispatch[0].name}",
+        "target_id": "backup-dispatch",
+        "arn": "${aws_lambda_function.dispatch.arn}",
+        "input": "{}",
+        "retry_policy": {
+          "maximum_event_age_in_seconds": 60,
+          "maximum_retry_attempts": 0
+        }
+      }
+    },
+    "aws_lambda_permission": {
+      "dispatch_schedule": {
+        "count": "${var.enable_dispatch_schedule ? 1 : 0}",
+        "statement_id": "OnlyOwnBackupSchedule",
+        "action": "lambda:InvokeFunction",
+        "function_name": "${aws_lambda_function.dispatch.function_name}",
+        "principal": "events.amazonaws.com",
+        "source_arn": "${aws_cloudwatch_event_rule.dispatch[0].arn}",
+        "source_account": "${var.config.account}"
       }
     }
   },

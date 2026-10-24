@@ -18,30 +18,35 @@ business service, CA, NAT provider, EC2 instance or new authentication mechanism
   two .NET10 Lambdas; SNS and its email subscription; event-source mapping.
 - Terraform also owns the content-addressed code object. Both Lambdas bind its actual
   S3 version and local SHA256. The release manifest must have matching source/upstream
-  commits, digest, v2 contract and admitted runtime mode. Old trial manifests fail closed.
+  commits, digest, v3 contract and admitted runtime mode. Old trial manifests fail closed.
 - CI/package preparation produces code; Terraform alone updates Lambda code/configuration.
   No competing CLI updater, ignore_changes or destroy provisioner is present.
 - Namespace/archive prefix derive from the original Sentinel JSON-array SHA256 contract,
   cross-checked against the real C# implementation.
 - Mapping is disabled by default. Confirm SNS and reviewed mode/producer before enabling.
-  No automatic dispatcher schedule is created: see the cursor gate below.
+  Dispatcher scheduling is opt-in and OFF by default; enabling adds three explicitly scoped
+  EventBridge rule/target/Lambda-permission resources. No cadence default is chosen.
 
 ## Toolchain boundary
 
 Existing ECS roots retain AWS5.100.0. That version validates Lambda runtimes using a
-Lambda SDK enum without dotnet10. This NEW root pins AWS6.30.0 only: its SDK1.87.1
-contains dotnet10. No provider was downloaded, initialized or locked for this root.
-The installed Terraform1.13.4 parsed the module but validate is BLOCKED by missing
-required provider; Python source checks are not provider/schema/plan acceptance.
+Lambda SDK enum without dotnet10. This NEW root pins AWS6.27.0 only: its SDK1.87.0
+contains dotnet10. One Windows provider was downloaded to the central project cache and verified against
+official release/Registry SHA256 plus detached GPG signature with the same renewed
+HashiCorp primary key. Terraform generated the Windows lock; actual provider schema
+and root validate PASS (zero diagnostics) using a junction to that one binary.
+The S3 backend was not initialized and no AWS API was called. The schema probe has
+no resources/backend. This does not qualify an apply/destroy or Linux provider.
 
 Official source:
 - [AWS5.100 runtime validation](https://github.com/hashicorp/terraform-provider-aws/blob/v5.100.0/internal/service/lambda/function.go#L316)
-- [AWS6.30 dependency](https://github.com/hashicorp/terraform-provider-aws/blob/v6.30.0/go.mod)
-- [SDK1.87.1 runtime enum](https://github.com/aws/aws-sdk-go-v2/blob/service/lambda/v1.87.1/service/lambda/types/enums.go)
+- [AWS6.27 dependency](https://github.com/hashicorp/terraform-provider-aws/blob/v6.27.0/go.mod)
+- [SDK1.87.0 runtime enum](https://github.com/aws/aws-sdk-go-v2/blob/service/lambda/v1.87.0/service/lambda/types/enums.go)
 
-A future tool qualification must verify official signed/checksummed platform archives,
-generate the real lock and test this isolated module. Do not copy a5.x lock, fabricate
-hashes or upgrade the14 existing TARGET roots to bypass that gate.
+[Provider qualification](provider-qualification.json) records the adjacent minimum-version
+boundary, signed checksum, real lock/schema and central-cache evidence. Official6.26
+has no dotnet10 enum,6.27 does. Additional platforms need their own authentic lock entries;
+do not copy a5.x lock or upgrade the14 existing TARGET roots.
 
 ## Inputs, state and local commands
 
@@ -92,26 +97,42 @@ Readable SNS content now has an explicit real-observation mode, still says a bac
 health check is not a SQL restore, and never calls SNS acceptance inbox delivery.
 
 DispatchFunction.Reconcile uses the original durable work directory, one20-item page,
-original dispatcher/fences and returned continuation. The caller MUST retain/pass its
-cursor, including empty pages with a continuation. Restarting every tick at null could
-starve later work; therefore automatic scheduling remains deliberately unwired until a
-durable caller checkpoint is implemented/qualified. It does not scan all tenants.
+original dispatcher/fences and a durable checkpoint in a single CTRL item in the SAME
+table/namespace. Conditional revision/worker/lease checks prevent competing/stale
+workers advancing it. A crash retains the old page until lease expiry; uncertain writes
+grant no execution. Empty-page continuation is preserved. External cursor overrides are
+rejected. No alternative receipt/outbox/backend exists.
+
+Opt-in watchdog tracks one additional monotonic heartbeat CTRL item, including valid
+suppressed healthy observations. Last arrival is not backup health. With an explicit
+deadline and expected-UP=true it reuses the original TelemetryWatchdog and reducer:
+missing observations mean UNKNOWN, never an invented failed backup or restore.
+Unknown escalates on the existing recovery budget; only later genuine healthy evidence
+can heal. Ingest and watchdog share one explicit catalog identity; the original policy-
+migration guard remains. Expected-down disables watchdog evaluation, not fake recovery.
+Enable expected-UP only with reviewed matching producer cadence/heartbeat configuration.
+
+Optional EventBridge scheduling invokes only the dispatch function through its exact
+rule ARN and account. No target retry is added; the next reviewed tick resumes the
+durable page. The existing application remains one business API. All units/flags are
+uninstalled/disabled until a future admitted cycle.
 
 Active RequestFunctionalProbe work is explicitly UNSUPPORTED: no attempt, no claimed
 success and no NAT worker. For a closed episode, the original store's CAS/obsolescence
-checks cancel old probes/checks. Tests prove multi-page reconciliation, real archive/
-audit ACKs with SDK doubles, and that an unsent stale failure notification is cancelled
-after recovery instead of sending a misleading late failure email.
+checks cancel old probes/checks. Tests preserve these distinctions and cancellation
+of an unsent stale failure notice instead of misleading late email.
 
 The original reducer still requires NAT-shaped policy fields and emits probe intents.
 Those inert fields are validated; no original core is forked to erase inconvenient work.
 A service-neutral upstream probe-capability policy remains the right permanent fix.
 Periodic independent observations supply actual backup-health evidence in this increment.
-They do NOT prove restoration. A missed/crashed observer watchdog is also not installed.
+They do NOT prove restoration. The watchdog code is local-qualified only; no schedule/unit is installed. No guarantee covers
+failure of Sentinel itself; an independent host/location and its checker-read role remain
+unselected and require explicit review. Neither is provisioned by this module.
 
 ## Lifecycle and next integrated test matrix
 
-1. Qualify isolated provider/lock and new immutable v2 package. Review account/principal,
+1. Qualify isolated provider/lock and new immutable v3 package. Review account/principal,
    backend key, sender role/host, email, timing, retentions, budget and both saved plans.
 2. Inventory names and effective CREATE/READ/DELETE permissions once. Include the known
    historical Get/DeleteEventSourceMapping wildcard-context limitation in the approval
@@ -144,3 +165,5 @@ There is no CloudFormation permission in the final path.
 
 Local tests do not satisfy those AWS/installation/durability gates. Prior2+2-day backups,
 original states/evidence, prior synthetic-trial receipts, EKS/demo and PKI scope are unchanged.
+
+[Next integrated trial proposal](NEXT-INTEGRATED-TRIAL.md) separates the locally qualified pipeline from the unimplemented observer-host slice; it grants no deployment authority.

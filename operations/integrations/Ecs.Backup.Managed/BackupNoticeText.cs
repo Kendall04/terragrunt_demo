@@ -20,12 +20,13 @@ public static class BackupNoticeText {
    ("FAILED","LAST_ATTEMPT_FAILED")=>"El observador informó un intento fallido.",
    ("MISSING","NO_REMOTE_COMMIT")=>"El observador informó que no hay un commit remoto de backup.",
    ("STALE","REMOTE_BACKUP_TOO_OLD")=>"El observador informó que el backup remoto es demasiado antiguo.",
+   ("UNKNOWN","OBSERVER_HEARTBEAT_EXPIRED")=>"No llegan observaciones dentro del plazo configurado; se desconoce la salud del backup.",
    ("UNKNOWN","REMOTE_STORAGE_NOT_CHECKED")=>"El almacenamiento remoto no fue comprobado; no confirma recuperación.",
    ("HEALTHY","RECENT_REMOTE_COMMIT")=>"El observador informó un commit remoto reciente.",
    _=>"No se recibió un código de motivo compatible; no se infiere una causa."};
   var expected=evidence.BackupStatus switch {"FAILED"=>"LAST_ATTEMPT_FAILED","MISSING"=>"NO_REMOTE_COMMIT",
    "STALE"=>"REMOTE_BACKUP_TOO_OLD","UNKNOWN"=>"REMOTE_STORAGE_NOT_CHECKED",_=>"RECENT_REMOTE_COMMIT"};
-  var safeCode=code==expected?expected:"NO_DISPONIBLE";
+  var safeCode=code==expected?expected:evidence.BackupStatus=="UNKNOWN" && code=="OBSERVER_HEARTBEAT_EXPIRED"?code:"NO_DISPONIBLE";
   static string Line(string value)=>value.Replace('\r',' ').Replace('\n',' ').Replace('\t',' ');
   var title=evidence.Kind=="ResolveIncident"?"Backup recuperado":"Atencion de backup";
   var subject=(evidence.SyntheticTrial?"PRUEBA SINTETICA | ":"BACKUP | ")+Line(evidence.SenderLabel)+" | "+title;

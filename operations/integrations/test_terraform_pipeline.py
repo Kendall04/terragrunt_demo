@@ -39,7 +39,7 @@ class TerraformContractTests(unittest.TestCase):
             self.assertEqual(f['environment']['variables']['SENTINEL_MODE'],'${var.config.mode}')
     def test_old_artifact_refused_by_manifest_contract(self):
         v=json.dumps(self.x['variable']['config']['validation'])
-        for field in ['integrationContractVersion','ecs-backup-managed-v2','supportedModes','sourceCommit','zipSha256','upstreamCommit']:self.assertIn(field,v)
+        for field in ['integrationContractVersion','ecs-backup-managed-v3','supportedModes','sourceCommit','zipSha256','upstreamCommit']:self.assertIn(field,v)
     def test_data_guards_and_default_disabled_ingress(self):
         self.assertFalse(self.x['variable']['enable_ingestion']['default'])
         self.assertFalse(self.x['variable']['allow_data_retirement']['default'])
@@ -57,7 +57,13 @@ class TerraformContractTests(unittest.TestCase):
         self.assertEqual(set(self.r['aws_iam_role']),{'ingest','dispatch'})
         self.assertNotIn('aws_iam_role_policy_attachment',self.r)
     def test_no_unreviewed_dispatch_schedule(self):
-        self.assertNotIn('aws_cloudwatch_event_rule',self.r)
+        self.assertFalse(self.x['variable']['enable_dispatch_schedule']['default'])
+        self.assertIsNone(self.x['variable']['dispatch_schedule_expression']['default'])
+        self.assertEqual(self.r['aws_cloudwatch_event_rule']['dispatch']['count'],'${var.enable_dispatch_schedule ? 1 : 0}')
+        permission=self.r['aws_lambda_permission']['dispatch_schedule']
+        self.assertEqual(permission['principal'],'events.amazonaws.com')
+        self.assertEqual(permission['source_arn'],'${aws_cloudwatch_event_rule.dispatch[0].arn}')
+        self.assertEqual(permission['source_account'],'${var.config.account}')
         self.assertNotIn('aws_scheduler_schedule',self.r)
         self.assertEqual(self.r['aws_lambda_function']['dispatch']['handler'],'Ecs.Backup.Managed::Ecs.Backup.Managed.DispatchFunction::Reconcile')
     def test_isolated_partial_backend_no_credentials_or_account_default(self):
@@ -65,8 +71,15 @@ class TerraformContractTests(unittest.TestCase):
         for key in ['SENTINEL_STATE_BUCKET','SENTINEL_STATE_ID','SENTINEL_STATE_REGION','SENTINEL_INPUTS_FILE']:self.assertIn('get_env("'+key+'")',tg)
         self.assertNotIn('profile',tg);self.assertNotIn('assume_role',tg);self.assertIn('sentinel-backup/',tg)
         self.assertEqual(self.root['provider']['aws']['allowed_account_ids'],['${var.config.account}'])
+    def test_runtime_utc_and_integer_duration_admission(self):
+        for source in [self.x,self.root]:
+            rules=json.dumps(source['variable']['config']['validation'])
+            for field in ['evidence_seconds','budget_seconds','check_seconds','hold_seconds','dedup_seconds','signal_age_seconds','audit_seconds','effect_seconds']:
+                self.assertIn('floor(var.config.'+field+')',rules)
+            self.assertIn('Z$',rules)
     def test_provider_pin_isolated_no_fake_lock(self):
-        self.assertEqual(self.root['terraform']['required_providers']['aws']['version'],'= 6.30.0')
-        self.assertFalse((BASE/'.terraform.lock.hcl').exists())
+        self.assertEqual(self.root['terraform']['required_providers']['aws']['version'],'= 6.27.0')
+        self.assertIn('version     = "6.27.0"',(BASE/'.terraform.lock.hcl').read_text())
+        self.assertIn('h1:',(BASE/'.terraform.lock.hcl').read_text())
         self.assertIn('version     = "5.100.0"',(ROOT/'terraform/infra/security/.terraform.lock.hcl').read_text())
 if __name__=='__main__':unittest.main()

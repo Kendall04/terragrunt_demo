@@ -8,4 +8,9 @@
     <PackageReference Include="AWSSDK.SimpleNotificationService" Version="[4.0.100.17]" />
   </ItemGroup>
   <Target Name="RequireManagedSource" BeforeTargets="PrepareForBuild"><Error Condition="!Exists('$(SentinelSourceRoot)/ecs-source-receipt.json')" Text="Prepare verified upstream source with the checked-in managed extension first." /></Target>
+  <Target Name="ExcludeTransitivePublishSymbols" AfterTargets="ComputeFilesToPublish">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(ResolvedFileToPublish.Extension)' == '.pdb'" />
+    </ItemGroup>
+  </Target>
 </Project>
