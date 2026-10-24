@@ -1,0 +1,36 @@
+{
+  "Status": "LOCAL_REVIEW_PACKET_NOT_APPROVED",
+  "Run": "ecs-sentinel-ssmdiag-r20261024d1",
+  "CloudExecuted": false,
+  "RequiresAdmissionReadbacksAndActualSavedPlans": true,
+  "DocumentCanonicalSha256": "f935d2594162584d9b42e0638ea196330eb7627705076919a1fe565528a6e8bb",
+  "ObserverOriginalLfSha256": "3fa1fa026cac11430789f267fa7c997e2e588d00dffc2e61a5118fb6c771f8bb",
+  "ObserverSubsetSha256": "0f04fc48e7116218fcfa511fb4498a7fe3473de5dc69cd7b330b7772e13f94fd",
+  "CompressedUserDataBytes": 11018,
+  "OperatorTemplateChars": 9745,
+  "OriginalCanonicalSha256": {
+    "part4": "2dee64162063bf48daa6be793a92399fd8383104cd102078ae4bd7427a7876e2",
+    "part7": "01ac28532b77b0266632d5714dc909a1638b7d1d54df5d3de27e02ed5dfaad59",
+    "backend": "97d39b00d7b24ec3a5af437e9ac447f3a5e8e96323d8508fd9e51e275f11e529"
+  },
+  "FilesSha256Lf": {
+    "cost.json": "62cebf9e5968cf20939d9f36a44d26ceaeb9d7d74fd1559437086402ba6d2242",
+    "document.json": "ae3c343a00e3858bd9456db94241c7dcf67971ab44d23755014448d30b6471a0",
+    "inventory.json": "e12ffb1a52a2d864f60206d8381b12c2c9547af86cf11e2d519bbb2af880a8c5",
+    "send-command.template.NOT-EXECUTED.json": "dc33a1f98eaffdd9c86e7a315c53a29bc92b15b3cd3f310e95b7ea1627d3e29f",
+    "access/admin-required-scope.json": "9a335be62f60de74e095f00bbe054c2b0c08ded24cb4adc1a2f337de33a5c7a5",
+    "access/backend-template.NOT-INSTALLABLE.json": "01cb031d468cd7b0e10be5e63d6aa2fb9664964930f6c7e9f8e9db032f9d1aca",
+    "access/node-runtime.json": "356aee81f5d840336f7268817b6a7f5b30c8ab9f3dbc082f41d93275ec3e5425",
+    "access/operator-template.NOT-INSTALLABLE.json": "c8e425d5dc44647f9e531d17b597cc8eee9f586bbc14ead454a3ea7e5a70c932",
+    "bootstrap/.terraform.lock.hcl": "be1182b2f765f01c210a0d1327471dd5cd3cc316acd9f11edb8c959888b5fe3d",
+    "bootstrap/backend.s3.json": "273443b26bc3e3d55b403b3c50259bfb3c5127b0a93726b58850853f0c9e9142",
+    "bootstrap/main.tf.json": "edebf25f7532707ab79c99eb36a8c54d679ff2d42244c018ba14ea4b5cde3cd8",
+    "originals/backend.json": "4ed1aaa85678e56871907ed08654b736d8887a2e59fe16fc514f610961afe36c",
+    "originals/part4.json": "817dc0e9528d7e0497f10232c4fa03b397c9731448acd025e68a653c299d22d3",
+    "originals/part7.json": "ac40ad6abcae3c427c54a4d79b6fcc78147a0e082003e740fb19871d4861d5bc",
+    "runtime/.terraform.lock.hcl": "be1182b2f765f01c210a0d1327471dd5cd3cc316acd9f11edb8c959888b5fe3d",
+    "runtime/backend.s3.json": "6cf30301dd08f90972a7d9730dbd80d6317dbc55ce36d72fa9c96017078f1c23",
+    "runtime/bootstrap.sh.tftpl": "99fc9d23fb63d19590c3e45eda49061ac8cf4c074375673a1e2d539b2323f0af",
+    "runtime/main.tf.json": "b19dd7078b7eda4a821b54fa881dbac2948f3ac3a83ef329c654fb7af80db1af"
+  }
+}

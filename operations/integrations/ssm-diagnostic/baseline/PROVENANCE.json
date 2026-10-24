@@ -1,0 +1,76 @@
+{
+  "Classification": "PRESERVED_B2_SNAPSHOTS_NOT_CURRENT_AUTHORITY",
+  "PolicyChain": [
+    {
+      "Policy": "TerragruntDemoDevOperatorPart0",
+      "Version": "v1",
+      "ReadEndedUtc": "2026-10-24T01:10:42.883970+00:00",
+      "CanonicalSha256": "20a107f7df88d14e4cf2e0181d80f462d7125097004069492c3f0193b3592097",
+      "Source": "observer-host-work/readonly-20261024/operator-policy-TerragruntDemoDevOperatorPart0-v1.json"
+    },
+    {
+      "Policy": "TerragruntDemoDevOperatorPart1",
+      "Version": "v1",
+      "ReadEndedUtc": "2026-10-24T01:10:43.497320+00:00",
+      "CanonicalSha256": "710d439f7b5322719adf72bf2f4708ba907f95785e43548628d2d1c99e04664f",
+      "Source": "observer-host-work/readonly-20261024/operator-policy-TerragruntDemoDevOperatorPart1-v1.json"
+    },
+    {
+      "Policy": "TerragruntDemoDevOperatorPart2",
+      "Version": "v1",
+      "ReadEndedUtc": "2026-10-24T01:10:44.108738+00:00",
+      "CanonicalSha256": "3133583e51a363a3ab60631376861ce55fa274b2c3a6d469e215cf16cb0bb32a",
+      "Source": "observer-host-work/readonly-20261024/operator-policy-TerragruntDemoDevOperatorPart2-v1.json"
+    },
+    {
+      "Policy": "TerragruntDemoDevOperatorPart3",
+      "Version": "v1",
+      "ReadEndedUtc": "2026-10-24T01:10:44.691445+00:00",
+      "CanonicalSha256": "e864d1f687fdd38af0039eadb58d3d95f012daf59ee19b8c4ea581a9b8bacb53",
+      "Source": "observer-host-work/readonly-20261024/operator-policy-TerragruntDemoDevOperatorPart3-v1.json"
+    },
+    {
+      "Policy": "TerragruntDemoDevOperatorPart4",
+      "Version": "v5",
+      "ReadEndedUtc": "2026-10-24T01:10:45.350008+00:00",
+      "CanonicalSha256": "2dee64162063bf48daa6be793a92399fd8383104cd102078ae4bd7427a7876e2",
+      "Source": "observer-host-work/readonly-20261024/operator-policy-TerragruntDemoDevOperatorPart4-v5.json"
+    },
+    {
+      "Policy": "TerragruntDemoDevOperatorPart5",
+      "Version": "v2",
+      "ReadEndedUtc": "2026-10-24T01:10:47.435162+00:00",
+      "CanonicalSha256": "51c65dc65d3fa55048e262bfd339eb6fe54f74bb0bc4557572a22bd3f3f0909c",
+      "Source": "observer-host-work/readonly-20261024/operator-policy-TerragruntDemoDevOperatorPart5-v2.json"
+    },
+    {
+      "Policy": "TerragruntDemoDevOperatorPart6",
+      "Version": "v6",
+      "ReadEndedUtc": "2026-10-24T01:10:48.011875+00:00",
+      "CanonicalSha256": "e46d80538fdfdb76e5f2a3157b1cf1881507498b61b863b1a0a2a32050b64b4a",
+      "Source": "observer-host-work/readonly-20261024/operator-policy-TerragruntDemoDevOperatorPart6-v6.json"
+    },
+    {
+      "Policy": "TerragruntDemoDevOperatorPart7",
+      "Version": "v3",
+      "ReadEndedUtc": "2026-10-24T01:10:48.628869+00:00",
+      "CanonicalSha256": "01ac28532b77b0266632d5714dc909a1638b7d1d54df5d3de27e02ed5dfaad59",
+      "Source": "observer-host-work/readonly-20261024/operator-policy-TerragruntDemoDevOperatorPart7-v3.json"
+    },
+    {
+      "Policy": "TerragruntDemoDevOperatorPart8",
+      "Version": "v3",
+      "ReadEndedUtc": "2026-10-24T01:10:49.244064+00:00",
+      "CanonicalSha256": "76eeeaddb23aa4a055678b8f8e8d022cef9d38321a83c75b60a4d399f8968964",
+      "Source": "observer-host-work/readonly-20261024/operator-policy-TerragruntDemoDevOperatorPart8-v3.json"
+    },
+    {
+      "Policy": "TerragruntDemoDevOperatorPart9",
+      "Version": "v4",
+      "ReadEndedUtc": "2026-10-24T01:10:49.824988+00:00",
+      "CanonicalSha256": "a9f67700405ebf5a003e4f7626143955956262b7e42ecded040b81aa7451a6f1",
+      "Source": "observer-host-work/readonly-20261024/operator-policy-TerragruntDemoDevOperatorPart9-v4.json"
+    }
+  ],
+  "RequiredBeforeAdmission": "Read full chain, roles, boundaries, inline quota and exact backend original under existing approved identity; stop on material drift"
+}

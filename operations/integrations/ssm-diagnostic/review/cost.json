@@ -1,0 +1,31 @@
+{
+  "Status": "PROPOSED_NEW_BUDGET_NOT_APPROVED",
+  "UsdCeiling": 1,
+  "BaseRates": {
+    "Ec2LinuxT3MicroPerHour": 0.0104,
+    "PublicIpv4PerHour": 0.005,
+    "Gp3GbMonthIllustrativeUpper": 0.1
+  },
+  "ConservativeEc2PerHour": 0.05,
+  "PaidHoursIncludingCleanupReserve": 5.5,
+  "ComputeIpv4DiskConservativeUsd": 0.308611,
+  "LogsStorageExportReserveUsd": 0.15,
+  "TransferReserveUsd": 0.05,
+  "BackendRequestsStatePreservationReserveUsd": 0.05,
+  "UncertaintyReserveUsd": 0.4,
+  "TotalConservativeUsd": 0.958611,
+  "ObjectiveHours": 2,
+  "StopTestsByPaidHour": 4,
+  "CleanupReserveHours": 1.5,
+  "AbsoluteCeilingHours": 24,
+  "NoFreeTierCreditOrAutomaticCap": true,
+  "LogBytesHardLimit": 2097152,
+  "NoSnapshotsNatSqlSnsCustomMetricsOrLogInsights": true,
+  "Sources": [
+    "https://aws.amazon.com/ec2/instance-types/t3/",
+    "https://aws.amazon.com/vpc/pricing/",
+    "https://aws.amazon.com/ebs/pricing/",
+    "https://aws.amazon.com/cloudwatch/pricing/",
+    "https://aws.amazon.com/systems-manager/pricing/"
+  ]
+}

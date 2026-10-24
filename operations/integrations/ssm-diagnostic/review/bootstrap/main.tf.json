@@ -1,0 +1,83 @@
+{
+  "terraform": {
+    "required_version": "= 1.13.4",
+    "backend": {
+      "s3": {}
+    },
+    "required_providers": {
+      "aws": {
+        "source": "hashicorp/aws",
+        "version": "= 6.27.0"
+      }
+    }
+  },
+  "provider": {
+    "aws": {
+      "region": "us-east-1",
+      "allowed_account_ids": [
+        "341936017254"
+      ]
+    }
+  },
+  "variable": {
+    "expires_at": {
+      "type": "string",
+      "description": "Reviewed admission T0+24h UTC, identical both states; no default",
+      "validation": [
+        {
+          "condition": "${can(formatdate(\"YYYY\",var.expires_at)) && can(regex(\"Z$\",var.expires_at))}",
+          "error_message": "Absolute UTC expiry required."
+        }
+      ]
+    }
+  },
+  "resource": {
+    "aws_iam_policy": {
+      "boundary": {
+        "name": "ecs-sentinel-ssmdiag-r20261024d1-node-boundary",
+        "policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Action\": [\"sts:GetCallerIdentity\"], \"Resource\": [\"*\"], \"Condition\": {\"StringEquals\": {\"aws:RequestedRegion\": \"us-east-1\"}, \"DateLessThan\": {\"aws:CurrentTime\": \"${var.expires_at}\"}}}, {\"Effect\": \"Allow\", \"Action\": [\"ssmmessages:CreateControlChannel\", \"ssmmessages:CreateDataChannel\", \"ssmmessages:OpenControlChannel\", \"ssmmessages:OpenDataChannel\"], \"Resource\": [\"*\"], \"Condition\": {\"StringEquals\": {\"aws:RequestedRegion\": \"us-east-1\"}, \"DateLessThan\": {\"aws:CurrentTime\": \"${var.expires_at}\"}}}, {\"Effect\": \"Allow\", \"Action\": [\"ssm:GetDocument\", \"ssm:DescribeDocument\"], \"Resource\": [\"arn:aws:ssm:us-east-1:341936017254:document/ecs-sentinel-ssmdiag-r20261024d1-observer-control\"], \"Condition\": {\"StringEquals\": {\"aws:RequestedRegion\": \"us-east-1\"}, \"DateLessThan\": {\"aws:CurrentTime\": \"${var.expires_at}\"}}}, {\"Effect\": \"Allow\", \"Action\": [\"ssm:UpdateInstanceInformation\"], \"Resource\": [\"arn:aws:ec2:us-east-1:341936017254:instance/*\"], \"Condition\": {\"StringEquals\": {\"aws:RequestedRegion\": \"us-east-1\", \"ssm:resourceTag/Trial\": \"ecs-sentinel-ssmdiag-r20261024d1\"}, \"DateLessThan\": {\"aws:CurrentTime\": \"${var.expires_at}\"}}}, {\"Effect\": \"Allow\", \"Action\": [\"logs:CreateLogStream\", \"logs:PutLogEvents\"], \"Resource\": [\"arn:aws:logs:us-east-1:341936017254:log-group:/ecs/ssm-diagnostic/ecs-sentinel-ssmdiag-r20261024d1:log-stream:*\"], \"Condition\": {\"StringEquals\": {\"aws:RequestedRegion\": \"us-east-1\"}, \"DateLessThan\": {\"aws:CurrentTime\": \"${var.expires_at}\"}}}, {\"Effect\": \"Allow\", \"Action\": [\"logs:CreateLogGroup\", \"logs:DescribeLogStreams\"], \"Resource\": [\"arn:aws:logs:us-east-1:341936017254:log-group:/ecs/ssm-diagnostic/ecs-sentinel-ssmdiag-r20261024d1\", \"arn:aws:logs:us-east-1:341936017254:log-group:/ecs/ssm-diagnostic/ecs-sentinel-ssmdiag-r20261024d1:*\"], \"Condition\": {\"StringEquals\": {\"aws:RequestedRegion\": \"us-east-1\"}, \"DateLessThan\": {\"aws:CurrentTime\": \"${var.expires_at}\"}}}, {\"Effect\": \"Allow\", \"Action\": [\"logs:DescribeLogGroups\"], \"Resource\": [\"*\"], \"Condition\": {\"StringEquals\": {\"aws:RequestedRegion\": \"us-east-1\"}, \"DateLessThan\": {\"aws:CurrentTime\": \"${var.expires_at}\"}}}]}",
+        "tags": {
+          "Project": "EcsBackupSentinel",
+          "Environment": "Sandbox",
+          "Owner": "Kendall04",
+          "Trial": "ecs-sentinel-ssmdiag-r20261024d1",
+          "Purpose": "SsmDiagnosticOnly"
+        }
+      }
+    },
+    "aws_iam_role": {
+      "node": {
+        "name": "ecs-sentinel-ssmdiag-r20261024d1-node",
+        "assume_role_policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Principal\": {\"Service\": \"ec2.amazonaws.com\"}, \"Action\": \"sts:AssumeRole\"}]}",
+        "permissions_boundary": "${aws_iam_policy.boundary.arn}",
+        "tags": {
+          "Project": "EcsBackupSentinel",
+          "Environment": "Sandbox",
+          "Owner": "Kendall04",
+          "Trial": "ecs-sentinel-ssmdiag-r20261024d1",
+          "Purpose": "SsmDiagnosticOnly"
+        }
+      }
+    },
+    "aws_iam_instance_profile": {
+      "node": {
+        "name": "ecs-sentinel-ssmdiag-r20261024d1-node",
+        "role": "${aws_iam_role.node.name}",
+        "tags": {
+          "Project": "EcsBackupSentinel",
+          "Environment": "Sandbox",
+          "Owner": "Kendall04",
+          "Trial": "ecs-sentinel-ssmdiag-r20261024d1",
+          "Purpose": "SsmDiagnosticOnly"
+        }
+      }
+    },
+    "aws_iam_role_policy": {
+      "node": {
+        "name": "SsmDiagnosticOnly",
+        "role": "${aws_iam_role.node.id}",
+        "policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Action\": [\"sts:GetCallerIdentity\"], \"Resource\": [\"*\"], \"Condition\": {\"StringEquals\": {\"aws:RequestedRegion\": \"us-east-1\"}, \"DateLessThan\": {\"aws:CurrentTime\": \"${var.expires_at}\"}}}, {\"Effect\": \"Allow\", \"Action\": [\"ssmmessages:CreateControlChannel\", \"ssmmessages:CreateDataChannel\", \"ssmmessages:OpenControlChannel\", \"ssmmessages:OpenDataChannel\"], \"Resource\": [\"*\"], \"Condition\": {\"StringEquals\": {\"aws:RequestedRegion\": \"us-east-1\"}, \"DateLessThan\": {\"aws:CurrentTime\": \"${var.expires_at}\"}}}, {\"Effect\": \"Allow\", \"Action\": [\"ssm:GetDocument\", \"ssm:DescribeDocument\"], \"Resource\": [\"arn:aws:ssm:us-east-1:341936017254:document/ecs-sentinel-ssmdiag-r20261024d1-observer-control\"], \"Condition\": {\"StringEquals\": {\"aws:RequestedRegion\": \"us-east-1\"}, \"DateLessThan\": {\"aws:CurrentTime\": \"${var.expires_at}\"}}}, {\"Effect\": \"Allow\", \"Action\": [\"ssm:UpdateInstanceInformation\"], \"Resource\": [\"arn:aws:ec2:us-east-1:341936017254:instance/*\"], \"Condition\": {\"StringEquals\": {\"aws:RequestedRegion\": \"us-east-1\", \"ssm:resourceTag/Trial\": \"ecs-sentinel-ssmdiag-r20261024d1\"}, \"DateLessThan\": {\"aws:CurrentTime\": \"${var.expires_at}\"}}}, {\"Effect\": \"Allow\", \"Action\": [\"logs:CreateLogStream\", \"logs:PutLogEvents\"], \"Resource\": [\"arn:aws:logs:us-east-1:341936017254:log-group:/ecs/ssm-diagnostic/ecs-sentinel-ssmdiag-r20261024d1:log-stream:*\"], \"Condition\": {\"StringEquals\": {\"aws:RequestedRegion\": \"us-east-1\"}, \"DateLessThan\": {\"aws:CurrentTime\": \"${var.expires_at}\"}}}, {\"Effect\": \"Allow\", \"Action\": [\"logs:CreateLogGroup\", \"logs:DescribeLogStreams\"], \"Resource\": [\"arn:aws:logs:us-east-1:341936017254:log-group:/ecs/ssm-diagnostic/ecs-sentinel-ssmdiag-r20261024d1\", \"arn:aws:logs:us-east-1:341936017254:log-group:/ecs/ssm-diagnostic/ecs-sentinel-ssmdiag-r20261024d1:*\"], \"Condition\": {\"StringEquals\": {\"aws:RequestedRegion\": \"us-east-1\"}, \"DateLessThan\": {\"aws:CurrentTime\": \"${var.expires_at}\"}}}, {\"Effect\": \"Allow\", \"Action\": [\"logs:DescribeLogGroups\"], \"Resource\": [\"*\"], \"Condition\": {\"StringEquals\": {\"aws:RequestedRegion\": \"us-east-1\"}, \"DateLessThan\": {\"aws:CurrentTime\": \"${var.expires_at}\"}}}]}"
+      }
+    }
+  }
+}

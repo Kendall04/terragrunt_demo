@@ -1,0 +1,72 @@
+{
+  "Status": "LOCAL_PACKAGE_QUALIFIED_NOT_AWS_APPROVED",
+  "AtUtc": "2026-10-24T20:24:03.530195+00:00",
+  "BaseCommit": "5e806899fc34701e01ce9489d65e02922713d4a0",
+  "LinuxTests": {
+    "Pass": 14,
+    "Skipped": 0,
+    "Uid": 65534,
+    "RealTransport": "NONE; fake CLI/systemctl, socket/process audit denial"
+  },
+  "Provider": {
+    "Version": "6.27.0",
+    "Lock": "Existing sentinel-backup lock, prior qualified cached provider",
+    "ValidateRoots": 2,
+    "MockPlans": {
+      "bootstrap": 4,
+      "runtime": 10
+    },
+    "NetworkOrBackendInitialization": false,
+    "Source": "Existing filesystem mirror, one shared tfdata; duplicate copy replaced with junction to central cache"
+  },
+  "BootstrapBashSyntax": "PASS",
+  "NativeAmiAgentHarnessOrPermissionsProven": false,
+  "CloudExecuted": false,
+  "OriginalPoliciesCurrent": false,
+  "AdmissionRequires": [
+    "fresh current readbacks/original hashes/names/quota",
+    "new grouped approval",
+    "native saved plans",
+    "real generation/source hashes and log arrival before one command"
+  ],
+  "SourceSha256Lf": {
+    "APPROVAL-REQUEST.txt": "ec72a75d818fffdee7a69f4c533584045dea4500c269ec32ec662cbe65ee0e1e",
+    "collector.py": "0d0fd3f691b308c53ddfde254e4a4609cf3612de6207290930160d5d1793f1a2",
+    "harness.py": "4461cc611f96e9121031fd72aea468804fb1a340311a4c076285e1142c695bb4",
+    "prepare.py": "34c5db6ce760ba3858ca26281255b58be3bb43f26d408fee803d9dd8af20a6b1",
+    "README.md": "209c2d6a4fe2281b8a065a0235d81e70771e70e93d9154d725775c7d44cc12ce",
+    "READONLY-PREFLIGHT.json": "122618ff9f164e7e8ec849d9ddbfa7d7e315fd70edf566b35b83f458dd854059",
+    "test_diagnostic.py": "06afa7beef79804ccb0138e2148c264a9d47a11c4e355ef36a975ee70b4bb5ea",
+    "baseline/backend.json": "4ed1aaa85678e56871907ed08654b736d8887a2e59fe16fc514f610961afe36c",
+    "baseline/part4.json": "817dc0e9528d7e0497f10232c4fa03b397c9731448acd025e68a653c299d22d3",
+    "baseline/part7.json": "ac40ad6abcae3c427c54a4d79b6fcc78147a0e082003e740fb19871d4861d5bc",
+    "baseline/PROVENANCE.json": "a8b39fbb10dad530f5e47930ac3f0ddfcef86f27d96e53d674f74269d6cb86f6",
+    "review/cost.json": "62cebf9e5968cf20939d9f36a44d26ceaeb9d7d74fd1559437086402ba6d2242",
+    "review/document.json": "ae3c343a00e3858bd9456db94241c7dcf67971ab44d23755014448d30b6471a0",
+    "review/inventory.json": "e12ffb1a52a2d864f60206d8381b12c2c9547af86cf11e2d519bbb2af880a8c5",
+    "review/manifest.json": "2180736202a2af576e20a40ba845195d5d26b5cb8554f7c739138a0b93452666",
+    "review/send-command.template.NOT-EXECUTED.json": "dc33a1f98eaffdd9c86e7a315c53a29bc92b15b3cd3f310e95b7ea1627d3e29f",
+    "review/access/admin-required-scope.json": "9a335be62f60de74e095f00bbe054c2b0c08ded24cb4adc1a2f337de33a5c7a5",
+    "review/access/backend-template.NOT-INSTALLABLE.json": "01cb031d468cd7b0e10be5e63d6aa2fb9664964930f6c7e9f8e9db032f9d1aca",
+    "review/access/node-runtime.json": "356aee81f5d840336f7268817b6a7f5b30c8ab9f3dbc082f41d93275ec3e5425",
+    "review/access/operator-template.NOT-INSTALLABLE.json": "c8e425d5dc44647f9e531d17b597cc8eee9f586bbc14ead454a3ea7e5a70c932",
+    "review/bootstrap/.terraform.lock.hcl": "be1182b2f765f01c210a0d1327471dd5cd3cc316acd9f11edb8c959888b5fe3d",
+    "review/bootstrap/backend.s3.json": "273443b26bc3e3d55b403b3c50259bfb3c5127b0a93726b58850853f0c9e9142",
+    "review/bootstrap/main.tf.json": "edebf25f7532707ab79c99eb36a8c54d679ff2d42244c018ba14ea4b5cde3cd8",
+    "review/originals/backend.json": "4ed1aaa85678e56871907ed08654b736d8887a2e59fe16fc514f610961afe36c",
+    "review/originals/part4.json": "817dc0e9528d7e0497f10232c4fa03b397c9731448acd025e68a653c299d22d3",
+    "review/originals/part7.json": "ac40ad6abcae3c427c54a4d79b6fcc78147a0e082003e740fb19871d4861d5bc",
+    "review/runtime/.terraform.lock.hcl": "be1182b2f765f01c210a0d1327471dd5cd3cc316acd9f11edb8c959888b5fe3d",
+    "review/runtime/backend.s3.json": "6cf30301dd08f90972a7d9730dbd80d6317dbc55ce36d72fa9c96017078f1c23",
+    "review/runtime/bootstrap.sh.tftpl": "99fc9d23fb63d19590c3e45eda49061ac8cf4c074375673a1e2d539b2323f0af",
+    "review/runtime/main.tf.json": "b19dd7078b7eda4a821b54fa881dbac2948f3ac3a83ef329c654fb7af80db1af"
+  },
+  "EvidenceSha256": {
+    "bash-syntax-final.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bootstrap-mock-plan-final.log": "c6c0033ff5ee2077033a6e9bc2f626563a1e654c261e5a4ac4b1c403b44d5f4f",
+    "bootstrap-validate-final.log": "4cd9eddc4d07c5aff74dadb6b3544f98186f6705ac60e0d94d545fc42b45b9b6",
+    "runtime-mock-plan-final.log": "17bada11fd88b065f726c5e5c46eb60010eabcf37e0ed1aabc01d6667f74ec9b",
+    "runtime-validate-final.log": "4cd9eddc4d07c5aff74dadb6b3544f98186f6705ac60e0d94d545fc42b45b9b6",
+    "tests-final.log": "6d70d03b809e5dbd967bbb4503796969da7d431dd8dd19873953dc3610a5b7ba"
+  }
+}

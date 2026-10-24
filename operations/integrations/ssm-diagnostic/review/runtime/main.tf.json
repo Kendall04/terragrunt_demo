@@ -1,0 +1,226 @@
+{
+  "terraform": {
+    "required_version": "= 1.13.4",
+    "backend": {
+      "s3": {}
+    },
+    "required_providers": {
+      "aws": {
+        "source": "hashicorp/aws",
+        "version": "= 6.27.0"
+      }
+    }
+  },
+  "provider": {
+    "aws": {
+      "region": "us-east-1",
+      "allowed_account_ids": [
+        "341936017254"
+      ]
+    }
+  },
+  "variable": {
+    "expires_at": {
+      "type": "string",
+      "description": "Reviewed admission T0+24h UTC, identical both states; no default",
+      "validation": [
+        {
+          "condition": "${can(formatdate(\"YYYY\",var.expires_at)) && can(regex(\"Z$\",var.expires_at))}",
+          "error_message": "Absolute UTC expiry required."
+        }
+      ]
+    }
+  },
+  "resource": {
+    "aws_vpc": {
+      "diag": {
+        "cidr_block": "10.249.0.0/24",
+        "enable_dns_support": true,
+        "enable_dns_hostnames": true,
+        "tags": {
+          "Project": "EcsBackupSentinel",
+          "Environment": "Sandbox",
+          "Owner": "Kendall04",
+          "Trial": "ecs-sentinel-ssmdiag-r20261024d1",
+          "Purpose": "SsmDiagnosticOnly"
+        }
+      }
+    },
+    "aws_internet_gateway": {
+      "diag": {
+        "vpc_id": "${aws_vpc.diag.id}",
+        "tags": {
+          "Project": "EcsBackupSentinel",
+          "Environment": "Sandbox",
+          "Owner": "Kendall04",
+          "Trial": "ecs-sentinel-ssmdiag-r20261024d1",
+          "Purpose": "SsmDiagnosticOnly"
+        }
+      }
+    },
+    "aws_subnet": {
+      "diag": {
+        "vpc_id": "${aws_vpc.diag.id}",
+        "cidr_block": "10.249.0.0/28",
+        "availability_zone": "us-east-1a",
+        "map_public_ip_on_launch": false,
+        "tags": {
+          "Project": "EcsBackupSentinel",
+          "Environment": "Sandbox",
+          "Owner": "Kendall04",
+          "Trial": "ecs-sentinel-ssmdiag-r20261024d1",
+          "Purpose": "SsmDiagnosticOnly"
+        }
+      }
+    },
+    "aws_route_table": {
+      "diag": {
+        "vpc_id": "${aws_vpc.diag.id}",
+        "tags": {
+          "Project": "EcsBackupSentinel",
+          "Environment": "Sandbox",
+          "Owner": "Kendall04",
+          "Trial": "ecs-sentinel-ssmdiag-r20261024d1",
+          "Purpose": "SsmDiagnosticOnly"
+        }
+      }
+    },
+    "aws_route_table_association": {
+      "diag": {
+        "subnet_id": "${aws_subnet.diag.id}",
+        "route_table_id": "${aws_route_table.diag.id}"
+      }
+    },
+    "aws_route": {
+      "internet": {
+        "route_table_id": "${aws_route_table.diag.id}",
+        "destination_cidr_block": "0.0.0.0/0",
+        "gateway_id": "${aws_internet_gateway.diag.id}"
+      }
+    },
+    "aws_security_group": {
+      "diag": {
+        "name": "ecs-sentinel-ssmdiag-r20261024d1",
+        "description": "Diagnostic HTTPS egress only; no ingress",
+        "vpc_id": "${aws_vpc.diag.id}",
+        "ingress": [],
+        "egress": [
+          {
+            "from_port": 443,
+            "to_port": 443,
+            "protocol": "tcp",
+            "cidr_blocks": [
+              "0.0.0.0/0"
+            ],
+            "ipv6_cidr_blocks": [],
+            "prefix_list_ids": [],
+            "security_groups": [],
+            "self": false,
+            "description": "AWS HTTPS endpoints by intended clients"
+          }
+        ],
+        "tags": {
+          "Project": "EcsBackupSentinel",
+          "Environment": "Sandbox",
+          "Owner": "Kendall04",
+          "Trial": "ecs-sentinel-ssmdiag-r20261024d1",
+          "Purpose": "SsmDiagnosticOnly"
+        }
+      }
+    },
+    "aws_cloudwatch_log_group": {
+      "diag": {
+        "name": "/ecs/ssm-diagnostic/ecs-sentinel-ssmdiag-r20261024d1",
+        "retention_in_days": 1,
+        "log_group_class": "STANDARD",
+        "skip_destroy": false,
+        "tags": {
+          "Project": "EcsBackupSentinel",
+          "Environment": "Sandbox",
+          "Owner": "Kendall04",
+          "Trial": "ecs-sentinel-ssmdiag-r20261024d1",
+          "Purpose": "SsmDiagnosticOnly"
+        }
+      }
+    },
+    "aws_ssm_document": {
+      "control": {
+        "name": "ecs-sentinel-ssmdiag-r20261024d1-observer-control",
+        "document_type": "Command",
+        "document_format": "JSON",
+        "content": "{\"description\":\"New bounded SSM diagnostic, status only; no backup acceptance\",\"mainSteps\":[{\"action\":\"aws:runShellScript\",\"inputs\":{\"runCommand\":[\"/usr/bin/python3 -I -B /opt/terragrunt-demo/ssm-diagnostic/harness.py --action status\"],\"timeoutSeconds\":\"30\"},\"name\":\"ObserverControl\"}],\"parameters\":{\"Action\":{\"allowedPattern\":\"^status$\",\"allowedValues\":[\"status\"],\"default\":\"status\",\"type\":\"String\"}},\"schemaVersion\":\"2.2\"}",
+        "tags": {
+          "Project": "EcsBackupSentinel",
+          "Environment": "Sandbox",
+          "Owner": "Kendall04",
+          "Trial": "ecs-sentinel-ssmdiag-r20261024d1",
+          "Purpose": "SsmDiagnosticOnly"
+        }
+      }
+    },
+    "aws_instance": {
+      "node": {
+        "ami": "ami-0d6e34c14757a048b",
+        "instance_type": "t3.micro",
+        "subnet_id": "${aws_subnet.diag.id}",
+        "vpc_security_group_ids": [
+          "${aws_security_group.diag.id}"
+        ],
+        "associate_public_ip_address": true,
+        "iam_instance_profile": "ecs-sentinel-ssmdiag-r20261024d1-node",
+        "monitoring": false,
+        "credit_specification": {
+          "cpu_credits": "standard"
+        },
+        "metadata_options": {
+          "http_endpoint": "enabled",
+          "http_tokens": "required",
+          "http_put_response_hop_limit": 1,
+          "instance_metadata_tags": "disabled"
+        },
+        "root_block_device": {
+          "encrypted": true,
+          "kms_key_id": "arn:aws:kms:us-east-1:341936017254:key/585f0833-6a1c-465d-ab40-a6c8278cae39",
+          "volume_type": "gp3",
+          "volume_size": 8,
+          "iops": 3000,
+          "throughput": 125,
+          "delete_on_termination": true,
+          "tags": {
+            "Project": "EcsBackupSentinel",
+            "Environment": "Sandbox",
+            "Owner": "Kendall04",
+            "Trial": "ecs-sentinel-ssmdiag-r20261024d1",
+            "Purpose": "SsmDiagnosticOnly"
+          }
+        },
+        "user_data_replace_on_change": true,
+        "user_data_base64": "${base64gzip(templatefile(\"${path.module}/bootstrap.sh.tftpl\",{binding_base64=base64encode(jsonencode({expires_at=var.expires_at}))}))}",
+        "depends_on": [
+          "aws_route.internet",
+          "aws_route_table_association.diag",
+          "aws_cloudwatch_log_group.diag",
+          "aws_ssm_document.control"
+        ],
+        "tags": {
+          "Project": "EcsBackupSentinel",
+          "Environment": "Sandbox",
+          "Owner": "Kendall04",
+          "Trial": "ecs-sentinel-ssmdiag-r20261024d1",
+          "Purpose": "SsmDiagnosticOnly"
+        }
+      }
+    }
+  },
+  "output": {
+    "instance_id": {
+      "value": "${aws_instance.node.id}"
+    },
+    "document_name": {
+      "value": "${aws_ssm_document.control.name}"
+    },
+    "log_group": {
+      "value": "${aws_cloudwatch_log_group.diag.name}"
+    }
+  }
+}

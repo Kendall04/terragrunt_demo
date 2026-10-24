@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "2.2",
+  "description": "New bounded SSM diagnostic, status only; no backup acceptance",
+  "parameters": {
+    "Action": {
+      "type": "String",
+      "default": "status",
+      "allowedValues": [
+        "status"
+      ],
+      "allowedPattern": "^status$"
+    }
+  },
+  "mainSteps": [
+    {
+      "action": "aws:runShellScript",
+      "name": "ObserverControl",
+      "inputs": {
+        "timeoutSeconds": "30",
+        "runCommand": [
+          "/usr/bin/python3 -I -B /opt/terragrunt-demo/ssm-diagnostic/harness.py --action status"
+        ]
+      }
+    }
+  ]
+}

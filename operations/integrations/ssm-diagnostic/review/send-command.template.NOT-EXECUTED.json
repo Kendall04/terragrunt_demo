@@ -1,0 +1,21 @@
+{
+  "DocumentName": "ecs-sentinel-ssmdiag-r20261024d1-observer-control",
+  "DocumentVersion": "1",
+  "DocumentHash": "__NATIVE_DOCUMENT_HASH_SHA256__",
+  "DocumentHashType": "Sha256",
+  "InstanceIds": [
+    "__VERIFIED_INSTANCE_ID__"
+  ],
+  "Parameters": {
+    "Action": [
+      "status"
+    ]
+  },
+  "TimeoutSeconds": 60,
+  "CloudWatchOutputConfig": {
+    "CloudWatchLogGroupName": "/ecs/ssm-diagnostic/ecs-sentinel-ssmdiag-r20261024d1",
+    "CloudWatchOutputEnabled": true
+  },
+  "MaxConcurrency": "1",
+  "MaxErrors": "0"
+}

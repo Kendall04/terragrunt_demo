@@ -2,6 +2,8 @@
 
 Purpose: distinguish caller-side target authorization from node agent/document/message-channel failure using evidence captured **before the host is retired**. Not a fix, not an authorized retry, not a way to run the old denied operation under another principal. Basic Support is confirmed; no paid support is purchased by this design.
 
+Current implementation and approval scope: [ssm-diagnostic/README.md](ssm-diagnostic/README.md). The collector, exact status-source harness, two Terraform roots, IAM/backend templates and offline plan guards are now implemented locally. The original design and preliminary price assumptions below are retained as history; the review packet and qualification receipt supersede those preparation gaps and the old price model. No native plan, resource or command has been executed.
+
 ## Missing evidence to capture
 
 B2 preserved initial acceptance, correct document/hash/target, role update and fresh session, but not SSM's asynchronous evaluated context/failed statement or agent-side authorization/delivery logs. Command output destinations were disabled. Native surviving APIs have no encoded authorization message for STS DecodeAuthorizationMessage. A new agent log may narrow delivery/agent hypotheses but **cannot guarantee** the service will expose its private IAM evaluation; that limit remains even with perfect collection.
@@ -27,7 +29,7 @@ Two isolated backend roots for bootstrap/runtime and locks use a new trial prefi
 5. Capture raw sanitized SendCommand response, full ListCommands/ListCommandInvocations/GetCommandInvocation metadata, document/role/boundary hashes, CloudTrail correlation and exporter log evidence. On AccessDenied/unknown **do not retry or modify policy blindly**. Caller target rejection before delivery plus healthy agent evidence narrows the service boundary; node GetDocument/channel errors identify a different candidate. Reaching the script proves only that new diagnostic execution, not b2 fixed or backup E2E.
 6. Only new relevant evidence plus a separately reviewed specific correction could justify another command. No B→admin fallback, condition removal, same-approval reset or reuse of discarded resources. Export evidence locally, terminate exact EC2, confirm volume/ENI/IP/network absence, delete log group/document, then remove role/profile/boundary/inline and restore backend/operator originals. Keep final states/evidence; no originals or2+2 backup retention touched.
 
-This design is not currently executable: collector sanitization, minimal harness, full IAM snapshots and exact saved plan/hashes are preparation gates. It authorizes no mutations or new SSM call. Prefer one bounded native experiment only if its missing evidence is worth the cost; do not use it to promise a root cause the customer APIs cannot expose.
+Initial preparation status: collector/harness and local policy templates were missing. They are now implemented and qualified in the linked packet; current effective authority/readbacks, new grouped approval and actual native saved plans remain future admission gates. It authorizes no mutations or new SSM call. Prefer one bounded native experiment only if its missing evidence is worth the cost; do not use it to promise a root cause the customer APIs cannot expose.
 
 ## Proposed budget/window, not a reset
 
