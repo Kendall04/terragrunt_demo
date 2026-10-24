@@ -286,3 +286,16 @@ EC2 i-* is not an input to DeregisterManagedInstance; stale AWS SSM metadata, if
 reported separately after actual instance/disk/ENI retirement. No fake native absence.
 The prior bcac19f Lambda ZIP and3f67d8b evidence remain immutable; this host has separate
 bundle/source lineage. No Lambda rebuild, AWS, timer installation, push or remote workflow.
+
+### Bounded review update — 2026-10-24
+
+- [x] Coordinated metadata preflight40 reads: identity/AMI/EBS/versioned manifest and
+  current access originals. Zero new object bodies/decryption/mutations.
+- [x] Local finite20-send counter, first-episode notice pair, idle43-resource creation,
+  early AMI/EBS checks, exact backend workspace prefix;106 managed/21 host Windows+WSL,
+  13 TF/7 packaging/16 access scope+reversal tests.
+- [ ] NEW43-resource/USD2/24h cycle is only a [review proposal](../terraform/infra/sentinel-backup/REVIEW-r20261024b2.md).
+  Real AL2023/IAM/checker/SQS/outbox/inbox/teardown evidence still required.
+
+The168h threshold observes a historical native manifest, not production2h freshness,
+new SQL recovery or a full ECS deployment. PKI remains OUT of ECS scope.

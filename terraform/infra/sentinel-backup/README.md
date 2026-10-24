@@ -180,3 +180,11 @@ in the pipeline bucket. Full scheduled source inventory43, pipeline-only29/base2
 No installed host/timer or AWS access. [Coordinated reads](READONLY-PREFLIGHT.json) and
 [required capability contract](required-capabilities.json) precede any exact grant or
 new consent. The Lambda ZIP bcac19f is unchanged; the host has a separate bundle lineage.
+
+## Current review update — 2026-10-24
+
+[Exact proposed cycle and reversions](REVIEW-r20261024b2.md) supersedes the earlier
+AMI-unselected/preflight-pending and unchanged-Lambda statements above. The metadata
+preflight completed without mutation; bounded send/notice code requires NEW qualified
+artifacts. Earlier qualification receipts remain immutable historical evidence. No
+consent, deployment or successful AWS observer execution is implied.

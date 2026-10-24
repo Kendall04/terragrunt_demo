@@ -21,7 +21,7 @@
           "error_message": "Explicit exact x86 AL2023 AMI and zone required; no latest selector."
         },
         {
-          "condition": "${can(regex(\"^[a-f0-9]{64}$\",var.host.bundle_sha256)) && can(regex(\"^[a-f0-9]{40}$\",var.host.bundle_source_commit)) && try(filesha256(var.host.bundle_path)==var.host.bundle_sha256 && jsondecode(file(var.host.bundle_manifest_path)).bundleSha256==var.host.bundle_sha256 && jsondecode(file(var.host.bundle_manifest_path)).sourceCommit==var.host.bundle_source_commit && jsondecode(file(var.host.bundle_manifest_path)).contract==\"ecs-observer-host-v1\",false)}",
+          "condition": "${can(regex(\"^[a-f0-9]{64}$\",var.host.bundle_sha256)) && can(regex(\"^[a-f0-9]{40}$\",var.host.bundle_source_commit)) && try(filesha256(var.host.bundle_path)==var.host.bundle_sha256 && jsondecode(file(var.host.bundle_manifest_path)).bundleSha256==var.host.bundle_sha256 && jsondecode(file(var.host.bundle_manifest_path)).sourceCommit==var.host.bundle_source_commit && jsondecode(file(var.host.bundle_manifest_path)).contract==\"ecs-observer-host-v2\",false)}",
           "error_message": "Exact local host bundle/manifest/source must be qualified before plan."
         },
         {
@@ -41,6 +41,10 @@
           "error_message": "Explicit canonical aws/ebs key ARN required; do not inherit an unknown account default."
         }
       ]
+    },
+    "distribution_ready_bucket": {
+      "type": "string",
+      "nullable": false
     }
   },
   "locals": {
@@ -219,6 +223,10 @@
             {
               "condition": "${filesha256(var.host.bundle_path)==var.host.bundle_sha256}",
               "error_message": "Host bundle changed."
+            },
+            {
+              "condition": "${var.distribution_ready_bucket==local.bucket}",
+              "error_message": "Distribution bucket policy/versioning/security must be ready before upload."
             }
           ]
         }

@@ -107,6 +107,12 @@ Check("cancelled SNS not attempted",new SnsNoticeAdapter(snsUnknown.Sns,snsUnkno
 var gate=new BackupEffectGate(snsUnknown.Store,snsUnknown.Settings,sn);calls=snsUnknown.Sns.Requests.Count;
 Check("foreign policy cannot reach SNS",gate.Execute(execution with {Audit=audit with {Policy=audit.Policy with {Nat=audit.Policy.Nat with {GroupScope="nat-foreign"}}}}).Status==DeliveryStatus.PermanentFailure && snsUnknown.Sns.Requests.Count==calls);
 await d.Send(fixtures["recovered"]);var resolved=d.Effects.Single(x=>x.Intent?.Kind==EffectKind.ResolveIncident);d.Dispatch([resolved.Id]);Check("explicit recovery policy publishes a recovery notice",d.Sns.Requests.Count==2 && d.Sns.Requests.Last().Message.Contains("ResolveIncident"));
+var pair=new Rig();await pair.Send(fixtures["failed"]);pair.Dispatch([pair.Effects.Single(x=>x.Intent?.Kind==EffectKind.EscalateIncident).Id]);
+await pair.Send(fixtures["recovered"]);pair.Dispatch([pair.Effects.Single(x=>x.Intent?.Kind==EffectKind.ResolveIncident).Id]);
+await pair.Send(fixtures["recurrence"]);var blockedNotice=pair.Effects.Single(x=>x.Intent?.Kind==EffectKind.EscalateIncident && x.Intent.Epoch==2);
+pair.Dispatch([blockedNotice.Id]);
+Check("trial notice pair survives recurrence without a third SNS request",pair.Sns.Requests.Count==2 && pair.Head.Epoch==2);
+Check("blocked later notice is permanent failure, never delivered or silently drained",pair.Store.ReadEffect(blockedNotice.Id)!.Status==OutboxStatus.PermanentFailure);
 // Known SNS acceptance followed by an uncertain persistence ACK can legitimately duplicate on retry.
 var receiptLost=new Rig();await receiptLost.Send(fixtures["failed"]);var noticeId=receiptLost.Effects.First(x=>x.Intent?.Kind==EffectKind.EscalateIncident).Id;
 receiptLost.Sns.AfterPublish=()=>{receiptLost.Ddb.Inner.WriteFailure=new TimeoutException();receiptLost.Sns.AfterPublish=null;};

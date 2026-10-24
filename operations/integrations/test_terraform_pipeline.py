@@ -58,6 +58,8 @@ class TerraformContractTests(unittest.TestCase):
         self.assertNotIn('aws_iam_role_policy_attachment',self.r)
     def test_no_unreviewed_dispatch_schedule(self):
         self.assertFalse(self.x['variable']['enable_dispatch_schedule']['default'])
+        self.assertFalse(self.x['variable']['dispatch_schedule_enabled']['default'])
+        self.assertIn('var.dispatch_schedule_enabled',self.r['aws_cloudwatch_event_rule']['dispatch']['state'])
         self.assertIsNone(self.x['variable']['dispatch_schedule_expression']['default'])
         self.assertEqual(self.r['aws_cloudwatch_event_rule']['dispatch']['count'],'${var.enable_dispatch_schedule ? 1 : 0}')
         permission=self.r['aws_lambda_permission']['dispatch_schedule']

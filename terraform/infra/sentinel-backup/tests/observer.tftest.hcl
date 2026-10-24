@@ -40,7 +40,7 @@ variables {
   }
   observer = {
     ami_id               = "ami-00000000000000000"
-    ebs_key_arn          = "arn:aws:kms:us-east-1:341936017254:key/33333333-3333-3333-3333-333333333333"
+    ebs_key_arn          = "arn:aws:kms:us-east-1:341936017254:key/33333333-3333-4333-8333-333333333333"
     availability_zone    = "us-east-1a"
     bundle_path          = "tests/fixtures/mock-only.txt"
     bundle_manifest_path = "tests/fixtures/host-manifest.json"
@@ -71,6 +71,10 @@ run "pipeline_default_off" {
 }
 
 run "observer_scheduled" {
+  assert {
+    condition = output.pipeline.dispatch_rule_state == "DISABLED"
+    error_message = "All43 resources may exist, but no automatic dispatch before SNS confirmation."
+  }
   command = plan
   override_data {
     target = module.observer[0].data.aws_ami.observer
@@ -78,7 +82,7 @@ run "observer_scheduled" {
   }
   override_data {
     target = module.observer[0].data.aws_kms_key.ebs
-    values = { key_manager = "AWS", arn = "arn:aws:kms:us-east-1:341936017254:key/33333333-3333-3333-3333-333333333333" }
+    values = { key_manager = "AWS", arn = "arn:aws:kms:us-east-1:341936017254:key/33333333-3333-4333-8333-333333333333" }
   }
   variables {
     enable_observer              = true

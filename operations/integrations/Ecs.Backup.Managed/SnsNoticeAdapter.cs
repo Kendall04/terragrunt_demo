@@ -16,6 +16,9 @@ public sealed class SnsNoticeAdapter(IAmazonSimpleNotificationService sns,Backup
    execution.Audit is null || execution.Audit.Signal.Key!=settings.Key || execution.IdempotencyKey!=execution.Entry.Id ||
    execution.Audit.Id!=execution.Entry.AuditId || execution.Entry.AggregateKey!=StorageKeys.Aggregate(settings.Key))
    return new(DeliveryStatus.PermanentFailure,"Invalid backup notification identity.");
+  // This runtime is a finite sandbox. Only the first episode may publish its alert/recovery pair.
+  // The original reducer deduplicates each semantic intent; original durable attempts remain max3.
+  if(intent.Epoch!=1)return new(DeliveryStatus.PermanentFailure,"Trial notice limit: later episode preserved without SNS request.");
   if(intent.Kind==EffectKind.ResolveIncident && settings.NotificationMode!="EscalationAndRecovery")
    return new(DeliveryStatus.PermanentFailure,"Recovery notice not enabled by explicit policy.");
   if(token.IsCancellationRequested)return new(DeliveryStatus.RetryableFailure,"Publish not attempted; invocation cancelled.");

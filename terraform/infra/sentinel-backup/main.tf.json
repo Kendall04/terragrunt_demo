@@ -60,7 +60,7 @@
           "error_message": "Current managed runtime is finite: explicit UTC start/expiry within24h. No permanent schedule is silently authorized."
         },
         {
-          "condition": "${try(jsondecode(file(var.config.artifact_manifest_path)).zipSha256 == var.config.artifact_sha256 && jsondecode(file(var.config.artifact_manifest_path)).sourceCommit == var.config.source_commit && jsondecode(file(var.config.artifact_manifest_path)).upstreamCommit == var.config.upstream_commit && jsondecode(file(var.config.artifact_manifest_path)).integrationContractVersion == \"ecs-backup-managed-v3\" && contains(jsondecode(file(var.config.artifact_manifest_path)).supportedModes,var.config.mode),false)}",
+          "condition": "${try(jsondecode(file(var.config.artifact_manifest_path)).zipSha256 == var.config.artifact_sha256 && jsondecode(file(var.config.artifact_manifest_path)).sourceCommit == var.config.source_commit && jsondecode(file(var.config.artifact_manifest_path)).upstreamCommit == var.config.upstream_commit && jsondecode(file(var.config.artifact_manifest_path)).integrationContractVersion == \"ecs-backup-managed-v3\" && contains(jsondecode(file(var.config.artifact_manifest_path)).supportedModes,var.config.mode),false) && try(contains(jsondecode(file(var.config.artifact_manifest_path)).capabilities,\"trial-one-epoch-notices-v1\"),false)}",
           "error_message": "New v3 qualified artifact manifest must match mode/digest/source; old trial binaries are refused."
         },
         {
@@ -101,6 +101,10 @@
         "condition": "${!var.enable_observer || var.observer!=null}",
         "error_message": "Explicit reviewed observer inputs required when enabled."
       }
+    },
+    "dispatch_schedule_enabled": {
+      "type": "bool",
+      "default": false
     }
   },
   "module": {
@@ -111,16 +115,15 @@
       "allow_data_retirement": "${var.allow_data_retirement}",
       "enable_dispatch_schedule": "${var.enable_dispatch_schedule}",
       "dispatch_schedule_expression": "${var.dispatch_schedule_expression}",
-      "distribution_reader": "${var.enable_observer ? {role_arn=var.config.sender_role_arn,key=\"observer-packages/${var.observer.bundle_sha256}.tar.gz\"} : null}"
+      "distribution_reader": "${var.enable_observer ? {role_arn=var.config.sender_role_arn,key=\"observer-packages/${var.observer.bundle_sha256}.tar.gz\"} : null}",
+      "dispatch_schedule_enabled": "${var.dispatch_schedule_enabled}"
     },
     "observer": {
       "source": "./modules/observer",
       "count": "${var.enable_observer ? 1 : 0}",
       "config": "${var.config}",
       "host": "${var.observer}",
-      "depends_on": [
-        "module.pipeline"
-      ]
+      "distribution_ready_bucket": "${module.pipeline.distribution_ready_bucket}"
     }
   },
   "output": {

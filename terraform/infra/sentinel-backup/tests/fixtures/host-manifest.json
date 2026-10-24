@@ -1,1 +1,1 @@
-{"contract": "ecs-observer-host-v1", "bundleSha256": "a14897e7cba5178d477450275bc158f0b8e1f87257f179baa136468ec0f08712", "sourceCommit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "fixture": "MOCK_PROVIDER_ONLY_NOT_RELEASE"}
+{"contract": "ecs-observer-host-v2", "bundleSha256": "a14897e7cba5178d477450275bc158f0b8e1f87257f179baa136468ec0f08712", "sourceCommit": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "fixture": "MOCK_PROVIDER_ONLY_NOT_RELEASE"}

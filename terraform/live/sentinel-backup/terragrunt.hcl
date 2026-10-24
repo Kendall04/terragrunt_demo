@@ -11,6 +11,7 @@ remote_state {
     region       = get_env("SENTINEL_STATE_REGION")
     encrypt      = true
     use_lockfile = true
+    workspace_key_prefix = "sentinel-backup/${get_env("SENTINEL_STATE_ID")}/workspaces"
   }
 }
 inputs = jsondecode(file(get_env("SENTINEL_INPUTS_FILE")))

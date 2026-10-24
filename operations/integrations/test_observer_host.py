@@ -29,6 +29,14 @@ class HostTests(unittest.TestCase):
         with patch('sys.argv',args),patch.object(h.subprocess,'check_output',return_value='c'*40):
             with self.assertRaisesRegex(h.Refused,'SOURCE_COMMIT_MISMATCH'):h.main()
         self.assertFalse(self.bundle.exists())
+    def test_global_send_budget_persists_across_modes_and_stops_at20(self):
+        state=self.root/'bounded-state';state.mkdir(mode=0o700)
+        with patch.object(h,'STATE',state):
+            self.assertTrue(all(h.consume_send_slot('ecs-sentinel-offline') for _ in range(20)))
+            self.assertFalse(h.consume_send_slot('ecs-sentinel-offline'));self.assertFalse(h.consume_send_slot('ecs-sentinel-offline'))
+            with self.assertRaisesRegex(h.Refused,'BUDGET_SCOPE'):h.consume_send_slot('ecs-sentinel-foreign')
+            value=h.evidence();self.assertEqual(value['files'][0]['slotsConsumed'],20)
+        self.assertEqual(json.loads((state/'send-budget/budget.json').read_text())['SlotsConsumed'],20)
     def test_bundle_inspection_and_exact_component_lineage(self):
         m=self.build();v=h.inspect(self.bundle,m['bundleSha256']);self.assertEqual(v['componentSourceCommit'],'b'*40);self.assertEqual(v['excludedSymbols'],['SqlBackup.pdb']);self.assertNotIn('checker/SqlBackup.pdb',v['files']);self.assertFalse(m['uploaded'])
     def test_bundle_is_byte_deterministic(self):
@@ -96,7 +104,7 @@ class HostTests(unittest.TestCase):
         self.assertFalse(any(a.startswith(('ec2:','iam:','sns:','dynamodb:','secretsmanager:')) for a in acts));self.assertNotIn('s3:PutObject',acts);self.assertEqual({a for a in acts if a.startswith('kms:')},{'kms:Decrypt'})
         self.assertTrue(all('DateLessThan' in s['Condition'] for s in p['Statement']));self.assertIn('ssmmessages:OpenDataChannel',acts)
     def test_default_off_and_same_sender_role_contract(self):
-        r=json.loads((TF/'main.tf.json').read_text());self.assertFalse(r['variable']['enable_observer']['default']);self.assertIsNone(r['variable']['observer']['default']);self.assertIn('module.pipeline',r['module']['observer']['depends_on'])
+        r=json.loads((TF/'main.tf.json').read_text());self.assertFalse(r['variable']['enable_observer']['default']);self.assertIsNone(r['variable']['observer']['default']);self.assertNotIn('depends_on',r['module']['observer']);self.assertIn('module.pipeline.distribution_ready_bucket',r['module']['observer']['distribution_ready_bucket'])
         m=json.loads((TF/'modules/observer/main.tf.json').read_text());checks=json.dumps(m['resource']['aws_instance']['observer']['lifecycle']);self.assertIn('sender_role_arn==local.role_arn',checks)
     def test_control_document_cannot_accept_arbitrary_shell(self):
         x=json.loads((TF/'modules/observer/main.tf.json').read_text());s=x['resource']['aws_ssm_document']['observer_control']['content'];self.assertIn('allowedValues',s);self.assertIn('allowedPattern',s);self.assertNotIn('commands=',s);self.assertIn('observer_host.py control --action',s)

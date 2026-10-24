@@ -47,7 +47,7 @@ def build(component,manifest_sha,commit,output):
     need(not output.exists() and not output.with_suffix('.manifest.json').exists(),'OUTPUT_MUST_BE_NEW')
     records={n:{'sha256':sha(p),'bytes':p.stat().st_size,'mode':0o755 if n=='checker/SqlBackup' or p.suffix=='.so' else 0o644} for n,p in files.items()}
     need(sum(v['bytes'] for v in records.values())<512*1024*1024 and len(records)<2000,'BUNDLE_BOUND')
-    meta={'schemaVersion':1,'contract':'ecs-observer-host-v1','sourceCommit':commit,'componentSourceCommit':m['SourceCommit'],'componentManifestSha256':manifest_sha,'runtime':'10.0.13','rid':'linux-x64','excludedSymbols':sorted(n for n in m['Files'] if n.endswith('.pdb')),'files':records,'containsSqlServer':False,'containsCredentials':False,'awsCalls':0}
+    meta={'schemaVersion':1,'contract':'ecs-observer-host-v2','capabilities':['bounded-sqs-attempts-v1'],'sourceCommit':commit,'componentSourceCommit':m['SourceCommit'],'componentManifestSha256':manifest_sha,'runtime':'10.0.13','rid':'linux-x64','excludedSymbols':sorted(n for n in m['Files'] if n.endswith('.pdb')),'files':records,'containsSqlServer':False,'containsCredentials':False,'awsCalls':0}
     output.parent.mkdir(parents=True,exist_ok=True)
     with output.open('xb') as raw,gzip.GzipFile(filename='',mode='wb',fileobj=raw,mtime=0) as gz,tarfile.open(fileobj=gz,mode='w',format=tarfile.USTAR_FORMAT) as t:
         for name in sorted([*files,'bundle-manifest.json']):
@@ -68,7 +68,7 @@ def inspect(archive,expected):
             need(item.isfile() and not p.is_absolute() and '..' not in p.parts and p.as_posix()==item.name and re.fullmatch('[A-Za-z0-9._/-]+',item.name) and item.name not in members,'UNSAFE_MEMBER')
             total+=item.size;need(total<=512*1024*1024 and len(members)<2000,'BUNDLE_BOUND');members[item.name]=item
         need('bundle-manifest.json' in members and members['bundle-manifest.json'].size<1048576,'BUNDLE_MANIFEST')
-        m=json.load(t.extractfile(members['bundle-manifest.json']));need(m['contract']=='ecs-observer-host-v1' and set(members)==set(m['files'])|{'bundle-manifest.json'},'BUNDLE_INVENTORY')
+        m=json.load(t.extractfile(members['bundle-manifest.json']));need(m['contract']=='ecs-observer-host-v2' and set(members)==set(m['files'])|{'bundle-manifest.json'},'BUNDLE_INVENTORY')
         for name,row in m['files'].items():
             item=members[name];need(item.size==row['bytes'] and item.mode==row['mode'] and row['mode'] in (0o644,0o755),'MEMBER_SHAPE')
             h=hashlib.sha256()
@@ -139,8 +139,21 @@ def install(archive,expected,c):
     write(BASE/'install-receipt.json',result);return result
 def host():
     c=json.loads(safe(BASE/'host.json').read_text());extra={k:c.pop(k) for k in ('aws_cli','uid')};validate(c);return c,extra
+def consume_send_slot(run_id):
+    import sys
+    here=Path(__file__).resolve().parent
+    sys.path.insert(0,str(here if (here/'observer.py').is_file() else here.parent/'sql-backup'));import observer
+    with observer.owner(STATE/'send-budget') as directory:
+        path=directory/'budget.json'
+        value=json.loads(path.read_text()) if path.exists() else {'SchemaVersion':1,'RunId':run_id,'SlotsConsumed':0,'Maximum':20}
+        need(set(value)=={'SchemaVersion','RunId','SlotsConsumed','Maximum'} and value['SchemaVersion']==1 and value['RunId']==run_id and value['Maximum']==20 and type(value['SlotsConsumed']) is int and 0<=value['SlotsConsumed']<=20,'SEND_BUDGET_SCOPE')
+        if value['SlotsConsumed']==20:return False
+        # Reserve BEFORE the child may send. A crash consumes the slot conservatively.
+        observer.save(path,value|{'SlotsConsumed':value['SlotsConsumed']+1});return True
 def tick():
     c,extra=host();mode=json.loads(safe(STATE/'mode.json').read_text())['mode'];need(mode in MODES,'MODE')
+    if not consume_send_slot(c['run_id']):
+        print(json.dumps({'status':'TRIAL_SEND_BUDGET_EXHAUSTED','maximumSqsAttempts':20}));return 2
     return subprocess.run(['/usr/bin/python3','-I','-B',str(BASE/'sentinel_publish.py'),'--config',str(BASE/(mode+'.json')),'--executable',str(BASE/'checker/SqlBackup'),'--aws-cli',extra['aws_cli'],'--state-directory',str(STATE/mode),'--subject',c['subject'],'--expected-up','true','--repeat-after-seconds','0','--account',c['account'],'--region',c['region'],'--run-id',c['run_id'],'--publish-attempts',str(c['publish_attempts']),'--expires-at',c['expires_at'],'--aws','--ec2-role'],env=environment()).returncode
 def can_change(active,pending):need(not active and not pending,'ACTIVE_OR_PENDING_DELIVERY_NO_MODE_CHANGE')
 def evidence():
@@ -152,6 +165,8 @@ def evidence():
                 need(path.stat().st_size<=65536,'EVIDENCE_BOUND')
                 body=path.read_bytes();value=json.loads(body)
                 rows.append({'mode':mode,'file':relative,'sha256':hashlib.sha256(body).hexdigest(),'bytes':len(body),'pending':relative=='delivery/pending.json','attempts':value.get('Attempts') if type(value.get('Attempts')) is int else None})
+    budget=safe(STATE/'send-budget/budget.json')
+    if budget.is_file():rows.append({'file':'send-budget/budget.json','sha256':sha(budget),'bytes':budget.stat().st_size,'pending':False,'slotsConsumed':json.loads(budget.read_text())['SlotsConsumed']})
     return {'status':'LOCAL_DELIVERY_EVIDENCE_HASHES','files':rows,'payloadExported':False,'drained':False}
 def control(action):
     c,extra=host();need(action in MODES|{'status','evidence','start','stop','once'},'ACTION')

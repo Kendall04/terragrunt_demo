@@ -259,3 +259,11 @@ saved create/destroy plans for ONE grouped approval. required-capabilities.json 
 review contract, not an installed or already-effective IAM grant. Material owner decision
 is new spend/access/read-of-originals/destructive retirement/email/24h scope. No consent
 is requested here. PKI and new API features remain out of scope.
+
+## Current review update — 2026-10-24
+
+[Exact proposed cycle and reversions](REVIEW-r20261024b2.md) supersedes the earlier
+AMI-unselected/preflight-pending and unchanged-Lambda statements above. The metadata
+preflight completed without mutation; bounded send/notice code requires NEW qualified
+artifacts. Earlier qualification receipts remain immutable historical evidence. No
+consent, deployment or successful AWS observer execution is implied.
