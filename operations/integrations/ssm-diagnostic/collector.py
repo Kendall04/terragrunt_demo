@@ -105,7 +105,7 @@ def snapshot(port,c,sequence):
 def execute(c,port=None,sleeper=time.sleep,clock=now):
     end=validate(c);need(os.geteuid()==0,'ROOT_REQUIRED');port=port or Native()
     need(clock()<end and end-clock()<=dt.timedelta(hours=24),'EXPIRED_OR_EXCESS_WINDOW')
-    need(hashlib.sha256(Path(__file__).read_bytes()).hexdigest()==c['source_sha256'],'COLLECTOR_CHANGED')
+    need(hashlib.sha256(Path(__file__).read_bytes().replace(b'\r\n',b'\n')).hexdigest()==c['source_sha256'],'COLLECTOR_CHANGED')
     r=port.command(['/usr/bin/aws','logs','create-log-stream','--log-group-name',c['log_group'],'--log-stream-name','boot','--region',c['region'],'--cli-connect-timeout','3','--cli-read-timeout','5'])
     need(r.returncode==0,'NEW_STREAM_REQUIRED_NO_RETRY')
     published=0

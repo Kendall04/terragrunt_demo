@@ -63,8 +63,8 @@ def observer_source():
     return ('# Exact status dependency subset from observer_host.py; no checker or installer.\nimport os,json,re,subprocess,datetime as dt\nfrom pathlib import Path\n'+'\n\n'.join(selected)+'\n').encode()
 
 def boot_script():
-    blobs={n:base64.b64encode((HERE/n).read_bytes()).decode() for n in ['collector.py','harness.py']};original=observer_source();blobs['observer_host.py']=base64.b64encode(original).decode()
-    cfg={'run':RUN,'account':A,'region':REG,'expires_at':None,'log_group':GROUP,'role':RUN+'-node','source_sha256':sha((HERE/'collector.py').read_bytes())}
+    blobs={n:base64.b64encode((HERE/n).read_bytes().replace(b'\r\n',b'\n')).decode() for n in ['collector.py','harness.py']};original=observer_source();blobs['observer_host.py']=base64.b64encode(original).decode()
+    cfg={'run':RUN,'account':A,'region':REG,'expires_at':None,'log_group':GROUP,'role':RUN+'-node','source_sha256':sha((HERE/'collector.py').read_bytes().replace(b'\r\n',b'\n'))}
     host={'account':A,'region':REG,'run_id':RUN,'subject':'diagnostic-only','bucket':'diagnostic-no-bucket','prefix':'unused/original','missing_prefix':'sentinel-observer/'+RUN+'/unused','backup_key_arn':f'arn:aws:kms:{REG}:{A}:key/00000000-0000-0000-0000-000000000001','text_key_arn':f'arn:aws:kms:{REG}:{A}:key/00000000-0000-0000-0000-000000000002','database':'diagnostic_only','max_age_hours':1,'expires_at':None,'cadence_seconds':60,'publish_attempts':1,'aws_cli':'/usr/bin/aws','uid':0}
     text='''#!/bin/bash
 set -euo pipefail

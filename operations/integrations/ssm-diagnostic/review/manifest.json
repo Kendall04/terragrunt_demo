@@ -6,7 +6,7 @@
   "DocumentCanonicalSha256": "f935d2594162584d9b42e0638ea196330eb7627705076919a1fe565528a6e8bb",
   "ObserverOriginalLfSha256": "3fa1fa026cac11430789f267fa7c997e2e588d00dffc2e61a5118fb6c771f8bb",
   "ObserverSubsetSha256": "0f04fc48e7116218fcfa511fb4498a7fe3473de5dc69cd7b330b7772e13f94fd",
-  "CompressedUserDataBytes": 11018,
+  "CompressedUserDataBytes": 10782,
   "OperatorTemplateChars": 9745,
   "OriginalCanonicalSha256": {
     "part4": "2dee64162063bf48daa6be793a92399fd8383104cd102078ae4bd7427a7876e2",
@@ -30,7 +30,7 @@
     "originals/part7.json": "ac40ad6abcae3c427c54a4d79b6fcc78147a0e082003e740fb19871d4861d5bc",
     "runtime/.terraform.lock.hcl": "be1182b2f765f01c210a0d1327471dd5cd3cc316acd9f11edb8c959888b5fe3d",
     "runtime/backend.s3.json": "6cf30301dd08f90972a7d9730dbd80d6317dbc55ce36d72fa9c96017078f1c23",
-    "runtime/bootstrap.sh.tftpl": "99fc9d23fb63d19590c3e45eda49061ac8cf4c074375673a1e2d539b2323f0af",
+    "runtime/bootstrap.sh.tftpl": "f6ed287dcfa392b95f91915d1283dfadcaad8b448563cc9188e69439a1a83360",
     "runtime/main.tf.json": "b19dd7078b7eda4a821b54fa881dbac2948f3ac3a83ef329c654fb7af80db1af"
   }
 }

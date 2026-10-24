@@ -8,7 +8,7 @@ HERE=Path(__file__).resolve().parent
 def audit(event,args):
     if event.startswith('socket.') or event in ('subprocess.Popen','os.system','os.posix_spawn'):raise AssertionError('EXTERNAL_EFFECT_FORBIDDEN')
 sys.addaudithook(audit)
-def cfg():return {'run':prepare.RUN,'account':prepare.A,'region':prepare.REG,'expires_at':'2026-10-25T12:00:00Z','log_group':prepare.GROUP,'role':prepare.RUN+'-node','source_sha256':hashlib.sha256((HERE/'collector.py').read_bytes()).hexdigest()}
+def cfg():return {'run':prepare.RUN,'account':prepare.A,'region':prepare.REG,'expires_at':'2026-10-25T12:00:00Z','log_group':prepare.GROUP,'role':prepare.RUN+'-node','source_sha256':hashlib.sha256((HERE/'collector.py').read_bytes().replace(b'\r\n',b'\n')).hexdigest()}
 class Port:
     def __init__(self):self.calls=[];self.records=[]
     def identity(self):return {'Account':prepare.A,'Arn':f'arn:aws:sts::{prepare.A}:assumed-role/{prepare.RUN}-node/i-'+'a'*17}
@@ -93,6 +93,12 @@ class PacketTests(unittest.TestCase):
         node=xs[1]['resource']['aws_instance']['node'];self.assertEqual(node['credit_specification']['cpu_credits'],'standard');self.assertEqual(node['root_block_device']['volume_size'],8);self.assertTrue(node['root_block_device']['delete_on_termination']);self.assertTrue(node['root_block_device']['encrypted'])
         self.assertEqual(xs[1]['resource']['aws_security_group']['diag']['ingress'],[]);self.assertEqual(prepare.document()['parameters']['Action']['allowedValues'],['status'])
         self.assertLess(len(gzip.compress(prepare.boot_script().encode())),16384)
+        import base64
+        tree=ast.parse(prepare.boot_script().split("<<'PY'\n",1)[1].rsplit('\nPY',1)[0])
+        node=next(n for n in tree.body if isinstance(n,ast.Assign) and isinstance(n.targets[0],ast.Name) and n.targets[0].id=='files')
+        blobs=ast.literal_eval(node.value)
+        self.assertTrue(all(b'\r\n' not in base64.b64decode(v) for v in blobs.values()))
+        self.assertEqual(hashlib.sha256(base64.b64decode(blobs['collector.py'])).hexdigest(),cfg()['source_sha256'])
     def test_scope_no_iam_writes_no_sessions_no_changed_forwarded_leg(self):
         p=prepare.operator_policy('i-'+'a'*17);allactions={a for s in p['Statement'] for a in s['Action']}
         self.assertFalse(any(a.startswith('iam:') and a not in ['iam:GetRole','iam:ListInstanceProfilesForRole','iam:GetInstanceProfile','iam:PassRole'] for a in allactions));self.assertNotIn('ssm:StartSession',allactions);self.assertNotIn('ec2:DeleteVolume',allactions)
