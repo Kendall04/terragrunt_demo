@@ -313,9 +313,128 @@ def cold_path(request, evidence=None):
     return result
 
 
+def service_plan(value):
+    """Offline consistency only; never acquires E2, changes a secret or switches traffic."""
+    import ipaddress
+    import sys
+    original_path = sys.path[:]
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from scripts.workflow_requests.contract import request as workflow_request
+        from host import timestamp, event_order
+    finally:
+        sys.path[:] = original_path
+    require(set(value) == {'Trial', 'ColdReceipt', 'Network', 'Connection', 'Release', 'Delivery',
+                           'PublicApiId', 'PublicUrl', 'ReviewedUtc', 'RecoveryRequestedUtc'}, 'SERVICE_PLAN_SHAPE')
+    name = trial(value['Trial'])
+    receipt, net, conn, release, delivery = (value[k] for k in ('ColdReceipt','Network','Connection','Release','Delivery'))
+    require(receipt['Trial'] == name and receipt['Status'] == 'TARGET_RECOVERED_REVIEW_EVIDENCE'
+            and receipt['Checkdb'] == 'RESTORED_CHECKDB_READABLE', 'COLD_RESTORE_REQUIRED')
+    fence = receipt['ColdFence']
+    require(fence and fence['Status'] == 'EXACT_SOURCE_TERMINATED'
+            and fence['Source'] == receipt['Source'] and fence['Target'] == receipt['Target']
+            and receipt['Source']['instanceId'] != receipt['Target']['instanceId'], 'SOURCE_FENCE_REQUIRED')
+    require(re.fullmatch('[a-f0-9]{64}', fence['ControlPlaneSha256']) is not None, 'FENCE_RECEIPT_REQUIRED')
+    require(all(i['accountId'] == ACCOUNT and i['region'] == REGION
+                and re.fullmatch('i-[0-9a-f]{17}',i['instanceId']) for i in (receipt['Source'],receipt['Target'])),
+            'WRONG_ACCOUNT_REGION_OR_HOST')
+    require(event_order(value['RecoveryRequestedUtc'], fence['TargetLaunchUtc'],
+                        receipt['ReadyAndDecryptedMarkersConfirmedUtc'], fence['ObservedUtc'], value['ReviewedUtc'])
+            and (timestamp(value['ReviewedUtc'])-timestamp(fence['ObservedUtc'])).total_seconds() <= 900,
+            'STALE_OR_PREPARED_TARGET')
+    require(set(net) == {'AppVpcId','DbVpcId','DbInstanceId','DbPrivateIp','DbSubnetCidr','DbSgId',
+                         'TaskSgId','DbIngress','SqlBoundAddresses','HasPublicIpv4'}, 'NETWORK_METADATA_ONLY')
+    require(net['AppVpcId'] == net['DbVpcId'] and re.fullmatch('vpc-[0-9a-f]{17}', net['AppVpcId']), 'APP_VPC_REQUIRED')
+    require(net['DbInstanceId'] == receipt['Target']['instanceId'], 'WRONG_SQL_ENDPOINT_INSTANCE')
+    ip = ipaddress.ip_address(net['DbPrivateIp'])
+    subnet = ipaddress.ip_network(net['DbSubnetCidr'])
+    private_ranges = [ipaddress.ip_network(c) for c in ('10.0.0.0/8','172.16.0.0/12','192.168.0.0/16')]
+    require(ip.version == subnet.version == 4 and ip in subnet
+            and ip not in (subnet.network_address,subnet.broadcast_address)
+            and any(subnet.subnet_of(r) for r in private_ranges), 'PRIVATE_BOUND_ENDPOINT_REQUIRED')
+    require(net['SqlBoundAddresses'] == [str(ip)] and net['HasPublicIpv4'] is False, 'APPLICATION_LISTENER_MODE_REQUIRED')
+    for key in ('DbSgId','TaskSgId'):
+        require(re.fullmatch('sg-[0-9a-f]{17}', net[key]) is not None, 'OWN_SECURITY_GROUP_REQUIRED')
+    require(net['DbSgId'] != net['TaskSgId'] and net['DbIngress'] ==
+            [{'Protocol':'tcp','FromPort':1433,'ToPort':1433,'SourceSecurityGroupId':net['TaskSgId']}],
+            'ONLY_TASK_SG_SQL_INGRESS')
+    require(set(conn) == {'SecretArn','VersionId','Endpoint','Database','TextKeyArn','BackupKeyArn','SecretKeyArn'}, 'NO_SECRET_VALUES_ALLOWED')
+    require(conn['Endpoint'] == str(ip) and conn['Database'] == 'recoverydb_restore_' + name, 'CONNECTION_TARGET_MISMATCH')
+    require(re.fullmatch(re.escape(f'arn:aws:secretsmanager:{REGION}:{ACCOUNT}:secret:demo/dev/db/')+
+                         '[A-Za-z0-9/_+=.@-]+', conn['SecretArn']) is not None
+            and conn['SecretArn'] not in (SA_SECRET, APP_SECRET), 'PROTECTED_CONNECTION_SECRET_REQUIRED')
+    require(re.fullmatch('[A-Za-z0-9-]{32,64}',conn['VersionId']) is not None, 'IMMUTABLE_SECRET_VERSION_REQUIRED')
+    require(conn['TextKeyArn'] == TEXT_KEY and conn['BackupKeyArn'] == BACKUP_KEY
+            and conn['SecretKeyArn'] == TEXT_KEY, 'KEY_PURPOSE_MISMATCH')
+    require(set(release) == {'release_id','image_uri','schema_sha256','restored_schema_sha256',
+                             'rollback_history','rollback_schema_sha256'}, 'RELEASE_SHAPE')
+    require(re.fullmatch('[a-f0-9]{64}',release['restored_schema_sha256']) is not None
+            and release['schema_sha256'] == release['restored_schema_sha256'] == release['rollback_schema_sha256'],
+            'SCHEMA_OR_ROLLBACK_INCOMPATIBLE')
+    image = re.fullmatch(re.escape(f'{ACCOUNT}.dkr.ecr.{REGION}.amazonaws.com/')+
+                         r'[a-z0-9][a-z0-9._/-]*@sha256:([a-f0-9]{64})',release['image_uri'])
+    require(image is not None and release['release_id'] == 'sha256-' + image[1], 'QUALIFIED_DIGEST_BINDING_REQUIRED')
+    require(set(delivery) == {'operation_id','rollback_operation_id','active_color','candidate_color','replicas',
+                              'listener_arn','rule_arn','active_target_arn','candidate_target_arn'}, 'DELIVERY_SHAPE')
+    require(delivery['candidate_color'] in ('blue','green') and delivery['active_color'] in ('blue','green')
+            and delivery['candidate_color'] != delivery['active_color'] and type(delivery['replicas']) is int
+            and delivery['replicas'] in (1,2), 'BOUNDED_DISTINCT_CANDIDATE_REQUIRED')
+    for key, kind in [('listener_arn','listener'),('rule_arn','listener-rule')]:
+        require(re.fullmatch(re.escape(f'arn:aws:elasticloadbalancing:{REGION}:{ACCOUNT}:{kind}/app/demo-dev-internal-alb/')+
+                             r'[A-Za-z0-9/]+',delivery[key]) is not None, 'OWN_ROUTING_REQUIRED')
+    for prefix,color in [('active',delivery['active_color']),('candidate',delivery['candidate_color'])]:
+        require(re.fullmatch(re.escape(f'arn:aws:elasticloadbalancing:{REGION}:{ACCOUNT}:targetgroup/demo-dev-{color}/')+
+                             '[a-z0-9]+',delivery[prefix+'_target_arn']) is not None, 'OWN_TARGET_GROUP_REQUIRED')
+    require(re.fullmatch('[a-z0-9]{10}',value['PublicApiId']) is not None and value['PublicUrl'] ==
+            f'https://{value["PublicApiId"]}.execute-api.{REGION}.amazonaws.com', 'OWN_PUBLIC_API_REQUIRED')
+    require(len({delivery['operation_id'],delivery['rollback_operation_id'],release['rollback_history']}) == 3,
+            'DISTINCT_DURABLE_OPERATIONS_REQUIRED')
+    payload = {'action':'deliver','release_id':release['release_id'],'replicas':delivery['replicas']}
+    rollback = {'action':'rollback-release','history':release['rollback_history'],'replicas':delivery['replicas']}
+    # Use the actual closed gateway validator; no new endpoint/secret override fields.
+    normal_request = workflow_request('deploy-dev',json.dumps(payload),delivery['operation_id'])
+    rollback_request = workflow_request('deploy-dev',json.dumps(rollback),delivery['rollback_operation_id'])
+    color = delivery['candidate_color']
+    return {'Status':'SERVICE_CUTOVER_DRY_PLAN','Trial':name,'AllowsActivation':False,'AwsExecuted':False,
+            'EvidenceAuthenticated':False,'FullEcsRecoveryProven':False,
+            'InputSha256':hashlib.sha256(encoded(value)).hexdigest(),
+            'ConnectionMetadata':{'Endpoint':str(ip),'Port':1433,'Database':conn['Database'],
+                                  'SecretReference':conn['SecretArn']+':::'+conn['VersionId'],
+                                  'PlaintextConnectionStringIncluded':False},
+            'RendererArguments':['bash','scripts/render-demo-api-taskdef.sh','--env','dev','--region',REGION,
+                '--account-id',ACCOUNT,'--color',color,'--image-uri',release['image_uri'],'--db-secret-id',
+                conn['SecretArn']+':::'+conn['VersionId'],'--kms-key-id',TEXT_KEY,'--output','candidate-taskdef.review.json'],
+            'GatewayRequest':normal_request,'RollbackRequest':rollback_request,
+            'ProposedTaskEnvironmentAppend':[{'name':'Database__RunMigrationsOnStartup','value':'false'}],
+            'TaskTemplateAutomaticallyChanged':False,
+            'RequiredTaskRoles':{'Execution':f'arn:aws:iam::{ACCOUNT}:role/demo-dev-app-api-{color}-exec-role',
+                                 'Task':f'arn:aws:iam::{ACCOUNT}:role/demo-dev-app-api-{color}-task-role'},
+            'IamReviewOnly':{'ExecutionRole':['GetSecretValue exact connection ARN/version','Decrypt connection-secret key '+conn['SecretKeyArn']],
+                             'TaskRole':['Encrypt/Decrypt application-text key '+TEXT_KEY],
+                             'SqlRole':['Read selected backup S3 version and decrypt backup key '+BACKUP_KEY]},
+            'Steps':['verify-native-fence-and-network-listener','read-durable-operation-history-stop-if-uncertain','acquire-existing-E2-owner',
+                     'create-connection-secret-version-outside-Terraform-and-pin-installed-binding',
+                     'deliver-qualified-release-through-existing-WP4-new-tasks',
+                     'run-existing-task-local-readiness-and-E3-final-revalidation',
+                     'WP4-controlled-routing-switch','public-ready-decrypt-old-marker-write-read',
+                     'mark-service-ready-and-measure-total-RTO','owner-LIVE-window','retire-owned-runtime'],
+            'RollbackRule':'Only schema-compatible image against the SAME restored endpoint/version; never old terminated SQL.',
+            'PublicChecks':{'BaseUrl':value['PublicUrl'],'BeforeMarkingReady':True,'BeforeTrafficSwitch':False,
+                            'Required':['/ready dependency check','decrypt recovered marker','fresh POST /text','read same marker']},
+            'BlockingLiveGates':['Supplied metadata is not native proof or an acquired E2 token',
+                'Current recovery verifier/bootstrap is loopback-only: private-listener mode needs review/qualification',
+                'Current WP4 caller cannot override a secret: protected installed binding must pin the reviewed version',
+                'Verify Fargate Linux platform >=1.4.0 for secret version selection',
+                'Existing template defaults startup migrations: protected recovery variant must disable them',
+                'Schema compatibility must come from protected qualified release and restore facts, not caller assertions',
+                'Existing E3 plus public API checks and same-VPC routes/NACLs need native receipts',
+                'SSM transport, full resource plan/IAM/budget not approved here']}
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('action', choices=['render', 'review-create', 'review-delete', 'bind-retirement', 'timeline', 'publisher', 'cold-plan', 'cold-review', 'bind-cold-retirement'])
+    p.add_argument('action', choices=['render', 'review-create', 'review-delete', 'bind-retirement', 'timeline', 'publisher', 'cold-plan', 'cold-review', 'bind-cold-retirement', 'service-plan'])
     p.add_argument('--trial', required=True)
     p.add_argument('--output', type=Path)
     p.add_argument('--input', type=Path)
@@ -323,6 +442,11 @@ def main():
     p.add_argument('--sha256')
     p.add_argument('--evidence', type=Path)
     a = p.parse_args()
+    if a.action == 'service-plan':
+        value = json.loads(a.input.read_text(encoding='utf-8'))
+        require(value['Trial'] == a.trial, 'WRONG_TRIAL')
+        print(json.dumps(service_plan(value), indent=2))
+        return
     if a.action == 'bind-cold-retirement':
         print(json.dumps(retirement_policy(json.loads(a.input.read_text(encoding='utf-8')), a.trial, cold=True), indent=2))
         return

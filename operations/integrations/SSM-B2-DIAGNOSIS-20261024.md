@@ -120,3 +120,8 @@ The two new root/status negatives run with the29-test observer suite in existing
 The owner-provided Chrome session was read successfully. Both the EC2 header and Support Center showed account341936017254; Support Center explicitly displayed **Basic Support**. [Observation receipt](fixtures/ssm-b2-support-console.json). This supersedes only the earlier UNKNOWN plan result. Basic does not include the technical-support case needed for the SSM internal trace; the API subscription error is consistent with it. No existing technical plan/channel was found. A Business Support+ trial promotion was visible but was not selected or accepted; it is not treated as included support.
 
 No case was opened, no issue text/attachment entered, no subscription/permission change and no purchase occurred. Only the agent-created Support tab was closed; the user's AWS EC2 tab/session was preserved. The draft remains unsent. Do not route the technical request through billing or silently buy support. Independent local recovery/Fargate planning continues; SSM's unresolved authorization still blocks that live execution path.
+
+
+## Next evidence experiment: design only
+
+The [bounded proposed diagnostic trial](SSM-DIAGNOSTIC-TRIAL-DESIGN.md) identifies the missing asynchronous/service versus agent evidence, collection-before-command admission, same-principal limits and retirement. It is not approved or executable yet; it adds no IAM, session, SendCommand, infrastructure or spend. A console Session Manager session is a separate optional capability and does not demonstrate that the denied Run Command is fixed.
