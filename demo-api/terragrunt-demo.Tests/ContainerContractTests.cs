@@ -26,6 +26,9 @@ public class ContainerContractTests
     [InlineData("COPY --from=build /app/publish .", "COPY --from=build --chmod=600 /app/publish .")]
     [InlineData("terragrunt-demo.dll", "other.dll")]
     [InlineData("/p:UseAppHost=false", "/p:UseAppHost=true")]
+    [InlineData(" --locked-mode", "")]
+    [InlineData("terragrunt-demo/packages.lock.json ", "")]
+    [InlineData("--no-restore", "")]
     [InlineData("&& chmod -R a+rX /app/publish", "")]
     [InlineData("a+rX", "777")]
     [InlineData("a+rX", "a+rwX")]
@@ -116,10 +119,10 @@ public class ContainerContractTests
             Base("base", "aspnet"), "WORKDIR /app", "EXPOSE 8080",
             "ENV ASPNETCORE_URLS=http://+:8080", "USER $APP_UID",
             Base("build", "sdk"), "ARG BUILD_CONFIGURATION=Release", "WORKDIR /src",
-            "COPY terragrunt-demo/terragrunt-demo.csproj terragrunt-demo/",
-            "RUN dotnet restore terragrunt-demo/terragrunt-demo.csproj",
+            "COPY terragrunt-demo/terragrunt-demo.csproj terragrunt-demo/packages.lock.json terragrunt-demo/",
+            "RUN dotnet restore terragrunt-demo/terragrunt-demo.csproj --locked-mode",
             "COPY terragrunt-demo/ terragrunt-demo/",
-            "RUN dotnet publish terragrunt-demo/terragrunt-demo.csproj -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false && chmod -R a+rX /app/publish",
+            "RUN dotnet publish terragrunt-demo/terragrunt-demo.csproj -c $BUILD_CONFIGURATION --no-restore -o /app/publish /p:UseAppHost=false && chmod -R a+rX /app/publish",
             "FROM base AS final", "WORKDIR /app", "COPY --from=build /app/publish .",
             "USER $APP_UID", "ENTRYPOINT [\"dotnet\", \"terragrunt-demo.dll\"]"
         }, instructions);

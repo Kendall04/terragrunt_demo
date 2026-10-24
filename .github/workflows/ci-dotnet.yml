@@ -36,12 +36,15 @@ jobs:
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/packages.lock.json', 'global.json') }}
           restore-keys: |
             ${{ runner.os }}-nuget-
 
+      - name: Validate dependency lock contracts (offline)
+        run: python3 -I -B -m unittest discover -s .github/scripts/ci/tests -p test_dotnet_locks.py -v
+
       - name: Restore dependencies
-        run: dotnet restore ./demo-api/terragrunt-demo.sln
+        run: dotnet restore ./demo-api/terragrunt-demo.sln --locked-mode
 
       - name: Build
         run: dotnet build ./demo-api/terragrunt-demo.sln --configuration Release --no-restore

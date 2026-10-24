@@ -94,3 +94,23 @@ Recommended next authorized-local increment: a small explicit offline suite entr
 The requested read-only browser check reached **Amazon Web Services Sign-In**, not an authenticated Support Center session. No identifier/credential was entered, no login attempted, and the agent-created tab was closed. Exact plan/legacy-console entitlement remains UNKNOWN; the earlier SubscriptionRequiredException remains the actual observed API result. No subscription, case, disclosure or attachment upload followed.
 
 Independent local work advanced meanwhile: explicit recovery CI entrypoint and local workflow diff now execute71 tests including POSIX without skips, with38 selector/runner contracts passing. See the recovery runbook and qualification receipt; Support unavailability did not block this local development.
+
+## Focused caller / instance / root map for the owner
+
+Correct distinction from current source (no runtime or permission changes):
+
+| Boundary | Required capability / expected evidence | What b2 proves or lacks |
+| --- | --- | --- |
+| Caller→SSM API | Operator SendCommand on document and managed-node target; Get/Describe document for pinning | Native API accepted with correct identity/version/hash. This does not prove asynchronous per-target authorization |
+| SSM→managed node | Effective caller authorization at dispatch; agent registration/channels and document retrieval under instance identity | Node Online is one registration observation, not command permission or delivery. Per-node invocation is AccessDenied before script start |
+| Instance role | Saved observer role has boundary and equal inline; own-document Get/Describe, ssmmessages channels, tagged UpdateInstanceInformation and explicit expiry/region | Matching inline/boundary is structural agreement, not effectiveness. It is separate from caller's no-boundary observation. No node-client GetDocument event/log establishes successful download |
+| Local `status` | `observer_host.py control` first reads private host config; status branch returns before the explicit root guard | A new local fake-read test verifies non-root status can reach OBSERVED when read/system calls are mocked. This does not grant non-root access to the real0600 host config |
+| Local mutation | `control(start/stop/once/mode)` checks ROOT_CONTROL_REQUIRED before systemd mutation | New negative test proves non-root start raises the program's Refused without calling systemd. CLI exception wrapper would print REFUSED and exit2, unlike a pre-execution SSM response−1 |
+
+Important: `ServiceRole` empty in Run Command metadata is not proof the EC2 instance profile was absent. Nor does the node metadata's IamRole=null prove that; inspect captured EC2/profile identity separately. Do not assign initiator permissions to the instance role or enlarge both roles in response to an unlocated denial.
+
+Metadata can establish what was requested and accepted, but cannot supply the principal/resource/context/failed statement of the later evaluation. `sts:DecodeAuthorizationMessage` needs an **actual encoded authorization failure message**. Neither accepted SendCommand/CloudTrail nor the complete SSM invocation responses contain one; a command ID, policy hash or AccessDenied string cannot be decoded in its place. Therefore no DecodeAuthorizationMessage request or new permission is useful on the captured data.
+
+Document download/agent authorization logs would be relevant if exported. The captured command has no S3/CW output destination, the EC2 disk is gone, and ordinary surviving APIs do not return those logs. We do not claim all provider diagnostics are exclusively Support; the practical remaining provider-facing request is the retained per-target decision with the prepared IDs. If the owner logs into an existing eligible Support Center session, reading plan/channel can continue; no case, log upload, plan purchase or new execution is authorized by that login alone.
+
+The two new root/status negatives run with the29-test observer suite in existing WSL and synthetic ports only. They refine the explanation; they do not fix or reproduce the AWS authorization failure. Independent pipeline work now also locks all four solution dependency graphs and validates them offline, so the project continues while live SSM remains blocked.

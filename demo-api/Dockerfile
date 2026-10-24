@@ -17,10 +17,10 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
 # Copy only solution and project files first (cache-friendly)
-COPY terragrunt-demo/terragrunt-demo.csproj terragrunt-demo/
+COPY terragrunt-demo/terragrunt-demo.csproj terragrunt-demo/packages.lock.json terragrunt-demo/
 # If you had more projects, list each with its own COPY
 
-RUN dotnet restore terragrunt-demo/terragrunt-demo.csproj
+RUN dotnet restore terragrunt-demo/terragrunt-demo.csproj --locked-mode
 
 # Copy the remaining source
 COPY terragrunt-demo/ terragrunt-demo/
@@ -28,6 +28,7 @@ COPY terragrunt-demo/ terragrunt-demo/
 # Build
 RUN dotnet publish terragrunt-demo/terragrunt-demo.csproj \
     -c $BUILD_CONFIGURATION \
+    --no-restore \
     -o /app/publish \
     /p:UseAppHost=false \
     && chmod -R a+rX /app/publish

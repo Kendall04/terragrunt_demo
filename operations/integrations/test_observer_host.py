@@ -24,6 +24,20 @@ class HostTests(unittest.TestCase):
         self.config={'account':'341936017254','region':'us-east-1','run_id':'ecs-sentinel-offline','subject':'sql-backup','bucket':'existing-backup-test-bucket','prefix':'old-native-read-only','missing_prefix':'sentinel-observer/ecs-sentinel-offline/empty','backup_key_arn':'arn:aws:kms:us-east-1:341936017254:key/'+'1'*8+'-'+'1'*4+'-'+'1'*4+'-'+'1'*4+'-'+'1'*12,'text_key_arn':'arn:aws:kms:us-east-1:341936017254:key/'+'2'*8+'-'+'2'*4+'-'+'2'*4+'-'+'2'*4+'-'+'2'*12,'database':'DemoDb','max_age_hours':168,'expires_at':'2026-10-25T00:00:00Z','cadence_seconds':60,'publish_attempts':3}
     def tearDown(self):self.tmp.cleanup()
     def build(self):return h.build(self.c,self.msha,'a'*40,self.bundle)
+    def test_status_branch_precedes_explicit_root_check_with_fake_read_access(self):
+        (self.root/'mode.json').write_text(json.dumps({'mode':'healthy'}))
+        with patch.object(h,'host',return_value=(self.config,{})),patch.object(h,'STATE',self.root), \
+             patch.object(h.os,'geteuid',return_value=1000,create=True),patch.object(h,'system',return_value=0), \
+             patch.object(h,'service_busy',return_value=False):
+            self.assertEqual(h.control('status')['status'],'OBSERVED')
+        # Read access was mocked: this does not prove a non-root user can read host.json.
+
+    def test_state_change_nonroot_refuses_before_systemd_not_ssm_authorization(self):
+        with patch.object(h,'host',return_value=(self.config,{})), \
+             patch.object(h.os,'geteuid',return_value=1000,create=True),patch.object(h,'system') as system:
+            with self.assertRaisesRegex(h.Refused,'ROOT_CONTROL_REQUIRED'):h.control('start')
+            system.assert_not_called()
+
     def test_cli_wrong_source_commit_refused_before_bundle_write(self):
         args=['observer_host','build','--component',str(self.c),'--component-manifest-sha',self.msha,'--source-commit','a'*40,'--output',str(self.bundle)]
         with patch('sys.argv',args),patch.object(h.subprocess,'check_output',return_value='c'*40):

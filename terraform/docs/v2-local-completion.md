@@ -339,3 +339,7 @@ The subsequent local implementation adds native-read adapters (not executed agai
 ## Explicit cold recovery CI
 
 Local workflow diff now invokes `scripts/tests/run_recovery_ci.py` from repo hygiene. Existing WSL unprivileged execution:71 PASS/0SKIP, including four POSIX tests; CI selector/runner contracts38 PASS with empty/skip/failure rejection. [Evidence](../../operations/sql-backup/recovery/cold-ci-qualification.json) contains actual discovered test IDs and hashes. No remote CI, push, install, SQL/AWS execution or root requirement change. Full hosted CI and inherited gates remain separately unverified. Support console required login; stopped without login, plan remains unknown.
+
+## Dependency-locked delivery increment
+
+All four solution projects now have NuGet locks; CI and Docker restore in locked mode, cache keys bind locks and Docker publish cannot implicitly restore. Actual offline locked restore/build passed; altered dependency with unchanged lock rejected NU1004. API107 PASS; backup62 PASS/1 native skip; lock contracts3 and observer29 PASS in WSL. Source/package versions unchanged; no downloads, push, container build, remote CI or AWS execution. [Validation and limits](validation.md#nuget-dependency-locks-and-cidocker-restore--2026-10-24). SSM root/status mapping is refined in the focused diagnosis; its live gate remains unresolved rather than blocking local development.

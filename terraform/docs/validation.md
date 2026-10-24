@@ -1534,3 +1534,15 @@ Locks, provider versions, retired sources, canonical generators and package
 identities remain unchanged. Missing evidence and generator admission dependencies
 are explicit; this result does not claim reproducibility is fixed. No provider
 binary download, Terraform initialization, AWS, workflow or push occurred.
+
+## NuGet dependency locks and CI/Docker restore — 2026-10-24
+
+The four solution projects now have packages.lock.json: API, API tests, SqlBackup and SqlBackup tests. CI restore uses --locked-mode; its cache key binds locks, project files and global.json. Docker copies the API lock before locked restore and publishes with --no-restore. Pinned base identities, non-root runtime and readiness deployment contracts remain strict. ContainerContractTests now also reject removal of the lock, locked-mode or no-restore; the expected grammar was updated, not weakened.
+
+Locks were generated with existing SDK10.0.402 and central migrated NuGet cache, using a newly created config with **no sources or credentials**. No package versions were edited or downloaded. Resolved API/backup package versions were compared with the previous qualified publications: no differences. Initial offline restore looked in the default user cache and failed with missing packages; using the known central cache resolved all four. An attempted raw NuGet.Config read was rejected by automatic review due to possible credentials; that file was never read or retried. No private configuration values are part of this change.
+
+Actual unchanged locked restore PASS, build PASS0warnings/0errors; a temporary project copy with MediatR12.4.1→12.4.0 and unchanged lock was rejected by dotnet itself with **NU1004**. It used empty sources and left original source/lock files unchanged. This verifies the refusal path rather than relying only on command-text assertions. Local NuGetAudit=false was used solely to keep offline fixture/validation from calling advisory endpoints; CI/Docker do not disable NuGet audit. This is not a current CVE/audit result.
+
+Managed tests using the installed Windows SDK: API107 PASS; backup62 PASS/1 intentionally skipped native SQL test. New dependency lock contracts3 PASS in WSL. Observer suite29 PASS in WSL includes root/status negatives supporting the SSM explanation. A Linux SDK was not available in WSL, no SDK was installed, and no new container build or hosted CI was executed. Prior71-test cold recovery CI qualification is unchanged, not rerun or relabelled as part of this managed validation.
+
+Files: `.github/workflows/ci-dotnet.yml`, `demo-api/Dockerfile`, four locks, strict container tests and `.github/scripts/ci/tests/test_dotnet_locks.py`. This adds reproducibility guards; it does not publish a release, change OIDC, activate a workflow remotely or claim ECS/SQL native E2E. Remaining provider-lock provenance, Linux/container acceptance and current vulnerability findings remain separate gates. Existing historical binaries/archives are not overwritten or relabelled with new provenance.
