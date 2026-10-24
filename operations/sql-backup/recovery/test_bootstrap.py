@@ -15,6 +15,67 @@ BASH = Path(r'C:\Program Files\Git\bin\bash.exe') if os.name == 'nt' else Path(s
 
 
 class BootstrapTests(unittest.TestCase):
+    def test_cli_install_arguments_are_isolated_in_both_recipes(self):
+        normal = BOOT.parents[3] / 'terraform/infra/data/user_data.sh'
+        for path in (normal, BOOT):
+            with self.subTest(recipe=path.name):
+                lines = [line.strip() for line in path.read_text(encoding='utf-8').splitlines()
+                         if 'apt-get install ' in line and not line.lstrip().startswith('#')]
+                cli = [line for line in lines if 'awscli' in line]
+                self.assertEqual(len(cli), 1)
+                # Execute the real recipe line with all external effects intercepted.
+                result = self.run_bash('''
+apt-get() { printf 'ARG:%s\\n' "$@"; }
+timeout() { shift; "$@"; }
+run_stage() { shift; "$@"; }
+''' + cli[0], source=False)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(result.stdout.splitlines(),
+                                 ['ARG:install', 'ARG:-y', 'ARG:--no-install-recommends', 'ARG:awscli'])
+                self.assertTrue(any('mssql-server' in line for line in lines))
+                self.assertTrue(any('mssql-tools18 unixodbc-dev' in line for line in lines))
+
+    def test_cli_precedes_secret_consumers_and_recovery_stops_on_install_failure(self):
+        normal = (BOOT.parents[3] / 'terraform/infra/data/user_data.sh').read_text(encoding='utf-8')
+        recovery = BOOT.read_text(encoding='utf-8')
+        self.assertLess(normal.index('--no-install-recommends awscli'), normal.index('SA_PASS="$(get_secret_value'))
+        self.assertLess(normal.index('--no-install-recommends awscli'), normal.index('APP_PASS="$(get_secret_value'))
+        main = recovery[recovery.index('bootstrap_main()'):]
+        self.assertLess(main.index('--no-install-recommends awscli'), main.index('secret_stage sa_secret'))
+        cli = next(line.strip() for line in main.splitlines() if '--no-install-recommends awscli' in line)
+        result = self.run_bash('timeout() { return 100; }\n' + cli + '\necho SECRET_CONSUMER_REACHED')
+        self.assertEqual(result.returncode, 100)
+        self.assertIn('stage=aws_cli', result.stdout)
+        self.assertNotIn('SECRET_CONSUMER_REACHED', result.stdout)
+
+    def test_normal_secret_consumers_keep_cli_contract(self):
+        text = (BOOT.parents[3] / 'terraform/infra/data/user_data.sh').read_text(encoding='utf-8')
+        helper = text[text.index('get_secret_value() {'):text.index('SA_PASS="$(get_secret_value')]
+        result = self.run_bash(helper + '''
+REGION=us-east-1
+aws() {
+  [[ "$*" == "secretsmanager get-secret-value --secret-id fixture-sa --region us-east-1 --query SecretString --output text" ||
+     "$*" == "secretsmanager get-secret-value --secret-id fixture-app --region us-east-1 --query SecretString --output text" ]] || return 97
+  printf fixture-value
+}
+[[ "$(get_secret_value fixture-sa SA)" == fixture-value ]]
+[[ "$(get_secret_value fixture-app app)" == fixture-value ]]
+''', source=False)
+        self.assertEqual((result.returncode, result.stdout, result.stderr), (0, '', ''))
+
+    def test_recovery_secret_consumer_keeps_cli_contract(self):
+        result = self.run_bash('''
+aws() {
+  [[ "$1" == secretsmanager && "$2" == get-secret-value && "$3" == --region && "$4" == us-east-1 &&
+     "$5" == --secret-id && "$6" == arn:aws:secretsmanager:* && "$7" == --query && "$8" == SecretString &&
+     "$9" == --output && "${10}" == text ]] || return 97
+  printf fixture-value
+}
+read_sa_secret
+[[ "$SA_PASS" == fixture-value ]]
+unset SA_PASS
+''')
+        self.assertEqual((result.returncode, result.stdout, result.stderr), (0, '', ''))
     def candidate_fixture(self, changed_package=None, changed_policy=None, installed=False):
         policies = {}
         for package in ('mssql-server', 'mssql-tools18', 'unixodbc-dev'):

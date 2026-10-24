@@ -191,7 +191,9 @@ bootstrap_main() {
   run_stage platform check_platform
   run_stage fresh_host check_fresh_host
   run_stage base_index timeout 600 apt-get update -y
-  run_stage base_packages timeout 600 apt-get install -y curl ca-certificates gnupg awscli
+  run_stage base_packages timeout 600 apt-get install -y curl ca-certificates gnupg
+  # CLI is required for secret retrieval; omit its optional recommended packages.
+  run_stage aws_cli timeout 600 apt-get install -y --no-install-recommends awscli
   run_stage repositories configure_repositories
   run_stage repository_access check_repository_access /etc/apt/keyrings/recovery-microsoft.gpg /etc/apt/sources.list.d/recovery-sql.list /etc/apt/sources.list.d/recovery-tools.list
   run_stage sql_index timeout 600 apt-get update -y

@@ -24,7 +24,9 @@ export DEBIAN_FRONTEND=noninteractive
 # 1) Install base packages and AWS CLI
 # ---------------------------------------
 apt-get update -y
-apt-get install -y curl ca-certificates gnupg lsb-release software-properties-common awscli
+apt-get install -y curl ca-certificates gnupg lsb-release software-properties-common
+# Keep the CLI for Secrets Manager without optional documentation/rendering packages.
+apt-get install -y --no-install-recommends awscli
 
 # -----------------------------------------------------
 # Retrieve SA and application passwords from Secrets Manager
