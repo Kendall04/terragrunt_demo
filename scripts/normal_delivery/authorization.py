@@ -346,6 +346,20 @@ def runtime(config, image_uri, replicas):
 
 
 class Authorizer:
+    intent_schema = 'E1_AUTHORIZED_RUNTIME_INTENT_V1'
+
+    def read_binding(self, observed):
+        return binding(envelope(observed,'endpoint',self.endpoint),self.endpoint,self.account,self.region)
+
+    def build_runtime(self, config, uri, replicas):
+        return runtime(config,uri,replicas)
+
+    def check_task_model(self, task, config, uri):
+        validate_task_model(task,config,uri)
+
+    def intent_extension(self, config, q, uri):
+        return {}
+
     def __init__(self, endpoint, account, region, facts):
         require(endpoint in ENDPOINTS and isinstance(facts, Facts))
         match(r'[0-9]{12}', account)
@@ -356,7 +370,7 @@ class Authorizer:
         try:
             caller = request(raw)
             observed = self.facts.environment(self.endpoint)
-            config = binding(envelope(observed, 'endpoint', self.endpoint), self.endpoint, self.account, self.region)
+            config = self.read_binding(observed)
             require(caller['replicas'] <= config['max_replicas'])
             membership = validate_membership(self.facts.membership(config['environment']), config)
             q, uri = qualified(self.facts, caller['release_id'], self.account, self.region)
@@ -368,15 +382,18 @@ class Authorizer:
                             repository=q['image_repository'], digest=q['image_digest'], available=True)
             exact(available, expected, 'artifact')
             prerequisite = promotion(self.facts, q, uri) if self.endpoint == 'promote-prod' else None
-            task, service = runtime(config, uri, caller['replicas'])
-            validate_task_model(task, config, uri)
-            intent = dict(schema='E1_AUTHORIZED_RUNTIME_INTENT_V1', endpoint=self.endpoint,
+            extension = self.intent_extension(config,q,uri)
+            task, service = self.build_runtime(config, uri, caller['replicas'])
+            self.check_task_model(task, config, uri)
+            intent = dict(schema=self.intent_schema, endpoint=self.endpoint,
                           environment=config['environment'], color=config['color'], release=q,
                           membership=membership,
                           qualification_sha256=sha(canonical(q)), eligibility=dict(version_id=eligible['version_id'],
                           sha256=sha(eligible['bytes'])), binding=dict(version_id=observed['version_id'],
                           sha256=sha(observed['bytes'])), promotion=prerequisite, task=task, service=service,
                           routing=dict(listener_arn=config['listener_arn'], candidate_rule_arn=config['candidate_rule_arn']))
+            require(type(extension) is dict and not set(extension) & set(intent))
+            intent.update(extension)
             intent['intent_sha256'] = sha(canonical(intent))
             return copy.deepcopy(intent)
         except Exception:

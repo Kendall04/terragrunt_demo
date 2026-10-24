@@ -92,6 +92,12 @@ class Delivery:
         self.auth, self.runtime, self.records, self.gate = authorizer, runtime, records, gate
         self.env = a.ENDPOINTS[authorizer.endpoint]
 
+    def operation_contract(self):
+        return ('E1_DELIVERY_OPERATION_V1','E1_AUTHORIZED_RUNTIME_INTENT_V1',
+                ('schema','endpoint','environment','color','release','membership',
+                 'qualification_sha256','eligibility','binding','promotion','task',
+                 'service','routing','intent_sha256'))
+
     def read(self, key, object_required=False):
         try:
             observed = self.records.read(self.env + '/' + key)
@@ -421,7 +427,7 @@ class Delivery:
             a.keys(retained, ('schema', 'operation_id', 'environment', 'action',
                 'request', 'history', 'intent', 'started', 'deadline', 'active_color',
                 'active_service', 'active_target', 'target', 'initial'))
-            a.require(retained['schema'] == 'E1_DELIVERY_OPERATION_V1')
+            a.require(retained['schema'] == self.operation_contract()[0])
             a.exact(retained['operation_id'], operation, 'stored operation')
             a.exact(retained['environment'], self.env, 'stored environment')
             a.require(retained['action'] in ('deliver', 'rollback-release'))
@@ -440,10 +446,8 @@ class Delivery:
                 a.require(type(retained[field]) is str and bool(retained[field]))
             a.require(type(retained['initial']) is dict)
             intent = retained['intent']
-            a.keys(intent, ('schema', 'endpoint', 'environment', 'color', 'release',
-                'membership', 'qualification_sha256', 'eligibility', 'binding',
-                'promotion', 'task', 'service', 'routing', 'intent_sha256'))
-            a.require(intent['schema'] == 'E1_AUTHORIZED_RUNTIME_INTENT_V1')
+            a.keys(intent, self.operation_contract()[2])
+            a.require(intent['schema'] == self.operation_contract()[1])
             a.exact(intent['environment'], self.env, 'stored intent environment')
             a.exact(intent['endpoint'], self.auth.endpoint, 'stored intent endpoint')
             for field in ('release', 'membership', 'eligibility', 'binding', 'task', 'service', 'routing'):
@@ -485,7 +489,7 @@ class Delivery:
         intent = self.auth.authorize(a.canonical(request))
         started = self.runtime.now()
         a.require(type(started) is int and started > 0)
-        op = dict(schema='E1_DELIVERY_OPERATION_V1', operation_id=operation,
+        op = dict(schema=self.operation_contract()[0], operation_id=operation,
                   environment=self.env, action=action, request=request, history=history,
                   intent=intent, started=started, deadline=started + 1800)
         snapshot = self.snapshot(op)

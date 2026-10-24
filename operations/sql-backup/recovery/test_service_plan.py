@@ -135,6 +135,16 @@ class ServicePlanTests(unittest.TestCase):
         # Closed caller request still has no profile/secret override.
         self.assertEqual(set(json.loads(plan['GatewayRequest']['body'])),{'action','release_id','replicas'})
 
+    def test_release_id_is_independent_qualification_identity_not_image_digest(self):
+        value=fixture();value['Release']['release_id']='sha256-'+'9'*64
+        plan=prepare.service_plan(value)
+        self.assertEqual(json.loads(plan['GatewayRequest']['body'])['release_id'],'sha256-'+'9'*64)
+        self.assertIn(value['Release']['image_uri'],plan['RendererArguments'])
+        self.assertFalse(plan['AllowsActivation']);self.assertFalse(plan['EvidenceAuthenticated'])
+        self.assertTrue(any('qualification record' in gate for gate in plan['BlockingLiveGates']))
+        value['Release']['release_id']='latest'
+        with self.assertRaises(ValueError):prepare.service_plan(value)
+
     def test_unfenced_wrong_source_stale_and_prepared_receipts_refuse(self):
         for change in (
             lambda v:v['ColdReceipt'].update(ColdFence=None),

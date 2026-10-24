@@ -1,0 +1,18 @@
+{
+  "schema": "E1_WP4_RECOVERY_PROFILE_V2",
+  "profile": "SQL_RESTORE_NO_MIGRATIONS_V2",
+  "binding_schema": "E1_DELIVERY_BINDING_V2",
+  "intent_schema": "E1_AUTHORIZED_RUNTIME_INTENT_V2",
+  "operation_schema": "E1_DELIVERY_OPERATION_V2",
+  "base_model_sha256": "ae022d8e665e88408348e860b7f685d657dbbe4b55c82978bb861f67aa55ccb5",
+  "base_runtime_contract": "E1_RUNTIME_V1",
+  "environment": "dev",
+  "app_environment_append": {
+    "name": "Database__RunMigrationsOnStartup",
+    "value": "false"
+  },
+  "secret_projection": "BASE_ARN:::EXACT_VERSION_ID",
+  "probe": "UNCHANGED_BASE_MODEL",
+  "maximum_approval_seconds": 86400,
+  "maximum_evidence_age_at_approval_seconds": 900
+}

@@ -374,7 +374,7 @@ def service_plan(value):
             'SCHEMA_OR_ROLLBACK_INCOMPATIBLE')
     image = re.fullmatch(re.escape(f'{ACCOUNT}.dkr.ecr.{REGION}.amazonaws.com/')+
                          r'[a-z0-9][a-z0-9._/-]*@sha256:([a-f0-9]{64})',release['image_uri'])
-    require(image is not None and release['release_id'] == 'sha256-' + image[1], 'QUALIFIED_DIGEST_BINDING_REQUIRED')
+    require(image is not None and re.fullmatch('sha256-[a-f0-9]{64}',release['release_id']) is not None, 'QUALIFIED_DIGEST_BINDING_REQUIRED')
     require(set(delivery) == {'operation_id','rollback_operation_id','active_color','candidate_color','replicas',
                               'listener_arn','rule_arn','active_target_arn','candidate_target_arn'}, 'DELIVERY_SHAPE')
     require(delivery['candidate_color'] in ('blue','green') and delivery['active_color'] in ('blue','green')
@@ -432,6 +432,7 @@ def service_plan(value):
                 'Current WP4 caller cannot override a secret: protected installed binding must pin the reviewed version',
                 'Verify Fargate Linux platform >=1.4.0 for secret version selection',
                 'Protected installed WP4 binding must select the recovery profile with startup migrations disabled; renderer alone does not change it',
+                'Release ID hashes the qualification record, not the image digest: protected WP4 qualified() must bind them',
                 'Schema compatibility must come from protected qualified release and restore facts, not caller assertions',
                 'Existing E3 plus public API checks and same-VPC routes/NACLs need native receipts',
                 'SSM transport, full resource plan/IAM/budget not approved here']}
