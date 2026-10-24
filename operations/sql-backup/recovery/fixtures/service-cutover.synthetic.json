@@ -60,7 +60,7 @@
     "HasPublicIpv4": false
   },
   "Connection": {
-    "SecretArn": "arn:aws:secretsmanager:us-east-1:341936017254:secret:demo/dev/db/app-connection-fixture",
+    "SecretArn": "arn:aws:secretsmanager:us-east-1:341936017254:secret:demo/dev/app/db-connection-string-AbCdEf",
     "VersionId": "dddddddddddddddddddddddddddddddd",
     "Endpoint": "10.77.1.8",
     "Database": "recoverydb_restore_r20261024c1t",

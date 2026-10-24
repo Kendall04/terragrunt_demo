@@ -31,7 +31,7 @@ def fixture():
         'DbPrivateIp':'10.77.1.8','DbSubnetCidr':'10.77.1.0/24','DbSgId':'sg-'+'b'*17,'TaskSgId':'sg-'+'c'*17,
         'DbIngress':[{'Protocol':'tcp','FromPort':1433,'ToPort':1433,'SourceSecurityGroupId':'sg-'+'c'*17}],
         'SqlBoundAddresses':['10.77.1.8'],'HasPublicIpv4':False},
-      'Connection':{'SecretArn':f'arn:aws:secretsmanager:{prepare.REGION}:{prepare.ACCOUNT}:secret:demo/dev/db/app-connection-fixture',
+      'Connection':{'SecretArn':f'arn:aws:secretsmanager:{prepare.REGION}:{prepare.ACCOUNT}:secret:demo/dev/app/db-connection-string-AbCdEf',
         'VersionId':'d'*32,'Endpoint':'10.77.1.8','Database':'recoverydb_restore_'+name,
         'TextKeyArn':prepare.TEXT_KEY,'BackupKeyArn':prepare.BACKUP_KEY,'SecretKeyArn':prepare.TEXT_KEY},
       'Release':{'release_id':'sha256-'+'e'*64,'image_uri':f'{prepare.ACCOUNT}.dkr.ecr.{prepare.REGION}.amazonaws.com/demo-shared-demo-ms@sha256:'+'e'*64,
@@ -112,6 +112,28 @@ class ServicePlanTests(unittest.TestCase):
             candidate=synthetic_taskdef(v);change(candidate)
             with self.assertRaisesRegex(ValueError,'RECOVERY_TASKDEF_NOT_EXACT_REVIEWED_PROJECTION'):
                 prepare.service_taskdef(v,candidate)
+
+    def test_shared_wp4_base_arn_is_aligned_but_recovery_profile_still_requires_new_protected_model(self):
+        value=fixture();prepare.service_plan(value)
+        from scripts.normal_delivery import authorization as wp4
+        base=value['Connection']['SecretArn']
+        self.assertEqual(wp4.connection_secret_arn(base,'dev',prepare.ACCOUNT,prepare.REGION),base)
+        for wrong in (base+':::'+value['Connection']['VersionId'],
+                      base.replace('/app/db-connection-string-AbCdEf','/db/app-connection-fixture')):
+            bad=fixture();bad['Connection']['SecretArn']=wrong
+            with self.assertRaises(ValueError):prepare.service_plan(bad)
+        plan=prepare.service_plan(value)
+        config={'environment':'dev','color':'green','region':prepare.REGION,
+                'roles':{'execution':plan['RequiredTaskRoles']['Execution'],'task':plan['RequiredTaskRoles']['Task']},
+                'kms_key_arn':prepare.TEXT_KEY,'secret_arn':base,'log_group':'/aws/ecs/demo-dev-app-api-green'}
+        normal=synthetic_taskdef(value)
+        normal['containerDefinitions'][0]['environment'].pop()
+        normal['containerDefinitions'][0]['secrets'][0]['valueFrom']=base
+        wp4.validate_task_model(normal,config,value['Release']['image_uri'])
+        with self.assertRaises(wp4.Rejected):
+            wp4.validate_task_model(synthetic_taskdef(value),config,value['Release']['image_uri'])
+        # Closed caller request still has no profile/secret override.
+        self.assertEqual(set(json.loads(plan['GatewayRequest']['body'])),{'action','release_id','replicas'})
 
     def test_unfenced_wrong_source_stale_and_prepared_receipts_refuse(self):
         for change in (

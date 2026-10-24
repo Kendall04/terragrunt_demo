@@ -322,6 +322,7 @@ def service_plan(value):
         sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
         sys.path.insert(0, str(Path(__file__).resolve().parent))
         from scripts.workflow_requests.contract import request as workflow_request
+        from scripts.normal_delivery.authorization import connection_secret_arn
         from host import timestamp, event_order
     finally:
         sys.path[:] = original_path
@@ -361,9 +362,8 @@ def service_plan(value):
             'ONLY_TASK_SG_SQL_INGRESS')
     require(set(conn) == {'SecretArn','VersionId','Endpoint','Database','TextKeyArn','BackupKeyArn','SecretKeyArn'}, 'NO_SECRET_VALUES_ALLOWED')
     require(conn['Endpoint'] == str(ip) and conn['Database'] == 'recoverydb_restore_' + name, 'CONNECTION_TARGET_MISMATCH')
-    require(re.fullmatch(re.escape(f'arn:aws:secretsmanager:{REGION}:{ACCOUNT}:secret:demo/dev/db/')+
-                         '[A-Za-z0-9/_+=.@-]+', conn['SecretArn']) is not None
-            and conn['SecretArn'] not in (SA_SECRET, APP_SECRET), 'PROTECTED_CONNECTION_SECRET_REQUIRED')
+    try: connection_secret_arn(conn['SecretArn'], 'dev', ACCOUNT, REGION)
+    except ValueError: raise ValueError('PROTECTED_CONNECTION_SECRET_REQUIRED') from None
     require(re.fullmatch('[A-Za-z0-9-]{32,64}',conn['VersionId']) is not None, 'IMMUTABLE_SECRET_VERSION_REQUIRED')
     require(conn['TextKeyArn'] == TEXT_KEY and conn['BackupKeyArn'] == BACKUP_KEY
             and conn['SecretKeyArn'] == TEXT_KEY, 'KEY_PURPOSE_MISMATCH')

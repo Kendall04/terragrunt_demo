@@ -130,6 +130,15 @@ def envelope(value, identity_key, identity):
     return record
 
 
+
+def connection_secret_arn(value, env, account, region):
+    """Shared base-ARN layout; selectors belong to a separately reviewed profile."""
+    require(env in ('dev','prod'))
+    match(r'arn:aws:secretsmanager:' + re.escape(region) + ':' + re.escape(account)
+          + ':secret:demo/' + env + r'/app/db-connection-string-[A-Za-z0-9]{6}', value)
+    return value
+
+
 def binding(value, endpoint, account, region):
     keys(value, ('schema', 'environment', 'color', 'account', 'region',
                  'runtime_contract', 'max_replicas', 'roles', 'secret_arn',
@@ -146,8 +155,7 @@ def binding(value, endpoint, account, region):
     prefix = 'arn:aws:iam::' + account + ':role/' + family
     require(value['roles']['task'] == prefix + '-task-role')
     require(value['roles']['execution'] == prefix + '-exec-role')
-    match(r'arn:aws:secretsmanager:' + region + ':' + account
-          + ':secret:demo/' + env + r'/app/db-connection-string-[A-Za-z0-9]{6}', value['secret_arn'])
+    connection_secret_arn(value['secret_arn'], env, account, region)
     match(r'arn:aws:kms:' + region + ':' + account + r':key/[a-f0-9-]{36}', value['kms_key_arn'])
     require(value['log_group'] == '/aws/ecs/' + family)
     for field, kind in (('listener_arn', 'listener'), ('candidate_rule_arn', 'listener-rule')):
