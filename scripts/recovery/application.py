@@ -13,6 +13,7 @@ from scripts.recovery.ports import ApplicationRuntime
 class History:
     """Read-only validation of actual WP4B evidence; no delivery execution port."""
     read = d.Delivery.read
+    operation_contract = d.Delivery.operation_contract
     retained_operation = d.Delivery.retained_operation
     stage_request = d.Delivery.stage_request
     stage_plan = d.Delivery.stage_plan

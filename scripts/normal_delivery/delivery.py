@@ -734,7 +734,9 @@ def dev_prerequisite(receipt):
     prod approval remains an independent WP4A port; it is never synthesized here.
     """
     a.require(receipt['schema'] == 'E1_DELIVERY_RECEIPT_V1' and receipt['status'] == 'SUCCESS'
-              and receipt['environment'] == 'dev')
+              and receipt['environment'] == 'dev'
+              and receipt['intent']['schema'] == 'E1_AUTHORIZED_RUNTIME_INTENT_V1'
+              and 'recovery' not in receipt['intent'])
     i = receipt['intent']; q = i['release']
     return dict(schema='E1_DEV_ACTIVATION_RECEIPT_V1', writer='NORMAL_DELIVERY_DEV',
         outcome='ACTIVATED', release_id=q['release_id'], source_commit=q['source_commit'],

@@ -34,6 +34,8 @@ RESERVED = {
 COMMON = (
     "scripts/normal_delivery/authorization.py",
     "scripts/normal_delivery/delivery.py",
+    "scripts/normal_delivery/recovery.py",
+    "ci/authority/recovery-profile-v2.json",
     "scripts/normal_delivery/e3.py",
     "scripts/normal_delivery/model_consistency.py",
     "scripts/qualification/finalizer.py",

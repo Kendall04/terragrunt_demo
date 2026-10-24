@@ -22,12 +22,36 @@ def configuration():
     require(type(value) is dict and set(value) == {
         "binding", "account", "region", "environment", "bundle",
         "runtime_image", "project", "evidence_bucket", "dev_evidence_bucket",
-        "admin_bucket", "repository", "resources", "nat_slots"})
+        "admin_bucket", "repository", "resources", "nat_slots"} |
+            ({"delivery_contract"} if "delivery_contract" in value else set()))
     require(value["environment"] in ("dev", "prod")
             and re.fullmatch(r"[0-9]{12}", value["account"]) is not None
             and re.fullmatch(r"[a-z]{2}(?:-[a-z]+)+-[0-9]", value["region"]) is not None)
     require(value["bundle"]["binding"] == value["binding"])
+    _delivery_selection(value)
     return value
+
+
+def _delivery_selection(config):
+    """Installer-owned opt-in only; never read this selector from a request."""
+    selected = config.get("delivery_contract", "V1")
+    require(selected in ("V1", "SQL_RESTORE_NO_MIGRATIONS_V2"))
+    if selected != "V1":
+        require(config["binding"] == "normal-delivery/deploy-dev"
+                and config["environment"] == "dev")
+    return selected
+
+
+def _delivery_factory(config, operation, facts):
+    from scripts.normal_delivery import authorization as a, delivery as d
+    endpoint = config["binding"].split("/", 1)[1]
+    if _delivery_selection(config) == "V1":
+        return a.Authorizer(endpoint, config["account"], config["region"], facts), d.Delivery
+    from scripts.normal_delivery.recovery import RecoveryAuthorizer, RecoveryDelivery, validate_profile
+    validate_profile()
+    auth = RecoveryAuthorizer(endpoint, config["account"], config["region"], facts,
+                              operation_id=operation, clock=lambda: int(time.time()))
+    return auth, RecoveryDelivery
 
 
 @contextmanager
@@ -145,16 +169,16 @@ def _normal_owned(clients, config, operation, request, authority):
     from scripts.wp4d.aws_runtime import Delivery, BoundedProcess
     records = Objects(clients["s3"], config["evidence_bucket"], "delivery/")
     facts = Facts(clients["s3"], clients["ecr"], _fact_config(config))
-    endpoint = config["binding"].split("/", 1)[1]
-    authorizer = a.Authorizer(endpoint, config["account"], config["region"], facts)
+    authorizer, controller = _delivery_factory(config, operation, facts)
     runtime = Delivery(clients["ecs"], clients["elbv2"], clients["events"],
                        records, config["resources"])
-    result = d.Delivery(authorizer, runtime, records, Gate(BoundedProcess())).run_owned(
+    result = controller(authorizer, runtime, records, Gate(BoundedProcess())).run_owned(
         operation, a.canonical(request), authority)
     if result["status"] == "SUCCESS":
         authority.call(History(clients["s3"], config["evidence_bucket"],
                 config["environment"]).publish, result, records)
-        if config["environment"] == "dev":
+        # Recovery success is history, not V1 normal-runtime/prod qualification.
+        if config["environment"] == "dev" and _delivery_selection(config) == "V1":
             activation = d.dev_prerequisite(result)
             publication = Objects(clients["s3"], config["evidence_bucket"], "activations/by-release/")
             key = activation["release_id"] + ".json"

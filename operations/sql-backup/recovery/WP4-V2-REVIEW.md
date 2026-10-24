@@ -140,17 +140,98 @@ delivery regressions passed. The 118 V1 regressions were not repeated after the
 V2-only retained-record fix. These are in-process/fixture checks, not native AWS,
 SQL, E3 or inbox delivery.
 
-The next concrete local gate is installed-bundle/factory interoperability.
+At the sealed d9e9772 checkpoint, the next local gate was installed-bundle/factory interoperability.
 `scripts/wp4d/runtime.py:_normal` still selects `a.Authorizer` and `d.Delivery`,
 and `_installed`/`installed.load` pins and verifies the administrator-published
 bundle bytes. A future **offline** test must load the proposed code/descriptor
 through that same loader, test an explicitly protected V2 factory selection and
 validate history/public-receipt publication. It must reject a missing descriptor,
 wrong pin/version, V1 factory fallback, caller selection and cross-operation
-context. That wiring is not in this review packet and is not installed. The
-current source factory therefore remains V1 even if these new files exist.
+context. That wiring was not in the d9e9772 review packet. That immutable packet and its
+hashes remain unchanged; the follow-up below versions the additional source work.
 
 After that local gate, native receipt publication still needs an approved mapping
 from real restore/fence/listener and connection-version receipts; missing timing
 or identity fields must remain UNKNOWN. No fixture may be promoted to approved
 evidence. New native deployment, access and spend require separate admission.
+
+## Installed-loader/factory local acceptance — follow-up to d9e9772
+
+The new **source** bootstrap accepts the optional administrator-owned configuration
+field `delivery_contract`. Absence or `V1` selects the original exact V1 classes.
+Only `SQL_RESTORE_NO_MIGRATIONS_V2` on `normal-delivery/deploy-dev` opts into the
+new exact classes. The selector is not a gateway/event/request field. Unknown
+selectors, PROD, emergency and cleanup selection of V2 are rejected. The trusted
+clock comes from bootstrap process time; the operation comes from the existing
+protected gateway/ownership envelope, never an added caller override.
+
+The existing bundle builder includes the V2 code and pinned profile. The exact
+version/digest loader and bootstrap self-consistency checks remain intact. All
+16 local source materialization digests are regenerated through the existing
+builder because the common bootstrap/dependency closure changed; this does not
+install any bundle, update a controller image or authorize PROD/NAT V2. The source
+installation/runtime-approval/environment-binding maps remain empty. No IAM
+statement, resource, backend namespace or SDK permission was added.
+
+A successful V2 operation uses the existing immutable success/public records and
+color-history index. Its V2 intent is retained verbatim. It **cannot** emit an
+`E1_DEV_ACTIVATION_RECEIPT_V1` for normal-runtime PROD promotion. The public receipt
+continues to expose only operation/status and null release/source fields. Index
+publication requires readback of the exact stored success receipt; a substituted
+receipt fails. A hash or a fixture writer label is not authentication.
+
+The original emergency history reader was missing the V1 `operation_contract`
+hook after the earlier journal refactor. The one-line compatibility correction
+restores V1 receipt closure and V1 emergency execution. It does not widen the
+emergency authorizer: V2 history/authorizers are refused before any emergency
+effect. Recovery rollback remains a new separately approved V2 delivery using
+the restored connection and compatible qualified image, not replay of an old
+task definition or reactivation of a potentially stale database endpoint.
+
+Existing cleanup remains profile-independent: protected membership, active route
+and nonzero active tasks must be proved before scaling only the inactive color
+to zero and removing its cleanup target/rule. It neither registers a task nor
+rewrites SQL secrets. Fixtures with V2 task data prove that active tasks stay up.
+They do not prove native ECS draining or a real database's exclusivity.
+
+`scripts/tests/wp4d/test_installed_recovery.py` loads actual builder-produced bytes
+through `installed.load` and `_installed`, checks extracted module paths and warm
+module cleanup, and executes the actual factory/state machine/history/public
+adapters. AWS ports, protected facts, clock and E3 process are in-memory doubles.
+Fixture eligibility/readback match the existing materialized DEV contract; no
+production validator is mocked or relaxed. Missing/changed descriptors, pin or
+version mismatches, wrong bootstrap, caller selection, V1 fallback and foreign
+operation are rejected. This is local bundle interoperability, **not** actual
+installation, AWS authorization, SQL recovery or public E2E acceptance.
+
+### Transition, rollback and remaining gate
+
+1. Review the new source commit, immutable bundle/bootstrap image and optional
+   protected configuration together. The changed bootstrap requires a new image;
+   an old image cannot load it because self-hash comparison fails. No image build
+   or installation was performed by this follow-up.
+2. Keep V1 selected until a separately admitted native recovery has authenticated
+   fencing/restore/network/connection-version/per-image evidence and a reviewed
+   current V2 approval. Tests and the synthetic review binding are never inputs
+   for live approval.
+3. Select V2 only in a separately reviewed installation for the exact DEV binding;
+   preserve original package/image/config versions and the terminal journals.
+   Installing this source or changing IAM/cloud configuration is not authorized
+   by local tests. New deployment/access/spend still require admission.
+4. Do not return to V1 by restoring a stale connection. Reconcile active tasks,
+   current routing and the independently proven recovered DB connection first.
+   If uncertain, stop activation; cleanup is not a database rollback mechanism.
+
+The next implementable local gap is a strict projection of preserved native
+restore/fence/listener/connection receipts into the V2 evidence contract. Missing
+timestamps, identities, provenance or per-image migration-off qualification must
+remain UNKNOWN and block an approved binding. No such native approval publisher
+has been qualified. Live private SQL/Fargate/E3/public decrypt/write/read, complete
+recovery timing and the owner's review window remain untested. SSM remains
+unresolved; no retry, alternative principal or transport was used here.
+
+Final follow-up regression: 40 WP4D tests (including seven installed-bundle cases),
+176 recovery CI tests in 12 suites, 20 V1 authorization tests, 98 V1 delivery tests
+and 53 emergency/cleanup/recovery tests passed, with zero skips. The seven new
+cases were rerun after tightening two negative assertions; they are counted once.
+No production validator was relaxed and no native cloud/SQL test ran.
