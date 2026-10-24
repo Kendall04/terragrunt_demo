@@ -10,9 +10,9 @@
     "v1-network": "c2a3f7973b625f665324c309eef523168a9928b7ad7d576914ca553cc67b7624",
     "az6-recovery": "9499e2f87b99200d9b7fd0b9196caf82964a8e7b9a42aefd2113a48289f474d1",
     "backup-signals": "0508e9897fd8326cecf4ecf632ec5e702b8f429d51c25ae2ae6747c7551d842f",
-    "future-integrations": "7d156e1220fa67cef9523068f8f6c5c7f04fd2afee5efd5bc68e5d26f60ed47a"
+    "future-integrations": "a8b33fbc3675ba9dc09c4301b35bc9e17aff30bb5e6e1641c67c78777896e0d9"
   },
   "sourceCommitByDiagram": {
-    "future-integrations": "5afa45ee3dd3d2068be42dc4a355444d5658a9c3"
+    "future-integrations": "2c8c3e7b79ba84029ec3965ea0cb4202cc0ddd55"
   }
 }

@@ -68,27 +68,37 @@
     },
     {
       "id": "future-integrations",
-      "sourceSha256": "f3c051490ef57bf0ca9d6abb495d7abc1e931a63dc3b66662bdb5bb0aa7bb305",
-      "htmlSha256": "7d156e1220fa67cef9523068f8f6c5c7f04fd2afee5efd5bc68e5d26f60ed47a",
+      "sourceSha256": "e3a320c894a19b1dcb91c78f810c24e20cea2016883199378a1a5e4bc520150c",
+      "htmlSha256": "a8b33fbc3675ba9dc09c4301b35bc9e17aff30bb5e6e1641c67c78777896e0d9",
       "gates": {
         "validate": "pass",
         "deliver": "pass",
         "check": "pass",
         "browser-check": "pass"
       },
-      "finalizerSummarySha256": "d2196ea2ac274f1668c9757d86970b19ba92e92c6914618a39394877b9f56286",
+      "finalizerSummarySha256": "5968d77f2ca4ed162c7ca5ac0604c229188ffdc6514b287fa63e9b529508c3fb",
       "diagnosticCount": 0,
-      "sourceCommit": "5afa45ee3dd3d2068be42dc4a355444d5658a9c3",
+      "sourceCommit": "2c8c3e7b79ba84029ec3965ea0cb4202cc0ddd55",
       "supersededProposal": {
         "preservedGitCommit": "5afa45ee3dd3d2068be42dc4a355444d5658a9c3",
         "htmlPath": "docs/interactive/future-integrations.html",
         "htmlSha256": "54014ee395c3d98445146d6067d2efee06957c59583185021032b590a5d4c4a7",
         "sourceSha256": "fbf4c9592d6bfb10eb73d5da14dedc2ada58d588e1caabcbc77710360a9ad89b",
         "reason": "Superseded proposal includes PKI/second service now outside ECS; preserved in Git, not in public traversal"
+      },
+      "previousLocalOnlyDiagram": {
+        "preservedGitCommit": "2c8c3e7b79ba84029ec3965ea0cb4202cc0ddd55",
+        "htmlSha256": "7d156e1220fa67cef9523068f8f6c5c7f04fd2afee5efd5bc68e5d26f60ed47a",
+        "sourceSha256": "f3c051490ef57bf0ca9d6abb495d7abc1e931a63dc3b66662bdb5bb0aa7bb305",
+        "reason": "Historical local-only view superseded by native synthetic pilot and separate undeployed TF/TG proposal"
       }
     }
   ],
-  "integratedBrowser": {
+  "nodeTestsPassed": 17,
+  "perceptualReview": "Current fifth diagram desktop/mobile and desktop evidence inspected; mobile overview needs native zoom. Historical SQL, retired synthetic pilot and undeployed TF/TG target kept distinct; no full accessibility certification.",
+  "noAwsPushHostingOrRemoteWorkflow": true,
+  "perDiagramCommitMeaning": "sourceCommitByDiagram or per-diagram sourceCommit overrides the original common sourceCommit; prior four generated originals unchanged.",
+  "previousIntegratedBrowser": {
     "finishedUtc": "2026-10-23T19:25:44.224Z",
     "sha256": "7fc6ef0c16db2551c1bcefc492873755937a56339e88c71431d6a30859e3a8be",
     "checksPassed": 16,
@@ -112,14 +122,10 @@
     "browserClosed": true,
     "serverClosed": true
   },
-  "nodeTestsPassed": 16,
-  "perceptualReview": "New fifth diagram desktop/mobile plus desktop product/tour and full desktop Archify portfolio inspected. Mobile overview requires native zoom; not complete accessibility certification.",
-  "noAwsPushHostingOrRemoteWorkflow": true,
-  "perDiagramCommitMeaning": "sourceCommitByDiagram or per-diagram sourceCommit overrides the original common sourceCommit; prior four generated originals unchanged.",
-  "previousIntegratedBrowser": {
-    "finishedUtc": "2026-10-23T17:31:18.062Z",
-    "sha256": "f52419d64df43ae03f238f3a729f009fe2259fbfc956bede73fba083c33a0c82",
-    "checksPassed": 15,
+  "integratedBrowser": {
+    "finishedUtc": "2026-10-24T02:38:35.609Z",
+    "sha256": "8ca617a837bc031a376370606ac9809a7cd620dc628b943c71d66d10926c6a8c",
+    "checksPassed": 16,
     "chrome": "155.0.8059.86",
     "diagramWidths": [
       1440,
@@ -133,6 +139,7 @@
     "allSvgNodesInitiallyVisible": true,
     "nativeZoomAndReset": true,
     "nativeSvgKeyboardFocus": true,
+    "guidedTourVerified": true,
     "externalRequests": 0,
     "consoleErrors": 0,
     "opaqueIframeVerified": true,

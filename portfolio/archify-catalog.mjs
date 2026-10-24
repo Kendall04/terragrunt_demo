@@ -4,5 +4,5 @@ export const archifyCatalog=[
  {id:'v1-network',title:'02 · Red V1',mode:'HISTÓRICO · RETIRADO',note:'NAT Instances de la plataforma original, no el NAT Gateway del ensayo.'},
  {id:'az6-recovery',title:'03 · Recuperación az6',mode:'HISTÓRICO · RETIRADO',note:'SQL/API en dos EC2 privadas. RTO con destino preparado: 142,63 s; dos reparaciones. Sin ECS ni ALB.'},
  {id:'backup-signals',title:'04 · Señales de backup',mode:'LOCAL · REPLAY',note:'Evaluación y JSON locales. Sin monitor live, temporizador instalado ni correo.'},
- {id:'future-integrations',title:'05 · Backups y Sentinel',mode:'LOCAL · INSTALACIÓN PENDIENTE',note:'Observador, política y outbox probados en memoria. Persistencia real, worker y correo siguen pendientes. Sin dispatcher operativo ni reparación NAT; PKI fuera de alcance de ECS.'}
+ {id:'future-integrations',title:'05 · Sentinel y siguiente paso',mode:'HISTORICO / LOCAL · SIGUIENTE PRUEBA PENDIENTE',note:'Piloto AWS sintético retirado: DynamoDB/S3 y dos avisos inbox acreditados; 10 efectos Pending. Módulo Terraform/Terragrunt y observador aún no desplegados. No monitor live ni reparación NAT; PKI fuera de alcance de ECS.'}
 ];

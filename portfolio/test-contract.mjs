@@ -16,7 +16,15 @@ test('guided evidence path and historical distinct-image rollback preserve scope
  assert.match(deployment,/sha256:ca7d92532/);assert.match(deployment,/sha256:7aa96288/);assert.match(deployment,/A also read\/decrypted the text written by B/);
  assert.match(input.html,/A → B → A/);assert.match(input.html,/continuidad SQL\/KMS/);assert.match(input.html,/No revierte migraciones/);
  for(const step of ['demo','v1','deployment','az6','observability','pending'])assert(input.html.includes(`data-tour="${step}"`));
- assert.match(input.html,/Persistencia de prueba en memoria/);assert.match(input.html,/PKI fuera de alcance de ECS/);
+ assert.match(input.html,/10 efectos Pending/);assert.match(input.html,/LOCAL · NO DESPLEGADO/);assert.match(input.html,/PKI fuera de alcance de ECS/);
+});
+
+test('Sentinel pilot, local target and real backup freshness are distinct',async()=>{
+ const trial=await read('../operations/integrations/NATIVE-TRIAL-2026-10-23.md');
+ assert.match(trial,/owner separately supplied both inbox receipts/);assert.match(trial,/10 Pending effects/);
+ assert.match(input.html,/7 recibos y 7 auditorías/);assert.match(input.html,/ambos avisos se acreditaron en el buzón/);
+ assert.match(input.html,/todavía no está desplegada ni autorizada/);assert.match(input.html,/168 h/);assert.match(input.html,/no prueba frescura de 2 h/);
+ assert.doesNotMatch(input.html,/Sentinel y correo real\.<|Observación y notificaciones reales siguen pendientes|Persistencia de prueba en memoria/);
 });
 
 test('external requests and injected third-party assets fail policy',()=>{
@@ -48,8 +56,8 @@ const server=createServer();let port;
 before(async()=>{await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));port=server.address().port;assert.equal(server.address().address,'127.0.0.1');});
 after(async()=>{await new Promise(resolve=>server.close(resolve));assert.equal(server.listening,false);});
 function request(target,method='GET'){return new Promise((resolve,reject)=>{const req=http.request({host:'127.0.0.1',port,path:target,method,agent:false},res=>{let text='';res.setEncoding('utf8');res.on('data',chunk=>text+=chunk);res.on('end',()=>resolve({status:res.statusCode,headers:res.headers,text}));});req.on('error',reject);req.end();});}
-test('only expected assets and four source documents are served',async()=>{
- for(const route of ['/','/index.html','/style.css','/app.mjs','/facts.mjs','/favicon.svg','/source/architecture','/source/recovery','/source/backup','/source/completion']){const res=await request(route);assert.equal(res.status,200,route);assert(res.text.length>0);}
+test('only expected assets and six source documents are served',async()=>{
+ for(const route of ['/','/index.html','/style.css','/app.mjs','/facts.mjs','/favicon.svg','/source/architecture','/source/recovery','/source/backup','/source/completion','/source/sentinel-trial','/source/sentinel-next']){const res=await request(route);assert.equal(res.status,200,route);assert(res.text.length>0);}
 });
 test('HEAD is read-only and CSP forbids connections/external assets',async()=>{
  const res=await request('/','HEAD');assert.equal(res.status,200);assert.equal(res.text,'');assert.match(res.headers['content-security-policy'],/connect-src 'none'/);assert.match(res.headers['content-security-policy'],/script-src 'self'/);assert.match(res.headers['content-security-policy'],/form-action 'none'/);assert.equal(res.headers['x-content-type-options'],'nosniff');assert.equal(res.headers['cache-control'],'no-store');
@@ -69,7 +77,7 @@ test('invalid or external absolute request targets refuse without proxying',asyn
 test('five genuine pinned Archify artifacts preserve historical/local and pending-installation scopes',async()=>{
  assert.equal(archifyCatalog.length,5);assert.match(archifyCatalog[4].mode,/LOCAL.*PENDIENTE/);assert.match(archifyCatalog[4].note,/PKI fuera de alcance de ECS/);assert.doesNotMatch(archifyCatalog[4].note,/son requisitos pendientes/);
  const pins=JSON.parse(await read('archify-pins.json'));assert.equal(pins.generator,'Archify 3.1.0');
- for(const item of archifyCatalog){const raw=await readFile(new URL('../docs/interactive/'+item.id+'.html',import.meta.url));assert.equal(createHash('sha256').update(raw).digest('hex'),pins.originalSha256[item.id]);assert.match(raw.toString(),/name="generator" content="archify 3.1.0"/);if(item.id==='future-integrations'){assert.doesNotMatch(raw.toString(),/Service Identity PKI|Servicio B objetivo/);assert.match(raw.toString(),/Sentinel in-process/);}}
+ for(const item of archifyCatalog){const raw=await readFile(new URL('../docs/interactive/'+item.id+'.html',import.meta.url));assert.equal(createHash('sha256').update(raw).digest('hex'),pins.originalSha256[item.id]);assert.match(raw.toString(),/name="generator" content="archify 3.1.0"/);if(item.id==='future-integrations'){assert.doesNotMatch(raw.toString(),/Service Identity PKI|Servicio B objetivo/);assert.match(raw.toString(),/Piloto AWS retirado/);}}
 });
 test('presentation refuses changed bytes and active resource mutants',async()=>{
  const raw=await readFile(new URL('../docs/interactive/v1-platform.html',import.meta.url));

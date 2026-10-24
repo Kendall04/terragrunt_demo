@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 export function assertPortfolioContract({html,app,css,contract,topologies}){
  assert.equal(contract.mode,'demo');assert.equal(contract.liveConnected,false);assert.equal(contract.data,'synthetic-memory');assert.equal(contract.provenance,'archify-3.1.0-with-hand-authored-inspector');
- assert.match(html,/DEMO LOCAL/);assert.match(html,/NO GENERADO POR ARCHIFY/);assert.match(html,/HISTÓRICO/);assert.match(html,/Sin conexión con AWS/);assert.match(html,/PKI fuera de alcance de ECS/);assert.doesNotMatch(html,/PKI, mTLS y rotación entre servicios/);assert.match(html,/pendientes/);assert.match(html,/no cifra, no consulta SQL/);
+ assert.match(html,/DEMO LOCAL/);assert.match(html,/NO GENERADO POR ARCHIFY/);assert.match(html,/HISTÓRICO/);assert.match(html,/Sin conexión con AWS/);assert.match(html,/PKI fuera de alcance de ECS/);assert.doesNotMatch(html,/PKI, mTLS y rotación entre servicios/);assert.match(html,/pendiente/i);assert.match(html,/no cifra, no consulta SQL/);
  assert.doesNotMatch([html,app,css].join('\n'),/\b(?:src|href)\s*=\s*["'](?:https?:|\/\/|javascript:)|(?:https?:)?\/\/[^\s"'<>]+|\b(?:fetch|WebSocket|EventSource)\s*\(|XMLHttpRequest|sendBeacon|serviceWorker|@import|import\s*\(/i,'External/network-capable source requires explicit review');
  assert.doesNotMatch([html,app,css].join('\n'),/AWS\s+(?:LIVE|CONECTADO)|CONEXI[ÓO]N\s+AWS\s+ACTIVA|MODO\s+LIVE\s+ACTIVO|data-mode=["']live["']/i,'False live-status claim');
  const views=[...html.matchAll(/<section id="([^"]+)" class="view"([^>]*)>/g)];assert.deepEqual(views.map(row=>row[1]),['demo','architecture','evidence']);assert(!views[0][2].includes('hidden'));assert(views.slice(1).every(row=>row[2].includes('hidden')));

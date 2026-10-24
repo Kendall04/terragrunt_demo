@@ -2,179 +2,175 @@
   "schema_version": 1,
   "diagram_type": "architecture",
   "meta": {
-    "title": "Backups y Sentinel · local / pendiente",
+    "title": "Sentinel: piloto y siguiente paso",
     "locale": "es",
     "output": "docs/interactive/future-integrations.html",
     "quality_profile": "showcase",
     "repository": {
       "url": "https://github.com/Kendall04/terragrunt_demo",
-      "revision": "5afa45ee3dd3d2068be42dc4a355444d5658a9c3",
+      "revision": "2c8c3e7b79ba84029ec3965ea0cb4202cc0ddd55",
       "link_mode": "local-only"
     }
   },
   "components": [
     {
-      "id": "observer",
+      "id": "receipts",
       "type": "backend",
-      "label": "Observador de backups",
-      "sublabel": "LOCAL · ejecución finita",
+      "label": "Recibos sintéticos",
+      "sublabel": "PILOTO · 10 mensajes",
       "pos": [
         40,
         40
-      ],
-      "size": [
-        210,
-        74
-      ],
-      "sources": [
-        {
-          "path": "operations/sql-backup/observer.py",
-          "line": 107,
-          "end_line": 143
-        }
-      ]
-    },
-    {
-      "id": "adapter",
-      "type": "backend",
-      "label": "Adaptador de eventos",
-      "sublabel": "LOCAL · JSON sanitario",
-      "pos": [
-        420,
-        40
-      ],
-      "size": [
-        210,
-        74
-      ],
-      "sources": [
-        {
-          "path": "operations/integrations/Ecs.Backup.Sentinel/ObserverNormalizer.cs",
-          "line": 67,
-          "end_line": 94
-        }
-      ]
-    },
-    {
-      "id": "sentinel",
-      "type": "backend",
-      "label": "Sentinel in-process",
-      "sublabel": "LOCAL · incidente / dedupe",
-      "pos": [
-        800,
-        40
-      ],
-      "size": [
-        220,
-        74
-      ],
-      "sources": [
-        {
-          "path": "operations/integrations/Ecs.Backup.Sentinel/BackupIncidentPolicy.cs",
-          "line": 7,
-          "end_line": 47
-        }
-      ]
-    },
-    {
-      "id": "memory",
-      "type": "database",
-      "label": "Estado y outbox",
-      "sublabel": "FAKE · en memoria",
-      "pos": [
-        800,
-        300
-      ],
-      "size": [
-        220,
-        74
-      ],
-      "sources": [
-        {
-          "path": "operations/integrations/Ecs.Backup.Sentinel.Tests/Program.cs",
-          "line": 111,
-          "end_line": 134
-        }
-      ]
-    },
-    {
-      "id": "installation",
-      "type": "backend",
-      "label": "Integración operativa",
-      "sublabel": "PENDIENTE · storage / worker",
-      "pos": [
-        420,
-        300
       ],
       "size": [
         230,
-        74
+        76
       ],
       "sources": [
         {
-          "path": "operations/integrations/README.md",
-          "line": 103,
-          "end_line": 115
+          "path": "operations/integrations/NATIVE-TRIAL-2026-10-23.md",
+          "line": 9,
+          "end_line": 10
         }
       ]
     },
     {
-      "id": "operator",
-      "type": "external",
-      "label": "Aviso al operador",
-      "sublabel": "PENDIENTE · correo real",
+      "id": "ingress",
+      "type": "messagebus",
+      "label": "SQS + Lambda ingreso",
+      "sublabel": "PILOTO · IAM / ACK durable",
       "pos": [
-        40,
-        300
+        430,
+        40
       ],
       "size": [
-        210,
-        74
+        230,
+        76
       ],
       "sources": [
         {
-          "path": "operations/integrations/README.md",
-          "line": 103,
-          "end_line": 115
+          "path": "operations/integrations/NATIVE-TRIAL-2026-10-23.md",
+          "line": 10,
+          "end_line": 13
+        }
+      ]
+    },
+    {
+      "id": "state",
+      "type": "database",
+      "label": "Sentinel: estado / outbox",
+      "sublabel": "PILOTO · DynamoDB / S3",
+      "pos": [
+        820,
+        40
+      ],
+      "size": [
+        230,
+        76
+      ],
+      "sources": [
+        {
+          "path": "operations/integrations/NATIVE-TRIAL-2026-10-23.md",
+          "line": 12,
+          "end_line": 17
+        }
+      ]
+    },
+    {
+      "id": "notice",
+      "type": "external",
+      "label": "Fallo y recuperación",
+      "sublabel": "PILOTO · ambos en buzón",
+      "pos": [
+        820,
+        310
+      ],
+      "size": [
+        230,
+        76
+      ],
+      "sources": [
+        {
+          "path": "operations/integrations/NATIVE-TRIAL-2026-10-23.md",
+          "line": 25,
+          "end_line": 30
+        }
+      ]
+    },
+    {
+      "id": "target",
+      "type": "backend",
+      "label": "Módulo TF/TG + observador",
+      "sublabel": "LOCAL · no desplegado",
+      "pos": [
+        430,
+        310
+      ],
+      "size": [
+        230,
+        76
+      ],
+      "sources": [
+        {
+          "path": "terraform/infra/sentinel-backup/REVIEW-r20261024b2.md",
+          "line": 3,
+          "end_line": 9
+        }
+      ]
+    },
+    {
+      "id": "gate",
+      "type": "external",
+      "label": "Próxima prueba integrada",
+      "sublabel": "PROPUESTA · 43 recursos",
+      "pos": [
+        40,
+        310
+      ],
+      "size": [
+        230,
+        76
+      ],
+      "sources": [
+        {
+          "path": "terraform/infra/sentinel-backup/REVIEW-r20261024b2.md",
+          "line": 3,
+          "end_line": 9
         }
       ]
     }
   ],
   "connections": [
     {
-      "from": "observer",
-      "to": "adapter",
-      "label": "JSON de salud"
+      "from": "receipts",
+      "to": "ingress",
+      "label": "envío manual"
     },
     {
-      "from": "adapter",
-      "to": "sentinel",
-      "label": "ingreso local"
+      "from": "ingress",
+      "to": "state",
+      "label": "commit y archivo"
     },
     {
-      "from": "sentinel",
-      "to": "memory",
-      "label": "prueba de commit"
+      "from": "state",
+      "to": "notice",
+      "label": "SNS + recibo usuario"
     },
     {
-      "from": "memory",
-      "to": "installation",
-      "label": "pendiente instalar"
-    },
-    {
-      "from": "installation",
-      "to": "operator",
-      "label": "correo pendiente"
+      "from": "target",
+      "to": "gate",
+      "label": "requiere aprobación"
     }
   ],
   "cards": [
     {
       "dot": "amber",
-      "title": "Alcance de la evidencia",
+      "title": "Tres alcances separados",
       "items": [
-        "Flujo local probado con observaciones sintéticas; no es un monitor instalado.",
-        "Persistencia fake y outbox pendiente; ningún dispatcher operativo conectado.",
-        "Sin entrega de correo, reparación NAT ni métricas de tráfico/latencia medidas."
+        "Piloto AWS retirado: recibos sintéticos; no monitor periódico de backups reales.",
+        "Exportación con 10 efectos Pending; no se acredita drenaje total ni reparación NAT.",
+        "Próximo módulo solo local: 168 h históricas no prueban frescura 2 h ni restore SQL.",
+        "PKI fuera de ECS; una API de negocio, sin segundo microservicio."
       ]
     }
   ]
