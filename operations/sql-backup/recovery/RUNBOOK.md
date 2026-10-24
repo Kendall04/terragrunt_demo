@@ -1034,3 +1034,46 @@ Native component assessment SHA256:
 0cb0065f6862059d7970bf37efcd207e5c3918b83b50425265e14e01c311e52b.
 Raw successful native receipt SHA256:
 6e9d0dceaa93c2574b41d34abe4d1aa62644769515cdd17462215de29eff7940.
+
+## Cold recovery preparation — local increment, 2026-10-24
+
+`prepare.py cold-plan` and `cold-review` extend the existing offline preparer; they have no SDK, AWS executor, secret read, apply or activation flag. They reuse the az6 Terraform generator and host timestamp/identity contracts. Existing az6 `render`/`host.py restore` remain historical two-host/cross-AZ tools; **do not pass the new single-host proposal through those old two-host retirement or host restore contracts**. The cold path is locally executable preparation/review, not a completed cloud recovery runner.
+
+From repository root, using installed Python (replace `python` with its existing path if needed):
+
+```text
+python -I -B operations/sql-backup/recovery/prepare.py cold-plan --trial r20261024cold --input operations/sql-backup/recovery/fixtures/cold-request.synthetic.json
+python -I -B operations/sql-backup/recovery/prepare.py cold-review --trial r20261024cold --input operations/sql-backup/recovery/fixtures/cold-request.synthetic.json --evidence operations/sql-backup/recovery/fixtures/cold-evidence.synthetic.json
+python -I -B -m unittest discover -s operations/sql-backup/recovery -p test_cold_path.py -v
+```
+
+These checked-in examples are **synthetic**, including AMI, instance IDs, timestamps, manifests, hashes and successful checks. Never deploy them or treat their output as native proof. The response keeps `AllowsCreation=false`, `AllowsActivation=false` and `EvidenceAuthenticated=false` even when metadata is consistent. JSON validation cannot authenticate its own assertions. Replacing parameters/evidence invalidates the request binding and requires another review.
+
+### Mode, backup, target and clock
+
+The request binds Trial, SAME_AZ/CROSS_AZ, source incarnation/account/region, target AZ in that account, exact AMI, artifact digest, recovery request time, review time, maximum backup age and the existing versioned source receipt. SAME_AZ requires the same AZ; CROSS_AZ another one. The proposal removes the second private subnet/route-table/association/route and second instance from az6, retaining one fresh target, private SQL/loopback API, encrypted 30GiB disk, IMDSv2 and the existing network/egress design: **15 Terraform resources proposed**, not a real plan. It does not include creation of the old source, permanent HA SQL, ECS app infrastructure or IAM/backend/KMS overlays.
+
+A selected manifest must belong to the source trial prefix and include immutable manifest/backup versions, native checksum verification metadata, ordered backup timestamps and explicit age bound. The selection uses that specific supplied receipt, not a fabricated search for the latest backup. Original source and new target trial can differ. Actual object/version/hash availability, decryptability, engine compatibility and restore remain the existing backup component's responsibility in a future native run. The 168h historical b2 bound must not become an unnoticed normal freshness policy.
+
+`RecoveryRequestedUtc` precedes fencing and **target creation**, then bootstrap/restore/checks precede deployed API readiness. Cold RTO is request→deployed API readiness, including provision time. Review refuses a prepared target, future/out-of-order events, changed artifact/versions, missing CHECKDB/decrypted marker/read/write, stale final source observation and missing renewed ECS connections/deployed API readiness. The example's 540s is constructed test data, not a measured RTO. RPO is not inferred from manifest age; keep az6's controlled marker qualification separate.
+
+### Fencing recommendation and hard limit
+
+For the next disposable-data trial, recommend **terminate the exact old instance and verify terminal control-plane state**, plus a fresh write attempt against the old endpoint that is unavailable and closure of old application connections, before creating/enabling the target. Termination is irreversible and needs explicit source data/disk disposition in that trial's approval. A mere stopped SQL service, authentication error, failed network probe or unreachable AZ is insufficient. The final receipt must re-observe the same terminated incarnation after API validation and shortly before the decision (local freshness bound 15 minutes). This is evidence freshness, not a short approval cutoff; re-observation is permitted in the future plan rather than re-requesting consent by the minute.
+
+This approach prevents that exact EC2 from resuming SQL, but a positive end-to-end no-write proof still requires authentic control-plane evidence, correctly bound endpoint/generation and known other writers/replicas. Root/SDK assertions in a user-supplied JSON are not proof. During an AZ outage, if termination cannot be confirmed, this path **halts activation**. Do not equate the outage with successful fencing. An independent durable write-authority/fencing-token design could permit another recovery strategy but is an architecture/IAM change, not implemented or silently substituted here.
+
+### Next single trial: grouped prerequisites and retirement
+
+Before live, close these concrete gaps as one reviewable package:
+
+1. Bind a real source/backup/artifact/AMI/target subnet and full saved plan. Source must be disposable synthetic trial data with a valid durable backup before irreversible termination; do not terminate an ordinary database from this template. Existing source manifests/backups/keys and 2+2 retention remain preserved.
+2. Adapt and test the old host restore entry point for source/new trial separation, SAME/CROSS mode and authenticated fencing evidence; wire the gate at the write-enable boundary. Add the actual collector/export of source termination/endpoint/connection evidence. No cloud executor or write-enable integration was added in this increment.
+3. Bind exact `TerminateInstances` authority for the source, `DescribeInstances` readback, new target create/tag/profile/pass-role/SSM only if that route is proven, network callbacks, encrypted EBS, exact source manifest/backup GetObjectVersion and KMS decrypt, app KMS/secret metadata/value use only on the workload, and isolated backend lock/state permissions. Compare roles/boundaries/bucket/key policies and full create/read/delete callbacks before approval. No final policy hashes or permission installation exist for this proposal yet.
+4. Produce a **new** cost estimate/budget for source setup plus one target, 15-resource network including NAT gateway/EIP, disk, S3/KMS/transfer, application readiness and retained storage. Count resource-hour overlap and allow 30min owner LIVE review plus cleanup reserve inside the agreed ceiling. Prior USD2/USD1 cycles are closed. No price/remaining-budget claim is made from absent billing.
+5. Prepare target-specific retirement inventory/plan for 15 resources and real implicit IDs, separately from the old source and application ownership. Old `bind-retirement` expects two instances and must refuse this state until adapted explicitly. NAT own delete first, wait/reconcile then fresh complete destroy; no DisassociateAddress retry, state hacks or blind replay. Export source/target/fencing/backup/API timings before deleting synthetic runtime and reversing only this trial's overlays.
+6. Announce readiness to Kendall with actual accessible LIVE API/web and honest historical diagrams; reserve the proposed 30min viewing window, then retire on schedule if he does not reply. This does not reactivate the deferred combined observability diagram or authorize new notices.
+
+### Local validation
+
+Seven hermetic tests PASS, covering both modes/15-resource proposal, invalid backup/age/scope/version, wrong account/AZ, stopped/unknown source/auth failure/stale fence, wrong instance/artifact/request binding, prepared target, event ordering and missing end-to-end checks. Existing `test_recovery.py`: **30 PASS**. Real isolated-Python CLI ran successfully on the synthetic fixture; an initial sibling-import failure under `-I` was corrected by temporarily resolving only the reviewed module directory, restoring sys.path afterwards. External socket/subprocess effects are prohibited by the test audit hook. No AWS, host service, SQL, provider init/schema/apply, real backup read or native fencing occurred. az6's 142.630783s and all closed artifacts/receipts remain unchanged.

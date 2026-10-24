@@ -212,15 +212,121 @@ def timeline(start):
     return {'FirstBillableConservativeUtc': value.isoformat(), 'RetireNoLaterThanUtc': (value + dt.timedelta(minutes=150)).isoformat(), 'AbsoluteDeadlineUtc': (value + dt.timedelta(hours=4)).isoformat(), 'BudgetProposalUsd': 2, 'AutomaticShutdown': False}
 
 
+def cold_target(name, ami, az):
+    """Reduce the existing az6 template to one fresh host/one private subnet."""
+    root, _ = render(name, Path(__file__).with_name('bootstrap.sh').read_text(encoding='utf-8'))
+    resources = root['resource']
+    for kind in ('aws_subnet', 'aws_route_table', 'aws_route_table_association', 'aws_route', 'aws_instance'):
+        del resources[kind]['b']
+    resources['aws_vpc_endpoint']['s3']['route_table_ids'] = ['${aws_route_table.a.id}']
+    instance = resources['aws_instance']['a']
+    instance['ami'] = ami
+    instance['depends_on'] = [r for r in instance['depends_on']
+                              if r not in ('aws_route.b', 'aws_route_table_association.b')]
+    root['output'] = {'target': {'value': '${aws_instance.a.id}'}}
+    root['variable'] = {'az_a': {'type': 'string', 'default': az,
+                               'validation': [{'condition': '${var.az_a == "' + az + '"}',
+                                               'error_message': 'Use the bound target AZ.'}]}}
+    return root
+
+
+def cold_path(request, evidence=None):
+    """Offline review only: supplied metadata is not authenticated AWS evidence."""
+    # Python -I removes the script directory. Resolve only our reviewed sibling modules.
+    import sys
+    module_dir = str(Path(__file__).resolve().parent)
+    original_path = sys.path[:]
+    try:
+        sys.path.insert(0, module_dir)
+        from host import timestamp, event_order, bind_identity
+    finally:
+        sys.path[:] = original_path
+    name = trial(request['Trial'])
+    source = request['SourceRecord']
+    origin = source['Source']
+    bind_identity(origin, origin['instanceId'], origin['availabilityZone'])
+    require(source['Status'] == 'SOURCE_BACKED_UP', 'VERIFIED_SOURCE_REQUIRED')
+    mode, az = request['Mode'], request['TargetAz']
+    require(mode in ('SAME_AZ', 'CROSS_AZ'), 'INVALID_RECOVERY_MODE')
+    require(isinstance(az, str) and re.fullmatch('us-east-1[a-f]', az), 'EXPECTED_AZ_REQUIRED')
+    require((az == origin['availabilityZone']) == (mode == 'SAME_AZ'), 'MODE_AZ_MISMATCH')
+    receipt, manifest = source['Receipt'], source['Receipt']['Manifest']
+    require(receipt['ManifestKey'].startswith(BASE + '/' + trial(source['Trial']) + '/runs/')
+            and receipt['ManifestKey'].endswith('/manifest.json'), 'MANIFEST_OUTSIDE_SOURCE_SCOPE')
+    require(all(isinstance(v, str) and v and v != 'null' for v in
+                (receipt['ManifestVersion'], manifest['BackupVersion'])), 'BACKUP_VERSION_MISSING')
+    require(manifest['NativeChecksumVerified'] is True, 'BACKUP_NOT_VERIFIED')
+    start, now = request['RecoveryRequestedUtc'], request['NowUtc']
+    require(event_order(manifest['StartedUtc'], manifest['CompletedUtc'], start, now), 'INVALID_EVENT_ORDER')
+    age = (timestamp(start) - timestamp(manifest['CompletedUtc'])).total_seconds()
+    maximum = request['MaxBackupAgeSeconds']
+    require(type(maximum) is int and 0 < maximum <= 604800 and age <= maximum, 'BACKUP_TOO_OLD_OR_INVALID_BOUND')
+    require(re.fullmatch('[0-9a-f]{64}', request['ArtifactSha256']) is not None, 'ARTIFACT_HASH_REQUIRED')
+    require(re.fullmatch('ami-[0-9a-f]{17}', request['SqlAmiId']) is not None
+            and request['SqlAmiId'] != 'ami-00000000000000000', 'REVIEWED_AMI_REQUIRED')
+    # Bind every parameter and the complete selected source receipt, not a caller label.
+    binding = hashlib.sha256(encoded(request)).hexdigest()
+    result = {'Status': 'COLD_PATH_OFFLINE_PLAN', 'Trial': name, 'Mode': mode, 'TargetAz': az,
+              'RequestSha256': binding, 'AllowsCreation': False, 'AllowsActivation': False,
+              'EvidenceAuthenticated': False, 'RecoveryRequestedUtc': start,
+              'TargetCountToCreate': 1, 'PreparedTargetAllowed': False,
+              'TerraformProposal': cold_target(name, request['SqlAmiId'], az),
+              'ManifestKey': receipt['ManifestKey'], 'ManifestVersion': receipt['ManifestVersion'],
+              'BackupAgeSecondsAtRequest': age,
+              'Steps': ['validate-versioned-backup-and-artifact', 'fence-exact-source-incarnation',
+                        'create-one-fresh-target', 'bootstrap-and-restore-with-existing-helper',
+                        'CHECKDB-and-decrypt-read-write', 'refresh-ECS-connections-and-probe-deployed-API',
+                        'record-total-time', 'owner-live-review-window', 'retire-and-reverse-access'],
+              'RequiredFence': 'TERMINATED_SOURCE_AND_POST_FENCE_WRITE_UNAVAILABLE',
+              'Limits': ['No cloud executor or role assumption',
+                         'A stopped SQL service or unreachable AZ is insufficient',
+                         'A JSON receipt cannot prove its own authenticity',
+                         'No prepared-target RTO may be reported as cold recovery']}
+    if evidence is None:
+        return result
+    require(evidence['RequestSha256'] == binding, 'REQUEST_BINDING_MISMATCH')
+    fence, target, checks = evidence['Fence'], evidence['Target'], evidence['Checks']
+    require(fence['Source'] == origin and fence['State'] == 'terminated', 'SOURCE_TERMINATION_REQUIRED')
+    require(fence['WriteProbe'] == 'ENDPOINT_UNAVAILABLE' and fence['ExistingConnectionsClosed'] is True,
+            'NO_WRITES_NOT_DEMONSTRATED')
+    require(re.fullmatch('[0-9a-f]{64}', fence['ControlPlaneReceiptSha256']) is not None,
+            'CONTROL_PLANE_RECEIPT_REQUIRED')
+    bind_identity(target['Identity'], target['Identity']['instanceId'], az)
+    require(target['Identity']['instanceId'] != origin['instanceId'], 'FRESH_TARGET_REQUIRED')
+    require(target['ArtifactSha256'] == request['ArtifactSha256'], 'ARTIFACT_HASH_MISMATCH')
+    require(evidence['ManifestVersion'] == receipt['ManifestVersion']
+            and evidence['BackupVersion'] == manifest['BackupVersion'], 'RESTORE_VERSION_MISMATCH')
+    require(all(checks.get(k) is True for k in ('Checkdb', 'DecryptedPreMarker', 'Read', 'Write',
+            'EcsConnectionsRenewed', 'DeployedApiReady')), 'END_TO_END_CHECKS_REQUIRED')
+    ready = evidence['ApiReadyUtc']
+    require(event_order(start, fence['ConfirmedUtc'], fence['WriteProbeUtc'], target['CreatedUtc'],
+                        evidence['RestoreStartedUtc'], evidence['RestoreVerifiedUtc'], ready, fence['ObservedUtc'], now),
+            'COLD_EVENT_ORDER_REQUIRED')
+    # Source evidence must remain fresh at the decision, not merely at plan time.
+    require((timestamp(now) - timestamp(fence['ObservedUtc'])).total_seconds() <= 900,
+            'FENCE_EVIDENCE_TOO_OLD')
+    result.update(Status='COLD_PATH_REVIEW_CONSISTENT',
+                  RtoTotalSeconds=(timestamp(ready) - timestamp(start)).total_seconds(),
+                  RpoQualification='Not measured by metadata admission; retain controlled marker evidence.')
+    return result
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('action', choices=['render', 'review-create', 'review-delete', 'bind-retirement', 'timeline', 'publisher'])
+    p.add_argument('action', choices=['render', 'review-create', 'review-delete', 'bind-retirement', 'timeline', 'publisher', 'cold-plan', 'cold-review'])
     p.add_argument('--trial', required=True)
     p.add_argument('--output', type=Path)
     p.add_argument('--input', type=Path)
     p.add_argument('--first-billable-utc')
     p.add_argument('--sha256')
+    p.add_argument('--evidence', type=Path)
     a = p.parse_args()
+    if a.action in ('cold-plan', 'cold-review'):
+        request = json.loads(a.input.read_text(encoding='utf-8'))
+        require(request['Trial'] == a.trial, 'WRONG_TRIAL')
+        evidence = json.loads(a.evidence.read_text(encoding='utf-8')) if a.action == 'cold-review' else None
+        print(json.dumps(cold_path(request, evidence), indent=2))
+        return
     root, security = render(a.trial, Path(__file__).with_name('bootstrap.sh').read_text())
     if a.action == 'render':
         require(a.output is not None and not a.output.exists(), 'NEW_OUTPUT_DIRECTORY_REQUIRED')

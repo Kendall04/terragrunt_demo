@@ -1,0 +1,41 @@
+{
+  "RequestSha256": "1022d937aaea8e45352a009a9bc006121b7f64fd3e703876d24dd43b0068db84",
+  "ManifestVersion": "fixture-manifest-v1",
+  "BackupVersion": "fixture-backup-v1",
+  "Fence": {
+    "Source": {
+      "accountId": "341936017254",
+      "region": "us-east-1",
+      "instanceId": "i-11111111111111111",
+      "availabilityZone": "us-east-1a"
+    },
+    "State": "terminated",
+    "ConfirmedUtc": "2026-10-24T12:01:00Z",
+    "ObservedUtc": "2026-10-24T12:09:30Z",
+    "WriteProbeUtc": "2026-10-24T12:01:30Z",
+    "WriteProbe": "ENDPOINT_UNAVAILABLE",
+    "ExistingConnectionsClosed": true,
+    "ControlPlaneReceiptSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+  },
+  "Target": {
+    "Identity": {
+      "accountId": "341936017254",
+      "region": "us-east-1",
+      "instanceId": "i-22222222222222222",
+      "availabilityZone": "us-east-1b"
+    },
+    "CreatedUtc": "2026-10-24T12:02:00Z",
+    "ArtifactSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "RestoreStartedUtc": "2026-10-24T12:04:00Z",
+  "RestoreVerifiedUtc": "2026-10-24T12:08:00Z",
+  "ApiReadyUtc": "2026-10-24T12:09:00Z",
+  "Checks": {
+    "Checkdb": true,
+    "DecryptedPreMarker": true,
+    "Read": true,
+    "Write": true,
+    "EcsConnectionsRenewed": true,
+    "DeployedApiReady": true
+  }
+}

@@ -327,3 +327,7 @@ AL2023 bundle bootstrap and durable empty Lambda cursor passed. SSM pre-executio
 authorization failed twice;0 events/0 notices. Offline receipt regressions do not
 qualify the periodic observer. Original b1 synthetic inbox proof stays valid and
 separate; no complete ECS acceptance or new AWS authority follows.
+
+## Local cold-path preparer — 2026-10-24
+
+See the [executable offline commands, fencing limit and next-trial gates](../../operations/sql-backup/recovery/RUNBOOK.md#cold-recovery-preparation--local-increment-2026-10-24). SAME_AZ/CROSS_AZ preparation now derives one fresh target and 15 resources from the az6 generator. Metadata review refuses uncertain fencing and prepared-target timing; it never authorizes activation or authenticates AWS evidence. Seven new hermetic tests and 30 existing recovery tests passed. Live host adaptation, native source fencing, full ECS cutover, exact IAM/retirement and a new costed approval packet remain open. The owner's LIVE review window is part of that future packet; no new cycle was started.
