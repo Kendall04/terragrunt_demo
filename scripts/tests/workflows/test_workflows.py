@@ -217,6 +217,26 @@ class Workflows(unittest.TestCase):
         positive=render.call('deploy-dev','{}',{'deploy-dev':projection('deploy-dev')})
         self.assertEqual(positive['uses'],c.workflow('deploy-dev')+'@'+COMMIT)
         self.assertNotIn('secrets',positive)
+    def test_current_unapproved_callers_fail_before_oidc_or_reusable_dispatch(self):
+        self.assertEqual(DOC['wp6']['approvals'],{})
+        paths=('release-build.yml','deploy-dev.yml','rollback-manifest.yml','cd-demo-api.yml','cd.yml')
+        inactive=0
+        for name in paths:
+            actual=json.loads((ROOT/'.github/workflows'/name).read_text())
+            self.assertEqual(actual,render.callers({})[name])
+            for job in actual['jobs'].values():
+                self.assertNotIn('id-token',job.get('permissions',{}))
+                for step in job.get('steps',[]):
+                    if 'is inactive:' not in step.get('run',''):continue
+                    inactive+=1
+                    self.assertNotIn('uses',job)
+                    self.assertEqual(job['permissions'],{})
+                    self.assertEqual(len(job['steps']),1)
+                    self.assertTrue(step['run'].endswith('; exit 1'))
+                    for forbidden in ('aws ', 'urllib', 'checkout', 'invoke', 'ACTIONS_ID_TOKEN_REQUEST'):
+                        self.assertNotIn(forbidden,step['run'])
+        self.assertGreaterEqual(inactive,7)
+
     def test_entry_hardcodes_environment_identity_and_code_source(self):
         for key in c.IDENTITIES:
             w=render.entry(key);job=w['jobs']['request']

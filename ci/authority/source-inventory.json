@@ -706,14 +706,9 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/cd-demo-api.yml": {
-      "sha256": "38a6733a066d3868cbed67e94039b6c9242fe239ee4fa39a1dab8158bd001664",
+      "sha256": "7ce62fcf6f03b6de4fdc864a54b4f9c2285a2d791accbe4b2265e79773c1452d",
       "declarations": [],
-      "signals": {
-        "launch-or-mutation": [
-          30,
-          43
-        ]
-      },
+      "signals": {},
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/cd-rollback.yml": {
@@ -786,13 +781,11 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/cd.yml": {
-      "sha256": "aa3a412d45e7a6ec00dedaf906f84e55abfe449b750f7550ea0d0ce53bffe1dd",
+      "sha256": "08541dd455b90eb91015d206775302b706fa844b3d6c643cfe66abe8b9d7b7e2",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          10,
-          353,
-          366
+          10
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -944,13 +937,9 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/deploy-dev.yml": {
-      "sha256": "a15287f5c361636d9c19aad4ee50efb700fe2f59d98f911ce26f5a6837dee4c0",
+      "sha256": "8f749dac8b0b641787b917e89210e3e1ce21874d57be83a541dd19b1c4fd9bdf",
       "declarations": [],
-      "signals": {
-        "launch-or-mutation": [
-          40
-        ]
-      },
+      "signals": {},
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/e1-dev-deploy.yml": {
@@ -1120,23 +1109,15 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/release-build.yml": {
-      "sha256": "2eb9b616c010794cffbc5b81f8a51749448209e0585c6d4587d93b3b2b806932",
+      "sha256": "7d781675d535ead301b255fe69e944a36c6291a5a105ba244d190064cc526864",
       "declarations": [],
-      "signals": {
-        "launch-or-mutation": [
-          20
-        ]
-      },
+      "signals": {},
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/rollback-manifest.yml": {
-      "sha256": "a4e5297db079e4efe79016ceb195acdc2fee16845a8a5b621dbc344be6e58110",
+      "sha256": "2a58974bc0bda58262d113f95bdca7b85759b33d10812bf67264d36c40beea48",
       "declarations": [],
-      "signals": {
-        "launch-or-mutation": [
-          50
-        ]
-      },
+      "signals": {},
       "semantic_status": "UNVERIFIED"
     },
     "ci/ephemeral/budget-draft.json": {
@@ -7441,15 +7422,15 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/workflows/test_workflows.py": {
-      "sha256": "3926503199e03279ba1b979aa361d90203c7fdd1f0c9f27b1d55807de2db67cb",
+      "sha256": "7904ba9ecb0363f505c3abd9768c5a4299ce7c6b22bcebc2e6a3b451a08882c2",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
           123,
-          241
+          261
         ],
         "role-input": [
-          238
+          258
         ],
         "launch-or-mutation": [
           27,
@@ -7480,13 +7461,14 @@
           210,
           211,
           212,
-          238,
-          239,
-          242,
-          282,
-          310,
-          324,
-          327
+          236,
+          258,
+          259,
+          262,
+          302,
+          330,
+          344,
+          347
         ],
         "executable-dependency": [
           86,
@@ -11520,7 +11502,7 @@
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",
-  "review_revision": "d3d15e76d08d8d2f6e488617833c711afef38ad0",
-  "review_note": "Exact one-file CI source-contract refresh for authenticated platform delta and separate Sentinel lock. Full suite31/32 retains old workflow-pin admission failure. No semantic/execution approval.",
-  "review_delta_sha256": "f02b0eb975a4b26eeead060fddcc8d3cf79fccf2e664851a5451bf4a3d626cc7"
+  "review_revision": "78df33e99f0f86b557008cacf964dd8a0b68f274",
+  "review_note": "Exact six-file structural refresh: five callers regenerated inactive from unchanged empty registry, plus no-OIDC/no-dispatch regression. No execution, installation or approval granted.",
+  "review_delta_sha256": "8c4c62ca5f549ef3ca62fb9661eb776046358924212fbcef3c97be7c9b52f01c"
 }

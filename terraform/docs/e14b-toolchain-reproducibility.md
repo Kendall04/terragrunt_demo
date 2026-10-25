@@ -15,8 +15,10 @@ receipt or scope changes fail. PROD/shared/TLS selections remain unchanged. The
 separate Sentinel6.27 root is recognized by its exact lock hash, with Windows-only
 provider qualification kept distinct from fresh Linux validation.
 
-The changed reproducibility suite is31/32, not global PASS: the historical workflow
-caller pin conflicts with the empty approval registry. [Bounded security/pipeline
+The prior changed-suite checkpoint was31/32: historical caller pins conflicted
+with the empty approval registry. The later local caller regeneration resolves
+that discrepancy at32/32 without activation; its expanded WP6 historical-fixture
+comparison still fails independently (61/62), so no whole-CI PASS is asserted. [Bounded security/pipeline
 checkpoint](v2-architecture-pipelines-20261024.md#bounded-securitypipeline-closure-update---2026-10-25)
 records that retained gate and source-only scope. No workflow or approval changed.
 

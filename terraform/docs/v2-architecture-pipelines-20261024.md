@@ -1,5 +1,38 @@
 # ECS V2: arquitectura y pipelines recomendados — 2026-10-24
 
+## Caller/registry closure - 2026-10-25
+
+The earlier31/32 checkpoint below is superseded for caller consistency. With an
+empty WP6 approval registry the existing generator must emit **no executable
+reusable pin** for release/deploy/rollback. Five local caller files were regenerated
+from that exact unchanged registry: release-build, deploy-dev, rollback-manifest,
+cd-demo-api and cd. Seven historicalf0ba8ad1 reusable references were removed.
+The affected jobs now have empty permissions, no OIDC/dispatch, and only an error
+message followed by exit1. Branch/environment guards, dependencies and triggers
+are preserved. No replacement pin, approval, installation or remote change exists.
+The historical approved trial/pin remains preserved in Git and receipts.
+
+Validation: **32/32 reproducibility PASS**, exact workflow render PASS and
+**36/36 foundation PASS**, zero admission discrepancies. The new current-caller
+regression proves the checked-in inactive jobs contain neither token acquisition
+nor reusable dispatch. Existing synthetic positive authorization cases remain
+separate from real approvals. No remote Actions job, AWS call, SSM or push ran.
+
+The expanded WP6 suite is **61/62**, not global PASS. Its existing historical-ref
+test fails while reconstructing an old whole-authority snapshot: the helper expects
+obsolete WP5 selected digests. Its helper bytes, authority bytes and failing test
+body match the pre-change base78df33e exactly, demonstrating an independent retained
+fixture mismatch. That assertion was not weakened, skipped or changed; the failing
+report remains. Correcting that shared historical projection is a separate narrow
+local task, not grounds to fill approvals or select a guessed current pin.
+
+Task-3/caller-registry-closure/qualification.json includes exact hashes, original
+reference inventory and unchanged-input proof; SHA256:`2fd595147579c4503caa76e48133f2471f4798e3b76dfbb5d6cb5e0206258cde`.
+This local consistency closure requires no additional access. Actual activation
+still requires fresh genuine G1-G9/installed-source/endpoint observations and the
+existing independently authorized approval mechanism. No such record was produced.
+
+
 ## Bounded security/pipeline closure update - 2026-10-25
 
 This is a source-only follow-up to the historical design below. No Actions
