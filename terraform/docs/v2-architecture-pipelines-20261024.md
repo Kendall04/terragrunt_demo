@@ -20,7 +20,7 @@ separate from real approvals. No remote Actions job, AWS call, SSM or push ran.
 
 The expanded WP6 suite is **61/62**, not global PASS. Its existing historical-ref
 test fails while reconstructing an old whole-authority snapshot: the helper expects
-obsolete WP5 selected digests. Its helper bytes, authority bytes and failing test
+obsolete WP4D/WP5 selected digests. Its helper bytes, authority bytes and failing test
 body match the pre-change base78df33e exactly, demonstrating an independent retained
 fixture mismatch. That assertion was not weakened, skipped or changed; the failing
 report remains. Correcting that shared historical projection is a separate narrow
