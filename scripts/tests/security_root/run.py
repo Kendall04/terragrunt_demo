@@ -23,7 +23,7 @@ def main():
     parser.add_argument("--report", type=Path)
     args = parser.parse_args()
     install()
-    from model import validate_repository, AUTHORITY, LEGACY, wiring, load_authority
+    from model import validate_repository, AUTHORITY, LEGACY, wiring, load_authority, reviewed_supplemental_iac, SUPPLEMENTAL_CATALOG
     from inventory import verify
     errors = verify(ROOT)
     try:
@@ -39,6 +39,7 @@ def main():
         unittest.defaultTestLoader.discover(str(HERE), pattern="test_*.py"))
     good = result.wasSuccessful() and result.testsRun > 0 and not result.skipped and not errors
     paths = [AUTHORITY, LEGACY, *wiring(load_authority(ROOT)), "terraform/live/security/terragrunt.hcl"]
+    paths += [SUPPLEMENTAL_CATALOG, *sorted(reviewed_supplemental_iac(ROOT))]
     paths += [p.relative_to(ROOT).as_posix() for p in HERE.glob("*.py")]
     report = {"result": "WP2A_FOUNDATION_PASS" if good else "WP2A_FOUNDATION_FAIL",
               "classification": "E1_WP2A_PROTECTED_SECURITY_ROOT_FOUNDATION",

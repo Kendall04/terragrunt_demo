@@ -1,0 +1,95 @@
+{
+  "schema": "ECS_REVIEWED_SUPPLEMENTAL_IAC_V1",
+  "execution_authorized": false,
+  "meaning": "Exact reviewed source coverage only. Not TARGET selection, IAM installation, deployment or native acceptance.",
+  "files": {
+    "operations/integrations/ssm-diagnostic/review/bootstrap/.terraform.lock.hcl": {
+      "sha256_lf": "be1182b2f765f01c210a0d1327471dd5cd3cc316acd9f11edb8c959888b5fe3d",
+      "introduced_by": "7a2499cf8bc0cb109a8b02efd40bb1746a5ff4fc",
+      "last_changed_by": "7a2499cf8bc0cb109a8b02efd40bb1746a5ff4fc",
+      "owner": "CLOSED_D1_DIAGNOSTIC",
+      "classification": "RETIRED_REVIEW_INPUT",
+      "purpose": "Preserved d1 bootstrap/runtime plan or lock; fourteen resources retired, SSM outcome inconclusive. No replay authority."
+    },
+    "operations/integrations/ssm-diagnostic/review/bootstrap/main.tf.json": {
+      "sha256_lf": "edebf25f7532707ab79c99eb36a8c54d679ff2d42244c018ba14ea4b5cde3cd8",
+      "introduced_by": "7a2499cf8bc0cb109a8b02efd40bb1746a5ff4fc",
+      "last_changed_by": "7a2499cf8bc0cb109a8b02efd40bb1746a5ff4fc",
+      "owner": "CLOSED_D1_DIAGNOSTIC",
+      "classification": "RETIRED_REVIEW_INPUT",
+      "purpose": "Preserved d1 bootstrap/runtime plan or lock; fourteen resources retired, SSM outcome inconclusive. No replay authority."
+    },
+    "operations/integrations/ssm-diagnostic/review/runtime/.terraform.lock.hcl": {
+      "sha256_lf": "be1182b2f765f01c210a0d1327471dd5cd3cc316acd9f11edb8c959888b5fe3d",
+      "introduced_by": "7a2499cf8bc0cb109a8b02efd40bb1746a5ff4fc",
+      "last_changed_by": "7a2499cf8bc0cb109a8b02efd40bb1746a5ff4fc",
+      "owner": "CLOSED_D1_DIAGNOSTIC",
+      "classification": "RETIRED_REVIEW_INPUT",
+      "purpose": "Preserved d1 bootstrap/runtime plan or lock; fourteen resources retired, SSM outcome inconclusive. No replay authority."
+    },
+    "operations/integrations/ssm-diagnostic/review/runtime/main.tf.json": {
+      "sha256_lf": "b19dd7078b7eda4a821b54fa881dbac2948f3ac3a83ef329c654fb7af80db1af",
+      "introduced_by": "7a2499cf8bc0cb109a8b02efd40bb1746a5ff4fc",
+      "last_changed_by": "7a2499cf8bc0cb109a8b02efd40bb1746a5ff4fc",
+      "owner": "CLOSED_D1_DIAGNOSTIC",
+      "classification": "RETIRED_REVIEW_INPUT",
+      "purpose": "Preserved d1 bootstrap/runtime plan or lock; fourteen resources retired, SSM outcome inconclusive. No replay authority."
+    },
+    "operations/sql-backup/recovery/provider.lock.hcl": {
+      "sha256_lf": "901a282544168f6b5d1567b13c91e9009129a2bc0cc92bf4c934e140efdae904",
+      "introduced_by": "df32f1d47f7bfcd3ca64858aa1ee7c4ad15b5a52",
+      "last_changed_by": "df32f1d47f7bfcd3ca64858aa1ee7c4ad15b5a52",
+      "owner": "RECOVERY_TOOLING",
+      "classification": "PROVIDER_LOCK_INPUT",
+      "purpose": "Pinned AWS5.100.0 provider lock copied into explicit recovery plans; not a root or version upgrade."
+    },
+    "terraform/infra/sentinel-backup/.terraform.lock.hcl": {
+      "sha256_lf": "be1182b2f765f01c210a0d1327471dd5cd3cc316acd9f11edb8c959888b5fe3d",
+      "introduced_by": "bcac19fe8ab61f54f2fe6f6f2055ea0739a04cd6",
+      "last_changed_by": "bcac19fe8ab61f54f2fe6f6f2055ea0739a04cd6",
+      "owner": "SEPARATE_SENTINEL_ADMIN_ROOT",
+      "classification": "LOCAL_INTEGRATION_SOURCE",
+      "purpose": "Existing Sentinel6.27 root/pipeline/optional observer. Default ingestion, dispatch and observer remain OFF. Future plans/access require approval."
+    },
+    "terraform/infra/sentinel-backup/main.tf.json": {
+      "sha256_lf": "33b41754830251ac983f0fe4e067d4d41f60b6cb6003c0dd78b10de859bace32",
+      "introduced_by": "ca919a7d24f6e62286b2aa134ed7e44458904f70",
+      "last_changed_by": "2c8c3e7b79ba84029ec3965ea0cb4202cc0ddd55",
+      "owner": "SEPARATE_SENTINEL_ADMIN_ROOT",
+      "classification": "LOCAL_INTEGRATION_SOURCE",
+      "purpose": "Existing Sentinel6.27 root/pipeline/optional observer. Default ingestion, dispatch and observer remain OFF. Future plans/access require approval."
+    },
+    "terraform/infra/sentinel-backup/modules/observer/main.tf.json": {
+      "sha256_lf": "c3976f70f85585378d28d8f1370c368527be6c941fe0b5a19dd5cf732289efb8",
+      "introduced_by": "4d6e2292cd58313c5c35bdb06fd988546092b924",
+      "last_changed_by": "2c8c3e7b79ba84029ec3965ea0cb4202cc0ddd55",
+      "owner": "SEPARATE_SENTINEL_ADMIN_ROOT",
+      "classification": "LOCAL_INTEGRATION_SOURCE",
+      "purpose": "Existing Sentinel6.27 root/pipeline/optional observer. Default ingestion, dispatch and observer remain OFF. Future plans/access require approval."
+    },
+    "terraform/infra/sentinel-backup/modules/pipeline/main.tf.json": {
+      "sha256_lf": "f01672993caee677595d51ce2cd52ae00e9749da2fe72a0bcb2c0a55bfda7a57",
+      "introduced_by": "ca919a7d24f6e62286b2aa134ed7e44458904f70",
+      "last_changed_by": "2c8c3e7b79ba84029ec3965ea0cb4202cc0ddd55",
+      "owner": "SEPARATE_SENTINEL_ADMIN_ROOT",
+      "classification": "LOCAL_INTEGRATION_SOURCE",
+      "purpose": "Existing Sentinel6.27 root/pipeline/optional observer. Default ingestion, dispatch and observer remain OFF. Future plans/access require approval."
+    },
+    "terraform/infra/sentinel-backup/tests/observer.tftest.hcl": {
+      "sha256_lf": "36af13e2ce7d750ba348333acc7ec10f59239834ce77421fdbcc01cb0d6dbce7",
+      "introduced_by": "4d6e2292cd58313c5c35bdb06fd988546092b924",
+      "last_changed_by": "2c8c3e7b79ba84029ec3965ea0cb4202cc0ddd55",
+      "owner": "SEPARATE_SENTINEL_ADMIN_ROOT",
+      "classification": "OFFLINE_MOCK_PLAN",
+      "purpose": "Mock-provider plan-only fixture; not AWS acceptance or executable delivery authority."
+    },
+    "terraform/live/sentinel-backup/terragrunt.hcl": {
+      "sha256_lf": "8a58dfdd188fccc14effd7390feb548d6986db91cef34b02d2b2b49d2ee71670",
+      "introduced_by": "ca919a7d24f6e62286b2aa134ed7e44458904f70",
+      "last_changed_by": "2c8c3e7b79ba84029ec3965ea0cb4202cc0ddd55",
+      "owner": "SEPARATE_SENTINEL_ADMIN_ROOT",
+      "classification": "EXPLICIT_WRAPPER",
+      "purpose": "Fixed local Sentinel source; external reviewed backend/config inputs still required. Not E16/WP5 TARGET or permission to bootstrap a backend."
+    }
+  }
+}

@@ -340,11 +340,41 @@ inputs = {
 '''
 
 
+# Source coverage is distinct from execution authority. Only these eleven
+# already reviewed paths may supplement the closed generated TARGET graph.
+SUPPLEMENTAL_CATALOG = 'ci/authority/target/supplemental-iac.json'
+SUPPLEMENTAL_CATALOG_SHA256 = '806ae4b34467dd3f558bd1890192ec29bd301dd9b65577393be86cb27d3ba0ab'
+SUPPLEMENTAL_IAC_FILES = frozenset(('operations/integrations/ssm-diagnostic/review/bootstrap/.terraform.lock.hcl', 'operations/integrations/ssm-diagnostic/review/bootstrap/main.tf.json', 'operations/integrations/ssm-diagnostic/review/runtime/.terraform.lock.hcl', 'operations/integrations/ssm-diagnostic/review/runtime/main.tf.json', 'operations/sql-backup/recovery/provider.lock.hcl', 'terraform/infra/sentinel-backup/.terraform.lock.hcl', 'terraform/infra/sentinel-backup/main.tf.json', 'terraform/infra/sentinel-backup/modules/observer/main.tf.json', 'terraform/infra/sentinel-backup/modules/pipeline/main.tf.json', 'terraform/infra/sentinel-backup/tests/observer.tftest.hcl', 'terraform/live/sentinel-backup/terragrunt.hcl'))
+SUPPORT_FILES[SUPPLEMENTAL_CATALOG] = SUPPLEMENTAL_CATALOG_SHA256
+
+
+def reviewed_supplemental_iac(root):
+    raw=(Path(root)/SUPPLEMENTAL_CATALOG).read_bytes()
+    require(sha(raw)==SUPPLEMENTAL_CATALOG_SHA256,'supplemental catalog changed; explicit source review required')
+    catalog=load_json(raw.decode('utf-8'))
+    keys(catalog,{'schema','execution_authorized','meaning','files'},'supplemental catalog')
+    require(catalog['schema']=='ECS_REVIEWED_SUPPLEMENTAL_IAC_V1'
+            and catalog['execution_authorized'] is False,'catalog is not execution authority')
+    keys(catalog['files'],SUPPLEMENTAL_IAC_FILES,'supplemental paths')
+    for name,record in catalog['files'].items():
+        keys(record,{'sha256_lf','introduced_by','last_changed_by','owner','classification','purpose'},'supplemental record')
+        require(record['classification'] in ('RETIRED_REVIEW_INPUT','PROVIDER_LOCK_INPUT',
+            'OFFLINE_MOCK_PLAN','EXPLICIT_WRAPPER','LOCAL_INTEGRATION_SOURCE'),'supplemental classification')
+        require((Path(root)/name).is_file() and sha((Path(root)/name).read_bytes())==record['sha256_lf'],
+                'supplemental source drift '+name)
+    return set(catalog['files'])
+
+
+def admit_configuration_paths(root, generated):
+    expected=set(generated)|{'terraform/live/security/terragrunt.hcl'}|reviewed_supplemental_iac(root)
+    require(configuration_paths(root)==expected,'unadmitted/missing IaC surface')
+
+
 def configuration_paths(root):
     """Closed repo IaC surface, including alternate roots and wrapper inputs.
 
-    Cache contents aren't TARGET mechanisms. All admitted configuration is fixed
-    generated wiring; retired bytes exist only as explicitly pinned inert text.
+    Cache contents aren't TARGET mechanisms. TARGET wiring is fixed/generated;
+    separately cataloged review/integration source never becomes a TARGET root.
     """
     found = set()
     for path in Path(root).rglob("*"):
@@ -367,7 +397,7 @@ def validate_repository(root):
     require(legacy["baseline"] == BASELINE and legacy["classification"] == "TRANSITIONAL_LEGACY_NOT_TARGET_ACCEPTED", "legacy classification")
     expected = wiring(doc)
     wrapper_path = "terraform/live/security/terragrunt.hcl"
-    require(configuration_paths(root) == set(expected) | {wrapper_path}, "unadmitted/missing IaC surface")
+    admit_configuration_paths(root, expected)
     for name, digest in legacy["sources"].items():
         require(not (root / name).exists() and sha(retired.source(root, name).read_bytes()) == digest, "restored/changed retired source " + name)
     for name, configuration in expected.items():
