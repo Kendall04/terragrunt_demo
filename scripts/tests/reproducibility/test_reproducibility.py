@@ -28,6 +28,38 @@ LAYERS = ('shared', 'secrets', 'global', 'data', 'platform', 'apps', 'edge')
 AWS_ONLY_DEV = ('shared', 'global', 'data', 'platform', 'apps', 'edge')
 
 
+RUNTIME_WINDOWS_LAYERS = ('global','data','platform','apps','edge')
+WINDOWS_H1 = 'h1:H3mU/7URhP0uCRGK8jeQRKxx2XFzEqLiOq/L2Bbiaxs='
+ORIGIN_RECEIPT = 'operations/sql-backup/recovery/provider-origin-verification.json'
+ORIGIN_RECEIPT_SHA256 = 'c1f2da389f1954de8cb2e9b06a9c456055bba7653b89a14f3383aecf164ad3e4'
+SENTINEL_LOCK = 'terraform/infra/sentinel-backup/.terraform.lock.hcl'
+SENTINEL_LOCK_SHA256 = 'be1182b2f765f01c210a0d1327471dd5cd3cc316acd9f11edb8c959888b5fe3d'
+
+
+def reviewed_windows_origin(raw):
+    if hashlib.sha256(raw.replace(b'\r\n',b'\n')).hexdigest()!=ORIGIN_RECEIPT_SHA256:
+        raise ValueError('Reviewed Windows origin receipt drift')
+    # This exact receipt records independent official signature/ZIP/h1 verification.
+    # Reading a mutable cache or generating a checksum here cannot replace it.
+    return WINDOWS_H1
+
+
+def aws_lock_identity(dev, prod, layer, origin):
+    if layer in RUNTIME_WINDOWS_LAYERS:
+        value=reviewed_windows_origin(origin)
+        line='    "'+value+'",\n'
+        if dev.count(line)!=1 or value in prod:
+            raise ValueError('Exact reviewed DEV-only platform delta required')
+        dev=dev.replace(line,'',1)
+    if dev!=prod:raise ValueError('Unreviewed AWS lock content/version/hash drift')
+
+
+def reviewed_sentinel_lock(raw):
+    # Separate6.27 root: exact reviewed source, not inherited5.100/Linux qualification.
+    if hashlib.sha256(raw.replace(b'\r\n',b'\n')).hexdigest()!=SENTINEL_LOCK_SHA256:
+        raise ValueError('Separate Sentinel lock drift')
+
+
 def references(text):
     return re.findall(r'(?:uses:|"uses":)\s*["\']?([^\s"\',]+)', text)
 
@@ -133,9 +165,13 @@ class ReproducibilityTests(unittest.TestCase):
         expected = {f'terraform/modules/target/{env}/{layer}/.terraform.lock.hcl'
                     for env in ('dev', 'prod') for layer in LAYERS}
         expected.add('terraform/infra/security/.terraform.lock.hcl')
+        expected.add(SENTINEL_LOCK)
         actual = {path.relative_to(ROOT).as_posix() for path in (ROOT / 'terraform').rglob('.terraform.lock.hcl')}
         self.assertEqual(actual, expected)
         for name in sorted(expected):
+            if name==SENTINEL_LOCK:
+                reviewed_sentinel_lock((ROOT/name).read_bytes())
+                continue # Exact separate root; its Windows/schema proof is not Linux init.
             text = (ROOT / name).read_text()
             blocks = re.findall(r'provider "registry.terraform.io/hashicorp/(\w+)" \{([^}]+)\}', text)
             aws_only = name == 'terraform/infra/security/.terraform.lock.hcl' or name in {
@@ -157,7 +193,8 @@ class ReproducibilityTests(unittest.TestCase):
             paths = [ROOT / f'terraform/modules/target/{env}/{layer}' for env in ('dev', 'prod')]
             locks = [dict(re.findall(r'provider "registry.terraform.io/hashicorp/(\w+)" \{([^}]+)\}',
                                     (path / '.terraform.lock.hcl').read_text())) for path in paths]
-            self.assertEqual(locks[0]['aws'], locks[1]['aws'])
+            # Preserve byte equality except the one independently authenticated Windows h1.
+            aws_lock_identity(locks[0]['aws'],locks[1]['aws'],layer,(ROOT/ORIGIN_RECEIPT).read_bytes())
             if layer in AWS_ONLY_DEV:
                 self.assertEqual(set(locks[0]), {'aws'})
                 self.assertEqual(set(locks[1]), {'aws', 'tls'})
@@ -169,6 +206,34 @@ class ReproducibilityTests(unittest.TestCase):
                 self.assertEqual(providers, {'aws'})
             else:
                 self.assertEqual(locks[0], locks[1])
+
+    def aws_blocks(self):
+        result=[]
+        for env in ('dev','prod'):
+            text=(ROOT/f'terraform/modules/target/{env}/global/.terraform.lock.hcl').read_text()
+            result.append(dict(re.findall(r'provider "registry.terraform.io/hashicorp/(\w+)" \{([^}]+)\}',text))['aws'])
+        return result
+
+    def test_platform_delta_cannot_hide_other_hash_version_or_constraint_changes(self):
+        dev,prod=self.aws_blocks();origin=(ROOT/ORIGIN_RECEIPT).read_bytes()
+        for mutated in (dev.replace('5.100.0','5.100.1'),dev.replace('~> 5.50','~> 6.0'),
+                        dev.replace('zh:054b8d','zh:154b8d'),dev+'    "h1:'+('A'*43)+'=",\n'):
+            with self.subTest(content=mutated[:24]),self.assertRaises(ValueError):
+                aws_lock_identity(mutated,prod,'global',origin)
+
+    def test_platform_delta_requires_exact_unchanged_authenticated_receipt(self):
+        dev,prod=self.aws_blocks();origin=(ROOT/ORIGIN_RECEIPT).read_bytes()
+        for raw in (b'{}',origin+b' ',origin.replace(b'OFFICIAL_SIGNED_ZIP_AND_H1_VERIFIED',b'CACHE_MATCH_ONLY')):
+            with self.assertRaisesRegex(ValueError,'receipt drift'):aws_lock_identity(dev,prod,'global',raw)
+        with self.assertRaises(ValueError):aws_lock_identity(dev,prod,'shared',origin)
+        with self.assertRaises(ValueError):aws_lock_identity(prod,prod,'global',origin)
+        with self.assertRaises(ValueError):aws_lock_identity(dev,dev,'global',origin)
+
+    def test_separate_sentinel_lock_never_admits_a_provider_upgrade_or_extra_hash(self):
+        raw=(ROOT/SENTINEL_LOCK).read_bytes()
+        reviewed_sentinel_lock(raw)
+        for modified in (raw.replace(b'6.27.0',b'6.28.0'),raw+b'\n# unreviewed\n'):
+            with self.assertRaisesRegex(ValueError,'Sentinel lock drift'):reviewed_sentinel_lock(modified)
 
     def test_new_toolchain_inputs_select_all_e11_gates(self):
         for path in ('.github/scripts/ci/install-tools.py', '.github/scripts/ci/toolchain.json', 'global.json'):

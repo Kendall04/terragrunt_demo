@@ -1,5 +1,57 @@
 # ECS V2: arquitectura y pipelines recomendados — 2026-10-24
 
+## Bounded security/pipeline closure update - 2026-10-25
+
+This is a source-only follow-up to the historical design below. No Actions
+workflow, GitHub setting, IAM, AWS resource, provider version or lock was changed.
+No dependency/tool installation, download, image build or remote run occurred.
+
+| Area | Current local disposition | Remaining acceptance |
+| --- | --- | --- |
+| SQL CLI recipe | Exact5110f5c fix retained in both bootstraps; AWS CLI uses `--no-install-recommends`; source pin reconciled | Resolved APT Depends/Recommends/installed versions on a newly admitted host; no installed-graphics/CVE verdict |
+| SQL/base/ODBC recommendations | Existing explicit SQL/ODBC packages retained; no purge or unrelated option change | Native dependency graph and SQL/API checks before altering other packages |
+| NuGet/image inputs | Four solution locks, CI/Docker locked restore and publish without restore already implemented; digest/non-root/API image qualification retained | Current vulnerability/SBOM assessment and deployed digest/runtime are not established by a pin |
+| Provider checks | Official signed5.100 Windows ZIP/content h1 authenticated; CI recognizes only the exact Sentinel6.27 lock and one verified DEV platform delta | Sentinel's existing Windows/schema proof is not a fresh Linux provider qualification |
+| Secrets/KMS/logging | Existing instance-only secret access, no shell tracing, separate backup/text keys and metadata-only configuration preserved | Effective IAM/boundaries/key policies and host logs require scoped native observation; values were not read |
+| SQL runtime privilege/TLS | db_owner/startup migrations and `-C`/TrustServerCertificate remain explicit lab limits; recovery migration-off contract is locally qualified | Separate runtime/migrator privilege and SQL TLS validation need a dedicated tested change; PKI between services stays outside ECS |
+| Publish versus deploy | Immutable release request, protected owner, task/route arbitration and empty approval registry retained | Local callers still reference historicalf0ba8ad1 while approvals are empty; do not claim those entrypoints currently admitted |
+
+A concrete CI source-test mismatch was reproduced: the old root list rejected the
+already reviewed separate Sentinel root; raw DEV/PROD equality rejected the one
+additional Windows h1. The test now accepts **only** exact hash-pinned Sentinel
+lock bytes, and only the exact additional h1 in DEV global/data/platform/apps/edge
+when the independently authenticated origin receipt matches its reviewed hash.
+After removing that one proven line for comparison, every remaining AWS block byte
+must equal PROD. Unexpected hashes, versions, constraints, receipt drift, another
+layer, deleted platform hash or modified Sentinel lock still fail. No actual lock,
+provider selection, generator, runtime package or approval changed.
+
+Focused full reproducibility suite: **32 executed,31 passed,1 retained failure,
+zero errors/skips**. The failure is
+`test_all_active_actions_recorded_or_explicitly_deferred`: delivery callers still
+name the historical reusable pin, absent from the intentionally empty WP6 registry.
+It is preserved as a real admission gate. This follow-up does not change Actions;
+local synchronization to inactive generated callers or a newly reviewed immutable
+installation is a subsequent delivery change, not permission to restore old grants.
+No green whole-CI claim, historical-debt suppression or auto-approved record follows.
+
+Evidence: task-3/pipeline-security-closure/{before.log,
+reproducibility-owned-temp.log,qualification.json}. The initial sandbox run had
+Windows private-temp cleanup errors; a new owned temporary directory resolved the
+environmental issue. The retained failure above remains independently visible.
+The36 foundation and236 WP1 cases from the prior closure were not repeated: only
+the changed reproduction contract suite ran. Source inventory is refreshed only
+for that reviewed test file and remains UNVERIFIED, never execution authority.
+
+For tomorrow: the lock/source mismatch is closed locally; the remaining delivery
+registry/caller discrepancy must remain blocked until its separate source/workflow
+change. The live acceptance gate is still one admitted integrated AWS trial after
+SSM execution admission is resolved and actual identities/resources reconciled.
+That trial must prove cold SQL/CLI installation, backup and private restore,
+version-bound Fargate/public API validation, periodic Sentinel observation and
+retirement. No previous budget or historical receipt authorizes it.
+
+
 Revisión local sobre `276dfd85674b99c1ef64c0bf7c622a50b94abf71`. Diseño propuesto, no cambio operativo ni autorización de despliegue. Actualiza las recomendaciones del 16 de octubre con az6/b1/b2 y las decisiones posteriores del propietario. La configuración de modelo solicitada fue Astra Medium; esta revisión no dispone de una comprobación del modelo efectivo.
 
 ## Decisión recomendada

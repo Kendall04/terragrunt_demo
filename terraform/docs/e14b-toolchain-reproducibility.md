@@ -1,5 +1,26 @@
 # E14-B infrastructure and CI reproducibility
 
+## Current local checksum disposition - 2026-10-25
+
+The later [authenticated provider closure](../../operations/sql-backup/recovery/CHECKER-RESULT-AND-PROVIDER-ORIGIN.md)
+resolved the missing origin proof without deleting DEV's Windows h1 or changing
+any lock. The fixed generator preserves the exact reviewed DEV runtime bytes;
+four inactive package digests changed, approvals remain empty. The earlier
+missing-proof paragraphs below are historical observations.
+
+The offline CI comparison now preserves strict equality of all AWS block content
+except that one exact authenticated DEV-only platform line in the five runtime
+layers. Its source receipt is hash pinned; arbitrary hash/version/constraint,
+receipt or scope changes fail. PROD/shared/TLS selections remain unchanged. The
+separate Sentinel6.27 root is recognized by its exact lock hash, with Windows-only
+provider qualification kept distinct from fresh Linux validation.
+
+The changed reproducibility suite is31/32, not global PASS: the historical workflow
+caller pin conflicts with the empty approval registry. [Bounded security/pipeline
+checkpoint](v2-architecture-pipelines-20261024.md#bounded-securitypipeline-closure-update---2026-10-25)
+records that retained gate and source-only scope. No workflow or approval changed.
+
+
 This bounded improvement starts from `72141a7f666ce058ce4d18eb3c3adc180e521ca4`.
 E14 overall remains **PARTIALLY_RESOLVED**. It changes CI input identities and
 security-root lock coverage without changing AWS authority, E11 selection,

@@ -55,8 +55,11 @@ Index/manifest/config digests are recorded in
 The fresh application build and isolated Linux smoke are recorded in
 [current qualification](validation.md#net-10-lts-local-migration---2026-10-16).
 V1's .NET 8 identities and dated acceptance remain preserved in Git history.
-These pins do not establish bit-for-bit application reproducibility: NuGet remains
-unlocked and [E14-B](e14b-toolchain-reproducibility.md) records other limits.
+These pins do not establish bit-for-bit application reproducibility. The later
+[dependency-lock increment](validation.md#nuget-dependency-locks-and-cidocker-restore--2026-10-24)
+added all four solution locks and locked CI/Docker restore; [E14-B](e14b-toolchain-reproducibility.md)
+records the remaining platform, source-admission and hosted-validation limits.
+A digest pin/lock is not a vulnerability-free or deployed-runtime verdict.
 
 ## Intentional update procedure
 
