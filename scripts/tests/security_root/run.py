@@ -40,6 +40,7 @@ def main():
     good = result.wasSuccessful() and result.testsRun > 0 and not result.skipped and not errors
     paths = [AUTHORITY, LEGACY, *wiring(load_authority(ROOT)), "terraform/live/security/terragrunt.hcl"]
     paths += [SUPPLEMENTAL_CATALOG, *sorted(reviewed_supplemental_iac(ROOT))]
+    paths += ["scripts/tests/authority/inventory.py"]
     paths += [p.relative_to(ROOT).as_posix() for p in HERE.glob("*.py")]
     report = {"result": "WP2A_FOUNDATION_PASS" if good else "WP2A_FOUNDATION_FAIL",
               "classification": "E1_WP2A_PROTECTED_SECURITY_ROOT_FOUNDATION",

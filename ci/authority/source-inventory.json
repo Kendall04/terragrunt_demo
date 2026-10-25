@@ -6616,60 +6616,60 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/model.py": {
-      "sha256": "42a756f740fe12d0fabdde983c47d8b63089675400f323f9e67735ad329a8c02",
+      "sha256": "ed576e9dfddf06684769a014a1feb79f2d5c5d52ac5baab980c4d5fc74d09331",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
-          158
+          159
         ],
         "role-input": [
-          65,
-          198,
-          211
+          66,
+          199,
+          212
         ],
         "launch-or-mutation": [
-          23,
-          51,
-          99,
-          138,
-          182,
-          184,
-          191,
-          193,
-          202,
-          247,
-          315,
-          318,
+          24,
+          52,
+          100,
+          139,
+          183,
+          185,
+          192,
+          194,
+          203,
+          248,
+          316,
           319,
           320,
           321,
           322,
-          331,
-          347,
-          375,
-          388,
-          405,
-          413,
-          414,
-          423,
-          425
+          323,
+          332,
+          348,
+          376,
+          387,
+          412,
+          420,
+          421,
+          430,
+          432
         ],
         "executable-dependency": [
-          23,
-          32,
+          24,
           33,
           34,
-          38,
-          332
+          35,
+          39,
+          333
         ],
         "security-control": [
-          205,
           206,
-          209,
+          207,
           210,
           211,
-          313,
-          314
+          212,
+          314,
+          315
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -6817,7 +6817,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/run.py": {
-      "sha256": "ae2a80689f8bf3abdfa55582026350dba3711b254acd0c406cbe4c87de545ac8",
+      "sha256": "c014bb24fc28f6f814e43dfd7c1508b3fd68c2e4ecbebb55a47170eaf657ecf4",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -6826,7 +6826,8 @@
         "executable-dependency": [
           3,
           39,
-          43
+          43,
+          44
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -6838,18 +6839,19 @@
       "semantic_status": "CURRENT_FACT"
     },
     "scripts/tests/security_root/test_supplemental_iac.py": {
-      "sha256": "5a65de28cf346d9191de831ed9127f5784187aef289b861744396f49a6c31754",
+      "sha256": "fc6010eed1305f7029bc6396e087d75d19af01664a601624e7460011d0983f16",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          18,
-          42,
+          20,
           44,
-          52,
-          61,
-          67,
-          74,
-          79
+          46,
+          54,
+          63,
+          69,
+          76,
+          81,
+          91
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -11480,7 +11482,7 @@
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",
-  "review_revision": "7cd596f80a973982b9f05d16ea51f11cfb0bb492",
-  "review_note": "Explicit local structural reconciliation; changed/new entries remain UNVERIFIED. No execution/native approval refreshed.",
-  "review_delta_sha256": "e691e540a11debc18e92d53dbe5a6fcc9bd6b70c3279fcf15ebb584659afc541"
+  "review_revision": "8dcf56f5479003df4f435b1d79901b3bb669582c",
+  "review_note": "Explicit structural coverage refresh after exact-path-parity traversal optimization; no semantic/execution approval. Prior127-entry review preserved in Git/evidence.",
+  "review_delta_sha256": "f7bba1d51d45980db430e09390dc6ec05af9905b185d1fe2c10e63a6d4f7869b"
 }

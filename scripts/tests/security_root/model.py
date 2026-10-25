@@ -5,6 +5,7 @@ configuration paths; immutable text data preserves extraction/provenance only.
 """
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 
@@ -383,14 +384,20 @@ def configuration_paths(root):
     separately cataloged review/integration source never becomes a TARGET root.
     """
     found = set()
-    for path in Path(root).rglob("*"):
-        rel = path.relative_to(root)
-        if set(rel.parts) & {".git", ".terraform", ".terragrunt-cache", "node_modules", "__pycache__"}:
-            continue
-        if path.is_symlink() or getattr(path, "is_junction", lambda: False)():
-            raise Unsupported("WP2A_SOURCE_ADMISSION_FAILURE: linked source " + rel.as_posix())
-        if path.is_file() and (path.suffix in {".tf", ".hcl", ".tfvars"} or path.name.endswith((".tf.json", ".tfvars.json"))):
-            found.add(rel.as_posix())
+    ignored={".git", ".terraform", ".terragrunt-cache", "node_modules", "__pycache__"}
+    def fail(error): raise error
+    for directory, dirs, files in os.walk(root, topdown=True, followlinks=False, onerror=fail):
+        # Same ignored names as before, pruned BEFORE scandir descends into them.
+        dirs[:]=sorted(name for name in dirs if name not in ignored)
+        for name in dirs+sorted(files):
+            if name in ignored: continue
+            path=Path(directory)/name
+            rel=path.relative_to(root)
+            if path.is_symlink() or getattr(path,"is_junction",lambda:False)():
+                raise Unsupported("WP2A_SOURCE_ADMISSION_FAILURE: linked source " + rel.as_posix())
+            if name in files and (path.suffix in {".tf", ".hcl", ".tfvars"}
+                    or path.name.endswith((".tf.json", ".tfvars.json"))) and path.is_file():
+                found.add(rel.as_posix())
     return found
 
 

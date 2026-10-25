@@ -1,5 +1,7 @@
 # Catalog closure and installation prerequisites — 2026-10-25
 
+Update: [completed checker, I/O diagnosis and Windows provider-hash identity](CHECKER-RESULT-AND-PROVIDER-ORIGIN.md). Full checker completed:29 cases,1 failure,3 errors; no global PASS. The earlier pending-session checkpoint below is historical.
+
 Local continuation from paused WIP `7cd596f`; no AWS, SSM, deployment, teardown,
 permission installation, push or image rebuild. The owner reports manual resource
 deletions; historical inventories therefore cannot establish current existence.

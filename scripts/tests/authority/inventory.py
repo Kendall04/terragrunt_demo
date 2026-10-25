@@ -5,6 +5,7 @@ whose names contain IAM. Adding or editing a surface requires inventory review.
 Hashes establish review freshness, NOT security or policy semantics.
 """
 import json
+import os
 from pathlib import Path
 import re
 from source import digest
@@ -22,7 +23,17 @@ SIGNALS = {
 
 def sources(root):
     root = Path(root)
-    for path in sorted(root.rglob("*")):
+    walked=[]
+    def fail(error): raise error
+    for directory, dirs, files in os.walk(root, topdown=True, followlinks=False, onerror=fail):
+        dirs[:]=sorted(name for name in dirs if name not in IGNORED)
+        for name in dirs+sorted(files):
+            if name in IGNORED: continue
+            path=Path(directory)/name
+            if path.is_symlink() or getattr(path,"is_junction",lambda:False)():
+                raise ValueError("source symlink requires explicit review: " + path.relative_to(root).as_posix())
+            if name in files: walked.append(path)
+    for path in sorted(walked):
         rel = path.relative_to(root)
         if any(part in IGNORED for part in rel.parts):
             continue

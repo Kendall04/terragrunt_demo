@@ -1,5 +1,7 @@
 """Exact supplemental coverage, never runtime/deployment or AWS authority."""
 import json
+import os
+from unittest.mock import patch
 from pathlib import Path
 import shutil
 import tempfile
@@ -83,5 +85,35 @@ class SupplementalIacTests(unittest.TestCase):
         except OSError as error:
             self.fail('Existing environment must support isolated link test: '+str(error.winerror if hasattr(error,'winerror') else error.errno))
         with self.assertRaisesRegex(Unsupported,'linked supplemental'):model.reviewed_supplemental_iac(root)
+
+    def test_configuration_prunes_exact_old_caches_but_not_bin(self):
+        root=self.fixture()
+        ignored={'.git','.terraform','.terragrunt-cache','node_modules','__pycache__'}
+        for name in ignored:
+            p=root/name;p.mkdir();(p/'unreviewed.tf').write_text('not parsed')
+        scandir=os.scandir
+        def observed(path):
+            self.assertFalse(set(Path(path).relative_to(root).parts)&ignored)
+            return scandir(path)
+        with patch.object(os,'scandir',side_effect=observed):model.admit_configuration_paths(root,{})
+        extra=root/'bin/unreviewed.tf';extra.parent.mkdir();extra.write_text('resource "evil" "x" {}')
+        self.assertIn('bin/unreviewed.tf',model.configuration_paths(root))
+        with self.assertRaisesRegex(Unsupported,'unadmitted/missing IaC'):model.admit_configuration_paths(root,{})
+
+    def test_inventory_prunes_old_caches_and_unreadable_directory_fails_closed(self):
+        import inventory
+        root=self.fixture();scandir=os.scandir
+        for name in inventory.IGNORED:
+            p=root/name
+            if not p.exists():p.mkdir()
+            (p/'unreviewed.tf').write_text('not parsed')
+        def observed(path):
+            self.assertFalse(set(Path(path).relative_to(root).parts)&inventory.IGNORED)
+            return scandir(path)
+        with patch.object(os,'scandir',side_effect=observed):list(inventory.sources(root))
+        def denied(path):raise PermissionError('isolated fixture unreadable')
+        for check in (model.configuration_paths,lambda p:list(inventory.sources(p))):
+            with patch.object(os,'scandir',side_effect=denied),self.assertRaises(PermissionError):check(root)
+
 
 if __name__=='__main__':unittest.main(verbosity=2)
