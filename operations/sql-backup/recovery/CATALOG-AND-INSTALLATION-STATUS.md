@@ -39,7 +39,7 @@ inventory discrepancies. Every refreshed/new semantic disposition is `UNVERIFIED
 This does not automatically approve code semantics, governance or runtime behavior.
 The prior-source inventory and review delta are preserved in Git/task evidence.
 
-## Independent retained blocker — do not weaken the lock guard
+## Earlier retained blocker - resolved by the later authenticated closure
 
 The generated provider lock differs from retained HEAD locks for DEV
 `global`, `data`, `platform`, `apps`, `edge`. Each retained lock has the additional
@@ -58,6 +58,24 @@ Its log has the eight catalog cases passing, but no final report yet; it was
 neither restarted nor interrupted. The focused catalog PASS does not imply full
 foundation acceptance. Collect final-checker.json/log before declaring its result.
 
+## Local checker closure update - 2026-10-25
+
+The earlier lock/reader paragraphs above are historical checkpoints. Independent
+signed ZIP verification now proves the Windows h1. The fixed generator preserves
+all five DEV runtime locks; no lock was edited or platform checksum discarded.
+A later stale bootstrap pin was reconciled against exact reviewed commit5110f5c.
+The full local foundation checker now passes36/36 with no admission discrepancies;
+all219 support pins pass. The old historical UNKNOWN was caused by two later d1
+review snapshots, isolated only in the disposable pre-E1 view with exact hashes.
+CURRENT still sees them, and unknown/drift negatives remain enforced.
+See [final result, origin and limitations](CHECKER-RESULT-AND-PROVIDER-ORIGIN.md).
+
+No new approvals or installations were emitted. Four inactive DEV package hashes
+were refreshed; release/deploy approvals remain empty. The source catalog alone
+does not authorize publication, IAM, state access, SSM or deployment. The generator
+now deliberately consumes the already cataloged lock as a fixed package input;
+this is not a general permission to import supplemental roots.
+
 ## Fresh installation request — DRAFT, not ready to approve/apply
 
 No approval record is emitted. Previous `release` and `deploy-dev` approvals remain
@@ -66,9 +84,9 @@ copy old G1–G9 flags, renew timestamps or label an old source hash APPROVED.
 
 Before presenting one concrete installation decision:
 
-1. Resolve provider provenance and run the full unchanged strict comparison again.
-   Use existing authenticated package evidence if it becomes available; do not
-   repeat the broad searches already completed or silently fetch new binaries.
+1. Local provenance/source-checker gate is complete as recorded above. Preserve
+   that receipt and strict comparison; do not rerun completed builds or generate
+   approval records from this local PASS.
 2. Reconcile actual retained/deleted resources with current authorized read-only
    identity, state ownership, backend, roles, installed image/bundle versions and
    current GitHub governance/OIDC. None was re-read in this local task. Do not

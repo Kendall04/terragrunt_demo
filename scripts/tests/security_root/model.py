@@ -21,7 +21,7 @@ import wp5
 import wp6
 import retired
 
-SUPPORT_FILES = {**{k:v for k,v in ownership.RECOVERY_SOURCES.items() if not k.endswith(".tf")}, "terraform/infra/data/user_data.sh": "98b4d17937711d27244c161a35832d6f05135b59f5cb5609a5016fd19b10cd7b"}
+SUPPORT_FILES = {**{k:v for k,v in ownership.RECOVERY_SOURCES.items() if not k.endswith(".tf")}, "terraform/infra/data/user_data.sh": "8d36d43d3c3e4f766e8e3aaba3c09679d5d3503c5504ef065f55e5ef47a70e10"}
 
 SUPPORT_FILES.update({retired.archived(k): v for k,v in json.loads((ordinary.ROOT / retired.MANIFEST).read_text())["sources"].items()})
 

@@ -1,3 +1,86 @@
+# Local checker closure and authenticated provider origin - 2026-10-25
+
+**Latest result: WP2A_FOUNDATION_PASS, 36 tests, zero failures/errors/skips and zero
+admission discrepancies.** This closes the local source-checker block, not E1
+installation, effective AWS permissions, native SSM or full ECS recovery acceptance.
+The original failed reports and the earlier investigation below remain preserved.
+
+## Final corrections and evidence
+
+1. **Provider origin proved, not inferred from the cache.** One official Windows
+   AWS5.100.0 ZIP (156,704,800 bytes) was downloaded, not extracted or executed.
+   The signed SHA256SUMS verified against HashiCorp primary fingerprint
+   `C874011F0AB405110D02105534365D9472D7468F`, signing subkey
+   `374EC75B485913604A831CC7C820C6D5CD27AB87`. The primary and actual signer are valid;
+   the supplied keyblock also contains an unrelated expired signing subkey, which
+   was not the signer. No expiry, bad signature or trust check on the used keys was
+   bypassed. ZIP SHA256 is `9f8b909d3ec50ade83c8062290378b1ec553edef6a447c56dadc01a99f4eaa93`.
+   Streaming Go/ Terraform directory-content hashing produced
+   `h1:H3mU/7URhP0uCRGK8jeQRKxx2XFzEqLiOq/L2Bbiaxs=`, matching the five retained DEV locks and the existing
+   cached package. Both archive members matched independently. No provider install,
+   execution, Terraform init, global keyring or PATH change occurred.
+2. **Generator corrected, locks preserved byte-for-byte.** Only DEV global/data/
+   platform/apps/edge now use the exact pinned reviewed lock input
+   `operations/sql-backup/recovery/provider.lock.hcl`, LF SHA256
+   `901a282544168f6b5d1567b13c91e9009129a2bc0cc92bf4c934e140efdae904`.
+   Shared, secrets, PROD, provider versions and all existing lock files are unchanged.
+   Four inactive DEV WP5 package digests changed as a consequence. No installation,
+   active contract, runtime approval or WP6 approval was created; approvals remain
+   empty. This deliberate generator correction is separate from catalog coverage.
+3. **Historical fixture corrected without weakening CURRENT.** The original
+   pre-E1 characterization copied two later d1 review JSON roots. Their unresolved
+   control semantics contaminated all six expected partial positive witnesses in
+   DEV and PROD. The disposable historical view now omits only those two exact
+   hash-pinned snapshots. A changed snapshot fails closed; unknown JSON beside it
+   remains present/UNKNOWN. CURRENT discovery and the eleven-file supplemental
+   catalog continue to include both snapshots. The original WITNESS_ALLOW/PARTIAL
+   expectation is unchanged and passes; no current control was declared effective.
+4. **Stale bootstrap pin reconciled by provenance.** The old source pin matched
+   the parent of `5110f5c9d6aa9e9594d49e756a781d0cab5a51b1`; current bytes match
+   that exact already reviewed CLI recipe fix. Only the pin was refreshed to
+   `8d36d43d3c3e4f766e8e3aaba3c09679d5d3503c5504ef065f55e5ef47a70e10`.
+   No bootstrap content changed here. A new negative test verifies future payload
+   drift is rejected by the earlier WP5 package guard. All219 protected support
+   pins and original-checkout full source admission pass. Installed Linux packages
+   and a new host bootstrap remain untested by this source-only result.
+
+The full checker ran against791 byte-verified files (5,382,458 source bytes) on the
+existing native Linux filesystem, with identical original config/inventory path
+sets, no credentials/providers/build outputs, and normal temporary-tree cleanup.
+It completed in20.485 seconds. The original checkout also passed full admission.
+Source coverage changes retain `semantic_status=UNVERIFIED`; hashes are not semantic
+or execution approval. No AWS, SSM, EKS change, image build, push or remote CI ran.
+
+Versioned origin receipt: [provider-origin-verification.json](provider-origin-verification.json).
+The public metadata, signature log and ZIP remain in task-3/provider-origin.
+Final checker evidence is in task-3/catalog-closure/checker-native-closed.json/log,
+native-source-equivalence-closed.json, origin-fix-authority-review.json and
+bootstrap-pin-provenance.json. The earlier failed reports are not overwritten.
+Final source-fixture ZIP:1,611,855bytes, SHA256
+`74d3b9e3226f50116b32767c2a36b6109289af2222e6f4f81427f304bfaf7472`.
+Final report SHA256:`8b30f8031f5ec04cd332c04a4bcb561988a81fa4d95863f7db3995e589412321`.
+
+Authentication method follows [HashiCorp security guidance](https://www.hashicorp.com/en/trust/security)
+and [official archive verification](https://developer.hashicorp.com/terraform/tutorials/cli/verify-archive).
+The exact [AWS5.100.0 release](https://releases.hashicorp.com/terraform-provider-aws/5.100.0/)
+provides the signed checksums; Terraform's [hash implementation](https://raw.githubusercontent.com/hashicorp/terraform/v1.13.4/internal/getproviders/hash.go)
+explains archive versus content hashes. A platform hash is legitimate only after
+its actual content provenance is verified, as done here.
+
+## Additional broad regression limit
+
+The optional sweep of all existing WP1 unit tests, separate from the completed
+foundation runner, reached its300-second bound without producing a final report.
+Its exact owned reader was CPU-running at the sampled checkpoint, not stuck on9P.
+It is **INCONCLUSIVE**, with no passed-test count or full-WP1 PASS claimed; the
+source fixture was disposable and the timed run ended. It was not restarted.
+The targeted historical baseline/current-discovery/unknown/drift regressions are
+included in the36 completed foundation tests. The extra sweep's timeout does not
+change their result, and does not justify weakening a control or creating AWS.
+Task-3/catalog-closure/authority-native-unit-timeout.json records this limitation.
+
+## Earlier failed checkpoint - preserved historical findings
+
 # Completed local checker and provider-origin investigation — 2026-10-25
 
 The checker completed. **Overall result: WP2A_FOUNDATION_FAIL**, not an accepted

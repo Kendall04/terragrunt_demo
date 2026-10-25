@@ -6616,7 +6616,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/model.py": {
-      "sha256": "ed576e9dfddf06684769a014a1feb79f2d5c5d52ac5baab980c4d5fc74d09331",
+      "sha256": "e7074cf1c3aea9f266cc803d99d8a0b9232a716908d464bb6260ddf5de7878cd",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -6817,7 +6817,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/run.py": {
-      "sha256": "c014bb24fc28f6f814e43dfd7c1508b3fd68c2e4ecbebb55a47170eaf657ecf4",
+      "sha256": "c2e0127ce06c50720aa13bd91b7e894dc2964d55f7298dabb7339b01fd3ec7f5",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -7093,48 +7093,49 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/wp5.py": {
-      "sha256": "2e9f1b765f3fc80a073032c9be95d810ddd5c9ab937d6b67815950d31298db3a",
+      "sha256": "53f21201889d3e6727b0a268fb3d1c95199508bda358c9e8b2e30bed6d88c45e",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
-          365
+          386
         ],
         "role-input": [
-          434
+          455
         ],
         "launch-or-mutation": [
-          52,
-          53,
-          61,
-          62,
-          63,
-          64,
           67,
-          69,
-          75,
-          86,
-          112,
-          147,
-          154,
-          159,
-          164,
-          165,
-          257,
-          269,
-          271,
-          284,
-          328,
-          337,
-          341,
-          343,
-          365,
-          382,
-          389,
-          391,
-          408,
-          417,
-          419,
-          429
+          68,
+          76,
+          77,
+          78,
+          79,
+          82,
+          87,
+          90,
+          96,
+          107,
+          133,
+          168,
+          175,
+          180,
+          185,
+          186,
+          278,
+          290,
+          292,
+          305,
+          349,
+          358,
+          362,
+          364,
+          386,
+          403,
+          410,
+          412,
+          429,
+          438,
+          440,
+          450
         ],
         "executable-dependency": [
           22,
@@ -7147,32 +7148,32 @@
           29,
           30,
           31,
-          165,
-          371,
-          382,
-          395,
-          400,
+          186,
+          392,
+          403,
           416,
-          429,
-          433,
-          442
+          421,
+          437,
+          450,
+          454,
+          463
         ],
         "security-control": [
-          366,
-          367,
-          369,
-          373,
-          374,
-          376,
-          379,
-          380,
-          381,
+          387,
           388,
-          393,
+          390,
+          394,
+          395,
           397,
-          399,
-          406,
-          428
+          400,
+          401,
+          402,
+          409,
+          414,
+          418,
+          420,
+          427,
+          449
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -8089,7 +8090,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/authority.json": {
-      "sha256": "8d9b8f982bd9e2adf813301007a84e71dd79055eb289f70faad8f5bf6439a40a",
+      "sha256": "642f1425f90e3c1a16c5a3a0e6f3bc1cd9f1721a41f854e6e64d42a4e0f9c355",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -11479,10 +11480,44 @@
         ]
       },
       "semantic_status": "UNVERIFIED"
+    },
+    "operations/sql-backup/recovery/provider-origin-verification.json": {
+      "sha256": "c1f2da389f1954de8cb2e9b06a9c456055bba7653b89a14f3383aecf164ad3e4",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          55,
+          62,
+          68,
+          80,
+          81
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/tests/security_root/test_origin_history.py": {
+      "sha256": "2a01f0937b7e0364414b85a3b151e17a085c642678bb0a47d797169d8e60f78d",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          38,
+          42,
+          43,
+          44,
+          50
+        ],
+        "executable-dependency": [
+          50
+        ],
+        "security-control": [
+          74
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",
-  "review_revision": "8dcf56f5479003df4f435b1d79901b3bb669582c",
-  "review_note": "Explicit structural coverage refresh after exact-path-parity traversal optimization; no semantic/execution approval. Prior127-entry review preserved in Git/evidence.",
-  "review_delta_sha256": "f7bba1d51d45980db430e09390dc6ec05af9905b185d1fe2c10e63a6d4f7869b"
+  "review_revision": "86caf174fa8fbbe66843ffe3f7a3e635cf35265a",
+  "review_note": "Consolidated exact six-path structural refresh: authenticated provider lock generator, reviewed5110f5c bootstrap pin, historical fixture regressions, origin receipt and four inactive package digests. Semantic statuses stay UNVERIFIED; approvals remain empty.",
+  "review_delta_sha256": "10c4b7e24cdfb565727c80b520832d740e94a41e386833c4810f47fbe16266a8"
 }

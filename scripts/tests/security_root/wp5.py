@@ -44,6 +44,21 @@ def require(ok, reason):
     if not ok:raise ValueError('WP5_SOURCE_ADMISSION_FAILURE: ' + reason)
 
 
+# Official Windows ZIP verified against signed SHA256SUMS; see the versioned
+# origin receipt. Preserve the existing DEV runtime locks, including Windows h1.
+DEV_RUNTIME_LOCK = 'operations/sql-backup/recovery/provider.lock.hcl'
+DEV_RUNTIME_LOCK_SHA256 = '901a282544168f6b5d1567b13c91e9009129a2bc0cc92bf4c934e140efdae904'
+
+
+def dev_runtime_lock(root):
+    path = Path(root) / DEV_RUNTIME_LOCK
+    require(not path.is_symlink() and not getattr(path, 'is_junction', lambda: False)(),
+            'linked DEV provider lock')
+    raw = path.read_bytes().replace(b'\r\n', b'\n')
+    require(sha(raw) == DEV_RUNTIME_LOCK_SHA256, 'reviewed DEV provider lock drift')
+    return raw.decode('utf-8')
+
+
 def configuration(doc):
     """Extend the exact WP2 extraction; never copy legacy IAM/recovery controls."""
     result = {}
@@ -66,7 +81,13 @@ def configuration(doc):
         # Reuse actual reviewed provider checksums. No downloaded/generated lock.
         lock = retired.source(ROOT, 'terraform/live/dev/shared/.terraform.lock.hcl').read_text()
         for layer in LAYERS:
-            result[f'terraform/modules/target/{env}/{layer}/.terraform.lock.hcl'] = (lock.split('provider "registry.terraform.io/hashicorp/tls"',1)[0].rstrip()+'\n') if env=='dev' and layer in ('shared','global','data','platform','apps','edge') else lock
+            if env == 'dev' and layer in ('global','data','platform','apps','edge'):
+                selected = dev_runtime_lock(ROOT)
+            elif env == 'dev' and layer == 'shared':
+                selected = lock.split('provider "registry.terraform.io/hashicorp/tls"',1)[0].rstrip()+'\n'
+            else:
+                selected = lock
+            result[f'terraform/modules/target/{env}/{layer}/.terraform.lock.hcl'] = selected
     return result
 
 
