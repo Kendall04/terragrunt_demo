@@ -1,5 +1,7 @@
 # ECS recovery: final local preparation and the remaining LIVE gate
 
+Current integrated scope and recommended new budget: [local integrated proposal](INTEGRATED-TRIAL-PROPOSAL.md), based on bc57dc4. It forecasts 102 Terraform addresses under explicit reuse assumptions and USD 6 new; it is not a saved plan or authorization. SSM remains unresolved, four wiring changes and separate .NET application qualification remain gates. The historical coverage below is preserved.
+
 This is the single forward checklist after the installed-bundle work at
 `29120514c64f7c7b36b680e7251da96b19d849e2`. It replaces the earlier "next local
 projection" item, not the historical receipts or the existing runbooks. No AWS,
