@@ -98,9 +98,15 @@ def operate(approval_path,config_path,root,apply=False,confirmation=None,port=No
     config=json.loads(config_path.read_bytes()); approval_sha=digest(approval_bytes)
     require(approval['Schema']=='SQL_BACKUP_EC2_REVIEW_V1' and approval['Account']==ACCOUNT and approval['Region']=='us-east-1','REVIEW_ACCOUNT_REQUIRED')
     require(approval['Runtime']['ExpectedRole']==f'arn:aws:iam::{ACCOUNT}:role/{ROLE}' and approval['Runtime']['ExistingSaSecret']==SA,'REVIEW_ROLE_AND_SECRET_REQUIRED')
-    require(digest(config_path.read_bytes())==approval['PayloadSha256']['config.json'] and config['Database']=='demodb','REVIEWED_CONFIG_REQUIRED')
-    require(config['ExpectedEc2RoleName']==ROLE,'ROLE_CONFIG_MISMATCH')
     endpoint=sql_endpoint(approval)
+    recovery=approval['Runtime'].get('RecoveryTrial')
+    if recovery is not None:
+        require(isinstance(recovery,str) and re.fullmatch('r[0-9]{8}[a-z0-9]{1,8}',recovery)
+                and endpoint!='127.0.0.1','EXPLICIT_PRIVATE_RECOVERY_DATABASE_REQUIRED')
+    database='demodb' if recovery is None else 'recoverydb_restore_'+recovery
+    require(digest(config_path.read_bytes())==approval['PayloadSha256']['config.json']
+            and config['Database']==database,'REVIEWED_CONFIG_REQUIRED')
+    require(config['ExpectedEc2RoleName']==ROLE,'ROLE_CONFIG_MISMATCH')
     no_links(root)
     base=root/'etc/terragrunt-demo/sql-backup'; directory=base/'credentials'
     dropin=root/'etc/systemd/system/sql-backup.service.d'

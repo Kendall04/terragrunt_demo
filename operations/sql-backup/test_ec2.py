@@ -183,6 +183,39 @@ class Credential(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'PRIVATE_ENDPOINT_HOST'):self.call(True,self.confirm)
         self.assertEqual(len(self.host.calls),1)
         self.assertFalse((self.system/'etc/terragrunt-demo/sql-backup/credentials').exists())
+    @unittest.skipUnless(os.geteuid()==0,'root only inside isolated fixture')
+    def test_private_recovery_backup_is_bound_to_exact_restored_database(self):
+        from unittest.mock import Mock
+        approval=self.private_approval();name='r20261025i1t'
+        config=json.loads((self.out/'config.json').read_text())
+        config['Database']='recoverydb_restore_'+name
+        raw=json.dumps(config).encode()
+        (self.out/'config.json').write_bytes(raw)
+        (self.system/'etc/terragrunt-demo/sql-backup/config.json').write_bytes(raw)
+        approval['PayloadSha256']['config.json']=hashlib.sha256(raw).hexdigest()
+        approval['Runtime']['RecoveryTrial']=name
+        (self.out/'approval.json').write_text(json.dumps(approval))
+        self.confirm=hashlib.sha256((self.out/'approval.json').read_bytes()).hexdigest()
+        self.host.identity=Mock(return_value={'accountId':plan.ACCOUNT,'region':'us-east-1',
+            'instanceId':'i-'+'2'*17,'privateIp':'10.77.1.8'})
+        self.host.sql=Mock()
+        self.call(True,self.confirm)
+        connection=(self.system/'etc/terragrunt-demo/sql-backup/credentials/backup-connection').read_text()
+        self.assertIn('Database='+config['Database']+';',connection)
+        self.assertIn('USE ['+config['Database']+'];',self.host.sql.call_args.args[1])
+    def test_recovery_trial_cannot_change_database_by_unreviewed_alias(self):
+        approval=self.private_approval()
+        for name in ('r20261025i1t','r20261025bad;DROP'):
+            approval['Runtime']['RecoveryTrial']=name
+            (self.out/'approval.json').write_text(json.dumps(approval))
+            with self.assertRaises(ValueError):self.call()
+        self.assertEqual(self.host.calls,[])
+    def test_recovery_database_requires_private_mode(self):
+        approval=json.loads((self.out/'approval.json').read_text())
+        approval['Runtime']['RecoveryTrial']='r20261025i1t'
+        (self.out/'approval.json').write_text(json.dumps(approval))
+        with self.assertRaisesRegex(ValueError,'EXPLICIT_PRIVATE_RECOVERY'):self.call()
+        self.assertEqual(self.host.calls,[])
     def test_new_endpoint_cannot_reuse_old_review_acknowledgement(self):
         old=self.confirm;self.private_approval()
         with self.assertRaisesRegex(ValueError,'CONFIRMATION'):self.call(True,old)

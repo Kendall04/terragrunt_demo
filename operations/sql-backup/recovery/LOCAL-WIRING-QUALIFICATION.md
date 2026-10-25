@@ -23,7 +23,9 @@ The proposed 102-address/USD6 trial remains unapproved and SSM remains unresolve
    `Runtime.SqlEndpoint` from the hash-reviewed approval. Default stays loopback.
    Private mode requires an exact instance ID and fresh IMDSv2 account/region/own IP
    match before reading the SA secret. SQL bootstrap and both generated credential
-   files use the same endpoint. Wildcard, public, metadata and noncanonical IPs fail.
+   files use the same endpoint. Explicit `Runtime.RecoveryTrial` binds only
+   `recoverydb_restore_<Trial>` on that private host; default lab DB remains demodb.
+   Wildcard, public, metadata and noncanonical IPs or database aliases fail.
    Values remain only in private EC2 files; no units are started or modified here.
 4. **Connection-version writer:** added `connection-version` to the existing
    `recovery/host.py`, default plan-only. It reuses `prepare.service_plan`, native
@@ -68,7 +70,7 @@ fixture, JSON label or this document grants permission to run it against AWS.
 | Check | Result and boundary |
 | --- | --- |
 | Recovery CI, existing explicit entrypoint plus new writer suite | **194 PASS, 13 suites, zero skips**, WSL; includes real Bash/jq, wrong fence/endpoint/schema, historical review, secret/version/key/override negatives, one-write denial and STARTED replay prevention. AWS/SQL ports remain doubles. |
-| Backup review/credential provisioning | **22 PASS, zero skips**, root-owned isolated temporary WSL fixtures; actual file permissions and same private endpoint, no real SQL/secrets/services. |
+| Backup review/credential provisioning | **25 PASS, zero skips**, root-owned isolated temporary WSL fixtures; actual file permissions and same private endpoint, no real SQL/secrets/services. |
 | WP4D loader/factory/V1/V2 | **44 PASS, zero skips**, including seven extracted-bundle cases. Original Windows short-name temp alias caused one path-only assertion; rerun in canonical task-owned temporary path passed. |
 | Terraform configuration behavior | Actual provider-free Terraform console/validate PASS: generated V1/V2 configurations, unchanged other bindings, enum rejection, either reviewed subnet, foreign/invalid subnet rejection. No backend/provider initialization. |
 | New focused protected-selector regressions | **2 PASS**: actual authored root opt-in and valid request plus attempted contract/profile/version/PROD overrides. The full global admission guard remains unchanged. |
