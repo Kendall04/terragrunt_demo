@@ -67,7 +67,33 @@ provides the signed checksums; Terraform's [hash implementation](https://raw.git
 explains archive versus content hashes. A platform hash is legitimate only after
 its actual content provenance is verified, as done here.
 
-## Additional broad regression limit
+## WP1 timeout follow-up - all236 unit cases covered locally
+
+The300-second limit belonged to the auxiliary task harness, not the repository
+runner. Instrumentation on a fresh byte-verified native Linux fixture found no
+individual hang, subprocess or30-second stalled-test stack. At the limit it was in
+`test_v5_applicability.SourceApplicabilityV5Tests.test_malformed_json_cannot_receive_inert_output_exemption`,
+during `inventory.scan`/`Path.read_text`. It was a cumulative CPU/source-mutation
+cost:164 tests had explicit unittest OK results, the slowest completed case took
+13.283s. This is not proof that the source scanner itself is universally optimal.
+No security evaluator, mutation or test expectation was weakened to improve speed.
+
+All791 fixture files and both original path sets were checked again against the
+current checkout before resuming. Only the72 uncompleted cases were run in a fresh
+disposable native fixture, including the interrupted case. They passed in116.388s
+(test runner),119.366s including fixture/driver overhead, with zero skips/errors/
+failures. Exact ID sets prove disjoint164+72 coverage of all236 discovered tests.
+Thus **all236 WP1 unit cases passed across two identical-source batches**; this is
+not a claim of one successful monolithic Git-metadata WP1 runner invocation or
+native cloud authority. The original timeout remains preserved below.
+
+Task-3/catalog-closure/wp1-timeout-closure.json binds all236 IDs, source revision
+17cb9d4 and underlying log/fixture hashes; SHA256:`aed9486e5576825d02896e20fcd4a899fc42c93f5906a0937d00e9161584c5f2`.
+No completed test was repeated, no timeout increased, no AWS action executed and
+no approval regenerated. Reader output is now streamed per case, so a bounded
+interruption no longer loses which checks actually completed.
+
+## Earlier additional broad regression limit - superseded by the follow-up
 
 The optional sweep of all existing WP1 unit tests, separate from the completed
 foundation runner, reached its300-second bound without producing a final report.

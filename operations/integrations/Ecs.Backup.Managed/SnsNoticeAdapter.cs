@@ -24,6 +24,9 @@ public sealed class SnsNoticeAdapter(IAmazonSimpleNotificationService sns,Backup
   if(token.IsCancellationRequested)return new(DeliveryStatus.RetryableFailure,"Publish not attempted; invocation cancelled.");
   var status=execution.Audit.SourceMetadata?.GetValueOrDefault("backupStatus")??"UNKNOWN";
   if(status is not ("FAILED" or "MISSING" or "STALE" or "UNKNOWN" or "HEALTHY"))return new(DeliveryStatus.PermanentFailure,"Invalid sanitized backup status.");
+  // State and semantic intent must agree before any external publish. UNKNOWN is not recovery.
+  if((intent.Kind==EffectKind.ResolveIncident)!=(status=="HEALTHY"))
+   return new(DeliveryStatus.PermanentFailure,"Contradictory backup notice state; no SNS request.");
   var evidence=new BackupNoticeEvidence(1,"Ecs.Backup.Sentinel",settings.SenderLabel,settings.Key.Service,settings.Key.Scope,
    intent.IncidentId,intent.Epoch,execution.Entry.Id,intent.Kind.ToString(),status,"SNS_PUBLISH_ONLY_NOT_INBOX_RECEIPT",settings.Mode=="synthetic-trial");
   var payload=DomainJson.Serialize(evidence);

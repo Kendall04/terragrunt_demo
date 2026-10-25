@@ -1,6 +1,6 @@
 # ECS recovery: final local preparation and the remaining LIVE gate
 
-Current integrated scope and recommended new budget: [local integrated proposal](INTEGRATED-TRIAL-PROPOSAL.md), based on bc57dc4. It forecasts 102 Terraform addresses under explicit reuse assumptions and USD 6 new; it is not a saved plan or authorization. SSM remains unresolved, four wiring changes and separate .NET application qualification remain gates. The historical coverage below is preserved.
+Current integrated scope and recommended new budget: [local integrated proposal](INTEGRATED-TRIAL-PROPOSAL.md), based on bc57dc4. It forecasts 102 Terraform addresses under explicit reuse assumptions and USD 6 new; it is not a saved plan or authorization. SSM remains unresolved. The four wiring changes and separate .NET application image smoke are now locally qualified; their native platform behavior remains unproved. The historical coverage below is preserved.
 
 Current local implementation: [four recovery wiring fixes and actual API image smoke](LOCAL-WIRING-QUALIFICATION.md). No AWS installation or E2E acceptance follows from those local checks.
 
@@ -8,6 +8,35 @@ This is the single forward checklist after the installed-bundle work at
 `29120514c64f7c7b36b680e7251da96b19d849e2`. It replaces the earlier "next local
 projection" item, not the historical receipts or the existing runbooks. No AWS,
 image build, installation, approval publication or new budget was executed here.
+
+## Local closure update - 2026-10-25
+
+- Foundation source admission:36/36 PASS; signed official provider ZIP/h1 provenance,
+  all219 support pins and strict lock comparison pass. No lock content or approval
+  was changed. [Checker and WP1 follow-up](CHECKER-RESULT-AND-PROVIDER-ORIGIN.md)
+  records all236 WP1 unit cases across two source-identical batches, not a native
+  AWS security claim.
+- SQL backup/restore retains the existing cold-fence, exact backup/version/checksum,
+  private listener, immutable secret version and real local Bash/jq task projection
+  contracts. Unchanged suites/images were not rebuilt/repeated for this closure.
+- Observer/Sentinel retains CHECK_COMMAND_RESULT versus receipt-replay admission,
+  durable original store/outbox/cursor contracts and readable notices. A demonstrated
+  contradictory effect/audit could previously send a recovery title for FAILED.
+  The SNS boundary now refuses non-HEALTHY recovery or HEALTHY escalation before
+  Publish. All111 managed checks pass, including five new negative pairs, with
+  SDK doubles, no NAT provider and no email. [Qualification](../../integrations/notice-state-qualification.json).
+- No new sealed runtime package was assembled; old manifests remain historical.
+  The new notification guard must enter a freshly qualified immutable package
+  before any approved live use.
+
+The single external acceptance gate remains an **explicitly admitted integrated
+AWS cycle** that demonstrates the ordered chain below, after evidence resolves
+SSM execution admission and current identities/resources are reconciled. It must
+bind the restored private SQL database/new verified backup to Fargate's versioned
+connection, authenticated public read/decrypt/write, and the periodic observer to
+Sentinel persistence/notice/recovery, with owner viewing window and full retirement.
+No local mock, unit-case count, historical b1 inbox receipt or prepared-target az6
+result substitutes for that gate. No new cycle or stale budget is authorized here.
 
 ## Preserved evidence and the projection's limit
 

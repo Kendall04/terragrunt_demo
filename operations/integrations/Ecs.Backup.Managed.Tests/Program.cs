@@ -97,6 +97,16 @@ var snsUnknown=new Rig();await snsUnknown.Send(fixtures["failed"]);var e=snsUnkn
 Check("unknown SNS acceptance not marked delivered",snsUnknown.Store.ReadEffect(e.Id)!.Status==OutboxStatus.Uncertain && !snsUnknown.Store.ReadEffect(e.Id)!.LastResult!.Contains("secret-like"));
 var sn=new SnsNoticeAdapter(snsUnknown.Sns,snsUnknown.Settings,CancellationToken.None);Check("SNS Standard never claims idempotency",!sn.SupportsIdempotency);
 var audit=snsUnknown.Store.ReadAudit(e.AuditId)!;var execution=new EffectExecution(e.Id,e,audit,1);
+// A corrupted/crossed audit must not turn a failure or UNKNOWN into a recovery email.
+foreach(var (kind,status) in new[]{(EffectKind.ResolveIncident,"FAILED"),(EffectKind.ResolveIncident,"MISSING"),
+ (EffectKind.ResolveIncident,"STALE"),(EffectKind.ResolveIncident,"UNKNOWN"),(EffectKind.EscalateIncident,"HEALTHY")}) {
+ var beforeCalls=snsUnknown.Sns.Requests.Count;
+ var contradictory=execution with {Entry=e with {Intent=e.Intent! with {Kind=kind}},
+  Audit=audit with {SourceMetadata=audit.SourceMetadata!.SetItem("backupStatus",status)}};
+ Check("contradictory "+kind+"/"+status+" rejected before SNS",
+  sn.Execute(contradictory).Status==DeliveryStatus.PermanentFailure && snsUnknown.Sns.Requests.Count==beforeCalls);
+}
+
 snsUnknown.Sns.Failure=new AmazonSimpleNotificationServiceException("private denied"){StatusCode=HttpStatusCode.Forbidden};Check("SNS denial sanitized permanent no alternate",sn.Execute(execution).Status==DeliveryStatus.PermanentFailure);
 snsUnknown.Sns.Failure=new AmazonSimpleNotificationServiceException("private throttled"){StatusCode=HttpStatusCode.TooManyRequests};Check("SNS throttling retryable",sn.Execute(execution).Status==DeliveryStatus.RetryableFailure);
 snsUnknown.Sns.Failure=new AmazonSimpleNotificationServiceException("private 5xx"){StatusCode=HttpStatusCode.ServiceUnavailable};Check("SNS 5xx acceptance unknown",sn.Execute(execution).Status==DeliveryStatus.Unknown);

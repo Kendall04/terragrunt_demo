@@ -235,3 +235,21 @@ preflight snapshots/readback must preserve any pre-existing policy of that name.
 adds explicit real-check admission, finite durable publisher and bounded original-store
 reconciliation. It is not deployed. The historical native trial and its ten exported
 pending effects remain immutable; newer local cancellation tests do not rewrite it.
+
+## Backup notice state/intent boundary - 2026-10-25 local correction
+
+A local negative reproducer showed that a contradictory audit/effect could reach
+SNS as `ResolveIncident` while its backup status was FAILED. The production
+adapter now rejects `ResolveIncident` unless status is HEALTHY, and rejects a
+HEALTHY escalation. FAILED/MISSING/STALE/UNKNOWN never become a recovery email.
+Rejection is a permanent delivery failure before Publish, not a confirmed email
+or a successful drain; the original outbox retains that result for review.
+
+Five contradictory combinations were tested with zero SNS requests. All111
+managed checks passed using the real original reducer/ingestion/DynamoStore,
+S3 archive/outbox and SDK doubles; normal failure/recovery, UNKNOWN, dedupe,
+retry uncertainty, readable plain-text format and absence of NAT providers remain
+covered. No AWS, actual inbox delivery, new package publication or host timer ran.
+See [small source qualification](notice-state-qualification.json). Historical
+sealed packages/manifests are unchanged and do not contain this new guard; a
+future approved deployment needs a newly qualified immutable package.
