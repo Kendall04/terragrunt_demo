@@ -1,0 +1,174 @@
+{
+  "BaseCompressedLayersBytes": 44199179,
+  "BasePythonVersionObserved": "3.13.17",
+  "BaseRef": "docker.io/library/python@sha256:4cea12ab7d78a3312c85f8cab19b6971d4fe9704da25443986c0bc20a6678850",
+  "BaseTagObserved": "docker.io/library/python:3.13-slim-bookworm",
+  "BootstrapSourceCommit": "29120514c64f7c7b36b680e7251da96b19d849e2",
+  "CloudRuntimeApproval": false,
+  "ControlledLfContextReplayVerified": true,
+  "ExpectedImageConfigDigest": "sha256:c5869d49e9731dd03701b73f21f0d94cd105542ba64dadfdc8879df706af5a83",
+  "ExpectedLocalManifestDigest": "sha256:48b67dff2fb9b936975b73adfb15957522519f49928f9a34f68a5182a10fbba8",
+  "ExpectedLocalTag": "ecs-wp4-codebuild:5fe2809-local",
+  "Exporter": {
+    "BuildKit": "v0.34.0",
+    "BuildRunNetwork": "none",
+    "DockerfileFrontend": "1.28.0",
+    "ProvenanceAttestation": false,
+    "SbomAttestation": false
+  },
+  "GlobalToolchainChanged": false,
+  "HistoricalLambdaBaseRef": "public.ecr.aws/lambda/python@sha256:c05509c1a303e7ca10acc26782f530ff1a8573411132e2a67c1924d687a65a96",
+  "HistoricalLambdaImageDigest": "sha256:1f55128f3203d38f452405d9625011573865ac71710635eecd21ea17304162c4",
+  "HistoricalLambdaProvenance": "terraform/docs/first-real-dev-deployment.md:181; historical, not current installed state",
+  "IndependentUncachedRebuildClaimed": false,
+  "Jq": {
+    "Sha256": "b1c22172dd303f3be49e935aa56aa48a8b7a46e0bc838b4997d3bb451495870f",
+    "Source": "https://github.com/jqlang/jq/releases/tag/jq-1.8.2",
+    "Version": "1.8.2"
+  },
+  "LocalImageBytes": 271431922,
+  "Platform": "linux/amd64",
+  "PublishedImageUri": null,
+  "Qualification": {
+    "ActualImageBootstrapCases": 7,
+    "AwsCalls": 0,
+    "LocalImageTestsPassed": 44,
+    "SdkVersionedLoad": "STUBBED_RESPONSE_WITH_REAL_SDK",
+    "Skipped": 0
+  },
+  "SdkAlignment": "Image-only boto3 1.40.76/s3transfer 0.14.0 align AWS CLI 1.42.76 to existing botocore 1.40.76. Host boto3 1.40.0 unchanged.",
+  "SourceDateEpoch": 1792885786,
+  "Sources": [
+    "https://github.com/docker-library/python",
+    "https://pypi.org/project/boto3/1.40.76/",
+    "https://pypi.org/project/awscli/1.42.76/",
+    "https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref.html",
+    "https://docs.docker.com/build/ci/github-actions/reproducible-builds/"
+  ],
+  "SourcesSha256": {
+    "scripts/wp4d/Delivery.CodeBuild.Dockerfile": "10fbc71ee4f70993d3e2e9a2306ab131e8b7a354b38b09d6f752cd7dde54b531",
+    "scripts/wp4d/installed.py": "b89eca8c636d374f1aed76c20f525e1e5c1c307c4ae3c4ba019d8609ac00b704",
+    "scripts/wp4d/requirements-codebuild.lock": "d03293c8fb511e96f0ec27fd0dd0ac5d58ed0bed3b7daa609b12d45e6a842d6c",
+    "scripts/wp4d/runtime.py": "7abb65eadd62d3bede3bf563760b4a774ef1450a2f7ec349ff3ce859569df8e3"
+  },
+  "Status": "PINNED_LOCAL_IMAGE_INPUTS_NOT_CLOUD_APPROVAL",
+  "Wheels": [
+    {
+      "Bytes": 4631616,
+      "File": "awscli-1.42.76-py3-none-any.whl",
+      "MetadataUrl": "https://pypi.org/pypi/awscli/1.42.76/json",
+      "Name": "awscli",
+      "Sha256": "8a8ee644b00e5bacf019fde8061eda02264ebe43aefeb9ad40859cac10cb0e1e",
+      "Url": "https://files.pythonhosted.org/packages/e5/c4/722d7e0ea06187c405de18a20d76b72980e16dc486e365f2c6739cc42c5b/awscli-1.42.76-py3-none-any.whl",
+      "Version": "1.42.76"
+    },
+    {
+      "Bytes": 139359,
+      "File": "boto3-1.40.76-py3-none-any.whl",
+      "MetadataUrl": "https://pypi.org/pypi/boto3/1.40.76/json",
+      "Name": "boto3",
+      "Sha256": "8df6df755727be40ad9e309cfda07f9a12c147e17b639430c55d4e4feee8a167",
+      "Url": "https://files.pythonhosted.org/packages/90/8e/966263696eb441e8d1c4daa5fdfb3b4be10a96a23c418cc74c80b0b03d4e/boto3-1.40.76-py3-none-any.whl",
+      "Version": "1.40.76"
+    },
+    {
+      "Bytes": 14161738,
+      "File": "botocore-1.40.76-py3-none-any.whl",
+      "MetadataUrl": "https://pypi.org/pypi/botocore/1.40.76/json",
+      "Name": "botocore",
+      "Sha256": "fe425d386e48ac64c81cbb4a7181688d813df2e2b4c78b95ebe833c9e868c6f4",
+      "Url": "https://files.pythonhosted.org/packages/7f/6c/522e05388aa6fc66cf8ea46c6b29809a1a6f527ea864998b01ffb368ca36/botocore-1.40.76-py3-none-any.whl",
+      "Version": "1.40.76"
+    },
+    {
+      "Bytes": 85712,
+      "File": "s3transfer-0.14.0-py3-none-any.whl",
+      "MetadataUrl": "https://pypi.org/pypi/s3transfer/0.14.0/json",
+      "Name": "s3transfer",
+      "Sha256": "ea3b790c7077558ed1f02a3072fb3cb992bbbd253392f4b6e9e8976941c7d456",
+      "Url": "https://files.pythonhosted.org/packages/48/f0/ae7ca09223a81a1d890b2557186ea015f6e0502e9b8cb8e1813f1d8cfa4e/s3transfer-0.14.0-py3-none-any.whl",
+      "Version": "0.14.0"
+    },
+    {
+      "Bytes": 20419,
+      "File": "jmespath-1.1.0-py3-none-any.whl",
+      "MetadataUrl": "https://pypi.org/pypi/jmespath/1.1.0/json",
+      "Name": "jmespath",
+      "Sha256": "a5663118de4908c91729bea0acadca56526eb2698e83de10cd116ae0f4e97c64",
+      "Url": "https://files.pythonhosted.org/packages/14/2f/967ba146e6d58cf6a652da73885f52fc68001525b4197effc174321d70b4/jmespath-1.1.0-py3-none-any.whl",
+      "Version": "1.1.0"
+    },
+    {
+      "Bytes": 229892,
+      "File": "python_dateutil-2.9.0.post0-py2.py3-none-any.whl",
+      "MetadataUrl": "https://pypi.org/pypi/python-dateutil/2.9.0.post0/json",
+      "Name": "python-dateutil",
+      "Sha256": "a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427",
+      "Url": "https://files.pythonhosted.org/packages/ec/57/56b9bcc3c9c6a792fcbaf139543cee77261f3651ca9da0c93f5c1221264b/python_dateutil-2.9.0.post0-py2.py3-none-any.whl",
+      "Version": "2.9.0.post0"
+    },
+    {
+      "Bytes": 11050,
+      "File": "six-1.17.0-py2.py3-none-any.whl",
+      "MetadataUrl": "https://pypi.org/pypi/six/1.17.0/json",
+      "Name": "six",
+      "Sha256": "4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274",
+      "Url": "https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl",
+      "Version": "1.17.0"
+    },
+    {
+      "Bytes": 135717,
+      "File": "urllib3-2.8.0-py3-none-any.whl",
+      "MetadataUrl": "https://pypi.org/pypi/urllib3/2.8.0/json",
+      "Name": "urllib3",
+      "Sha256": "0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3",
+      "Url": "https://files.pythonhosted.org/packages/92/9d/c4e665119135114480843e7ab388fa94d8480650450e6f8e26b70d323a4c/urllib3-2.8.0-py3-none-any.whl",
+      "Version": "2.8.0"
+    },
+    {
+      "Bytes": 570472,
+      "File": "docutils-0.19-py3-none-any.whl",
+      "MetadataUrl": "https://pypi.org/pypi/docutils/0.19/json",
+      "Name": "docutils",
+      "Sha256": "5e1de4d849fee02c63b040a4a3fd567f4ab104defd8a5511fbbc24a8a017efbc",
+      "Url": "https://files.pythonhosted.org/packages/93/69/e391bd51bc08ed9141ecd899a0ddb61ab6465309f1eb470905c0c8868081/docutils-0.19-py3-none-any.whl",
+      "Version": "0.19"
+    },
+    {
+      "Bytes": 801626,
+      "File": "pyyaml-6.0.3-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+      "MetadataUrl": "https://pypi.org/pypi/PyYAML/6.0.3/json",
+      "Name": "PyYAML",
+      "Sha256": "0f29edc409a6392443abf94b9cf89ce99889a1dd5376d94316ae5145dfedd5d6",
+      "Url": "https://files.pythonhosted.org/packages/74/27/e5b8f34d02d9995b80abcef563ea1f8b56d20134d8f4e5e81733b1feceb2/pyyaml-6.0.3-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+      "Version": "6.0.3"
+    },
+    {
+      "Bytes": 25335,
+      "File": "colorama-0.4.6-py2.py3-none-any.whl",
+      "MetadataUrl": "https://pypi.org/pypi/colorama/0.4.6/json",
+      "Name": "colorama",
+      "Sha256": "4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6",
+      "Url": "https://files.pythonhosted.org/packages/d1/d6/3965ed04c63042e047cb6a3e6ed1a63a35087b6a609aa3a15ed8ac56c221/colorama-0.4.6-py2.py3-none-any.whl",
+      "Version": "0.4.6"
+    },
+    {
+      "Bytes": 34505,
+      "File": "rsa-4.7.2-py3-none-any.whl",
+      "MetadataUrl": "https://pypi.org/pypi/rsa/4.7.2/json",
+      "Name": "rsa",
+      "Sha256": "78f9a9bf4e7be0c5ded4583326e7461e3a3c5aae24073648b4bdfa797d78c9d2",
+      "Url": "https://files.pythonhosted.org/packages/e9/93/0c0f002031f18b53af7a6166103c02b9c0667be528944137cc954ec921b3/rsa-4.7.2-py3-none-any.whl",
+      "Version": "4.7.2"
+    },
+    {
+      "Bytes": 83135,
+      "File": "pyasn1-0.6.1-py3-none-any.whl",
+      "MetadataUrl": "https://pypi.org/pypi/pyasn1/0.6.1/json",
+      "Name": "pyasn1",
+      "Sha256": "0d632f46f2ba09143da3a8afe9e33fb6f92fa2320ab7e886e2d0f7672af84629",
+      "Url": "https://files.pythonhosted.org/packages/c8/f1/d6a797abb14f6283c0ddff96bbdd46937f64122b8c925cab503dd37f8214/pyasn1-0.6.1-py3-none-any.whl",
+      "Version": "0.6.1"
+    }
+  ]
+}

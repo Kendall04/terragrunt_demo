@@ -129,20 +129,41 @@ for review; missing native provenance/current installation/transport and a full
 platform admission are the remaining blockers. No further broad audit or repeat
 of unaffected local suites is needed before addressing those gates.
 
-## Image/bootstrap/config review package
+## Image/bootstrap/config — concrete local candidate, 2026-10-25
 
-The follow-up review packet references the immutable 2912051 archive and its
-exact DEV bundle; it does not duplicate an SDK, provider, image layer or old tar.
-It records SHA256 for `Controller.Dockerfile`, `runtime.py`, `installed.py` and the
-embedded bundle, plus a proposed protected-config delta. The runtime source and
-bundle are unchanged by the historical report tool. Default selection stays V1.
+The inputs are no longer an unspecified base/image proposal. The versioned
+[CodeBuild image recipe, lock and reproduction steps](../../../scripts/wp4d/CODEBUILD-IMAGE.md)
+pin the official Python amd64 base, 13 verified wheels and existing jq. The image
+was built with RUN network disabled, repeated from the identical LF context with
+the same manifest digest, and passed **44 local-image tests / zero skips**. Its
+manifest is `sha256:48b67dff2fb9b936975b73adfb15957522519f49928f9a34f68a5182a10fbba8`.
+The historical Lambda base is separately identified from repo evidence; it is
+not confused with CodeBuild or asserted to be currently installed. No registry
+push, image tar, AWS call, IAM/runtime installation or new budget occurred.
 
-The existing `scripts/wp4d/Controller.Dockerfile` is the Lambda bootstrap at `/var/task`. Normal delivery actually uses CodeBuild and its protected buildspec runs `python3 /opt/e1/scripts/wp4d/runtime.py` (`scripts/tests/security_root/wp4d.py`). The Lambda recipe alone does not assemble that path. The review context includes a separate minimal proposed CodeBuild recipe: it copies the same bootstrap files, clears the inherited entrypoint and checks the existing explicit E3 tools, with no dependency installation. It is not built or approved. CodeBuild needs a separately reviewed, immutable compatible base; Lambda needs its observed official base digest.
-That digest, resulting controller image digest, current protected configuration
-hash, native membership/roles and published S3 VersionId are **UNKNOWN** in this
-offline task. No image was built and no fake build/installation receipt is
-provided. The config delta therefore is explicitly **NOT INSTALLABLE**. A future
-review must approve its concrete image/bundle/current-config lineage together;
-the old bootstrap cannot silently load new bytes because the self-hash check
-refuses them. This source report adds no IAM actions, cloud resources, package
-read prefixes, deployment owners or persistent laptop settings.
+The remaining 24 unfilled acceptance slots are now separated, not blindly called
+24 unknown inputs: **2 reserved contract labels are known**, **5 historical
+metadata values are available locally**, and **17 actual-run values are absent**.
+The five are the retired target private address, VPC, subnet, DB SG and hash of
+its loopback precheck projection. Their state/native-readback sources agree, but
+they do not prove an application listener, current membership or fresh authority.
+The original gap report/receipts remain unchanged; no historical value is promoted
+to a current approved binding.
+
+### Exact 17 missing values and their required source
+
+| Fields | Required evidence in the next admitted native run |
+| --- | --- |
+| `source_launch_epoch`, `target_launch_epoch` | EC2 LaunchTime with exact instance/generation/account/region; never IMDS pendingTime |
+| `source_state`, `target_state`, `source_terminated_at` | Fresh exact-host control-plane readbacks; source terminated before enabling target writes, with confirmation time and old-writer/connection checks |
+| `recovery_requested_at`, `restore_started_at`, `restore_completed_at`, `observed_at` | Captured request, actual restore start/end+CHECKDB and final fresh observation; retain original precise UTC before epoch projection; never SSM dispatch times |
+| `task_security_groups`, `network_sha256` | Current protected membership plus native task/DB listener, VPC/subnet/SG/route observations, bound in the network receipt |
+| `source_fence_sha256` | Exact identity-bound native fence/write-inhibition receipt; no synthetic assertion or teardown-after-restore substitution |
+| `secret_arn`, `secret_version_id`, `secret_key_arn`, `connection_receipt_sha256` | Approved writer's exact connection-version metadata/readback and correct application key purpose; no secret values in state/logs and no substitution of backup CMK or SA/app password secret |
+| `restored_schema_sha256` | Native restored-schema fingerprint and independently qualified compatible migrations-off image; no guessed fingerprint or assumed schema rollback |
+
+These fields must be captured during the real run, not filled by more retrospective
+local JSON. The five available historical values also need fresh validation for
+the new run. The next action is to resolve execution admission/current metadata
+and review one complete platform plan, budget and withdrawal window. The built
+image is ready for that review; it supplies no new execution or approval authority.
