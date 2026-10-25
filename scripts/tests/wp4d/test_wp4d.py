@@ -537,3 +537,17 @@ class Membership(unittest.TestCase):
                          slots[1]["asg"])
         with self.assertRaises(ValueError): resolver.observe(aws, aws, aws, "assign_eip", 10,
                                                             selected_asg="foreign-asg")
+
+
+class ProtectedSelectorRequestTests(unittest.TestCase):
+    def test_valid_delivery_cannot_override_installer_contract_or_secret_version(self):
+        from scripts.workflow_requests import contract as requests
+        value={'action':'deliver','release_id':'sha256-'+'a'*64,'replicas':1}
+        operation='11111111-1111-4111-8111-111111111111'
+        accepted=requests.request('deploy-dev',json.dumps(value),operation)
+        self.assertEqual(json.loads(accepted['body']),value)
+        for key,selected in (('delivery_contract','SQL_RESTORE_NO_MIGRATIONS_V2'),
+                             ('profile','SQL_RESTORE_NO_MIGRATIONS_V2'),
+                             ('secret_version_id','b'*32),('environment','prod')):
+            with self.subTest(key=key),self.assertRaises(ValueError):
+                requests.request('deploy-dev',json.dumps(dict(value,**{key:selected})),operation)

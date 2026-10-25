@@ -6,6 +6,8 @@ The approval hash is an operator acknowledgement, not a substitute for owner con
 """
 import argparse
 import hashlib
+import ipaddress
+import urllib.request
 import json
 import os
 from pathlib import Path
@@ -52,7 +54,27 @@ ALTER ROLE db_backupoperator ADD MEMBER [{LOGINS[0]}];
 COMMIT;
 """
 
+def sql_endpoint(approval):
+    value=approval['Runtime'].get('SqlEndpoint','127.0.0.1')
+    if value=='127.0.0.1': return value
+    try:
+        address=ipaddress.ip_address(value)
+        require(address.version==4 and str(address)==value and any(address in ipaddress.ip_network(cidr)
+            for cidr in ('10.0.0.0/8','172.16.0.0/12','192.168.0.0/16')),'PRIVATE_SQL_ENDPOINT_REQUIRED')
+    except (ValueError,TypeError): raise ValueError('PRIVATE_SQL_ENDPOINT_REQUIRED') from None
+    require(re.fullmatch('i-[0-9a-f]{17}',approval['Runtime'].get('InstanceId','')) is not None,'EXACT_PRIVATE_HOST_REQUIRED')
+    return value
+
 class HostPort:
+    def identity(self):
+        opener=urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        token=opener.open(urllib.request.Request('http://169.254.169.254/latest/api/token',data=b'',method='PUT',
+            headers={'X-aws-ec2-metadata-token-ttl-seconds':'60'}),timeout=3).read(4097).decode()
+        require(0<len(token)<=4096,'IMDS_TOKEN_INVALID')
+        raw=opener.open(urllib.request.Request('http://169.254.169.254/latest/dynamic/instance-identity/document',
+            headers={'X-aws-ec2-metadata-token':token}),timeout=3).read(65537)
+        require(len(raw)<=65536,'IMDS_IDENTITY_TOO_LARGE')
+        return json.loads(raw)
     def environment(self):
         # Only IMDS can supply AWS auth: ignore profiles, files and ambient tokens.
         return {'PATH':'/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/mssql-tools18/bin',
@@ -64,9 +86,9 @@ class HostPort:
         run=subprocess.run(['aws','--region','us-east-1','--output','json',*args],env=self.environment(),text=True,capture_output=True,timeout=60)
         require(run.returncode==0 and len(run.stdout)<=65536,'INSTANCE_ROLE_READ_FAILED')
         return json.loads(run.stdout)
-    def sql(self,password,batch):
+    def sql(self,password,batch,endpoint='127.0.0.1'):
         env=self.environment(); env['SQLCMDPASSWORD']=password
-        run=subprocess.run(['/opt/mssql-tools18/bin/sqlcmd','-S','127.0.0.1','-C','-U','sa','-b','-l','10','-t','60'],input=batch,env=env,text=True,capture_output=True,timeout=75)
+        run=subprocess.run(['/opt/mssql-tools18/bin/sqlcmd','-S',endpoint,'-C','-U','sa','-b','-l','10','-t','60'],input=batch,env=env,text=True,capture_output=True,timeout=75)
         # Do not return sqlcmd diagnostics: SQL input may contain passwords.
         require(run.returncode==0,'SQL_BOOTSTRAP_FAILED_OR_UNKNOWN')
 
@@ -78,12 +100,13 @@ def operate(approval_path,config_path,root,apply=False,confirmation=None,port=No
     require(approval['Runtime']['ExpectedRole']==f'arn:aws:iam::{ACCOUNT}:role/{ROLE}' and approval['Runtime']['ExistingSaSecret']==SA,'REVIEW_ROLE_AND_SECRET_REQUIRED')
     require(digest(config_path.read_bytes())==approval['PayloadSha256']['config.json'] and config['Database']=='demodb','REVIEWED_CONFIG_REQUIRED')
     require(config['ExpectedEc2RoleName']==ROLE,'ROLE_CONFIG_MISMATCH')
+    endpoint=sql_endpoint(approval)
     no_links(root)
     base=root/'etc/terragrunt-demo/sql-backup'; directory=base/'credentials'
     dropin=root/'etc/systemd/system/sql-backup.service.d'
     result={'Status':'CREDENTIAL_PLAN','ApprovalSha256':approval_sha,'SqlLogins':list(LOGINS),'NewSecretsManagerSecrets':0,
             'CredentialDirectory':str(directory),'CredentialMode':'root:root 0600; directory 0700; encrypted EBS',
-            'SecretValuesPrinted':False,'SystemctlActions':[]}
+            'SecretValuesPrinted':False,'SystemctlActions':[],'SqlEndpoint':endpoint}
     if not apply: return result
     require(confirmation==approval_sha,'EXACT_SECRET_BOOTSTRAP_CONFIRMATION_REQUIRED')
     require(os.geteuid()==0,'ROOT_REQUIRED')
@@ -98,6 +121,11 @@ def operate(approval_path,config_path,root,apply=False,confirmation=None,port=No
     port=port or HostPort()
     identity=port.aws('sts','get-caller-identity')
     require(identity['Account']==ACCOUNT and identity['Arn'].startswith(f'arn:aws:sts::{ACCOUNT}:assumed-role/{ROLE}/'),'INSTANCE_ROLE_MISMATCH')
+    if endpoint!='127.0.0.1':
+        native=port.identity()
+        require(native.get('accountId')==ACCOUNT and native.get('region')=='us-east-1'
+            and native.get('instanceId')==approval['Runtime']['InstanceId'] and native.get('privateIp')==endpoint,
+            'PRIVATE_ENDPOINT_HOST_MISMATCH')
     value=port.aws('secretsmanager','get-secret-value','--secret-id',SA)
     sa=value.get('SecretString','')
     require(isinstance(sa,str) and 1<=len(sa)<=4096 and '\n' not in sa and '\r' not in sa,'INVALID_SA_SECRET')
@@ -107,10 +135,12 @@ def operate(approval_path,config_path,root,apply=False,confirmation=None,port=No
     proof={'SchemaVersion':1,'Status':'PREPARING_OR_UNKNOWN','ApprovalSha256':approval_sha,'Database':config['Database'],'Logins':list(LOGINS)}
     private_write(receipt,json.dumps(proof).encode())
     # A failure intentionally preserves the receipt and refuses blind retry.
-    port.sql(sa,sql_batch(config['Database'],backup_password,verify_password))
+    batch=sql_batch(config['Database'],backup_password,verify_password)
+    if endpoint=='127.0.0.1': port.sql(sa,batch)
+    else: port.sql(sa,batch,endpoint=endpoint)
     for name,user,password in [('backup-connection',LOGINS[0],backup_password),('verify-connection',LOGINS[1],verify_password)]:
         database=config['Database'] if name=='backup-connection' else 'master'
-        connection=f'Server=127.0.0.1,1433;Database={database};User ID={user};Password={password};Encrypt=True;TrustServerCertificate=True;Connect Timeout=10'
+        connection=f'Server={endpoint},1433;Database={database};User ID={user};Password={password};Encrypt=True;TrustServerCertificate=True;Connect Timeout=10'
         private_write(directory/name,connection.encode())
     dropin.mkdir(mode=0o755)
     unit='[Service]\nLoadCredential=\nLoadCredential=backup-connection:/etc/terragrunt-demo/sql-backup/credentials/backup-connection\nLoadCredential=verify-connection:/etc/terragrunt-demo/sql-backup/credentials/verify-connection\n'

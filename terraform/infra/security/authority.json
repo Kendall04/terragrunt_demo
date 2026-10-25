@@ -3139,7 +3139,7 @@
             "vpc_link_sg_id"
           ]
         },
-        "package_sha256": "05cba0c2eb61b8c5174033f3493abe4264ce2f6a19b2e08bb83d20e6b2c797c5"
+        "package_sha256": "3b5236b426d9c991bb46fa61a29a0e52d059935b02e07e64f88050b49fe4895e"
       },
       "environment-lifecycle/infra-dev": {
         "name": "e1-controller-infra-dev",
@@ -3197,7 +3197,7 @@
             "vpc_link_sg_id"
           ]
         },
-        "package_sha256": "331afbcd782734e78e89e8735903eaf61641e89a98ff7d9f7321a691a85d1b89"
+        "package_sha256": "4d02dca0b0517ca9396e713d67ab257b482b558e8f75b2c1df392a8a8fdc6c0f"
       },
       "request-gateway/infra-prod": {
         "name": "e1-gateway-infra-prod",
@@ -3256,7 +3256,7 @@
             "vpc_link_sg_id"
           ]
         },
-        "package_sha256": "bff1c10241fab18d11fad9ed94e036ec51f6c473f5d8b1b3e7e1bc09b899800e"
+        "package_sha256": "f6ec3e27b22a7f061aa28080ab33314fb517d979a5aaee5ce369db2af491dfdc"
       },
       "environment-lifecycle/infra-prod": {
         "name": "e1-controller-infra-prod",
@@ -3315,7 +3315,7 @@
             "vpc_link_sg_id"
           ]
         },
-        "package_sha256": "ebc6cba33a8d2c540d9767eca8f91414e8e6337853bfb9837c668d6274519e69"
+        "package_sha256": "ff81a4aa71dcd5118ae36f71528caa197ac9b9cbc0d230f6e2df36e9ead38a68"
       },
       "request-gateway/infra-high-risk-dev": {
         "name": "e1-gateway-infra-high-risk-dev",
@@ -3373,7 +3373,7 @@
             "vpc_link_sg_id"
           ]
         },
-        "package_sha256": "635b36664d6855e450cb6a00bd1b44e815ff689d9d56d400e52f8a0614cf764c"
+        "package_sha256": "5db12e55ce8dd5f798c5c6f3160362cabc6664ac0920b06b9a9c80a33e999ec0"
       },
       "environment-lifecycle/infra-high-risk-dev": {
         "name": "e1-controller-infra-high-risk-dev",
@@ -3431,7 +3431,7 @@
             "vpc_link_sg_id"
           ]
         },
-        "package_sha256": "47af276a9db45cdf91147d5941240e955749a79652b90dc599ca8c98c1f9fff1"
+        "package_sha256": "91c17ba81f3de59c62c809e4764f25fad2f999fe98271d0fdc515e3ea2e62a66"
       },
       "request-gateway/infra-high-risk-prod": {
         "name": "e1-gateway-infra-high-risk-prod",
@@ -3490,7 +3490,7 @@
             "vpc_link_sg_id"
           ]
         },
-        "package_sha256": "34db0c081229e0046939c318b936795a8b0086a21de7256fb85bbe8c305dae36"
+        "package_sha256": "402be64d69acaf348c640404c82feb4b80d2dc52b4d878dca5427177cae154bc"
       },
       "environment-lifecycle/infra-high-risk-prod": {
         "name": "e1-controller-infra-high-risk-prod",
@@ -3549,7 +3549,7 @@
             "vpc_link_sg_id"
           ]
         },
-        "package_sha256": "cbe7dbaa9f750b90383bb7ce260573234623b219e5e4f2307bd6016aa0f8fc26"
+        "package_sha256": "70124a7147f29a6a735801b263a3f1597f3e6a50272dcd8bb1fcd4c416b68c67"
       }
     },
     "installations": {},
@@ -3685,8 +3685,8 @@
       ".github/workflows/cd-scope.yml": "eb77443dcd775afaadba8a8adb68c58db55b96ddc3955ea5acd3c1ae5f96d5dd",
       "scripts/lifecycle/contract.py": "a15c4083aaa8f2eb72580075cb324c59ae90cea79c50909e618f4d808b3ab582",
       "scripts/wp4d/gateway.py": "aed8a94814a08127142e60cd589e4c6621a94c070d5ac133e2270a77cbaea5f6",
-      "scripts/normal_delivery/delivery.py": "32ecec29f0a103c9d26e7733dbc85887061fa37d973dfc9e9efd69815a12f7fd",
-      "scripts/normal_delivery/authorization.py": "5da787e3c77267a0d125b38895528d0c203aa40115d1e70e8c3686da20ef433b",
+      "scripts/normal_delivery/delivery.py": "1a4ab9b9e29f5c1a6343bc2702824ce2f9a9956d0d801c86e393c338016fd7ea",
+      "scripts/normal_delivery/authorization.py": "d7aee75e1b139c6e401103dd12ffbd3ca5fda777131c942abdced8674f63a3a6",
       ".github/workflows/e1-plan-dev.yml": "f129eea900b574cd2ff0ee7bd4f46a9f23922097a7f1c83790b43f6849f33dcf",
       ".github/workflows/e1-plan-prod.yml": "3cf7b5ad619ae5b43becc719a00d15587cffe7081f48aceba044bf0b1b8fe18a",
       ".github/workflows/e1-infra-dev.yml": "2088086cba8c1d9a5aa74b0509dccf675d0c507c3dc91d2cd63fd68364cbe227",
@@ -3699,76 +3699,7 @@
       ".github/workflows/e1-dev-emergency.yml": "a6b497e7f21795dfe665a44807ef77dd4854775e5f24d204d1b874385a66d88e",
       ".github/workflows/e1-prod-emergency.yml": "5314136503db6c93119f14c05a33534df646e0284b6a2c6809837b99ab266823"
     },
-    "approvals": {
-      "release": {
-        "identity": "release",
-        "environment": "neutral",
-        "account": "341936017254",
-        "region": "us-east-1",
-        "workflow_commit": "f0ba8ad1d6528d362693c8de932f935c8084529d",
-        "active": true,
-        "governance": "ADMIN_VERIFIED_G1_G9",
-        "gateway_version": "2",
-        "plan_binding": null,
-        "source_sha256": {
-          "ci/authority/governance.json": "97d1ba5258e937627e6c048360be76a582c6e49fc95124a8e355e9ec5ec940e0",
-          "scripts/workflow_requests/contract.py": "c1f41c8cc1fadc8b820c4c127e776937a30ba27f70ef16de1112b23c6d9d806e",
-          "scripts/workflow_requests/client.py": "898414be092fbbf99c472869cdf33c4642f71d3d7fa4dd48ec60148d12c5e3da",
-          "scripts/workflow_requests/render.py": "1f28b7f1bfefdaaae7f6ee6bae974d5120c5825e7963deb2fd9ef468c9041748",
-          ".github/workflows/cd-scope.yml": "eb77443dcd775afaadba8a8adb68c58db55b96ddc3955ea5acd3c1ae5f96d5dd",
-          "scripts/lifecycle/contract.py": "a15c4083aaa8f2eb72580075cb324c59ae90cea79c50909e618f4d808b3ab582",
-          "scripts/wp4d/gateway.py": "aed8a94814a08127142e60cd589e4c6621a94c070d5ac133e2270a77cbaea5f6",
-          "scripts/normal_delivery/delivery.py": "32ecec29f0a103c9d26e7733dbc85887061fa37d973dfc9e9efd69815a12f7fd",
-          "scripts/normal_delivery/authorization.py": "5da787e3c77267a0d125b38895528d0c203aa40115d1e70e8c3686da20ef433b",
-          ".github/workflows/e1-plan-dev.yml": "f129eea900b574cd2ff0ee7bd4f46a9f23922097a7f1c83790b43f6849f33dcf",
-          ".github/workflows/e1-plan-prod.yml": "3cf7b5ad619ae5b43becc719a00d15587cffe7081f48aceba044bf0b1b8fe18a",
-          ".github/workflows/e1-infra-dev.yml": "2088086cba8c1d9a5aa74b0509dccf675d0c507c3dc91d2cd63fd68364cbe227",
-          ".github/workflows/e1-infra-prod.yml": "cfe6b1f6a02e80ee1aa706d41ff23da646316846e23b259b57b1dc43e4a572e9",
-          ".github/workflows/e1-infra-high-risk-dev.yml": "b4c28c746e3070110076948da146266f7d64d80a7338e23ed6df0784ebde837d",
-          ".github/workflows/e1-infra-high-risk-prod.yml": "bbd044b6eb1232d9b3bbe34f0e7d3fbcec7f2a582165bc6bb6104d4b7360119b",
-          ".github/workflows/e1-release.yml": "e11b079eb937662d2f5603fb573dd14e924f25c0f3c763566ccae90072d6dc2b",
-          ".github/workflows/e1-dev-deploy.yml": "d8049cc260380bd1be0d2b914580c615eece8c0bc80e227f6adab7b6119b65f6",
-          ".github/workflows/e1-prod-promote.yml": "e1d020e1a71c1d320b6b13e6b91610843cfaffc84227464593a4c335b9c14b0c",
-          ".github/workflows/e1-dev-emergency.yml": "a6b497e7f21795dfe665a44807ef77dd4854775e5f24d204d1b874385a66d88e",
-          ".github/workflows/e1-prod-emergency.yml": "5314136503db6c93119f14c05a33534df646e0284b6a2c6809837b99ab266823"
-        },
-        "endpoint_readback": "arn:aws:lambda:us-east-1:341936017254:function:e1-gateway-release:2"
-      },
-      "deploy-dev": {
-        "identity": "deploy-dev",
-        "environment": "dev",
-        "account": "341936017254",
-        "region": "us-east-1",
-        "workflow_commit": "f0ba8ad1d6528d362693c8de932f935c8084529d",
-        "active": true,
-        "governance": "ADMIN_VERIFIED_G1_G9",
-        "gateway_version": "3",
-        "plan_binding": null,
-        "source_sha256": {
-          "ci/authority/governance.json": "97d1ba5258e937627e6c048360be76a582c6e49fc95124a8e355e9ec5ec940e0",
-          "scripts/workflow_requests/contract.py": "c1f41c8cc1fadc8b820c4c127e776937a30ba27f70ef16de1112b23c6d9d806e",
-          "scripts/workflow_requests/client.py": "898414be092fbbf99c472869cdf33c4642f71d3d7fa4dd48ec60148d12c5e3da",
-          "scripts/workflow_requests/render.py": "1f28b7f1bfefdaaae7f6ee6bae974d5120c5825e7963deb2fd9ef468c9041748",
-          ".github/workflows/cd-scope.yml": "eb77443dcd775afaadba8a8adb68c58db55b96ddc3955ea5acd3c1ae5f96d5dd",
-          "scripts/lifecycle/contract.py": "a15c4083aaa8f2eb72580075cb324c59ae90cea79c50909e618f4d808b3ab582",
-          "scripts/wp4d/gateway.py": "aed8a94814a08127142e60cd589e4c6621a94c070d5ac133e2270a77cbaea5f6",
-          "scripts/normal_delivery/delivery.py": "32ecec29f0a103c9d26e7733dbc85887061fa37d973dfc9e9efd69815a12f7fd",
-          "scripts/normal_delivery/authorization.py": "5da787e3c77267a0d125b38895528d0c203aa40115d1e70e8c3686da20ef433b",
-          ".github/workflows/e1-plan-dev.yml": "f129eea900b574cd2ff0ee7bd4f46a9f23922097a7f1c83790b43f6849f33dcf",
-          ".github/workflows/e1-plan-prod.yml": "3cf7b5ad619ae5b43becc719a00d15587cffe7081f48aceba044bf0b1b8fe18a",
-          ".github/workflows/e1-infra-dev.yml": "2088086cba8c1d9a5aa74b0509dccf675d0c507c3dc91d2cd63fd68364cbe227",
-          ".github/workflows/e1-infra-prod.yml": "cfe6b1f6a02e80ee1aa706d41ff23da646316846e23b259b57b1dc43e4a572e9",
-          ".github/workflows/e1-infra-high-risk-dev.yml": "b4c28c746e3070110076948da146266f7d64d80a7338e23ed6df0784ebde837d",
-          ".github/workflows/e1-infra-high-risk-prod.yml": "bbd044b6eb1232d9b3bbe34f0e7d3fbcec7f2a582165bc6bb6104d4b7360119b",
-          ".github/workflows/e1-release.yml": "e11b079eb937662d2f5603fb573dd14e924f25c0f3c763566ccae90072d6dc2b",
-          ".github/workflows/e1-dev-deploy.yml": "d8049cc260380bd1be0d2b914580c615eece8c0bc80e227f6adab7b6119b65f6",
-          ".github/workflows/e1-prod-promote.yml": "e1d020e1a71c1d320b6b13e6b91610843cfaffc84227464593a4c335b9c14b0c",
-          ".github/workflows/e1-dev-emergency.yml": "a6b497e7f21795dfe665a44807ef77dd4854775e5f24d204d1b874385a66d88e",
-          ".github/workflows/e1-prod-emergency.yml": "5314136503db6c93119f14c05a33534df646e0284b6a2c6809837b99ab266823"
-        },
-        "endpoint_readback": "arn:aws:lambda:us-east-1:341936017254:function:e1-gateway-deploy-dev:3"
-      }
-    },
+    "approvals": {},
     "live": "UNVERIFIED_NOT_DEPLOYED",
     "legacy_retirement": "WP7"
   }

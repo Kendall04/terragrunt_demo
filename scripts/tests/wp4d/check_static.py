@@ -38,7 +38,7 @@ def main():
     environment.update(AWS_EC2_METADATA_DISABLED='true', AWS_CONFIG_FILE=os.devnull,
                        AWS_SHARED_CREDENTIALS_FILE=os.devnull, CHECKPOINT_DISABLE='1', TF_IN_AUTOMATION='1')
     installs, images, bindings = installed_projection(authority)
-    cases = [('undeployed', {}, {}, {}), ('all-synthetic', installs, images, bindings)]
+    cases = [('undeployed', {}, {}, {}), ('all-synthetic', installs, images, bindings), ('dev-recovery-v2', installs, images, bindings)]
     missing = copy.deepcopy(installs); missing.pop('cleanup-recovery/cleanup-dev')
     cases.append(('missing-cleanup', missing, images, bindings))
     for field, bad in [('version_id', 'latest'), ('readback', 'UNVERIFIED'), ('sha256', 'f'*64)]:
@@ -65,7 +65,8 @@ def main():
             variables = {key:{'type':'any', 'default': value} for key,value in {
                 'authority': authority, 'account_id': ACCOUNT, 'region': REGION,
                 'wp4d_installations': i, 'wp4d_runtime_approvals': r,
-                'wp4d_environment_bindings': b, 'dev_delivery_binding': overlay}.items()}
+                'wp4d_environment_bindings': b, 'dev_delivery_binding': overlay,
+                'dev_delivery_contract': 'SQL_RESTORE_NO_MIGRATIONS_V2' if name=='dev-recovery-v2' else 'V1'}.items()}
             selected_locals=copy.deepcopy(locals_)
             if overlay is not None:selected_locals['evidence_bucket']=f'demo-release-artifacts-{ACCOUNT}'
             path.write_text(json.dumps({'variable':variables, 'locals':selected_locals}), encoding='utf-8')
@@ -85,6 +86,9 @@ def main():
                 selected = authority['wp4d']['selected'][binding]
                 config=observed['configurations'][binding]
                 assert config['binding']==binding
+                if binding=='normal-delivery/deploy-dev':
+                    assert config['delivery_contract']==('SQL_RESTORE_NO_MIGRATIONS_V2' if name=='dev-recovery-v2' else 'V1')
+                else:assert 'delivery_contract' not in config, 'V2 selector must not reach gateway/PROD/emergency/NAT'
                 expected_admin=(f'e1-evidence-{ACCOUNT}-{REGION}' if binding.startswith('nat-recovery/nat-dev/') else selected_locals['evidence_bucket'])
                 assert config['admin_bucket']==expected_admin, 'WP3 must not rebind existing DEV NAT authority'
                 compact=binding in ('request-gateway/deploy-dev','cleanup-recovery/cleanup-dev')
@@ -166,6 +170,30 @@ def main():
             expected=['build/release','normal-delivery/deploy-dev','request-gateway/deploy-dev','request-gateway/release'] if limited else sorted(authority['controller_compute']['nodes'])
             assert observed=={'nodes':expected,'buckets':['dev'] if limited else ['dev','prod']},observed
         print('Existing protected default and exact WP3/DEV installation scope PASS')
+        for owner in (root,tf):
+            variable=owner['variable']['dev_delivery_contract']
+            assert variable['default']=='V1' and variable['nullable'] is False
+            for choice,expected in (('V1',True),('SQL_RESTORE_NO_MIGRATIONS_V2',True),('caller-override',False)):
+                path.write_text(json.dumps({'variable':{'dev_delivery_contract':{'default':choice}},
+                    'locals':{'valid':variable['validation']['condition']}}),encoding='utf-8')
+                result=subprocess.run([terraform,'console','-no-color'],input='jsonencode(local.valid)\n',text=True,capture_output=True,cwd=directory,env=environment,timeout=30)
+                assert result.returncode==0,result.stderr
+                assert console_json(result.stdout)==expected
+        print('Root/module protected recovery enum rejects caller-selected contracts PASS')
+        ids=['subnet-'+'a'*17,'subnet-'+'b'*17]
+        condition='${var.recovery_target_subnet_id == null ? true : can(regex("^subnet-[0-9a-f]{8,17}$", var.recovery_target_subnet_id)) && contains(var.private_subnet_ids, var.recovery_target_subnet_id)}'
+        source=(wp4d.ROOT/'terraform/modules/target/dev/data/ordinary-variables.tf').read_text()
+        assert condition[2:-1] in source
+        main=(wp4d.ROOT/'terraform/modules/target/dev/data/ordinary-main.tf').read_text()
+        assert 'coalesce(var.recovery_target_subnet_id, var.private_subnet_ids[0])' in main
+        for selected,expected in ((None,True),(ids[0],True),(ids[1],True),('subnet-'+'c'*17,False),('',False),('subnet-invalid',False)):
+            path.write_text(json.dumps({'variable':{'private_subnet_ids':{'default':ids},
+                'recovery_target_subnet_id':{'type':'string','default':selected}},
+                'locals':{'valid':condition,'selected':'${coalesce(var.recovery_target_subnet_id, var.private_subnet_ids[0])}'}}),encoding='utf-8')
+            result=subprocess.run([terraform,'console','-no-color'],input='jsonencode(local.valid)\n',text=True,capture_output=True,cwd=directory,env=environment,timeout=30)
+            assert result.returncode==0,result.stderr
+            assert console_json(result.stdout)==expected
+        print('Real Terraform recovery subnet: original default, either reviewed subnet, foreign/invalid negatives PASS')
 
 
 

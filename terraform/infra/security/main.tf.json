@@ -122,6 +122,15 @@
         "condition": "${var.dev_delivery_binding==null ? true : try(var.dev_delivery_binding.schema==\"E1_WP4D_PROTECTED_ENVIRONMENT_V1\" && var.dev_delivery_binding.environment==\"dev\" && var.dev_delivery_binding.account==var.aws_account_id && var.dev_delivery_binding.region==var.aws_region && var.dev_delivery_binding.repository==\"demo-shared-demo-ms\",false)}",
         "error_message": "Only exact-account DEV delivery with the neutral qualified repository is supported."
       }
+    },
+    "dev_delivery_contract": {
+      "type": "string",
+      "default": "V1",
+      "nullable": false,
+      "validation": {
+        "condition": "${contains([\"V1\",\"SQL_RESTORE_NO_MIGRATIONS_V2\"],var.dev_delivery_contract)}",
+        "error_message": "Only protected V1 or DEV SQL recovery V2 is supported."
+      }
     }
   },
   "provider": {
@@ -168,7 +177,8 @@
       "wp5_environment_bindings": "${local.authority.wp5.environment_bindings}",
       "dev_operator_arn": "${var.dev_operator_arn}",
       "dev_cicd_installation_only": "${var.dev_cicd_installation_only}",
-      "dev_delivery_binding": "${var.dev_delivery_binding}"
+      "dev_delivery_binding": "${var.dev_delivery_binding}",
+      "dev_delivery_contract": "${var.dev_delivery_contract}"
     },
     "protected_resources": {
       "source": "./modules/protected_resources",

@@ -43,6 +43,8 @@ def wiring(doc):
                     text = select(text, lambda h: '"aws_iam_' not in h)
                     text = text.replace("aws_iam_instance_profile.ec2_profile.name", 'split("/", local.expected["' + env + '/sql-profile"])[1]')
                     text = text.replace("var.kms_key_id", "null")
+                    if env == "dev":
+                        text = text.replace("subnet_id                   = var.private_subnet_ids[0]", "subnet_id                   = coalesce(var.recovery_target_subnet_id, var.private_subnet_ids[0])")
                     text = text.replace("var.sql_sa_secret_arn", 'local.expected["' + env + '/sa"]').replace("var.sql_app_secret_arn", 'local.expected["' + env + '/db-user"]')
                     # The immutable CURRENT script is a source input, never an
                     # ordinary caller path. Its digest is separately pinned.
@@ -93,6 +95,8 @@ def wiring(doc):
                     if layer == "data":
                         remove.add("kms_key_id")
                     text = select(text, lambda h: (h.startswith('variable "alert_email"') if layer == "shared" else not any(h.startswith('variable "' + name + '"') for name in remove)))
+                if env == "dev" and layer == "data" and rel == "variables.tf":
+                    text += '\nvariable "recovery_target_subnet_id" {\n  description = "Explicit reviewed recovery target; null preserves original placement. Membership is not native VPC/AZ proof."\n  type = string\n  default = null\n  nullable = true\n  validation {\n    condition = var.recovery_target_subnet_id == null ? true : can(regex("^subnet-[0-9a-f]{8,17}$", var.recovery_target_subnet_id)) && contains(var.private_subnet_ids, var.recovery_target_subnet_id)\n    error_message = "Recovery target must be one of the reviewed private subnets."\n  }\n}\n'
                 if env == "dev" and layer == "shared":
                     if rel == "main.tf":
                         text = text.replace('resource "aws_sns_topic_subscription" "alerts_email" {',

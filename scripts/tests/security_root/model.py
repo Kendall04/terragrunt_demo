@@ -302,6 +302,8 @@ def wiring(doc):
         'condition':expression('var.dev_delivery_binding==null ? true : try(var.dev_delivery_binding.schema=="E1_WP4D_PROTECTED_ENVIRONMENT_V1" && var.dev_delivery_binding.environment=="dev" && var.dev_delivery_binding.account==var.aws_account_id && var.dev_delivery_binding.region==var.aws_region && var.dev_delivery_binding.repository=="demo-shared-demo-ms",false)'),
         'error_message':'Only exact-account DEV delivery with the neutral qualified repository is supported.'}}
     root['module']['controller_compute']['dev_delivery_binding']=expression('var.dev_delivery_binding')
+    root['variable']['dev_delivery_contract']={"type":"string","default":"V1","nullable":False,"validation":{"condition":expression('contains(["V1","SQL_RESTORE_NO_MIGRATIONS_V2"],var.dev_delivery_contract)'),"error_message":"Only protected V1 or DEV SQL recovery V2 is supported."}}
+    root['module']['controller_compute']['dev_delivery_contract']=expression('var.dev_delivery_contract')
 
     foundations=wp5.foundations()
     wp6.extend(root,child,compute_module,foundations,doc)

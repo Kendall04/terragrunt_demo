@@ -1,7 +1,7 @@
 resource "aws_instance" "db" {
   ami                         = var.protected_sql_ami
   instance_type               = var.instance_type
-  subnet_id                   = var.private_subnet_ids[0]
+  subnet_id                   = coalesce(var.recovery_target_subnet_id, var.private_subnet_ids[0])
   vpc_security_group_ids      = [var.db_instance_sg_id]
   iam_instance_profile        = split("/", local.expected["dev/sql-profile"])[1]
   key_name                    = var.key_name

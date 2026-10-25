@@ -69,6 +69,16 @@ class FoundationTests(unittest.TestCase):
         self.assertEqual(len(doc["request_identities"]), 11)
         self.assertEqual(set(doc["ownership"]["categories"]), CATEGORIES)
 
+    def test_dev_recovery_selection_is_explicit_security_root_only(self):
+        generated=wiring(load_authority(ROOT))
+        root=generated['terraform/infra/security/main.tf.json']
+        self.assertEqual(root['variable']['dev_delivery_contract']['default'],'V1')
+        self.assertEqual(root['module']['controller_compute']['dev_delivery_contract'],'${var.dev_delivery_contract}')
+        self.assertFalse(root['variable']['dev_delivery_contract']['nullable'])
+        child=generated['terraform/infra/security/modules/controller_compute/main.tf.json']
+        self.assertEqual(child['variable']['dev_delivery_contract']['default'],'V1')
+        self.assertIn('key == "normal-delivery/deploy-dev" ?', child['locals']['wp4d_config'])
+
     def test_all_protected_classes_have_external_security_owner(self):
         doc = load_authority(ROOT)
         self.assertEqual(set(doc["ownership"]["protected_classes"]), PROTECTED)

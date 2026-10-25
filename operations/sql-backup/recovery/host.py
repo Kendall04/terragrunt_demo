@@ -99,11 +99,12 @@ def options(name):
             'ProposedMaxAgeHours': 2, 'RetainLocalVerifiedBackups': 2}
 
 
-def connection(user, password, database):
+def connection(user, password, database, endpoint='127.0.0.1'):
     # SqlClient quote escapes semicolons, braces and embedded double quotes.
     require(isinstance(password, str) and password and '\n' not in password and '\r' not in password, 'INVALID_CREDENTIAL')
+    runtime_verify.checked_endpoint(endpoint)
     quoted = '"' + password.replace('"', '""') + '"'
-    return f'Server=127.0.0.1;Database={database};User Id={user};Password={quoted};Encrypt=True;TrustServerCertificate=True;'
+    return f'Server={endpoint};Database={database};User Id={user};Password={quoted};Encrypt=True;TrustServerCertificate=True;'
 
 
 class Port:
@@ -219,6 +220,24 @@ class Port:
                           '--query', 'SecretString', '--output', 'text'], timeout=20).rstrip('\n')
         require(value and value != 'None', 'SECRET_UNAVAILABLE')
         return value
+
+    def connection_aws(self, *arguments):
+        # Deliberately no profiles, caller tokens, AWS SDK retries or raw output.
+        env={'PATH':'/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
+             'HOME':'/nonexistent','AWS_CONFIG_FILE':'/dev/null','AWS_SHARED_CREDENTIALS_FILE':'/dev/null',
+             'AWS_REGION':REGION,'AWS_DEFAULT_REGION':REGION,'AWS_EC2_METADATA_V1_DISABLED':'true',
+             'AWS_MAX_ATTEMPTS':'1','AWS_PAGER':''}
+        return json.loads(self.run(['aws','--region',REGION,'--output','json',*arguments],env=env,timeout=30))
+
+    def put_connection_version(self, arn, version, stage, value, directory):
+        # Value exists only in this root-private EC2 file, never argv/stdout/state.
+        path=directory/('connection-value-'+version+'.json')
+        private_write(path, {'SecretId':arn,'ClientRequestToken':version,
+                             'VersionStages':[stage],'SecretString':value})
+        try:
+            return self.connection_aws('secretsmanager','put-secret-value','--cli-input-json','file://'+str(path))
+        finally:
+            path.unlink()  # only the file just created; unknown mutation is not retried
 
     def sql(self, password, statement):
         env = dict(os.environ, SQLCMDPASSWORD=password)
@@ -340,6 +359,55 @@ def check_application_listener(port, value, identity):
             'PublicApiRecoveryProven':False,'FullEcsRecoveryProven':False}
 
 
+def write_connection_version(port, value, identity, directory, approved_sha256):
+    """Future explicit host action; hash acknowledgement is not owner authority.
+
+    Uses the existing listener/fence validators and fresh native reads. Metadata
+    never activates ECS. CLI main records STARTED before this mutating action.
+    """
+    from prepare import service_plan, encoded
+    service_plan(value)
+    expected=hashlib.sha256(encoded(value)).hexdigest()
+    require(isinstance(approved_sha256,str) and re.fullmatch('[a-f0-9]{64}',approved_sha256)
+            and approved_sha256==expected,'EXACT_CONNECTION_WRITE_ACK_REQUIRED')
+    age=(timestamp(utc())-timestamp(value['ReviewedUtc'])).total_seconds()
+    require(0<=age<=600,'FRESH_CONNECTION_REVIEW_REQUIRED')
+    target=value['ColdReceipt']['Target']
+    require(all(identity[k]==target[k] for k in ('accountId','region','instanceId','availabilityZone')),
+            'CONNECTION_TARGET_IDENTITY_MISMATCH')
+    before=check_application_listener(port,value,identity)
+    conn=value['Connection'];arn=conn['SecretArn'];version=conn['VersionId']
+    stage='ecs-recovery-'+value['Trial']
+    metadata=port.connection_aws('secretsmanager','describe-secret','--secret-id',arn)
+    require(metadata.get('ARN')==arn and metadata.get('KmsKeyId')==conn['SecretKeyArn']
+            and not metadata.get('DeletedDate'),'CONNECTION_SECRET_METADATA_MISMATCH')
+    stages=metadata.get('VersionIdsToStages')
+    require(type(stages) is dict and len([v for v,labels in stages.items() if 'AWSCURRENT' in labels])==1
+            and version not in stages and all(stage not in labels for labels in stages.values()),
+            'CONNECTION_VERSION_OR_STAGE_REQUIRES_REVIEW')
+    password=port.secret(APP_SECRET)
+    secret=connection('recovery_app',password,conn['Database'],endpoint=conn['Endpoint'])
+    try:
+        result=port.put_connection_version(arn,version,stage,secret,directory)
+    finally:
+        password=secret=None
+    require(result.get('ARN')==arn and result.get('VersionId')==version and result.get('VersionStages')==[stage],
+            'CONNECTION_PUT_RESULT_UNKNOWN')
+    after=port.connection_aws('secretsmanager','describe-secret','--secret-id',arn)
+    require(after.get('ARN')==arn and after.get('KmsKeyId')==conn['SecretKeyArn']
+            and not after.get('DeletedDate') and after.get('VersionIdsToStages')==dict(stages,**{version:[stage]}),
+            'CONNECTION_STAGES_CHANGED_OR_UNKNOWN')
+    final=check_application_listener(port,value,identity)
+    require(before['NetworkBinding']==final['NetworkBinding'],'CONNECTION_NETWORK_CHANGED')
+    receipt={'Status':'CONNECTION_VERSION_WRITTEN_METADATA_VERIFIED','Trial':value['Trial'],
+             'ServiceInputSha256':expected,'Target':target,'SecretArn':arn,
+             'VersionId':version,'CustomStage':stage,'SecretKeyArn':conn['SecretKeyArn'],
+             'Endpoint':conn['Endpoint'],'Database':conn['Database'],'ObservedUtc':utc(),
+             'OriginalStagesPreserved':True,'PlaintextExported':False,'AllowsActivation':False,
+             'OwnerAuthorityEstablishedByAcknowledgement':False,'FullEcsRecoveryProven':False}
+    return dict(receipt,ConnectionReceiptSha256=hashlib.sha256(encoded(receipt)).hexdigest())
+
+
 def source(port, name, config, backup, api, identity):
     sa = port.secret(SA_SECRET)
     runtime = checked_runtime(port, identity, sa)
@@ -432,13 +500,14 @@ def restore(port, name, config, backup, api, identity, source_record, failure, c
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('action', choices=['source', 'quiesce', 'restore', 'listener-network-check', 'listener-check'])
+    p.add_argument('action', choices=['source', 'quiesce', 'restore', 'listener-network-check', 'listener-check', 'connection-version'])
     p.add_argument('--trial', required=True)
     p.add_argument('--directory', type=Path, required=True)
     p.add_argument('--source', type=Path)
     p.add_argument('--failure', type=Path)
     p.add_argument('--cold-request', type=Path)
     p.add_argument('--listener-plan', type=Path)
+    p.add_argument('--connection-write-approved-sha256')
     p.add_argument('--backup', type=Path)
     p.add_argument('--api', type=Path)
     p.add_argument('--backup-sha256')
@@ -449,7 +518,7 @@ def main():
     p.add_argument('--expected-az')
     a = p.parse_args()
     trial(a.trial)
-    require(a.listener_plan is None or a.action in ('listener-network-check','listener-check'), 'LISTENER_PLAN_ACTION_MISMATCH')
+    require(a.listener_plan is None or a.action in ('listener-network-check','listener-check','connection-version'), 'LISTENER_PLAN_ACTION_MISMATCH')
     if not a.execute:
         print(json.dumps({'Status': 'HOST_PLAN_ONLY', 'Action': a.action, 'AllowsCreation': False, 'ReadsSecrets': False}))
         return
@@ -469,11 +538,14 @@ def main():
     port.record_fence = record_fence
     identity = port.identity()
     bind_identity(identity, a.expected_instance_id, a.expected_az)
-    if a.action in ('listener-network-check','listener-check'):
+    if a.action in ('listener-network-check','listener-check','connection-version'):
         require(a.listener_plan is not None, 'EXPLICIT_LISTENER_PLAN_REQUIRED')
         value = json.loads(a.listener_plan.read_text(encoding='utf-8'))
         require(value['Trial'] == a.trial, 'WRONG_TRIAL')
-        result = check_application_network(port,value,identity) if a.action == 'listener-network-check' else check_application_listener(port, value, identity)
+        if a.action=='connection-version':
+            result=write_connection_version(port,value,identity,a.directory,a.connection_write_approved_sha256)
+        else:
+            result = check_application_network(port,value,identity) if a.action == 'listener-network-check' else check_application_listener(port, value, identity)
     elif a.action == 'quiesce':
         source_record = json.loads(a.source.read_text())
         require(source_record['Trial'] == a.trial, 'WRONG_TRIAL')

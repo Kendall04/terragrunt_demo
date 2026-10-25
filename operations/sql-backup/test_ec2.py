@@ -145,6 +145,48 @@ class Credential(unittest.TestCase):
     def test_sql_names_and_passwords_cannot_inject_statements(self):
         with self.assertRaisesRegex(ValueError,'DATABASE'):credentials.sql_batch('demodb];DROP DATABASE x','Synthetic!'+'a'*48,'Synthetic!'+'b'*48)
         with self.assertRaisesRegex(ValueError,'PASSWORD'):credentials.sql_batch('demodb',"';DROP LOGIN sa;--",'Synthetic!'+'b'*48)
+    def private_approval(self,endpoint='10.77.1.8'):
+        approval=json.loads((self.out/'approval.json').read_text())
+        approval['Runtime'].update(SqlEndpoint=endpoint,InstanceId='i-'+'2'*17)
+        (self.out/'approval.json').write_text(json.dumps(approval))
+        self.confirm=hashlib.sha256((self.out/'approval.json').read_bytes()).hexdigest()
+        return approval
+    def test_private_endpoint_is_explicit_and_plan_only(self):
+        self.private_approval()
+        result=self.call();self.assertEqual(result['SqlEndpoint'],'10.77.1.8')
+        self.assertEqual(self.host.calls,[])
+    def test_wildcard_public_and_noncanonical_endpoints_refuse_before_secret_access(self):
+        for bad in ('0.0.0.0','::','8.8.8.8','169.254.169.254','10.077.1.8','10.77.1.8;bad'):
+            self.private_approval(bad)
+            with self.assertRaisesRegex(ValueError,'PRIVATE_SQL_ENDPOINT'):self.call()
+        self.assertEqual(self.host.calls,[])
+    @unittest.skipUnless(os.geteuid()==0,'root only inside isolated fixture')
+    def test_private_credentials_and_sql_bootstrap_use_same_bound_own_ip(self):
+        from unittest.mock import Mock
+        self.private_approval()
+        self.host.identity=Mock(return_value={'accountId':plan.ACCOUNT,'region':'us-east-1',
+            'instanceId':'i-'+'2'*17,'privateIp':'10.77.1.8'})
+        self.host.sql=Mock()
+        result=self.call(True,self.confirm)
+        self.assertEqual(result['Status'],'PROVISIONED_NOT_STARTED')
+        self.assertEqual(self.host.sql.call_args.kwargs,{'endpoint':'10.77.1.8'})
+        base=self.system/'etc/terragrunt-demo/sql-backup/credentials'
+        for name in ('backup-connection','verify-connection'):
+            self.assertIn('Server=10.77.1.8,1433;', (base/name).read_text())
+        self.assertNotIn('SECRET-SENTINEL',json.dumps(result))
+    @unittest.skipUnless(os.geteuid()==0,'root only inside isolated fixture')
+    def test_foreign_native_ip_or_generation_never_reads_sa_secret(self):
+        from unittest.mock import Mock
+        self.private_approval()
+        self.host.identity=Mock(return_value={'accountId':plan.ACCOUNT,'region':'us-east-1',
+            'instanceId':'i-'+'2'*17,'privateIp':'10.77.1.9'})
+        with self.assertRaisesRegex(ValueError,'PRIVATE_ENDPOINT_HOST'):self.call(True,self.confirm)
+        self.assertEqual(len(self.host.calls),1)
+        self.assertFalse((self.system/'etc/terragrunt-demo/sql-backup/credentials').exists())
+    def test_new_endpoint_cannot_reuse_old_review_acknowledgement(self):
+        old=self.confirm;self.private_approval()
+        with self.assertRaisesRegex(ValueError,'CONFIRMATION'):self.call(True,old)
+        self.assertEqual(self.host.calls,[])
     def test_host_aws_environment_ignores_all_existing_credentials(self):
         env=credentials.HostPort().environment()
         self.assertNotIn('AWS_PROFILE',env);self.assertNotIn('AWS_ACCESS_KEY_ID',env)

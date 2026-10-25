@@ -1,5 +1,7 @@
 # ECS integrated recovery proposal — local preparation, not authorization
 
+Local implementation update: [four wiring fixes and actual .NET10 image qualification](LOCAL-WIRING-QUALIFICATION.md). The preparation gaps described below record the original planning checkpoint; the four code changes and local image smoke have now passed. Native AWS/SSM/release installation gates remain. Original sealed proposal ZIP is preserved unchanged.
+
 Prepared 2026-10-25 against source `bc57dc44ddf5dd60cfc4c38db5a5bb0fb6b404fa`.
 Proposed run `r20261025i1`, account `341936017254`, region `us-east-1`.
 **No AWS calls, builds, publication, installation or permission changes were made for this proposal.**
@@ -145,9 +147,9 @@ after denial without new relevant authority.
 | Mapping callbacks | Create/Update mapping constrained by non-optional exact ingest FunctionArn where supported. Get/DeleteEventSourceMapping need regional Resource `*` with the observed provider callback: **real ability to read/delete other mappings in us-east-1**, although execution uses only the recorded trial UUID. Explicitly disclose, expire and remove; do not assert UUID/tag isolation or use permissive IfExists as protection. |
 | Regional inventories | Necessary EC2/SSM/Lambda/logs/metrics Get/List/Describe may reveal other regional metadata. No new SendCommand, SessionManager or reboot grant is proposed. SSM remains a separate unresolved admission prerequisite. |
 | Backend policy | Add only exact new Sentinel state/lock access to existing operator/backend restrictions. No extra workspace prefixes, deletion of prior states or access to EKS. Preserve/read back current document and reverse own delta with concurrency check. |
-| SQL role | Existing `arn:aws:iam::341936017254:role/demo-dev-data-sql-ec2-role`; profile `demo-dev-data-sql-ec2-profile`. Add exact queue SendMessage, exact new backup prefixes, and regional DescribeInstances for positive source/target generation fencing. The latter exposes regional metadata; code must select the two recorded IDs. |
+| SQL role | Existing `arn:aws:iam::341936017254:role/demo-dev-data-sql-ec2-role`; profile `demo-dev-data-sql-ec2-profile`. Add exact queue SendMessage, exact new backup prefixes, and regional DescribeInstances/DescribeSubnets/DescribeSecurityGroups for positive source/target generation and network checks. The latter exposes regional metadata; code must select the two recorded IDs. |
 | Backup S3/KMS | Bucket `terragrunt-demo-sql-backup-341936017254-fa48a32dc9`; prefixes `terragrunt-demo/dev/sql-backups/ec2-20261016/r20261025i1s/runs/*` and `.../r20261025i1t/runs/*`. List only those prefixes; versioned backup read/write required by source/restore. CMK `arn:aws:kms:us-east-1:341936017254:key/30f01bb6-03b5-4e5f-b7a8-e304fe607ced`: GenerateDataKey/Decrypt via S3 and exact encryption context. Check actual BucketKey context first; no silent bucket-wide fallback. Reverse only run-specific statements. Original prefixes/retentions unchanged. |
-| Connection secret writer | Resolve existing name `demo/dev/app/db-connection-string` with DescribeSecret to obtain the actual suffixed ARN. SQL role temporary PutSecretValue/DescribeSecret/ListSecretVersionIds on that ARN only, private EC2 material only. Protected UUID/version token and custom stage R; require an existing AWSCURRENT first. **IAM ability affects all sessions of that role and could write other values/stages on that secret; code's one-version rule is not an IAM guarantee.** No CreateSecret/DeleteSecret. |
+| Connection secret writer | Resolve existing name `demo/dev/app/db-connection-string` with DescribeSecret to obtain the actual suffixed ARN. SQL role temporary PutSecretValue/DescribeSecret on that ARN only, private EC2 material only. Protected UUID/version token and custom stage `ecs-recovery-<Trial>`; require an existing AWSCURRENT first. **IAM ability affects all sessions of that role and could write other values/stages on that secret; code's one-version rule is not an IAM guarantee.** No CreateSecret/DeleteSecret. |
 | App roles/keys | Existing `demo-dev-app-api-{blue,green}-exec-role`: GetSecretValue on that exact connection secret and actual secret CMK decrypt if required. Task roles keep application-text Encrypt/Decrypt with `arn:aws:kms:us-east-1:341936017254:key/50d3fe36-8128-4d09-ac13-8f5536a230a7`. Backup CMK is distinct. No task secret writes or backup-bucket access. Review current policy before adding only a demonstrated missing grant. |
 | Publication/factory | Existing protected publisher only: immutable controller image in `e1-wp4d-normal-delivery-deploy-dev`, versioned bundle in `e1-evidence-341936017254-us-east-1`, key `bundles/sha256/dc91ab31610de2b050ee077f3c55b6e29ffd06da1065609840c04d2ca90e9406.json`. Real VersionId and ECR digest readback precede protected opt-in. No requester ECR writer or runtime override. Existing gateway/cleanup identities preserved. |
 | Existing controllers and NAT binding | Reuse `e1-controller-deploy-dev` / `e1-controller-deploy-dev-exec`, `e1-gateway-deploy-dev`, `e1-cleanup-recovery-cleanup-dev`, and `e1-nat-recovery-nat-dev-{assign-eip,change-rt,disable-sdc}` with their existing dedicated execution roles. Bootstrap network plan first; admin binds only actual new EIP/SG/route/instance/launch-template identities to the protected NAT slots before ASG creation. Preserve original bindings for reversal. Current controller permissions and generation ownership must be read back; this is not a grant for arbitrary NAT changes or use of another controller to bypass a denial. |
@@ -265,8 +267,8 @@ fits USD6. No automatic AWS bill cap is claimed.
 
 | Increment, conservative 7.5h allowance | USD |
 | --- | ---: |
-| SQL t3.medium STANDARD, sequential source/target | 0.3120 |
-| Two NAT t3.nano STANDARD | 0.0780 |
+| SQL t3.medium STANDARD, sequential source/target, conservative .0418/h allowance | 0.3135 |
+| Two NAT t3.micro STANDARD, matching protected launch contract | 0.1560 |
 | Two public NAT IPv4 addresses | 0.0750 |
 | Internal ALB, allowance one LCU | 0.2288 |
 | Fargate .25vCPU/.5GiB, conservatively two tasks all 7.5h | 0.1851 |
@@ -276,7 +278,7 @@ fits USD6. No automatic AWS bill cap is claimed.
 | Network/transfer allowance | 0.5000 |
 | API/Lambda/DynamoDB/SQS/SNS/S3/KMS request allowance | 0.2500 |
 | First-month incremental retained image/state/evidence allowance | 0.5000 |
-| Cleanup/rate/usage uncertainty reserve | 2.3078 |
+| Cleanup/rate/usage uncertainty reserve | 2.2283 |
 | **Requested maximum new spend** | **6.0000** |
 
 These are estimates, not an invoice. Bound the trial to <=2,000 public requests,
@@ -287,7 +289,7 @@ deletion of historical evidence. Check current regional prices and actual CodeBu
 compute type before admission. No NAT Gateway charge is included because none is proposed.
 
 Primary pricing sources: [EC2 on-demand](https://aws.amazon.com/th/ec2/pricing/on-demand/)
-(.0416/h medium, .0052/h nano Linux), [Fargate](https://aws.amazon.com/fargate/pricing/)
+and [official T3 table](https://aws.amazon.com/ec2/instance-types/t3/) (.0104/h micro; .0418/h conservative medium allowance; verify actual regional quote), [Fargate](https://aws.amazon.com/fargate/pricing/)
 (US East example .000011244/vCPU-second, .000001235/GB-second),
 [ALB](https://aws.amazon.com/elasticloadbalancing/pricing/) (.0225/h + .008/LCU-hour),
 [VPC IPv4](https://aws.amazon.com/vpc/pricing/) (.005/IP-hour),

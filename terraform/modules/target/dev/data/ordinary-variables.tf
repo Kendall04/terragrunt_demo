@@ -50,4 +50,15 @@ variable "alerts_topic_arn" {
   description = "SNS topic ARN for alarm notifications"
 }
 
+variable "recovery_target_subnet_id" {
+  description = "Explicit reviewed recovery target; null preserves original placement. Membership is not native VPC/AZ proof."
+  type = string
+  default = null
+  nullable = true
+  validation {
+    condition = var.recovery_target_subnet_id == null ? true : can(regex("^subnet-[0-9a-f]{8,17}$", var.recovery_target_subnet_id)) && contains(var.private_subnet_ids, var.recovery_target_subnet_id)
+    error_message = "Recovery target must be one of the reviewed private subnets."
+  }
+}
+
 variable "protected_sql_ami" { type = string }
