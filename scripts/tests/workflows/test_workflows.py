@@ -11,6 +11,7 @@ import unittest
 from unittest.mock import patch
 
 import wp6
+import wp4d
 import model
 from test_wp4d import permits
 from scripts.workflow_requests import contract as c, client, render
@@ -107,14 +108,57 @@ class Workflows(unittest.TestCase):
         self.assertIn("refs/heads/main",callers['rollback-manifest.yml']['jobs']['prod']['if'])
         s=c.subject('deploy-dev',COMMIT);self.assertEqual(s,'repo:'+c.REPOSITORY+':environment:e1-dev-deploy:job_workflow_ref:'+c.workflow('deploy-dev')+'@'+COMMIT)
         for sha in ('main','develop','0'*40,'${SHA}','b'*39):self.reject(c.subject,'deploy-dev',sha)
-        from scripts.tests.workflows.historical_snapshot import before_authorized_trial
-        prior=before_authorized_trial(DOC)
+        from scripts.tests.workflows.historical_snapshot import before_authorized_trial,source_transport_snapshot
+        # CURRENT checks above keep DOC. This projection only accepts its original generation.
+        historical=source_transport_snapshot()
+        prior=before_authorized_trial(historical)
         self.assertEqual(prior['wp6']['selected']['release']['ref'],'refs/heads/develop')
         for identity in ('release','deploy-dev'):
-            bad=copy.deepcopy(DOC);bad['wp6']['selected'][identity]['ref']='refs/heads/other'
+            bad=copy.deepcopy(historical);bad['wp6']['selected'][identity]['ref']='refs/heads/other'
             with self.assertRaises((AssertionError,ValueError)):before_authorized_trial(bad)
-        bad=copy.deepcopy(DOC);bad['wp6']['source_sha256']['scripts/workflow_requests/contract.py']='f'*64
+        bad=copy.deepcopy(historical);bad['wp6']['source_sha256']['scripts/workflow_requests/contract.py']='f'*64
         with self.assertRaises((AssertionError,ValueError)):before_authorized_trial(bad)
+
+    def test_historical_snapshot_is_exact_data_and_not_current_authority(self):
+        from scripts.tests.workflows import historical_snapshot as h
+        before=copy.deepcopy(DOC);historical=h.source_transport_snapshot()
+        original=copy.deepcopy(historical);projected=h.before_authorized_trial(historical)
+        self.assertEqual(historical,original) # No historical or CURRENT mutation.
+        self.assertEqual(DOC,before)
+        self.assertEqual(projected['wp6']['approvals'],{})
+        self.assertEqual(projected['wp6']['selected']['release']['ref'],'refs/heads/develop')
+        self.assertEqual(DOC['wp6']['selected']['release']['ref'],h.REF)
+        raw=h.SOURCE_SNAPSHOT_PATH.read_bytes()
+        for bad in (b'{}',raw+b' ',raw.replace(b'refs/heads/codex/final-github-actions-cicd',b'refs/heads/develop',1)):
+            with self.assertRaisesRegex(ValueError,'HISTORICAL_SOURCE_SNAPSHOT_DRIFT'):h.source_transport_snapshot(bad)
+        self.reject(wp4d.validate,ROOT,historical)
+        import wp5
+        self.reject(wp5.validate,ROOT,historical)
+
+    def test_historical_projection_rejects_mixed_current_package_generation(self):
+        from scripts.tests.workflows import historical_snapshot as h
+        historical=h.source_transport_snapshot();tested=0
+        for (group,key,field),_ in h.SOURCE_TRANSPORT_SELECTED.items():
+            if group not in ('wp4d','wp5'):continue
+            mixed=copy.deepcopy(historical)
+            self.assertNotEqual(mixed[group]['selected'][key][field],DOC[group]['selected'][key][field])
+            mixed[group]['selected'][key][field]=DOC[group]['selected'][key][field]
+            with self.subTest(binding=key),self.assertRaises(AssertionError):h.before_authorized_trial(mixed)
+            tested+=1
+        self.assertEqual(tested,8)
+        with self.assertRaises(AssertionError):h.before_authorized_trial(DOC)
+
+    def test_historical_package_pins_cannot_substitute_current_packages(self):
+        from scripts.tests.workflows import historical_snapshot as h
+        import wp5
+        historical=h.source_transport_snapshot();tested=0
+        for (group,key,field),_ in h.SOURCE_TRANSPORT_SELECTED.items():
+            if group not in ('wp4d','wp5'):continue
+            mixed=copy.deepcopy(DOC);mixed[group]['selected'][key][field]=historical[group]['selected'][key][field]
+            with self.subTest(binding=key),self.assertRaises(ValueError):
+                (wp4d if group=='wp4d' else wp5).validate(ROOT,mixed)
+            tested+=1
+        self.assertEqual(tested,8)
 
     def test_role_templates_have_no_security_admin_or_role_chaining(self):
         for key in c.IDENTITIES:

@@ -1,5 +1,48 @@
 # ECS V2: arquitectura y pipelines recomendados — 2026-10-24
 
+## Historical WP6 selection resolved - 2026-10-25
+
+**WP6 is now65/65 PASS**, with zero failures/errors/skips. The original62 cases
+remain, plus3 regressions. Reproducibility32/32, foundation36/36 and exact workflow
+render also pass. These are local test scopes, not remote CI or AWS acceptance.
+The earlier61/62 review below is preserved as the diagnosis, now resolved for this
+single test without changing its expected historical result.
+
+Root cause: `test_immutable_subject_has_no_default_fallback` passed CURRENT
+in-memory authority into a transform for the original two-ref/source-transport
+generation. The correct input was recovered directly from Git commit
+`f55f52f501bbec6138d3eed994ab08e19510ef8a`, the commit where that exact helper was
+last changed. Its original authority blob is
+`0ea3b8b27c241dbdb019c7d041b7a1bf3019d229`;138,375 bytes, LF SHA256
+`0260e8093c13ea76047b0102a2f33eb5a9b025fa4873cbada672df3f7797a65e`.
+The unmodified original transform succeeds on that original snapshot.
+
+That exact JSON is retained as inert `.json.txt` fixture data. Its loader pins
+bytes/hash; CURRENT identity/branch/source checks still use CURRENT. Only the
+historical part of this one test now selects the original generation. Original
+transform function bodies, predecessor/successor constants and expected whole-
+authority historical digests remain unchanged. No old package pin was assigned to
+CURRENT, no approval was copied there, and no assertion was changed to the current
+answer. Historical approval metadata in the inert fixture is never an active
+registry or installed-source input; runtime package source lists exclude it.
+
+Regressions reject3 altered fixture payloads, all8 mixed current/historical
+package generations, all8 historical package pins substituted into CURRENT, and
+CURRENT itself as input to the historical transform. Original wrong-ref and
+source-hash negatives remain. The tests also verify both snapshots are unmutated.
+Current authority bytes, empty approvals, inactive callers and runtime package
+pins remain exactly unchanged. Source coverage was refreshed only for the three
+reviewed test-data/reader/test paths; their dispositions remain UNVERIFIED.
+
+The previous65-case run used792 SHA256-verified source files on the existing
+native Linux filesystem; no credentials/provider binaries were copied, and the
+temporary fixture was removed normally. Qualification, source Git provenance and
+full logs remain in task-3/historical-wp6-resolution; qualification SHA256:
+`da363708a298e921c412be182e3221b270ba362bf7ef5d4ae28fe6b5aa83afc1`. No full unrelated suite, package rebuild, cloud call, activation,
+remote Action, push or publication occurred. SSM admission and the costed native
+integrated ECS trial remain external gates; existing budgets stay closed.
+
+
 ## Eight-digest review - 2026-10-25: historical failure retained
 
 The eight **current inactive package pins are correct**: each equals the digest

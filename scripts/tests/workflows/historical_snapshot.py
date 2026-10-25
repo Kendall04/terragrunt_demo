@@ -4,6 +4,27 @@ The retained historical whole-authority digests are not replaced. Any other
 field, identity, source hash, or activation remains visible to those assertions.
 """
 import copy
+import hashlib
+import json
+from pathlib import Path
+
+SOURCE_SNAPSHOT_COMMIT = 'f55f52f501bbec6138d3eed994ab08e19510ef8a'
+SOURCE_SNAPSHOT_SHA256 = '0260e8093c13ea76047b0102a2f33eb5a9b025fa4873cbada672df3f7797a65e'
+SOURCE_SNAPSHOT_PATH = Path(__file__).with_name('fixtures') / 'authority-source-transport-f55f52f.json.txt'
+
+
+def source_transport_snapshot(raw=None):
+    """Exact inert historical test input; never CURRENT or installation authority.
+
+    Source: the original authority blob0ea3b8b27c241dbdb019c7d041b7a1bf3019d229
+    at SOURCE_SNAPSHOT_COMMIT, where the retained transform was last changed.
+    """
+    if raw is None:
+        raw = SOURCE_SNAPSHOT_PATH.read_bytes()
+    if hashlib.sha256(raw.replace(b'\r\n',b'\n')).hexdigest() != SOURCE_SNAPSHOT_SHA256:
+        raise ValueError('HISTORICAL_SOURCE_SNAPSHOT_DRIFT')
+    return json.loads(raw)
+
 
 REF='refs/heads/codex/final-github-actions-cicd'
 SOURCE_PAIRS={'scripts/workflow_requests/contract.py': ('c69368c01e5eced55fb33c55ed7592cee1799ba77a6b6765a16bf2fc40338fc7', 'c1f41c8cc1fadc8b820c4c127e776937a30ba27f70ef16de1112b23c6d9d806e'), 'scripts/workflow_requests/render.py': ('68bbe212d68f848f5b444b4355282a785da32506f9c937f39b4d4e356b464491', '1f28b7f1bfefdaaae7f6ee6bae974d5120c5825e7963deb2fd9ef468c9041748'), '.github/workflows/e1-release.yml': ('03bae05bfd5b85d8be0a3fbce31c4eb814c43ba5e415e953727f948072508337', 'e11b079eb937662d2f5603fb573dd14e924f25c0f3c763566ccae90072d6dc2b'), '.github/workflows/e1-dev-deploy.yml': ('8d4e6bdd74ff74d3ec2cf16df06810df21c114a2f58adf121c73ededffa004da', 'd8049cc260380bd1be0d2b914580c615eece8c0bc80e227f6adab7b6119b65f6')}
