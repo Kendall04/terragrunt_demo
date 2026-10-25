@@ -349,7 +349,13 @@ SUPPORT_FILES[SUPPLEMENTAL_CATALOG] = SUPPLEMENTAL_CATALOG_SHA256
 
 
 def reviewed_supplemental_iac(root):
-    raw=(Path(root)/SUPPLEMENTAL_CATALOG).read_bytes()
+    def source(name):
+        path=Path(root)/name
+        require(not any(p.is_symlink() or getattr(p,'is_junction',lambda:False)()
+                        for p in (path,*path.parents)),'linked supplemental source '+name)
+        require(path.is_file(),'missing supplemental source '+name)
+        return path
+    raw=source(SUPPLEMENTAL_CATALOG).read_bytes()
     require(sha(raw)==SUPPLEMENTAL_CATALOG_SHA256,'supplemental catalog changed; explicit source review required')
     catalog=load_json(raw.decode('utf-8'))
     keys(catalog,{'schema','execution_authorized','meaning','files'},'supplemental catalog')
@@ -360,7 +366,7 @@ def reviewed_supplemental_iac(root):
         keys(record,{'sha256_lf','introduced_by','last_changed_by','owner','classification','purpose'},'supplemental record')
         require(record['classification'] in ('RETIRED_REVIEW_INPUT','PROVIDER_LOCK_INPUT',
             'OFFLINE_MOCK_PLAN','EXPLICIT_WRAPPER','LOCAL_INTEGRATION_SOURCE'),'supplemental classification')
-        require((Path(root)/name).is_file() and sha((Path(root)/name).read_bytes())==record['sha256_lf'],
+        require(sha(source(name).read_bytes())==record['sha256_lf'],
                 'supplemental source drift '+name)
     return set(catalog['files'])
 
