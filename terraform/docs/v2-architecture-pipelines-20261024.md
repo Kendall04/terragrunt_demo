@@ -1,5 +1,54 @@
 # ECS V2: arquitectura y pipelines recomendados — 2026-10-24
 
+## Eight-digest review - 2026-10-25: historical failure retained
+
+The eight **current inactive package pins are correct**: each equals the digest
+reconstructed by its existing WP4D/WP5 artifact builder. Eight arbitrary wrong-pin
+mutants were rejected; substituting each frozen historical post-transport pin was
+also rejected (8/8). Changing authority.json back to those historical values would
+therefore introduce invalid package/source binding. No metadata correction is needed.
+
+| Binding | Frozen post-transport | Current, recomputed | Introduced by |
+| --- | --- | --- | --- |
+| wp4d/request-gateway/deploy-dev | `e113ae86c672` | `cf0cf510a374` | `29120514c64f` |
+| wp4d/request-gateway/promote-prod | `8953dab96547` | `301b136aadad` | `29120514c64f` |
+| wp4d/request-gateway/emergency-dev | `4182da3d2a11` | `de1b34ade3b4` | `29120514c64f` |
+| wp4d/request-gateway/emergency-prod | `bbb891781904` | `dfe29c1cb7f6` | `29120514c64f` |
+| wp5/request-gateway/infra-dev | `05cba0c2eb61` | `6ad74cf40a08` | `17cb9d4fb4c6` |
+| wp5/request-gateway/infra-prod | `bff1c10241fa` | `f6ec3e27b22a` | `f62bfe7a9e8b` |
+| wp5/request-gateway/infra-high-risk-dev | `635b36664d68` | `83ddea26f427` | `17cb9d4fb4c6` |
+| wp5/request-gateway/infra-high-risk-prod | `34db0c081229` | `402be64d69ac` | `f62bfe7a9e8b` |
+
+Full hashes, exact package byte sizes and Git provenance are preserved in
+task-3/package-digest-review/audit.json, SHA256:`b24d448c06b776bd08b254b92accf0ed7687e0874b7974e6055c643be21ca148`.
+Authority SHA256 remains `642f1425f90e3c1a16c5a3a0e6f3bc1cd9f1721a41f854e6e64d42a4e0f9c355`;
+the historical helper LF hash remains `c2c95f9ee978b7f36744e0584bfe7ce9a9f82c8a6e7f31a152f5886170e0e71a`.
+
+`historical_snapshot.py` explicitly permits only the original two-ref/source-transport
+normalization; the paired predecessor/successor constants identify those historical
+stages. They are not a second registry of current installable packages. Updating
+them automatically from current source would broaden that historical contract.
+The same helper feeds retained whole-authority digest assertions in ephemeral,
+exact-destroy and retention tests. Those expected historical digests were not edited.
+
+Actual repeated WP6 result: **61/62**, zero errors/skips. The sole failure remains
+`test_immutable_subject_has_no_default_fallback`, before its historical projection
+can complete. The current inactive-caller regression is among61 passing cases; deterministic
+render separately passed. Original-checkout source admission and inventory checks pass.
+The prior32 reproducibility and36 foundation tests were not repeated: no executable
+or contract code changed in this review. All791 reusable fixture files and source
+path sets were reverified against the checkout before the WP6 run.
+
+No missing AWS/IAM permission blocks this local review. A future correction is a
+**separate review of the historical test projection**, with a declared baseline and
+explicit admissible source deltas; it is not a fix to inactive package pins. This
+bounded task leaves that projection and its honest failing result intact. Current
+approvals remain empty, callers blocked, original receipts/snapshots untouched.
+No runtime package was written/published or installed, runtime activated, AWS/SSM
+called or remote Action executed. Native SSM admission and the costed integrated
+ECS trial remain external gates, without authority from previous closed budgets.
+
+
 ## Caller/registry closure - 2026-10-25
 
 The earlier31/32 checkpoint below is superseded for caller consistency. With an
