@@ -11879,17 +11879,17 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/portable/prepare_module.py": {
-      "sha256": "ba15a3aa26307be9af3a83b3454bbdc78feea826f2165d4b37ed258bcf01a435",
+      "sha256": "03d403df8a5f0be33fc3a3c05d43d905be269c94af4ed2b11cb53d02d92ead9e",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           4,
-          16,
-          17,
-          18
+          27,
+          28,
+          29
         ],
         "executable-dependency": [
-          16
+          27
         ],
         "security-control": [
           7,
@@ -11919,14 +11919,102 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/portable/prepare_runtime_source.py": {
-      "sha256": "30ab1d159e714c76b2d50c945aa755b222bfa1c1dea02cc0ba27b90d6cb54522",
+      "sha256": "fd243b7be29c5d6562efb3e287d1c105c94235b3004eaae440c6a8bcecf1b883",
       "declarations": [],
       "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "operations/integrations/portable/package_lambda.py": {
+      "sha256": "55c7372ebcfb76513b3ba305817c7d4315452a190bb52dcc890c8dc0e825bfde",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "operations/integrations/portable/trial/main.tf": {
+      "sha256": "9afcfc9831bef453dc432dc16639d4a0796f3183f31902ddc1fc08634beb2b4f",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_sns_topic",
+          "name": "notices",
+          "line": 19
+        },
+        {
+          "kind": "resource",
+          "type": "aws_sns_topic_policy",
+          "name": "notices",
+          "line": 20
+        },
+        {
+          "kind": "resource",
+          "type": "aws_sns_topic_subscription",
+          "name": "owner",
+          "line": 27
+        },
+        {
+          "kind": "module",
+          "type": "runtime",
+          "name": null,
+          "line": 32
+        }
+      ],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          23,
+          24
+        ],
+        "executable-dependency": [
+          23,
+          24,
+          33
+        ],
+        "security-control": [
+          20,
+          22
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "operations/integrations/portable/trial/runtime-outputs.tf": {
+      "sha256": "25f20f6e0a8d0edd2843e51764f34a686c7cf2125fc1e6235d72f7b05d8cee7c",
+      "declarations": [],
+      "signals": {
+        "security-control": [
+          1,
+          2,
+          3
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "operations/integrations/portable/trial/tests/portable.tftest.hcl": {
+      "sha256": "23086c5d50dbd38b18913caad48874063293bb175ba47833133210e9be6cbc5f",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "executable-dependency": [
+          19,
+          42,
+          50
+        ],
+        "security-control": [
+          5
+        ]
+      },
       "semantic_status": "UNVERIFIED"
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",
-  "review_revision": "724bd1208c789b3065d90f5b4bdb35e4c22a3d2a",
-  "review_note": "Four isolated build/hash/provider sources. No effective IAM/state/global provider/approval change; UNVERIFIED.",
-  "review_delta_sha256": "e3e7da7b8cb8e7a6fd47ecb0c50ca61de1235e1b7bedc63c22e256a8c8fe8f94"
+  "review_revision": "d1e8d9b571b5f6dfad368074b60f5ee800c22a0d",
+  "review_note": "Six inactive offline packaging/mock test sources; execution authority and all protected approvals unchanged. UNVERIFIED.",
+  "review_delta_sha256": "cac636183ea83726a5af3791b32fa8ea26397723e99819bbf7846e45949eb31a"
 }
