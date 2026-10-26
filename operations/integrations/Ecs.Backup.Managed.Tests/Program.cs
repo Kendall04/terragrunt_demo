@@ -209,6 +209,30 @@ Check("expected-down watchdog is disabled without fake success",maintenanceWd.St
 var forgedWd=new Rig();forgedWd.Settings=forgedWd.Settings with {Mode="observer-check",ObserverDeadlineSeconds=60,ObserverExpectedUp=true};forgedWd.Restart();
 Check("external sender cannot forge trusted watchdog source",(await forgedWd.Send(Change(ActualCheck(fixtures["failed"]),"Source",JsonValue.Create(Ecs.Backup.Sentinel.BackupIncidentPolicy.WatchdogProducer)))).BatchItemFailures.Count==1 && forgedWd.Ddb.Inner.Rows.Count==0);
 
+// Cohost failure-domain acceptance: shared SQL host stops emitting; external runtime persists.
+var cohost=new Rig();cohost.Settings=cohost.Settings with {Mode="observer-check",ObserverDeadlineSeconds=1200,ObserverExpectedUp=true};cohost.Restart();
+Check("cohost fresh healthy check commits external heartbeat",(await cohost.Send(ActualCheck(fixtures["baseline"]))).BatchItemFailures.Count==0 && new BackupHeartbeatStore(cohost.Ddb,cohost.Settings).Read(CancellationToken.None) is not null);
+var freshHeartbeat=new BackupHeartbeatStore(cohost.Ddb,cohost.Settings).Read(CancellationToken.None)!.ObservedAt;
+cohost.Now=freshHeartbeat.AddSeconds(1199);cohost.Reconcile();
+Check("cohost telemetry within configured deadline makes no notice",cohost.Sns.Requests.Count==0);
+cohost.Now=freshHeartbeat.AddSeconds(1201);cohost.Reconcile();
+Check("cohost disappearance opens external UNKNOWN without asserting failed backup",cohost.Store.Read(StorageKeys.Aggregate(cohost.Settings.Key)) is not null && cohost.Sns.Requests.All(x=>x.Message.Contains("OBSERVER_HEARTBEAT_EXPIRED") && !x.Message.Contains("FALLO (FAILED)")));
+cohost.Now=freshHeartbeat.AddMinutes(51);cohost.Reconcile();
+Check("cohost prolonged silence is UNKNOWN escalation with readable notice",cohost.Head.State==IncidentState.ESCALATED && cohost.Sns.Requests.Count==1 && cohost.Sns.Requests[0].Message.StartsWith("OBSERVACI\u00d3N DE BACKUP"));
+var silenceRevision=cohost.Head.Revision;cohost.Reconcile();
+Check("cohost repeated watchdog tick deduplicates notice",cohost.Sns.Requests.Count==1 && cohost.Head.Revision==silenceRevision);
+var oldHeartbeat=freshHeartbeat;
+await cohost.Send(ActualCheck(fixtures["baseline"]));
+Check("old healthy replay cannot heal disappearance or refresh heartbeat",cohost.Head.State==IncidentState.ESCALATED && new BackupHeartbeatStore(cohost.Ddb,cohost.Settings).Read(CancellationToken.None)!.ObservedAt==oldHeartbeat);
+var backAt=cohost.Now.AddSeconds(1).ToString("yyyy-MM-dd'T'HH:mm:ss'Z'");
+var back=Change(ActualCheck(fixtures["unknown"]),"ObservedUtc",JsonValue.Create(backAt));
+await cohost.Send(back);cohost.Reconcile();
+Check("cohost return with unknown result restores telemetry but not health",new BackupHeartbeatStore(cohost.Ddb,cohost.Settings).Read(CancellationToken.None)!.ObservedAt>oldHeartbeat && cohost.Head.State==IncidentState.ESCALATED);
+var healthyAt=cohost.Now.AddSeconds(1).ToString("yyyy-MM-dd'T'HH:mm:ss'Z'");
+var healthy=Change(Change(ActualCheck(fixtures["recovered"]),"ObservedUtc",JsonValue.Create(healthyAt)),"LastSuccessUtc",JsonValue.Create(healthyAt));
+await cohost.Send(healthy);cohost.Reconcile();
+Check("cohost fresh verified health resolves telemetry episode only",cohost.Head.State==IncidentState.RESOLVED && cohost.Sns.Requests.Count==2 && cohost.Sns.Requests[1].Subject.EndsWith("Backup recuperado",StringComparison.Ordinal));
+
 var emptyReconcile=new Rig();Check("empty directory has no external effects",emptyReconcile.Reconcile().Results.Length==0 && emptyReconcile.Sns.Requests.Count==0);
 await Reject("foreign discovery cursor refused",()=>Task.Run(()=>emptyReconcile.Reconcile(Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("{\"PK\":\"foreign\",\"SK\":\"W#a\"}")))));
 

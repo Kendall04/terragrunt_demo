@@ -1,5 +1,7 @@
 # ECS recovery: final local preparation and the remaining LIVE gate
 
+Observer placement update: [SQL-host package and external watchdog](../COHOST.md). Local-only opt-in staging and loss/return tests do not constitute native boot/scheduling acceptance, independent S3 checks or a fix to SSM.
+
 Current integrated scope and recommended new budget: [local integrated proposal](INTEGRATED-TRIAL-PROPOSAL.md), based on bc57dc4. It forecasts 102 Terraform addresses under explicit reuse assumptions and USD 6 new; it is not a saved plan or authorization. SSM remains unresolved. The four wiring changes and separate .NET application image smoke are now locally qualified; their native platform behavior remains unproved. The historical coverage below is preserved.
 
 Current local implementation: [four recovery wiring fixes and actual API image smoke](LOCAL-WIRING-QUALIFICATION.md). No AWS installation or E2E acceptance follows from those local checks.

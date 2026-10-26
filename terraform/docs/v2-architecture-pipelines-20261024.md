@@ -1,5 +1,32 @@
 # ECS V2: arquitectura y pipelines recomendados — 2026-10-24
 
+## SQL-host observer placement selected - 2026-10-26
+
+Owner approved local preparation of the existing SQL host's producer+observer with
+external Sentinel/watchdog; [implementation and acceptance](../../operations/sql-backup/COHOST.md).
+No dedicated observer EC2 or new service is proposed. Package opt-in stages hashed
+files/config, the two timers and a declarative target without starting them; startup
+checks reject drift/expiry and use the same sanitized local producer receipt. A recent
+UNKNOWN producer result no longer hides behind an older healthy commit. The external
+watchdog opens UNKNOWN on lost telemetry and requires fresh healthy evidence after return.
+
+Native Linux fixture suites:54 PASS/0 skips (cohost12, lifecycle12, observer15, publisher15).
+Real systemd255 parser accepted rendered units against disposable dependency stubs;
+no systemd timer or SQL was run. Managed real Sentinel components:119 PASS with original
+DynamoDB/S3/SNS SDK doubles, including8 loss/return lifecycle checks. No email/AWS call,
+role, secret, current authority, approval or protected factory was changed. No large
+runtime archive was built; current binary packaging/native boot remains a future gate.
+The finite publisher preserves <=20 total send attempts across restart, <=3 per pending
+observation, and pending data on exhaustion. No budget is silently reset.
+
+Guarantee is local S3 observation plus externally detected telemetry loss, not independent
+S3 inspection while SQL is down. SSM AccessDenied remains unresolved. The existing102-address
+integrated forecast already omitted a dedicated observer, so this adds0 cloud addresses;
+its proposedUSD6 is still unapproved, not spent or renewed. A future packet must review
+exact SQS send/queue-policy scope for the existing SQL role, actual bootstrap/artifacts,
+external watchdog binding, current identities, costs and retirement, with30min owner LIVE
+viewing window. Unsupported probes/outbox remain visible; no claim of full ECS E2E follows.
+
 ## Historical WP6 selection resolved - 2026-10-25
 
 **WP6 is now65/65 PASS**, with zero failures/errors/skips. The original62 cases

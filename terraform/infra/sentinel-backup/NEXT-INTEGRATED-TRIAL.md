@@ -1,5 +1,7 @@
 # Next integrated Sentinel/observer trial — proposal only
 
+Historical standalone observer proposal, superseded for the next integrated ECS cycle by [SQL host plus external watchdog](../../../operations/sql-backup/COHOST.md). The optional host module and b2 receipts remain preserved, off by default. Do not instantiate this old host recommendation as the current integrated plan.
+
 Status: LOCAL PREPARATION, NOT ADMITTED. No new AWS, recipient, role, subscription,
 backend or timer has been created. The previous USD1 cycle is CLOSED; prior ECS
 recovery allowances are also closed. This proposal does not reuse them.

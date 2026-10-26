@@ -1,5 +1,7 @@
 # ECS integrated recovery proposal — local preparation, not authorization
 
+Placement update 2026-10-26: [cohost package/units and external UNKNOWN watchdog](../COHOST.md) now have local fixture acceptance. No separate observer EC2 is proposed; the102-address forecast already excluded it and is unchanged. This does not resolve SSM, install bootstrap or admit the cycle. The historical sealed proposal and native evidence remain immutable.
+
 Local implementation update: [four wiring fixes and actual .NET10 image qualification](LOCAL-WIRING-QUALIFICATION.md). The preparation gaps described below record the original planning checkpoint; the four code changes and local image smoke have now passed. Native AWS/SSM/release installation gates remain. Original sealed proposal ZIP is preserved unchanged.
 
 Prepared 2026-10-25 against source `bc57dc44ddf5dd60cfc4c38db5a5bb0fb6b404fa`.

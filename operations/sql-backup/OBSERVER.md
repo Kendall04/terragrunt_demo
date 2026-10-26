@@ -1,4 +1,6 @@
-# Independent backup observer — local implementation, uninstalled
+# Backup observer - local implementation, uninstalled
+
+Current placement for the next integrated proposal: [SQL host plus external watchdog](COHOST.md), selected by the owner on2026-10-25. The separate-host requirement below is preserved as the earlier design and superseded for that proposal. Independent periodic execution on SQL does not imply an independent failure domain. Historical qualifications remain unchanged.
 
 `observer.py` supplies the missing finite observer around the existing read-only
 `SqlBackup check`. It creates no backups, restores nothing and delivers no mail.

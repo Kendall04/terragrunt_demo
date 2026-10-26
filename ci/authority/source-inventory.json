@@ -1961,36 +1961,37 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/observer.py": {
-      "sha256": "03e6466f2461412be10380d8918c6a9b39c9250dab859ffd62599878d759e920",
+      "sha256": "e93c63aa616a6c24ff8ca3cedb0b437eea200c2a139dc714832fd83f1cb0782b",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          122,
-          133,
-          151,
-          154
+          124,
+          135,
+          153,
+          156
         ]
       },
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/package.py": {
-      "semantic_status": "UNVERIFIED",
-      "sha256": "475650f73dac86b7af897a6ff12b666a4bd716b25c9fd2abce14fa551a5c661e",
+      "sha256": "7a0e59cfc11a5efe85bc836e610fb0a857809301e91474eb9da1ee680e309588",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          74,
           78,
-          79
+          87,
+          88
         ],
         "executable-dependency": [
-          36,
           37,
-          127,
-          128,
-          129
+          38,
+          41,
+          148,
+          149,
+          150
         ]
-      }
+      },
+      "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/proposed-lab.json": {
       "semantic_status": "UNVERIFIED",
@@ -2709,14 +2710,14 @@
       }
     },
     "operations/sql-backup/sentinel_publish.py": {
-      "sha256": "177db577b1eace564211ebe2d5cec7f36dfb864a949a71e1f68f6b2341c2df26",
+      "sha256": "30b9579a705ae3c32a0006c87f2bda233a03a426f2316ee506eddd88f523570d",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           25,
           43,
-          81,
-          87
+          94,
+          100
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -11669,10 +11670,58 @@
         ]
       },
       "semantic_status": "UNVERIFIED"
+    },
+    "operations/sql-backup/cohost.py": {
+      "sha256": "5f6017b9011c8631f661bdc83f3de260b3fcfb771695a423e0cdf392fed959a0",
+      "declarations": [],
+      "signals": {
+        "role-input": [
+          41
+        ],
+        "launch-or-mutation": [
+          17,
+          18,
+          19,
+          41,
+          46,
+          52,
+          67,
+          78,
+          79
+        ],
+        "executable-dependency": [
+          15,
+          50
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "operations/sql-backup/test_cohost.py": {
+      "sha256": "e0099887410e6b7244b3a3720b9855617f98d3c24bbab4fb6f93cfb4a886f0db",
+      "declarations": [],
+      "signals": {
+        "role-input": [
+          39
+        ],
+        "launch-or-mutation": [
+          39,
+          41,
+          53,
+          59,
+          62
+        ],
+        "executable-dependency": [
+          50,
+          53,
+          59,
+          62
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",
-  "review_revision": "ae293e2f94bb71b89a9d759e70fe810dcf5f7c53",
-  "review_note": "Three exact test-only source updates: original f55f52f authority blob as inert fixture, pinned reader, explicit historical selection and generation negatives. No historical transform, CURRENT authority or execution approval changed.",
-  "review_delta_sha256": "8e5343fbe3b17b4a529a7b5b50553c4139fafd0bebae1b6da4e0f2c0c1d97591"
+  "review_revision": "fe199261812268597f27e6b2fa9ab41b5bff6184",
+  "review_note": "Five exact local SQL-host observer packaging/startup and publisher/test updates. All UNVERIFIED; hashes do not authorize installation or AWS. No CURRENT authority or execution approval changed.",
+  "review_delta_sha256": "740e0855a664a03cc8d034a59c45ef78731a02b799129ac42752ce6907b88277"
 }

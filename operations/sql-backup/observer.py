@@ -46,6 +46,8 @@ def health(value,observed,exit_code,job=None):
         later=latest is None or job['Utc']>signals.utc(latest).timestamp()
         if valid['Status']!='MAINTENANCE' and job['Status']=='FAILED_OR_UNCONFIRMED' and later:
             valid=signals.render('health',{'Status':'FAILED','Code':'LAST_ATTEMPT_FAILED','LastSuccessUtc':latest},observed,1)
+        elif valid['Status']!='MAINTENANCE' and job['Status'] in ('UNKNOWN','OPERATOR_RESUMED') and later:
+            valid=signals.render('health',{'Status':'UNKNOWN','Code':'REMOTE_STORAGE_NOT_CHECKED','LastSuccessUtc':latest},observed,1)
     return {k:valid[k] for k in ('Status','Code','Severity','LastSuccessUtc')}|{'ProducerFailureCoverage':coverage}
 
 def transition(current,observed,previous,subject,scope,repeat_seconds):

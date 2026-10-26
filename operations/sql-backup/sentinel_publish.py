@@ -59,6 +59,19 @@ def run(args,runner=subprocess.run,clock=lambda:__import__('datetime').datetime.
                 raise Refused('PENDING_PAYLOAD_MISMATCH')
             if item['Blocked'] is not None:raise Refused('PUBLISH_BLOCKED_REQUIRES_REVIEW')
             if type(item['Attempts']) is not int or not 0<=item['Attempts']<args.publish_attempts:raise Refused('PUBLISH_ATTEMPT_BUDGET_EXHAUSTED')
+            total=getattr(args,'total_publish_attempts',None)
+            if total is None and (directory/'budget.json').exists():raise Refused('TOTAL_PUBLISH_BOUND_REQUIRED')
+            if total is not None:
+                if type(total) is not int or not 1<=total<=20:raise Refused('TOTAL_PUBLISH_BOUND_REQUIRED')
+                budget_path=directory/'budget.json'
+                budget={'SchemaVersion':1,'Subject':args.subject,'ConfigSha256':scope,'QueueUrl':queue,'Limit':total,'Attempts':0}
+                if budget_path.exists():
+                    old=signals.read(budget_path)
+                    if set(old)!=set(budget) or any(old[k]!=v for k,v in budget.items() if k!='Attempts') or type(old['Attempts']) is not int or not 0<=old['Attempts']<=total:raise Refused('TOTAL_PUBLISH_BUDGET_SCOPE')
+                    budget=old
+                if budget['Attempts']>=total:raise Refused('TOTAL_PUBLISH_BUDGET_EXHAUSTED')
+                # Count before transport. A crash/uncertain acceptance consumes its slot.
+                budget['Attempts']+=1;observer.save(budget_path,budget)
             item['Attempts']+=1;observer.save(pending,item)
             try:result=send(args,payload,runner)
             except Refused:
@@ -83,7 +96,7 @@ def main():
     p.add_argument('--expected-up',choices=['true','false'],required=True)
     p.add_argument('--repeat-after-seconds',type=int,required=True)
     p.add_argument('--producer-job-receipt',type=Path)
-    p.add_argument('--publish-attempts',type=int,required=True);p.add_argument('--expires-at',required=True)
+    p.add_argument('--total-publish-attempts',type=int);p.add_argument('--publish-attempts',type=int,required=True);p.add_argument('--expires-at',required=True)
     p.add_argument('--aws',action='store_true');p.add_argument('--ec2-role',action='store_true')
     a=p.parse_args();a.action='run';a.observed_at=None;a.health_receipt=None;a.health_exit_code=None
     result=run(a);print(json.dumps(result,separators=(',',':')));return 1 if result['Status']=='PENDING' else 0
