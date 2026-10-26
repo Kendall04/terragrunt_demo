@@ -11,7 +11,8 @@
     "upstreamLock": "6.70.0",
     "compatibleWith5_100": false,
     "globalUpgradeAllowed": false,
-    "recommended": "Isolated new Sentinel root with an explicitly reviewed6.70 provider/lock. Keep all existing DEV/PROD5.100 and legacy Sentinel6.27 roots unchanged. No init/download executed."
+    "recommended": "Isolated new Sentinel root with an explicitly reviewed6.70 provider/lock. Keep all existing DEV/PROD5.100 and legacy Sentinel6.27 roots unchanged. No init/download executed.",
+    "isolatedQualified": "6.28.0 official signed/checksum, validation passed; no global upgrade"
   },
   "inputs": {
     "config_path": "Exact same two-monitor manifest inside qualified Lambda bundle",
@@ -35,7 +36,8 @@
   },
   "boundaries": {
     "upstreamSuppliesThem": false,
-    "requiredBeforeUse": "Four role-specific permissions boundaries mirroring each exact runtime policy; no blanket Allow*. Add explicit module input/role assignment in a reviewed source extension before any deployment. No double ownership of roles."
+    "requiredBeforeUse": "Four role-specific permissions boundaries mirroring each exact runtime policy; no blanket Allow*. Add explicit module input/role assignment in a reviewed source extension before any deployment. No double ownership of roles.",
+    "consumerAdaptationImplementedLocally": true
   },
   "scope": {
     "candidateDeployment": "ecs-portable-r20261026p1",
@@ -115,10 +117,9 @@
     "originalSqlBackupsRetention": "2+2 days unchanged"
   },
   "blockers": [
-    "Exact new AWS dependencies absent and cached AWSSDK.Core4.0.102.10 hash differs from existing ECS lock; no SDK probe or dependency bypass",
-    "Readable renderer source contract tested, complete SNS/runtime factory wiring not qualified",
-    "Portable module requires provider6; no downgrade to5.100 or provider schema qualification performed",
-    "Boundaries, new retention/cost/teardown and immutable Lambda bundle must be closed before proposing a cloud cycle"
+    "Native AWS/SQL/timer/persistence/notices remain unproved; no trial authorized",
+    "SNS consumer resources, retentions, budget/effective IAM/teardown require grouped fresh admission",
+    "Cohost portable publisher executable packaging/activation remains distinct from Lambda runtime; no SSM fix implied"
   ],
   "awsCalls": 0,
   "installed": false

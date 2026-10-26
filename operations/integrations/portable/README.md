@@ -1,5 +1,53 @@
 # Portable Sentinel integration - first local contract increment
 
+## Verified isolated dependencies/runtime - supersedes the prior hash blocker
+
+The prior AWSSDK.Core cache-integrity block was a bug in our check: a signed package's
+raw archive SHA512 differs from NuGet's canonical signed contentHash. The new official
+Core4.0.102.10 download is byte-identical to the original cache. `dotnet nuget verify
+--all` confirms the NuGet repository signature and exactly the unchanged ECS lock hash.
+The corrected verifier rejects a tampered package and rejects raw archive hash as a
+replacement for the lock hash. No lock was altered to make a package pass. Earlier
+failed probe/receipts remain preserved; they do not prove a corrupt package.
+Reference: NuGet.Client PackageArchiveReader.GetContentHash uses the signed-package
+content hash separately from GetArchiveHashAsync.
+https://github.com/NuGet/NuGet.Client/blob/dev/src/NuGet.Core/NuGet.Packaging/PackageArchiveReader.cs
+
+The runtime's exact AWS dependencies restored successfully in locked mode in a fresh
+isolated cache from official NuGet. Signature validation is required, with the official
+repository certificate pinned in that config; no machine/global trust changes. All115
+original source files remain exact apart from the two reviewed SNS-format extensions;
+upstream locks remain byte-identical. SDK10.0.402 existing on the laptop builds the
+full consumer runtime, with no SDK install or upstream global.json alteration.
+
+Ecs.Backup.Portable.Host delegates all four handlers to the original portable runtime
+and supplies only the readable SNS renderer. It verifies the exact two-expectation
+manifest/hash, upstream pin and explicit synthetic trial metadata. The internal notice
+remains schema2; state, journal, reducer, IDs and webhook JSON are unchanged.22 checks
+now execute the original Notifications implementation with its pinned SDK, anonymous
+SNS transport double and network-rejecting HTTP factory. No SNS or other AWS request,
+subscription, email or inbox acceptance is claimed.
+
+AWS provider6.28.0 was installed once in the isolated module root from the official
+registry, signed by HashiCorp; its archive checksum matches the new isolated lock.
+Both the original upstream module and the consumer adaptation pass real provider
+schema validation with0 errors/warnings. The adaptation factors the unchanged runtime
+policies into one map and uses that same value for four boundaries/inline policies,
+adds only own-role tags, and changes the four handler strings to the consumer host.
+The module has59 addresses; the consumer SNS topic/policy/subscription would add3.
+No global5.100, legacy6.27 or upstream6.70 lock was replaced. No AWS plan was run.
+
+prepare_runtime_source.py and prepare_module.py reproduce the fixed-source extensions;
+the latter copies only the isolated6.28 lock and invokes fmt, never init/plan/apply.
+Any executable package, test/provider mocks and hashes are local qualification only.
+Fresh cloud scope/budget, SNS confirmation, effective IAM/backend concurrency and
+teardown admission remain required. This does not resolve historical SSM denial or
+qualify Linux, real SQL, actual timers, AWS persistence, public ECS recovery or inbox.
+
+The following724bd12 checkpoint is preserved as history; its cache-hash/SNS/provider
+blockers are superseded by the evidence above, not silently removed from prior receipts.
+
+
 ## Current delivery increment - local checkpoint
 
 The durable publisher is now implemented as a local API, still not installed or

@@ -11877,10 +11877,56 @@
         ]
       },
       "semantic_status": "UNVERIFIED"
+    },
+    "operations/integrations/portable/prepare_module.py": {
+      "sha256": "ba15a3aa26307be9af3a83b3454bbdc78feea826f2165d4b37ed258bcf01a435",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          4,
+          16,
+          17,
+          18
+        ],
+        "executable-dependency": [
+          16
+        ],
+        "security-control": [
+          7,
+          9,
+          11,
+          12,
+          13
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "operations/integrations/portable/verify_nuget_package.py": {
+      "sha256": "9a32ab956cb06430b46c73da19bf0b5649fa2b86a173d0458e4f55a8863abd45",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "operations/integrations/portable/aws-6.28.lock.hcl": {
+      "sha256": "258de7a3dbd3a5eeffed0eec35becd0f4b134380a929bc09c456805fa851259e",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "operations/integrations/portable/prepare_runtime_source.py": {
+      "sha256": "30ab1d159e714c76b2d50c945aa755b222bfa1c1dea02cc0ba27b90d6cb54522",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",
-  "review_revision": "cc68350eec1099b4be12dd556a444f6c78c9b45e",
-  "review_note": "Five local publisher/probe/proposal source files. No execution approval, installed runtime, IAM, provider/SDK or legacy pin change. UNVERIFIED.",
-  "review_delta_sha256": "b142b32f280bc1a04e0e9e3cd48ba0dfd86ba9685de4dbba495e887b8038e929"
+  "review_revision": "724bd1208c789b3065d90f5b4bdb35e4c22a3d2a",
+  "review_note": "Four isolated build/hash/provider sources. No effective IAM/state/global provider/approval change; UNVERIFIED.",
+  "review_delta_sha256": "e3e7da7b8cb8e7a6fd47ecb0c50ca61de1235e1b7bedc63c22e256a8c8fe8f94"
 }
