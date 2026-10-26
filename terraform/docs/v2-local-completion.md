@@ -1,5 +1,17 @@
 # V2 local completion checkpoint - 2026-10-23
 
+## Portable/local closure -26-oct-2026
+
+The paired cohost/Lambda package is locally qualified; the portfolio now separates it
+from retired b1/B2 and native recovery. Eight additional host/worker watchdog cases
+bring the integrated double-backed handler suite to25; portfolio18 Node checks pass.
+Generated Archify diagrams are unchanged, with the final integrated map deferred.
+See [current native scope, permissions, cost and retirement gates](../../operations/integrations/portable/NATIVE-NEXT-GATE.md).
+This is not cloud, full CI, native timer/persistence/inbox or public ECS acceptance.
+Old102/USD6 and earlier source-access/lock blockers below are historical checkpoints;
+no new authority, AWS preflight, publication or spend was created.
+
+
 > Actualización de diseño del 24 de octubre: [arquitectura y pipelines V2](v2-architecture-pipelines-20261024.md). Recomendaciones locales con evidencia az6/b1/b2; no cambia la historia ni autoriza operaciones.
 
 This is a bounded local implementation/evidence checkpoint, not deployment or

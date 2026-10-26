@@ -6,10 +6,10 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import http from 'node:http';
 import {createServer} from './server.mjs';
-import {portfolioContract,topologies} from './facts.mjs';
+import {portfolioContract,topologies,portableEvidence} from './facts.mjs';
 import {assertPortfolioContract} from './contract.mjs';
 const read=name=>readFile(new URL(name,import.meta.url),'utf8');
-const input={html:await read('index.html'),app:await read('app.mjs'),css:await read('style.css'),contract:portfolioContract,topologies};
+const input={html:await read('index.html'),app:await read('app.mjs'),css:await read('style.css'),contract:portfolioContract,topologies,portableEvidence};
 test('DEMO/history, source facts, navigation and accessible source contracts',()=>assertPortfolioContract(input));
 test('guided evidence path and historical distinct-image rollback preserve scope',async()=>{
  const deployment=await read('../terraform/docs/deployment.md');
@@ -58,7 +58,7 @@ before(async()=>{await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve)
 after(async()=>{await new Promise(resolve=>server.close(resolve));assert.equal(server.listening,false);});
 function request(target,method='GET'){return new Promise((resolve,reject)=>{const req=http.request({host:'127.0.0.1',port,path:target,method,agent:false},res=>{let text='';res.setEncoding('utf8');res.on('data',chunk=>text+=chunk);res.on('end',()=>resolve({status:res.statusCode,headers:res.headers,text}));});req.on('error',reject);req.end();});}
 test('only expected assets and six source documents are served',async()=>{
- for(const route of ['/','/index.html','/style.css','/app.mjs','/facts.mjs','/favicon.svg','/source/architecture','/source/recovery','/source/backup','/source/completion','/source/sentinel-trial','/source/sentinel-next']){const res=await request(route);assert.equal(res.status,200,route);assert(res.text.length>0);}
+ for(const route of ['/','/index.html','/style.css','/app.mjs','/facts.mjs','/favicon.svg','/source/architecture','/source/recovery','/source/backup','/source/completion','/source/sentinel-trial','/source/sentinel-next','/source/sentinel-portable']){const res=await request(route);assert.equal(res.status,200,route);assert(res.text.length>0);}
 });
 test('HEAD is read-only and CSP forbids connections/external assets',async()=>{
  const res=await request('/','HEAD');assert.equal(res.status,200);assert.equal(res.text,'');assert.match(res.headers['content-security-policy'],/connect-src 'none'/);assert.match(res.headers['content-security-policy'],/script-src 'self'/);assert.match(res.headers['content-security-policy'],/form-action 'none'/);assert.equal(res.headers['x-content-type-options'],'nosniff');assert.equal(res.headers['cache-control'],'no-store');
@@ -76,7 +76,7 @@ test('invalid or external absolute request targets refuse without proxying',asyn
 });
 
 test('five genuine pinned Archify artifacts preserve historical/local and pending-installation scopes',async()=>{
- assert.equal(archifyCatalog.length,5);assert.match(archifyCatalog[4].mode,/LOCAL.*PENDIENTE/);assert.match(archifyCatalog[4].note,/PKI fuera de alcance de ECS/);assert.doesNotMatch(archifyCatalog[4].note,/son requisitos pendientes/);
+ assert.equal(archifyCatalog.length,5);assert.match(archifyCatalog[4].mode,/HISTORICO/);assert.match(archifyCatalog[4].note,/Snapshot anterior al portable/);assert.match(archifyCatalog[4].note,/aplazado hasta E2E nativo/);assert.match(archifyCatalog[4].note,/PKI fuera de alcance de ECS/);assert.doesNotMatch(archifyCatalog[4].note,/son requisitos pendientes/);
  const pins=JSON.parse(await read('archify-pins.json'));assert.equal(pins.generator,'Archify 3.1.0');
  for(const item of archifyCatalog){const raw=await readFile(new URL('../docs/interactive/'+item.id+'.html',import.meta.url));assert.equal(createHash('sha256').update(raw).digest('hex'),pins.originalSha256[item.id]);assert.match(raw.toString(),/name="generator" content="archify 3.1.0"/);if(item.id==='future-integrations'){assert.doesNotMatch(raw.toString(),/Service Identity PKI|Servicio B objetivo/);assert.match(raw.toString(),/Piloto AWS retirado/);}}
 });
@@ -92,4 +92,17 @@ test('only isolated presentation routes served; original source and generator st
 test('host stays no-connect and diagram sandbox has no same-origin permission',async()=>{
  assert.match(input.html,/sandbox="allow-scripts"/);assert.doesNotMatch(input.html,/allow-same-origin|allow-top-navigation/);
  const res=await request('/');assert.match(res.headers['content-security-policy'],/frame-src 'self'/);assert.doesNotMatch(res.headers['content-security-policy'],/unsafe-inline/);
+});
+
+test('portable local evidence binds the actual source-bound packages and preserves native gates',async()=>{
+ const artifact=JSON.parse(await read('../operations/integrations/portable/trial/cohost-package.json'));
+ const qualification=await read('../operations/integrations/portable/PORTABLE-COHOST-QUALIFICATION.md');
+ assert.equal(portableEvidence.cohostSource,artifact.SourceCommit);assert.equal(portableEvidence.cohostSha256,artifact.Sha256);
+ assert.equal(portableEvidence.lambdaSha256,artifact.LambdaPackage.zipSha256);assert.equal(portableEvidence.upstream,artifact.LambdaPackage.upstreamCommit);
+ assert.equal(portableEvidence.classification,'LOCAL_WITH_DOUBLES');assert.equal(portableEvidence.nativePortable,false);assert.equal(portableEvidence.timersInstalled,false);assert.equal(portableEvidence.alarmNoticesEnabled,false);assert.equal(portableEvidence.integratedDiagramDeferred,true);assert.equal(portableEvidence.ssmResolved,false);
+ for(const n of ['44 POSIX','33 bridge','42 artifact','17 integrated'])assert(qualification.includes(n));
+ assert.match(input.html,/LOCAL CON DOBLES/);assert.match(input.html,/Diagrama integrado aplazado hasta E2E nativo/);
+ assert.match(input.html,/Watchdog: salud del worker Sentinel/);assert.match(input.html,/SSM sin causa resuelta/);
+ assert.match(input.html,/data-tour="observability" data-tour-focus="#portable-evidence h2"/);
+ const response=await request('/source/sentinel-portable');assert.equal(response.status,200);assert.match(response.text,/No AWS/);
 });

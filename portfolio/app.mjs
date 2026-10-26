@@ -1,6 +1,7 @@
 import {archifyCatalog} from './archify-catalog.mjs';
-import {topologies} from './facts.mjs';
+import {topologies,portableEvidence} from './facts.mjs';
 const $=s=>document.querySelector(s);
+$('#portable-checks').textContent=`Pruebas locales: ${portableEvidence.packageTests} de paquete/cohost · ${portableEvidence.publisherTests} de publicación/contrato · ${portableEvidence.installedFixtureChecks} de bootstrap/ELF · ${portableEvidence.handlerChecks} de handler y avisos con dobles.`;
 let selectedArchify='v1-platform';
 function selectArchify(id){const item=archifyCatalog.find(item=>item.id===id);if(!item)return;selectedArchify=id;$('#archify-frame').title='Diagrama Archify: '+item.title;$('#archify-frame').src='/diagrams/'+id;$('#archify-description').textContent=item.note;$('#archify-mode').textContent=item.mode;document.querySelectorAll('[data-archify]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.archify===id)));}
 for(const item of archifyCatalog){const button=document.createElement('button');button.textContent=item.title;button.dataset.archify=item.id;button.setAttribute('aria-pressed',String(item.id===selectedArchify));button.addEventListener('click',()=>selectArchify(item.id));$('#archify-tabs').append(button);}

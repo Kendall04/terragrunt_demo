@@ -17,3 +17,15 @@ export const topologies={
  ['nat','NAT Gateway temporal','RED DEL ENSAYO','Salida para bootstrap/SSM. Se retiró antes del resto.','No confundir con las NAT Instances de V1.','recovery']
  ]}
 };
+
+// Fixed local qualification, not a current AWS inventory or successful live recovery.
+export const portableEvidence=Object.freeze({
+ classification:'LOCAL_WITH_DOUBLES',nativePortable:false,timersInstalled:false,
+ cohostSource:'0359bafa1fbb3c48ebc53ce29836acf034381108',
+ upstream:'b3d0b3b595a9257bb6d4d849c899bf4e8dbc2828',
+ cohostSha256:'081b62f739cd309e84abf64b5c8e327bf6b7445214f37d85069fa070f0e2f24f',
+ lambdaSha256:'4e89587b2760b5ec6d4a37a4bc6327ed6f770d0316d2e1f3fba32d4b1d54cca7',
+ packageTests:44,publisherTests:33,installedFixtureChecks:42,handlerChecks:17,
+ mockBackendAddresses:62,observerEc2:0,backupFreshnessHours:2,telemetryFreshnessMinutes:20,
+ alarmNoticesEnabled:false,integratedDiagramDeferred:true,ssmResolved:false
+});

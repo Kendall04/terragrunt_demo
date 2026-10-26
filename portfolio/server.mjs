@@ -14,7 +14,8 @@ const routes=new Map([
  ['/source/backup',['../operations/sql-backup/README.md','text/plain']],
  ['/source/completion',['../terraform/docs/v2-local-completion.md','text/plain']],
  ['/source/sentinel-trial',['../operations/integrations/NATIVE-TRIAL-2026-10-23.md','text/plain']],
- ['/source/sentinel-next',['../operations/integrations/NATIVE-TRIAL-2026-10-24.md','text/plain']]
+ ['/source/sentinel-next',['../operations/integrations/NATIVE-TRIAL-2026-10-24.md','text/plain']],
+ ['/source/sentinel-portable',['../operations/integrations/portable/PORTABLE-COHOST-QUALIFICATION.md','text/plain']]
 ]);
 export function createServer(){
  return http.createServer(async(req,res)=>{

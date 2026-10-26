@@ -10,6 +10,7 @@ using Amazon.SimpleNotificationService.Model;
 using Sentinel.Core;
 using Sentinel.Application;
 using Sentinel.Ingestion;
+using Sentinel.Operations;
 using Sentinel.Persistence.Fakes;
 using Sentinel.Portable;
 using Sentinel.Portable.Aws;
@@ -35,6 +36,21 @@ Check("exactly attention and recovery text, no inbox claim",sns.Messages.Count==
 Check("no NAT functional probe or healing adapter requested",config.Monitors.All(m=>store.Effects(StorageKeys.Aggregate(m.Key)).All(e=>e.Intent?.Kind!=EffectKind.RequestFunctionalProbe)));
 Check("future supervision remains visible, no drained claim",store.Effects(StorageKeys.Aggregate(backup.Key)).Any(e=>e.Intent?.Kind==EffectKind.ScheduleRecoveryCheck && e.Status==OutboxStatus.Pending));
 var wrong=Batch(stages.Last()!["entries"]!.AsArray());wrong.Records[0].EventSourceArn=queue+"-foreign";Check("foreign queue is not ACKed",(await handler.Handler(wrong,new Context())).BatchItemFailures.Single().ItemIdentifier==wrong.Records[0].MessageId);
+// Synthetic post-recovery host loss must not fabricate another backup or a worker-health result.
+now=start.AddMinutes(39);Evaluate(telemetry);now=start.AddMinutes(41);Evaluate(telemetry);Evaluate(backup);
+Check("host telemetry loss escalates independently of still-fresh backup",store.Read(StorageKeys.Aggregate(telemetry.Key))!.Head.State==IncidentState.ESCALATED && store.Read(StorageKeys.Aggregate(backup.Key))!.Head.State!=IncidentState.ESCALATED);
+now=start.AddMinutes(42);var returned=Batch(stages.Last()!["entries"]!.AsArray());string? priorBackupData=null;
+foreach(var message in returned.Records){var env=JsonNode.Parse(message.Body)!.AsObject();var report=env["detail"]!.AsObject();report["id"]=DomainJson.StableId(report["id"]!.GetValue<string>(),"synthetic-host-return");report["observedAt"]=now.ToString("O");if(report["monitor"]!.GetValue<string>()==telemetry.Id)report["dataAt"]=now.ToString("O");else priorBackupData=report["dataAt"]!.GetValue<string>();message.Body=env.ToJsonString();}
+Check("host-return reports ACK through real handler",(await handler.Handler(returned,new Context())).BatchItemFailures.Count==0);
+Check("host return resolves only its own telemetry expectation",store.Read(StorageKeys.Aggregate(telemetry.Key))!.Head.State==IncidentState.RESOLVED && store.Read(StorageKeys.Aggregate(backup.Key))!.Head.State!=IncidentState.ESCALATED);
+Check("heartbeat does not renew backup dataAt",DateTimeOffset.Parse(priorBackupData!)<now.AddMinutes(-20));
+var scope=new OperationalScope(config.Project,config.Environment,config.Consumer,"worker","portable");var profile=config.Operations;
+Check("watchdog absent worker record stays UNKNOWN",HealthEvaluator.Evaluate(scope,null,profile,now).State==HealthState.UNKNOWN);
+var record=OperationalRecord.Empty(scope,profile,now) with{LastExpectedAt=now,LastInvokedAt=now,LastCompletedAt=now,LastProgressAt=now,Backlog=BacklogObservation.Empty(now,true)};
+Check("fresh completed worker with authoritative empty sweep is healthy idle",HealthEvaluator.Evaluate(scope,record,profile,now).State==HealthState.HEALTHY_IDLE);
+var late=HealthEvaluator.Evaluate(scope,record,profile,now.AddMinutes(5),new(now.AddMinutes(5),true,true));
+Check("AWS invocation success cannot conceal missing worker progress",late.State==HealthState.HEARTBEAT_MISSING && late.Reasons.Contains("ControlPlaneSuccessDoesNotProveProgress"));
+Check("watchdog rejects contradictory future progress",HealthEvaluator.Evaluate(scope,record with{LastProgressAt=now.AddMinutes(1)},profile,now).State==HealthState.UNKNOWN);
 File.WriteAllText(Path.Combine(root,"readable-notices.json"),DomainJson.Serialize(sns.Messages));File.WriteAllText(Path.Combine(root,"handler-flow-result.json"),DomainJson.Serialize(new{Status="PASS",Tests=checks.Count,Cases=checks,Handler="ORIGINAL_SENTINEL_WORKER_LAMBDA_HANDLER",Storage="ORIGINAL_MEMORY_FAKE",Sns="PINNED_SDK_TRANSPORT_DOUBLE",PortableOuterAwsCompositionInvoked=false,AwsCalls=0,EmailSent=false}));Console.WriteLine(File.ReadAllText(Path.Combine(root,"handler-flow-result.json")));
 sealed class NeverHttp:HttpMessageHandler{protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage r,CancellationToken t)=>throw new Exception("No HTTP");}
 sealed class NeverNetwork:Amazon.Runtime.HttpClientFactory{public override HttpClient CreateHttpClient(Amazon.Runtime.IClientConfig c)=>throw new Exception("No network");}

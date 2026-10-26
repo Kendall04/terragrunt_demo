@@ -1,5 +1,15 @@
 # ECS integrated recovery proposal — local preparation, not authorization
 
+## Portable supersession -26-oct-2026
+
+El bloque Sentinel29/USD6/102 descrito abajo es histórico y no está admitido.
+El backend nuevo tiene62 direcciones mock; la suma aritmética con los otros TARGET73
+sería135, no un plan integrado ni un selector materializado. El opt-in de la unidad
+protegida nueva sigue sujeto a revisión/instalación. Preservar archivos/ZIP antiguos.
+Ver [alcance nativo actualizado y límites](../../integrations/portable/NATIVE-NEXT-GATE.md).
+Ninguna autoridad nueva ni ejecución AWS.
+
+
 ## Split cohost activation correction - local, not authority
 
 Observer bootstrap no longer waits for SQL credential provisioning. Its false-default

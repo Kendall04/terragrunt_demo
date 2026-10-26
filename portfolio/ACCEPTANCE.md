@@ -1,5 +1,34 @@
 # Local portfolio acceptance checkpoint
 
+## Estado actual - cierre local portable y revisión26-oct-2026
+
+La demo incorpora una tarjeta LOCAL CON DOBLES del paquete portable, dos expectativas
+y límites del watchdog.18 pruebas Node PASS;25 comprobaciones de composición PASS
+(17 base +8 nuevas): pérdida/regreso de host sin renovar backup dataAt, worker sin
+telemetría UNKNOWN, éxito del control plane insuficiente y rechazo de tiempo contradictorio.
+Se usan exactamente los DLL del ZIP cualificado, persistencia memory fake y SNS doble.
+No se repitieron builds de runtime, la suite completa ni ensayos cloud.
+
+Dos renders Chrome CLI del sitio,1440x2600 y390x5000, verifican DOM de módulos y capturas
+inspeccionadas. Perfil propio, proceso principal termina normalmente y servidor cierra;
+sin sesión personal ni fuerza. No es nueva certificación completa de accesibilidad,
+test de todos los gestos/teclado ni medición de tráfico nativo de fondo del navegador.
+El runner Playwright existente se actualizó para el nuevo tour pero no se ejecutó en
+este corte: su dependencia no apareció en las ubicaciones de herramientas revisadas.
+No se instaló nada. El entorno conserva su recibo/perfil sintético como evidencia.
+
+Los cinco HTML/JSON Archify y pins están intactos; quinto mapa rotulado snapshot histórico
+anterior al portable. El diagrama conjunto final sigue aplazado hasta E2E nativo.
+La nueva ruta de sólo lectura/source/sentinel-portable es el séptimo documento permitido;
+CSP, aislamiento y rechazo de archivos ajenos siguen cubiertos por Node.
+
+Las menciones antiguas a repos privados inaccesibles, PKI pendiente,29/102 recursos o
+locks todavía bloqueados son checkpoints HISTÓRICOS, no el estado ni autoridad actual.
+No se certifica el CI global ni hosted workflows sin ejecutarlos. API sencilla y PKI fuera.
+Ver [próximo alcance y probes](../operations/integrations/portable/NATIVE-NEXT-GATE.md).
+No hay AWS nuevo ni preflight de cuenta, push, permisos, publicación o servicios instalados.
+
+
 
 ## Current correction — b2 retired, partial (2026-10-24)
 
