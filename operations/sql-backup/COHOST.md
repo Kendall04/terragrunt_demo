@@ -1,6 +1,6 @@
 # SQL-host backup observation with external telemetry watchdog
 
-Current actual TARGET/bootstrap and exact IAM proposal: [wiring review](recovery/COHOST-WIRING-REVIEW.md). Initial boot stages only; post-restore native handoff and external readiness gate activation.
+Current actual TARGET/bootstrap and exact IAM proposal: [wiring review](recovery/COHOST-WIRING-REVIEW.md). Current split: observer opt-in follows external readiness and requires no SQL credentials; producer opt-in additionally requires the admitted complete credential handoff.
 
 Owner selected this placement on 2026-10-25 (local preparation only). This supersedes
 OBSERVER.md's original requirement for a separate observer host for the next integrated
@@ -40,7 +40,7 @@ sources and existing unit templates to the same deterministic hash-inventoried S
 package. A normal build/install keeps its backup-only behavior. No old tar, component
 manifest, protected pin, approval or native receipt is rewritten. Current binary inputs
 must be freshly qualified when packaging for a real cycle; fixture executables are not
-native SQL acceptance. No large binary archive was assembled for this local increment.
+native SQL acceptance. The earlier executable archive remains immutable; a new helper revision must receive its own artifact hash and local qualification.
 
 `package.py install --sentinel-config <absolute-json>` validates all metadata before
 writing. The regular backup config supplies the **existing SQL role**, staging and
@@ -78,29 +78,34 @@ it receives no LoadCredential or SQL connection environment. Its state directory
 separate from SQL staging. Existing ephemeral credential provisioning for the backup
 service is unchanged; none is created by this extension.
 
-A future reviewed SQL bootstrap stages the hash-verified package/config through the
-normal artifact path, checks required runtime/CLI and the two existing ephemeral backup
-credential files, verifies `ExternalWatchdogBinding` against the external deployment,
-and then executes these fixed actions under its already approved host authority:
+The verified bootstrap accepts two separate false-default opt-ins. After fresh cycle
+approval and native Sentinel/SNS/watchdog readiness, `enable_after_native_gates=true`
+requests only `sql-backup-cohost.target` (observation). No credential path is read.
+`enable_producer_after_native_gates=true` additionally requires the observer opt-in
+and complete admitted post-restore credentials before requesting `sql-backup-producer.target`.
+The two targets own separate timers; stopping or refusing the producer does not stop
+observation. Producer startup checks `cohost.py verify-producer`, including its exact
+credential drop-in; observer startup checks only `cohost.py verify` and package integrity.
 
-```text
-python3 -I -B /opt/terragrunt-demo/sql-backup/cohost.py verify
-systemctl daemon-reload
-systemctl enable --now sql-backup-cohost.target
-```
+The local CLI defaults to a plan and `--component observer`; `producer` and `both`
+are explicit selections. `both` prechecks the producer before any service request,
+then requests observer before producer. Each apply still requires root and exact
+package acknowledgement plus separately admitted authority. A hash is not consent.
+No missing credential is interpreted as a successful backup: without a sanitized
+producer receipt the observer emits UNKNOWN even if a manifest check is otherwise
+healthy. It can therefore heartbeat before the producer exists, without asserting HEALTHY.
 
 These actions were **not executed**. Each service has the same startup integrity/expiry
 gate, so restart/reboot cannot silently use changed files. The gate verifies the installed
 receipt (<=1MiB), exact files/hashes/modes/root ownership, config and finite window. This
-is local integrity under root trust, not attestation against compromised root. The target
-starts both timers; observation has OnBootSec90/OnUnitActiveSec with no SQL dependency,
+is local integrity under root trust, not attestation against compromised root. The observation target starts only its timer; observation has OnBootSec90/OnUnitActiveSec with no SQL dependency,
 so unavailable SQL does not inhibit metadata checking. Target/timer active is not health.
 No repeated boot downloads, service restarts, force-kill or ownership takeover is added.
 Enabling through user data still requires a reviewed bootstrap diff and fresh artifact;
 this local change does not edit the protected data user_data or claim it is installed.
 
 Shutdown remains owner-controlled: inhibit the backup with existing lifecycle tooling,
-wait for known idle/outcome, disable the two own timers and cohost target, reconcile any
+wait for known idle/outcome, disable the two own timers and both own targets, reconcile any
 active job/pending delivery, export bounded sanitized evidence, then retire only the own
 host/run. Do not remove pending files, steal locks or kill a PID. Expected-DOWN must be
 explicitly reviewed in the external watcher before planned teardown; silence alone does

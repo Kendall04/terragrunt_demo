@@ -67,7 +67,7 @@ def integration(value,backup,inputs,artifact):
     condition={'DateGreaterThanEquals':{'aws:CurrentTime':value['StartsAt']},'DateLessThan':{'aws:CurrentTime':value['ExpiresAt']}}
     send={'Version':'2012-10-17','Statement':[{'Sid':'SqlCohostSendOnly','Effect':'Allow','Action':'sqs:SendMessage','Resource':queue,'Condition':condition|{'StringEquals':{'aws:RequestedRegion':value['Region']}}}]}
     read={'Version':'2012-10-17','Statement':[{'Sid':'SqlCohostExactArtifactVersion','Effect':'Allow','Action':'s3:GetObjectVersion','Resource':object_arn,'Condition':condition|{'StringEquals':{'s3:VersionId':artifact['VersionId']}}},{'Sid':'SqlCohostArtifactDecryptViaS3','Effect':'Allow','Action':'kms:Decrypt','Resource':backup['BackupKeyArn'],'Condition':condition|{'StringEquals':{'kms:ViaService':'s3.'+value['Region']+'.amazonaws.com','kms:EncryptionContext:aws:s3:arn':object_arn}}}]}
-    return {'StagedSentinelInputs':staged,'ActivationSentinelInputs':active,'SqlRoleArn':binding['sender_role_arn'],'SqlRoleSqsDelta':send,'SqlRoleArtifactDelta':read,'SqlTargetInput':{'sql_backup_cohost':{'artifact':artifact,'backup':backup,'sentinel':value,'enable_after_native_gates':False}},'ExecutionAuthorized':False,'AdditionalCloudAddresses':0,'ActivationRequires':['FRESH_CYCLE_APPROVAL','NATIVE_SUBSCRIPTION_CONFIRMED','NATIVE_SENTINEL_RUNTIME_AND_WATCHDOG_READBACK','POST_RESTORE_CREDENTIAL_BOOTSTRAP_COMPLETED'],'Artifact':artifact}
+    return {'StagedSentinelInputs':staged,'ActivationSentinelInputs':active,'SqlRoleArn':binding['sender_role_arn'],'SqlRoleSqsDelta':send,'SqlRoleArtifactDelta':read,'SqlTargetInput':{'sql_backup_cohost':{'artifact':artifact,'backup':backup,'sentinel':value,'enable_after_native_gates':False,'enable_producer_after_native_gates':False}},'ExecutionAuthorized':False,'AdditionalCloudAddresses':0,'ActivationRequires':['FRESH_CYCLE_APPROVAL','NATIVE_SUBSCRIPTION_CONFIRMED','NATIVE_SENTINEL_RUNTIME_AND_WATCHDOG_READBACK','POST_RESTORE_CREDENTIAL_BOOTSTRAP_COMPLETED'],'ObserverActivationRequires':['FRESH_CYCLE_APPROVAL','NATIVE_SUBSCRIPTION_CONFIRMED','NATIVE_SENTINEL_RUNTIME_AND_WATCHDOG_READBACK'],'ProducerActivationRequires':['FRESH_CYCLE_APPROVAL','POST_RESTORE_CREDENTIAL_BOOTSTRAP_COMPLETED'],'Artifact':artifact}
 
 
 def render(value,backup,user,templates):
@@ -81,9 +81,10 @@ def render(value,backup,user,templates):
     service=service.replace('Type=oneshot','Type=oneshot\n'+gate)
     service=service.replace(' --aws --ec2-role',' --total-publish-attempts 20 --producer-job-receipt '+backup['StagingDirectory']+'/.service/last-job.json --aws --ec2-role')
     timer=f'[Unit]\nPartOf=sql-backup-cohost.target\nDescription=SQL-host backup observation; external watchdog covers telemetry loss\n[Timer]\nOnBootSec=90\nOnUnitActiveSec={value["CadenceSeconds"]}\nUnit=sql-backup-sentinel-producer.service\n[Install]\nWantedBy=timers.target\n'
-    dropin='[Service]\n'+gate+'\n'
-    target='[Unit]\nDescription=SQL backup and local observation, external Sentinel required\nWants=sql-backup.timer sql-backup-sentinel-producer.timer\nAfter=network-online.target\n[Install]\nWantedBy=multi-user.target\n'
-    return {'etc/systemd/system/sql-backup-sentinel-producer.service':service.encode(),'etc/systemd/system/sql-backup-sentinel-producer.timer':timer.encode(),'etc/systemd/system/sql-backup.service.d/sentinel-integrity.conf':dropin.encode(),'etc/systemd/system/sql-backup.timer.d/sentinel-cohost.conf':b'[Unit]\nPartOf=sql-backup-cohost.target\n','etc/systemd/system/sql-backup-cohost.target':target.encode()}
+    dropin='[Service]\n'+gate+'-producer\n'
+    target='[Unit]\nDescription=SQL-host observation only, external Sentinel required\nWants=sql-backup-sentinel-producer.timer\nAfter=network-online.target\n[Install]\nWantedBy=multi-user.target\n'
+    producer_target='[Unit]\nDescription=SQL backup producer after admitted credential handoff\nWants=sql-backup.timer\nAfter=network-online.target\n[Install]\nWantedBy=multi-user.target\n'
+    return {'etc/systemd/system/sql-backup-sentinel-producer.service':service.encode(),'etc/systemd/system/sql-backup-sentinel-producer.timer':timer.encode(),'etc/systemd/system/sql-backup.service.d/sentinel-integrity.conf':dropin.encode(),'etc/systemd/system/sql-backup.timer.d/sentinel-cohost.conf':b'[Unit]\nPartOf=sql-backup-producer.target\n','etc/systemd/system/sql-backup-cohost.target':target.encode(),'etc/systemd/system/sql-backup-producer.target':producer_target.encode()}
 
 def verify(root=Path('/'),now=None):
     # Trusted root-owned receipt is local integrity, not remote attestation.
@@ -103,32 +104,24 @@ def verify(root=Path('/'),now=None):
         return v
     receipt=json.loads(raw,object_pairs_hook=unique)
     require(receipt.get('ObserverPlacement')=='SQL_HOST','COHOST_INSTALL_REQUIRED')
+    require(receipt.get('ActivationContract')=='COHOST_OBSERVER_PRODUCER_SPLIT_V1','SPLIT_ACTIVATION_INSTALL_REQUIRED')
     require(bool(receipt.get('InstalledFiles')),'INSTALLED_INVENTORY_REQUIRED')
     expected=set(receipt['InstalledFiles'])
     required={'opt/terragrunt-demo/sql-backup/'+name for name in FILES if not name.endswith('.in')}
-    required|={'opt/terragrunt-demo/sql-backup/bin/SqlBackup','etc/terragrunt-demo/sql-backup/config.json','etc/terragrunt-demo/sql-backup/sentinel.json','etc/systemd/system/sql-backup-sentinel-producer.service','etc/systemd/system/sql-backup-sentinel-producer.timer','etc/systemd/system/sql-backup.service.d/sentinel-integrity.conf','etc/systemd/system/sql-backup.service','etc/systemd/system/sql-backup.timer','etc/systemd/system/sql-backup.timer.d/sentinel-cohost.conf','etc/systemd/system/sql-backup-cohost.target'}
+    required|={'opt/terragrunt-demo/sql-backup/bin/SqlBackup','etc/terragrunt-demo/sql-backup/config.json','etc/terragrunt-demo/sql-backup/sentinel.json','etc/systemd/system/sql-backup-sentinel-producer.service','etc/systemd/system/sql-backup-sentinel-producer.timer','etc/systemd/system/sql-backup.service.d/sentinel-integrity.conf','etc/systemd/system/sql-backup.service','etc/systemd/system/sql-backup.timer','etc/systemd/system/sql-backup.timer.d/sentinel-cohost.conf','etc/systemd/system/sql-backup-cohost.target','etc/systemd/system/sql-backup-producer.target'}
     require(required<=expected,'COHOST_INVENTORY_INCOMPLETE')
     for relative,record in receipt['InstalledFiles'].items():
         p=file(relative)
         require(hashlib.sha256(p.read_bytes()).hexdigest()==record['Sha256'] and stat.S_IMODE(p.stat().st_mode)==record['Mode'],'INSTALLED_FILE_DRIFT')
-    dropin=root/'etc/systemd/system/sql-backup.service.d'
-    require({p.name for p in dropin.iterdir()}<={'sentinel-integrity.conf','credentials.conf'},'FOREIGN_CREDENTIAL_DROPIN')
-    if (dropin/'credentials.conf').exists():
-        credentials=file('etc/systemd/system/sql-backup.service.d/credentials.conf')
-        expected_credentials='[Service]\nLoadCredential=\nLoadCredential=backup-connection:/etc/terragrunt-demo/sql-backup/credentials/backup-connection\nLoadCredential=verify-connection:/etc/terragrunt-demo/sql-backup/credentials/verify-connection\n'
-        require(credentials.read_text()==expected_credentials and stat.S_IMODE(credentials.stat().st_mode)==0o644,'CREDENTIAL_DROPIN_DRIFT')
     config=signals.read(root/str(CONFIG).lstrip('/'));settings=signals.read(root/str(SETTINGS).lstrip('/'));validate(settings,config)
     at=now or dt.datetime.now(dt.timezone.utc)
     require(signals.utc(settings['StartsAt'])<=at<signals.utc(settings['ExpiresAt']),'COHOST_WINDOW_NOT_ACTIVE')
     return {'Status':'VERIFIED_LOCAL_INSTALL','Placement':'SQL_HOST','FailureDomain':'SHARED_WITH_SQL','IndependentS3Observation':False,'ExternalWatchdogRequired':True,'WatchdogSeconds':settings['WatchdogSeconds'],'ExpectedUp':settings['ExpectedUp'],'ServicesStarted':False}
 
 
-def activate(root=Path('/'),apply=False,confirmation=None,system=subprocess.run,now=None):
-    """Persistent plan-default entrypoint after native external/credential admission.
-
-    Hash confirmation acknowledges exact local bytes; it is not owner consent.
-    """
-    proof=verify(root,now)
+def producer_ready(root=Path('/'),now=None):
+    """Root-side producer gate; observer never reads SQL credential material."""
+    verify(root,now)
     config=signals.read(root/str(CONFIG).lstrip('/'))
     directory=root/'etc/terragrunt-demo/sql-backup/credentials'
     require(not any(p.is_symlink() for p in (directory,*directory.parents)) and directory.is_dir(),'POST_RESTORE_CREDENTIALS_REQUIRED')
@@ -138,11 +131,27 @@ def activate(root=Path('/'),apply=False,confirmation=None,system=subprocess.run,
         require(p.is_file() and not p.is_symlink() and p.stat().st_uid==os.geteuid() and stat.S_IMODE(p.stat().st_mode)==0o600,'PRIVATE_CREDENTIAL_MATERIAL_REQUIRED')
     completed=signals.read(directory/'bootstrap-receipt.json')
     require(completed.get('Status')=='PROVISIONED_NOT_STARTED' and completed.get('Database')==config['Database'],'POST_RESTORE_CREDENTIALS_REQUIRED')
+    dropin=root/'etc/systemd/system/sql-backup.service.d'
+    require({p.name for p in dropin.iterdir()}<={'sentinel-integrity.conf','credentials.conf'},'FOREIGN_CREDENTIAL_DROPIN')
+    credentials=dropin/'credentials.conf'
+    require(credentials.is_file() and not credentials.is_symlink(),'PRODUCER_CREDENTIAL_DROPIN_REQUIRED')
+    require(credentials.stat().st_uid==os.geteuid() and stat.S_IMODE(credentials.stat().st_mode)==0o644,'CREDENTIAL_DROPIN_DRIFT')
+    expected_credentials='[Service]\nLoadCredential=\nLoadCredential=backup-connection:/etc/terragrunt-demo/sql-backup/credentials/backup-connection\nLoadCredential=verify-connection:/etc/terragrunt-demo/sql-backup/credentials/verify-connection\n'
+    require(credentials.read_text()==expected_credentials,'CREDENTIAL_DROPIN_DRIFT')
+    return {'Status':'VERIFIED_PRODUCER_HANDOFF','Database':config['Database'],'BackupSuccess':False}
+
+def activate(root=Path('/'),apply=False,confirmation=None,system=subprocess.run,now=None,component='observer'):
+    """Independent opt-ins. Hash acknowledgement is not owner/native admission."""
+    require(component in ('observer','producer','both'),'EXPLICIT_COMPONENT_REQUIRED')
+    verify(root,now)
+    if component in ('producer','both'):producer_ready(root,now)
     install=root/'opt/terragrunt-demo/sql-backup/install-receipt.json'
     with install.open('rb') as stream:raw=stream.read(1048577)
     require(len(raw)<=1048576,'INSTALL_RECEIPT_TOO_LARGE');sha=json.loads(raw)['PackageSha256']
-    actions=[['/usr/bin/systemctl','daemon-reload'],['/usr/bin/systemctl','enable','--now','sql-backup-cohost.target']]
-    result={'Status':'ACTIVATION_PLAN','PackageSha256':sha,'Actions':actions,'ServicesStarted':False,'NativeAcceptance':False,'ExternalReadiness':'REQUIRES_SEPARATE_NATIVE_ADMISSION'}
+    actions=[['/usr/bin/systemctl','daemon-reload']]
+    if component in ('observer','both'):actions.append(['/usr/bin/systemctl','enable','--now','sql-backup-cohost.target'])
+    if component in ('producer','both'):actions.append(['/usr/bin/systemctl','enable','--now','sql-backup-producer.target'])
+    result={'Status':'ACTIVATION_PLAN','Component':component,'PackageSha256':sha,'Actions':actions,'ServicesStarted':False,'NativeAcceptance':False,'ExternalReadiness':'REQUIRES_SEPARATE_NATIVE_ADMISSION'}
     if not apply:return result
     require(confirmation==sha and os.geteuid()==0,'EXPLICIT_ROOT_ACTIVATION_REQUIRED')
     require(root==Path('/') or system is not subprocess.run,'FIXTURE_REQUIRES_DOUBLE_PORT')
@@ -153,9 +162,9 @@ def activate(root=Path('/'),apply=False,confirmation=None,system=subprocess.run,
     return result|{'Status':'ACTIVATION_REQUEST_ACCEPTED','ServicesStarted':True,'NativeAcceptance':False}
 
 def main():
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('action',choices=['verify','activate']);p.add_argument('--apply',action='store_true');p.add_argument('--confirm-root-activation');args=p.parse_args()
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('action',choices=['verify','verify-producer','activate']);p.add_argument('--component',choices=['observer','producer','both'],default='observer');p.add_argument('--apply',action='store_true');p.add_argument('--confirm-root-activation');args=p.parse_args()
     require(args.action=='activate' or not (args.apply or args.confirm_root_activation),'VERIFY_IS_READ_ONLY')
-    print(json.dumps(verify() if args.action=='verify' else activate(apply=args.apply,confirmation=args.confirm_root_activation),separators=(',',':')))
+    print(json.dumps(verify() if args.action=='verify' else producer_ready() if args.action=='verify-producer' else activate(apply=args.apply,confirmation=args.confirm_root_activation,component=args.component),separators=(',',':')))
 if __name__=='__main__':
     try:main()
     except Exception as e:

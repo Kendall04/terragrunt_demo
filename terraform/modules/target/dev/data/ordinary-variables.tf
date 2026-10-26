@@ -68,14 +68,16 @@ variable "protected_sql_ami" { type = string }
 variable "sql_backup_cohost" {
   default = null
   type = object({
-    artifact                  = object({ Bucket = string, Key = string, VersionId = string, Sha256 = string, BucketKeyEnabled = bool })
-    backup                    = object({ Database = string, StagingDirectory = string, RestoreDirectory = string, Bucket = string, Prefix = string, BackupKeyArn = string, TextKeyArn = string, ExpectedEc2RoleName = string, MaxBackupBytes = number, FreeReserveBytes = number, TimeoutSeconds = number, ProposedIntervalHours = number, ProposedRetentionDays = number, ProposedMaxAgeHours = number, RetainLocalVerifiedBackups = number })
-    sentinel                  = object({ SchemaVersion = number, Placement = string, Account = string, Region = string, RunId = string, Subject = string, StartsAt = string, ExpiresAt = string, CadenceSeconds = number, ReminderSeconds = number, PublishAttempts = number, WatchdogSeconds = number, ExpectedUp = bool })
-    enable_after_native_gates = optional(bool, false)
+    artifact                           = object({ Bucket = string, Key = string, VersionId = string, Sha256 = string, BucketKeyEnabled = bool })
+    backup                             = object({ Database = string, StagingDirectory = string, RestoreDirectory = string, Bucket = string, Prefix = string, BackupKeyArn = string, TextKeyArn = string, ExpectedEc2RoleName = string, MaxBackupBytes = number, FreeReserveBytes = number, TimeoutSeconds = number, ProposedIntervalHours = number, ProposedRetentionDays = number, ProposedMaxAgeHours = number, RetainLocalVerifiedBackups = number })
+    sentinel                           = object({ SchemaVersion = number, Placement = string, Account = string, Region = string, RunId = string, Subject = string, StartsAt = string, ExpiresAt = string, CadenceSeconds = number, ReminderSeconds = number, PublishAttempts = number, WatchdogSeconds = number, ExpectedUp = bool })
+    enable_after_native_gates          = optional(bool, false)
+    enable_producer_after_native_gates = optional(bool, false)
   })
   validation {
     condition = var.sql_backup_cohost == null ? true : (
       length(base64encode(jsonencode(var.sql_backup_cohost))) <= 4096 &&
+      (!var.sql_backup_cohost.enable_producer_after_native_gates || var.sql_backup_cohost.enable_after_native_gates) &&
       var.sql_backup_cohost.sentinel.Account == var.account_id && var.sql_backup_cohost.sentinel.Region == var.region &&
       var.sql_backup_cohost.sentinel.Placement == "SQL_HOST" &&
       var.sql_backup_cohost.backup.ExpectedEc2RoleName == "demo-dev-data-sql-ec2-role" &&

@@ -47,7 +47,8 @@ def build(publish,output,commit,with_observer=False,component_manifest_sha=None,
         for name in cohost.FILES:
             files[name]=((base/name).read_bytes().replace(b'\r\n',b'\n') if with_observer else (base/name).read_bytes(),0o755 if name.endswith('.py') else 0o644)
     manifest={'SchemaVersion':1,'SourceCommit':commit,'Runtime':'10.0.13','Target':'linux-x64','Files':{name:{'Sha256':digest(body),'Bytes':len(body),'Mode':mode} for name,(body,mode) in files.items()}}
-    if with_observer:manifest['HelperTextEncoding']='UTF8_LF'
+    if with_observer:
+        manifest['HelperTextEncoding']='UTF8_LF';manifest['ActivationContract']='COHOST_OBSERVER_PRODUCER_SPLIT_V1'
     if binary is not None:
         binary['ExcludedSymbols']=excluded;manifest['BinaryComponent']=binary
     files['manifest.json']=(json.dumps(manifest,sort_keys=True,separators=(',',':')).encode(),0o644)
@@ -107,6 +108,7 @@ def install(package,expected,config,root,user,apply,confirmation,sentinel_config
     if sentinel is not None:
         cohost.validate(sentinel,value)
         require(set(cohost.FILES)<=set(files),'COHOST_PACKAGE_REQUIRED')
+        require(manifest.get('ActivationContract')=='COHOST_OBSERVER_PRODUCER_SPLIT_V1','SPLIT_ACTIVATION_PACKAGE_REQUIRED')
     observer_units=cohost.render(sentinel,value,user,files) if sentinel is not None else {}
     identity=pwd.getpwnam(user)
     destination=root/'opt/terragrunt-demo/sql-backup'
@@ -136,7 +138,7 @@ def install(package,expected,config,root,user,apply,confirmation,sentinel_config
         no_links(staging)
         require(staging.is_dir() and stat.S_IMODE(staging.stat().st_mode)==0o700 and staging.stat().st_uid==identity.pw_uid,'STAGING_PERMISSION_DRIFT')
         return dict(result,Status='ALREADY_INSTALLED')
-    for path in (configdir,units/'sql-backup.service',units/'sql-backup.timer',units/'sql-backup-sentinel-producer.service',units/'sql-backup-sentinel-producer.timer',units/'sql-backup.service.d',units/'sql-backup.timer.d',units/'sql-backup-cohost.target'):
+    for path in (configdir,units/'sql-backup.service',units/'sql-backup.timer',units/'sql-backup-sentinel-producer.service',units/'sql-backup-sentinel-producer.timer',units/'sql-backup.service.d',units/'sql-backup.timer.d',units/'sql-backup-cohost.target',units/'sql-backup-producer.target'):
         no_links(path); require(not path.exists(),'UNMANAGED_TARGET_EXISTS')
     staging=root/value['StagingDirectory'].lstrip('/')
     no_links(staging); require(not staging.exists(),'UNMANAGED_STAGING_EXISTS')
@@ -162,7 +164,7 @@ def install(package,expected,config,root,user,apply,confirmation,sentinel_config
         for name,body in observer_units.items():put(root/name,body,0o644)
     staging.mkdir(parents=True,mode=0o700); staging.chmod(0o700)
     if os.geteuid()==0: os.chown(staging,identity.pw_uid,identity.pw_gid)
-    put(receipt,json.dumps({'SchemaVersion':1,'PackageSha256':expected,'SourceCommit':manifest['SourceCommit'],'ConfigSha256':digest(config.read_bytes()),'ServiceUser':user,'InstalledFiles':installed,'ObserverPlacement':'SQL_HOST' if sentinel is not None else None,'SentinelConfigSha256':digest(sentinel_config.read_bytes()) if sentinel is not None else None},indent=2).encode(),0o644)
+    put(receipt,json.dumps({'SchemaVersion':1,'PackageSha256':expected,'SourceCommit':manifest['SourceCommit'],'ConfigSha256':digest(config.read_bytes()),'ServiceUser':user,'InstalledFiles':installed,'ObserverPlacement':'SQL_HOST' if sentinel is not None else None,'ActivationContract':manifest.get('ActivationContract'),'SentinelConfigSha256':digest(sentinel_config.read_bytes()) if sentinel is not None else None},indent=2).encode(),0o644)
     return dict(result,Status='STAGED_NOT_ENABLED',StagingUid=identity.pw_uid)
 
 def signals_read(path):

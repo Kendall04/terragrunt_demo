@@ -1974,21 +1974,21 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/package.py": {
-      "sha256": "de8b79f93f2cea6a3a8e36d0ef96f37eedd6207b61be7f56e8577c164e839c0e",
+      "sha256": "aaaa760263d188c9e6c3d1f0c1b18bff03e9a7852fec1626c1e8c9bc6f2414bd",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          103,
-          112,
-          113
+          104,
+          114,
+          115
         ],
         "executable-dependency": [
           44,
           45,
           48,
-          173,
-          174,
-          175
+          175,
+          176,
+          177
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -9294,11 +9294,11 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/modules/target/dev/data/ordinary-variables.tf": {
-      "sha256": "5c520e80eeb9eb6971b77f3f8550f69911bf19c6fd30fd7832eea5a01fe3de1b",
+      "sha256": "245a6e0b3079b25e3e5b862690f8c6ed5b0db714c180c5a7510106e74ddbb48f",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          86
+          88
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -11682,7 +11682,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/cohost.py": {
-      "sha256": "f58c60b154f110a3ddca7530d2ecf0d5bc8669ae47f1a49cd5d00be8e93c75a5",
+      "sha256": "6fc94acdf914e542e8a20774913336043fc39a0ac426fb212f3c8eca718e1f98",
       "declarations": [],
       "signals": {
         "role-input": [
@@ -11702,12 +11702,12 @@
           69,
           76,
           82,
-          97,
-          108,
-          109,
-          118,
-          133,
-          141
+          98,
+          110,
+          111,
+          126,
+          139,
+          148
         ],
         "executable-dependency": [
           16,
@@ -11717,62 +11717,65 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/test_cohost.py": {
-      "sha256": "41a5a3cc8e7f9f6f2d25fecfe2de38afb33b68f80e24e6ca1a100442920211a4",
+      "sha256": "c7881223906b982597c2587f0e5ef70bb0456b099d391a51742ab0b687935959",
       "declarations": [],
       "signals": {
         "role-input": [
-          39,
-          167
+          43,
+          196
         ],
         "launch-or-mutation": [
-          39,
-          41,
-          49,
-          81,
-          87,
-          90,
-          157,
-          167
+          43,
+          45,
+          53,
+          91,
+          110,
+          116,
+          119,
+          186,
+          196
         ],
         "executable-dependency": [
-          57,
-          78,
+          61,
           81,
-          87,
-          90
+          97,
+          107,
+          110,
+          116,
+          119
         ]
       },
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/test_cohost_wiring.py": {
-      "sha256": "7db947534b204224f40e3b22e62958865cf84fb7b565716ceaab825f2b742360",
+      "sha256": "bec04f6bf008afbabb5d0995325c0bdf3f191342594d89ccb50891d59d43dd21",
       "declarations": [],
       "signals": {
         "role-input": [
-          31
+          32
         ],
         "launch-or-mutation": [
           10,
           11,
           12,
-          21,
           22,
-          35
+          23,
+          36
         ],
         "executable-dependency": [
           13,
           14,
-          35,
-          40
+          36,
+          41
         ],
         "security-control": [
-          31
+          32
         ]
       },
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/data/cohost-bootstrap.sh.tftpl": {
-      "sha256": "d8bbe9c617e8b0804a7482902ee7af3b8c95e422b3d5ff816677649f47d35b6e",
+      "sha256": "f844aedf0c48291872bba1bd26687293277c9ba8b0229883a3c96043441df191",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -11787,7 +11790,7 @@
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",
-  "review_revision": "1285831d46f92fdee506df50cc6d9bdb41d8bdda",
-  "review_note": "Six exact local changes: pinned reusable Linux binary lineage, LF helpers/symbol exclusion, persistent plan-default activation and tests/bootstrap delegation. UNVERIFIED, no CURRENT authority, approval, AWS or timer activation.",
-  "review_delta_sha256": "e40804ca3134dfebfa49e703d84aa031fc6301c5f22bd9bf72783229e327e59a"
+  "review_revision": "c7cc2b676fc7ec3ea2c99b3d8ed4c43523e14945",
+  "review_note": "Six reviewed split activation source changes; no authority, installed settings, AWS or credentials granted. UNVERIFIED.",
+  "review_delta_sha256": "e1403f96ba29784e55bb5a81e5b11d17bc5d145e63fcf659243ee1739b635149"
 }

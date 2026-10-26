@@ -1,5 +1,19 @@
 # ECS integrated recovery proposal — local preparation, not authorization
 
+## Split cohost activation correction - local, not authority
+
+Observer bootstrap no longer waits for SQL credential provisioning. Its false-default
+opt-in starts only observation after approved external readiness, and can send UNKNOWN
+heartbeats without claiming healthy backups. Producer has its own false-default flag,
+target and repeated private credential handoff gate. Both timers retain integrity/expiry.
+This adds zero AWS addresses: the 102-address forecast and USD6 proposal remain unapproved.
+It does not resolve or retry SSM. The cold SQL seed/backup/fence/restore/CHECKDB/handoff
+transport is still a separate admission blocker; do not create the full trial on the
+assumption that cohost autonomy fixes it. New artifact SHA plus actual future S3 VersionId,
+current policy/backend concurrency preflight, bounded owner LIVE review and a complete
+create/test/retire permission packet remain required before any fresh cloud cycle.
+
+
 Current wiring/access addendum: [actual SQL opt-in and original external watchdog](COHOST-WIRING-REVIEW.md), including exact SQS/artifact deltas, phase guards and revised grouped-decision wording. Historical sealed ZIP is unchanged; this does not admit theUSD6 cycle. Recommended finite trial observer cadence is300s/deadline1200s; the earlier60s paragraph below is historical, not an installed setting.
 
 Placement update 2026-10-26: [cohost package/units and external UNKNOWN watchdog](../COHOST.md) now have local fixture acceptance. No separate observer EC2 is proposed; the102-address forecast already excluded it and is unchanged. This does not resolve SSM, install bootstrap or admit the cycle. The historical sealed proposal and native evidence remain immutable.

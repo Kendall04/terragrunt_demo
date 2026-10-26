@@ -13,7 +13,8 @@ class CohostWiring(unittest.TestCase):
         self.assertIn('var.sql_backup_cohost == null ? local.sql_base_user_data',main)
         self.assertIn('cohost-bootstrap.sh.tftpl',main);self.assertIn('base64encode(jsonencode(var.sql_backup_cohost))',main)
         for key in ['AWS_REGION','APP_DB','APP_USER','SA_SECRET_ARN','APP_SECRET_ARN']:self.assertIn(key,locals_)
-        self.assertIn('enable_after_native_gates = optional(bool, false)',variables)
+        self.assertRegex(variables,r'enable_after_native_gates\s*=\s*optional\(bool, false\)')
+        self.assertRegex(variables,r'enable_producer_after_native_gates\s*=\s*optional\(bool, false\)')
         self.assertIn('length(base64encode(jsonencode(var.sql_backup_cohost))) <= 4096',variables)
         self.assertNotIn('remote-exec',main);self.assertNotIn('provisioner',main)
         self.assertEqual(main.count('resource "aws_instance"'),1)
@@ -35,9 +36,11 @@ class CohostWiring(unittest.TestCase):
         template=(ROOT/'terraform/infra/data/cohost-bootstrap.sh.tftpl').read_text()
         inline=template.split("<<'SQL_BACKUP_COHOST_BOOTSTRAP'\n",1)[1].split('\nSQL_BACKUP_COHOST_BOOTSTRAP',1)[0]
         ast.parse(inline.replace('${cohost_config}',base64.b64encode(b'{}').decode()))
-        for required in ['--version-id','--expected-bucket-owner','PACKAGE_SHA_MISMATCH','SAFE_PACKAGE_MEMBERS_REQUIRED','package.install(','cohost.verify()','cohost.activate(apply=True,confirmation=sha)','enable_after_native_gates']:
+        for required in ['--version-id','--expected-bucket-owner','PACKAGE_SHA_MISMATCH','SAFE_PACKAGE_MEMBERS_REQUIRED','package.install(','cohost.verify()',"cohost.activate(apply=True,confirmation=sha,component='observer')",'enable_after_native_gates']:
             self.assertIn(required,template)
         for forbidden in ['send-command','start-session','ssh ','--profile','set -x','SQLCMDPASSWORD','secretsmanager get-secret-value']:
             self.assertNotIn(forbidden,template)
-        self.assertLess(template.index("if v['enable_after_native_gates']"),template.index('cohost.activate(apply=True,confirmation=sha)'))
+        self.assertLess(template.index("if v['enable_after_native_gates']"),template.index("cohost.activate(apply=True,confirmation=sha,component='observer')"))
+        self.assertLess(template.index("component='observer'"),template.index("component='producer'"))
+        self.assertIn("v.get('enable_producer_after_native_gates',False)",template)
 if __name__=='__main__':unittest.main(verbosity=2)

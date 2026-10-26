@@ -38,14 +38,15 @@ connection string or actual host configuration is embedded. Opt-in settings are 
 and hash-inventoried at installation. Source manifest, mode, archive bounds and exact
 component lineage are checked before installation. No timer is enabled by installation.
 
-The persistent `cohost.py activate` entrypoint defaults to a local plan. With separately
-approved native external readiness, root may use `--apply --confirm-root-activation <package-sha>`
-after the existing post-restore credential handoff. It verifies integrity/window, exact DB,
-completed provisioning receipt and root-private material before requesting the declarative
-target. It never prints/reads credential file contents. Unknown/failed systemctl outcomes
-stop without retries. A matching hash is only local-byte acknowledgement, never owner consent.
-The proposed boot script calls this same entrypoint; rerunning SQL's whole user-data is
-neither necessary nor safe. Fixture roots require a double port before any action.
+The manifest/install receipt explicitly pin `COHOST_OBSERVER_PRODUCER_SPLIT_V1`.
+`cohost.py activate` defaults to a local plan for observer only, without credential
+reads. Explicit `--component producer` additionally validates complete private credential
+handoff and its exact drop-in. Observer and backup timers belong to separate targets;
+producer failure cannot disable observer heartbeat. The bootstrap exposes independent
+false-default flags, with producer opt-in requiring observer opt-in. External readiness
+and actual cycle authority still precede activation. Root plus exact package SHA is
+local acknowledgement only. Failed/uncertain service calls stop without retry. Fixture
+roots require a service double; no real host service is installed in qualification.
 
 Local runtime qualification should execute the actual packaged ELF on Ubuntu WSL, verify
 build-info against BinaryComponent, exercise no-cloud/check/replay/maintenance/error gates,

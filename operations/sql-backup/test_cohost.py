@@ -34,7 +34,11 @@ class Installation(unittest.TestCase):
         self.assertIn('OnBootSec=90',(self.fixture/'etc/systemd/system/sql-backup-sentinel-producer.timer').read_text())
         target=(self.fixture/'etc/systemd/system/sql-backup-cohost.target').read_text()
         self.assertIn('WantedBy=multi-user.target',target)
-        self.assertIn('Wants=sql-backup.timer sql-backup-sentinel-producer.timer',target)
+        self.assertIn('Wants=sql-backup-sentinel-producer.timer',target)
+        self.assertNotIn('Wants=sql-backup.timer',target)
+        producer=(self.fixture/'etc/systemd/system/sql-backup-producer.target').read_text()
+        self.assertIn('Wants=sql-backup.timer',producer);self.assertNotIn('sql-backup-sentinel-producer.timer',producer)
+        self.assertIn('PartOf=sql-backup-producer.target',(self.fixture/'etc/systemd/system/sql-backup.timer.d/sentinel-cohost.conf').read_text())
         binding=self.stage()['ExternalWatchdogBinding']
         self.assertEqual(binding['sender_role_arn'],'arn:aws:iam::341936017254:role/fixture-role')
         self.assertEqual((binding['watchdog_seconds'],binding['observer_expected_up']),(1200,True))
@@ -51,22 +55,47 @@ class Installation(unittest.TestCase):
         result=credentials.operate(path,self.config,self.fixture,True,credentials.digest(path.read_bytes()),host)
         self.assertEqual(result['Status'],'PROVISIONED_NOT_STARTED')
         cohost.verify(self.fixture)
-        self.assertEqual(cohost.activate(self.fixture)['Status'],'ACTIVATION_PLAN')
+        self.assertEqual(cohost.activate(self.fixture,component='producer')['Status'],'ACTIVATION_PLAN')
         calls=[]
         class Success:returncode=0
         def fake(command,**options):calls.append(command);return Success()
-        with self.assertRaisesRegex(ValueError,'EXPLICIT_ROOT_ACTIVATION'):cohost.activate(self.fixture,True,'0'*64,fake)
+        with self.assertRaisesRegex(ValueError,'EXPLICIT_ROOT_ACTIVATION'):cohost.activate(self.fixture,True,'0'*64,fake,component='producer')
         self.assertEqual(calls,[])
-        self.assertEqual(cohost.activate(self.fixture,True,self.sha,fake)['Status'],'ACTIVATION_REQUEST_ACCEPTED')
-        self.assertEqual(calls,[['/usr/bin/systemctl','daemon-reload'],['/usr/bin/systemctl','enable','--now','sql-backup-cohost.target']])
+        self.assertEqual(cohost.activate(self.fixture,True,self.sha,fake,component='producer')['Status'],'ACTIVATION_REQUEST_ACCEPTED')
+        self.assertEqual(calls,[['/usr/bin/systemctl','daemon-reload'],['/usr/bin/systemctl','enable','--now','sql-backup-producer.target']])
         self.assertFalse((self.fixture/'etc/systemd/system/timers.target.wants').exists())
+        calls.clear()
+        cohost.activate(self.fixture,True,self.sha,fake,component='both')
+        self.assertEqual(calls,[['/usr/bin/systemctl','daemon-reload'],['/usr/bin/systemctl','enable','--now','sql-backup-cohost.target'],['/usr/bin/systemctl','enable','--now','sql-backup-producer.target']])
         drop=self.fixture/'etc/systemd/system/sql-backup.service.d/credentials.conf';drop.write_text(drop.read_text()+'ExecStart=/bin/false\n')
-        with self.assertRaisesRegex(ValueError,'CREDENTIAL_DROPIN_DRIFT'):cohost.verify(self.fixture)
+        with self.assertRaisesRegex(ValueError,'CREDENTIAL_DROPIN_DRIFT'):cohost.producer_ready(self.fixture)
+        self.assertEqual(cohost.activate(self.fixture)['Component'],'observer')
 
     def test_activation_never_starts_without_completed_credentials(self):
         self.stage()
-        with self.assertRaisesRegex(ValueError,'POST_RESTORE_CREDENTIALS_REQUIRED'):cohost.activate(self.fixture,now=NOW)
+        with self.assertRaisesRegex(ValueError,'POST_RESTORE_CREDENTIALS_REQUIRED'):cohost.activate(self.fixture,now=NOW,component='producer')
 
+    def test_observer_activates_without_reading_private_sql_credentials(self):
+        self.stage();calls=[]
+        class Success:returncode=0
+        def fake(command,**options):calls.append(command);return Success()
+        read=cohost.signals.read
+        def no_private_material(path):
+            self.assertNotIn('credentials',Path(path).parts)
+            return read(path)
+        with patch.object(cohost.signals,'read',side_effect=no_private_material):
+            plan=cohost.activate(self.fixture,now=NOW)
+            self.assertEqual(plan['Component'],'observer')
+            self.assertEqual(cohost.activate(self.fixture,True,self.sha,fake,NOW)['Status'],'ACTIVATION_REQUEST_ACCEPTED')
+        self.assertEqual(calls,[['/usr/bin/systemctl','daemon-reload'],['/usr/bin/systemctl','enable','--now','sql-backup-cohost.target']])
+        self.assertFalse((self.fixture/'etc/terragrunt-demo/sql-backup/credentials').exists())
+        before=list(calls)
+        with self.assertRaisesRegex(ValueError,'POST_RESTORE_CREDENTIALS_REQUIRED'):cohost.activate(self.fixture,True,self.sha,fake,NOW,component='producer')
+        self.assertEqual(calls,before) # producer refusal does not disable/restart observation
+    def test_producer_cannot_be_selected_by_unknown_component_or_default_override(self):
+        self.stage()
+        with self.assertRaisesRegex(ValueError,'EXPLICIT_COMPONENT_REQUIRED'):cohost.activate(self.fixture,now=NOW,component='sql-or-any-command')
+        self.assertNotIn('sql-backup-producer.target',str(cohost.activate(self.fixture,now=NOW)['Actions']))
     def test_configuration_drift_is_not_silently_adopted(self):
         self.stage();self.value['Subject']='other-sql';self.sentinel.write_text(json.dumps(self.value))
         with self.assertRaisesRegex(ValueError,'REVIEWED_OBSERVER_REPLACEMENT'):self.stage()
@@ -75,7 +104,7 @@ class Installation(unittest.TestCase):
         for at in [NOW-dt.timedelta(days=1),NOW+dt.timedelta(days=1)]:
             with self.assertRaisesRegex(ValueError,'WINDOW_NOT_ACTIVE'):cohost.verify(self.fixture,at)
         drop=(self.fixture/'etc/systemd/system/sql-backup.service.d/sentinel-integrity.conf').read_text()
-        self.assertIn('cohost.py verify',drop)
+        self.assertIn('cohost.py verify-producer',drop)
     def test_tamper_on_binary_config_units_or_source_blocks_startup(self):
         self.stage()
         for name in ['opt/terragrunt-demo/sql-backup/bin/SqlBackup','etc/terragrunt-demo/sql-backup/config.json','etc/terragrunt-demo/sql-backup/sentinel.json','etc/systemd/system/sql-backup-sentinel-producer.timer','opt/terragrunt-demo/sql-backup/observer.py']:

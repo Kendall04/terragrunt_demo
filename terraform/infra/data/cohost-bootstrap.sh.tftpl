@@ -53,10 +53,12 @@ try:
    with os.fdopen(fd,'wb') as f:f.write(raw)
  result=package.install(archive,sha,root/'backup.json',Path('/'),'mssql',True,sha,root/'sentinel.json')
  cohost.verify()
- # First target boot normally lacks post-restore credentials: leave timers disabled.
+ # Observer needs no SQL credentials; producer has a separate admitted handoff gate.
  if v['enable_after_native_gates']:
-  cohost.activate(apply=True,confirmation=sha)
- print(json.dumps({'Status':'COHOST_BOOTSTRAP_COMPLETE','TimersRequested':v['enable_after_native_gates'],'NativeTimerAcceptance':False}))
+  cohost.activate(apply=True,confirmation=sha,component='observer')
+ if v.get('enable_producer_after_native_gates',False):
+  cohost.activate(apply=True,confirmation=sha,component='producer')
+ print(json.dumps({'Status':'COHOST_BOOTSTRAP_COMPLETE','ObserverRequested':v['enable_after_native_gates'],'ProducerRequested':v.get('enable_producer_after_native_gates',False),'NativeTimerAcceptance':False}))
 except Exception:
  print('{"Status":"REFUSED","Code":"COHOST_BOOTSTRAP_FAILED_REQUIRES_REVIEW"}');sys.exit(1)
 SQL_BACKUP_COHOST_BOOTSTRAP

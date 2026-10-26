@@ -12,7 +12,7 @@ SSM AccessDenied is preserved; no SSH, alternate document or principal is introd
 is supplied. Null keeps the exact original SQL bootstrap expression/metadata and no
 extra bootstrap actions. Original `user_data.sh`, secrets retrieval and SQL installation
 recipe are unchanged. The new metadata contains an exact package version/SHA, public
-backup/observer settings and `enable_after_native_gates`, defaultfalse; no connection
+backup/observer settings and two independent activation flags, defaultfalse; no connection
 string, password, arbitrary command or secret value belongs in Terraform/user-data.
 
 The authored bootstrap verifies the expected SQL STS role, retrieves only the versioned
@@ -22,21 +22,19 @@ It runs no SSM command. Extraction/config writes are confined to a root-private 
 directory, identical files are reused and drift/partial uncertainty refuses blind replay.
 Provider/SQL diagnostics and credential environment are not printed or copied.
 
-Initial target boot is **staging**, not proof of backup scheduling. The restored database
-and the existing `ec2_credentials.py` handoff must be ready first. The latter retains its
-exact approval/package/config/host gates and transient SA use. Its previously incompatible
-`dropin.exists()` guard now admits only the verified, inventory-owned cohost integrity
-file; foreign drop-ins, changes and replays remain rejected. Startup also rejects an
-altered credential drop-in; no secret contents enter the integrity receipt.
-
-After a genuinely approved cycle and native Sentinel/SNS readiness, the reviewed owner
-may select `enable_after_native_gates=true` for the fixed bootstrap entry. It checks the
-completed post-restore credential receipt, exact database, private root-owned files and
-the cohost integrity/window gate before daemon-reload/enable of the declarative target.
-If credentials are absent/unknown it refuses and leaves timers disabled. The scheduling
-is autonomous after this handoff, including future boots while the finite window is valid.
-The first boot does not magically restore a DB or manufacture that handoff. Executing the
-handoff is still part of the unresolved recovery/SSM native gate; this is not a bypass.
+Initial target boot stages verified files; both activation flags default false.
+After fresh approval and native external readiness, observer opt-in can start periodic
+checks/UNKNOWN heartbeats autonomously without reading SQL credentials. Its target
+owns only the observation timer. Producer opt-in is separate, implies observer opt-in,
+and verifies the complete admitted credential handoff before starting its own target.
+The producer service repeats that private handoff gate at each start. Missing or failed
+producer credentials do not block observation. Both targets retain package integrity,
+finite-window and root acknowledgement controls; no recovery/fencing gate is relaxed.
+The earlier coupled artifact remains historical and cannot silently adopt split semantics:
+the new manifest/install receipt require COHOST_OBSERVER_PRODUCER_SPLIT_V1.
+The SQL credential helper, cold restore and its unresolved authorized remote transport
+remain distinct from this autonomous observer bootstrap. No rejected SSM operation
+is retried or substituted by this local correction.
 The SQL Ubuntu recipe installs AWS CLIv1; publisher now omits the CLIv2-only
 `--no-cli-pager` flag and retains scrubbed `AWS_PAGER`/single-attempt settings. This
 fix is port-contract tested, not an assertion that CLIv1 reached SQS natively.
