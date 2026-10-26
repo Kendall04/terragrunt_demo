@@ -1,5 +1,32 @@
 # Portable Sentinel integration - first local contract increment
 
+## Executable package and mock-plan closure - current
+
+The source-bound Lambda ZIP from `25f037e` is 3,783,279 bytes, SHA256
+`4e89587b2760b5ec6d4a37a4bc6327ed6f770d0316d2e1f3fba32d4b1d54cca7`.
+Four actual handlers/serializer/factory load from that ZIP: 136 package checks pass;
+22 actual upstream SNS/factory checks pass with pinned SDK/transport doubles.
+Three mock-provider plans pass, with 62 create addresses:55 upstream +4 boundaries
++3 consumer SNS. No AWS plan or execution. The final consumer profile caps notice
+attempts at 3 and disables alarm actions independently of runtime activation.
+
+See [the full proposed scope, lifecycle, cost and limits](NATIVE-TRIAL-PROPOSAL.md),
+[package descriptor](trial/lambda-package.json) and
+[mock address inventory](trial/mock-plan-inventory.json).
+`prepare_module.py --trial-root --config ... --zip ... --package-manifest ...`
+reproduces the root/child/templates using one isolated 6.28 lock and fmt only;
+test placeholders are rendered by that helper. Use the explicit source-cleared
+NuGet config for the BCL package probe, run build from its project directory, and
+invoke its DLL with `archive.zip descriptor.json`. This creates only a disposable
+package extraction/child CLR process. `package_lambda.py --published ... --config ...
+--output new.zip` refuses an existing ZIP or uncommitted source and never publishes.
+
+Earlier wording about two extensions is superseded: the third is the narrow durable
+three-attempt profile. SQL-host portable publication/installer is still separate;
+this Lambda ZIP does not silently update the existing cohost tar or timers.
+No approvals, SDK/global provider locks, cloud resources or upstream originals changed.
+
+
 ## Verified isolated dependencies/runtime - supersedes the prior hash blocker
 
 The prior AWSSDK.Core cache-integrity block was a bug in our check: a signed package's

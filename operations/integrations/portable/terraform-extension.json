@@ -1,20 +1,25 @@
 {
   "upstreamCommit": "b3d0b3b595a9257bb6d4d849c899bf4e8dbc2828",
   "upstreamSha256": "1b412dc5d48c52ec8a17ad567569e33a648d553a0aaab6f65d677461e0d09195",
-  "preparedSha256": "0468bab20697484153260529ceff86bb420c6f607687f27baa0212d4e5f219ae",
+  "preparedSha256": "b4830d8174a6aaef68a77960a4a830c84d5b56f5ff920c2dbe90ee8b3c05e92d",
   "changes": [
     "Factor identical existing runtime policies into local map; no action/resource change",
     "Four runtime-role boundaries mirror exact existing inline capabilities without cyclic role dependency",
     "Tags on new roles only",
-    "Point four Lambda handlers to consumer formatter host"
+    "Point four Lambda handlers to consumer formatter host",
+    "Separate explicit alarm-notice opt-in default false; runtime activation does not enable alarm emails"
   ],
   "resourceAddresses": {
     "upstream": 55,
     "boundaries": 4,
     "preparedModule": 59,
     "externalConsumerSns": 3,
-    "possibleTotal": 62
+    "possibleTotal": 62,
+    "mockPlanTotal": 62,
+    "mockPlanOnly": true
   },
   "provider": "6.28.0 isolated exact override; original6.70 and global5.100 unchanged",
-  "appliedToAws": false
+  "appliedToAws": false,
+  "rootSha256": "9afcfc9831bef453dc432dc16639d4a0796f3183f31902ddc1fc08634beb2b4f",
+  "consumerOutputsSha256": "25f20f6e0a8d0edd2843e51764f34a686c7cf2125fc1e6235d72f7b05d8cee7c"
 }

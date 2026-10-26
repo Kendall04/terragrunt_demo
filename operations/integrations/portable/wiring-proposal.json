@@ -11,12 +11,12 @@
     "upstreamLock": "6.70.0",
     "compatibleWith5_100": false,
     "globalUpgradeAllowed": false,
-    "recommended": "Isolated new Sentinel root with an explicitly reviewed6.70 provider/lock. Keep all existing DEV/PROD5.100 and legacy Sentinel6.27 roots unchanged. No init/download executed.",
+    "recommended": "Isolated6.28.0 signed/schema/mock-qualified root; keep global5.100, legacy6.27, upstream6.70 unchanged.",
     "isolatedQualified": "6.28.0 official signed/checksum, validation passed; no global upgrade"
   },
   "inputs": {
     "config_path": "Exact same two-monitor manifest inside qualified Lambda bundle",
-    "lambda_zip": "Future qualified portable Lambda with optional readable-SNS extension; not current core test binary",
+    "lambda_zip": "ecs-portable-lambda-25f037e.zip",
     "enabled": false
   },
   "host": {
@@ -32,7 +32,9 @@
     "consumerSnsTopicPolicySubscriptionProposed": 3,
     "proposedCombinedAddresses": 62,
     "actualTerraformPlan": false,
-    "previous102AndUsd6Applicable": false
+    "previous102AndUsd6Applicable": false,
+    "mockPlanResources": 62,
+    "mockPlanRunsPassed": 3
   },
   "boundaries": {
     "upstreamSuppliesThem": false,
@@ -122,5 +124,9 @@
     "Cohost portable publisher executable packaging/activation remains distinct from Lambda runtime; no SSM fix implied"
   ],
   "awsCalls": 0,
-  "installed": false
+  "installed": false,
+  "noticeAttempts": 3,
+  "alarmActionsEnabledByDefault": false,
+  "newBudgetProposalUsd": 2,
+  "priorBudgetsApplicable": false
 }
