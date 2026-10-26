@@ -27,7 +27,7 @@ def send(args,payload,runner=subprocess.run):
     env={k:os.environ[k] for k in ('PATH','SystemRoot','WINDIR','LANG','LC_ALL') if k in os.environ}
     env.update(AWS_EC2_METADATA_V1_DISABLED='true',AWS_CONFIG_FILE=os.devnull,AWS_SHARED_CREDENTIALS_FILE=os.devnull,AWS_MAX_ATTEMPTS='1',AWS_PAGER='')
     try:
-        response=runner([str(executable),'sqs','send-message','--region',args.region,'--queue-url',binding(args),'--message-body',payload,'--output','json','--no-cli-pager','--cli-connect-timeout','5','--cli-read-timeout','10'],capture_output=True,env=env)
+        response=runner([str(executable),'sqs','send-message','--region',args.region,'--queue-url',binding(args),'--message-body',payload,'--output','json','--cli-connect-timeout','5','--cli-read-timeout','10'],capture_output=True,env=env)
         if response.returncode!=0:
             # Classify only well-known CLI error codes; never echo stderr/provider details.
             if re.search(rb'\((?:AccessDenied(?:Exception)?|UnauthorizedOperation|UnrecognizedClientException|InvalidClientTokenId)\)',response.stderr or b''):

@@ -39,6 +39,22 @@ class Installation(unittest.TestCase):
         self.assertEqual(binding['sender_role_arn'],'arn:aws:iam::341936017254:role/fixture-role')
         self.assertEqual((binding['watchdog_seconds'],binding['observer_expected_up']),(1200,True))
         self.assertEqual(0o640,(self.fixture/'etc/terragrunt-demo/sql-backup/sentinel.json').stat().st_mode&0o777)
+    def test_actual_credential_helper_accepts_only_verified_cohost_dropin(self):
+        import ec2_credentials as credentials
+        import test_ec2
+        backup=json.loads(self.config.read_text());backup['Database']='demodb';backup['ExpectedEc2RoleName']=credentials.ROLE
+        self.config.write_text(json.dumps(backup))
+        at=dt.datetime.now(dt.timezone.utc);self.value['StartsAt']=(at-dt.timedelta(minutes=1)).isoformat();self.value['ExpiresAt']=(at+dt.timedelta(hours=23)).isoformat();self.sentinel.write_text(json.dumps(self.value))
+        self.stage()
+        approval={'Schema':'SQL_BACKUP_EC2_REVIEW_V1','Account':credentials.ACCOUNT,'Region':'us-east-1','Runtime':{'ExpectedRole':'arn:aws:iam::'+credentials.ACCOUNT+':role/'+credentials.ROLE,'ExistingSaSecret':credentials.SA},'PayloadSha256':{'config.json':credentials.digest(self.config.read_bytes())},'Package':{'Sha256':self.sha},'SourceCommit':'a'*40}
+        path=self.root/'approval.json';path.write_text(json.dumps(approval));host=test_ec2.FakeHost()
+        result=credentials.operate(path,self.config,self.fixture,True,credentials.digest(path.read_bytes()),host)
+        self.assertEqual(result['Status'],'PROVISIONED_NOT_STARTED')
+        cohost.verify(self.fixture)
+        self.assertFalse((self.fixture/'etc/systemd/system/timers.target.wants').exists())
+        drop=self.fixture/'etc/systemd/system/sql-backup.service.d/credentials.conf';drop.write_text(drop.read_text()+'ExecStart=/bin/false\n')
+        with self.assertRaisesRegex(ValueError,'CREDENTIAL_DROPIN_DRIFT'):cohost.verify(self.fixture)
+
     def test_configuration_drift_is_not_silently_adopted(self):
         self.stage();self.value['Subject']='other-sql';self.sentinel.write_text(json.dumps(self.value))
         with self.assertRaisesRegex(ValueError,'REVIEWED_OBSERVER_REPLACEMENT'):self.stage()
@@ -118,5 +134,33 @@ class LocalTelemetry(unittest.TestCase):
             return self.runner(argv,**kw)
         test_sentinel_publish.pub.run(self.args,denied,lambda:test_sentinel_publish.NOW)
         self.assertEqual(self.event()['Status'],'UNKNOWN');self.assertNotIn('SECRET-MARKER',json.dumps(self.event()))
+
+
+class IntegrationProjection(unittest.TestCase):
+    def setUp(self):
+        import ec2_prepare as original
+        self.v={'SchemaVersion':1,'Placement':'SQL_HOST','Account':original.ACCOUNT,'Region':original.REGION,'RunId':'ecs-sentinel-r20261025i1','Subject':'dev-sql-backups','StartsAt':'2026-10-26T00:00:00Z','ExpiresAt':'2026-10-27T00:00:00Z','CadenceSeconds':300,'ReminderSeconds':0,'PublishAttempts':3,'WatchdogSeconds':1200,'ExpectedUp':True}
+        self.backup={'ExpectedEc2RoleName':original.ROLE.rsplit('/',1)[1],'Bucket':original.BUCKET,'BackupKeyArn':original.KEY,'TextKeyArn':original.TEXT_KEY,'StagingDirectory':'/var/opt/mssql/backup/current','Prefix':original.PREFIX+'/r20261025i1t'}
+        self.inputs={'config':cohost.external_binding(self.v,self.backup)|{'account':original.ACCOUNT,'region':original.REGION,'email':'not-sent@example.invalid'}}
+        self.artifact={'Bucket':original.BUCKET,'Key':'terragrunt-demo/dev/sql-backup-artifacts/'+self.v['RunId']+'/'+'a'*64+'/SqlBackup.tar','VersionId':'SYNTHETIC-NOT-AWS-VERSION','Sha256':'a'*64,'BucketKeyEnabled':False}
+    def test_staged_and_activation_inputs_use_existing_external_schedule(self):
+        r=cohost.integration(self.v,self.backup,self.inputs,self.artifact)
+        self.assertFalse(r['StagedSentinelInputs']['dispatch_schedule_enabled']);self.assertFalse(r['StagedSentinelInputs']['enable_ingestion'])
+        self.assertTrue(r['ActivationSentinelInputs']['dispatch_schedule_enabled']);self.assertTrue(r['ActivationSentinelInputs']['enable_dispatch_schedule'])
+        self.assertFalse(r['ActivationSentinelInputs']['enable_observer']);self.assertEqual(r['AdditionalCloudAddresses'],0);self.assertFalse(r['ExecutionAuthorized'])
+        statement=r['SqlRoleSqsDelta']['Statement'];self.assertEqual(len(statement),1);self.assertEqual(statement[0]['Action'],'sqs:SendMessage');self.assertTrue(statement[0]['Resource'].endswith(':ecs-sentinel-r20261025i1-ingestion'))
+        self.assertEqual({x['Action'] for x in r['SqlRoleArtifactDelta']['Statement']},{'s3:GetObjectVersion','kms:Decrypt'});self.assertNotIn('*.bak',json.dumps(r['SqlRoleArtifactDelta']))
+    def test_mismatched_watchdog_role_prefix_artifact_or_retirement_refused(self):
+        import copy
+        for key,value in [('watchdog_seconds',0),('sender_role_arn','arn:aws:iam::341936017254:role/other'),('subject','other')]:
+            inputs=copy.deepcopy(self.inputs);inputs['config'][key]=value
+            with self.assertRaisesRegex(ValueError,'BINDING_MISMATCH'):cohost.integration(self.v,self.backup,inputs,self.artifact)
+        for key,value in [('account','000000000000'),('region','us-west-2')]:
+            inputs=copy.deepcopy(self.inputs);inputs['config'][key]=value
+            with self.assertRaisesRegex(ValueError,'ACCOUNT_REGION_REQUIRED'):cohost.integration(self.v,self.backup,inputs,self.artifact)
+        for delta in [{'BucketKeyEnabled':True},{'VersionId':'null'},{'Key':'other/archive.bak'}]:
+            with self.assertRaises(ValueError):cohost.integration(self.v,self.backup,self.inputs,self.artifact|delta)
+        for delta in [{'enable_observer':True},{'allow_data_retirement':True}]:
+            with self.assertRaises(ValueError):cohost.integration(self.v,self.backup,self.inputs|delta,self.artifact)
 
 if __name__=='__main__':unittest.main(verbosity=2)

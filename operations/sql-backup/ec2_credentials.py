@@ -123,7 +123,13 @@ def operate(approval_path,config_path,root,apply=False,confirmation=None,port=No
     install_receipt=json.loads((root/'opt/terragrunt-demo/sql-backup/install-receipt.json').read_text())
     require(install_receipt['PackageSha256']==approval['Package']['Sha256'] and install_receipt['SourceCommit']==approval['SourceCommit'],'INSTALLED_PACKAGE_MISMATCH')
     require(digest((base/'config.json').read_bytes())==approval['PayloadSha256']['config.json'],'INSTALLED_CONFIG_DRIFT')
-    require(not directory.exists() and not dropin.exists(),'EXISTING_CREDENTIAL_BOOTSTRAP_REQUIRES_REVIEW')
+    require(not directory.exists(),'EXISTING_CREDENTIAL_BOOTSTRAP_REQUIRES_REVIEW')
+    if dropin.exists():
+        # Only the already hash-inventoried cohost integrity drop-in may precede us.
+        import cohost
+        require(install_receipt.get('ObserverPlacement')=='SQL_HOST','EXISTING_CREDENTIAL_BOOTSTRAP_REQUIRES_REVIEW')
+        require({p.name for p in dropin.iterdir()}=={'sentinel-integrity.conf'},'FOREIGN_CREDENTIAL_DROPIN')
+        cohost.verify(root)
     port=port or HostPort()
     identity=port.aws('sts','get-caller-identity')
     require(identity['Account']==ACCOUNT and identity['Arn'].startswith(f'arn:aws:sts::{ACCOUNT}:assumed-role/{ROLE}/'),'INSTANCE_ROLE_MISMATCH')
@@ -148,7 +154,7 @@ def operate(approval_path,config_path,root,apply=False,confirmation=None,port=No
         database=config['Database'] if name=='backup-connection' else 'master'
         connection=f'Server={endpoint},1433;Database={database};User ID={user};Password={password};Encrypt=True;TrustServerCertificate=True;Connect Timeout=10'
         private_write(directory/name,connection.encode())
-    dropin.mkdir(mode=0o755)
+    dropin.mkdir(mode=0o755,exist_ok=True)
     unit='[Service]\nLoadCredential=\nLoadCredential=backup-connection:/etc/terragrunt-demo/sql-backup/credentials/backup-connection\nLoadCredential=verify-connection:/etc/terragrunt-demo/sql-backup/credentials/verify-connection\n'
     private_write(dropin/'credentials.conf',unit.encode(),0o644)
     proof['Status']='PROVISIONED_NOT_STARTED'

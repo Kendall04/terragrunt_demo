@@ -1,5 +1,29 @@
 # ECS V2: arquitectura y pipelines recomendados — 2026-10-24
 
+## Actual cohost bootstrap and external schedule wiring - 2026-10-26
+
+[Current wiring/access review](../../operations/sql-backup/recovery/COHOST-WIRING-REVIEW.md)
+connects the typed null-default TARGET opt-in to fixed SQL user-data bootstrap and
+projects exact existing Sentinel schedule/ingress/watchdog bindings. No extra cloud
+address or watchdog resource is required:102 forecast/29 Sentinel remain conditional.
+Initial boot stages only; native post-restore credential handoff and external readiness
+precede explicit activation. SSM is unresolved and no alternate transport is added.
+
+The real installer/credential-helper conflict with the integrity drop-in is fixed;
+only the verified cohost file may precede credentials. Startup refuses modified or
+foreign credential drop-ins. Ubuntu CLIv1 compatibility also no longer uses a v2-only
+pager flag; credentials/pager/retry environment remains scrubbed and bounded.
+
+83 native Linux fixture cases +3 actual-declaration/inline-Python wiring tests +13
+existing Terraform source-contract cases PASS (99 total, no skips). Terraform fmt,
+Bash syntax and the existing real systemd parser pass offline. Prior119 managed
+SDK-double checks are preserved, not rerun for unchanged managed source. No Terraform
+init/provider plan, live SQL/timer, AWS/SNS, IAM installation or authority change occurred.
+The new source review packet is not a qualified/published runtime tar; immutable archive
+hash/version, source/runtime publication approval and native readback remain required.
+Exact SQS SendMessage and one-version artifact/S3-mediated CMK read templates are
+proposed only. USD6 remains a new unapproved proposal; all prior budgets stay closed.
+
 ## SQL-host observer placement selected - 2026-10-26
 
 Owner approved local preparation of the existing SQL host's producer+observer with

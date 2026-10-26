@@ -1,5 +1,7 @@
 # ECS integrated recovery proposal — local preparation, not authorization
 
+Current wiring/access addendum: [actual SQL opt-in and original external watchdog](COHOST-WIRING-REVIEW.md), including exact SQS/artifact deltas, phase guards and revised grouped-decision wording. Historical sealed ZIP is unchanged; this does not admit theUSD6 cycle. Recommended finite trial observer cadence is300s/deadline1200s; the earlier60s paragraph below is historical, not an installed setting.
+
 Placement update 2026-10-26: [cohost package/units and external UNKNOWN watchdog](../COHOST.md) now have local fixture acceptance. No separate observer EC2 is proposed; the102-address forecast already excluded it and is unchanged. This does not resolve SSM, install bootstrap or admit the cycle. The historical sealed proposal and native evidence remain immutable.
 
 Local implementation update: [four wiring fixes and actual .NET10 image qualification](LOCAL-WIRING-QUALIFICATION.md). The preparation gaps described below record the original planning checkpoint; the four code changes and local image smoke have now passed. Native AWS/SSM/release installation gates remain. Original sealed proposal ZIP is preserved unchanged.

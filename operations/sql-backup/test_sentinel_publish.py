@@ -32,6 +32,12 @@ class PublisherTests(unittest.TestCase):
     def tick(self):return pub.run(self.args,self.runner,lambda:NOW)
     def pending(self):return self.args.state_directory/'delivery/pending.json'
     def sends(self):return [x for x in self.calls if x[0][1]=='sqs']
+    def test_sql_ubuntu_cli_v1_has_no_v2_only_pager_flag(self):
+        self.tick();argv,options=self.sends()[0]
+        self.assertNotIn('--no-cli-pager',argv)
+        self.assertEqual(options['env']['AWS_PAGER'],'')
+        self.assertEqual(options['env']['AWS_MAX_ATTEMPTS'],'1')
+        self.assertEqual(options['env']['AWS_SHARED_CREDENTIALS_FILE'],os.devnull)
     def test_actual_check_candidate_and_explicit_acceptance(self):
         self.assertEqual(self.tick()['Acceptance'],'SQS_ONLY_NOT_SENTINEL_OR_EMAIL')
         event=json.loads(self.sends()[0][0][self.sends()[0][0].index('--message-body')+1])

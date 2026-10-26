@@ -40,6 +40,35 @@ def external_binding(value,backup):
     validate(value,backup)
     return {'mode':'observer-check','run_id':value['RunId'],'subject':value['Subject'],'starts_at':value['StartsAt'],'expires_at':value['ExpiresAt'],'watchdog_seconds':value['WatchdogSeconds'],'observer_expected_up':value['ExpectedUp'],'sender_role_arn':'arn:aws:iam::'+value['Account']+':role/'+backup['ExpectedEc2RoleName']}
 
+
+def integration(value,backup,inputs,artifact):
+    """Pure projection to the existing TF config/schedule and SQL role; no API calls."""
+    import copy
+    import ec2_prepare as original
+    validate(value,backup)
+    require(backup['Bucket']==original.BUCKET and backup['BackupKeyArn']==original.KEY and backup['TextKeyArn']==original.TEXT_KEY and backup['ExpectedEc2RoleName']==original.ROLE.rsplit('/',1)[1],'EXISTING_SQL_STORAGE_ROLE_REQUIRED')
+    require(backup['Prefix']==original.PREFIX+'/'+value['RunId'].removeprefix('ecs-sentinel-')+'t','EXACT_TARGET_BACKUP_PREFIX_REQUIRED')
+    require(set(artifact)=={'Bucket','Key','VersionId','Sha256','BucketKeyEnabled'},'EXACT_ARTIFACT_DESCRIPTOR_REQUIRED')
+    require(artifact['Bucket']==backup['Bucket'] and artifact['BucketKeyEnabled'] is False,'EXACT_ARTIFACT_BUCKET_CONTEXT_REQUIRED')
+    require(re.fullmatch('[a-f0-9]{64}',artifact['Sha256']) is not None,'ARTIFACT_HASH_REQUIRED')
+    expected='terragrunt-demo/dev/sql-backup-artifacts/'+value['RunId']+'/'+artifact['Sha256']+'/SqlBackup.tar'
+    require(artifact['Key']==expected and re.fullmatch(r'[A-Za-z0-9+/=._-]{1,256}',artifact['VersionId']) is not None and artifact['VersionId']!='null','IMMUTABLE_ARTIFACT_REQUIRED')
+    require(set(inputs)<= {'config','enable_observer','enable_ingestion','enable_dispatch_schedule','dispatch_schedule_enabled','dispatch_schedule_expression','allow_data_retirement','observer'} and 'config' in inputs,'EXISTING_SENTINEL_INPUTS_REQUIRED')
+    require(inputs['config'].get('account')==value['Account'] and inputs['config'].get('region')==value['Region'],'EXACT_SENTINEL_ACCOUNT_REGION_REQUIRED')
+    result=copy.deepcopy(inputs);binding=external_binding(value,backup)
+    require(all(result['config'].get(k)==v for k,v in binding.items()),'WATCHDOG_AND_SQL_BINDING_MISMATCH')
+    require(inputs.get('enable_observer',False) is False and inputs.get('observer') is None,'DEDICATED_OBSERVER_FORBIDDEN')
+    require(inputs.get('allow_data_retirement',False) is False,'DATA_RETIREMENT_NOT_ADMITTED')
+    staged=result|{'enable_observer':False,'enable_ingestion':False,'enable_dispatch_schedule':True,'dispatch_schedule_enabled':False,'dispatch_schedule_expression':'rate(1 minute)'}
+    active=copy.deepcopy(staged);active.update(enable_ingestion=True,dispatch_schedule_enabled=True)
+    queue='arn:aws:sqs:'+value['Region']+':'+value['Account']+':'+value['RunId']+'-ingestion'
+    object_arn='arn:aws:s3:::'+artifact['Bucket']+'/'+artifact['Key']
+    condition={'DateGreaterThanEquals':{'aws:CurrentTime':value['StartsAt']},'DateLessThan':{'aws:CurrentTime':value['ExpiresAt']}}
+    send={'Version':'2012-10-17','Statement':[{'Sid':'SqlCohostSendOnly','Effect':'Allow','Action':'sqs:SendMessage','Resource':queue,'Condition':condition|{'StringEquals':{'aws:RequestedRegion':value['Region']}}}]}
+    read={'Version':'2012-10-17','Statement':[{'Sid':'SqlCohostExactArtifactVersion','Effect':'Allow','Action':'s3:GetObjectVersion','Resource':object_arn,'Condition':condition|{'StringEquals':{'s3:VersionId':artifact['VersionId']}}},{'Sid':'SqlCohostArtifactDecryptViaS3','Effect':'Allow','Action':'kms:Decrypt','Resource':backup['BackupKeyArn'],'Condition':condition|{'StringEquals':{'kms:ViaService':'s3.'+value['Region']+'.amazonaws.com','kms:EncryptionContext:aws:s3:arn':object_arn}}}]}
+    return {'StagedSentinelInputs':staged,'ActivationSentinelInputs':active,'SqlRoleArn':binding['sender_role_arn'],'SqlRoleSqsDelta':send,'SqlRoleArtifactDelta':read,'SqlTargetInput':{'sql_backup_cohost':{'artifact':artifact,'backup':backup,'sentinel':value,'enable_after_native_gates':False}},'ExecutionAuthorized':False,'AdditionalCloudAddresses':0,'ActivationRequires':['FRESH_CYCLE_APPROVAL','NATIVE_SUBSCRIPTION_CONFIRMED','NATIVE_SENTINEL_RUNTIME_AND_WATCHDOG_READBACK','POST_RESTORE_CREDENTIAL_BOOTSTRAP_COMPLETED'],'Artifact':artifact}
+
+
 def render(value,backup,user,templates):
     validate(value,backup)
     require(re.fullmatch(r'[a-z_][a-z0-9_-]{0,31}',user) is not None,'SAFE_SERVICE_USER_REQUIRED')
@@ -81,6 +110,12 @@ def verify(root=Path('/'),now=None):
     for relative,record in receipt['InstalledFiles'].items():
         p=file(relative)
         require(hashlib.sha256(p.read_bytes()).hexdigest()==record['Sha256'] and stat.S_IMODE(p.stat().st_mode)==record['Mode'],'INSTALLED_FILE_DRIFT')
+    dropin=root/'etc/systemd/system/sql-backup.service.d'
+    require({p.name for p in dropin.iterdir()}<={'sentinel-integrity.conf','credentials.conf'},'FOREIGN_CREDENTIAL_DROPIN')
+    if (dropin/'credentials.conf').exists():
+        credentials=file('etc/systemd/system/sql-backup.service.d/credentials.conf')
+        expected_credentials='[Service]\nLoadCredential=\nLoadCredential=backup-connection:/etc/terragrunt-demo/sql-backup/credentials/backup-connection\nLoadCredential=verify-connection:/etc/terragrunt-demo/sql-backup/credentials/verify-connection\n'
+        require(credentials.read_text()==expected_credentials and stat.S_IMODE(credentials.stat().st_mode)==0o644,'CREDENTIAL_DROPIN_DRIFT')
     config=signals.read(root/str(CONFIG).lstrip('/'));settings=signals.read(root/str(SETTINGS).lstrip('/'));validate(settings,config)
     at=now or dt.datetime.now(dt.timezone.utc)
     require(signals.utc(settings['StartsAt'])<=at<signals.utc(settings['ExpiresAt']),'COHOST_WINDOW_NOT_ACTIVE')

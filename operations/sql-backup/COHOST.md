@@ -1,5 +1,7 @@
 # SQL-host backup observation with external telemetry watchdog
 
+Current actual TARGET/bootstrap and exact IAM proposal: [wiring review](recovery/COHOST-WIRING-REVIEW.md). Initial boot stages only; post-restore native handoff and external readiness gate activation.
+
 Owner selected this placement on 2026-10-25 (local preparation only). This supersedes
 OBSERVER.md's original requirement for a separate observer host for the next integrated
 proposal. No service, role, credential, infrastructure or budget is installed/approved here.
