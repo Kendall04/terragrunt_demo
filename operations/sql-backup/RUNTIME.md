@@ -77,3 +77,43 @@ hash binds the exact future object key/version and artifact S3/KMS statements de
 approved immutable upload and readback. No authority, policy, source approval, state or
 remote setting is regenerated here. Preserve new artifact/terminal-state receipts and
 historical backups; retire only own approved versions/resources under the future packet.
+
+
+## Executed qualification - 2026-10-26
+
+The actual executable tar `SqlBackup-cohost-0cabbbb.tar` (133,672,960bytes,
+250 payload files plus manifest) is locally qualified. SHA256:
+`feda7d1495637db751a92d818f4150bc305b7bb72f05431142446a72c16d5984`.
+Its helper source is0cabbbb91fc39e20e26345bdfae37bdb3b9e082a and its explicit CLR
+component origin remainsb2bf8d82938e690561a85e45b3ab9e2a383413cf, not a new compilation.
+
+39 actual-tar checks passed on Ubuntu24.04 WSL/x86_64/glibc2.39. The ELF ran as
+`nobody`; its native apphost libraries resolved. Real archive install/idempotence,
+permissions/integrity/tamper refusal, no-cloud maintenance/UNKNOWN, synthetic health
+replay, installed observer/publisher pending retry/recovery/20-attempt cap and the
+installed credential/activation handoff passed. Cloud/SQL/systemctl ports were local
+doubles and ephemeral synthetic material only. No systemd timer, SQL process, IMDS,
+AWS call or email was used. Disposable installation was removed normally. Streaming
+reconstruction reproduced the tar SHA without a second large runtime archive.
+
+Exact Git-blob comparison confirms9 original component source/project files unchanged;
+all31 included Linux dependency versions/content hashes match the current lock.
+All237 input publication files matched the old pinned manifest before assembly; only
+its PDB was omitted with explicit lineage. The committed source lock and approvals
+remain unchanged. NU1004/NU1100 were technical offline restore failures in preparation
+for **local dotnet publish**, not a denied AWS upload or security-review rejection.
+The Windows SNI cache mismatch stopped its proposed use; that package is not in the
+Linux closure. No rejected operation, alternate principal, new SDK or weakened lock
+was used to assemble this previously qualified Linux component with new helpers.
+
+Evidence is retained in task-3/cohost-runtime-1285831: runtime-artifact-qualified.json,
+runtime-manifest.json, native-runtime-qualification.json, source-dependency-equivalence.json
+and bounded logs. The assembly's original pending receipt is preserved separately.
+The review directory contains draft publication/access/try-and-retire consent; no request
+was sent andUSD6 is still unapproved. The runtime tar is the executable deliverable;
+the small review ZIP references it by SHA rather than duplicating133MB of binaries.
+
+This closes local artifact loading/staging/flow qualification, not a new build from a
+clean machine or Ubuntu22.04 SQL/cloud scheduling/cold-recovery/Fargate acceptance.
+SSM is absent from normal cohost/watchdog operation; the existing full recovery runner's
+remote-control admission remains a separate unresolved gate. No denied status was retried.
