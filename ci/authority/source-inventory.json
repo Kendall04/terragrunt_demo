@@ -11682,7 +11682,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/cohost.py": {
-      "sha256": "6fc94acdf914e542e8a20774913336043fc39a0ac426fb212f3c8eca718e1f98",
+      "sha256": "bbea5335cb6c092d4d7a5e3b5bfb58c3e863f3b10eebfe75edbf5ad5cfd7a389",
       "declarations": [],
       "signals": {
         "role-input": [
@@ -11717,7 +11717,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/test_cohost.py": {
-      "sha256": "c7881223906b982597c2587f0e5ef70bb0456b099d391a51742ab0b687935959",
+      "sha256": "d4fe2f28d5602e2bf4e32053466e28287eade68b380409242903c892ff8747fe",
       "declarations": [],
       "signals": {
         "role-input": [
@@ -11792,5 +11792,5 @@
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",
   "review_revision": "c7cc2b676fc7ec3ea2c99b3d8ed4c43523e14945",
   "review_note": "Six reviewed split activation source changes; no authority, installed settings, AWS or credentials granted. UNVERIFIED.",
-  "review_delta_sha256": "e1403f96ba29784e55bb5a81e5b11d17bc5d145e63fcf659243ee1739b635149"
+  "review_delta_sha256": "63aef5743770e99fcd0296c5dc989b4e565e35078eb7a188216688b1573d2a1d"
 }

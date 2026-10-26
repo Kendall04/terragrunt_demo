@@ -104,7 +104,7 @@ class Installation(unittest.TestCase):
         for at in [NOW-dt.timedelta(days=1),NOW+dt.timedelta(days=1)]:
             with self.assertRaisesRegex(ValueError,'WINDOW_NOT_ACTIVE'):cohost.verify(self.fixture,at)
         drop=(self.fixture/'etc/systemd/system/sql-backup.service.d/sentinel-integrity.conf').read_text()
-        self.assertIn('cohost.py verify-producer',drop)
+        self.assertIn('cohost.py verify\n',drop)
     def test_tamper_on_binary_config_units_or_source_blocks_startup(self):
         self.stage()
         for name in ['opt/terragrunt-demo/sql-backup/bin/SqlBackup','etc/terragrunt-demo/sql-backup/config.json','etc/terragrunt-demo/sql-backup/sentinel.json','etc/systemd/system/sql-backup-sentinel-producer.timer','opt/terragrunt-demo/sql-backup/observer.py']:

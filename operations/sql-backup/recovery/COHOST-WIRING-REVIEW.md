@@ -27,7 +27,9 @@ After fresh approval and native external readiness, observer opt-in can start pe
 checks/UNKNOWN heartbeats autonomously without reading SQL credentials. Its target
 owns only the observation timer. Producer opt-in is separate, implies observer opt-in,
 and verifies the complete admitted credential handoff before starting its own target.
-The producer service repeats that private handoff gate at each start. Missing or failed
+The private handoff gate runs as root during activation. At service start systemd
+loads the required credentials; its unprivileged integrity gate does not attempt to
+read root-private handoff metadata. Missing or failed
 producer credentials do not block observation. Both targets retain package integrity,
 finite-window and root acknowledgement controls; no recovery/fencing gate is relaxed.
 The earlier coupled artifact remains historical and cannot silently adopt split semantics:

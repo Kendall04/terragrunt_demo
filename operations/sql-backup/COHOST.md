@@ -84,8 +84,10 @@ requests only `sql-backup-cohost.target` (observation). No credential path is re
 `enable_producer_after_native_gates=true` additionally requires the observer opt-in
 and complete admitted post-restore credentials before requesting `sql-backup-producer.target`.
 The two targets own separate timers; stopping or refusing the producer does not stop
-observation. Producer startup checks `cohost.py verify-producer`, including its exact
-credential drop-in; observer startup checks only `cohost.py verify` and package integrity.
+observation. Root-side producer activation checks `cohost.py verify-producer`, including its exact
+credential drop-in. Both service startup gates use unprivileged `cohost.py verify`
+for package integrity; systemd loads the producer credentials from root-private files.
+The observer service has no LoadCredential directive and reads no private credentials.
 
 The local CLI defaults to a plan and `--component observer`; `producer` and `both`
 are explicit selections. `both` prechecks the producer before any service request,

@@ -81,7 +81,7 @@ def render(value,backup,user,templates):
     service=service.replace('Type=oneshot','Type=oneshot\n'+gate)
     service=service.replace(' --aws --ec2-role',' --total-publish-attempts 20 --producer-job-receipt '+backup['StagingDirectory']+'/.service/last-job.json --aws --ec2-role')
     timer=f'[Unit]\nPartOf=sql-backup-cohost.target\nDescription=SQL-host backup observation; external watchdog covers telemetry loss\n[Timer]\nOnBootSec=90\nOnUnitActiveSec={value["CadenceSeconds"]}\nUnit=sql-backup-sentinel-producer.service\n[Install]\nWantedBy=timers.target\n'
-    dropin='[Service]\n'+gate+'-producer\n'
+    dropin='[Service]\n'+gate+'\n'
     target='[Unit]\nDescription=SQL-host observation only, external Sentinel required\nWants=sql-backup-sentinel-producer.timer\nAfter=network-online.target\n[Install]\nWantedBy=multi-user.target\n'
     producer_target='[Unit]\nDescription=SQL backup producer after admitted credential handoff\nWants=sql-backup.timer\nAfter=network-online.target\n[Install]\nWantedBy=multi-user.target\n'
     return {'etc/systemd/system/sql-backup-sentinel-producer.service':service.encode(),'etc/systemd/system/sql-backup-sentinel-producer.timer':timer.encode(),'etc/systemd/system/sql-backup.service.d/sentinel-integrity.conf':dropin.encode(),'etc/systemd/system/sql-backup.timer.d/sentinel-cohost.conf':b'[Unit]\nPartOf=sql-backup-producer.target\n','etc/systemd/system/sql-backup-cohost.target':target.encode(),'etc/systemd/system/sql-backup-producer.target':producer_target.encode()}

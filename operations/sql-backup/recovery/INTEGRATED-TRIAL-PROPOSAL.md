@@ -5,7 +5,8 @@
 Observer bootstrap no longer waits for SQL credential provisioning. Its false-default
 opt-in starts only observation after approved external readiness, and can send UNKNOWN
 heartbeats without claiming healthy backups. Producer has its own false-default flag,
-target and repeated private credential handoff gate. Both timers retain integrity/expiry.
+target and root-side private credential handoff gate. Both timers retain integrity/expiry;
+systemd supplies producer credentials without granting the service root metadata access.
 This adds zero AWS addresses: the 102-address forecast and USD6 proposal remain unapproved.
 It does not resolve or retry SSM. The cold SQL seed/backup/fence/restore/CHECKDB/handoff
 transport is still a separate admission blocker; do not create the full trial on the
