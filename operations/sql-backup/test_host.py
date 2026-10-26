@@ -116,6 +116,40 @@ class PackageTests(unittest.TestCase):
         self.assertFalse((self.fixture/'run/sql-backup-credentials').exists())
         self.assertEqual(0o700,(self.fixture/'var/opt/mssql/backup/v2').stat().st_mode&0o777)
         self.assertEqual(0o640,(self.fixture/'etc/terragrunt-demo/sql-backup/config.json').stat().st_mode&0o777)
+    def binary_publication(self):
+        import local_release
+        (self.publish/'SqlBackup.pdb').write_bytes(b'SYNTHETIC_SYMBOL_ONLY')
+        original={'SchemaVersion':1,'Component':'SqlBackup','SourceCommit':'b'*40,'Runtime':'10.0.13','Rid':'linux-x64','SelfContained':True,'BuildIdentity':{'Component':'SqlBackup','SourceCommit':'b'*40,'InformationalVersion':'1.0.0+'+'b'*40},'Files':local_release.inventory(self.publish),'DeploymentAuthorized':False,'Uploaded':False}
+        raw=json.dumps(original,sort_keys=True).encode();(self.publish/'local-component-manifest.json').write_bytes(raw)
+        return hashlib.sha256(raw).hexdigest()
+    def test_distinct_binary_lineage_and_symbols_are_bound_without_claiming_new_compile(self):
+        sha=self.binary_publication();archive=self.root/'cohost-binary.tar'
+        result=package.build(self.publish,archive,'a'*40,True,sha,'b'*40)
+        manifest,files=package.inspect(archive,result['Sha256'])
+        self.assertEqual((manifest['SourceCommit'],manifest['BinaryComponent']['SourceCommit']),('a'*40,'b'*40))
+        self.assertEqual(manifest['BinaryComponent']['ExcludedSymbols'],['SqlBackup.pdb'])
+        self.assertNotIn('bin/SqlBackup.pdb',files);self.assertIn('cohost.py',files)
+    def test_wrong_binary_manifest_or_source_refuses_before_output(self):
+        sha=self.binary_publication()
+        for expected,commit in [('0'*64,'b'*40),(sha,'c'*40)]:
+            archive=self.root/'refused.tar'
+            with self.assertRaises(ValueError):package.build(self.publish,archive,'a'*40,True,expected,commit)
+            self.assertFalse(archive.exists())
+    def test_binary_content_drift_refuses_before_output(self):
+        sha=self.binary_publication();(self.publish/'SqlBackup').write_bytes(b'changed')
+        with self.assertRaisesRegex(ValueError,'COMPONENT_CONTENT_CHANGED'):package.build(self.publish,self.root/'refused.tar','a'*40,True,sha,'b'*40)
+        self.assertFalse((self.root/'refused.tar').exists())
+    def test_outer_rehash_cannot_substitute_binary_identity(self):
+        sha=self.binary_publication();archive=self.root/'bound.tar'
+        result=package.build(self.publish,archive,'a'*40,True,sha,'b'*40)
+        with tarfile.open(archive,'r:') as t:members={x.name:(t.extractfile(x).read(),x.mode) for x in t}
+        manifest=json.loads(members['manifest.json'][0]);manifest['BinaryComponent']['SourceCommit']='c'*40
+        members['manifest.json']=(json.dumps(manifest).encode(),0o644)
+        changed=self.root/'changed.tar'
+        with tarfile.open(changed,'w') as t:
+            for name,(raw,mode) in members.items():
+                info=tarfile.TarInfo(name);info.size=len(raw);info.mode=mode;t.addfile(info,io.BytesIO(raw))
+        with self.assertRaisesRegex(ValueError,'BINARY_COMPONENT_IDENTITY_MISMATCH'):package.inspect(changed,hashlib.sha256(changed.read_bytes()).hexdigest())
     def test_host_install_needs_explicit_confirmation(self):
         with self.assertRaisesRegex(ValueError,'HOST_INSTALL_CONFIRMATION'): self.install(root=Path('/'))
     def test_existing_foreign_staging_is_not_adopted_or_deleted(self):

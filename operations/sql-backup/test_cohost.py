@@ -51,9 +51,21 @@ class Installation(unittest.TestCase):
         result=credentials.operate(path,self.config,self.fixture,True,credentials.digest(path.read_bytes()),host)
         self.assertEqual(result['Status'],'PROVISIONED_NOT_STARTED')
         cohost.verify(self.fixture)
+        self.assertEqual(cohost.activate(self.fixture)['Status'],'ACTIVATION_PLAN')
+        calls=[]
+        class Success:returncode=0
+        def fake(command,**options):calls.append(command);return Success()
+        with self.assertRaisesRegex(ValueError,'EXPLICIT_ROOT_ACTIVATION'):cohost.activate(self.fixture,True,'0'*64,fake)
+        self.assertEqual(calls,[])
+        self.assertEqual(cohost.activate(self.fixture,True,self.sha,fake)['Status'],'ACTIVATION_REQUEST_ACCEPTED')
+        self.assertEqual(calls,[['/usr/bin/systemctl','daemon-reload'],['/usr/bin/systemctl','enable','--now','sql-backup-cohost.target']])
         self.assertFalse((self.fixture/'etc/systemd/system/timers.target.wants').exists())
         drop=self.fixture/'etc/systemd/system/sql-backup.service.d/credentials.conf';drop.write_text(drop.read_text()+'ExecStart=/bin/false\n')
         with self.assertRaisesRegex(ValueError,'CREDENTIAL_DROPIN_DRIFT'):cohost.verify(self.fixture)
+
+    def test_activation_never_starts_without_completed_credentials(self):
+        self.stage()
+        with self.assertRaisesRegex(ValueError,'POST_RESTORE_CREDENTIALS_REQUIRED'):cohost.activate(self.fixture,now=NOW)
 
     def test_configuration_drift_is_not_silently_adopted(self):
         self.stage();self.value['Subject']='other-sql';self.sentinel.write_text(json.dumps(self.value))

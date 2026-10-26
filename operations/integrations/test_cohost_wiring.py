@@ -35,10 +35,9 @@ class CohostWiring(unittest.TestCase):
         template=(ROOT/'terraform/infra/data/cohost-bootstrap.sh.tftpl').read_text()
         inline=template.split("<<'SQL_BACKUP_COHOST_BOOTSTRAP'\n",1)[1].split('\nSQL_BACKUP_COHOST_BOOTSTRAP',1)[0]
         ast.parse(inline.replace('${cohost_config}',base64.b64encode(b'{}').decode()))
-        for required in ['--version-id','--expected-bucket-owner','PACKAGE_SHA_MISMATCH','SAFE_PACKAGE_MEMBERS_REQUIRED','package.install(','cohost.verify()','POST_RESTORE_CREDENTIALS_REQUIRED','enable_after_native_gates']:
+        for required in ['--version-id','--expected-bucket-owner','PACKAGE_SHA_MISMATCH','SAFE_PACKAGE_MEMBERS_REQUIRED','package.install(','cohost.verify()','cohost.activate(apply=True,confirmation=sha)','enable_after_native_gates']:
             self.assertIn(required,template)
         for forbidden in ['send-command','start-session','ssh ','--profile','set -x','SQLCMDPASSWORD','secretsmanager get-secret-value']:
             self.assertNotIn(forbidden,template)
-        self.assertLess(template.index("if v['enable_after_native_gates']"),template.index("'enable','--now'"))
-        self.assertLess(template.index("'POST_RESTORE_CREDENTIALS_REQUIRED'"),template.index("'enable','--now'"))
+        self.assertLess(template.index("if v['enable_after_native_gates']"),template.index('cohost.activate(apply=True,confirmation=sha)'))
 if __name__=='__main__':unittest.main(verbosity=2)

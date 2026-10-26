@@ -1974,21 +1974,21 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/package.py": {
-      "sha256": "7a0e59cfc11a5efe85bc836e610fb0a857809301e91474eb9da1ee680e309588",
+      "sha256": "de8b79f93f2cea6a3a8e36d0ef96f37eedd6207b61be7f56e8577c164e839c0e",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          78,
-          87,
-          88
+          103,
+          112,
+          113
         ],
         "executable-dependency": [
-          37,
-          38,
-          41,
-          148,
-          149,
-          150
+          44,
+          45,
+          48,
+          173,
+          174,
+          175
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -2816,16 +2816,15 @@
       }
     },
     "operations/sql-backup/test_host.py": {
-      "semantic_status": "UNVERIFIED",
-      "sha256": "333f12794d184821389d210d766b1f5d307a598d119712d77c628a8a9457563b",
+      "sha256": "a2f7993ca65dd635c53c534fb925b82e630c92f114746bd62cd258f11095bba1",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           26,
           107,
           118,
-          133,
-          143
+          167,
+          177
         ],
         "executable-dependency": [
           18,
@@ -2834,9 +2833,11 @@
           58,
           93,
           94,
-          133
+          131,
+          167
         ]
-      }
+      },
+      "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/test_local_signals.py": {
       "sha256": "80cb17d68fffc1eff5c5281bab73da7618400352dd558a212890c7b77b9a5b2d",
@@ -11681,67 +11682,70 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/cohost.py": {
-      "sha256": "b08282a77bcdc891c6c963e3cd3de5b6206eda28a71269ec0924face57d0bfa8",
+      "sha256": "f58c60b154f110a3ddca7530d2ecf0d5bc8669ae47f1a49cd5d00be8e93c75a5",
       "declarations": [],
       "signals": {
         "role-input": [
-          41,
-          69
+          42,
+          70
         ],
         "launch-or-mutation": [
-          17,
           18,
           19,
-          41,
-          54,
-          64,
+          20,
+          42,
+          55,
           65,
           66,
           67,
           68,
-          75,
-          81,
-          96,
-          107,
+          69,
+          76,
+          82,
+          97,
           108,
-          117
+          109,
+          118,
+          133,
+          141
         ],
         "executable-dependency": [
-          15,
-          79
+          16,
+          80
         ]
       },
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/test_cohost.py": {
-      "sha256": "08a96642f4fea48a953e1e1b7b00b7018964bed067292f998d368773563dcbfc",
+      "sha256": "41a5a3cc8e7f9f6f2d25fecfe2de38afb33b68f80e24e6ca1a100442920211a4",
       "declarations": [],
       "signals": {
         "role-input": [
           39,
-          155
+          167
         ],
         "launch-or-mutation": [
           39,
           41,
           49,
-          69,
-          75,
-          78,
-          145,
-          155
+          81,
+          87,
+          90,
+          157,
+          167
         ],
         "executable-dependency": [
-          66,
-          69,
-          75,
-          78
+          57,
+          78,
+          81,
+          87,
+          90
         ]
       },
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/test_cohost_wiring.py": {
-      "sha256": "525d38cbfd71eec456c7ba36ec2b94813e1613706e8ec33e660b04ca86b570a0",
+      "sha256": "7db947534b204224f40e3b22e62958865cf84fb7b565716ceaab825f2b742360",
       "declarations": [],
       "signals": {
         "role-input": [
@@ -11768,7 +11772,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/data/cohost-bootstrap.sh.tftpl": {
-      "sha256": "1efd1d453e045286c16f890d682d199f9818e446ba32b414c99db5b3e7cc9aa2",
+      "sha256": "d8bbe9c617e8b0804a7482902ee7af3b8c95e422b3d5ff816677649f47d35b6e",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -11776,15 +11780,14 @@
           21,
           22,
           27,
-          28,
-          58
+          28
         ]
       },
       "semantic_status": "UNVERIFIED"
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",
-  "review_revision": "6c35924549aea70fb1705eed28743fb88f511363",
-  "review_note": "Ten exact local SQL cohost bootstrap/role projection/credential/CLI compatibility/test updates. All UNVERIFIED, no execution or CURRENT authority approval. Original SQL user_data and previous packages preserved.",
-  "review_delta_sha256": "e5f918e19d02002bd05db8c4627cb0471b2567515a9f0a77529318437d49845d"
+  "review_revision": "1285831d46f92fdee506df50cc6d9bdb41d8bdda",
+  "review_note": "Six exact local changes: pinned reusable Linux binary lineage, LF helpers/symbol exclusion, persistent plan-default activation and tests/bootstrap delegation. UNVERIFIED, no CURRENT authority, approval, AWS or timer activation.",
+  "review_delta_sha256": "e40804ca3134dfebfa49e703d84aa031fc6301c5f22bd9bf72783229e327e59a"
 }

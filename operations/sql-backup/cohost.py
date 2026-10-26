@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 import re
 import stat
+import subprocess
 import os
 import sys
 sys.path.insert(0,str(Path(__file__).resolve().parent))
@@ -121,9 +122,40 @@ def verify(root=Path('/'),now=None):
     require(signals.utc(settings['StartsAt'])<=at<signals.utc(settings['ExpiresAt']),'COHOST_WINDOW_NOT_ACTIVE')
     return {'Status':'VERIFIED_LOCAL_INSTALL','Placement':'SQL_HOST','FailureDomain':'SHARED_WITH_SQL','IndependentS3Observation':False,'ExternalWatchdogRequired':True,'WatchdogSeconds':settings['WatchdogSeconds'],'ExpectedUp':settings['ExpectedUp'],'ServicesStarted':False}
 
+
+def activate(root=Path('/'),apply=False,confirmation=None,system=subprocess.run,now=None):
+    """Persistent plan-default entrypoint after native external/credential admission.
+
+    Hash confirmation acknowledges exact local bytes; it is not owner consent.
+    """
+    proof=verify(root,now)
+    config=signals.read(root/str(CONFIG).lstrip('/'))
+    directory=root/'etc/terragrunt-demo/sql-backup/credentials'
+    require(not any(p.is_symlink() for p in (directory,*directory.parents)) and directory.is_dir(),'POST_RESTORE_CREDENTIALS_REQUIRED')
+    require(stat.S_IMODE(directory.stat().st_mode)==0o700,'PRIVATE_CREDENTIAL_MATERIAL_REQUIRED')
+    for name in ('bootstrap-receipt.json','backup-connection','verify-connection'):
+        p=directory/name
+        require(p.is_file() and not p.is_symlink() and p.stat().st_uid==os.geteuid() and stat.S_IMODE(p.stat().st_mode)==0o600,'PRIVATE_CREDENTIAL_MATERIAL_REQUIRED')
+    completed=signals.read(directory/'bootstrap-receipt.json')
+    require(completed.get('Status')=='PROVISIONED_NOT_STARTED' and completed.get('Database')==config['Database'],'POST_RESTORE_CREDENTIALS_REQUIRED')
+    install=root/'opt/terragrunt-demo/sql-backup/install-receipt.json'
+    with install.open('rb') as stream:raw=stream.read(1048577)
+    require(len(raw)<=1048576,'INSTALL_RECEIPT_TOO_LARGE');sha=json.loads(raw)['PackageSha256']
+    actions=[['/usr/bin/systemctl','daemon-reload'],['/usr/bin/systemctl','enable','--now','sql-backup-cohost.target']]
+    result={'Status':'ACTIVATION_PLAN','PackageSha256':sha,'Actions':actions,'ServicesStarted':False,'NativeAcceptance':False,'ExternalReadiness':'REQUIRES_SEPARATE_NATIVE_ADMISSION'}
+    if not apply:return result
+    require(confirmation==sha and os.geteuid()==0,'EXPLICIT_ROOT_ACTIVATION_REQUIRED')
+    require(root==Path('/') or system is not subprocess.run,'FIXTURE_REQUIRES_DOUBLE_PORT')
+    for action in actions:
+        try:response=system(action,capture_output=True,timeout=30,env={'PATH':'/usr/sbin:/usr/bin:/sbin:/bin','HOME':'/nonexistent','LANG':'C'})
+        except (OSError,subprocess.TimeoutExpired):raise ValueError('ACTIVATION_UNCERTAIN_NO_RETRY') from None
+        require(response.returncode==0,'ACTIVATION_FAILED_RECONCILE_NO_RETRY')
+    return result|{'Status':'ACTIVATION_REQUEST_ACCEPTED','ServicesStarted':True,'NativeAcceptance':False}
+
 def main():
-    p=argparse.ArgumentParser(description=__doc__);p.add_argument('action',choices=['verify']);p.parse_args()
-    print(json.dumps(verify(),separators=(',',':')))
+    p=argparse.ArgumentParser(description=__doc__);p.add_argument('action',choices=['verify','activate']);p.add_argument('--apply',action='store_true');p.add_argument('--confirm-root-activation');args=p.parse_args()
+    require(args.action=='activate' or not (args.apply or args.confirm_root_activation),'VERIFY_IS_READ_ONLY')
+    print(json.dumps(verify() if args.action=='verify' else activate(apply=args.apply,confirmation=args.confirm_root_activation),separators=(',',':')))
 if __name__=='__main__':
     try:main()
     except Exception as e:

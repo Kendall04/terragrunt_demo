@@ -55,12 +55,7 @@ try:
  cohost.verify()
  # First target boot normally lacks post-restore credentials: leave timers disabled.
  if v['enable_after_native_gates']:
-  directory=Path('/etc/terragrunt-demo/sql-backup/credentials')
-  receipt=json.loads((directory/'bootstrap-receipt.json').read_bytes())
-  need(receipt.get('Status')=='PROVISIONED_NOT_STARTED' and receipt.get('Database')==v['backup']['Database'],'POST_RESTORE_CREDENTIALS_REQUIRED')
-  for name in ['bootstrap-receipt.json','backup-connection','verify-connection']:
-   p=directory/name;need(not p.is_symlink() and p.is_file() and p.stat().st_uid==0 and stat.S_IMODE(p.stat().st_mode)==0o600,'PRIVATE_CREDENTIAL_MATERIAL_REQUIRED')
-  run(['/usr/bin/systemctl','daemon-reload']);run(['/usr/bin/systemctl','enable','--now','sql-backup-cohost.target'])
+  cohost.activate(apply=True,confirmation=sha)
  print(json.dumps({'Status':'COHOST_BOOTSTRAP_COMPLETE','TimersRequested':v['enable_after_native_gates'],'NativeTimerAcceptance':False}))
 except Exception:
  print('{"Status":"REFUSED","Code":"COHOST_BOOTSTRAP_FAILED_REQUIRES_REVIEW"}');sys.exit(1)

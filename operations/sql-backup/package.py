@@ -23,23 +23,33 @@ def no_links(path):
     require('..' not in path.parts,'PARENT_PATH_DENIED')
     require(not any(item.is_symlink() for item in (path,*path.parents)),'SYMLINK_DENIED')
 
-def build(publish,output,commit,with_observer=False):
+def build(publish,output,commit,with_observer=False,component_manifest_sha=None,component_commit=None):
     require(re.fullmatch('[a-f0-9]{40}',commit) is not None,'SOURCE_COMMIT_REQUIRED')
     no_links(publish)
     require(REQUIRED.issubset({item.name for item in publish.iterdir()}),'SELF_CONTAINED_PUBLISH_REQUIRED')
     runtime=json.loads((publish/'SqlBackup.runtimeconfig.json').read_text())['runtimeOptions']
     require(any(item.get('name')=='Microsoft.NETCore.App' and item.get('version')=='10.0.13' for item in runtime.get('includedFrameworks',[])),'PINNED_SELF_CONTAINED_RUNTIME_REQUIRED')
+    binary=None;excluded=[]
+    if with_observer and (publish/'local-component-manifest.json').exists():
+        import local_release
+        original=local_release.verify(publish,component_manifest_sha,component_commit)
+        binary={'SourceCommit':original['SourceCommit'],'ManifestSha256':component_manifest_sha,'BuildIdentity':original['BuildIdentity'],'ManifestPath':'bin/local-component-manifest.json','ExcludedSymbols':[]}
     files={}
     for path in sorted(publish.rglob('*')):
         require(not path.is_symlink(),'PACKAGE_SYMLINK_DENIED')
+        if with_observer and path.is_file() and path.suffix=='.pdb':
+            excluded.append(path.relative_to(publish).as_posix());continue
         if path.is_file(): files['bin/'+path.relative_to(publish).as_posix()]=(path.read_bytes(),0o755 if path.name=='SqlBackup' or path.suffix=='.so' else 0o644)
     base=Path(__file__).resolve().parent
-    for name in ('host.py','package.py','cohost.py','signals.py','ec2_credentials.py','ec2_prepare.py','sql-backup.service.in','sql-backup.timer.in'):
-        files[name]=((base/name).read_bytes(),0o755 if name.endswith('.py') else 0o644)
+    for name in ('host.py','package.py','cohost.py','signals.py','local_release.py','ec2_credentials.py','ec2_prepare.py','sql-backup.service.in','sql-backup.timer.in'):
+        files[name]=((base/name).read_bytes().replace(b'\r\n',b'\n') if with_observer else (base/name).read_bytes(),0o755 if name.endswith('.py') else 0o644)
     if with_observer:
         for name in cohost.FILES:
-            files[name]=((base/name).read_bytes(),0o755 if name.endswith('.py') else 0o644)
+            files[name]=((base/name).read_bytes().replace(b'\r\n',b'\n') if with_observer else (base/name).read_bytes(),0o755 if name.endswith('.py') else 0o644)
     manifest={'SchemaVersion':1,'SourceCommit':commit,'Runtime':'10.0.13','Target':'linux-x64','Files':{name:{'Sha256':digest(body),'Bytes':len(body),'Mode':mode} for name,(body,mode) in files.items()}}
+    if with_observer:manifest['HelperTextEncoding']='UTF8_LF'
+    if binary is not None:
+        binary['ExcludedSymbols']=excluded;manifest['BinaryComponent']=binary
     files['manifest.json']=(json.dumps(manifest,sort_keys=True,separators=(',',':')).encode(),0o644)
     require(not output.exists(),'PACKAGE_OUTPUT_EXISTS')
     # Uncompressed tar avoids gzip timestamps and makes byte-identical inputs reproducible.
@@ -64,6 +74,21 @@ def inspect(package,expected):
     for name,body in files.items():
         record=manifest['Files'][name]
         require(digest(body)==record['Sha256'] and len(body)==record['Bytes'] and record['Mode'] in (0o644,0o755),'PACKAGE_CONTENT_MISMATCH')
+    binary=manifest.get('BinaryComponent')
+    if binary is not None:
+        record=files.get(binary['ManifestPath'],b'')
+        require(digest(record)==binary['ManifestSha256'],'BINARY_COMPONENT_MANIFEST_MISMATCH')
+        original=json.loads(record)
+        require(original['SchemaVersion']==1 and original['Runtime']=='10.0.13' and original['Rid']=='linux-x64' and original['SelfContained'] is True,'BINARY_COMPONENT_RUNTIME_MISMATCH')
+        require(original['SourceCommit']==binary['SourceCommit'] and original['BuildIdentity']==binary['BuildIdentity'],'BINARY_COMPONENT_IDENTITY_MISMATCH')
+        require(original.get('Uploaded') is False and original.get('DeploymentAuthorized') is False,'BINARY_COMPONENT_MUST_BE_LOCAL')
+        omitted=binary['ExcludedSymbols']
+        require(len(set(omitted))==len(omitted) and all(name.endswith('.pdb') and name in original['Files'] for name in omitted),'ONLY_REVIEWED_SYMBOLS_EXCLUDED')
+        actual={name[4:] for name in files if name.startswith('bin/') and name!=binary['ManifestPath']}
+        require(actual==set(original['Files'])-set(omitted),'BINARY_COMPONENT_INVENTORY_MISMATCH')
+        for name in actual:
+            data=files['bin/'+name];expected_record=original['Files'][name]
+            require(digest(data)==expected_record['Sha256'] and len(data)==expected_record['Bytes'],'BINARY_COMPONENT_CONTENT_MISMATCH')
     return manifest,files
 
 def install(package,expected,config,root,user,apply,confirmation,sentinel_config=None):
@@ -146,10 +171,10 @@ def signals_read(path):
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__); commands=parser.add_subparsers(dest='action',required=True)
-    buildargs=commands.add_parser('build'); buildargs.add_argument('--publish-dir',type=Path,required=True); buildargs.add_argument('--out',type=Path,required=True); buildargs.add_argument('--source-commit',required=True); buildargs.add_argument('--with-observer',action='store_true')
+    buildargs=commands.add_parser('build'); buildargs.add_argument('--publish-dir',type=Path,required=True); buildargs.add_argument('--out',type=Path,required=True); buildargs.add_argument('--source-commit',required=True); buildargs.add_argument('--with-observer',action='store_true'); buildargs.add_argument('--component-manifest-sha256'); buildargs.add_argument('--component-source-commit')
     deploy=commands.add_parser('install'); deploy.add_argument('--package',type=Path,required=True); deploy.add_argument('--expected-sha256',required=True); deploy.add_argument('--config',type=Path,required=True); deploy.add_argument('--root',type=Path,default=Path('/')); deploy.add_argument('--service-user',default='mssql'); deploy.add_argument('--apply',action='store_true'); deploy.add_argument('--confirm-host-install'); deploy.add_argument('--sentinel-config',type=Path)
     args=parser.parse_args()
-    if args.action=='build': return build(args.publish_dir,args.out,args.source_commit,args.with_observer)
+    if args.action=='build': return build(args.publish_dir,args.out,args.source_commit,args.with_observer,args.component_manifest_sha256,args.component_source_commit)
     return install(args.package,args.expected_sha256,args.config,args.root,args.service_user,args.apply,args.confirm_host_install,args.sentinel_config)
 
 if __name__=='__main__':
