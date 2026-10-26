@@ -15,6 +15,7 @@ import signals
 
 FILES=('cohost.py','observer.py','sentinel_publish.py','signals.py','sql-backup-sentinel-producer.service.in','sql-backup-sentinel-producer.timer.in')
 KEYS=set('SchemaVersion Placement Account Region RunId Subject StartsAt ExpiresAt CadenceSeconds ReminderSeconds PublishAttempts WatchdogSeconds ExpectedUp'.split())
+PORTABLE_FILES=('portable/cohost_runtime.py','portable/publisher.py','portable/bridge.py','portable/cohost-contract.json')
 ROOT=Path('/opt/terragrunt-demo/sql-backup')
 CONFIG=Path('/etc/terragrunt-demo/sql-backup/config.json')
 SETTINGS=Path('/etc/terragrunt-demo/sql-backup/sentinel.json')
@@ -23,7 +24,7 @@ def require(condition,code):
     if not condition:raise ValueError(code)
 
 def validate(value,backup):
-    require(set(value)==KEYS and type(value['SchemaVersion']) is int and value['SchemaVersion']==1 and value['Placement']=='SQL_HOST','EXACT_COHOST_CONFIG_REQUIRED')
+    require(set(value) in (KEYS,KEYS|{'Portable'}) and type(value['SchemaVersion']) is int and value['SchemaVersion']==1 and value['Placement']=='SQL_HOST','EXACT_COHOST_CONFIG_REQUIRED')
     require(value['Account']=='341936017254' and value['Region']=='us-east-1','EXACT_ACCOUNT_REGION_REQUIRED')
     require(re.fullmatch(r'ecs-sentinel-[a-z0-9-]{1,24}',value['RunId']) is not None and re.fullmatch(r'[a-z0-9][a-z0-9._-]{0,63}',value['Subject']) is not None,'EXACT_SENTINEL_SUBJECT_REQUIRED')
     require(type(value['ExpectedUp']) is bool,'EXPLICIT_EXPECTED_UP_REQUIRED')
@@ -35,7 +36,13 @@ def validate(value,backup):
     require(dt.timedelta(0)<end-start<=dt.timedelta(hours=24),'FINITE_COHOST_WINDOW_REQUIRED')
     require(re.fullmatch(r'[A-Za-z0-9+=,.@_-]{1,64}',backup.get('ExpectedEc2RoleName','')) is not None,'SQL_ROLE_BINDING_REQUIRED')
     require(re.fullmatch(r'/[A-Za-z0-9/_-]+',backup.get('StagingDirectory','')) is not None and '..' not in Path(backup['StagingDirectory']).parts,'LOCAL_PRODUCER_STAGING_REQUIRED')
+    if value.get('Portable') is not None:portable_module().validate(value,backup)
     return value
+
+def portable_module():
+    base=Path(__file__).resolve().parent;directory=base/'portable' if (base/'portable/cohost_runtime.py').is_file() else base.parent/'integrations/portable'
+    sys.path.insert(0,str(directory));import cohost_runtime
+    return cohost_runtime
 
 def external_binding(value,backup):
     validate(value,backup)
@@ -45,6 +52,7 @@ def external_binding(value,backup):
 def integration(value,backup,inputs,artifact):
     """Pure projection to the existing TF config/schedule and SQL role; no API calls."""
     import copy
+    require(value.get('Portable') is None,'USE_PORTABLE_INTEGRATION_PROJECTION')
     import ec2_prepare as original
     validate(value,backup)
     require(backup['Bucket']==original.BUCKET and backup['BackupKeyArn']==original.KEY and backup['TextKeyArn']==original.TEXT_KEY and backup['ExpectedEc2RoleName']==original.ROLE.rsplit('/',1)[1],'EXISTING_SQL_STORAGE_ROLE_REQUIRED')
@@ -77,6 +85,9 @@ def render(value,backup,user,templates):
     service=templates['sql-backup-sentinel-producer.service.in'].decode()
     for key,item in mapping.items():service=service.replace('@'+key+'@',item)
     require('@' not in service,'UNRESOLVED_COHOST_PLACEHOLDER')
+    if value.get('Portable') is not None:
+        require(set(PORTABLE_FILES)<=set(templates),'PORTABLE_PACKAGE_REQUIRED')
+        service='\n'.join('ExecStart=/usr/bin/python3 -I -B '+str(ROOT/'portable/cohost_runtime.py')+' run' if line.startswith('ExecStart=') else line.replace('durable SQS delivery candidate','durable EventBridge Report delivery') for line in service.split('\n'))
     gate=f'ExecStartPre=/usr/bin/python3 -I -B {ROOT}/cohost.py verify'
     service=service.replace('Type=oneshot','Type=oneshot\n'+gate)
     service=service.replace(' --aws --ec2-role',' --total-publish-attempts 20 --producer-job-receipt '+backup['StagingDirectory']+'/.service/last-job.json --aws --ec2-role')
@@ -109,11 +120,13 @@ def verify(root=Path('/'),now=None):
     expected=set(receipt['InstalledFiles'])
     required={'opt/terragrunt-demo/sql-backup/'+name for name in FILES if not name.endswith('.in')}
     required|={'opt/terragrunt-demo/sql-backup/bin/SqlBackup','etc/terragrunt-demo/sql-backup/config.json','etc/terragrunt-demo/sql-backup/sentinel.json','etc/systemd/system/sql-backup-sentinel-producer.service','etc/systemd/system/sql-backup-sentinel-producer.timer','etc/systemd/system/sql-backup.service.d/sentinel-integrity.conf','etc/systemd/system/sql-backup.service','etc/systemd/system/sql-backup.timer','etc/systemd/system/sql-backup.timer.d/sentinel-cohost.conf','etc/systemd/system/sql-backup-cohost.target','etc/systemd/system/sql-backup-producer.target'}
+    if receipt.get('PublisherTransport')=='EVENTBRIDGE_REPORT_V1':required|={'opt/terragrunt-demo/sql-backup/'+name for name in PORTABLE_FILES}
     require(required<=expected,'COHOST_INVENTORY_INCOMPLETE')
     for relative,record in receipt['InstalledFiles'].items():
         p=file(relative)
         require(hashlib.sha256(p.read_bytes()).hexdigest()==record['Sha256'] and stat.S_IMODE(p.stat().st_mode)==record['Mode'],'INSTALLED_FILE_DRIFT')
     config=signals.read(root/str(CONFIG).lstrip('/'));settings=signals.read(root/str(SETTINGS).lstrip('/'));validate(settings,config)
+    require((settings.get('Portable') is not None)==(receipt.get('PublisherTransport')=='EVENTBRIDGE_REPORT_V1'),'INSTALLED_TRANSPORT_BINDING_MISMATCH')
     at=now or dt.datetime.now(dt.timezone.utc)
     require(signals.utc(settings['StartsAt'])<=at<signals.utc(settings['ExpiresAt']),'COHOST_WINDOW_NOT_ACTIVE')
     return {'Status':'VERIFIED_LOCAL_INSTALL','Placement':'SQL_HOST','FailureDomain':'SHARED_WITH_SQL','IndependentS3Observation':False,'ExternalWatchdogRequired':True,'WatchdogSeconds':settings['WatchdogSeconds'],'ExpectedUp':settings['ExpectedUp'],'ServicesStarted':False}

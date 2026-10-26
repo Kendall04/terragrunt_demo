@@ -70,7 +70,7 @@ variable "sql_backup_cohost" {
   type = object({
     artifact                           = object({ Bucket = string, Key = string, VersionId = string, Sha256 = string, BucketKeyEnabled = bool })
     backup                             = object({ Database = string, StagingDirectory = string, RestoreDirectory = string, Bucket = string, Prefix = string, BackupKeyArn = string, TextKeyArn = string, ExpectedEc2RoleName = string, MaxBackupBytes = number, FreeReserveBytes = number, TimeoutSeconds = number, ProposedIntervalHours = number, ProposedRetentionDays = number, ProposedMaxAgeHours = number, RetainLocalVerifiedBackups = number })
-    sentinel                           = object({ SchemaVersion = number, Placement = string, Account = string, Region = string, RunId = string, Subject = string, StartsAt = string, ExpiresAt = string, CadenceSeconds = number, ReminderSeconds = number, PublishAttempts = number, WatchdogSeconds = number, ExpectedUp = bool })
+    sentinel                           = object({ SchemaVersion = number, Placement = string, Account = string, Region = string, RunId = string, Subject = string, StartsAt = string, ExpiresAt = string, CadenceSeconds = number, ReminderSeconds = number, PublishAttempts = number, WatchdogSeconds = number, ExpectedUp = bool, Portable = optional(object({ SchemaVersion = number, ContractSha256 = string })) })
     enable_after_native_gates          = optional(bool, false)
     enable_producer_after_native_gates = optional(bool, false)
   })

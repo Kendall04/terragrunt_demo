@@ -1974,21 +1974,23 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/package.py": {
-      "sha256": "aaaa760263d188c9e6c3d1f0c1b18bff03e9a7852fec1626c1e8c9bc6f2414bd",
+      "sha256": "b6c99f12779134d1ec7c5645fc252ecbe2bd77d29540f9da52f2670d9d455c8d",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          104,
-          114,
-          115
+          110,
+          123,
+          124
         ],
         "executable-dependency": [
           44,
           45,
           48,
-          175,
-          176,
-          177
+          52,
+          53,
+          184,
+          185,
+          186
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -9294,7 +9296,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/modules/target/dev/data/ordinary-variables.tf": {
-      "sha256": "245a6e0b3079b25e3e5b862690f8c6ed5b0db714c180c5a7510106e74ddbb48f",
+      "sha256": "3cc0034cf4e2639d20c0cc7d67a544a583752715bc8c393bd174a6041eccf58f",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -11682,36 +11684,40 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/cohost.py": {
-      "sha256": "bbea5335cb6c092d4d7a5e3b5bfb58c3e863f3b10eebfe75edbf5ad5cfd7a389",
+      "sha256": "359c83431fd320ad1e27878b759bad716a44e4f3a7f505cb4e62da43d54bb920",
       "declarations": [],
       "signals": {
         "role-input": [
-          42,
-          70
+          49,
+          78
         ],
         "launch-or-mutation": [
-          18,
           19,
           20,
-          42,
-          55,
-          65,
-          66,
-          67,
-          68,
-          69,
+          21,
+          49,
+          63,
+          73,
+          74,
+          75,
           76,
-          82,
-          98,
-          110,
-          111,
-          126,
+          77,
+          84,
+          93,
+          109,
+          121,
+          122,
+          123,
           139,
-          148
+          152,
+          161
         ],
         "executable-dependency": [
           16,
-          80
+          18,
+          43,
+          90,
+          91
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -12011,10 +12017,47 @@
         ]
       },
       "semantic_status": "UNVERIFIED"
+    },
+    "operations/integrations/portable/cohost_runtime.py": {
+      "sha256": "2847fa1a3149a4ee07fde47b500d6710b075735e62664684e6b7590910bc410f",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          24,
+          25,
+          34,
+          35,
+          36
+        ],
+        "executable-dependency": [
+          8
+        ],
+        "security-control": [
+          35
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "operations/sql-backup/test_portable_cohost.py": {
+      "sha256": "9e57793e7bd13549cda50f7b521fbd540de45168d47ef7502c8bdf4e47143f6d",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          17,
+          35,
+          38
+        ],
+        "executable-dependency": [
+          16,
+          35,
+          43
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",
-  "review_revision": "d1e8d9b571b5f6dfad368074b60f5ee800c22a0d",
-  "review_note": "Six inactive offline packaging/mock test sources; execution authority and all protected approvals unchanged. UNVERIFIED.",
-  "review_delta_sha256": "cac636183ea83726a5af3791b32fa8ea26397723e99819bbf7846e45949eb31a"
+  "review_revision": "df840eab882b412bc1862f3f89694cad853a961a",
+  "review_note": "Five local portable cohost opt-in/package/fixture/typed-input sources only. No installed authority, protected approvals, runtime roles or AWS state changed. UNVERIFIED.",
+  "review_delta_sha256": "0be2ce3fd52752e835d7a82324889ea483c2fc47311155649beac9baa9702cb3"
 }
