@@ -7,13 +7,21 @@ framework-dependent `dotnet10` Lambda ZIP, not the Python controller or SQL-host
 no permission. The old artifacts, upstream checkout, legacy integration and approvals
 remain intact. No cloud operation, subscription or email was performed for this cut.
 
+## Cohost local completion addendum
+
+The portable SQL-host package/bootstrap/publisher wiring is now qualified locally;
+see [the paired artifact and real limits](PORTABLE-COHOST-QUALIFICATION.md).
+The Lambda ZIP remains unchanged. References below to an unassembled/unselected
+cohost publisher describe the prior checkpoint; native installation/transport and
+whole-ECS admission remain pending. The USD2 serverless proposal excludes SQL.
+
 ## What is implemented and tested
 
 The real original portable Lambda, reducer, ingestion, DynamoDB/S3 adapters, durable
 journal, worker, watchdog and cleanup remain upstream code. Three source extensions:
 optional SNS rendering, factory forwarding of that renderer, and `MaxAttempts=3`
 in this consumer's operational profile (critical retries beyond limit remain false).
-The structured notice remains schema2. Human SNS text shows PRUEBA SINTÉTICA, state,
+The structured notice remains schema2. Human SNS text shows PRUEBA SINTÃ‰TICA, state,
 actual reasons, revision/evaluation time and operational IDs, and distinguishes provider
 acceptance from inbox receipt. Webhook JSON/default upstream rendering are unchanged.
 
@@ -62,7 +70,7 @@ is claimed. `trial/mock-plan-inventory.json` contains every address and type.
 
 Upstream's55 already contain the durable worker/watchdog/cleanup/alarms; consumer adds
 four permission boundaries and three owned SNS resources. Legacy 29 is a different
-architecture, not an in-place29→62 migration. No CloudFormation, second backend,
+architecture, not an in-place29â†’62 migration. No CloudFormation, second backend,
 EC2 observer, SQL, NAT, VPC, ECR, secrets, CA or new business service. Do not add this
 count to historical102 or reuse its USD 6. Implicit Lambda versions, S3 object versions,
 log streams, DynamoDB records/PITR storage and subscription generation are lifecycle
@@ -142,7 +150,7 @@ SSM retry, force process cleanup or resource substitution.
 ## Smallest useful native test and cost proposal
 
 Recommend a NEW serverless-only pilot, separate from full SQL/Fargate recovery. It can
-test EventBridge→SQS→authenticated ingress→durable state/audit/outbox→readable SNS,
+test EventBridgeâ†’SQSâ†’authenticated ingressâ†’durable state/audit/outboxâ†’readable SNS,
 replays/duplicates and scheduled watchdog without any RunCommand operation. Explicitly
 authorize operator synthetic PutEvents only to this bus/source if selected; it does not
 execute the denied SSM command or prove SQL-host IAM/timers/backup. The observer's full
@@ -162,12 +170,12 @@ bounded pilot. Real alarm delivery and SQL host-loss recovery remain explicit pr
 Proposed new budget **USD 2**, no previous budget carried/reset. Target 2h, stop active
 diagnosis/triggers by 4h, reserve 90min retirement, absolute 24h INCLUDING cleanup.
 24h is a cleanup ceiling, not permission for 24h of active schedules. Without free tier,
-conservative compute envelope: three schedules/minute ×330min ×60s ×0.5GiB =29,700GB-s;
-plus100 ingestion invocations at full timeout =3,000GB-s; total32,700 ×
-USD0.0000166667 ≈USD0.545, requests <USD0.001. Budget allowances (not claimed unit
+conservative compute envelope: three schedules/minute Ã—330min Ã—60s Ã—0.5GiB =29,700GB-s;
+plus100 ingestion invocations at full timeout =3,000GB-s; total32,700 Ã—
+USD0.0000166667 â‰ˆUSD0.545, requests <USD0.001. Budget allowances (not claimed unit
 tariffs): DynamoDB/PITR0.40, logs/seven alarms0.15, SQS/EventBridge/SNS0.10,
 S3/backend first-month residual0.10, contingency0.704 =>USD 2.00. Assumes at most20
-entries, ≤100MiB logs/archive and bounded payloads, no provisioned capacity/pollers,
+entries, â‰¤100MiB logs/archive and bounded payloads, no provisioned capacity/pollers,
 no cross-account/network/service extras. Review rates in the actual region at admission;
 stop early on unexpected traffic, retries/storage growth or projected reserve erosion.
 This estimate is not an automatic invoice cap or measured charge.
@@ -187,9 +195,10 @@ allowances rather than a falsely precise quote from dynamically rendered tables.
    saved plan, expiring access JSON/reversal plus fresh grouped spending/data/email consent.
 2. Native managed-dotnet10 Lambda handler execution, DynamoDB/S3 atomicity, retries,
    ACK/redelivery, durable watchdog and readable SNS/inbox. Local mocks prove none of those.
-3. Separate SQL-host portable package/boot/timer wiring and producer role, authenticated
+3. Native acceptance of the now locally qualified SQL-host package/boot/timer wiring
+   and producer role, authenticated
    EventBridge publication without persistent laptop credentials; loss/regain of telemetry.
    No need to recreate a dedicated observer just to test the serverless consumer.
-4. SQL fencing/restore→Fargate/public service recovery is still a distinct gate. SSM's
+4. SQL fencing/restoreâ†’Fargate/public service recovery is still a distinct gate. SSM's
    historical AccessDenied remains unresolved; no alternate transport/principal used.
    No native clean deployment, actual RPO/full RTO or full ECS completion is asserted.

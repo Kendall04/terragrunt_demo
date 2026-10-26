@@ -23,7 +23,12 @@
     "newObserverEc2": false,
     "producerPlacement": "existing proposed SQL host",
     "observerCredentials": "none",
-    "activation": "observer and SQL producer remain separate opt-ins; no SSM/SSH command or changed recovery gate"
+    "activation": "observer and SQL producer remain separate opt-ins; no SSM/SSH command or changed recovery gate",
+    "portablePackageQualifiedLocally": true,
+    "portableCohostSourceCommit": "0359bafa1fbb3c48ebc53ce29836acf034381108",
+    "portableCohostSha256": "081b62f739cd309e84abf64b5c8e327bf6b7445214f37d85069fa070f0e2f24f",
+    "additionalObserverCloudResources": 0,
+    "observerNativeInstalled": false
   },
   "counts": {
     "upstreamResourceBlocks": 27,
@@ -119,9 +124,10 @@
     "originalSqlBackupsRetention": "2+2 days unchanged"
   },
   "blockers": [
-    "Native AWS/SQL/timer/persistence/notices remain unproved; no trial authorized",
-    "SNS consumer resources, retentions, budget/effective IAM/teardown require grouped fresh admission",
-    "Cohost portable publisher executable packaging/activation remains distinct from Lambda runtime; no SSM fix implied"
+    "Fresh native admission/current IAM/backend/paired publication and real plan required",
+    "Actual SQL-host boot/timers/role/EventBridge/native SQL/S3 not proven",
+    "AWS durability/ACK/outbox/watchdog/SNS/inbox remain native gates",
+    "SSM unresolved for separate recovery transport; no denied-operation workaround"
   ],
   "awsCalls": 0,
   "installed": false,

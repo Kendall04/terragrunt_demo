@@ -1,5 +1,15 @@
 # Portable Sentinel integration - first local contract increment
 
+## Portable cohost package - current local qualification
+
+The explicit portable mode now ships in a source-bound cohost tar, retaining inert
+timers, observer/producer separation and legacy mode. Actual bootstrap/package/ELF
+fixtures and original SQS handler/readable-SNS flow pass locally with double ports.
+See [artifact hashes, tests, IAM scope and native limits](PORTABLE-COHOST-QUALIFICATION.md).
+No installed authority, current IAM or cloud acceptance is implied. Earlier dated
+checkpoints describing an unconnected API remain historical.
+
+
 ## Executable package and mock-plan closure - current
 
 The source-bound Lambda ZIP from `25f037e` is 3,783,279 bytes, SHA256

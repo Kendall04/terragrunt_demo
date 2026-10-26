@@ -1,5 +1,15 @@
 # SQL-host backup observation with external telemetry watchdog
 
+## Portable cohost package - current local qualification
+
+The explicit portable mode now ships in a source-bound cohost tar, retaining inert
+timers, observer/producer separation and legacy mode. Actual bootstrap/package/ELF
+fixtures and original SQS handler/readable-SNS flow pass locally with double ports.
+See [artifact hashes, tests, IAM scope and native limits](../integrations/portable/PORTABLE-COHOST-QUALIFICATION.md).
+No installed authority, current IAM or cloud acceptance is implied. Earlier dated
+checkpoints describing an unconnected API remain historical.
+
+
 Current actual TARGET/bootstrap and exact IAM proposal: [wiring review](recovery/COHOST-WIRING-REVIEW.md). Current split: observer opt-in follows external readiness and requires no SQL credentials; producer opt-in additionally requires the admitted complete credential handoff.
 
 Owner selected this placement on 2026-10-25 (local preparation only). This supersedes
