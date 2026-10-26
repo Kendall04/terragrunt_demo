@@ -1,5 +1,50 @@
 # Portable Sentinel integration - first local contract increment
 
+## Current delivery increment - local checkpoint
+
+The durable publisher is now implemented as a local API, still not installed or
+selected by cohost timers. One atomic journal debits each attempted EventBridge
+entry before transport (POSIX directory fsync included), caps20 globally/3 per entry,
+preserves unknown outcomes, retries only failed entries, refuses changed binding,
+keeps pending work at exhaustion and blocks automatic retries after AccessDenied.
+It collects no newer observation while old pending work exists. EventBridge delivery
+itself may be unordered/duplicated. A stale owner lock requires review, never PID
+cleanup or automatic takeover. New host/recreated state is not permission to reset
+the admitted budget. Do not enable old SQS and portable publishers together.
+
+19 Windows publisher scenarios pass;18 were also run in Linux, including real fsync
+on disposable state. The added19th checks the final global slot.36 checks now cover
+real upstream core/ingress with actual publisher payloads, partial retry, reversed
+arrival and redelivery. Storage is still the upstream memory fake, not native DynamoDB.
+
+ReadableNotice renders schema2 with prominent synthetic label, understandable status,
+reasons/resource, revision/time and all operational identities, retaining the structured
+notice internally.21 formatter checks pass against the exact upstream source enum/record.
+notice-extension.json defines an optional SNS renderer with original JSON as its default;
+source contexts match. That full SNS implementation/factory was NOT executed or wired.
+
+The attempted cached-SDK probe stopped before restore/build: AWSSDK.Core4.0.102.10 cache
+SHA512 differs from the existing ECS managed lock. No package was used, hash changed,
+alternate cache tried, dependency installed or source version relaxed. The probe sources
+are preserved outside the checkout. The BCL formatter test uses source-only contracts,
+not fabricated SDK types or a substitute claim of SNS execution. Exact upstream SNS
+4.0.100.16/Backup4.0.101.6/RDS4.0.106.5 are also absent in the inspected cache.
+
+wiring-proposal.json pins the original module, keeps enabled=false and explicitly
+rejects provider5.100: upstream requires>=6.28 and locks6.70. A dedicated isolated root
+is proposed; no global provider/locks changed, no init/schema/plan executed. Four
+proposal coherence checks pass. Source expansion55 +4 required boundaries +3 consumer
+SNS objects suggests62 addresses, not an actual plan or new cloud consent. Upstream
+does not provide the boundaries; that extension and role-specific policy contents
+must be closed before deployment. The old102/USD6 proposal is inapplicable.
+
+Next: resolve pinned AWS dependency integrity/availability under explicit authority,
+qualify the real Lambda/SNS factory, complete the reviewed boundary/module adaptation
+and isolated provider schema qualification, then package the executable cohost opt-in.
+The following first-increment text is historical to cc68350; its pending publisher
+paragraph is superseded by this checkpoint. No AWS/SSM/SSH/IAM/state/Actions/push occurred.
+
+
 This is a tested adapter, not an installed/published runtime. Legacy upstream-sources.json,
 cohost source131e87b and qualified archives stay unchanged. New upstream pin is explicit
 in portable/upstream.json; do not pass its checkout through the old source verifier.

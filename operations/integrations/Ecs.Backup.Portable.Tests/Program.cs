@@ -67,6 +67,12 @@ var bad=new Rig(config,at);var noCall=new CancellationToken(true);Check("cancell
 Check("maintenance emits no fake heartbeat",Entries("maintenance").Length==0);
 Check("no NAT functional probe or provider requested",new[]{r,fresh,stale,recovered}.All(x=>config.Monitors.All(m=>x.Store.Effects(StorageKeys.Aggregate(m.Key)).All(e=>e.Intent?.Kind!=EffectKind.RequestFunctionalProbe))));
 Check("outbox is real but no delivery or drain is claimed",recovered.Store.Effects(StorageKeys.Aggregate(backup.Key)).Any(e=>e.Kind==WorkKind.ArchiveDecision) && recovered.Store.Effects(StorageKeys.Aggregate(backup.Key)).All(e=>e.Status==OutboxStatus.Pending));
+var delivered=JsonNode.Parse(File.ReadAllText(Path.Combine(root,"publisher-partial-delivery.json")))!.AsArray();
+var roundtrip=new Rig(config,at);foreach(var m in config.Monitors)roundtrip.Bootstrap(m);
+Check("real upstream accepts heartbeat delivered before backup after partial publish",roundtrip.Send(Envelope(delivered[0]!.AsObject())) is {Retry:false,Status:ProcessingStatus.Committed});
+Check("real upstream accepts actual durable-publisher backup payload",roundtrip.Send(Envelope(delivered[1]!.AsObject())) is {Retry:false,Status:ProcessingStatus.Committed});
+var deliveredRevision=roundtrip.Head(backup).Revision;
+Check("redelivered accepted EventBridge payload deduplicates in original receipt",roundtrip.Send(Envelope(delivered[2]!.AsObject())) is {Status:ProcessingStatus.Duplicate} && roundtrip.Head(backup).Revision==deliveredRevision);
 Console.WriteLine(DomainJson.Serialize(new{Status="PASS",Tests=cases.Count,Cases=cases,Upstream="b3d0b3b595a9257bb6d4d849c899bf4e8dbc2828",Persistence="ORIGINAL_UPSTREAM_MEMORY_FAKE",AwsCalls=0,EmailSent=false,Upstream749Rerun=false}));
 sealed class Rig{
  public readonly Installation Config;public readonly MemoryDatabase Db=new();public DateTimeOffset Now;public TransactionalMemoryStore Store=null!;SignalProcessor processor=null!;IngestionProcessor ingress=null!;

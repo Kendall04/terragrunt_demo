@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "upstreamCommit": "b3d0b3b595a9257bb6d4d849c899bf4e8dbc2828",
+  "file": "src/Sentinel.Portable.Aws/Notifications.cs",
+  "baseSha256": "2a15e179dfb24c15dde136c0e13cef1b2c53d611bb539e401b8866d62447d896",
+  "purpose": "Optional SNS text renderer; default SNS JSON, webhook JSON, state/outbox/IDs unchanged",
+  "replacements": [
+    {
+      "before": "HttpClient http, Func<string, string?> environment, Action beforeIo) : IEffectAdapter {",
+      "after": "HttpClient http, Func<string, string?> environment, Action beforeIo,\n    Func<IncidentNotice,(string Subject,string Message)>? snsFormat = null) : IEffectAdapter {"
+    },
+    {
+      "before": "var subject = $\"Sentinel {notice.Condition}: {notice.Monitor}\";",
+      "after": "var rendered = snsFormat?.Invoke(notice);\n                var subject = rendered?.Subject ?? $\"Sentinel {notice.Condition}: {notice.Monitor}\";"
+    },
+    {
+      "before": "Subject = subject[..Math.Min(100, subject.Length)], Message = message",
+      "after": "Subject = subject[..Math.Min(100, subject.Length)], Message = rendered?.Message ?? message"
+    }
+  ]
+}

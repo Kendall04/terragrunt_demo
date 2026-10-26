@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "classification": "LOCAL_PROPOSAL_NOT_EXECUTION_AUTHORITY",
+  "upstreamCommit": "b3d0b3b595a9257bb6d4d849c899bf4e8dbc2828",
+  "singleOwner": "Dedicated Terragrunt unit of the ECS project; preserve the legacy unit/history, never apply both to same names/state",
+  "source": "git::https://github.com/Kendall04/reliability-sentinel.git//deploy/portable?ref=b3d0b3b595a9257bb6d4d849c899bf4e8dbc2828",
+  "upstreamModuleSha256": "1b412dc5d48c52ec8a17ad567569e33a648d553a0aaab6f65d677461e0d09195",
+  "provider": {
+    "existingRoot": "5.100.0",
+    "upstreamMinimum": "6.28.0",
+    "upstreamLock": "6.70.0",
+    "compatibleWith5_100": false,
+    "globalUpgradeAllowed": false,
+    "recommended": "Isolated new Sentinel root with an explicitly reviewed6.70 provider/lock. Keep all existing DEV/PROD5.100 and legacy Sentinel6.27 roots unchanged. No init/download executed."
+  },
+  "inputs": {
+    "config_path": "Exact same two-monitor manifest inside qualified Lambda bundle",
+    "lambda_zip": "Future qualified portable Lambda with optional readable-SNS extension; not current core test binary",
+    "enabled": false
+  },
+  "host": {
+    "newObserverEc2": false,
+    "producerPlacement": "existing proposed SQL host",
+    "observerCredentials": "none",
+    "activation": "observer and SQL producer remain separate opt-ins; no SSM/SSH command or changed recovery gate"
+  },
+  "counts": {
+    "upstreamResourceBlocks": 27,
+    "upstreamExpandedAddressesWithReports": 55,
+    "consumerBoundariesProposed": 4,
+    "consumerSnsTopicPolicySubscriptionProposed": 3,
+    "proposedCombinedAddresses": 62,
+    "actualTerraformPlan": false,
+    "previous102AndUsd6Applicable": false
+  },
+  "boundaries": {
+    "upstreamSuppliesThem": false,
+    "requiredBeforeUse": "Four role-specific permissions boundaries mirroring each exact runtime policy; no blanket Allow*. Add explicit module input/role assignment in a reviewed source extension before any deployment. No double ownership of roles."
+  },
+  "scope": {
+    "candidateDeployment": "ecs-portable-r20261026p1",
+    "account": "341936017254",
+    "region": "us-east-1",
+    "finalNameAndWindowAdmitted": false
+  },
+  "runtimePermissions": {
+    "producer": {
+      "principal": "arn:aws:iam::341936017254:role/demo-dev-data-sql-ec2-role",
+      "Action": [
+        "events:PutEvents"
+      ],
+      "Resource": "arn:aws:events:us-east-1:341936017254:event-bus/ecs-portable-r20261026p1",
+      "Conditions": {
+        "events:source": "sentinel.report.sql-observer",
+        "events:detail-type": "Sentinel Observation v1",
+        "timeWindow": "UNBOUND_PENDING_ADMISSION"
+      },
+      "legacySendMessage": "Not needed by portable mode; reverse only any future own temporary delta, not existing unrelated grants"
+    },
+    "ingestion": [
+      "own DynamoDB item/transaction capabilities",
+      "own reports queue ReceiveMessage/DeleteMessage/GetQueueAttributes",
+      "own log stream/events",
+      "own operations DLQ SendMessage"
+    ],
+    "worker": [
+      "own DynamoDB item/transaction/query capabilities",
+      "own archive prefix GetObject/PutObject",
+      "exact own notices SNS Publish",
+      "own logs and operations DLQ"
+    ],
+    "watchdog": [
+      "own DynamoDB GetItem",
+      "own logs and operations DLQ"
+    ],
+    "cleanup": [
+      "own DynamoDB item/transaction/query capabilities",
+      "own logs and operations DLQ"
+    ],
+    "noRuntimeGrants": [
+      "ec2",
+      "ssm",
+      "iam",
+      "secretsmanager",
+      "kms",
+      "NAT",
+      "source backups .bak",
+      "RDS/AWS Backup reads"
+    ],
+    "regionalReadWildcardsNeededByTheseTwoReportMonitors": []
+  },
+  "deploymentLifecycleProposal": {
+    "principal": "TerragruntDemoDevOperator; existing administrator only for reviewed access bootstrap/reversal",
+    "createReadUpdateDeleteScopes": [
+      "exact own table/index/PITR/deletion-protection",
+      "exact own archive bucket/config/policy/versions",
+      "exact own queues/policies",
+      "exact event bus/rules/targets",
+      "four own roles/log groups/boundaries/inline policies",
+      "four own Lambdas/versions/aliases/invoke-config",
+      "own mapping",
+      "own metric filter/alarms",
+      "own notices topic/policy/subscription"
+    ],
+    "knownRegionalExposure": "Lambda Get/DeleteEventSourceMapping Resource* previously required by actual callbacks; scope disclosure/expiry/reversal must be included if still needed. Do not infer UUID isolation from a name. No retry of past denied operations in this task.",
+    "resourceGenerationIds": "Future actual plan and AWS-created IDs; unknown now, never filled with examples",
+    "retire": "Disable publisher/triggers/notifications; export/classify pending/outbox/DLQ/archive; explicit own table protection removal, object+version purge, saved destroy of exact resources, verify residuals, reverse exact temporary IAM/backend deltas with concurrency checks",
+    "defaultsNotSilentlyAccepted": {
+      "auditDays": 7,
+      "effectsDays": 7,
+      "logsDays": 30,
+      "queueDays": 14,
+      "s3Expiry": "none; versioned manual retention/deletion decision required"
+    },
+    "originalSqlBackupsRetention": "2+2 days unchanged"
+  },
+  "blockers": [
+    "Exact new AWS dependencies absent and cached AWSSDK.Core4.0.102.10 hash differs from existing ECS lock; no SDK probe or dependency bypass",
+    "Readable renderer source contract tested, complete SNS/runtime factory wiring not qualified",
+    "Portable module requires provider6; no downgrade to5.100 or provider schema qualification performed",
+    "Boundaries, new retention/cost/teardown and immutable Lambda bundle must be closed before proposing a cloud cycle"
+  ],
+  "awsCalls": 0,
+  "installed": false
+}

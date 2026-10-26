@@ -11819,10 +11819,68 @@
         ]
       },
       "semantic_status": "UNVERIFIED"
+    },
+    "operations/integrations/portable/prepare_notice_contract.py": {
+      "sha256": "9fe5b04a3d4b182e1e6f185e42fabab21032bb858f7d6c0c1731074150a58020",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          8
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "operations/integrations/portable/test_wiring_proposal.py": {
+      "sha256": "4eeeb4dcfb6ce35ba04a4c9fd66815d864f4071e7167b14039dd42b6a53ad3f0",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          11
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "operations/integrations/portable/generate_publisher_fixture.py": {
+      "sha256": "09450a2d1792a10cf17c4605bd808dd37af96e184e64644b551984b9d765a37d",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          12
+        ],
+        "executable-dependency": [
+          14,
+          15,
+          16,
+          17
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "operations/integrations/portable/test_publisher.py": {
+      "sha256": "951e79aa40ed95ab6c1c86f7c483b5a4f1dff0ce4d44001d76ae100e2b335cc4",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          12,
+          63
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "operations/integrations/portable/publisher.py": {
+      "sha256": "7bd616829c918d789ebadd4e2b375755d43de56c6ae1ad12119569a99e088a35",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          55,
+          77
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",
-  "review_revision": "131e87bbb03520ab610fec500b2ed410e1b818e7",
-  "review_note": "Four new local pure projection/source staging/test files. No existing authority, cohost artifact, upstream legacy pin or operational workflow changed. UNVERIFIED.",
-  "review_delta_sha256": "147c77d3f6d86626107ff39e26b80e1bb4545c50c1113c27b60a9612a271d414"
+  "review_revision": "cc68350eec1099b4be12dd556a444f6c78c9b45e",
+  "review_note": "Five local publisher/probe/proposal source files. No execution approval, installed runtime, IAM, provider/SDK or legacy pin change. UNVERIFIED.",
+  "review_delta_sha256": "b142b32f280bc1a04e0e9e3cd48ba0dfd86ba9685de4dbba495e887b8038e929"
 }
