@@ -11787,10 +11787,42 @@
         ]
       },
       "semantic_status": "UNVERIFIED"
+    },
+    "operations/integrations/portable/bridge.py": {
+      "sha256": "0766a3eb78fc46071a1aa2989fe616f6215cc1932310b8facf8cb920afaa69ab",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "operations/integrations/portable/generate_fixtures.py": {
+      "sha256": "5351588ded93d2215b77e29ac18ad9eb79d771cd2ef0bf60a106c3ccebb6f7cb",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "operations/integrations/portable/prepare_source.py": {
+      "sha256": "7566daebb17b843b5ef4ed20f617c745e7de1f053bbf529d823c7a42a67a64c6",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "operations/integrations/portable/test_bridge.py": {
+      "sha256": "a92760ab3f315573af8178aa5ff2ec8f07a1fb86b58cf192b524d82493d75204",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          35,
+          57
+        ],
+        "executable-dependency": [
+          1
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",
-  "review_revision": "c7cc2b676fc7ec3ea2c99b3d8ed4c43523e14945",
-  "review_note": "Six reviewed split activation source changes; no authority, installed settings, AWS or credentials granted. UNVERIFIED.",
-  "review_delta_sha256": "63aef5743770e99fcd0296c5dc989b4e565e35078eb7a188216688b1573d2a1d"
+  "review_revision": "131e87bbb03520ab610fec500b2ed410e1b818e7",
+  "review_note": "Four new local pure projection/source staging/test files. No existing authority, cohost artifact, upstream legacy pin or operational workflow changed. UNVERIFIED.",
+  "review_delta_sha256": "147c77d3f6d86626107ff39e26b80e1bb4545c50c1113c27b60a9612a271d414"
 }

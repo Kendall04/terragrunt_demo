@@ -1,0 +1,9 @@
+{
+  "origin": "https://github.com/Kendall04/reliability-sentinel.git",
+  "commit": "b3d0b3b595a9257bb6d4d849c899bf4e8dbc2828",
+  "legacyCommitUnchanged": "0e8fc55333ddde3b9816885915310a7e69f3de45",
+  "consumerSdk": "10.0.402",
+  "upstreamSdk": "10.0.301",
+  "scope": "LOCAL_CONSUMER_COMPATIBILITY_ONLY",
+  "deploymentAuthorized": false
+}
