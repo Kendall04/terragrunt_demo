@@ -570,3 +570,19 @@ policies, grants creation, settles UNKNOWN or replaces any E16 execution guard.
 Checked-in legacy templates are useful negative regression fixtures, not evidence
 of installed permissions. The closed 21 October session cannot be resumed after
 its bindings were restored. No spending envelope or retirement deadline is renewed.
+
+
+## 2026-10-27: three metadata-only data inputs
+
+E16 now transports the already-defined `sql_database_security`, `sql_backup_cohost`
+and `recovery_target_subnet_id` fields. Null/absent preserves legacy configuration.
+Closed shapes reject plaintext credential/command extras, cross-account/region or
+wrong-purpose key/secret/artifact references, mutable artifact versions and invalid
+policy bounds. Selected recovery subnet must belong to observed original global
+outputs; caller dependency overrides remain rejected. Proposal values are preserved,
+not silently rewritten into new frequency/retention. The cohost pass-through is
+preparation-only: enabling either observer or producer is explicitly refused in E16
+until a separately admitted activation contract is available. This adds no AWS verbs,
+role permissions, locks or installed security changes. Six focused hermetic cases
+passed without rerunning closed suites. Source records remain UNVERIFIED; approvals
+are unchanged. Native plan permission does not activate these data settings.

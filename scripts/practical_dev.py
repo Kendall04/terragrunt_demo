@@ -6,6 +6,8 @@ Advanced WP5 remains a distinct, mutually exclusive mode. No E2 writes/takeover.
 """
 import argparse
 import configparser
+import base64
+import datetime as dt
 import copy
 import hashlib
 import json
@@ -315,6 +317,72 @@ class Session:
             require(set(observed)==set(arns) and all(t.get('Environment')=='dev' and t.get('Project')=='demo' for t in observed.values()),'independent owner tags missing/foreign')
         return dict(lineage=value['lineage'],serial=value['serial'],sha256=state_digest(raw),rows=rows,outputs={k:v['value'] for k,v in value.get('outputs',{}).items()})
 
+    def data_options(self,value):
+        """Only existing metadata contracts; no credentials, activation or actions."""
+        selected=value.get('recovery_target_subnet_id')
+        require(selected is None or isinstance(selected,str) and re.fullmatch(r'subnet-[a-f0-9]{8,17}',selected),'exact recovery subnet metadata')
+        security=value.get('sql_database_security')
+        if security is not None:
+            require(type(security) is dict and set(security)=={'migration_user','migration_secret_arn'},'closed SQL security metadata only')
+            user=value.get('app_user','fargate_user');database=value.get('app_db','demodb')
+            require(all(isinstance(x,str) and re.fullmatch('[A-Za-z_][A-Za-z0-9_]{0,63}',x) for x in (user,database,security['migration_user']))
+                and user.lower()!='sa' and security['migration_user'].lower() not in ('sa',user.lower())
+                and database.lower() not in ('master','model','msdb','tempdb'),'distinct non-SA SQL identities')
+            require(isinstance(security['migration_secret_arn'],str) and re.fullmatch(
+                re.escape(f'arn:aws:secretsmanager:{self.region}:{self.account}:secret:demo/dev/db/sql-migrator-password-')+'[A-Za-z0-9]{6}',
+                security['migration_secret_arn']),'exact migration secret reference, no secret value')
+        cohost=value.get('sql_backup_cohost')
+        if cohost is None:return
+        require(type(cohost) is dict and {'artifact','backup','sentinel'}<=set(cohost)<=
+                {'artifact','backup','sentinel','enable_after_native_gates','enable_producer_after_native_gates'},'closed cohost metadata only')
+        require(all(type(cohost.get(k,False)) is bool and cohost.get(k,False) is False
+                for k in ('enable_after_native_gates','enable_producer_after_native_gates')),'E16 cohost preparation cannot activate timers or producer')
+        artifact,backup,sentinel=(cohost[k] for k in ('artifact','backup','sentinel'))
+        require(type(artifact) is dict and set(artifact)=={'Bucket','Key','VersionId','Sha256','BucketKeyEnabled'},'closed artifact metadata only')
+        require(type(backup) is dict and set(backup)==set('Database StagingDirectory RestoreDirectory Bucket Prefix BackupKeyArn TextKeyArn ExpectedEc2RoleName MaxBackupBytes FreeReserveBytes TimeoutSeconds ProposedIntervalHours ProposedRetentionDays ProposedMaxAgeHours RetainLocalVerifiedBackups'.split()),'closed backup metadata only')
+        expected=set('SchemaVersion Placement Account Region RunId Subject StartsAt ExpiresAt CadenceSeconds ReminderSeconds PublishAttempts WatchdogSeconds ExpectedUp'.split())
+        require(type(sentinel) is dict and set(sentinel) in (expected,expected|{'Portable'}),'closed observer metadata only')
+        require(self.account=='341936017254' and self.region=='us-east-1' and sentinel['Account']==self.account and sentinel['Region']==self.region
+                and type(sentinel['SchemaVersion']) is int and sentinel['SchemaVersion']==1 and sentinel['Placement']=='SQL_HOST'
+                and type(sentinel['ExpectedUp']) is bool,'exact existing SQL cohost scope')
+        require(isinstance(sentinel['RunId'],str) and re.fullmatch('ecs-sentinel-[a-z0-9-]{1,24}',sentinel['RunId'])
+                and isinstance(sentinel['Subject'],str) and re.fullmatch('[a-z0-9][a-z0-9._-]{0,63}',sentinel['Subject']),'exact observer identifiers')
+        bounds={'CadenceSeconds':(60,3600),'ReminderSeconds':(0,604800),'PublishAttempts':(1,3),'WatchdogSeconds':(1,86400)}
+        require(all(type(sentinel[k]) is int and lo<=sentinel[k]<=hi for k,(lo,hi) in bounds.items())
+                and sentinel['WatchdogSeconds']>sentinel['CadenceSeconds']+840,'existing observer policy bounds')
+        try:
+            start,end=(dt.datetime.fromisoformat(sentinel[k].replace('Z','+00:00')) for k in ('StartsAt','ExpiresAt'))
+            valid=start.utcoffset() is not None and end.utcoffset() is not None and dt.timedelta(0)<end-start<=dt.timedelta(hours=24)
+        except (TypeError,ValueError,AttributeError):valid=False
+        require(valid,'finite cohost metadata window')
+        if sentinel.get('Portable') is not None:
+            portable=sentinel['Portable']
+            require(type(portable) is dict and set(portable)=={'SchemaVersion','ContractSha256'} and type(portable['SchemaVersion']) is int
+                    and portable['SchemaVersion']==1 and isinstance(portable['ContractSha256'],str)
+                    and re.fullmatch('[a-f0-9]{64}',portable['ContractSha256']),'closed portable contract metadata')
+        bucket='terragrunt-demo-sql-backup-341936017254-fa48a32dc9'
+        require(artifact['Bucket']==backup['Bucket']==bucket and artifact['BucketKeyEnabled'] is False
+                and isinstance(artifact['Sha256'],str) and re.fullmatch('[a-f0-9]{64}',artifact['Sha256'])
+                and isinstance(artifact['VersionId'],str) and re.fullmatch('[A-Za-z0-9+/=._-]{1,256}',artifact['VersionId'])
+                and artifact['VersionId'].lower() not in ('null','latest')
+                and artifact['Key']=='terragrunt-demo/dev/sql-backup-artifacts/'+sentinel['RunId']+'/'+artifact['Sha256']+'/SqlBackup.tar','exact immutable cohost artifact')
+        require(backup['Database']==value.get('app_db','demodb') and isinstance(backup['Database'],str)
+                and re.fullmatch('[A-Za-z_][A-Za-z0-9_]{0,63}',backup['Database'])
+                and backup['Database'].lower() not in ('master','model','msdb','tempdb')
+                and backup['ExpectedEc2RoleName']=='demo-dev-data-sql-ec2-role'
+                and backup['BackupKeyArn']==f'arn:aws:kms:{self.region}:{self.account}:key/30f01bb6-03b5-4e5f-b7a8-e304fe607ced'
+                and backup['TextKeyArn']==f'arn:aws:kms:{self.region}:{self.account}:key/50d3fe36-8128-4d09-ac13-8f5536a230a7','existing SQL database/role/key purposes')
+        require(all(isinstance(backup[k],str) and re.fullmatch('/var/opt/mssql/backup/[A-Za-z0-9/_-]+',backup[k])
+                    and '//' not in backup[k] for k in ('StagingDirectory','RestoreDirectory'))
+                and backup['StagingDirectory']!=backup['RestoreDirectory'] and isinstance(backup['Prefix'],str)
+                and re.fullmatch('terragrunt-demo/dev/sql-backups/ec2-20261016/[A-Za-z0-9_-]+',backup['Prefix']),'owned backup paths only')
+        require(all(type(backup[k]) is int for k in ('MaxBackupBytes','FreeReserveBytes','TimeoutSeconds','ProposedIntervalHours','ProposedRetentionDays','ProposedMaxAgeHours','RetainLocalVerifiedBackups'))
+                and 1048576<=backup['MaxBackupBytes']<=1073741824 and backup['FreeReserveBytes']>=1048576
+                and 10<=backup['TimeoutSeconds']<=3600 and 1<=backup['ProposedIntervalHours']<=24
+                and 1<=backup['ProposedRetentionDays']<=30 and backup['ProposedIntervalHours']<=backup['ProposedMaxAgeHours']<=168
+                and 1<=backup['RetainLocalVerifiedBackups']<=10,'existing backup option bounds')
+        require(len(base64.b64encode(c.canonical(cohost)))<=4096,'bounded cohost metadata payload')
+
     def variables(self,layer):
         # Existing admin-promoted source publication supplies only security-owned
         # references; network/service IDs are resolved after their actual creation.
@@ -324,7 +392,7 @@ class Session:
         required=authority['ownership_closure']['consumers'].get('dev/'+layer,[])
         protected={k:publication['records'][k]['value'] for k in required if publication['records'][k]['available']}
         require(set(protected)==set(required),'security references incomplete')
-        allowed={'global':{'protected_nat_launch'},'data':{'protected_sql_ami','app_db','app_user','enable_alarms','instance_type','volume_size_gb','cpu_credits'},'platform':set(),'apps':set(),'edge':{'cors_allowed_origins'}}
+        allowed={'global':{'protected_nat_launch'},'data':{'protected_sql_ami','app_db','app_user','enable_alarms','instance_type','volume_size_gb','cpu_credits','sql_database_security','sql_backup_cohost','recovery_target_subnet_id'},'platform':set(),'apps':set(),'edge':{'cors_allowed_origins'}}
         require(set(self.config['variables'].get(layer,{}))<=allowed[layer],'only original nonsecret configuration inputs; dependency overrides rejected')
         value=dict(self.config['variables'].get(layer,{}),account_id=self.account,region=self.region)
         if required:value['protected_inputs']=protected
@@ -332,10 +400,14 @@ class Session:
         shared=publication['records'].get('dev/kms')
         require(shared and shared['available'],'actual KMS publication')
         if layer!='platform':value['alerts_topic_arn']=f'arn:aws:sns:{self.region}:{self.account}:demo-dev-shared-alerts'
+        if layer=='data':self.data_options(value)
         if layer in ('data','apps','edge'):
             global_=self.state('global')['outputs']
             value['private_subnet_ids']=global_['private_subnet_ids']
-            if layer=='data':value['db_instance_sg_id']=global_['db_instance_sg_id']
+            if layer=='data':
+                value['db_instance_sg_id']=global_['db_instance_sg_id']
+                selected=value.get('recovery_target_subnet_id')
+                require(selected is None or selected in value['private_subnet_ids'],'recovery subnet must belong to observed original global outputs')
             elif layer=='edge':value.update(alb_listener_arn=global_['alb_listener_arn'],vpc_link_sg_id=global_['vpc_link_sg_id'])
             else:
                 value.update({k:global_[k] for k in ('alb_listener_arn','demo_sg_id','demo_blue_tg_arn','demo_green_tg_arn')})
