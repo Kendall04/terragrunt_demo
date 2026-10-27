@@ -48,7 +48,11 @@
       ],
       "needs": [
         "release"
-      ]
+      ],
+      "concurrency": {
+        "group": "e1-application-delivery-dev",
+        "cancel-in-progress": false
+      }
     }
   }
 }

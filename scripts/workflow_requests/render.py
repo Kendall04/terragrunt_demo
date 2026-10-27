@@ -59,6 +59,13 @@ PY""".replace("EXPECTED_IDENTITY",identity).replace("EXPECTED_REF",c.source_ref(
             'steps':steps}}}
 
 def call(identity,request,approvals,**options):
+    # Advisory per-environment queue, shared by manual delivery, rollback and
+    # both CD wrappers. Durable E2 remains the actual mutation owner. Never cancel
+    # an in-progress request or accept a caller-defined concurrency override.
+    if identity in ('deploy-dev','promote-prod'):
+        c.require('concurrency' not in options)
+        options = dict(options, concurrency={'group':'e1-application-delivery-'+c.environment(identity),
+                                            'cancel-in-progress':False})
     if identity not in approvals:
         return dict({'runs-on':'ubuntu-latest','permissions':{},'steps':[{'run':
             'echo "::error::E1 '+identity+' is inactive: no verified immutable workflow pin, installation and governance binding."; exit 1'}]},**options)

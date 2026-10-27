@@ -1,5 +1,44 @@
 # ECS V2: arquitectura y pipelines recomendados — 2026-10-24
 
+## Finite pipeline implementation reconciliation - 2026-10-27
+
+The five recommended entry types already exist as source, rather than only this
+design: `ci.yml`, `release-build.yml`, `deploy-dev.yml`, `rollback-manifest.yml` and
+`cd-terragrunt.yml`. Reusable/internal/legacy files are not27 independently admitted
+pipelines. Release/deploy callers currently fail closed with empty approvals,
+permissions and no reusable dispatch; source existence does not mean remote admission.
+Locked restore, immutable action/image/source bindings, WP3 qualification, WP4/E2/E3
+delivery and explicit recovery/portable test selection were already implemented.
+Do not implement a duplicate workflow system or remove old entries without their
+remote governance/ownership migration.
+
+One still-unimplemented recommendation was reproduced: manual deploy/rollback and
+both CD wrappers had different outer groups and no common application request gate.
+The existing renderer now assigns every deploy-dev request the literal job group
+`e1-application-delivery-dev`, and promote-prod/PROD rollback the separate PROD group,
+both with `cancel-in-progress=false`. Five generated callers changed; claims,
+repository/ref, permissions, guards, inputs, approval registry and installed runtime
+did not. Only the renderer's existing WP6 source hash was refreshed; approvals remain
+empty. Six focused cases plus65 existing workflow/OIDC cases PASS with network/process
+effects denied. Exact rendered-source comparison also passes. This does not run or
+enable GitHub Actions, prove live exclusion, or replace durable E2 ownership.
+
+GitHub supports job concurrency on reusable calls; groups are repository-scoped and
+the default pending slot can be replaced, so this is not a durable FIFO or proof of
+request completion. Keep the existing operation journal/reconciliation gates.
+Sources: [supported reusable keywords](https://docs.github.com/en/actions/reference/workflows-and-actions/reusing-workflow-configurations#supported-keywords-for-jobs-that-call-a-reusable-workflow),
+[concurrency behavior](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency).
+No new queue feature, action version, grant, secret or cloud operation was introduced.
+
+Security is not globally closed: the current security strategy still records broad
+egress, internal HTTP, SQL certificate-validation and migration/runtime privilege
+separation as UNRESOLVED. These are not silently accepted production settings, nor
+do the APT/image fixes prove their remediation. Choosing certificate trust/endpoint
+identity and a separate migrator/credential lifecycle is a material contract/access
+decision; actual package/role/network verification is native evidence. The original
+scope remains intact and PKI business-service integration stays outside ECS.
+
+
 ## Actual cohost bootstrap and external schedule wiring - 2026-10-26
 
 [Current wiring/access review](../../operations/sql-backup/recovery/COHOST-WIRING-REVIEW.md)

@@ -1,5 +1,50 @@
 # V2 local completion checkpoint - 2026-10-23
 
+## Finite original-scope reconciliation - 2026-10-27
+
+This is the agreed six-block status, not a reduced replacement project. Evidence
+references below are bounded local results, not a new audit or live acceptance.
+
+| Agreed block | Local code completed / evidence | Concrete local code still pending | External acceptance / decision |
+| --- | --- | --- | --- |
+| Architecture, availability, cost and pipelines | One-active-SQL cold target modes; five workflow entry types; locked CI, WP3/WP4/OIDC guards; shared environment application queues now6 new +65 existing cases PASS | No duplicate five-entry implementation needed. Final repository/ref migration is not selected or published; do not rewrite immutable refs speculatively | Fresh governance/installation and integrated costed saved plan. PROD independence remains a target; no PROD/live availability claim |
+| Backup and integrated recovery | Producer/observer, exact backup/fence checks, private transition/reconciliation, version writer, V2 installed-factory fixtures and API marker checks. Restore now captures actual start/completion around the restore port;4 cold cases and1 prepared-target case PASS | No missing three-step listener automation. Authenticated final evidence/binding publication cannot be fabricated from the retained or synthetic records | Controlled transport, fresh source fencing/target, SQL CHECKDB/schema, private connectivity and public Fargate/API/full RTO; current-scope approval and exit required |
+| Proportionate security | Minimal AWS CLI recipe, pinned locks/images/non-root and secret-free receipts, closed IAM/source contracts | SQL runtime/migrator separation, verified SQL trust, internal TLS/egress treatment remain UNRESOLVED in `secrets-strategy.md`; not relabeled implemented or removed from consideration | Material certificate/endpoint/credential/privilege decisions before those changes; native package graph, effective IAM and runtime findings. No invented CA, secret or grant |
+| Current Sentinel integration | Portable upstream pinned, two expectations, cohost split startup, bounded durable publisher, real reducer/journal/handler with doubles, readable notices and external watchdog composition; portable14+19+4 cases included in existing CI source | No independent backend/framework or extra observer EC2 is missing. Permanent operation is not achieved by deleting finite sandbox limits | Current-version EventBridge/ACK/persistence/outbox/watchdog/inbox and periodic native behavior. Historical b1 email is not new portable acceptance |
+| UI and real flows | Existing simple API, honest synthetic Product Demo, historical A-B-A/az6 navigation and five genuine Archify diagrams; existing18 Node / browser receipts retained | Final combined diagram and LIVE screenshots are deliberately deferred until E2E; do not generate them prematurely or silently change the no-external-API demo contract | Real restored API flow and owner viewing window; reconcile any final live frontend target before adding a network connection |
+| Cleanup, documentation, repository, CI/CD and delivery | Current candidate manifests, source coverage and existing lifecycle/retirement/residual/journal mechanisms; Kendall attribution already in README | Final docs/screenshots/repository migration depend on final evidence and destination. No alternative deletion engine is missing or authorized | Protected install/publication/new repository/hosted CI plus native owned-resource absence/access reversal; an existing platform prohibition cannot be lifted by another owner yes |
+
+The security decisions above are distinct from permission to deploy. Recommendation:
+preserve one app and one active SQL; use explicit schema-compatible migration work
+and a data-only runtime principal when that credential/privilege contract is admitted;
+validate SQL server identity under an agreed certificate trust model; narrow egress
+against the required bootstrap/AWS/SQL paths after their native inventory. These are
+not new business capabilities and not implemented by unit tests alone. They must not
+be dropped to call ECS complete, or silently introduce a CA/credential/access scope.
+
+No executable new AWS request can honestly be sealed now. Classification:
+
+- User/material scope decisions: final security treatment and repository/ref/governance
+  destination, then exact publication/installation/access/new budget. No old budget resets.
+- Technical feasibility: the three preserved SSM target-authorization failures remain
+  unexplained; no admitted working cold-recovery transport is demonstrated. No retry,
+  document/principal switch, console/SSH route or imagined successful evidence is proposed.
+- Existing prohibition: no teardown action or alternative implementation is authorized
+  here. An applicable platform rejection requires a genuinely admissible review, not
+  another general yes. Do not start a cycle whose withdrawal is blocked.
+
+The minimal next external admission is read-only current-identity/ownership/policy/
+governance reconciliation in341936017254/us-east-1 with the existing cnp-cert-dev
+profile, without secret values, new role assumption, command execution or resource
+creation; combine that result with the transport/exit feasibility decision before
+requesting spend. The26-oct inventory is dated evidence, not a current27-oct readback.
+62 is a portable mock plan;73 TARGET +62 =135 is arithmetic, not an integrated plan,
+count of all implicit resources or budget. No full-platform dollar limit is justified
+by the serverlessUSD2 or obsolete102/USD6 proposals. Preserve originals/backups2+2d,
+collect an exact plan/IDs/lifecycle/permissions/cost/exit before one future grouped
+cycle decision; include the30-minute owner LIVE window and cleanup reserve then.
+
+
 ## Portable/local closure -26-oct-2026
 
 The paired cohost/Lambda package is locally qualified; the portfolio now separates it
