@@ -9,6 +9,7 @@ import json
 import math
 import re
 from contracts import load_json
+from current_controls import finite_keys, resource_policy_scope, schema_scope, SCHEMAS, disjoint_function
 from evaluator import Unsupported, matches
 
 IGNORED_DIRECTORIES = {".git", ".terraform", ".terragrunt-cache", "node_modules", "__pycache__"}
@@ -380,18 +381,74 @@ class Discovery:
             return re.sub(r"\$\{([^}]+)\}", lambda match:
                           name_pattern(match[1], directory, seen), literal)
 
+        def expansion(attrs, directory):
+            if "for_each" not in attrs:
+                return (None,)
+            if "count" in attrs:
+                raise Unsupported("ambiguous instance expansion")
+            return finite_keys(attrs["for_each"], local_strings, directory)
+
+        def patterns(attrs, symbol, directory):
+            result = []
+            for key in expansion(attrs, directory):
+                expr = attrs[symbol]
+                if key is not None:
+                    expr = (json.dumps(key) if expr == "each.key" else
+                            expr.replace("${each.key}", key))
+                result.append(name_pattern(expr, directory))
+            return tuple(result)
+
+        resources = {}
+        for rel, children in parsed.items():
+            for kind, typ, name, body in children:
+                if kind == "resource":
+                    key = (str(Path(rel).parent), typ, name)
+                    resources[key] = body if key not in resources else None
+
+        def function_patterns(expression, directory, active=()):
+            ref = re.fullmatch(r"(aws_lambda_function|aws_lambda_alias)\.(\w+)(?:\[(?:each\.key|\"[A-Za-z0-9_-]+\")\])?\.(?:function_name|arn|id)", expression)
+            if not ref:
+                pattern = name_pattern(expression, directory)
+                if pattern.startswith("arn:"):
+                    arn = re.fullmatch(r"arn:[^:]+:lambda:[^:]+:[^:]+:function:([^:]+)(?::[^:]+)?", pattern)
+                    if not arn:
+                        raise Unsupported("unresolved function ARN identity")
+                    pattern = arn[1]
+                return (pattern,)
+            key = (directory, ref[1], ref[2])
+            body = resources.get(key)
+            if body is None or key in active:
+                raise Unsupported("missing/ambiguous/cyclic function identity")
+            nested, rest = blocks(body)
+            attrs = attributes(rest)
+            if ref[1] == "aws_lambda_function":
+                if any(k not in ("environment", "vpc_config", "tracing_config", "dead_letter_config", "ephemeral_storage", "lifecycle") for k, _, _, _ in nested):
+                    raise Unsupported("uninspected function hook")
+                return patterns(attrs, "function_name", directory)
+            schema_scope("aws_lambda_alias", body)
+            return function_patterns(attrs["function_name"], directory, active + (key,))
+
         # Resolve foreign attachment destinations structurally, not by directory prefix.
         foreign_roles = {}
         for rel, children in parsed.items():
             for kind, typ, name, body in children:
                 if kind == "resource" and typ == "aws_iam_role":
                     try:
-                        attrs = attributes(blocks(body)[1])
-                        pattern = name_pattern(attrs["name"], str(Path(rel).parent))
-                        if not any(matches(pattern, known, insensitive=True) for known in names):
-                            scope = "role:" + declaration_id(rel, kind, typ, name)
-                            foreign_roles[(str(Path(rel).parent), name)] = scope
-                            self.role_scope_patterns[scope] = pattern
+                        nested, rest = blocks(body)
+                        attrs = attributes(rest)
+                        directory = str(Path(rel).parent)
+                        if resources.get((directory, typ, name)) is None:
+                            raise Unsupported("ambiguous role declaration")
+                        if nested or set(attrs) - {"name", "name_prefix", "assume_role_policy", "count", "for_each", "tags", "description", "permissions_boundary", "max_session_duration", "path"}:
+                            raise Unsupported("uninspected role control/hook")
+                        possible = patterns(attrs, "name", directory)
+                        if not any(matches(pattern, known, insensitive=True) for pattern in possible for known in names):
+                            scopes = []
+                            for index, pattern in enumerate(possible):
+                                scope = "role:" + declaration_id(rel, kind, typ, name) + (":" + str(index) if len(possible) > 1 else "")
+                                scopes.append(scope)
+                                self.role_scope_patterns[scope] = pattern
+                            foreign_roles[(directory, name)] = (scopes, expansion(attrs, directory))
                     except (Unsupported, ValueError, KeyError, TypeError):
                         pass
         for rel, children in parsed.items():
@@ -424,17 +481,25 @@ class Discovery:
                     affects, reason = ["document:" + ident], "Unconsumed document cannot grant independently; every used reference requires semantic admission"
                 elif kind == "resource" and typ in ("aws_iam_role_policy", "aws_iam_role_policy_attachment", "aws_iam_instance_profile"):
                     try:
-                        attrs = attributes(blocks(body)[1])
-                        role = re.fullmatch(r"aws_iam_role\.(\w+)\.(?:name|id)", attrs["role"])
-                        scope = foreign_roles.get((str(Path(rel).parent), role[1])) if role else None
-                        if scope:
-                            affects, reason = [scope], "Attachment targets a module-local role with a name pattern disjoint from queried GitHub principals; its own permissions remain UNKNOWN"
-                    except (Unsupported, KeyError):
+                        nested, rest = blocks(body)
+                        attrs = attributes(rest)
+                        directory = str(Path(rel).parent)
+                        allowed = {"role", "name", "name_prefix", "policy", "policy_arn", "count", "for_each"}
+                        if typ == "aws_iam_instance_profile":
+                            allowed |= {"tags", "path"}
+                        if nested or set(attrs) - allowed:
+                            raise Unsupported("uninspected attachment control/hook")
+                        role = re.fullmatch(r"aws_iam_role\.(\w+)(\[each\.key\])?\.(?:name|id)", attrs["role"])
+                        target = foreign_roles.get((directory, role[1])) if role else None
+                        if target and ((role[2] is None and target[1] == (None,)) or
+                                       (role[2] and target[1] == expansion(attrs, directory) and target[1] != (None,))):
+                            affects, reason = target[0], "Attachment targets the same admitted finite role instances disjoint from queried GitHub principals; own permissions remain UNKNOWN"
+                    except (Unsupported, ValueError, KeyError, TypeError):
                         pass
                 elif kind == "resource" and typ == "aws_iam_role":
                     scope = foreign_roles.get((str(Path(rel).parent), name))
                     if scope:
-                        affects, reason = [scope], "Declared role name pattern disjoint from queried GitHub identities; no foreign trust/permission conclusion admitted"
+                        affects, reason = scope[0], "Declared role name pattern disjoint from queried GitHub identities; no foreign trust/permission conclusion admitted"
                 elif kind in ("resource", "data") and typ == "aws_iam_policy":
                     # A definition alone does not grant. Every attachment is independently
                     # discovered; unresolved literal/foreign references taint all subjects.
@@ -445,6 +510,23 @@ class Discovery:
                     affects, reason = ["api:lambda"], "Unmodeled Lambda resource delegation"
                 elif typ == "aws_ecr_lifecycle_policy":
                     affects, reason = ["artifact-retention"], "Lifecycle controls retention, not IAM caller authorization; operational image availability is not evaluated"
+                elif kind == "resource" and typ in ("aws_sns_topic_policy", "aws_s3_bucket_policy", "aws_sqs_queue_policy"):
+                    try:
+                        actions = resource_policy_scope(body, typ)
+                        services = {a.split(":")[0].lower() for a in actions}
+                        affects = ["*"] if any("*" in x or "?" in x for x in services) else ["api:" + x for x in sorted(services)]
+                        record["policy_action_domain"] = list(actions)
+                        reason = "Complete closed policy source grammar; action domain only, resource/principal/context permission remains UNKNOWN"
+                    except (Unsupported, ValueError, KeyError, TypeError):
+                        reason = "Unsupported resource policy source/control; no action-domain proof"
+                elif kind == "resource" and typ in SCHEMAS:
+                    try:
+                        service, attrs = schema_scope(typ, body)
+                        affects = ["api:" + service, "alternate-paths"]
+                        record["mechanism_schema"] = typ
+                        reason = "Inspected mechanism attributes/children; affected API and alternate paths retained, no execution grant"
+                    except (Unsupported, ValueError, KeyError, TypeError):
+                        reason = "Uninspected resource schema/control/hook"
                 elif typ and ("policy" in typ or typ.startswith("aws_iam_")):
                     reason = "Unsupported policy/identity mechanism may alter queried principals"
                 elif kind in ("resource", "data"):
@@ -454,6 +536,16 @@ class Discovery:
                         reason = "Unknown resource mechanism or embedded authority/execution hook"
                 else:
                     reason = "Unknown configuration construct"
+                if kind == "resource" and "api:lambda" in affects and (
+                    typ == "aws_lambda_permission" or record.get("mechanism_schema")):
+                    try:
+                        nested, rest = blocks(body)
+                        attrs = attributes(rest)
+                        if typ == "aws_lambda_permission" and (nested or set(attrs) - {"for_each", "count", "action", "function_name", "qualifier", "principal", "source_arn", "source_account", "statement_id"} or attrs.get("action") != '\"lambda:InvokeFunction\"'):
+                            raise Unsupported("uninspected Lambda permission")
+                        record["function_target_patterns"] = list(function_patterns(attrs["function_name"], str(Path(rel).parent)))
+                    except (Unsupported, ValueError, KeyError, TypeError):
+                        pass
                 record.update(admission=status, affects=affects, reason=reason)
                 self.records.append(record)
 
@@ -485,10 +577,18 @@ class Discovery:
                 record["admission"] = "UNSUPPORTED_NOT_APPLICABLE"
                 record["affects"] = []
 
-    def taints(self, *subjects):
+    def taints(self, *subjects, action=None, resource=None):
         wanted = set(subjects)
-        return [r for r in self.records if r["admission"] == "UNSUPPORTED_APPLICABLE" and
-                ("*" in r["affects"] or wanted.intersection(r["affects"]))]
+        result = []
+        for record in self.records:
+            if record["admission"] != "UNSUPPORTED_APPLICABLE" or not ("*" in record["affects"] or wanted.intersection(record["affects"])):
+                continue
+            if action and record.get("policy_action_domain") and not any(matches(p, action, insensitive=True) for p in record["policy_action_domain"]):
+                continue
+            if action and action.lower().startswith("lambda:") and disjoint_function(record.get("function_target_patterns"), resource):
+                continue
+            result.append(record)
+        return result
 
     def taints_for_role(self, role_name, admitted_directory):
         """Additional applicable declarations colliding with a bound workload role.

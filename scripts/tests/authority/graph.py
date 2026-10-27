@@ -194,7 +194,7 @@ def historical_baseline(root, environments=("dev", "prod")):
                                        "workload": workload, "routing": routing})
 
         def admitted(result, subject, action, resource, extra_error=None):
-            taints = discovery.taints("github", "api:" + action.split(":")[0].lower())
+            taints = discovery.taints("github", "api:" + action.split(":")[0].lower(), action=action, resource=resource)
             if subject in ("task_role", "execution_role") and not binding_error:
                 external = discovery.taints_for_role(resource, "terraform/infra/apps/fargate/modules/ecs_service")
                 taints = taints + [r for r in external if r not in taints]
