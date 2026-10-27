@@ -6,4 +6,4 @@ output "ecs_handlers" { value = { for k, f in aws_lambda_function.runtime : k =>
 output "ecs_ingestion_enabled" { value = aws_lambda_event_source_mapping.reports.enabled }
 output "ecs_schedule_states" { value = { for k, r in aws_cloudwatch_event_rule.tick : k => r.state } }
 
-output "ecs_alarm_actions_enabled" { value = { for k,a in aws_cloudwatch_metric_alarm.errors : k => a.actions_enabled } }
+output "ecs_alarm_actions_enabled" { value = { for k, a in aws_cloudwatch_metric_alarm.errors : k => a.actions_enabled } }

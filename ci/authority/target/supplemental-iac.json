@@ -108,7 +108,7 @@
       "purpose": "Reviewed opt-in portable trial wrapper; requires staged runtime and explicit package inputs, not execution authority."
     },
     "operations/integrations/portable/trial/runtime-outputs.tf": {
-      "sha256_lf": "25f20f6e0a8d0edd2843e51764f34a686c7cf2125fc1e6235d72f7b05d8cee7c",
+      "sha256_lf": "f37244f35283c605a052fc9592d7c5e86e558e9d3a43a03665d7658d070e5f65",
       "introduced_by": "25f037e04b0e059e868c66b0c8282d410452bfd9",
       "last_changed_by": "25f037e04b0e059e868c66b0c8282d410452bfd9",
       "owner": "ECS_PORTABLE_LOCAL_INTEGRATION",
@@ -116,7 +116,7 @@
       "purpose": "Outputs copied by prepare_module.py into the staged portable child module; not a standalone deployable root."
     },
     "operations/integrations/portable/trial/tests/portable.tftest.hcl": {
-      "sha256_lf": "23086c5d50dbd38b18913caad48874063293bb175ba47833133210e9be6cbc5f",
+      "sha256_lf": "cbbe6bf698e9eda3c77a9ac060f8d4fafb416b7a7b5b686c79396dce2624134a",
       "introduced_by": "25f037e04b0e059e868c66b0c8282d410452bfd9",
       "last_changed_by": "25f037e04b0e059e868c66b0c8282d410452bfd9",
       "owner": "ECS_PORTABLE_LOCAL_INTEGRATION",

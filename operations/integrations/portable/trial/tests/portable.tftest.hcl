@@ -12,7 +12,7 @@ mock_provider "aws" {
 variables {
   config_path           = "@CONFIG@"
   lambda_zip            = "@ZIP@"
-  notice_email = "owner@example.invalid"
+  notice_email          = "owner@example.invalid"
   package_manifest_path = "@RECEIPT@"
 }
 run "closed_input_output" {

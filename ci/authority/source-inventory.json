@@ -6653,7 +6653,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/model.py": {
-      "sha256": "07b20c9a41093e1d1c2c9f0f6fe5bef398d87beeeefe97ddde8ae59d1ac2c6f8",
+      "sha256": "da17939051b0d2dd8cc0927755e3cf54327548b4b7f42a90f2159b04e023375b",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -12053,7 +12053,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/portable/trial/runtime-outputs.tf": {
-      "sha256": "25f20f6e0a8d0edd2843e51764f34a686c7cf2125fc1e6235d72f7b05d8cee7c",
+      "sha256": "f37244f35283c605a052fc9592d7c5e86e558e9d3a43a03665d7658d070e5f65",
       "declarations": [],
       "signals": {
         "security-control": [
@@ -12065,7 +12065,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/portable/trial/tests/portable.tftest.hcl": {
-      "sha256": "23086c5d50dbd38b18913caad48874063293bb175ba47833133210e9be6cbc5f",
+      "sha256": "cbbe6bf698e9eda3c77a9ac060f8d4fafb416b7a7b5b686c79396dce2624134a",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
