@@ -15,9 +15,10 @@ variable "alarm_notices_enabled" {
   default = false
 }
 locals {
-  config = jsondecode(file(var.config_path))
-  name   = local.config.deployment
-  roles  = toset(["worker", "ingestion", "watchdog", "cleanup"])
+  config              = jsondecode(file(var.config_path))
+  name                = local.config.deployment
+  archive_bucket_name = "snt-${lower(local.name)}-${local.config.account}-${local.config.region}"
+  roles               = toset(["worker", "ingestion", "watchdog", "cleanup"])
   handlers = {
     worker = "Tick", ingestion = "Ingest", watchdog = "Watchdog", cleanup = "Cleanup"
   }
@@ -66,8 +67,16 @@ resource "aws_dynamodb_table" "state" {
   }
 }
 resource "aws_s3_bucket" "archive" {
-  bucket        = "${lower(local.name)}-${local.config.account}-${local.config.region}"
+  bucket        = local.archive_bucket_name
   force_destroy = false
+  lifecycle {
+    precondition {
+      condition = length(local.archive_bucket_name) <= 63 && can(regex("^snt-[a-z0-9][a-z0-9-]*[a-z0-9]$", local.archive_bucket_name)) && alltrue([
+        for suffix in ["-s3alias", "--ol-s3", "--x-s3", "--table-s3", "-an"] : !endswith(local.archive_bucket_name, suffix)
+      ])
+      error_message = "Sentinel archive requires the snt- namespace and a valid shared-namespace S3 name, at most 63 characters; no truncation or legacy bucket fallback."
+    }
+  }
 }
 resource "aws_s3_bucket_public_access_block" "archive" {
   bucket                  = aws_s3_bucket.archive.id

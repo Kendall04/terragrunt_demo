@@ -211,3 +211,82 @@ def disjoint_function(patterns, resource):
     """A name-only superset: ignoring account/region cannot prove false disjointness."""
     m = re.fullmatch(r'arn:aws:lambda:[a-z][a-z0-9-]+:[0-9]{12}:function:([A-Za-z0-9_-]+)(?::[A-Za-z0-9_-]+)?', resource or '')
     return bool(m and patterns and not any(matches(p, m[1], insensitive=True) for p in patterns))
+
+
+def symbolic_string(expression, local_values, directory, active=()):
+    """Superset of possible strings; literals remain, unresolved values become '*'."""
+    expression = expression.strip()
+    lowered = re.fullmatch(r'lower\(((?:var|local)\.\w+(?:\.\w+)*)\)', expression)
+    if lowered:
+        return symbolic_string(lowered[1], local_values, directory, active).lower()
+    ref = re.fullmatch(r'local\.(\w+)', expression)
+    if ref:
+        key = (directory, ref[1])
+        value = local_values.get(key)
+        return '*' if key in active or not isinstance(value, str) else symbolic_string(value, local_values, directory, active + (key,))
+    try:
+        value = json.loads(expression)
+    except (ValueError, TypeError):
+        return '*'
+    if not isinstance(value, str) or '%{' in value or '$${' in value:
+        return '*'
+    matcher = re.compile(r'\$\{([^{}]+)\}')
+    residual = matcher.sub('', value)
+    if '${' in residual:
+        return '*'
+    for m in matcher.finditer(value):
+        if not re.fullmatch(r'(?:var|local)\.\w+(?:\.\w+)*|lower\((?:var|local)\.\w+(?:\.\w+)*\)', m[1]):
+            return '*'
+    return matcher.sub(lambda m: symbolic_string(m[1], local_values, directory, active), value)
+
+
+def s3_policy_target(body, directory, resources, local_values):
+    """Bind every policy Resource to its single same-module bucket declaration.
+
+    Only target disjointness is proved; an overlapping request remains UNKNOWN
+    regardless of principal/transport assumptions. No resource name is allowlisted.
+    """
+    from source import attributes, blocks, split_top
+    resource_policy_scope(body, 'aws_s3_bucket_policy')
+    nested, rest = blocks(body);attrs = attributes(rest)
+    if nested or 'count' in attrs or 'for_each' in attrs:
+        raise Unsupported('expanded S3 policy identity')
+    ref = re.fullmatch(r'aws_s3_bucket\.(\w+)\.id', attrs['bucket'])
+    if not ref:
+        raise Unsupported('unbound S3 policy bucket')
+    target = resources.get((directory, 'aws_s3_bucket', ref[1]))
+    if target is None:
+        raise Unsupported('missing or ambiguous S3 bucket')
+    children, rest = blocks(target);bucket = attributes(rest)
+    if set(bucket) - {'bucket', 'force_destroy', 'tags'} or 'bucket' not in bucket:
+        raise Unsupported('uninspected S3 bucket identity attributes')
+    for kind, label, name, content in children:
+        if (kind, label, name) != ('lifecycle', None, None):
+            raise Unsupported('uninspected S3 bucket hook')
+        guards, remainder = blocks(content)
+        if remainder.strip():raise Unsupported('uninspected S3 lifecycle attributes')
+        for k, t, n, b in guards:
+            if (k, t, n) != ('precondition', None, None) or set(attributes(b)) != {'condition', 'error_message'}:
+                raise Unsupported('uninspected S3 lifecycle hook')
+    expr=attrs['policy'];doc=object_fields(expr[11:-1]);statements=doc['Statement']
+    if not (statements.startswith('[') and statements.endswith(']')):
+        raise Unsupported('unbound S3 statement construction')
+    arn='aws_s3_bucket.'+ref[1]+'.arn';allowed={arn, json.dumps('${'+arn+'}/*')}
+    count=0
+    for raw in split_top(statements[1:-1]):
+        st=object_fields(raw);actions=json.loads(st['Action']);actions=actions if isinstance(actions,list) else [actions]
+        if not all(a.lower().startswith('s3:') for a in actions):
+            raise Unsupported('cross-service S3 policy action')
+        rr=st['Resource'];refs=split_top(rr[1:-1]) if rr.startswith('[') and rr.endswith(']') else [rr]
+        if not refs or any(x not in allowed for x in refs):
+            raise Unsupported('policy Resource not bound to its bucket ARN')
+        count+=len(refs)
+    if not count:raise Unsupported('empty S3 policy target')
+    return dict(bucketDeclaration='aws_s3_bucket.'+ref[1], arnReference=arn,
+                resourceReferencesChecked=count, patterns=[symbolic_string(bucket['bucket'],local_values,directory)],
+                meaning='TARGET_SCOPE_ONLY; matching identity/context permission remains UNKNOWN')
+
+
+def disjoint_s3(binding, resource):
+    m=re.fullmatch(r'arn:aws:s3:::([a-z0-9][a-z0-9.-]{1,61}[a-z0-9])(?:/.*)?', resource or '')
+    return bool(binding and m and binding.get('patterns') and not any(matches(p,m[1]) for p in binding['patterns']))

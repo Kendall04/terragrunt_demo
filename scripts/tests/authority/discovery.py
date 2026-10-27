@@ -9,7 +9,7 @@ import json
 import math
 import re
 from contracts import load_json
-from current_controls import finite_keys, resource_policy_scope, schema_scope, SCHEMAS, disjoint_function
+from current_controls import finite_keys, resource_policy_scope, schema_scope, SCHEMAS, disjoint_function, s3_policy_target, disjoint_s3
 from evaluator import Unsupported, matches
 
 IGNORED_DIRECTORIES = {".git", ".terraform", ".terragrunt-cache", "node_modules", "__pycache__"}
@@ -516,6 +516,11 @@ class Discovery:
                         services = {a.split(":")[0].lower() for a in actions}
                         affects = ["*"] if any("*" in x or "?" in x for x in services) else ["api:" + x for x in sorted(services)]
                         record["policy_action_domain"] = list(actions)
+                        if typ == "aws_s3_bucket_policy":
+                            try:
+                                record["s3_target_binding"] = s3_policy_target(body, str(Path(rel).parent), resources, local_strings)
+                            except (Unsupported, ValueError, KeyError, TypeError):
+                                pass  # A complete action domain does not imply a resolved resource target.
                         reason = "Complete closed policy source grammar; action domain only, resource/principal/context permission remains UNKNOWN"
                     except (Unsupported, ValueError, KeyError, TypeError):
                         reason = "Unsupported resource policy source/control; no action-domain proof"
@@ -586,6 +591,8 @@ class Discovery:
             if action and record.get("policy_action_domain") and not any(matches(p, action, insensitive=True) for p in record["policy_action_domain"]):
                 continue
             if action and action.lower().startswith("lambda:") and disjoint_function(record.get("function_target_patterns"), resource):
+                continue
+            if action and action.lower().startswith("s3:") and disjoint_s3(record.get("s3_target_binding"), resource):
                 continue
             result.append(record)
         return result

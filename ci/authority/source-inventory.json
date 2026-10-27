@@ -5082,7 +5082,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/final_acceptance/gate.py": {
-      "sha256": "62d182210b2ba2f05d4f914ec629f4612279b601e391704c995355a57c393e3d",
+      "sha256": "9f5b8a2b39394855c7ee3edc3682c5a63c7ba87d4c9b9af14e61b914f47a8fe3",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -6660,7 +6660,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/model.py": {
-      "sha256": "457804653c106fcadbda2abf706a624210ae7cfde0e912ac08dc40da7b40308d",
+      "sha256": "d3649f912135a724cb700ea5b0335f4c3ee9cd6e7495c885226bdccb54d840af",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -11961,24 +11961,24 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/portable/prepare_module.py": {
-      "sha256": "93e964988c3a3239f5acc59a0aa2c67d8cc9fc7c4efedfdd497c0263b8a4c894",
+      "sha256": "87e1c89b8bee36eb89ce2bccad2bae5c8922b80dc754d8475554599f74a32cb9",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           4,
-          27,
-          28,
-          29
+          33,
+          34,
+          35
         ],
         "executable-dependency": [
-          27
+          33
         ],
         "security-control": [
-          7,
-          9,
-          11,
-          12,
-          13
+          13,
+          15,
+          17,
+          18,
+          19
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -12346,240 +12346,240 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/portable/trial/runtime/main.tf": {
-      "sha256": "b4830d8174a6aaef68a77960a4a830c84d5b56f5ff920c2dbe90ee8b3c05e92d",
+      "sha256": "c6f824686abe5e171bcef9bb181e4d238db0de4b977c2df776908009630043e7",
       "declarations": [
         {
           "kind": "data",
           "type": "aws_caller_identity",
           "name": "current",
-          "line": 35
+          "line": 36
         },
         {
           "kind": "data",
           "type": "aws_region",
           "name": "current",
-          "line": 36
+          "line": 37
         },
         {
           "kind": "resource",
           "type": "aws_dynamodb_table",
           "name": "state",
-          "line": 37
+          "line": 38
         },
         {
           "kind": "resource",
           "type": "aws_s3_bucket",
           "name": "archive",
-          "line": 68
+          "line": 69
         },
         {
           "kind": "resource",
           "type": "aws_s3_bucket_public_access_block",
           "name": "archive",
-          "line": 72
+          "line": 81
         },
         {
           "kind": "resource",
           "type": "aws_s3_bucket_versioning",
           "name": "archive",
-          "line": 79
+          "line": 88
         },
         {
           "kind": "resource",
           "type": "aws_s3_bucket_server_side_encryption_configuration",
           "name": "archive",
-          "line": 83
+          "line": 92
         },
         {
           "kind": "resource",
           "type": "aws_s3_bucket_policy",
           "name": "archive",
-          "line": 89
+          "line": 98
         },
         {
           "kind": "resource",
           "type": "aws_sqs_queue",
           "name": "dead",
-          "line": 93
+          "line": 102
         },
         {
           "kind": "resource",
           "type": "aws_sqs_queue",
           "name": "reports",
-          "line": 99
+          "line": 108
         },
         {
           "kind": "resource",
           "type": "aws_cloudwatch_event_bus",
           "name": "reports",
-          "line": 106
+          "line": 115
         },
         {
           "kind": "resource",
           "type": "aws_cloudwatch_event_rule",
           "name": "reports",
-          "line": 107
+          "line": 116
         },
         {
           "kind": "resource",
           "type": "aws_cloudwatch_event_target",
           "name": "reports",
-          "line": 114
+          "line": 123
         },
         {
           "kind": "resource",
           "type": "aws_sqs_queue_policy",
           "name": "reports",
-          "line": 125
+          "line": 134
         },
         {
           "kind": "resource",
           "type": "aws_iam_role",
           "name": "runtime",
-          "line": 130
+          "line": 139
         },
         {
           "kind": "resource",
           "type": "aws_cloudwatch_log_group",
           "name": "runtime",
-          "line": 137
+          "line": 146
         },
         {
           "kind": "resource",
           "type": "aws_iam_role_policy",
           "name": "runtime",
-          "line": 159
+          "line": 168
         },
         {
           "kind": "resource",
           "type": "aws_lambda_function",
           "name": "runtime",
-          "line": 164
+          "line": 173
         },
         {
           "kind": "resource",
           "type": "aws_lambda_alias",
           "name": "live",
-          "line": 180
+          "line": 189
         },
         {
           "kind": "resource",
           "type": "aws_lambda_event_source_mapping",
           "name": "reports",
-          "line": 186
+          "line": 195
         },
         {
           "kind": "resource",
           "type": "aws_cloudwatch_event_rule",
           "name": "tick",
-          "line": 193
+          "line": 202
         },
         {
           "kind": "resource",
           "type": "aws_cloudwatch_event_target",
           "name": "tick",
-          "line": 199
+          "line": 208
         },
         {
           "kind": "resource",
           "type": "aws_lambda_permission",
           "name": "tick",
-          "line": 210
+          "line": 219
         },
         {
           "kind": "resource",
           "type": "aws_lambda_function_event_invoke_config",
           "name": "runtime",
-          "line": 219
+          "line": 228
         },
         {
           "kind": "resource",
           "type": "aws_sqs_queue_policy",
           "name": "operations",
-          "line": 229
+          "line": 238
         },
         {
           "kind": "resource",
           "type": "aws_cloudwatch_log_metric_filter",
           "name": "health",
-          "line": 233
+          "line": 242
         },
         {
           "kind": "resource",
           "type": "aws_cloudwatch_metric_alarm",
           "name": "health",
-          "line": 243
+          "line": 252
         },
         {
           "kind": "resource",
           "type": "aws_cloudwatch_metric_alarm",
           "name": "dead",
-          "line": 257
+          "line": 266
         },
         {
           "kind": "resource",
           "type": "aws_cloudwatch_metric_alarm",
           "name": "errors",
-          "line": 272
+          "line": 281
         },
         {
           "kind": "resource",
           "type": "aws_iam_policy",
           "name": "ecs_boundary",
-          "line": 294
+          "line": 303
         }
       ],
       "signals": {
         "credential-acquisition": [
-          135
+          144
         ],
         "launch-or-mutation": [
           1,
           4,
-          31,
-          91,
-          128,
-          139,
-          152,
-          231
+          32,
+          100,
+          137,
+          148,
+          161,
+          240
         ],
         "executable-dependency": [
           4,
-          91,
-          111,
-          128,
-          144,
-          145,
-          146,
-          148,
-          150,
-          152,
+          100,
+          120,
+          137,
+          153,
           154,
-          156,
-          168,
-          231,
-          292
-        ],
-        "security-control": [
-          75,
-          89,
-          91,
-          104,
-          125,
-          128,
-          130,
-          133,
-          135,
+          155,
+          157,
           159,
           161,
-          162,
-          167,
-          178,
-          210,
-          229,
-          231,
-          295,
-          298
+          163,
+          165,
+          177,
+          240,
+          301
+        ],
+        "security-control": [
+          84,
+          98,
+          100,
+          113,
+          134,
+          137,
+          139,
+          142,
+          144,
+          168,
+          170,
+          171,
+          176,
+          187,
+          219,
+          238,
+          240,
+          304,
+          307
         ]
       },
       "semantic_status": "UNVERIFIED"

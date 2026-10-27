@@ -134,5 +134,22 @@
   "noticeAttempts": 3,
   "alarmActionsEnabledByDefault": false,
   "newBudgetProposalUsd": 2,
-  "priorBudgetsApplicable": false
+  "priorBudgetsApplicable": false,
+  "archiveNameContract": {
+    "namespacePrefix": "snt-",
+    "futureResourcesOnly": true,
+    "maxLength": 63,
+    "characterSubset": "lowercase letters, digits, hyphens; starts/ends alphanumeric",
+    "reservedSuffixesRejected": [
+      "-s3alias",
+      "--ol-s3",
+      "--x-s3",
+      "--table-s3",
+      "-an"
+    ],
+    "invalidNames": "plan precondition fails; no truncation or legacy fallback",
+    "existingBucketsRenamed": false,
+    "appliedToAws": false,
+    "source": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html"
+  }
 }

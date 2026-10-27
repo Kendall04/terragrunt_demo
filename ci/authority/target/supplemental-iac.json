@@ -124,12 +124,12 @@
       "purpose": "Same reviewed output declarations relocated into the real materialized child module; no declarations excluded."
     },
     "operations/integrations/portable/trial/runtime/main.tf": {
-      "sha256_lf": "b4830d8174a6aaef68a77960a4a830c84d5b56f5ff920c2dbe90ee8b3c05e92d",
+      "sha256_lf": "c6f824686abe5e171bcef9bb181e4d238db0de4b977c2df776908009630043e7",
       "introduced_by": "04e665d75973377357298333092711ac1c43d753",
-      "last_changed_by": "04e665d75973377357298333092711ac1c43d753",
+      "last_changed_by": "LOCAL_S3_NAMESPACE_PENDING_COMMIT",
       "owner": "ECS_PORTABLE_LOCAL_INTEGRATION",
       "classification": "LOCAL_INTEGRATION_SOURCE",
-      "purpose": "Real b3d0b3b portable module plus existing ECS boundaries/handlers; reproduced with the unchanged reviewed transformation, no deployment authority."
+      "purpose": "Materialized pinned upstream plus reviewed ECS boundaries/handlers and owner-approved future snt- archive namespace; no deployment authority."
     },
     "operations/integrations/portable/trial/versions.tf": {
       "sha256_lf": "6339a32b1016abf2f998076c311c04ed8967db3eade2e49194b2fa635b398299",
