@@ -1,0 +1,27 @@
+{
+  "SchemaVersion": 1,
+  "LabOnly": true,
+  "Subject": "CN=sql.demo.internal",
+  "DnsNames": [
+    "sql.demo.internal"
+  ],
+  "SelfSigned": true,
+  "CertificateAuthority": false,
+  "Purpose": "TLS server authentication",
+  "KeyAlgorithm": "RSA",
+  "KeySizeBits": 2048,
+  "SignatureAlgorithm": "sha256RSA",
+  "NotBeforeUtc": "2026-10-27T03:21:58.0000000+00:00",
+  "NotAfterUtc": "2026-11-26T03:21:58.0000000+00:00",
+  "ValidityDays": 30,
+  "CertificateDerSha256": "6a45fbcadf8a0a44ffed3f9b78de396b872af430c856b3cb041a29c2ece87738",
+  "CertificatePemSha256": "2c783c5da0047e887d78f91a25a78d9df87ed7d40f6c54c8f5880505f657847d",
+  "ExpectedSqlClientSettings": {
+    "Encrypt": "True",
+    "TrustServerCertificate": false,
+    "HostNameInCertificate": "sql.demo.internal"
+  },
+  "TrustInstalledInWindows": false,
+  "UploadedToAws": false,
+  "SqlHandshakeProven": false
+}

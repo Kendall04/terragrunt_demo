@@ -24,7 +24,19 @@
 LICENSE
 README.md
 !**/.gitignore
-!.git/HEAD
-!.git/config
-!.git/packed-refs
-!.git/refs/heads/**
+
+# Private material must never enter any API build context.
+**/.aws
+**/.ssh
+**/.secrets
+**/.env.*
+**/*.key
+**/*.pem
+**/*.pfx
+**/*.p12
+**/*.pkcs8
+**/CodexPrivate
+**/private-material
+# Only the explicitly reviewed public leaf is available to the lab recipe.
+**/*.crt
+!deploy/trust/sql.demo.internal.crt

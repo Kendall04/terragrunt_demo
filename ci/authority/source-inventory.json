@@ -12180,6 +12180,43 @@
       "declarations": [],
       "signals": {},
       "semantic_status": "UNVERIFIED"
+    },
+    "demo-api/deploy/sql-lab/Dockerfile": {
+      "sha256": "44adf409a3c54fb0d3bd3375266fa6b3fa1c05b7c087baf3d5bd535b4320ebda",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          5,
+          27,
+          30,
+          33,
+          36,
+          53
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "demo-api/deploy/trust/sql.demo.internal.crt": {
+      "sha256": "2c783c5da0047e887d78f91a25a78d9df87ed7d40f6c54c8f5880505f657847d",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "demo-api/deploy/trust/sql.demo.internal.json": {
+      "sha256": "9d35537e26c718a1166e589d08db473e61e983259bfc4c56c46c150230088cc2",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "demo-api/deploy/trust/README.md": {
+      "sha256": "223369490276d4c0b6ffa87c9eabd01593398b8ce53af8622236c145801db42a",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          26
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",

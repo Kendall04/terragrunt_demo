@@ -1,7 +1,9 @@
 # SQL runtime security increment - 2026-10-27
 
-Local implementation, NOT installed, native SQL/TLS proof, IAM authority or rollout approval.
-No password, certificate, private key, CA, SQL grant or trust store was generated or changed.
+Local implementation, NOT native SQL/TLS proof, IAM authority or rollout approval.
+The initial security increment generated no material. A separately owner-approved
+30-day laboratory leaf was subsequently generated locally; see the update below.
+No CA, SQL grant, host truststore or AWS configuration was installed/changed.
 
 ## Runtime and migration are separate operations
 
@@ -192,22 +194,16 @@ certificate SAN. No SQL Route53 name, managed public chain, ACM certificate refe
 or SQL certificate distribution is defined in these checked-in paths. No certificate
 availability was inferred from the account and no private material was inspected.
 
-Choose the stable logical SQL certificate identity `sql.demo.internal` for this
-single-app lab; it is a proposed SAN/name, not a deployed DNS record. Connect to the
-reviewed private IP with HostNameInCertificate bound to this name, so no new DNS
-zone/record is needed for that override. It requires an actual supplied certificate
-and a chain already managed/trusted outside this project; none is currently referenced.
-Do not pretend a public CA will issue an internal-only name. If no managed issuer
-exists, there is no ready certificate for that chain-validating profile: propose a
-separately approved lab server-certificate pinning treatment (not a new CA/PKI) or
-an owned public-domain certificate before changing this strict profile. Exact leaf
-pinning is an alternative trust model, not proof of CA-chain/SAN validation; it is
-NOT implemented or silently enabled here. No certificate/key was generated.
-
-This removes the open naming choice from the owner. The material missing input is
-the admissible certificate/trust source and its installation/distribution approval,
-not a request to invent SQL/DNS/CA architecture. Internal ALB/task TLS remains a
-separate disclosed hop; this SQL control does not secure it automatically.
+The stable logical identity is `sql.demo.internal`, without a new DNS record for
+the reviewed-IP/HostNameInCertificate override. The owner separately approved a
+30-day self-signed lab server leaf and preparation of explicit public trust in the
+API image. That generation is now complete; private key remains outside Git/build
+context. [Public certificate, exact recipe and boundary](../../demo-api/deploy/trust/README.md).
+No managed CA is invented, and the earlier alternative pinning proposal is withdrawn:
+ServerCertificate pinning is not used. Encrypt=True/TrustServerCertificate=False
+and name/chain/expiry validation remain. No Windows trust, Linux image build,
+SQL certificate installation, handshake, AWS upload or protected rollout occurred.
+Internal ALB/task TLS remains separate and unproved by this preparation.
 
 ## Linux environment boundary
 
