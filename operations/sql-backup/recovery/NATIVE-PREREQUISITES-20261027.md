@@ -22,6 +22,14 @@ Their keys remain `s3://e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev
 
 ## Concrete control-plane prerequisites
 
+Scope correction: [bootstrap source reconciliation](BOOTSTRAP-SCOPE-20261027.md)
+shows that absent infra/emergency compute is NOT a prerequisite of supervised E16.
+It remains a final CI/CD delivery requirement. The four infra nodes use WP5; the
+emergency pair has a WP4D implementation requiring verified cleanup dependencies.
+Do not create the six merely to prepare original-root plans, and do not describe
+the current full security root as a safe six-resource installation.
+
+
 The complete project list contains `e1-controller-release` and `e1-controller-deploy-dev`, but not these three projects required by the protected design:
 
 - `e1-controller-infra-dev`
