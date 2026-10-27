@@ -706,7 +706,7 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/cd-demo-api.yml": {
-      "sha256": "7ce62fcf6f03b6de4fdc864a54b4f9c2285a2d791accbe4b2265e79773c1452d",
+      "sha256": "9f8ef3cec3055fc45e2aae862d0361cb15de37829321c7d11a29b8a2356bc62a",
       "declarations": [],
       "signals": {},
       "semantic_status": "UNVERIFIED"
@@ -781,7 +781,7 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/cd.yml": {
-      "sha256": "08541dd455b90eb91015d206775302b706fa844b3d6c643cfe66abe8b9d7b7e2",
+      "sha256": "69abf4848f4b2aa5f5d94b5b7fb23fc843fc87a835d1fa66234f6ff54c758d25",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -937,7 +937,7 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/deploy-dev.yml": {
-      "sha256": "8f749dac8b0b641787b917e89210e3e1ce21874d57be83a541dd19b1c4fd9bdf",
+      "sha256": "5f802aa87b6014b98ecbf0ebab15e90ddf22905e6738c23999de260ce61a444c",
       "declarations": [],
       "signals": {},
       "semantic_status": "UNVERIFIED"
@@ -1103,7 +1103,7 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/promote-prod.yml": {
-      "sha256": "f325fb5c3fa152a6fa495a618ef1950b6d4ce76f280323c677d87499530c2296",
+      "sha256": "333a1c34b9c4fbbb9d16920d3351626045bf786327e66b3b86613da869849ddc",
       "declarations": [],
       "signals": {},
       "semantic_status": "UNVERIFIED"
@@ -1115,7 +1115,7 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/rollback-manifest.yml": {
-      "sha256": "2a58974bc0bda58262d113f95bdca7b85759b33d10812bf67264d36c40beea48",
+      "sha256": "fef32a1e6fb3a6ff040feb6383ab14aa3325f586efe26343141ecdfc1c921497",
       "declarations": [],
       "signals": {},
       "semantic_status": "UNVERIFIED"
@@ -2169,7 +2169,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/recovery/host.py": {
-      "sha256": "72710cd881dda6bc6ef2a10df0f3f6edb209fce8dcb6b7c1c2c96f25c20a46b0",
+      "sha256": "e6b9d74d001cae8086a0f86b679d416d8c17a673d324be7f71e54ff19aa6a4fa",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -2380,7 +2380,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/recovery/test_cold_execution.py": {
-      "sha256": "3d9702ba93bbe377a6a4f936e40e87df6664de2daf7550be3a9dac4ae5aa7ba8",
+      "sha256": "070a2d761f2e6915d1158b8874621aa4391480ec98c24215385b51263cf3c38b",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -2391,11 +2391,14 @@
           33,
           34,
           35,
-          76,
-          77
+          78,
+          79,
+          82,
+          91,
+          92
         ],
         "security-control": [
-          84
+          99
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -7781,7 +7784,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/workflow_requests/render.py": {
-      "sha256": "1f28b7f1bfefdaaae7f6ee6bae974d5120c5825e7963deb2fd9ef468c9041748",
+      "sha256": "3d6b776094c98d818474ca50a48969d01cc7554a34fadc8bc2c4026511932859",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -7790,11 +7793,11 @@
           40,
           42,
           51,
-          95,
-          103,
-          104,
-          141,
-          151
+          102,
+          110,
+          111,
+          148,
+          158
         ],
         "executable-dependency": [
           53
@@ -8088,7 +8091,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/authority.json": {
-      "sha256": "642f1425f90e3c1a16c5a3a0e6f3bc1cd9f1721a41f854e6e64d42a4e0f9c355",
+      "sha256": "d25653dcdebf994a559cb36bd99593e31bb83b64c442e41d9130f25b5bf19572",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -12080,7 +12083,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/recovery/runtime-candidate.json": {
-      "sha256": "72501e31c19b5d31c8e4ce68446bdf96e09db9b06d7673a920c77672a8ae1d98",
+      "sha256": "db1569a5bf52b8dc47a2a186ce64bd7bf5cd133edee559796eb264901c08b44e",
       "declarations": [],
       "signals": {},
       "semantic_status": "UNVERIFIED"
@@ -12096,10 +12099,21 @@
         ]
       },
       "semantic_status": "UNVERIFIED"
+    },
+    "scripts/tests/workflows/test_delivery_concurrency.py": {
+      "sha256": "4dfbe47e2fc70426e28a9cd9794ba3bb477534e74b9ec43548bc2ee31b119446",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          58,
+          64
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",
-  "review_revision": "24b87642d00a81befcfe4b9805c4e6a55bf78c1e",
-  "review_note": "Four exact local listener automation/test/current-candidate/CI surfaces. UNVERIFIED semantics; no installed authority, permission, state or hosted operation changed.",
-  "review_delta_sha256": "c2db3c3ced49a2cf14511e2b454243ee297721b551338b522583f7da8f9a39f8"
+  "review_revision": "f27e26c804e966f408113e538c9390dc53f97819",
+  "review_note": "Eleven exact local concurrency/timing/test/candidate surfaces. WP6 source hash refreshed with approvals empty; all semantics UNVERIFIED. No installed authority, IAM/trust/claims, state, remote workflow or AWS change.",
+  "review_delta_sha256": "1cde9b3dd7166d7c1a54281711b20d0c9d7cc9d62ac1a9c4c8839dcc320e28d4"
 }

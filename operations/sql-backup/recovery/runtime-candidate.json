@@ -1,18 +1,18 @@
 {
   "Status": "LOCAL_REPRODUCIBLE_RUNTIME_CURRENT_SOURCE_NOT_NATIVE",
-  "SourceCommit": "24b87642d00a81befcfe4b9805c4e6a55bf78c1e",
+  "SourceCommit": "f27e26c804e966f408113e538c9390dc53f97819",
   "IncludesRecoveryCorrectionCommit": "993293f1cd26d08316379de953dfb0809602be0a",
   "Archive": {
-    "Name": "recovery-24b8764.tar",
+    "Name": "recovery-f27e26c.tar",
     "Bytes": 301281280,
-    "Sha256": "bcf45c0cb2fdfdad7ff884f6c8301d934a2ac77c4fdea28bb637d9be7d414159",
+    "Sha256": "4ba9e29c02443f52304133f79ab4f5f8c203bffdef9b13c63ccdbe1052a9d60f",
     "Files": 635,
     "BundleContract": "RECOVERY_HOST_WITH_SERVICE_VALIDATORS_V2"
   },
   "HelperZip": {
-    "Name": "recovery-helpers-24b8764.zip",
-    "Bytes": 69641,
-    "Sha256": "82b0a82f70263f1f8fb99b81fa20e8fc5377959ec3649c3e8036f3344c13ce42",
+    "Name": "recovery-helpers-f27e26c.zip",
+    "Bytes": 69692,
+    "Sha256": "4a6ecc6518459681ab24132ca56a7996dcc9556f6cf6303781bfd4f2308cd787",
     "Files": 14
   },
   "PublishedBinaryReuse": {
@@ -37,7 +37,7 @@
   },
   "StreamRebuild": {
     "Identical": true,
-    "Sha256": "bcf45c0cb2fdfdad7ff884f6c8301d934a2ac77c4fdea28bb637d9be7d414159",
+    "Sha256": "4ba9e29c02443f52304133f79ab4f5f8c203bffdef9b13c63ccdbe1052a9d60f",
     "PhysicalArchivesCreated": 1
   },
   "ExtractedConsumer": {
@@ -66,18 +66,17 @@
     "Wiring": 4,
     "CloudExecuted": false,
     "DiscoverySuites": 18,
-    "DiscoveredTests": 252,
+    "DiscoveredTests": 253,
     "HostedCiExecuted": false
   },
   "ExecutionAuthorized": false,
   "SsmAuthorizationResolved": false,
-  "ListenerTransitionCommit": "24b87642d00a81befcfe4b9805c4e6a55bf78c1e",
-  "ListenerTests": {
-    "Transition": 11,
-    "PrivateListener": 10,
-    "ExtractedPackage": 3,
-    "NativeEffects": "DOUBLES_ONLY",
-    "PosixPermissions": "EXPLICIT_METADATA_DOUBLE_NOT_NATIVE"
+  "IncludesListenerTransitionCommit": "24b87642d00a81befcfe4b9805c4e6a55bf78c1e",
+  "RestoreTimingCommit": "f27e26c804e966f408113e538c9390dc53f97819",
+  "RestoreTimingCases": {
+    "ColdExecution": 4,
+    "PreparedTarget": 1,
+    "NativeEffects": "DOUBLES_ONLY"
   },
   "Installed": false,
   "Uploaded": false,

@@ -1,5 +1,28 @@
 # ECS recovery: final local preparation and the remaining LIVE gate
 
+## Finite scope check and latest candidate - 2026-10-27
+
+The [six-block reconciliation](../../../terraform/docs/v2-local-completion.md#finite-original-scope-reconciliation---2026-10-27)
+is current: five pipeline entry types already exist; the documented shared application
+request queue gap is now fixed locally (6 new +65 workflow/OIDC cases PASS, no token
+or remote effect). Security trust/migrator/egress decisions remain explicit unresolved
+contracts, not silently reduced scope or completed native-only work.
+
+Restore now stamps `RestoreStartedUtc` immediately before the actual restore port
+and `RestoreCompletedUtc` only after its CHECKDB result; reversed time stops before
+login/API activation.4 cold cases and1 affected warm case PASS with doubles; no old
+receipt was filled retrospectively. These are real runtime capture points for a
+future admitted run, not invented native values or full public-ECS RTO.
+
+The latest candidate is f27e26c:635 files,301281280 bytes, tar SHA256
+`4ba9e29c02443f52304133f79ab4f5f8c203bffdef9b13c63ccdbe1052a9d60f`;
+the14-file helper ZIP is69692 bytes. Actual extracted consumer PASS, stable stream
+rebuild, no new compile/download/Linux execution or upload. Earlier f9a9b04/24b8764
+archives remain historical and unchanged. The current descriptor pins only this
+candidate for new review. CI discovery18/253 is not a full or hosted PASS. No budget,
+permission, install, SSM, teardown or native acceptance is granted by the descriptor.
+
+
 ## Listener automation status - 2026-10-27
 
 The three private-listener steps mentioned below are now implemented together in
