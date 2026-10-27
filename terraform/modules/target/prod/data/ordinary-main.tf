@@ -15,13 +15,7 @@ resource "aws_instance" "db" {
     http_tokens = "required"
   }
 
-  user_data = templatefile("${path.module}/../../../../infra/data/user_data.sh", {
-    AWS_REGION     = var.region
-    APP_DB         = var.app_db
-    APP_USER       = var.app_user
-    SA_SECRET_ARN  = local.expected["prod/sa"]
-    APP_SECRET_ARN = local.expected["prod/db-user"]
-  })
+  user_data = local.sql_full_user_data
 
   root_block_device {
     volume_type           = "gp3"
@@ -38,6 +32,11 @@ resource "aws_instance" "db" {
 
   lifecycle {
     ignore_changes = [ami]
+    precondition {
+      # base64 measures UTF-8 bytes. 21844 encoded chars permit at most 16383 bytes.
+      condition     = length(base64encode(local.sql_full_user_data)) <= 21844
+      error_message = "Combined SQL/security/cohost user-data exceeds the reviewed EC2 byte limit."
+    }
   }
 }
 resource "aws_cloudwatch_metric_alarm" "statuscheck_failed" {

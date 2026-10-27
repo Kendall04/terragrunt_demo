@@ -15,13 +15,8 @@ resource "aws_instance" "db" {
     http_tokens = "required"
   }
 
-  # Null preserves the original bootstrap bytes. No timer is enabled by default.
-  user_data = var.sql_backup_cohost == null ? local.sql_base_user_data : join("\n", [
-    local.sql_base_user_data,
-    templatefile("${path.module}/../../../../infra/data/cohost-bootstrap.sh.tftpl", {
-      cohost_config = base64encode(jsonencode(var.sql_backup_cohost))
-    })
-  ])
+  # Optional security/cohost source changes need renewed installation admission.
+  user_data = local.sql_full_user_data
 
   root_block_device {
     volume_type           = "gp3"
@@ -38,6 +33,11 @@ resource "aws_instance" "db" {
 
   lifecycle {
     ignore_changes = [ami]
+    precondition {
+      # base64 measures UTF-8 bytes. 21844 encoded chars permit at most 16383 bytes.
+      condition     = length(base64encode(local.sql_full_user_data)) <= 21844
+      error_message = "Combined SQL/security/cohost user-data exceeds the reviewed EC2 byte limit."
+    }
   }
 }
 resource "aws_cloudwatch_metric_alarm" "statuscheck_failed" {

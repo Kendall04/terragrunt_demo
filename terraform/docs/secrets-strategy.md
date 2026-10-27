@@ -19,6 +19,7 @@ migration command from the data-only runtime and adds opt-in validated-v2 SQL TL
 effective-permission guards. Startup migrations now default off. TARGET DEV/PROD
 Fargate general egress narrows to HTTPS while retaining exact SQL/1433. No controls
 were installed; legacy bootstrap remains db_owner/TrustServerCertificate=True,
+an opt-in bootstrap now prepares a separate migrator and disabled minimal runtime.
 SQL host egress and internal HTTP remain unresolved. The table below describes
 that legacy deployed recipe, not acceptance of the strict profile. Certificate
 inputs, reviewed privilege handoff, Linux artifacts and native tests are pending.

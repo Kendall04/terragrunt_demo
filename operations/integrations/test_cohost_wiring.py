@@ -6,12 +6,14 @@ from pathlib import Path
 import unittest
 ROOT=Path(__file__).resolve().parents[2]
 class CohostWiring(unittest.TestCase):
-    def test_real_target_null_opt_in_preserves_original_template_and_no_new_resources(self):
+    def test_real_target_null_opt_in_preserves_base_template_and_no_new_resources(self):
         main=(ROOT/'terraform/modules/target/dev/data/ordinary-main.tf').read_text()
         locals_=(ROOT/'terraform/modules/target/dev/data/ordinary-locals.tf').read_text()
         variables=(ROOT/'terraform/modules/target/dev/data/ordinary-variables.tf').read_text()
-        self.assertIn('var.sql_backup_cohost == null ? local.sql_base_user_data',main)
-        self.assertIn('cohost-bootstrap.sh.tftpl',main);self.assertIn('base64encode(jsonencode(var.sql_backup_cohost))',main)
+        self.assertIn('user_data = local.sql_full_user_data',main)
+        self.assertIn('var.sql_backup_cohost == null ? local.sql_base_user_data',locals_)
+        self.assertIn('cohost-bootstrap.sh.tftpl',locals_);self.assertIn('base64encode(jsonencode(var.sql_backup_cohost))',locals_)
+        self.assertIn('length(base64encode(local.sql_full_user_data)) <= 21844',main)
         for key in ['AWS_REGION','APP_DB','APP_USER','SA_SECRET_ARN','APP_SECRET_ARN']:self.assertIn(key,locals_)
         self.assertRegex(variables,r'enable_after_native_gates\s*=\s*optional\(bool, false\)')
         self.assertRegex(variables,r'enable_producer_after_native_gates\s*=\s*optional\(bool, false\)')

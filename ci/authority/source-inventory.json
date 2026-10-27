@@ -8030,14 +8030,14 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/data/user_data.sh": {
-      "sha256": "8d36d43d3c3e4f766e8e3aaba3c09679d5d3503c5504ef065f55e5ef47a70e10",
+      "sha256": "a1f2092473c3608535f412747d926c687ec0ae02a8ebda7711e9eeb5ba644a80",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          41
+          58
         ],
         "executable-dependency": [
-          103
+          123
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -9249,20 +9249,25 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/modules/target/dev/data/ordinary-locals.tf": {
-      "sha256": "4374b19cc1dfb8b797e7f1c8fadc640701bda10057c24cf47a0c5cab499623a8",
+      "sha256": "9d15ab7f31331521b1931512c1414a959f91f54b62b08d2645f26ccd041975ab",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           7
         ],
         "executable-dependency": [
-          13
+          13,
+          22,
+          23,
+          28,
+          29,
+          30
         ]
       },
       "semantic_status": "UNVERIFIED"
     },
     "terraform/modules/target/dev/data/ordinary-main.tf": {
-      "sha256": "3f12e096f5442cb3464959c395a652c3864cb11157435b9cd36fe4ef49c8ce01",
+      "sha256": "6adb16b7bc7e7e31c5c2703a51528d0c457a2b0370808f7c8167b87a8e6c9a6e",
       "declarations": [
         {
           "kind": "resource",
@@ -9295,24 +9300,24 @@
         ],
         "executable-dependency": [
           19,
-          20,
-          21
+          38
         ]
       },
       "semantic_status": "UNVERIFIED"
     },
     "terraform/modules/target/dev/data/ordinary-outputs.tf": {
-      "sha256": "06ed2fd41aa6f9227d3e9310b1fbb97f8d10ff922bac27734e3ed3df7dbcc47d",
+      "sha256": "db0e699c12b6345ffa8878ea5e49da5219a92bfdc18a85a6bdee8ec62941424d",
       "declarations": [],
       "signals": {},
       "semantic_status": "UNVERIFIED"
     },
     "terraform/modules/target/dev/data/ordinary-variables.tf": {
-      "sha256": "3cc0034cf4e2639d20c0cc7d67a544a583752715bc8c393bd174a6041eccf58f",
+      "sha256": "e66a7e283a4c1d26cc8132e58022b96a2d0ca3d5c57065cef89e7bd1828c8fa0",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          88
+          96,
+          113
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -10489,17 +10494,22 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/modules/target/prod/data/ordinary-locals.tf": {
-      "sha256": "9ffe983af0532b879d3ac0e39069f13e2312cd7b3588e42de15c62ee5db78a3c",
+      "sha256": "b6ee9200e8025a76e57e1d9cacaabc9bb8f2bc642e9a9a98641260de824f09a3",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           7
+        ],
+        "executable-dependency": [
+          13,
+          22,
+          23
         ]
       },
       "semantic_status": "UNVERIFIED"
     },
     "terraform/modules/target/prod/data/ordinary-main.tf": {
-      "sha256": "64d782254472d0faa942a266fd15cf1ec8a6b1dc332aa2ce2cf0dcb50105f3d4",
+      "sha256": "e2d4a0e2404b72205c2ba632fa07bcf2b73999463fa9930bab8563c48ce9152f",
       "declarations": [
         {
           "kind": "resource",
@@ -10511,19 +10521,19 @@
           "kind": "resource",
           "type": "aws_cloudwatch_metric_alarm",
           "name": "statuscheck_failed",
-          "line": 43
+          "line": 42
         },
         {
           "kind": "resource",
           "type": "aws_cloudwatch_metric_alarm",
           "name": "cpu_credit_low",
-          "line": 66
+          "line": 65
         },
         {
           "kind": "resource",
           "type": "aws_cloudwatch_metric_alarm",
           "name": "cpu_high",
-          "line": 89
+          "line": 88
         }
       ],
       "signals": {
@@ -10531,21 +10541,26 @@
           6
         ],
         "executable-dependency": [
-          18
+          18,
+          37
         ]
       },
       "semantic_status": "UNVERIFIED"
     },
     "terraform/modules/target/prod/data/ordinary-outputs.tf": {
-      "sha256": "549a7bd00a9d1273bec1b006df4c5cbe2c7178d8849dde4a00262cbc288beadb",
+      "sha256": "69fe242605649f3c033ef633c8e0df33984919d16be54f5c7e5fd0a5d23b4c29",
       "declarations": [],
       "signals": {},
       "semantic_status": "UNVERIFIED"
     },
     "terraform/modules/target/prod/data/ordinary-variables.tf": {
-      "sha256": "bd799feb7dff9fc9aaaf848ff27942c980a83a5d4d13b05230aa76dae7aa2b6d",
+      "sha256": "ba0ff150987c7c94e2472260c36683d6c6af108d6c418fe9bf53000146963aa8",
       "declarations": [],
-      "signals": {},
+      "signals": {
+        "launch-or-mutation": [
+          74
+        ]
+      },
       "semantic_status": "UNVERIFIED"
     },
     "terraform/modules/target/prod/data/ordinary-versions.tf": {
@@ -11766,28 +11781,30 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/test_cohost_wiring.py": {
-      "sha256": "bec04f6bf008afbabb5d0995325c0bdf3f191342594d89ccb50891d59d43dd21",
+      "sha256": "f523b85fb9eaa014484e5932aa28c52934fa350e1dcbfda7fa469aa6cd11e185",
       "declarations": [],
       "signals": {
         "role-input": [
-          32
+          34
         ],
         "launch-or-mutation": [
           10,
           11,
           12,
-          22,
-          23,
-          36
+          24,
+          25,
+          38
         ],
         "executable-dependency": [
           13,
           14,
-          36,
-          41
+          15,
+          16,
+          38,
+          43
         ],
         "security-control": [
-          32
+          34
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -12125,6 +12142,43 @@
           11
         ]
       },
+      "semantic_status": "UNVERIFIED"
+    },
+    "operations/sql-backup/recovery/test_sql_principals.py": {
+      "sha256": "e734db3e743f83d6e5f6a3e92b47806ab4bb12e6ced06c9b9713e90a18237a76",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          13,
+          35,
+          114,
+          122
+        ],
+        "executable-dependency": [
+          13,
+          98,
+          100,
+          107,
+          114,
+          130
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/infra/data/sql-principals.sh": {
+      "sha256": "c67844a051205f82a04c5abea2d253c927b4d52a615efd091e4ac93f55ffccab",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          20
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/infra/data/sql-principals.sh.gz.b64": {
+      "sha256": "a5b9ee47d6abd0af0d11e9b0903cbbef8d54311b72f2827b5fe147f2c21b6140",
+      "declarations": [],
+      "signals": {},
       "semantic_status": "UNVERIFIED"
     }
   },
