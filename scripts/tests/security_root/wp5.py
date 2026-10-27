@@ -166,6 +166,8 @@ def target_overlay(wiring):
             name = root+layer+'/main.tf.json'
             if name in wiring:
                 wiring[name].setdefault('terraform', {})['backend'] = {'s3':{'encrypt':True,'use_lockfile':True}}
+    ordinary.current_runtime_projection(wiring)
+
 
 
 def package_files(root, doc, binding):

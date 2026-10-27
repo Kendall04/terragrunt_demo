@@ -76,7 +76,7 @@
       "purpose": "Existing Sentinel6.27 root/pipeline/optional observer. Default ingestion, dispatch and observer remain OFF. Future plans/access require approval."
     },
     "terraform/infra/sentinel-backup/tests/observer.tftest.hcl": {
-      "sha256_lf": "36af13e2ce7d750ba348333acc7ec10f59239834ce77421fdbcc01cb0d6dbce7",
+      "sha256_lf": "17d50283ebd29e72420b10ecd48d0fca4ef040e4bd22b51620d2370782d610a1",
       "introduced_by": "4d6e2292cd58313c5c35bdb06fd988546092b924",
       "last_changed_by": "2c8c3e7b79ba84029ec3965ea0cb4202cc0ddd55",
       "owner": "SEPARATE_SENTINEL_ADMIN_ROOT",
@@ -90,6 +90,38 @@
       "owner": "SEPARATE_SENTINEL_ADMIN_ROOT",
       "classification": "EXPLICIT_WRAPPER",
       "purpose": "Fixed local Sentinel source; external reviewed backend/config inputs still required. Not E16/WP5 TARGET or permission to bootstrap a backend."
+    },
+    "operations/integrations/portable/aws-6.28.lock.hcl": {
+      "sha256_lf": "258de7a3dbd3a5eeffed0eec35becd0f4b134380a929bc09c456805fa851259e",
+      "introduced_by": "d1e8d9b571b5f6dfad368074b60f5ee800c22a0d",
+      "last_changed_by": "d1e8d9b571b5f6dfad368074b60f5ee800c22a0d",
+      "owner": "ECS_PORTABLE_LOCAL_INTEGRATION",
+      "classification": "PROVIDER_LOCK_INPUT",
+      "purpose": "Isolated signed portable provider lock; does not replace AWS 5.100 TARGET locks."
+    },
+    "operations/integrations/portable/trial/main.tf": {
+      "sha256_lf": "9afcfc9831bef453dc432dc16639d4a0796f3183f31902ddc1fc08634beb2b4f",
+      "introduced_by": "25f037e04b0e059e868c66b0c8282d410452bfd9",
+      "last_changed_by": "25f037e04b0e059e868c66b0c8282d410452bfd9",
+      "owner": "ECS_PORTABLE_LOCAL_INTEGRATION",
+      "classification": "LOCAL_INTEGRATION_SOURCE",
+      "purpose": "Reviewed opt-in portable trial wrapper; requires staged runtime and explicit package inputs, not execution authority."
+    },
+    "operations/integrations/portable/trial/runtime-outputs.tf": {
+      "sha256_lf": "25f20f6e0a8d0edd2843e51764f34a686c7cf2125fc1e6235d72f7b05d8cee7c",
+      "introduced_by": "25f037e04b0e059e868c66b0c8282d410452bfd9",
+      "last_changed_by": "25f037e04b0e059e868c66b0c8282d410452bfd9",
+      "owner": "ECS_PORTABLE_LOCAL_INTEGRATION",
+      "classification": "LOCAL_INTEGRATION_SOURCE",
+      "purpose": "Outputs copied by prepare_module.py into the staged portable child module; not a standalone deployable root."
+    },
+    "operations/integrations/portable/trial/tests/portable.tftest.hcl": {
+      "sha256_lf": "23086c5d50dbd38b18913caad48874063293bb175ba47833133210e9be6cbc5f",
+      "introduced_by": "25f037e04b0e059e868c66b0c8282d410452bfd9",
+      "last_changed_by": "25f037e04b0e059e868c66b0c8282d410452bfd9",
+      "owner": "ECS_PORTABLE_LOCAL_INTEGRATION",
+      "classification": "OFFLINE_MOCK_PLAN",
+      "purpose": "Portable module mocked-provider tests with placeholder paths; no native evidence or deployment authority."
     }
   }
 }

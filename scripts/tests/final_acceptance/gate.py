@@ -120,6 +120,11 @@ def main():
             if not record['executed'] or len(ids) != record['executed'] or not re.search(r'^OK\s*$', text, re.M):
                 record['status'] = 'FAIL'
         print(name + ': ' + record['status'], flush=True)
+        if record['status'] == 'FAIL':
+            # Hermetic local tests run without cloud credentials. Keep failure
+            # evidence visible instead of losing it with the ephemeral runner.
+            print('--- ' + name + ' diagnostic (last 6000 chars) ---', flush=True)
+            print(text[-6000:], flush=True)
         return name, record
     records = {}
     # Independent processes retain isolated hermetic guards and disposable files.

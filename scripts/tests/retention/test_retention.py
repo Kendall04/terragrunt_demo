@@ -207,8 +207,8 @@ class Retention(unittest.TestCase):
                          {key:record for key,record in full.items() if record['scope']=='dev'})
         self.assertEqual(checksum(configuration),
                          baseline["configuration_without_lifecycle_sha256"])
-        from scripts.tests.workflows.historical_snapshot import before_authorized_trial
-        authority=before_authorized_trial(DOC)
+        from scripts.tests.workflows.historical_snapshot import before_authorized_trial, source_transport_snapshot
+        authority=before_authorized_trial(source_transport_snapshot())  # Authenticated historical generation, never CURRENT.
         ownership.validate_publications(authority)
         authority['ownership_closure']['publications']={}
         # Only the owner-approved optional DEV email input is normalized.

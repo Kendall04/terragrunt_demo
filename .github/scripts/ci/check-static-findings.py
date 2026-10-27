@@ -7,6 +7,8 @@ from collections import Counter
 import hashlib
 import json
 import os
+import re
+import sys
 from pathlib import Path
 import subprocess
 
@@ -61,6 +63,20 @@ def inspect(tool, code, raw, baseline, root=ROOT):
     return len(actual)
 
 
+
+def failure_diagnostics(tool, result):
+    # Scanners inspect public source, not credentials. Export a bounded diagnostic
+    # on failure; retain the complete original reports only in RUNNER_TEMP.
+    text = (result.stderr + b'\n' + result.stdout).decode('utf-8', 'replace')
+    text = re.sub(r'\x1b\[[0-?]*[ -/]*[@-~]', '', text)
+    text = re.sub(r'-----BEGIN (?:RSA |EC |OPENSSH |ENCRYPTED )?PRIVATE KEY-----.*?-----END (?:RSA |EC |OPENSSH |ENCRYPTED )?PRIVATE KEY-----',
+                  '[REDACTED_PRIVATE_KEY]', text, flags=re.S)
+    text = re.sub(r'\b(?:AKIA|ASIA)[A-Z0-9]{16}\b', '[REDACTED_ACCESS_KEY]', text)
+    text = re.sub(r'(?i)(aws_secret_access_key|aws_session_token|authorization|password)\s*[:=]\s*[^\r\n]+',
+                  r'\1=[REDACTED]', text)
+    return f'{tool} failed with exit {result.returncode}; full reports retained in RUNNER_TEMP\n' + text[:4096]
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('tool', choices=tuple(COMMANDS)); args = parser.parse_args(argv)
@@ -73,7 +89,11 @@ def main(argv=None):
     if directory == ROOT or ROOT in directory.parents: raise ValueError('External report directory required')
     (directory / (args.tool + '-raw-findings.json')).write_bytes(result.stdout)
     (directory / (args.tool + '-scanner-stderr.log')).write_bytes(result.stderr)
-    count = inspect(args.tool, result.returncode, result.stdout, baseline)
+    try:
+        count = inspect(args.tool, result.returncode, result.stdout, baseline)
+    except (ValueError, KeyError):
+        print(failure_diagnostics(args.tool, result), file=sys.stderr)
+        raise
     message = f'{args.tool}: {count} reviewed historical findings; identity/multiplicity/source unchanged; no suppressions'
     print(message)
     if os.environ.get('GITHUB_STEP_SUMMARY'):

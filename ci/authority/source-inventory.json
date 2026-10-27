@@ -435,19 +435,19 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/scripts/ci/check-static-findings.py": {
-      "sha256": "b8a53b3ddfcdea72df8b3a212ac0a4ece101af4d521e9353dda9c84b839c7325",
+      "sha256": "a3cc8eea81ec96ca5aa4f01ec622e3d4658322c1c77924b0f4749638c36f7640",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          30,
-          32
+          32,
+          34
         ],
         "executable-dependency": [
-          36,
-          41
+          38,
+          43
         ]
       },
-      "semantic_status": "CURRENT_FACT"
+      "semantic_status": "UNVERIFIED"
     },
     ".github/scripts/ci/install-tools.py": {
       "sha256": "e094108000fa3f6124b7b1be18498a8f607c866b4ecbee4e516369981d2a2978",
@@ -811,7 +811,7 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/ci-dotnet.yml": {
-      "sha256": "651b8e94c213d884dde4201c9780c66a4fbe447a9f7cec3d5e8be225c9a74764",
+      "sha256": "bf82d50fa1e026a7f49a37c8675f7d2bad96375742480d53074fb605bcd46d65",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -819,9 +819,9 @@
           50,
           53,
           57,
-          59,
-          95,
-          97
+          60,
+          96,
+          98
         ],
         "executable-dependency": [
           22,
@@ -829,11 +829,12 @@
           36,
           44,
           58,
-          60,
-          66,
-          69,
-          74,
-          82
+          59,
+          61,
+          67,
+          70,
+          75,
+          83
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -2503,7 +2504,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/recovery/test_receipt_gaps.py": {
-      "sha256": "d3fa0eb2d343f84ac6acf56d4ceed4a22e8a7cd5f27dfe1a1a6abc075933e306",
+      "sha256": "ec6a3a40e61a187a138add98a9f7cbcaea8177c73ecfd0a38b8c58fb34bbf8f6",
       "declarations": [],
       "signals": {
         "executable-dependency": [
@@ -4926,7 +4927,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/ephemeral/test_ephemeral.py": {
-      "sha256": "a2799dc5b36f6d8f61c7e42245267368802fdece317fd3a792070b0c44e39f7b",
+      "sha256": "c38f7cbdd18343e1b83d6914810561225f93c8b4ddad097a86aabaeb46d7a48f",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -4960,7 +4961,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/exact_destroy/test_exact_destroy.py": {
-      "sha256": "c0bea683d2912e079c94d3025d6e87633f40ecd72e567558bfc55343e78258ab",
+      "sha256": "b558cced6e651e7270f0984b77c2045386a153492cb7645bc2d73773503f0934",
       "declarations": [],
       "signals": {
         "role-input": [
@@ -5081,13 +5082,13 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/final_acceptance/gate.py": {
-      "sha256": "7899db58ea0d3081133f8493e5a3d0a4234609415fb178966dbbba15f4be11db",
+      "sha256": "88c59d6917a30035935d5119fcf64b7230e524bc70c2b96ad5fecfb4355b1290",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           69,
-          147,
-          167
+          152,
+          172
         ],
         "executable-dependency": [
           3,
@@ -5115,7 +5116,7 @@
           66,
           67,
           68,
-          127
+          132
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -6430,23 +6431,23 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/reproducibility/test_static_findings.py": {
-      "sha256": "de51bab5d68232f4ed4c01038416bef562ec1db79c7eac6bc14d5bcfa541ca12",
+      "sha256": "a8643bab8c0631a332624a9ebb2c0d45d9747871c5faee9f93e551775f7d32db",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          15,
-          18,
-          44,
-          46,
+          19,
+          22,
           48,
-          53
+          50,
+          52,
+          57
         ],
         "executable-dependency": [
-          9,
-          15
+          13,
+          19
         ]
       },
-      "semantic_status": "CURRENT_FACT"
+      "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/retention/baseline-policy.json": {
       "sha256": "252141c3838329460bad990b1758ecb466f10e4d5732dc6f6049d8605a4c05a3",
@@ -6469,7 +6470,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/retention/test_retention.py": {
-      "sha256": "e43afda149bb7b57c16db8c634ebfc8e745878c559e363defcdbc95dd58213ed",
+      "sha256": "db4da5b41b0a023c9bd357647a68cab824caf7d7b2ab8951cae48bf845b7f290",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -6652,7 +6653,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/model.py": {
-      "sha256": "e7074cf1c3aea9f266cc803d99d8a0b9232a716908d464bb6260ddf5de7878cd",
+      "sha256": "07b20c9a41093e1d1c2c9f0f6fe5bef398d87beeeefe97ddde8ae59d1ac2c6f8",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -6711,26 +6712,29 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/ordinary.py": {
-      "sha256": "6da07e230c35e1d479e545d360339674adeb9f3eaa689582e74d839bd22eba05",
+      "sha256": "97d53830ebb76258f60c53fa35d30eec0090f02db1563c301e69d1754dc5e09d",
       "declarations": [],
       "signals": {
         "role-input": [
           44,
           70,
-          88
+          88,
+          124
         ],
         "launch-or-mutation": [
           12,
           25,
           26,
           37,
-          117
+          117,
+          124
         ],
         "executable-dependency": [
           51,
           54,
           66,
-          114
+          114,
+          124
         ],
         "security-control": [
           43,
@@ -6875,19 +6879,20 @@
       "semantic_status": "CURRENT_FACT"
     },
     "scripts/tests/security_root/test_supplemental_iac.py": {
-      "sha256": "fc6010eed1305f7029bc6396e087d75d19af01664a601624e7460011d0983f16",
+      "sha256": "583f265b37c182f0927d92db09e339c4a959ce19ee634d93466ff32df97e5f14",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           20,
           44,
           46,
-          54,
-          63,
-          69,
-          76,
-          81,
-          91
+          55,
+          58,
+          66,
+          72,
+          79,
+          84,
+          94
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -7129,14 +7134,14 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/wp5.py": {
-      "sha256": "53f21201889d3e6727b0a268fb3d1c95199508bda358c9e8b2e30bed6d88c45e",
+      "sha256": "7ce16304d35f9c571d3eaebe9b71da5e3f90187ea48da1c1e3a76e3ece928ec9",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
-          386
+          388
         ],
         "role-input": [
-          455
+          457
         ],
         "launch-or-mutation": [
           67,
@@ -7152,26 +7157,26 @@
           107,
           133,
           168,
-          175,
-          180,
-          185,
-          186,
-          278,
-          290,
+          177,
+          182,
+          187,
+          188,
+          280,
           292,
-          305,
-          349,
-          358,
-          362,
+          294,
+          307,
+          351,
+          360,
           364,
-          386,
-          403,
-          410,
+          366,
+          388,
+          405,
           412,
-          429,
-          438,
+          414,
+          431,
           440,
-          450
+          442,
+          452
         ],
         "executable-dependency": [
           22,
@@ -7184,32 +7189,32 @@
           29,
           30,
           31,
-          186,
-          392,
-          403,
-          416,
-          421,
-          437,
-          450,
-          454,
-          463
+          188,
+          394,
+          405,
+          418,
+          423,
+          439,
+          452,
+          456,
+          465
         ],
         "security-control": [
-          387,
-          388,
+          389,
           390,
-          394,
-          395,
+          392,
+          396,
           397,
-          400,
-          401,
+          399,
           402,
-          409,
-          414,
-          418,
+          403,
+          404,
+          411,
+          416,
           420,
-          427,
-          449
+          422,
+          429,
+          451
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -8127,7 +8132,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/authority.json": {
-      "sha256": "d25653dcdebf994a559cb36bd99593e31bb83b64c442e41d9130f25b5bf19572",
+      "sha256": "e6cf3636d92afb9b9723add042bee13d0ec5283baf2a532b2c26aa74b37b77a8",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -9006,7 +9011,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/sentinel-backup/tests/observer.tftest.hcl": {
-      "sha256": "36af13e2ce7d750ba348333acc7ec10f59239834ce77421fdbcc01cb0d6dbce7",
+      "sha256": "17d50283ebd29e72420b10ecd48d0fca4ef040e4bd22b51620d2370782d610a1",
       "declarations": [],
       "signals": {
         "role-input": [
@@ -12338,6 +12343,6 @@
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",
   "review_revision": "f27e26c804e966f408113e538c9390dc53f97819",
-  "review_note": "Eleven exact local concurrency/timing/test/candidate surfaces. WP6 source hash refreshed with approvals empty; all semantics UNVERIFIED. No installed authority, IAM/trust/claims, state, remote workflow or AWS change.",
+  "review_note": "Eleven exact local concurrency/timing/test/candidate surfaces. WP6 source hash refreshed with approvals empty; all semantics UNVERIFIED. No installed authority, IAM/trust/claims, state, remote workflow or AWS change.; 2026-10-27 CI integration: reviewed inactive package descriptors, isolated container mount, parser contract, scanner diagnostics and formatting only; no installation or runtime approval.",
   "review_delta_sha256": "1cde9b3dd7166d7c1a54281711b20d0c9d7cc9d62ac1a9c4c8839dcc320e28d4"
 }

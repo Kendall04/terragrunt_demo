@@ -84,7 +84,19 @@ class ReceiptGapTests(unittest.TestCase):
         function=next(n for n in tree.body if isinstance(n,ast.FunctionDef) and n.name=='validate_recovery')
         call=next(n for n in ast.walk(function) if isinstance(n,ast.Call) and isinstance(n.func,ast.Attribute)
                   and n.func.attr=='keys' and isinstance(n.args[0],ast.Name) and n.args[0].id=='e')
-        self.assertEqual(g.V2_FIELDS,ast.literal_eval(call.args[1]))
+        # The mandatory historical fields remain closed; strict SQL adds only
+        # this explicit conditional tuple. Never execute/eval the validator.
+        fields = call.args[1]
+        self.assertIsInstance(fields, ast.BinOp)
+        self.assertIsInstance(fields.op, ast.Add)
+        self.assertEqual(g.V2_FIELDS, ast.literal_eval(fields.left))
+        optional = fields.right
+        self.assertIsInstance(optional, ast.IfExp)
+        self.assertEqual(ast.dump(optional.test),
+                         ast.dump(ast.parse("'database_security' in r", mode='eval').body))
+        self.assertEqual(ast.literal_eval(optional.body),
+                         ('database_security_sha256', 'principal_adoption', 'sql_tls_receipt_sha256'))
+        self.assertEqual(ast.literal_eval(optional.orelse), ())
 
     def test_raw_pin_and_embedded_hash_fail_closed(self):
         raw,pins=encode(fixture());pins['source']='0'*64

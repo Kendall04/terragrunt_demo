@@ -27,7 +27,7 @@ class SupplementalIacTests(unittest.TestCase):
         before=json.dumps(doc['wp6']['approvals'],sort_keys=True)
         generated=model.wiring(doc)
         supplemental=model.reviewed_supplemental_iac(ROOT)
-        self.assertEqual(len(supplemental),11)
+        self.assertEqual(len(supplemental),15)
         self.assertFalse(supplemental&set(generated))
         model.admit_configuration_paths(ROOT,generated)
         self.assertEqual(before,json.dumps(model.load_authority(ROOT)['wp6']['approvals'],sort_keys=True))
@@ -43,7 +43,8 @@ class SupplementalIacTests(unittest.TestCase):
         root=self.fixture()
         for name in ('terraform/infra/evil/main.tf','terraform/infra/sentinel-backup/unreviewed.auto.tfvars.json',
                      'operations/integrations/ssm-diagnostic/review/runtime/extra.tf',
-                     'terraform/live/sentinel-backup/other.hcl'):
+                     'terraform/live/sentinel-backup/other.hcl',
+                     'operations/integrations/portable/trial/extra.tf'):
             path=root/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_text('{}')
             with self.subTest(path=name),self.assertRaisesRegex(Unsupported,'unadmitted/missing IaC'):
                 model.admit_configuration_paths(root,{})
@@ -52,7 +53,9 @@ class SupplementalIacTests(unittest.TestCase):
     def test_changed_known_resource_or_provider_checksum_is_rejected(self):
         root=self.fixture()
         for name in ('terraform/infra/sentinel-backup/modules/pipeline/main.tf.json',
-                     'operations/sql-backup/recovery/provider.lock.hcl'):
+                     'operations/sql-backup/recovery/provider.lock.hcl',
+                     'operations/integrations/portable/trial/main.tf',
+                     'operations/integrations/portable/aws-6.28.lock.hcl'):
             path=root/name;original=path.read_bytes();path.write_bytes(original+b'\n# unreviewed change\n')
             with self.subTest(path=name),self.assertRaisesRegex(Unsupported,'supplemental source drift'):
                 model.reviewed_supplemental_iac(root)
@@ -75,7 +78,7 @@ class SupplementalIacTests(unittest.TestCase):
         root=self.fixture()
         name='terraform/live/sentinel-backup/terragrunt.hcl'
         path=root/name;path.write_bytes(path.read_bytes().replace(b'\r\n',b'\n').replace(b'\n',b'\r\n'))
-        self.assertEqual(len(model.reviewed_supplemental_iac(root)),11)
+        self.assertEqual(len(model.reviewed_supplemental_iac(root)),15)
 
     def test_symlink_is_rejected_before_following_source_bytes(self):
         root=self.fixture();path=root/'terraform/infra/sentinel-backup/main.tf.json'

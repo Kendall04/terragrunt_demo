@@ -72,7 +72,7 @@ run "pipeline_default_off" {
 
 run "observer_scheduled" {
   assert {
-    condition = output.pipeline.dispatch_rule_state == "DISABLED"
+    condition     = output.pipeline.dispatch_rule_state == "DISABLED"
     error_message = "All43 resources may exist, but no automatic dispatch before SNS confirmation."
   }
   command = plan

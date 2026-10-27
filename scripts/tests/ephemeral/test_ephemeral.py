@@ -277,8 +277,8 @@ class Ephemeral(unittest.TestCase):
         with self.assertRaises(ValueError):c.authorize(binding,value,protected,reference)
 
     def test_authority_unchanged_except_derived_package_hashes(self):
-        from scripts.tests.workflows.historical_snapshot import before_authorized_trial
-        authority=before_authorized_trial(DOC)
+        from scripts.tests.workflows.historical_snapshot import before_authorized_trial, source_transport_snapshot
+        authority=before_authorized_trial(source_transport_snapshot())  # Authenticated historical generation, never CURRENT.
         import ownership
         ownership.validate_publications(authority)
         # Authenticated first-session output metadata is now explicitly allowed;

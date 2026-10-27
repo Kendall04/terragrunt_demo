@@ -4,6 +4,10 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from types import SimpleNamespace
+from unittest.mock import patch
+import contextlib
+import io
 from test_reproducibility import load
 
 CHECK = load('static_findings', '.github/scripts/ci/check-static-findings.py')
@@ -55,3 +59,25 @@ class StaticFindingsTests(unittest.TestCase):
         self.assertEqual(CHECK.inspect('tfsec', 1, json.dumps(report), baseline, self.root), 2)
         changed = copy.deepcopy(report); changed['results'][0]['resource'] = 'example.other'
         with self.assertRaises(ValueError): CHECK.inspect('tfsec', 1, json.dumps(changed), baseline, self.root)
+
+    def test_failure_exposes_execution_diagnostic_but_still_blocks(self):
+        result = SimpleNamespace(returncode=1, stdout=b'{"errors":[{"message":"missing declaration"}]}',
+                                 stderr=b'configuration could not be loaded')
+        captured = io.StringIO()
+        with patch.object(CHECK.subprocess, 'run', return_value=result), \
+             patch.dict(CHECK.os.environ, {'RUNNER_TEMP':str(self.root)}), \
+             contextlib.redirect_stderr(captured), self.assertRaisesRegex(ValueError, 'execution failed'):
+            CHECK.main(['tflint'])
+        self.assertIn('configuration could not be loaded', captured.getvalue())
+        self.assertIn('missing declaration', captured.getvalue())
+        self.assertEqual((self.root/'tflint-scanner-stderr.log').read_bytes(), result.stderr)
+
+    def test_diagnostic_is_bounded_and_redacts_credentials(self):
+        key = 'AKIA' + 'A'*16
+        result = SimpleNamespace(returncode=1, stdout=b'x'*10000,
+                                 stderr=('password=not-a-real-secret\n'+key+'\n').encode())
+        text = CHECK.failure_diagnostics('tflint', result)
+        self.assertNotIn('not-a-real-secret', text)
+        self.assertNotIn(key, text)
+        self.assertIn('[REDACTED_ACCESS_KEY]', text)
+        self.assertLess(len(text), 4300)
