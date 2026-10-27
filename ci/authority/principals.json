@@ -351,6 +351,28 @@
       "unknowns": [
         "Actual principal/account authority unverified; no current AWS identity invented"
       ]
+    },
+    {
+      "id": "operations/integrations/portable/trial/runtime/main.tf#runtime",
+      "classification": "CURRENT_FACT",
+      "instance_context": "SOURCE_DECLARATION_ONLY; for_each instances and effective authority UNVERIFIED; not deployed",
+      "responsibilities": [
+        "portable-sentinel-runtime"
+      ],
+      "source": "operations/integrations/portable/trial/runtime/main.tf",
+      "declaration": {
+        "kind": "resource",
+        "type": "aws_iam_role",
+        "name": "runtime",
+        "line": 130
+      },
+      "trust": "STRUCTURALLY_PRESENT; semantic admission UNVERIFIED",
+      "policies": "UNVERIFIED",
+      "boundary": "UNVERIFIED",
+      "unknowns": [
+        "Materialized module is fully inventoried; registration grants no authority or WITNESS_ALLOW",
+        "Runtime roles are for_each instances; no current AWS identity or effective permissions claimed"
+      ]
     }
   ],
   "wp7_disposition": "HISTORICAL_PRE_E1_CHARACTERIZATION_ONLY; final authority is security_root/model.py closed generated TARGET plus final_acceptance gate"

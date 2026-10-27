@@ -176,6 +176,14 @@ class Applicability:
         self.reached = expand(entries, self.edges)
         self.reached_wrappers = wrappers
         self.all_reached = expand(set().union(*(x["targets"] for x in self.entries.values())) if self.entries else set(), self.edges)
+        # An unresolved root is potentially applicable, as are all its local
+        # descendants. A resolved child cannot become "uninvoked" merely because
+        # the invoking root has no selected-environment wrapper.
+        directories = {(self.root / rel).parent for rel in set(parsed) | set(json_documents)}
+        unbound = {p for p in directories if p not in self.targets and p not in self.entries
+                   and "modules" not in p.relative_to(self.root).parts
+                   and p.relative_to(self.root).parts[:2] != ("terraform", "live")}
+        self.unbound_reached = expand(unbound, self.edges)
 
     def terminal_consumer(self, parent, symbol, active=()):
         """Only exact-reference local chains can be proved terminal inert.
@@ -282,6 +290,8 @@ class Applicability:
         relative = path.relative_to(self.root)
         if directory in self.reached:
             return True, "Directory reachable from selected environment's local source/dependency graph"
+        if directory in self.unbound_reached:
+            return True, "Reachable from an unbound root; applicability unresolved, including local descendants"
         if directory in self.all_reached:
             return False, "Module reached only by another environment; no selected dependency reaches it"
         if relative.parts[:2] == ("terraform", "live") and len(relative.parts) > 2:

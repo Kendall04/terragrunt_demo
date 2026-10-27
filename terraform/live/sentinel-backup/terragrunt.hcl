@@ -6,11 +6,11 @@ terraform {
 remote_state {
   backend = "s3"
   config = {
-    bucket       = get_env("SENTINEL_STATE_BUCKET")
-    key          = "sentinel-backup/${get_env("SENTINEL_STATE_ID")}/terraform.tfstate"
-    region       = get_env("SENTINEL_STATE_REGION")
-    encrypt      = true
-    use_lockfile = true
+    bucket               = get_env("SENTINEL_STATE_BUCKET")
+    key                  = "sentinel-backup/${get_env("SENTINEL_STATE_ID")}/terraform.tfstate"
+    region               = get_env("SENTINEL_STATE_REGION")
+    encrypt              = true
+    use_lockfile         = true
     workspace_key_prefix = "sentinel-backup/${get_env("SENTINEL_STATE_ID")}/workspaces"
   }
 }

@@ -17,14 +17,14 @@ assert s.count('actions_enabled     = var.enabled')==3
 s=s.replace('actions_enabled     = var.enabled','actions_enabled     = var.enabled && var.alarm_notices_enabled')
 if a.trial_root:
  assert a.package_manifest and a.config and a.zip
- child=M/'runtime';child.mkdir();(child/'main.tf').write_text(s,encoding='utf-8',newline='\n');(child/'outputs.tf').write_bytes((B/'trial/runtime-outputs.tf').read_bytes())
+ child=M/'runtime';child.mkdir();(child/'main.tf').write_text(s,encoding='utf-8',newline='\n');(child/'outputs.tf').write_bytes((B/'trial/runtime/outputs.tf').read_bytes())
  (M/'main.tf').write_bytes((B/'trial/main.tf').read_bytes());(M/'tests').mkdir()
  template=(B/'trial/tests/portable.tftest.hcl').read_text()
  for marker,value in [('@CONFIG@',a.config),('@ZIP@',a.zip),('@RECEIPT@',a.package_manifest),('@BADZIP@',M/'main.tf')]:template=template.replace(marker,value.resolve().as_posix())
  (M/'tests/portable.tftest.hcl').write_text(template,encoding='utf-8',newline='\n')
 else:
  (M/'main.tf').write_text(s,encoding='utf-8',newline='\n')
-(M/'versions_override.tf').write_text('terraform {\n required_providers {\n  aws = { source = "hashicorp/aws", version = "= 6.28.0" }\n }\n}\n',encoding='utf-8')
+(M/('versions.tf' if a.trial_root else 'versions_override.tf')).write_text('terraform {\n required_providers {\n  aws = { source = "hashicorp/aws", version = "= 6.28.0" }\n }\n}\n',encoding='utf-8')
 (M/'.terraform.lock.hcl').write_bytes((B/'aws-6.28.lock.hcl').read_bytes())
 subprocess.run([str(a.terraform),'-chdir='+str(M),'fmt','-recursive','-no-color'],check=True)
 (M/'ecs-module-receipt.json').write_text(json.dumps({'upstreamCommit':proposal['upstreamCommit'],'upstreamSha256':proposal['upstreamModuleSha256'],'preparedSha256':hashlib.sha256((M/'main.tf').read_bytes()).hexdigest(),'provider':'6.28.0','appliedToAws':False},indent=2)+'\n',encoding='utf-8')

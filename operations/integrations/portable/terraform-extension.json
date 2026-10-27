@@ -21,5 +21,20 @@
   "provider": "6.28.0 isolated exact override; original6.70 and global5.100 unchanged",
   "appliedToAws": false,
   "rootSha256": "9afcfc9831bef453dc432dc16639d4a0796f3183f31902ddc1fc08634beb2b4f",
-  "consumerOutputsSha256": "25f20f6e0a8d0edd2843e51764f34a686c7cf2125fc1e6235d72f7b05d8cee7c"
+  "consumerOutputsSha256": "25f20f6e0a8d0edd2843e51764f34a686c7cf2125fc1e6235d72f7b05d8cee7c",
+  "reviewedMaterialization": {
+    "upstreamCommit": "b3d0b3b595a9257bb6d4d849c899bf4e8dbc2828",
+    "upstreamModuleSha256": "1b412dc5d48c52ec8a17ad567569e33a648d553a0aaab6f65d677461e0d09195",
+    "generator": "operations/integrations/portable/prepare_module.py",
+    "preparedRuntimeSha256": "b4830d8174a6aaef68a77960a4a830c84d5b56f5ff920c2dbe90ee8b3c05e92d",
+    "files": {
+      "operations/integrations/portable/trial/runtime/main.tf": "b4830d8174a6aaef68a77960a4a830c84d5b56f5ff920c2dbe90ee8b3c05e92d",
+      "operations/integrations/portable/trial/runtime/outputs.tf": "f37244f35283c605a052fc9592d7c5e86e558e9d3a43a03665d7658d070e5f65",
+      "operations/integrations/portable/trial/.terraform.lock.hcl": "258de7a3dbd3a5eeffed0eec35becd0f4b134380a929bc09c456805fa851259e",
+      "operations/integrations/portable/trial/versions.tf": "6339a32b1016abf2f998076c311c04ed8967db3eade2e49194b2fa635b398299"
+    },
+    "defaultEnabled": false,
+    "deploymentAuthorized": false,
+    "providerGlobalChanged": false
+  }
 }

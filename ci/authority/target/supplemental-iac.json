@@ -84,7 +84,7 @@
       "purpose": "Mock-provider plan-only fixture; not AWS acceptance or executable delivery authority."
     },
     "terraform/live/sentinel-backup/terragrunt.hcl": {
-      "sha256_lf": "8a58dfdd188fccc14effd7390feb548d6986db91cef34b02d2b2b49d2ee71670",
+      "sha256_lf": "bd0b5c2c0ce89fb2de4caf7dba18bb1530c226a72991e4fae00d33bc6d74899f",
       "introduced_by": "ca919a7d24f6e62286b2aa134ed7e44458904f70",
       "last_changed_by": "2c8c3e7b79ba84029ec3965ea0cb4202cc0ddd55",
       "owner": "SEPARATE_SENTINEL_ADMIN_ROOT",
@@ -107,14 +107,6 @@
       "classification": "LOCAL_INTEGRATION_SOURCE",
       "purpose": "Reviewed opt-in portable trial wrapper; requires staged runtime and explicit package inputs, not execution authority."
     },
-    "operations/integrations/portable/trial/runtime-outputs.tf": {
-      "sha256_lf": "f37244f35283c605a052fc9592d7c5e86e558e9d3a43a03665d7658d070e5f65",
-      "introduced_by": "25f037e04b0e059e868c66b0c8282d410452bfd9",
-      "last_changed_by": "25f037e04b0e059e868c66b0c8282d410452bfd9",
-      "owner": "ECS_PORTABLE_LOCAL_INTEGRATION",
-      "classification": "LOCAL_INTEGRATION_SOURCE",
-      "purpose": "Outputs copied by prepare_module.py into the staged portable child module; not a standalone deployable root."
-    },
     "operations/integrations/portable/trial/tests/portable.tftest.hcl": {
       "sha256_lf": "cbbe6bf698e9eda3c77a9ac060f8d4fafb416b7a7b5b686c79396dce2624134a",
       "introduced_by": "25f037e04b0e059e868c66b0c8282d410452bfd9",
@@ -122,6 +114,38 @@
       "owner": "ECS_PORTABLE_LOCAL_INTEGRATION",
       "classification": "OFFLINE_MOCK_PLAN",
       "purpose": "Portable module mocked-provider tests with placeholder paths; no native evidence or deployment authority."
+    },
+    "operations/integrations/portable/trial/runtime/outputs.tf": {
+      "sha256_lf": "f37244f35283c605a052fc9592d7c5e86e558e9d3a43a03665d7658d070e5f65",
+      "introduced_by": "25f037e04b0e059e868c66b0c8282d410452bfd9",
+      "last_changed_by": "25f037e04b0e059e868c66b0c8282d410452bfd9",
+      "owner": "ECS_PORTABLE_LOCAL_INTEGRATION",
+      "classification": "LOCAL_INTEGRATION_SOURCE",
+      "purpose": "Same reviewed output declarations relocated into the real materialized child module; no declarations excluded."
+    },
+    "operations/integrations/portable/trial/runtime/main.tf": {
+      "sha256_lf": "b4830d8174a6aaef68a77960a4a830c84d5b56f5ff920c2dbe90ee8b3c05e92d",
+      "introduced_by": "UNCOMMITTED_LOCAL_MATERIALIZATION",
+      "last_changed_by": "UNCOMMITTED_LOCAL_MATERIALIZATION",
+      "owner": "ECS_PORTABLE_LOCAL_INTEGRATION",
+      "classification": "LOCAL_INTEGRATION_SOURCE",
+      "purpose": "Real b3d0b3b portable module plus existing ECS boundaries/handlers; reproduced with the unchanged reviewed transformation, no deployment authority."
+    },
+    "operations/integrations/portable/trial/versions.tf": {
+      "sha256_lf": "6339a32b1016abf2f998076c311c04ed8967db3eade2e49194b2fa635b398299",
+      "introduced_by": "UNCOMMITTED_LOCAL_MATERIALIZATION",
+      "last_changed_by": "UNCOMMITTED_LOCAL_MATERIALIZATION",
+      "owner": "ECS_PORTABLE_LOCAL_INTEGRATION",
+      "classification": "LOCAL_INTEGRATION_SOURCE",
+      "purpose": "Exact isolated AWS 6.28 constraint in the portable root; no global provider change."
+    },
+    "operations/integrations/portable/trial/.terraform.lock.hcl": {
+      "sha256_lf": "258de7a3dbd3a5eeffed0eec35becd0f4b134380a929bc09c456805fa851259e",
+      "introduced_by": "UNCOMMITTED_LOCAL_MATERIALIZATION",
+      "last_changed_by": "UNCOMMITTED_LOCAL_MATERIALIZATION",
+      "owner": "ECS_PORTABLE_LOCAL_INTEGRATION",
+      "classification": "PROVIDER_LOCK_INPUT",
+      "purpose": "Existing signed isolated AWS 6.28 lock copied as the root lock; no new provider version."
     }
   }
 }

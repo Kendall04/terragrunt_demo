@@ -5082,13 +5082,13 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/final_acceptance/gate.py": {
-      "sha256": "88c59d6917a30035935d5119fcf64b7230e524bc70c2b96ad5fecfb4355b1290",
+      "sha256": "e4e228f44e5e5fe91536a5441582495f0d01665c61898ec90177c7fa06ff8c35",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           69,
           152,
-          172
+          174
         ],
         "executable-dependency": [
           3,
@@ -6660,7 +6660,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/model.py": {
-      "sha256": "da17939051b0d2dd8cc0927755e3cf54327548b4b7f42a90f2159b04e023375b",
+      "sha256": "ea02bd65674f13d693c3975028ff45a247f2f74cf7ddebc0d1dbb1e9fd37d31d",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -6886,20 +6886,19 @@
       "semantic_status": "CURRENT_FACT"
     },
     "scripts/tests/security_root/test_supplemental_iac.py": {
-      "sha256": "583f265b37c182f0927d92db09e339c4a959ce19ee634d93466ff32df97e5f14",
+      "sha256": "7545a35807a30ae413c27590cd694b08393eb8617ef83121df308f1e5cfa837c",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           20,
           44,
           46,
-          55,
-          58,
-          66,
-          72,
-          79,
-          84,
-          94
+          56,
+          59,
+          74,
+          81,
+          86,
+          96
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -9057,7 +9056,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/live/sentinel-backup/terragrunt.hcl": {
-      "sha256": "8a58dfdd188fccc14effd7390feb548d6986db91cef34b02d2b2b49d2ee71670",
+      "sha256": "bd0b5c2c0ce89fb2de4caf7dba18bb1530c226a72991e4fae00d33bc6d74899f",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -11962,7 +11961,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/portable/prepare_module.py": {
-      "sha256": "03d403df8a5f0be33fc3a3c05d43d905be269c94af4ed2b11cb53d02d92ead9e",
+      "sha256": "93e964988c3a3239f5acc59a0aa2c67d8cc9fc7c4efedfdd497c0263b8a4c894",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -12055,18 +12054,6 @@
         "security-control": [
           20,
           22
-        ]
-      },
-      "semantic_status": "UNVERIFIED"
-    },
-    "operations/integrations/portable/trial/runtime-outputs.tf": {
-      "sha256": "f37244f35283c605a052fc9592d7c5e86e558e9d3a43a03665d7658d070e5f65",
-      "declarations": [],
-      "signals": {
-        "security-control": [
-          1,
-          2,
-          3
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -12343,6 +12330,282 @@
           51,
           55,
           66
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "operations/integrations/portable/trial/.terraform.lock.hcl": {
+      "sha256": "258de7a3dbd3a5eeffed0eec35becd0f4b134380a929bc09c456805fa851259e",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "operations/integrations/portable/trial/runtime/main.tf": {
+      "sha256": "b4830d8174a6aaef68a77960a4a830c84d5b56f5ff920c2dbe90ee8b3c05e92d",
+      "declarations": [
+        {
+          "kind": "data",
+          "type": "aws_caller_identity",
+          "name": "current",
+          "line": 35
+        },
+        {
+          "kind": "data",
+          "type": "aws_region",
+          "name": "current",
+          "line": 36
+        },
+        {
+          "kind": "resource",
+          "type": "aws_dynamodb_table",
+          "name": "state",
+          "line": 37
+        },
+        {
+          "kind": "resource",
+          "type": "aws_s3_bucket",
+          "name": "archive",
+          "line": 68
+        },
+        {
+          "kind": "resource",
+          "type": "aws_s3_bucket_public_access_block",
+          "name": "archive",
+          "line": 72
+        },
+        {
+          "kind": "resource",
+          "type": "aws_s3_bucket_versioning",
+          "name": "archive",
+          "line": 79
+        },
+        {
+          "kind": "resource",
+          "type": "aws_s3_bucket_server_side_encryption_configuration",
+          "name": "archive",
+          "line": 83
+        },
+        {
+          "kind": "resource",
+          "type": "aws_s3_bucket_policy",
+          "name": "archive",
+          "line": 89
+        },
+        {
+          "kind": "resource",
+          "type": "aws_sqs_queue",
+          "name": "dead",
+          "line": 93
+        },
+        {
+          "kind": "resource",
+          "type": "aws_sqs_queue",
+          "name": "reports",
+          "line": 99
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_event_bus",
+          "name": "reports",
+          "line": 106
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_event_rule",
+          "name": "reports",
+          "line": 107
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_event_target",
+          "name": "reports",
+          "line": 114
+        },
+        {
+          "kind": "resource",
+          "type": "aws_sqs_queue_policy",
+          "name": "reports",
+          "line": 125
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role",
+          "name": "runtime",
+          "line": 130
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_log_group",
+          "name": "runtime",
+          "line": 137
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role_policy",
+          "name": "runtime",
+          "line": 159
+        },
+        {
+          "kind": "resource",
+          "type": "aws_lambda_function",
+          "name": "runtime",
+          "line": 164
+        },
+        {
+          "kind": "resource",
+          "type": "aws_lambda_alias",
+          "name": "live",
+          "line": 180
+        },
+        {
+          "kind": "resource",
+          "type": "aws_lambda_event_source_mapping",
+          "name": "reports",
+          "line": 186
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_event_rule",
+          "name": "tick",
+          "line": 193
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_event_target",
+          "name": "tick",
+          "line": 199
+        },
+        {
+          "kind": "resource",
+          "type": "aws_lambda_permission",
+          "name": "tick",
+          "line": 210
+        },
+        {
+          "kind": "resource",
+          "type": "aws_lambda_function_event_invoke_config",
+          "name": "runtime",
+          "line": 219
+        },
+        {
+          "kind": "resource",
+          "type": "aws_sqs_queue_policy",
+          "name": "operations",
+          "line": 229
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_log_metric_filter",
+          "name": "health",
+          "line": 233
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_metric_alarm",
+          "name": "health",
+          "line": 243
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_metric_alarm",
+          "name": "dead",
+          "line": 257
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_metric_alarm",
+          "name": "errors",
+          "line": 272
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_policy",
+          "name": "ecs_boundary",
+          "line": 294
+        }
+      ],
+      "signals": {
+        "credential-acquisition": [
+          135
+        ],
+        "launch-or-mutation": [
+          1,
+          4,
+          31,
+          91,
+          128,
+          139,
+          152,
+          231
+        ],
+        "executable-dependency": [
+          4,
+          91,
+          111,
+          128,
+          144,
+          145,
+          146,
+          148,
+          150,
+          152,
+          154,
+          156,
+          168,
+          231,
+          292
+        ],
+        "security-control": [
+          75,
+          89,
+          91,
+          104,
+          125,
+          128,
+          130,
+          133,
+          135,
+          159,
+          161,
+          162,
+          167,
+          178,
+          210,
+          229,
+          231,
+          295,
+          298
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "operations/integrations/portable/trial/runtime/outputs.tf": {
+      "sha256": "f37244f35283c605a052fc9592d7c5e86e558e9d3a43a03665d7658d070e5f65",
+      "declarations": [],
+      "signals": {
+        "security-control": [
+          1,
+          2,
+          3
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "operations/integrations/portable/trial/versions.tf": {
+      "sha256": "6339a32b1016abf2f998076c311c04ed8967db3eade2e49194b2fa635b398299",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          1,
+          3
+        ],
+        "executable-dependency": [
+          3
         ]
       },
       "semantic_status": "UNVERIFIED"
