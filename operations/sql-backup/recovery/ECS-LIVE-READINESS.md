@@ -1,5 +1,47 @@
 # ECS recovery: final local preparation and the remaining LIVE gate
 
+## Current package/CI closure - 2026-10-27
+
+The current non-authorizing [runtime candidate](runtime-candidate.json) supersedes
+old helper ZIPs for any newly admitted recovery composition. Source f9a9b04 includes
+993293f's exact-ID API verification. One635-file tar (301271040 bytes) was built with
+the existing builder, independently stream-reproduced without a second large copy,
+and checked in a fresh isolated Python against its actual extracted helpers. Four
+root helpers/bootstrap plus ten exact original validator/model files close the
+demonstrated missing-import defect. API383 files and backup237 compiled files were
+rehashed against preserved manifests; the extra backup component manifest is explicit.
+The34 API and31 backup runtime package versions match current locks. No compile,
+download, install, Linux execution, upload, cloud call or authority refresh occurred.
+The existing cohost and portable Lambda were rehashed and remain paired unchanged.
+
+Current-source inspection requires both archive SHA256 and reviewed source commit;
+old/changed/missing helper/support content fails even after an internal hash rewrite.
+Three extracted-package cases and two affected existing bundle cases PASS. The44
+unchanged API/cold/POSIX cases were not repeated. The existing hygiene runner now
+also selects the portable bridge/publisher/wiring suites:14+19+4 PASS locally;
+17 suites/241 cases discovered, not241 executed or hosted CI PASS. The runner still
+rejects empty discovery, failures and skips. No new workflow, permission or trigger.
+
+Six agreed blocks, with local versus native limits kept explicit:
+
+| Block | Local implementation/evidence | Remaining gate |
+| --- | --- | --- |
+| Architecture/cost/pipelines | One-active-SQL design, protected V1/V2, immutable images, existing OIDC workflows, explicit recovery+portable CI selection | Current remote governance/installation, integrated saved plan and fresh full-platform cost;135 is arithmetic, not an applied plan |
+| Backup/recovery | Producer/observer/cohost, cold fence/restore checks, private listener observations, secret-version writer, strict API marker sequence, complete helper package | Listener transition still listed as three reviewed host steps; controlled transport, actual cold/Fargate/public evidence and full RTO remain unproved |
+| Security | No-recommends CLI recipe, source/lock provenance and no-secret receipt gates | Native SQL/private-listener/dependency and effective IAM observations; known SQL trust exception remains explicit |
+| Sentinel | Portable current package, two expectations, durable bounded publisher, original reducer/journal/outbox and readable notices, new CI selection | Real EventBridge/ACK/store/watchdog/notice/recovery proof of this version; b1 inbox is historical |
+| UI | Existing simple synthetic/historical API demo and five genuine Archify diagrams | Real LIVE viewing window and final joint diagram after integrated E2E, as agreed |
+| Delivery/cleanup | Current candidate pins, source catalog, existing plan/state/ownership/retirement mechanisms | Protected install/publication/CI and approved viable withdrawal; current teardown prohibition is not overridden |
+
+The next actual local automation gap is the explicit private-listener transition,
+which is currently a plan plus separate checks. Do not call that already automated.
+This package closes its dependency/wiring blocker but grants no host action or SSM
+retry. Final integrated admission must group the fresh resource/IAM/retention/cost
+and exit plan; old102/USD6 and the serverless-onlyUSD2 are not full-platform budgets.
+Until withdrawal authority and SQL transport are genuinely viable, the full cycle
+is NOT executable and no paid creation should begin. PKI remains outside ECS.
+
+
 Observer placement update: [SQL-host package and external watchdog](../COHOST.md). Local-only opt-in staging and loss/return tests do not constitute native boot/scheduling acceptance, independent S3 checks or a fix to SSM.
 
 Current integrated scope and recommended new budget: [local integrated proposal](INTEGRATED-TRIAL-PROPOSAL.md), based on bc57dc4. It forecasts 102 Terraform addresses under explicit reuse assumptions and USD 6 new; it is not a saved plan or authorization. SSM remains unresolved. The four wiring changes and separate .NET application image smoke are now locally qualified; their native platform behavior remains unproved. The historical coverage below is preserved.

@@ -1,4 +1,4 @@
-# SQL recovery â†’ ECS service: executable offline cutover plan
+# SQL recovery → ECS service: executable offline cutover plan
 
 Local implementation in the existing `recovery/prepare.py`; no SDK, executor, token acquisition, secret value, infrastructure mutation or traffic switch. This joins existing cold-host receipt metadata to the actual WP4 closed request validator and existing taskdef renderer arguments. A consistent JSON input never authenticates itself or authorizes activation.
 
@@ -36,7 +36,7 @@ The code calls **`scripts.workflow_requests.contract.request('deploy-dev', ...)`
 | Pin candidate configuration | Exact Secrets Manager version selector `ARN:::VersionId`; explicit `--recovery` renderer profile sets migration-off | The current WP4 V1 source cannot represent the pinned selector/migration-off profile. A new reviewed protected runtime/binding model is required; caller cannot override it. No workflow or installed binding was changed. Fargate Linux platform>=1.4.0 required for version selector |
 | Fresh tasks / candidate validation | Existing WP4 flow, `scripts/ecs-readiness-gate.sh` and E3 | New candidate tasks must fetch the reviewed version; existing tasks do not refresh secrets automatically. No direct update-service bypass |
 | Controlled traffic switch | Existing WP4/E2-owned transition | Task-local SQL/KMS readiness and final E3 check first. Do not advertise public replacement validation before switching if no candidate public route exists |
-| Declare service ready | Plan requires public `/ready`, old-marker decrypt, fresh POST/read and total requestâ†’public-ready time | Only after the controlled switch; failed public checks leave service recovery unaccepted. No public HTTP request was made here |
+| Declare service ready | Plan requires public `/ready`, old-marker decrypt, fresh POST/read and total request→public-ready time | Only after the controlled switch; failed public checks leave service recovery unaccepted. No public HTTP request was made here |
 | Rollback | Actual WP4 rollback-release request shape | Compatible old image against the SAME restored DB endpoint/version; never reconnect to the terminated original DB or claim schema rollback |
 | Owner review / retirement | Existing approved lifecycle ownership | Future plan must include live viewing window, complete application resources, IAM/budget and retirement. Isolated30-object/USD4 proposal does not include full app reconstruction |
 

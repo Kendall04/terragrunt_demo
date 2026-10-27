@@ -33,7 +33,7 @@ jobs:
           python3 -I -B -m unittest discover -s operations/integrations -p test_package_managed.py -v
           python3 -I -B -m unittest discover -s operations/integrations -p test_observer_host.py -v
 
-      - name: Validate cold recovery suites (offline, no skipped POSIX tests)
+      - name: Validate recovery and portable Sentinel suites (offline, zero skips)
         shell: bash
         run: python3 -I -B scripts/tests/run_recovery_ci.py
 

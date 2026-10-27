@@ -839,7 +839,7 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/ci-repo-hygiene.yml": {
-      "sha256": "5ec2237fb2ff07ec21bf8f3417b9de3a9e4040ee1a379ebf29eb783af1d76b31",
+      "sha256": "095a57438c4161d0e57cc4b4e4a7431755016cdd3acc2466ae69bae3f8f0e769",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -2068,14 +2068,21 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/recovery/bundle.py": {
-      "sha256": "cafcd9d6f5cc9ea9bbe0e982a0e495d8b045ae1018ef41a6a52c6761416ce3e5",
+      "sha256": "21e7eaf7c471aca26646ff4ca495644f20e605b5506b0584f362d7862e5df3c1",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          42
+          76
         ],
         "executable-dependency": [
-          55
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          36
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -2162,7 +2169,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/recovery/host.py": {
-      "sha256": "80b53d210152390e6985dc358288814e22efcb8adf58266322faca592db147cc",
+      "sha256": "ab53748e019ae72418df9faa0a2ac0613975aebaa0fb870847829d39aa4a16c8",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -2497,7 +2504,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/recovery/test_recovery.py": {
-      "sha256": "efa2224cc7a4e447058996befe2e5022d8a2e7ec2c301b135b3507f7618e9135",
+      "sha256": "3d978ff442fd632aaf581c079bd22dddfcad9ebab2188c7d78934bbb94cb47be",
       "declarations": [],
       "signals": {
         "role-input": [
@@ -2509,7 +2516,7 @@
           154,
           161,
           315,
-          429
+          439
         ],
         "executable-dependency": [
           29,
@@ -2524,8 +2531,9 @@
           355,
           357,
           369,
-          438,
-          439
+          448,
+          449,
+          469
         ],
         "security-control": [
           277,
@@ -6457,7 +6465,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/run_recovery_ci.py": {
-      "sha256": "c913c9601bacf6c1df05cda6467fe3175b4c04a48ef94f224137ee99c0fcdf42",
+      "sha256": "16ac707deab4c82930c7a6e6aca7be089ffa816528ac81071ffe1b54a0e80353",
       "declarations": [],
       "signals": {
         "executable-dependency": [
@@ -6466,7 +6474,8 @@
           21,
           22,
           23,
-          24
+          24,
+          26
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -12054,10 +12063,31 @@
         ]
       },
       "semantic_status": "UNVERIFIED"
+    },
+    "operations/sql-backup/recovery/test_bundle_runtime.py": {
+      "sha256": "fb237880889378354e659e7b7de145cdfe8381835bbfb3a87f046aa36d1a7860",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          33
+        ],
+        "executable-dependency": [
+          71,
+          73,
+          87
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "operations/sql-backup/recovery/runtime-candidate.json": {
+      "sha256": "915358f9f88acb93cd56f8b37fdeb5f2d8b5925fec7d3b6aefde0a8f1976da07",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",
-  "review_revision": "df840eab882b412bc1862f3f89694cad853a961a",
-  "review_note": "Five local portable cohost opt-in/package/fixture/typed-input sources only. No installed authority, protected approvals, runtime roles or AWS state changed. UNVERIFIED.",
-  "review_delta_sha256": "0be2ce3fd52752e835d7a82324889ea483c2fc47311155649beac9baa9702cb3"
+  "review_revision": "f9a9b04ffc43085e3412d11329431757bdda3487",
+  "review_note": "Seven exact recovery/API-package/portable-CI/current-candidate surfaces reviewed locally. UNVERIFIED semantics; no approval, installed runtime, IAM, AWS or remote execution changed.",
+  "review_delta_sha256": "b8521578e577caf81cdd3582085cb256d0e2b10bb32e9078c0d77deb97f16422"
 }

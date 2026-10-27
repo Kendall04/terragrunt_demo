@@ -22,6 +22,9 @@ SUITES = ('test_recovery.py', 'test_cold_path.py', 'test_cold_execution.py',
           'test_service_renderer.py', 'test_verify_effective.py', 'test_runtime_precheck.py',
           'test_kernel_query_binding.py', 'test_private_listener.py',
           'test_wp4_recovery_contract.py')
+PORTABLE = ROOT / 'operations/integrations/portable'
+PORTABLE_SUITES = ('test_bridge.py', 'test_publisher.py', 'test_wiring_proposal.py')
+SUITES += PORTABLE_SUITES
 CHILD = r'''
 import json,sys,unittest
 loader=unittest.TestLoader()
@@ -51,7 +54,7 @@ def main():
     parser.add_argument('--list', action='store_true', help='Discover only; never counts as PASS')
     args = parser.parse_args()
     if not args.list and not POSIX:
-        parser.error('Existing POSIX Python/Bash required to execute all suites; use WSL, no installs')
+        parser.error('Existing POSIX Python/Bash required; use the approved Linux VM or CI, no installs')
     env = {key: os.environ[key] for key in ('PATH', 'SystemRoot', 'TEMP', 'TMP', 'HOME', 'LANG', 'LC_ALL')
            if key in os.environ}
     env.update(AWS_EC2_METADATA_DISABLED='true', AWS_CONFIG_FILE=os.devnull,
@@ -61,7 +64,7 @@ def main():
         env['ECS_RECOVERY_TEST_SCRATCH'] = scratch
         total = 0
         for name in SUITES:
-            result = subprocess.run([sys.executable, '-I', '-B', '-c', CHILD, str(RECOVERY),
+            result = subprocess.run([sys.executable, '-I', '-B', '-c', CHILD, str(PORTABLE if name in PORTABLE_SUITES else RECOVERY),
                                      name, 'list' if args.list else 'run'],
                                     env=env, text=True, capture_output=True, timeout=180)
             if result.stderr:
