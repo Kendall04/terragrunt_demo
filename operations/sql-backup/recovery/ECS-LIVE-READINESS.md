@@ -1,5 +1,17 @@
 # ECS recovery: final local preparation and the remaining LIVE gate
 
+## Native local Linux API image component - 2026-10-27
+
+The owner-authorized WSL build of commit8d2b7a9 now passes system certificate
+trust/name/expiry and isolated API liveness checks. See
+[the exact image record](../../../demo-api/deploy/trust/native-linux-image.json).
+Readiness without SQL/KMS correctly503; strict SQL handshake, principal adoption,
+Fargate/public API and complete cold recovery are not accepted by this component.
+The existing recovery tar remains historical and unmodified. Future cloud admission
+must use current exact ECS scope; the prior specific EKS retirement rejection is
+not a blanket ban on every ECS deletion, and its denied objective must not be retried.
+
+
 ## Finite scope check and latest candidate - 2026-10-27
 
 The [six-block reconciliation](../../../terraform/docs/v2-local-completion.md#finite-original-scope-reconciliation---2026-10-27)

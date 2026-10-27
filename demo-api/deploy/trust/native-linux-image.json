@@ -1,0 +1,87 @@
+{
+  "SchemaVersion": 1,
+  "Status": "NATIVE_LOCAL_LINUX_IMAGE_AND_PUBLIC_TRUST_QUALIFIED_NOT_SQL_OR_AWS",
+  "RecordedAtUtc": "2026-10-27T04:09:58.698863+00:00",
+  "SourceCommit": "8d2b7a9b5761173cbb688159acfa0b07ba500ba5",
+  "ImageTag": "ecs-demo-api:sql-lab-8d2b7a9-net10-local",
+  "LocalImageId": "sha256:8d18362122d94d051479a8427a31cdcd1ac7ec79d05d0c990034ca34a7ed51d2",
+  "LocalRepoDigests": [
+    "ecs-demo-api@sha256:8d18362122d94d051479a8427a31cdcd1ac7ec79d05d0c990034ca34a7ed51d2"
+  ],
+  "ImageBytes": 456791836,
+  "Environment": "Existing laptop Ubuntu-24.04 WSL2 / Docker29.9.2 / default BuildKit0.34.0 /2CPU/4GiB; no host software installation or daemon settings changed",
+  "BuildRecipe": "demo-api/deploy/sql-lab/Dockerfile",
+  "ContextFiles": 32,
+  "ContextSourceBytes": 76020,
+  "ContextArchiveSha256": "66c26278993732fd84946affdf0df86e64f58924912601f277c6e94cf73dce3d",
+  "PrivateKeyCopiedToWslContextOrImage": false,
+  "WindowsOrWslHostTrustInstalled": false,
+  "Checks": {
+    "ExactPublicDerFingerprint": "6a45fbcadf8a0a44ffed3f9b78de396b872af430c856b3cb041a29c2ece87738",
+    "OpenSslVersion": "OpenSSL 3.0.13 30 Jan 2024 (Library: OpenSSL 3.0.13 30 Jan 2024)",
+    "OsRelease": [
+      "PRETTY_NAME=\"Ubuntu 24.04.5 LTS\"",
+      "NAME=\"Ubuntu\"",
+      "VERSION_ID=\"24.04\"",
+      "VERSION=\"24.04.5 LTS (Noble Numbat)\"",
+      "VERSION_CODENAME=noble",
+      "ID=ubuntu",
+      "ID_LIKE=debian",
+      "HOME_URL=\"https://www.ubuntu.com/\"",
+      "SUPPORT_URL=\"https://help.ubuntu.com/\"",
+      "BUG_REPORT_URL=\"https://bugs.launchpad.net/ubuntu/\"",
+      "PRIVACY_POLICY_URL=\"https://www.ubuntu.com/legal/terms-and-policies/privacy-policy\"",
+      "UBUNTU_CODENAME=noble",
+      "LOGO=ubuntu-logo"
+    ],
+    "CaCertificatesPackage": "20260601~24.04.1",
+    "SystemTrustAndExpectedName": "PASS",
+    "WrongNameRejected": "PASS",
+    "AbsentTrustRejected": "PASS",
+    "ExpiredCertificateRejected": "PASS",
+    "NoPrivateKeyFormatsInApplicationOrAddedTrust": "PASS",
+    "Runtimes": [
+      "Microsoft.AspNetCore.App 10.0.13 [/usr/share/dotnet/shared/Microsoft.AspNetCore.App]",
+      "Microsoft.NETCore.App 10.0.13 [/usr/share/dotnet/shared/Microsoft.NETCore.App]"
+    ],
+    "Health": 200,
+    "HealthLive": 200,
+    "ReadinessWithoutSqlOrKms": 503,
+    "RuntimeIsolation": {
+      "Uid": 1654,
+      "Network": "none",
+      "PublishedPorts": false,
+      "ReadOnlyRoot": true,
+      "MemoryBytes": 536870912,
+      "CpuLimit": 1,
+      "Capabilities": "ALL_DROPPED"
+    },
+    "LivenessSmokeProfile": "Explicit legacy-v1 without SQL/KMS/migrations; not strict-profile SQL acceptance"
+  },
+  "OwnContainersRemoved": true,
+  "SqlClientHandshakeProven": false,
+  "StrictSqlProfileNativeAccepted": false,
+  "FargateOrRecoveryAccepted": false,
+  "RegistryPush": false,
+  "AwsOperations": 0,
+  "ExecutionAuthorityCreated": false,
+  "OldRecoveryTarRequalified": false,
+  "TechnicalBuildFailuresPreserved": [
+    "Offline RUN restore had a cold cache and NU1301 to NuGet official; locked restore subsequently used Docker temporary default network",
+    "An intermediate context under /tmp was lost between WSL executions; build/qualification then used verified source under /var/tmp in one invocation"
+  ],
+  "NativeEvidenceSha256": {
+    "linux-qualification.json": "e0c4dfa95e2aa97bbdd0c387ad42924eb7012e86a85b9c52e6f23b63bcb1f15d",
+    "linux-context-inputs.json": "695f33086e37c057e853a5a5ceb740db178fb4c86119f3538037abb1d4869fb5",
+    "linux-build-persistent-metadata.json": "cf6da2134cc279f739a7a3522d7222605d4b4d969c4a0c7b6c7457984e990b11",
+    "linux-build-persistent.log": "c7587c54a60ea7b2c7ded188469e4e59640a454e11aeb6024bcf534822fc8c54",
+    "linux-build.log": "03406285a65530fc529442eb7e9fcf333fec054be140eba2abd9789bea276a9f",
+    "linux-build-networked.log": "e54993f1e6bd1097e4dfe0e59dc062fabea285dc606ca004af7b96e0472d7a2e",
+    "qualify_linux_image.py": "55605a571784cfe6c0ccd98900286ba02778518f18650838e19014fc7fcc6bbc"
+  },
+  "RemainingNativeGates": [
+    "Separately admitted SQL certificate/private-key installation and strict SqlClient handshake",
+    "SQL principal adoption/migration and public Fargate/API cold recovery",
+    "Protected publication/configuration and current scoped cloud review; no prior EKS denial is assumed universal for ECS"
+  ]
+}

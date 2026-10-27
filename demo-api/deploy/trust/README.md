@@ -1,4 +1,4 @@
-# Opt-in SQL laboratory trust - prepared locally, not deployed
+# Opt-in SQL laboratory trust - qualified locally on Linux, not deployed
 
 One self-signed **server leaf**, CA=false, RSA2048/SHA256, SAN `sql.demo.internal`.
 Public DER SHA256: `6a45fbcadf8a0a44ffed3f9b78de396b872af430c856b3cb041a29c2ece87738`.
@@ -10,8 +10,9 @@ Only the public `.crt` and non-secret metadata are checked in. No CA/PKI was cre
 
 The normal `demo-api/Dockerfile` is byte-for-byte unchanged. The opt-in file is
 `deploy/sql-lab/Dockerfile`, selected from the same `demo-api` build context with
-`-f deploy/sql-lab/Dockerfile`. This is a future build instruction, not a claim
-that this increment ran Docker, installed trust or published an image.
+`-f deploy/sql-lab/Dockerfile`. This variant has now been built and run in the owner-authorized laptop WSL.
+See `native-linux-image.json`. Only the image truststore was changed; no Windows/
+WSL host trust, SQL installation, remote publication or AWS operation occurred.
 
 The recipe is exactly the pinned normal build plus one public trust insertion:
 copy the one reviewed `.crt`, match its DER fingerprint, verify it with OpenSSL
@@ -44,14 +45,26 @@ The .NET tests use only the public certificate and an in-memory CustomRootTrust;
 they do not import a certificate store. Chain tests use the recorded valid period
 for repeatability, with explicit untrusted/expired/name negatives. The lab image
 build verifies current validity; tests of an archived leaf do not extend its life.
-Actual Linux image trust, SQL TLS handshake, private-key installation/distribution
-and current protected deployment admission remain separate gates. No automated
+Linux system trust, name and expiry checks now PASS against the actual image.
+SQL TLS handshake, private-key installation/distribution and current protected
+deployment admission remain separate gates. No automated
 renewal exists; do not silently regenerate or substitute material after expiry.
 
-No verified local VM SSH destination/mount is available in this thread. Minimum
-missing environment metadata: the authorized local VM address/alias, SSH user and
-host-key binding, plus the mounted Linux workspace path. No password/key in chat
-is needed. External bastions and WSL were not used as substitutes.
+The owner explicitly authorized laptop WSL after the earlier VM-only limitation.
+Existing Ubuntu24.04 WSL/Docker were used with2CPU/4GiB and no active containers at
+preflight. No external bastion, new VM, credentials or private-key transfer was used.
+The context contained32 tracked Git blobs/76020 source bytes; it was verified before
+build and remained outside all private material. Initial cold-cache/offline restore
+and transient-/tmp failures are preserved, not hidden or turned into successful runs.
+
+Native OpenSSL checks used the installed system truststore without a custom CAfile
+for the positive case. Wrong name, explicitly absent trust and post-expiry time were
+rejected. The API smoke ran as UID1654 with read-only root, network=none, no published
+ports and dropped capabilities: liveness200, readiness503 without SQL/KMS. That smoke
+explicitly used legacy-v1/migrations-off, so it is not strict SQL-profile acceptance.
+The disposable API container was stopped normally and removed. The qualified local
+image is retained for reuse; no image archive, registry push or Docker prune occurred.
+The old recovery tar is still historical and was not rebuilt by this qualification.
 
 Sources: [Microsoft SQL Linux encrypted connections](https://learn.microsoft.com/en-us/sql/linux/security/encrypted-connections?view=sql-server-ver16)
 and [SqlClient certificate validation](https://learn.microsoft.com/en-us/sql/connect/ado-net/encryption-and-certificate-validation?view=sql-server-ver16).

@@ -201,17 +201,31 @@ API image. That generation is now complete; private key remains outside Git/buil
 context. [Public certificate, exact recipe and boundary](../../demo-api/deploy/trust/README.md).
 No managed CA is invented, and the earlier alternative pinning proposal is withdrawn:
 ServerCertificate pinning is not used. Encrypt=True/TrustServerCertificate=False
-and name/chain/expiry validation remain. No Windows trust, Linux image build,
-SQL certificate installation, handshake, AWS upload or protected rollout occurred.
+and name/chain/expiry validation remain. No Windows trust, SQL certificate installation, handshake, AWS upload or protected
+rollout occurred. The separately authorized WSL image build is now qualified below.
 Internal ALB/task TLS remains separate and unproved by this preparation.
 
-## Linux environment boundary
+## Linux image qualification - 2026-10-27
 
-Windows SSH is installed, but the visible codex-nat/codex-work configuration uses
-an external bastion; it is not a verified local VM workspace. No local VM alias,
-host-key binding or mounted project path was available in the known task folders,
-and no VM manager command was available. Personal Context returned unavailable.
-No connection to that bastion, new login, WSL fallback, host mount/service change,
-Linux installation or native SQL command was attempted. A verified authorized VM
-destination and mount are still needed for Linux qualification; Windows tests must
-not be represented as that qualification.
+The owner explicitly superseded the VM-only preference and authorized laptop WSL.
+Existing Ubuntu24.04 WSL2 and Docker were used; no VM installation, host trust,
+credentials, private-key transfer or external bastion was required. The actual
+image/trust checks PASS; see [native record](../../demo-api/deploy/trust/native-linux-image.json).
+
+Ubuntu24.04.5/OpenSSL3.0.13 with ca-certificates20260601~24.04.1 accepted the leaf
+using its system truststore and expected name. Wrong name, no trust and expiry
+were rejected. These are native Linux certificate checks, not a SqlClient/TDS
+handshake. API liveness200/readiness503 was measured with synthetic unavailable
+dependencies, explicit legacy profile and migrations disabled. It is not strict
+SQL credential/permission or whole-platform recovery acceptance.
+
+The qualified image derives from exact commit8d2b7a9 Git blobs. No private key
+entered its32-file context. No AWS/push occurred. The old recovery tar remains
+historical; this image qualification must not repin/reapprove that archive.
+
+The earlier retirement rejection is scoped: the primary receipt concerned an EKS
+Run-GitHubCdRetirement.py execution plan with irreversible RDS/EKS/network effects,
+rejected before process/AWS. It is not a universal ECS-retirement prohibition.
+Do not repeat its denied objective through another runner/principal/division.
+Any future ECS cycle still needs its own exact targets/cost/access/exit review;
+no new cloud authority follows from this local qualification or the general plan.

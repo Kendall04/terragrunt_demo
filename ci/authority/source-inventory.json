@@ -12209,11 +12209,21 @@
       "semantic_status": "UNVERIFIED"
     },
     "demo-api/deploy/trust/README.md": {
-      "sha256": "223369490276d4c0b6ffa87c9eabd01593398b8ce53af8622236c145801db42a",
+      "sha256": "94616853b663b6ab50755c4f38134cf6fe39b3232621cce679a902e4d1dcafe9",
       "declarations": [],
       "signals": {
         "executable-dependency": [
-          26
+          27
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "demo-api/deploy/trust/native-linux-image.json": {
+      "sha256": "53fb5577425f4fa48167c499ba8ac1a6f86a551b85ada08a3a1dde7001151e01",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          80
         ]
       },
       "semantic_status": "UNVERIFIED"
