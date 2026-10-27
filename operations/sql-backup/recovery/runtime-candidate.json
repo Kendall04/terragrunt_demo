@@ -1,18 +1,18 @@
 {
   "Status": "LOCAL_REPRODUCIBLE_RUNTIME_CURRENT_SOURCE_NOT_NATIVE",
-  "SourceCommit": "f9a9b04ffc43085e3412d11329431757bdda3487",
+  "SourceCommit": "24b87642d00a81befcfe4b9805c4e6a55bf78c1e",
   "IncludesRecoveryCorrectionCommit": "993293f1cd26d08316379de953dfb0809602be0a",
   "Archive": {
-    "Name": "recovery-f9a9b04.tar",
-    "Bytes": 301271040,
-    "Sha256": "c69141e1ec3655ef65c0367d043bcc03a77452a72316e99020e23f53eabc4e46",
+    "Name": "recovery-24b8764.tar",
+    "Bytes": 301281280,
+    "Sha256": "bcf45c0cb2fdfdad7ff884f6c8301d934a2ac77c4fdea28bb637d9be7d414159",
     "Files": 635,
     "BundleContract": "RECOVERY_HOST_WITH_SERVICE_VALIDATORS_V2"
   },
   "HelperZip": {
-    "Name": "recovery-helpers-f9a9b04.zip",
-    "Bytes": 68178,
-    "Sha256": "27704226f71a4e0774c5a3231394f3d6ab0cf35c8f3aa7fddcdd036e65d82cd9",
+    "Name": "recovery-helpers-24b8764.zip",
+    "Bytes": 69641,
+    "Sha256": "82b0a82f70263f1f8fb99b81fa20e8fc5377959ec3649c3e8036f3344c13ce42",
     "Files": 14
   },
   "PublishedBinaryReuse": {
@@ -37,7 +37,7 @@
   },
   "StreamRebuild": {
     "Identical": true,
-    "Sha256": "c69141e1ec3655ef65c0367d043bcc03a77452a72316e99020e23f53eabc4e46",
+    "Sha256": "bcf45c0cb2fdfdad7ff884f6c8301d934a2ac77c4fdea28bb637d9be7d414159",
     "PhysicalArchivesCreated": 1
   },
   "ExtractedConsumer": {
@@ -65,12 +65,20 @@
     "Publisher": 19,
     "Wiring": 4,
     "CloudExecuted": false,
-    "DiscoverySuites": 17,
-    "DiscoveredTests": 241,
+    "DiscoverySuites": 18,
+    "DiscoveredTests": 252,
     "HostedCiExecuted": false
   },
   "ExecutionAuthorized": false,
   "SsmAuthorizationResolved": false,
+  "ListenerTransitionCommit": "24b87642d00a81befcfe4b9805c4e6a55bf78c1e",
+  "ListenerTests": {
+    "Transition": 11,
+    "PrivateListener": 10,
+    "ExtractedPackage": 3,
+    "NativeEffects": "DOUBLES_ONLY",
+    "PosixPermissions": "EXPLICIT_METADATA_DOUBLE_NOT_NATIVE"
+  },
   "Installed": false,
   "Uploaded": false,
   "CurrentNativeAcceptance": false,

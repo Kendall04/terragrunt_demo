@@ -2169,7 +2169,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/recovery/host.py": {
-      "sha256": "ab53748e019ae72418df9faa0a2ac0613975aebaa0fb870847829d39aa4a16c8",
+      "sha256": "72710cd881dda6bc6ef2a10df0f3f6edb209fce8dcb6b7c1c2c96f25c20a46b0",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -2183,19 +2183,19 @@
           178,
           199,
           203,
-          219,
-          230,
-          298
+          242,
+          253,
+          321
         ],
         "executable-dependency": [
           111,
           113,
           140,
-          298,
-          300,
-          302,
-          333,
-          349
+          321,
+          323,
+          325,
+          356,
+          372
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -6465,7 +6465,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/run_recovery_ci.py": {
-      "sha256": "16ac707deab4c82930c7a6e6aca7be089ffa816528ac81071ffe1b54a0e80353",
+      "sha256": "bae478ef9063f119160e5f6d77fadd08c25295bfabb60152d465a9dd035af6ff",
       "declarations": [],
       "signals": {
         "executable-dependency": [
@@ -12080,14 +12080,26 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/recovery/runtime-candidate.json": {
-      "sha256": "915358f9f88acb93cd56f8b37fdeb5f2d8b5925fec7d3b6aefde0a8f1976da07",
+      "sha256": "72501e31c19b5d31c8e4ce68446bdf96e09db9b06d7673a920c77672a8ae1d98",
       "declarations": [],
       "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "operations/sql-backup/recovery/test_listener_transition.py": {
+      "sha256": "21a8a228c435879f2416644adf563439a770fb1488c1c83a3d0bf64d8100eba2",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          170,
+          173,
+          177
+        ]
+      },
       "semantic_status": "UNVERIFIED"
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",
-  "review_revision": "f9a9b04ffc43085e3412d11329431757bdda3487",
-  "review_note": "Seven exact recovery/API-package/portable-CI/current-candidate surfaces reviewed locally. UNVERIFIED semantics; no approval, installed runtime, IAM, AWS or remote execution changed.",
-  "review_delta_sha256": "b8521578e577caf81cdd3582085cb256d0e2b10bb32e9078c0d77deb97f16422"
+  "review_revision": "24b87642d00a81befcfe4b9805c4e6a55bf78c1e",
+  "review_note": "Four exact local listener automation/test/current-candidate/CI surfaces. UNVERIFIED semantics; no installed authority, permission, state or hosted operation changed.",
+  "review_delta_sha256": "c2db3c3ced49a2cf14511e2b454243ee297721b551338b522583f7da8f9a39f8"
 }

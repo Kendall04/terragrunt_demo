@@ -259,3 +259,15 @@ local JSON. The five available historical values also need fresh validation for
 the new run. The next action is to resolve execution admission/current metadata
 and review one complete platform plan, budget and withdrawal window. The built
 image is ready for that review; it supplies no new execution or approval authority.
+
+Current candidate closure: the24b8764 source tar has635 files/301281280 bytes,
+SHA256 `bcf45c0cb2fdfdad7ff884f6c8301d934a2ac77c4fdea28bb637d9be7d414159`;
+its14-file helper ZIP is69641 bytes. The actual extracted tar loads both transition
+actions and runs the service plan in an isolated offline Python process without
+the original checkout. One new archive version was necessary because executable
+source changed; no binary rebuild, extra identical archive, large staging copy or
+dependency download occurred. f9a9b04 and all historical artifacts remain immutable.
+Existing paired cohost/Lambda hashes still match. Current source-catalog coverage
+has0 discrepancies; all four changed surfaces remain UNVERIFIED. CI discovery is
+18 suites/252 cases, not a hosted or full execution result. No new Linux execution
+was performed; native VM/systemd/SQL acceptance is still explicitly pending.
