@@ -14,7 +14,33 @@ def digest(body):
     return hashlib.sha256(body).hexdigest()
 
 
-def inspect(path, expected):
+BUNDLE_CONTRACT = 'RECOVERY_HOST_WITH_SERVICE_VALIDATORS_V2'
+SERVICE_SUPPORT = (
+    'scripts/workflow_requests/contract.py',
+    'scripts/wp4d/gateway.py',
+    'scripts/normal_delivery/delivery.py',
+    'scripts/normal_delivery/model_consistency.py',
+    'scripts/normal_delivery/e3.py',
+    'scripts/normal_delivery/authorization.py',
+    'scripts/qualification/finalizer.py',
+    'ci/authority/normal-delivery-model.json',
+    'ci/schemas/e1-qualification.schema.json',
+    'demo-api/deploy/task-definition.template.json',
+)
+
+
+def runtime_sources():
+    """Closed source-only dependency set; never includes approvals/credentials."""
+    base = Path(__file__).resolve().parent
+    root = base.parents[2]
+    paths = {name: base / name for name in ('host.py', 'prepare.py', 'verify_effective.py', 'bootstrap.sh')}
+    paths.update({name: root / name for name in SERVICE_SUPPORT})
+    require(all(path.is_file() and not any(p.is_symlink() for p in (path, *path.parents))
+                for path in paths.values()), 'BUNDLE_RUNTIME_SOURCE_UNAVAILABLE')
+    return {name: path.read_bytes() for name, path in paths.items()}
+
+
+def inspect(path, expected, source_commit=None):
     require(path.stat().st_size <= 536870912 and digest(path.read_bytes()) == expected, 'BUNDLE_HASH_MISMATCH')
     found = {}
     total = 0
@@ -31,6 +57,14 @@ def inspect(path, expected):
     require(manifest['Status'] == 'LOCAL_ARTIFACT_NOT_DEPLOYED' and manifest['Runtime'] == '10.0.13', 'BUNDLE_CONTRACT')
     for name, body in found.items():
         require(digest(body) == manifest['Files'][name]['Sha256'], 'BUNDLE_CONTENT_CHANGED')
+    if source_commit is not None:
+        require(manifest.get('SourceCommit') == source_commit, 'BUNDLE_SOURCE_COMMIT_MISMATCH')
+        require(manifest.get('BundleContract') == BUNDLE_CONTRACT, 'BUNDLE_CURRENT_SOURCE_MISMATCH')
+        sources = runtime_sources()
+        nonbinary = {name for name in found if not name.startswith(('api/', 'backup/'))}
+        require(nonbinary == set(sources) and all(
+            found[name].replace(b'\r\n', b'\n') == body.replace(b'\r\n', b'\n')
+            for name, body in sources.items()), 'BUNDLE_CURRENT_SOURCE_MISMATCH')
     return manifest
 
 
@@ -52,10 +86,11 @@ def build(api, backup, output, commit):
             if path.is_file():
                 name = label + '/' + path.relative_to(directory).as_posix()
                 files[name] = (path.read_bytes(), 0o755 if path.name == executable or path.suffix == '.so' else 0o644)
-    for name in ('host.py', 'prepare.py', 'verify_effective.py'):
-        files[name] = (Path(__file__).with_name(name).read_bytes(), 0o644)
+    for name, body in runtime_sources().items():
+        files[name] = (body, 0o644)
     require(sum(len(body) for body, _ in files.values()) <= 500000000, 'BUNDLE_TOO_LARGE')
     manifest = {'Status': 'LOCAL_ARTIFACT_NOT_DEPLOYED', 'SourceCommit': commit, 'Runtime': '10.0.13',
+                'BundleContract': BUNDLE_CONTRACT,
                 'Files': {name: {'Sha256': digest(body), 'Bytes': len(body), 'Mode': mode} for name, (body, mode) in files.items()}}
     files['bundle-manifest.json'] = ((json.dumps(manifest, sort_keys=True) + '\n').encode(), 0o644)
     with tarfile.open(output, 'w', format=tarfile.USTAR_FORMAT) as archive:
@@ -76,7 +111,7 @@ if __name__ == '__main__':
     p.add_argument('--sha256')
     a = p.parse_args()
     try:
-        print(json.dumps(build(a.api, a.backup, a.archive, a.commit) if a.action == 'build' else inspect(a.archive, a.sha256), indent=2))
+        print(json.dumps(build(a.api, a.backup, a.archive, a.commit) if a.action == 'build' else inspect(a.archive, a.sha256, source_commit=a.commit), indent=2))
     except (ValueError, OSError, KeyError, TypeError) as e:
         print(json.dumps({'Status': 'REFUSED', 'Code': str(e) if type(e) is ValueError else type(e).__name__}))
         raise SystemExit(1)

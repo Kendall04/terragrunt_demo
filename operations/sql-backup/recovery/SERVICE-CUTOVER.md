@@ -1,4 +1,4 @@
-# SQL recovery → ECS service: executable offline cutover plan
+# SQL recovery â†’ ECS service: executable offline cutover plan
 
 Local implementation in the existing `recovery/prepare.py`; no SDK, executor, token acquisition, secret value, infrastructure mutation or traffic switch. This joins existing cold-host receipt metadata to the actual WP4 closed request validator and existing taskdef renderer arguments. A consistent JSON input never authenticates itself or authorizes activation.
 
@@ -36,7 +36,7 @@ The code calls **`scripts.workflow_requests.contract.request('deploy-dev', ...)`
 | Pin candidate configuration | Exact Secrets Manager version selector `ARN:::VersionId`; explicit `--recovery` renderer profile sets migration-off | The current WP4 V1 source cannot represent the pinned selector/migration-off profile. A new reviewed protected runtime/binding model is required; caller cannot override it. No workflow or installed binding was changed. Fargate Linux platform>=1.4.0 required for version selector |
 | Fresh tasks / candidate validation | Existing WP4 flow, `scripts/ecs-readiness-gate.sh` and E3 | New candidate tasks must fetch the reviewed version; existing tasks do not refresh secrets automatically. No direct update-service bypass |
 | Controlled traffic switch | Existing WP4/E2-owned transition | Task-local SQL/KMS readiness and final E3 check first. Do not advertise public replacement validation before switching if no candidate public route exists |
-| Declare service ready | Plan requires public `/ready`, old-marker decrypt, fresh POST/read and total request→public-ready time | Only after the controlled switch; failed public checks leave service recovery unaccepted. No public HTTP request was made here |
+| Declare service ready | Plan requires public `/ready`, old-marker decrypt, fresh POST/read and total requestâ†’public-ready time | Only after the controlled switch; failed public checks leave service recovery unaccepted. No public HTTP request was made here |
 | Rollback | Actual WP4 rollback-release request shape | Compatible old image against the SAME restored DB endpoint/version; never reconnect to the terminated original DB or claim schema rollback |
 | Owner review / retirement | Existing approved lifecycle ownership | Future plan must include live viewing window, complete application resources, IAM/budget and retirement. Isolated30-object/USD4 proposal does not include full app reconstruction |
 
@@ -145,3 +145,34 @@ listener and connection version, protected V2 delivery/routing, public endpoint
 proof and full RTO, plus portable Sentinel's durable AWS/notice path. This correction
 removes a demonstrated local false-positive; it does not close those gates or solve
 SSM authorization. No deployment, teardown, IAM change, installation or budget use.
+
+## Self-contained recovery runtime packaging - 2026-10-27
+
+The existing bundle builder now includes the exact source dependency closure used
+by the listener/connection validators: four root helpers/bootstrap and ten explicit
+pure WP3/WP4/WP6 validator/model/template files. It includes no approvals, installed
+configuration, credentials or SDK/cloud execution adapter. No second deployment
+controller is installed by packaging these original source modules.
+
+An extracted-package regression first reproduced `ModuleNotFoundError: scripts`;
+after including the lazy gateway/delivery imports, a fresh isolated Python process
+can run the actual listener plan without the repository on sys.path. External
+effects are denied inside that process. The other new regressions reject a foreign
+source commit, changed helper bytes even with a rewritten internal hash, and a
+missing dependency even with a self-consistent manifest. Three new cases and two
+affected existing bundle cases pass; the prior44 API/cold/POSIX cases are unchanged.
+`test_bundle_runtime.py` is explicitly wired into the existing offline CI runner.
+
+Before future publication/installation, use the source-pinned inspection mode:
+
+```text
+python operations/sql-backup/recovery/bundle.py inspect --archive RECOVERY.tar --sha256 EXPECTED_ARCHIVE_SHA256 --commit REVIEWED_SOURCE_COMMIT
+```
+
+It requires `RECOVERY_HOST_WITH_SERVICE_VALIDATORS_V2`, the exact source commit,
+current helper/support bytes (LF/CRLF normalization only), and no unexpected root
+support files. Historical two-argument inspection remains available for preserving
+old evidence; it is not current-source qualification. The self-reported commit or
+an archive hash grants no authority. New binaries retain their actual original build
+identity; no rebuild, upload, permission installation or native acceptance is implied.
+Old az6/cold locks and sealed tar/ZIP receipts remain historical and unchanged.
