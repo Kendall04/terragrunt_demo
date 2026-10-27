@@ -66,6 +66,8 @@ class ColdExecutionTests(unittest.TestCase):
                 self.assertFalse(result['DeployedEcsApiProven'])
                 self.assertIsNone(result['RtoWarmTargetSeconds'])
                 self.assertEqual(result['RtoColdHostSeconds'], 600)
+                self.assertEqual(result['RestoreStartedUtc'], r['NowUtc'])
+                self.assertEqual(result['RestoreCompletedUtc'], r['NowUtc'])
                 self.assertEqual(fence.call_count, 4)
             for fail_at in (1, 2, 3):
                 p = FakePort()
@@ -75,6 +77,19 @@ class ColdExecutionTests(unittest.TestCase):
                         host.restore(p, r['Trial'], None, None, None, e['Target']['Identity'], s, None, r)
                 self.assertFalse(any(isinstance(c, tuple) and c[0]=='api' for c in p.commands))
                 if fail_at <= 2: self.assertFalse(any(isinstance(c, str) and 'CREATE LOGIN' in c for c in p.commands))
+
+    def test_restore_clock_reversal_stops_before_login_api_and_success_receipt(self):
+        r,e=fixture();source=r['SourceRecord']
+        source.update(PreMarker='fixture-before',PreMarkerId=1,PostMarker='fixture-after',PreMarkerRequestUtc='2026-10-24T11:54:00Z')
+        port=FakePort();source['RuntimePrecheck']=host.checked_runtime(port,source['Source'],'fixture')
+        port.confirm_cold_fence=lambda request,identity:{'Status':'EXACT_SOURCE_TERMINATED'}
+        # First UTC refresh is request admission; next two bracket the actual restore port.
+        times=[r['NowUtc'],r['NowUtc'],'2026-10-24T12:09:59Z']
+        with patch.object(host,'utc',side_effect=times):
+            with self.assertRaisesRegex(ValueError,'RESTORE_TIME_ORDER_INVALID'):
+                host.restore(port,r['Trial'],None,None,None,e['Target']['Identity'],source,None,r)
+        self.assertFalse(any(isinstance(c,str) and 'CREATE LOGIN' in c for c in port.commands))
+        self.assertFalse(any(isinstance(c,tuple) and c[0]=='api' for c in port.commands))
 
     def test_single_target_retirement_rejects_old_or_foreign_state(self):
         snapshot = state()

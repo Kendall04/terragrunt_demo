@@ -623,8 +623,11 @@ def restore(port, name, config, backup, api, identity, source_record, failure, c
     app = port.secret(APP_SECRET)
     target = 'recoverydb_restore_' + name
     restore_record = dict(source_record, Trial=name) if cold_request is not None else source_record
+    restore_started = utc()
     result = port.backup(backup, config, sa, restore_record)
     require(result['Status'] == 'RESTORED_CHECKDB_READABLE' and result['Rows'] >= 1, 'RESTORE_NOT_VERIFIED')
+    restore_completed = utc()
+    require(event_order(restore_started, restore_completed), 'RESTORE_TIME_ORDER_INVALID')
     escaped = app.replace("'", "''")
     if cold_request is not None:
         fence = port.confirm_cold_fence(cold_request, identity)
@@ -641,6 +644,7 @@ def restore(port, name, config, backup, api, identity, source_record, failure, c
             'DeployedEcsApiProven': False, 'Status': 'TARGET_RECOVERED_REVIEW_EVIDENCE', 'Trial': name, 'Source': source_record['Source'], 'Target': identity,
             'ManifestVersion': source_record['Receipt']['ManifestVersion'], 'BackupVersion': m['BackupVersion'],
             'ApiRecoveryCheck': api_check,
+            'RestoreStartedUtc':restore_started,'RestoreCompletedUtc':restore_completed,
             'Checkdb': result['Status'], 'RuntimePrecheck': runtime, 'ReadyAndDecryptedMarkersConfirmedUtc': ready,
             'RtoWarmTargetSeconds': (timestamp(ready) - timestamp(failure['FailureDeclaredUtc'])).total_seconds() if cold_request is None else None,
             'ControlledMarkerAgeUpperBoundSeconds': (timestamp(failure['FailureDeclaredUtc']) - timestamp(source_record['PreMarkerRequestUtc'])).total_seconds(),
