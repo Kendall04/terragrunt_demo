@@ -445,6 +445,51 @@ def quiesce(port, source_record, identity):
             'FailureDeclaredUtc': start, 'SourceInactiveConfirmedUtc': utc(), 'ActiveState': active}
 
 
+def check_api_recovery(port, source_record, probe, require_ready=True):
+    """One bounded sequence through the caller-bound API port, with no retry.
+
+    Reused by host restore; a future admitted public transport can use the same
+    checks. This does not authenticate a supplied receipt, bind a public URL,
+    acquire delivery authority, switch traffic or claim full ECS acceptance.
+    """
+    require(source_record.get('Status') == 'SOURCE_BACKED_UP'
+            and type(source_record.get('PreMarkerId')) is int and source_record['PreMarkerId'] > 0
+            and all(isinstance(source_record.get(k), str) and source_record[k]
+                    for k in ('PreMarker', 'PostMarker'))
+            and source_record['PreMarker'] != source_record['PostMarker'], 'INVALID_API_MARKER_BINDING')
+    require(type(require_ready) is bool and isinstance(probe, str)
+            and re.fullmatch(r'r[0-9]{8}[a-z0-9]{1,8}-[a-z0-9-]{1,64}', probe)
+            and probe not in (source_record['PreMarker'], source_record['PostMarker']), 'INVALID_API_WRITE_PROBE')
+    if require_ready:
+        ready = port.http('GET', '/ready')
+        require(isinstance(ready, dict) and ready.get('status') == 'Healthy', 'API_DEPENDENCIES_NOT_READY')
+
+    def rows():
+        result = port.http('GET', '/text?page=1&pageSize=100')
+        require(isinstance(result, list) and len(result) <= 100
+                and all(isinstance(r, dict) and type(r.get('id')) is int and r['id'] > 0
+                        and isinstance(r.get('text'), str) for r in result)
+                and len({r['id'] for r in result}) == len(result), 'API_ROWS_INVALID')
+        require(any(r['id'] == source_record['PreMarkerId'] and r['text'] == source_record['PreMarker']
+                    for r in result), 'RECOVERED_MARKER_MISSING')
+        require(not any(r['text'] == source_record['PostMarker'] for r in result), 'UNEXPECTED_POST_BACKUP_MARKER')
+        return result
+
+    before = rows()
+    require(not any(r['text'] == probe for r in before), 'API_PROBE_ALREADY_PRESENT_RECONCILE')
+    before_ids = {r['id'] for r in before}
+    written = port.http('POST', '/text', {'text': probe})  # unknown outcome must not be retried here
+    require(isinstance(written, dict) and type(written.get('id')) is int and written['id'] > 0
+            and written.get('text') == probe and written['id'] not in before_ids,
+            'RESTORED_WRITE_FAILED')
+    after = rows()
+    require(any(r['id'] == written['id'] and r['text'] == probe for r in after), 'RESTORED_READ_FAILED')
+    return {'Status': 'API_MARKERS_READ_WRITE_BOUND', 'RestoredMarkerId': source_record['PreMarkerId'],
+            'NewMarkerId': written['id'], 'ReadinessChecked': require_ready,
+            'PostBackupMarkerAbsentOnBothReads': True, 'WriteAttempts': 1,
+            'PublicEndpointAuthenticated': False, 'FullEcsRecoveryProven': False}
+
+
 def restore(port, name, config, backup, api, identity, source_record, failure, cold_request=None):
     check_source_runtime(source_record)
     fence = None
@@ -478,12 +523,7 @@ def restore(port, name, config, backup, api, identity, source_record, failure, c
     if cold_request is not None:
         fence = port.confirm_cold_fence(cold_request, identity)
     with port.api(api, app, target, False):
-        rows = port.http('GET', '/text?page=1&pageSize=100')
-        require(any(r['id'] == source_record['PreMarkerId'] and r['text'] == source_record['PreMarker'] for r in rows), 'RECOVERED_MARKER_MISSING')
-        require(not any(r['text'] == source_record['PostMarker'] for r in rows), 'UNEXPECTED_POST_BACKUP_MARKER')
-        probe = name + '-restored-write'
-        require(port.http('POST', '/text', {'text': probe})['text'] == probe, 'RESTORED_WRITE_FAILED')
-        require(any(r['text'] == probe for r in port.http('GET', '/text?page=1&pageSize=100')), 'RESTORED_READ_FAILED')
+        api_check = check_api_recovery(port, source_record, name + '-restored-write', require_ready=False)
         ready = utc()
     if cold_request is not None:
         fence = port.confirm_cold_fence(cold_request, identity)
@@ -491,6 +531,7 @@ def restore(port, name, config, backup, api, identity, source_record, failure, c
             'RtoColdHostSeconds': (timestamp(ready) - timestamp(cold_request['RecoveryRequestedUtc'])).total_seconds() if cold_request else None,
             'DeployedEcsApiProven': False, 'Status': 'TARGET_RECOVERED_REVIEW_EVIDENCE', 'Trial': name, 'Source': source_record['Source'], 'Target': identity,
             'ManifestVersion': source_record['Receipt']['ManifestVersion'], 'BackupVersion': m['BackupVersion'],
+            'ApiRecoveryCheck': api_check,
             'Checkdb': result['Status'], 'RuntimePrecheck': runtime, 'ReadyAndDecryptedMarkersConfirmedUtc': ready,
             'RtoWarmTargetSeconds': (timestamp(ready) - timestamp(failure['FailureDeclaredUtc'])).total_seconds() if cold_request is None else None,
             'ControlledMarkerAgeUpperBoundSeconds': (timestamp(failure['FailureDeclaredUtc']) - timestamp(source_record['PreMarkerRequestUtc'])).total_seconds(),

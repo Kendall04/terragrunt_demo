@@ -416,3 +416,17 @@ Keep the API's product scope unchanged during the local regression/presentation
 increment. A simple API may serve the CV objective by demonstrating real delivery,
 recovery and infrastructure complexity through honest Archify diagrams and demo
 evidence. Any future API product expansion needs its own justified scope.
+
+## Recovery API acceptance correction - 2026-10-27
+
+Continue the agreed full ECS scope; no reduction to the portfolio's happy path.
+The existing recovery runner now binds a fresh write to the exact returned/read
+ID and plaintext, rechecks restored/post-backup marker boundaries, and refuses
+uncertain outcomes without replay. The shared sequence is wired into restore;
+default readiness checking can be reused by a future admitted public transport,
+without adding another deploy owner or alternate SSM route. See the concrete
+[implementation and local qualification](../../operations/sql-backup/recovery/SERVICE-CUTOVER.md#bound-api-readwrite-sequence---local-correction-2026-10-27).
+44 affected local cases pass (37 recovery,3 cold,4 POSIX entrypoint), with doubles
+for external effects and zero skips. Historical native receipts, packaged runtime
+and authority remain unchanged. Full cold SQL-to-Fargate/public recovery and current
+portable Sentinel native acceptance remain required; no AWS cycle is approved here.

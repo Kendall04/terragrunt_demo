@@ -104,3 +104,44 @@ A focused test calls the actual WP4 model validator: the normal task passes; the
 The local opt-in V2 implementation is now available for review in [WP4-V2-REVIEW.md](WP4-V2-REVIEW.md), selected only from protected versioned facts: base connection ARN plus exact secret VersionId, immutable model/reference hashes, migrations-off on the app, unchanged credential-free probe and valid Fargate platform. It must bind the same restored target/network/fencing observations, release/schema compatibility and operation ownership; validate membership and rollback against the same recovered DB. It must not silently reinterpret V1, add a caller flag, grant IAM or install settings. Qualifying/publishing that new protected model and running an integrated cycle require their own reviewed scope. The API, PKI exclusion, old receipts and live resources remain unchanged.
 
 Local V2 status: implemented and tested, not selected by the installed factory or deployed. V1 keeps its rules and rejects V2 bindings/authorizers/journals. The new types reuse the existing state machine and its E2/E3 boundaries; they add no IAM or public request fields. Installation/package selection remains a material review gate, and the native receipt/image/profile qualification described in the review is still required. No old trial budget or SSM command was reused.
+
+## Bound API read/write sequence - local correction, 2026-10-27
+
+`host.check_api_recovery(port, source_record, probe)` now implements the existing
+four-request acceptance sequence, rather than accepting a successful HTTP response
+or matching plaintext alone: dependency readiness; restored marker ID+plaintext
+read; one fresh synthetic POST; and a second read containing that exact POST ID
+and plaintext. Both reads must retain the restored marker and exclude the known
+post-backup marker. Duplicate/malformed IDs, an existing write probe, or a reused
+POST ID refuse. An unknown/denied POST is not retried; reconcile the existing host
+STARTED marker and outcome before any separately admitted continuation.
+
+The actual restore function now uses this shared sequence. Its existing API context
+already performs `/ready`, so it passes `require_ready=False`; the shared function
+defaults to checking readiness when used by a separately admitted future public
+adapter. It constructs no client, reads no credential and accepts no URL/redirect
+override. The caller must bind the transport to the reviewed endpoint and preserve
+WP4/E2/E3 ownership. No public adapter, command or alternate SSM transport was added.
+
+Restore receipts now include `ApiRecoveryCheck` with the old/new numeric IDs and
+fixed check results, without plaintext. `PublicEndpointAuthenticated` and
+`FullEcsRecoveryProven` remain false. Older sealed receipts/artifacts/approvals stay
+unchanged; this source must be packaged under a new manifest before approved native
+use. It is not evidence that public Fargate recovery has executed.
+
+The original defect was reproduced first: the POST returned ID999 but the read
+contained ID2 with the same text, and the old workflow accepted it. The regression
+now refuses. Seven additional test methods cover the actual restore wiring,
+ordered sequence, missing/contradictory markers, duplicate IDs, readiness failure,
+already-present probes and denied/uncertain writes without retries. Final results:
+37 recovery cases +3 cold-execution cases on Windows; 4 existing production-main
+entrypoint cases in WSL Ubuntu24.04, zero skips. These use real helper/entrypoint
+code and transport doubles, never AWS, SQL engine or public traffic. The existing
+`run_recovery_ci.py` already discovers `test_recovery.py`, so the added cases enter
+the existing hygiene job without a new workflow or hosted run.
+
+Remaining native acceptance is unchanged: authenticated cold fence/restore/private
+listener and connection version, protected V2 delivery/routing, public endpoint
+proof and full RTO, plus portable Sentinel's durable AWS/notice path. This correction
+removes a demonstrated local false-positive; it does not close those gates or solve
+SSM authorization. No deployment, teardown, IAM change, installation or budget use.

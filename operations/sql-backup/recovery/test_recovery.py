@@ -370,6 +370,16 @@ class HostTests(unittest.TestCase):
         failure = host.quiesce(port, source, IDENTITY)
         return port, source, failure
 
+    def test_restore_rejects_post_id_not_read_back(self):
+        p, source, failure = self.records()
+        original = p.http
+        def mismatched(method, route, body=None):
+            result = original(method, route, body)
+            return dict(result, id=999) if method == 'POST' else result
+        p.http = mismatched
+        with self.assertRaisesRegex(ValueError, 'RESTORED_READ_FAILED'):
+            host.restore(p, NAME, None, None, None, TARGET, source, failure)
+
     def test_full_fake_flow_is_only_contract_evidence(self):
         p, s, f = self.records()
         result = host.restore(p, NAME, None, None, None, TARGET, s, f)
@@ -451,6 +461,91 @@ class BundleTests(unittest.TestCase):
                 archive.addfile(item, io.BytesIO(b'x'))
             with self.assertRaises(ValueError):
                 bundle.inspect(output, hashlib.sha256(output.read_bytes()).hexdigest())
+
+
+
+class ApiRecoveryCheckTests(unittest.TestCase):
+    def fixture(self):
+        source = {'Status': 'SOURCE_BACKED_UP', 'PreMarkerId': 1,
+                  'PreMarker': 'synthetic-before', 'PostMarker': 'synthetic-after'}
+        before = [{'id': 1, 'text': source['PreMarker']}]
+        new = {'id': 2, 'text': NAME + '-public-write'}
+        return source, before, new
+
+    def port(self, before=None, written=None, after=None, ready=None):
+        source, initial, new = self.fixture()
+        p = Mock()
+        p.http.side_effect = [ready if ready is not None else {'status': 'Healthy'},
+                              initial if before is None else before,
+                              new if written is None else written,
+                              initial + [new] if after is None else after]
+        return source, p
+
+    def test_one_ordered_sequence_binds_old_and_new_ids_without_exporting_plaintext(self):
+        source, p = self.port()
+        result = host.check_api_recovery(p, source, NAME + '-public-write')
+        self.assertEqual([c.args[:2] for c in p.http.call_args_list],
+                         [('GET','/ready'),('GET','/text?page=1&pageSize=100'),
+                          ('POST','/text'),('GET','/text?page=1&pageSize=100')])
+        self.assertEqual(result['NewMarkerId'], 2)
+        self.assertTrue(result['ReadinessChecked'])
+        self.assertFalse(result['FullEcsRecoveryProven'])
+        self.assertFalse(result['PublicEndpointAuthenticated'])
+        self.assertNotIn('synthetic-before', json.dumps(result))
+        self.assertNotIn('public-write', json.dumps(result))
+
+    def test_unhealthy_missing_old_marker_or_existing_probe_stops_before_post(self):
+        _, before, new = self.fixture()
+        for kwargs, code, calls in (({'ready': {'status':'Unhealthy'}}, 'API_DEPENDENCIES_NOT_READY', 1),
+                                   ({'before': []}, 'RECOVERED_MARKER_MISSING', 2),
+                                   ({'before': before+[new]}, 'API_PROBE_ALREADY_PRESENT_RECONCILE', 2),
+                                   ({'before': before+[{'id':3,'text':'synthetic-after'}]}, 'UNEXPECTED_POST_BACKUP_MARKER', 2)):
+            source, p = self.port(**kwargs)
+            with self.subTest(code=code), self.assertRaisesRegex(ValueError, code):
+                host.check_api_recovery(p, source, NAME + '-public-write')
+            self.assertEqual(p.http.call_count, calls)
+
+    def test_post_id_type_collision_or_wrong_plaintext_refuses_without_read_retry(self):
+        for written in ({'id':True,'text':NAME+'-public-write'}, {'id':0,'text':NAME+'-public-write'},
+                        {'id':1,'text':NAME+'-public-write'}, {'id':2,'text':'different'}, {}):
+            source, p = self.port(written=written)
+            with self.subTest(written=written), self.assertRaisesRegex(ValueError, 'RESTORED_WRITE_FAILED'):
+                host.check_api_recovery(p, source, NAME + '-public-write')
+            self.assertEqual(p.http.call_count, 3)
+
+    def test_readback_requires_exact_post_id_plaintext_and_preserved_restore_boundary(self):
+        source, before, new = self.fixture()
+        cases = [(before+[dict(new,id=3)], 'RESTORED_READ_FAILED'),
+                 (before+[dict(new,text='different')], 'RESTORED_READ_FAILED'),
+                 ([new], 'RECOVERED_MARKER_MISSING'),
+                 (before+[new,{'id':3,'text':source['PostMarker']}], 'UNEXPECTED_POST_BACKUP_MARKER'),
+                 (before+[new,dict(new)], 'API_ROWS_INVALID')]
+        for after, code in cases:
+            source, p = self.port(after=after)
+            with self.subTest(code=code), self.assertRaisesRegex(ValueError, code):
+                host.check_api_recovery(p, source, NAME + '-public-write')
+            self.assertEqual(p.http.call_count, 4)
+
+    def test_unknown_or_denied_post_is_not_retried_or_followed_by_success(self):
+        source, before, _ = self.fixture()
+        for code in ('HTTP_OUTCOME_UNKNOWN', 'ACCESS_DENIED'):
+            p = Mock();p.http.side_effect = [{'status':'Healthy'},before,ValueError(code)]
+            with self.assertRaisesRegex(ValueError, code):
+                host.check_api_recovery(p, source, NAME + '-public-write')
+            self.assertEqual(p.http.call_count, 3)
+
+    def test_invalid_binding_or_probe_never_enters_transport(self):
+        source, _, _ = self.fixture()
+        for bad in (dict(source,PreMarkerId=True), dict(source,Status='UNKNOWN'),
+                    dict(source,PreMarker=source['PostMarker'])):
+            p = Mock()
+            with self.assertRaisesRegex(ValueError,'INVALID_API_MARKER_BINDING'):
+                host.check_api_recovery(p,bad,NAME+'-public-write')
+            p.http.assert_not_called()
+        p = Mock()
+        with self.assertRaisesRegex(ValueError,'INVALID_API_WRITE_PROBE'):
+            host.check_api_recovery(p,source,'arbitrary-business-text')
+        p.http.assert_not_called()
 
 
 if __name__ == '__main__':
