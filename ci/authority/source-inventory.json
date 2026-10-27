@@ -6069,14 +6069,14 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/ownership_publication/test_wp2d.py": {
-      "sha256": "7cbc001e9c945abf982e9c9a32fcae349083cb8b592ea7ec95366294b7995ed8",
+      "sha256": "9f8103c226182220b7572505d3696c1060d651371fad80549615ce8741544733",
       "declarations": [],
       "signals": {
         "role-input": [
           112,
-          359,
-          369,
-          370
+          370,
+          380,
+          381
         ],
         "launch-or-mutation": [
           71,
@@ -6096,17 +6096,24 @@
           322,
           326,
           354,
-          358,
-          361,
-          368,
-          371,
-          385,
-          392
+          360,
+          369,
+          372,
+          379,
+          382,
+          396,
+          403
         ],
         "executable-dependency": [
           211,
-          385,
-          525
+          359,
+          360,
+          363,
+          365,
+          366,
+          368,
+          396,
+          536
         ],
         "security-control": [
           111,
@@ -6117,7 +6124,7 @@
           218,
           303,
           316,
-          362
+          373
         ]
       },
       "semantic_status": "UNVERIFIED"

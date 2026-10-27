@@ -354,7 +354,18 @@ class ClosureTests(unittest.TestCase):
             data = generated[f"terraform/modules/target/{env}/data/ordinary-main.tf"]
             self.assertIn('resource "aws_instance" "db"', data)
             self.assertIn(f'local.expected["{env}/sql-profile"]', data)
-            self.assertIn(f'local.expected["{env}/sa"]', data)
+            # CURRENT bootstrap is composed through locals; require the whole
+            # protected-reference chain instead of its historical file layout.
+            self.assertIn('user_data = local.sql_full_user_data', data)
+            locals_source = generated[f"terraform/modules/target/{env}/data/ordinary-locals.tf"]
+            self.assertRegex(locals_source, rf'SA_SECRET_ARN\s*= local\.expected\["{env}/sa"\]')
+            self.assertRegex(locals_source, rf'APP_SECRET_ARN\s*= local\.expected\["{env}/db-user"\]')
+            template = 'templatefile("${path.module}/../../../../infra/data/user_data.sh", {'
+            if env == 'dev':
+                self.assertIn('sql_base_user_data = ' + template, locals_source)
+                self.assertIn('sql_full_user_data = var.sql_backup_cohost == null ? local.sql_base_user_data : join', locals_source)
+            else:
+                self.assertIn('sql_full_user_data = ' + template, locals_source)
             vpc = generated[f"terraform/modules/target/{env}/global/modules/vpc/vpc.tf"]
             self.assertIn("iam_role_arn         = var.protected_flow_role", vpc)
             for path, text in generated.items():
