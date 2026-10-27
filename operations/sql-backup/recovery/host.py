@@ -215,6 +215,29 @@ class Port:
                 'VpcId':node['VpcId'],'SubnetId':node['SubnetId'],'PrivateIp':node['PrivateIpAddress'],
                 'DbSgId':net['DbSgId'],'TaskSgId':net['TaskSgId'], 'SingleTaskSgSql1433IngressOnly':True}
 
+    def sql_stopped_observation(self):
+        """Read-only stopped-state gate; no kill, restart or retry."""
+        observer = runtime_verify.Verifier(runtime_verify.LocalPort())
+        require(observer.port.guard(), 'LISTENER_STOP_OBSERVER_ENVIRONMENT')
+        require(observer.prop('ActiveState') == 'inactive' and observer.prop('MainPID') == '0',
+                'LISTENER_SQL_STOP_UNCONFIRMED')
+        for path in ('/proc/net/tcp', '/proc/net/tcp6'):
+            lines = observer.port.text(path).splitlines()
+            require(bool(lines), 'LISTENER_TCP_OBSERVATION_INVALID')
+            for line in lines[1:]:
+                fields = line.split()
+                require(len(fields) >= 10 and re.fullmatch('[0-9a-fA-F]{8,32}:[0-9a-fA-F]{4}', fields[1])
+                        and re.fullmatch('[0-9a-fA-F]{2}', fields[3]), 'LISTENER_TCP_OBSERVATION_INVALID')
+                require(not (fields[1].rsplit(':',1)[1].upper() == '0599' and fields[3] == '0A'),
+                        'LISTENER_SQL_SOCKET_REMAINS')
+        return {'ServiceState':'inactive', 'MainPid':0, 'Tcp1433Listeners':0}
+
+    def selected_listener(self, expected_ip):
+        runtime_verify.checked_endpoint(expected_ip)
+        observer = runtime_verify.Verifier(runtime_verify.LocalPort(), expected_ip)
+        require(observer.port.guard(), 'LISTENER_CONFIG_OBSERVER_ENVIRONMENT')
+        observer.selected('network', 'ipaddress', expected_ip)
+
     def secret(self, arn):
         value = self.run(['aws', 'secretsmanager', 'get-secret-value', '--region', REGION, '--secret-id', arn,
                           '--query', 'SecretString', '--output', 'text'], timeout=20).rstrip('\n')
@@ -357,6 +380,92 @@ def check_application_listener(port, value, identity):
             'ServiceInputSha256':plan['ServiceInputSha256'],'NetworkBinding':after,
             'RuntimePrecheck':runtime,'ObservedUtc':utc(),'AllowsActivation':False,
             'PublicApiRecoveryProven':False,'FullEcsRecoveryProven':False}
+
+
+LISTENER_PHASES = ('preflight', 'stop-intent', 'stopped', 'config-intent', 'configured', 'start-intent', 'verified')
+
+
+def transition_application_listener(port, value, identity, directory, approved_sha256):
+    """Fixed reviewed stop/config/start sequence. Never replay an uncertain action.
+
+    CLI's existing root/identity/STARTED gates still apply. Hash acknowledgement
+    binds the exact review input; it does not supply owner or transport authority.
+    """
+    from prepare import application_listener_plan, encoded
+    plan = application_listener_plan(value)
+    digest = plan['ServiceInputSha256']
+    require(approved_sha256 == digest, 'EXACT_LISTENER_TRANSITION_ACK_REQUIRED')
+    require(0 <= (timestamp(utc())-timestamp(value['ReviewedUtc'])).total_seconds() <= 600,
+            'FRESH_LISTENER_TRANSITION_REVIEW_REQUIRED')
+    target = value['ColdReceipt']['Target']
+    binding = {k:identity[k] for k in ('accountId','region','instanceId','availabilityZone')}
+    require(binding == target, 'LISTENER_TARGET_IDENTITY_MISMATCH')
+    require(not list(directory.glob('listener-transition-phase-*.json')), 'PREVIOUS_LISTENER_TRANSITION_REQUIRES_REVIEW')
+    before = port.application_network(value, identity)
+    password = port.secret(SA_SECRET)
+    try:
+        runtime = checked_runtime(port, identity, password)  # prior restore listener must still be loopback
+    finally:
+        password = None
+    network_digest = hashlib.sha256(encoded(before)).hexdigest()
+    def phase(index):
+        private_write(directory / ('listener-transition-phase-' + str(index) + '.json'),
+                      {'SchemaVersion':1,'Phase':LISTENER_PHASES[index],'ServiceInputSha256':digest,
+                       'Target':binding,'NetworkSha256':network_digest,'Endpoint':plan['ProposedEndpoint'],'ObservedUtc':utc()})
+    def recheck():
+        require(port.application_network(value, identity) == before, 'LISTENER_NETWORK_CHANGED_DURING_TRANSITION')
+    phase(0)
+    recheck()
+    phase(1)
+    port.run(plan['ReviewedHostSteps'][0], timeout=60)
+    port.sql_stopped_observation()
+    phase(2)
+    recheck()
+    phase(3)
+    port.run(plan['ReviewedHostSteps'][1], timeout=30)
+    port.selected_listener(plan['ProposedEndpoint'])
+    port.sql_stopped_observation()
+    phase(4)
+    recheck()
+    phase(5)
+    port.run(plan['ReviewedHostSteps'][2], timeout=180)
+    final = check_application_listener(port, value, identity)
+    require(final['NetworkBinding'] == before, 'LISTENER_NETWORK_CHANGED_DURING_TRANSITION')
+    phase(6)
+    return {'Status':'APPLICATION_LISTENER_TRANSITION_VERIFIED','Trial':value['Trial'],
+            'ServiceInputSha256':digest,'Target':binding,'NetworkBinding':before,
+            'BeforeRuntimeSha256':hashlib.sha256(encoded(runtime)).hexdigest(),
+            'RuntimePrecheck':final['RuntimePrecheck'],'ObservedUtc':utc(),
+            'AllowsActivation':False,'PublicApiRecoveryProven':False,'FullEcsRecoveryProven':False,
+            'OwnerAuthorityEstablishedByAcknowledgement':False,'AutomaticRetry':False}
+
+
+def review_listener_transition(port, value, identity, directory):
+    """Reconciliation only: preserve the original phase records and STARTED marker."""
+    from prepare import service_plan, encoded
+    digest = service_plan(value)['InputSha256']
+    paths = sorted(directory.glob('listener-transition-phase-*.json'))
+    require(1 <= len(paths) <= len(LISTENER_PHASES), 'LISTENER_TRANSITION_HISTORY_REQUIRED')
+    phases = []
+    network_digest = None
+    for index, path in enumerate(paths):
+        require(path.name == 'listener-transition-phase-' + str(index) + '.json' and not path.is_symlink()
+                and path.stat().st_size <= 8192, 'LISTENER_TRANSITION_HISTORY_INVALID')
+        record = json.loads(path.read_text(encoding='utf-8'))
+        require(record.get('SchemaVersion') == 1 and record.get('Phase') == LISTENER_PHASES[index]
+                and record.get('ServiceInputSha256') == digest and record.get('Target') == value['ColdReceipt']['Target']
+                and record.get('Endpoint') == value['Network']['DbPrivateIp'], 'LISTENER_TRANSITION_HISTORY_MISMATCH')
+        require(isinstance(record.get('NetworkSha256'), str) and re.fullmatch('[a-f0-9]{64}', record['NetworkSha256'])
+                and network_digest in (None, record['NetworkSha256']), 'LISTENER_TRANSITION_HISTORY_MISMATCH')
+        network_digest = record['NetworkSha256']
+        phases.append(record['Phase'])
+    final = check_application_listener(port, value, identity)
+    require(hashlib.sha256(encoded(final['NetworkBinding'])).hexdigest() == network_digest,
+            'LISTENER_NETWORK_CHANGED_DURING_TRANSITION')
+    return {'Status':'APPLICATION_LISTENER_RECONCILIATION_OBSERVATION_ONLY','Trial':value['Trial'],
+            'ServiceInputSha256':digest,'RecordedPhases':phases,'CurrentPrivateListener':final,
+            'OriginalActionOutcomeResolved':False,'SafeToReplayTransition':False,'AllowsActivation':False,
+            'FullEcsRecoveryProven':False}
 
 
 def write_connection_version(port, value, identity, directory, approved_sha256):
@@ -541,7 +650,7 @@ def restore(port, name, config, backup, api, identity, source_record, failure, c
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument('action', choices=['source', 'quiesce', 'restore', 'listener-network-check', 'listener-check', 'connection-version'])
+    p.add_argument('action', choices=['source', 'quiesce', 'restore', 'listener-network-check', 'listener-check', 'listener-transition', 'listener-transition-review', 'connection-version'])
     p.add_argument('--trial', required=True)
     p.add_argument('--directory', type=Path, required=True)
     p.add_argument('--source', type=Path)
@@ -549,6 +658,7 @@ def main():
     p.add_argument('--cold-request', type=Path)
     p.add_argument('--listener-plan', type=Path)
     p.add_argument('--connection-write-approved-sha256')
+    p.add_argument('--listener-transition-approved-sha256')
     p.add_argument('--backup', type=Path)
     p.add_argument('--api', type=Path)
     p.add_argument('--backup-sha256')
@@ -559,7 +669,8 @@ def main():
     p.add_argument('--expected-az')
     a = p.parse_args()
     trial(a.trial)
-    require(a.listener_plan is None or a.action in ('listener-network-check','listener-check','connection-version'), 'LISTENER_PLAN_ACTION_MISMATCH')
+    require(a.listener_transition_approved_sha256 is None or a.action == 'listener-transition', 'LISTENER_TRANSITION_ACK_ACTION_MISMATCH')
+    require(a.listener_plan is None or a.action in ('listener-network-check','listener-check','listener-transition','listener-transition-review','connection-version'), 'LISTENER_PLAN_ACTION_MISMATCH')
     if not a.execute:
         print(json.dumps({'Status': 'HOST_PLAN_ONLY', 'Action': a.action, 'AllowsCreation': False, 'ReadsSecrets': False}))
         return
@@ -579,12 +690,16 @@ def main():
     port.record_fence = record_fence
     identity = port.identity()
     bind_identity(identity, a.expected_instance_id, a.expected_az)
-    if a.action in ('listener-network-check','listener-check','connection-version'):
+    if a.action in ('listener-network-check','listener-check','listener-transition','listener-transition-review','connection-version'):
         require(a.listener_plan is not None, 'EXPLICIT_LISTENER_PLAN_REQUIRED')
         value = json.loads(a.listener_plan.read_text(encoding='utf-8'))
         require(value['Trial'] == a.trial, 'WRONG_TRIAL')
         if a.action=='connection-version':
             result=write_connection_version(port,value,identity,a.directory,a.connection_write_approved_sha256)
+        elif a.action=='listener-transition':
+            result=transition_application_listener(port,value,identity,a.directory,a.listener_transition_approved_sha256)
+        elif a.action=='listener-transition-review':
+            result=review_listener_transition(port,value,identity,a.directory)
         else:
             result = check_application_network(port,value,identity) if a.action == 'listener-network-check' else check_application_listener(port, value, identity)
     elif a.action == 'quiesce':

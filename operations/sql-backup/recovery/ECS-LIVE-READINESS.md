@@ -1,5 +1,20 @@
 # ECS recovery: final local preparation and the remaining LIVE gate
 
+## Listener automation status - 2026-10-27
+
+The three private-listener steps mentioned below are now implemented together in
+the existing runner, with pre-effect phase records, repeated fencing/network gates,
+stopped-process/socket proof, strict config readback, private runtime validation and
+read-only reconciliation. See [exact behavior and boundaries](SERVICE-CUTOVER.md#fixed-private-listener-transition---local-automation-2026-10-27).
+11 new +10 private-listener +3 package cases PASS using explicit doubles, not native
+Linux/SQL/AWS. No executable action or permission was installed. The current candidate
+manifest must bind this changed helper; the earlier f9a9b04 tar remains historical.
+Native transport, protected V2 installation, cold/public ECS and current portable
+Sentinel acceptance, plus a viable admitted withdrawal, remain required. Old budgets
+and the SSM/teardown restrictions are unchanged. This supersedes the earlier local
+"three steps not automated" entry; it does not remove any agreed completion gate.
+
+
 ## Current package/CI closure - 2026-10-27
 
 The current non-authorizing [runtime candidate](runtime-candidate.json) supersedes

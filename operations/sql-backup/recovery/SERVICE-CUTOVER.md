@@ -176,3 +176,42 @@ old evidence; it is not current-source qualification. The self-reported commit o
 an archive hash grants no authority. New binaries retain their actual original build
 identity; no rebuild, upload, permission installation or native acceptance is implied.
 Old az6/cold locks and sealed tar/ZIP receipts remain historical and unchanged.
+
+## Fixed private-listener transition - local automation, 2026-10-27
+
+The existing host runner now exposes `listener-transition` and the separate
+read-only `listener-transition-review`. Both are inert without the existing explicit
+execution/acknowledgement/Linux-root/instance-role/expected-host/private-directory
+gates. No action was executed on a real host. The earlier three manually sequenced
+steps now run as one fixed procedure; no arbitrary command, hostname, port or SG
+override was added. A transition also requires the exact reviewed service-input
+SHA256 through `--listener-transition-approved-sha256` and a review age0..600s.
+That hash binds input consistency, not owner permission or transport authorization.
+
+Order: validate exact native source termination/target/network; authenticate the
+existing loopback SQL runtime; record preflight and stop intent; stop the service;
+verify inactive/MainPID0/no TCP1433 listener; recheck the same network; record config
+intent and set only the reviewed private IP; use the strict original mssql-conf
+getter to confirm it while SQL remains stopped; recheck network; record start
+intent and start normally; run the existing private socket-owner/fresh-query and
+network checks before recording verification. A denied/unknown step, bad config,
+changed generation/network or failed final query halts. No retry, compensating
+restart/rollback, force-PID action, SG change or fallback to the old database occurs.
+
+Seven append-only private phase files precede/confirm the effects. The original
+STARTED marker prevents replay of the CLI action; direct transition calls also
+refuse existing phase history. Reconciliation validates history/input/target/network
+hashes and uses the existing fresh private-listener observation without mutating
+SQL or rewriting the original records. It never declares an unresolved original
+operation successful or safe to replay. The normal application activation and
+connection-version gates remain separate and `AllowsActivation=false` throughout.
+Transport permission and native trial approval are still required; this is not an
+alternate route around the preserved SSM denial or the teardown prohibition.
+
+Affected qualification:11 new transition cases +10 existing private-listener cases
++3 extracted-package cases PASS. External effects, root admission and private POSIX
+directory metadata are explicitly doubled in the Windows tests; they do not prove
+Linux permissions, real systemd/SQL behavior or AWS execution. No WSL fallback,
+service installation, network change, credential access or new dependency occurred.
+The explicit existing CI runner includes the transition suite; hosted/native Linux
+acceptance remains for the approved VM/CI environment and future admitted cycle.
