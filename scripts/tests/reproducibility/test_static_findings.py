@@ -61,7 +61,8 @@ class StaticFindingsTests(unittest.TestCase):
         with self.assertRaises(ValueError): CHECK.inspect('tfsec', 1, json.dumps(changed), baseline, self.root)
 
     def test_failure_exposes_execution_diagnostic_but_still_blocks(self):
-        result = SimpleNamespace(returncode=1, stdout=b'{"errors":[{"message":"missing declaration"}]}',
+        result = SimpleNamespace(returncode=1, stdout=json.dumps({'issues': [{'message': 'x'*10000}],
+            'errors': [{'message': 'missing declaration'}]}).encode(),
                                  stderr=b'configuration could not be loaded')
         captured = io.StringIO()
         with patch.object(CHECK.subprocess, 'run', return_value=result), \

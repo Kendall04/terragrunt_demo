@@ -67,7 +67,16 @@ def inspect(tool, code, raw, baseline, root=ROOT):
 def failure_diagnostics(tool, result):
     # Scanners inspect public source, not credentials. Export a bounded diagnostic
     # on failure; retain the complete original reports only in RUNNER_TEMP.
-    text = (result.stderr + b'\n' + result.stdout).decode('utf-8', 'replace')
+    output = result.stdout
+    try:
+        document = json.loads(output)
+        if isinstance(document, dict) and document.get('errors'):
+            # Fatal errors may follow thousands of issues in native JSON.
+            # Prioritize errors before bounding output; retain original bytes.
+            output = json.dumps({'errors': document['errors']}, ensure_ascii=True).encode()
+    except (ValueError, TypeError):
+        pass
+    text = (result.stderr + b'\n' + output).decode('utf-8', 'replace')
     text = re.sub(r'\x1b\[[0-?]*[ -/]*[@-~]', '', text)
     text = re.sub(r'-----BEGIN (?:RSA |EC |OPENSSH |ENCRYPTED )?PRIVATE KEY-----.*?-----END (?:RSA |EC |OPENSSH |ENCRYPTED )?PRIVATE KEY-----',
                   '[REDACTED_PRIVATE_KEY]', text, flags=re.S)

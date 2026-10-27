@@ -435,7 +435,7 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/scripts/ci/check-static-findings.py": {
-      "sha256": "a3cc8eea81ec96ca5aa4f01ec622e3d4658322c1c77924b0f4749638c36f7640",
+      "sha256": "01caae763c19d4379768ef2f9e59521f859889b4850a2e3552053d65fc49d89d",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -6431,7 +6431,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/reproducibility/test_static_findings.py": {
-      "sha256": "a8643bab8c0631a332624a9ebb2c0d45d9747871c5faee9f93e551775f7d32db",
+      "sha256": "0d8be5548c124087766097cc6471b155cb0a8776a64f8a6d098b5ae1a33fc1d7",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
