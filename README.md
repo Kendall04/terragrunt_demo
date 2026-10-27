@@ -1,5 +1,7 @@
 # terragrunt_demo — AWS infrastructure and delivery, proven end to end
 
+**Latest owner handoff (2026-10-27):** [source status, native evidence and remaining gates](docs/HANDOFF-20261027.md). Publishing this source does not deploy V2 or activate CD.
+
 A personal AWS/DevOps portfolio project: provision the **original full DEV
 architecture**, deploy a .NET application, qualify and deliver immutable images,
 exercise blue/green and rollback, recover NAT instances, then destroy the runtime.
