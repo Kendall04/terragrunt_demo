@@ -126,7 +126,7 @@
     "operations/integrations/portable/trial/runtime/main.tf": {
       "sha256_lf": "c6f824686abe5e171bcef9bb181e4d238db0de4b977c2df776908009630043e7",
       "introduced_by": "04e665d75973377357298333092711ac1c43d753",
-      "last_changed_by": "LOCAL_S3_NAMESPACE_PENDING_COMMIT",
+      "last_changed_by": "736c361cb15405e0a9dd9d7e25913b66d642bbdd",
       "owner": "ECS_PORTABLE_LOCAL_INTEGRATION",
       "classification": "LOCAL_INTEGRATION_SOURCE",
       "purpose": "Materialized pinned upstream plus reviewed ECS boundaries/handlers and owner-approved future snt- archive namespace; no deployment authority."
