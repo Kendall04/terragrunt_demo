@@ -50,7 +50,8 @@ def validate_recovery(value, base, operation, now):
     r = value['recovery']
     a.keys(r, ('profile', 'model_sha256', 'approval_id', 'writer', 'status',
                'operation_id', 'approved_at', 'expires_at', 'base_binding_sha256',
-               'secret_version_id', 'evidence', 'evidence_sha256', 'allowed_releases'))
+               'secret_version_id', 'evidence', 'evidence_sha256', 'allowed_releases') +
+           (('database_security',) if 'database_security' in r else ()))
     a.require(r['profile'] == PROFILE_NAME and r['model_sha256'] == PROFILE_SHA256
               and r['writer'] == 'SECURITY_ADMIN' and r['status'] == 'APPROVED'
               and r['operation_id'] == operation
@@ -68,7 +69,8 @@ def validate_recovery(value, base, operation, now):
                'endpoint', 'vpc_id', 'db_subnet_id', 'db_security_group_id', 'task_security_groups',
                'source_fence_sha256', 'network_sha256', 'runtime_precheck_sha256',
                'connection_receipt_sha256', 'restored_schema_sha256',
-               'secret_arn', 'secret_version_id', 'secret_key_arn'))
+               'secret_arn', 'secret_version_id', 'secret_key_arn') +
+           (('database_security_sha256','principal_adoption','sql_tls_receipt_sha256') if 'database_security' in r else ()))
     a.require(e['schema'] == 'E1_SQL_RECOVERY_EVIDENCE_V2' and e['writer'] == 'RECOVERY_VERIFIER'
               and e['account'] == base['account'] and e['region'] == base['region']
               and e['source_state'] == 'terminated' and e['target_state'] == 'running'
@@ -98,6 +100,17 @@ def validate_recovery(value, base, operation, now):
     a.require(e['secret_arn'] == base['secret_arn'] and e['secret_key_arn'] == base['kms_key_arn']
               and e['secret_version_id'] == r['secret_version_id']
               and r['evidence_sha256'] == a.sha(a.canonical(e)))
+    if 'database_security' in r:
+        security=r['database_security']
+        a.keys(security,('Profile','RuntimeUser','MigrationUser','MigrationSecretArn','CertificateHostName'))
+        a.require(security['Profile']=='validated-v2' and security['RuntimeUser']=='recovery_app'
+                  and security['MigrationUser']=='recovery_migrator'
+                  and security['CertificateHostName']=='sql.demo.internal')
+        a.match(r'arn:aws:secretsmanager:'+base['region']+':'+base['account']+
+                r':secret:demo/dev/db/sql-migrator-password-[A-Za-z0-9]{6}',security['MigrationSecretArn'])
+        a.require(e['database_security_sha256']==a.sha(a.canonical(security))
+                  and e['principal_adoption']=='RUNTIME_MINIMAL_MIGRATOR_DISABLED')
+        digest(e['sql_tls_receipt_sha256'])
     releases = r['allowed_releases']
     a.require(type(releases) is list and 1 <= len(releases) <= 2)
     for release in releases:
@@ -111,10 +124,24 @@ def validate_recovery(value, base, operation, now):
     return copy.deepcopy(value)
 
 
+def security_environment(config):
+    # Protected approval/evidence only; never a gateway/caller override.
+    recovery=config['recovery']
+    if 'database_security' not in recovery:return []
+    s=recovery['database_security'];e=recovery['evidence']
+    return [{'name':k,'value':v} for k,v in (
+        ('Database__SecurityProfile','validated-v2'),
+        ('Database__ExpectedRuntimeUser',s['RuntimeUser']),
+        ('Database__ExpectedSqlEndpoint','tcp:'+e['endpoint']+',1433'),
+        ('Database__ExpectedDatabase','recoverydb_restore_'+e['recovery_id']),
+        ('Database__ExpectedCertificateHostName',s['CertificateHostName']))]
+
+
 def build_runtime(config, uri, replicas):
     base = base_binding(config, 'deploy-dev', config['account'], config['region'])
     task, service = a.runtime(base, uri, replicas)
     task['containerDefinitions'][0]['environment'].append(copy.deepcopy(PROFILE['app_environment_append']))
+    task['containerDefinitions'][0]['environment'] += security_environment(config)
     task['containerDefinitions'][0]['secrets'][0]['valueFrom'] = base['secret_arn']+':::'+config['recovery']['secret_version_id']
     return task, service
 
@@ -124,6 +151,10 @@ def check_task_model(task, config, uri):
     base = base_binding(config, 'deploy-dev', config['account'], config['region'])
     normal = copy.deepcopy(task)
     app = normal['containerDefinitions'][0]
+    extension=security_environment(config)
+    if extension:
+        a.exact(app['environment'][-len(extension):],extension,'recovery.database_security')
+        del app['environment'][-len(extension):]
     a.exact(app['environment'][-1], PROFILE['app_environment_append'], 'recovery.migrations')
     app['environment'].pop()
     a.exact(app['secrets'], [{'name':'DB_CONN_STRING','valueFrom':base['secret_arn']+':::'+config['recovery']['secret_version_id']}], 'recovery.secret')

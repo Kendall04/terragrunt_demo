@@ -50,6 +50,14 @@ Current readback of published SQL/task roles and both KMS key metadata remains u
 
 ## SQL transport and strict runtime boundary
 
+Local update after this preflight: [strict recovery wiring](STRICT-DATABASE-RECOVERY.md)
+has now been implemented/tested. The historical TrustServerCertificate=True builder
+is limited to loopback compatibility; strict restore/handoff uses validated TLS and
+separate migrator/runtime identities. The following initial findings remain context,
+not a claim that this local wiring is still absent. Native transport, trust/grants
+and protected installation remain pending.
+
+
 Cohost observation now starts independently of SQL credentials through the reviewed bootstrap and opt-in timers; this removes its unnecessary Run Command dependency. It does **not** authorize or prove a replacement route for the rejected commands.
 
 The recovery host runner still requires admitted execution for synthetic seed/backup, source fencing, destination restore/CHECKDB, principal adoption and handoff. Local private-listener automation and task-definition preparation do not execute those operations. b2/d1 Run Command was accepted by the API but returned AccessDenied/-1 without proven command execution; the cause remains unknown. No retry, SSH, Session Manager or alternate principal is proposed as a workaround. Before billing resources, define and admit the exact recovery document/content hash, destination binding and command scope; a new transport test requires its own explicit evidence/authority.

@@ -313,6 +313,37 @@ def cold_path(request, evidence=None):
     return result
 
 
+def database_security(value):
+    """Strict, metadata-only lab contract; not certificate/credential installation."""
+    require(type(value) is dict and set(value) == {'Profile','RuntimeUser','MigrationUser',
+            'MigrationSecretArn','CertificateHostName'}, 'DATABASE_SECURITY_CONTRACT_REQUIRED')
+    require(value['Profile'] == 'validated-v2' and value['RuntimeUser'] == 'recovery_app'
+            and value['MigrationUser'] == 'recovery_migrator'
+            and value['CertificateHostName'] == 'sql.demo.internal', 'DATABASE_SECURITY_IDENTITY_MISMATCH')
+    require(isinstance(value['MigrationSecretArn'],str) and re.fullmatch(
+            re.escape(f'arn:aws:secretsmanager:{REGION}:{ACCOUNT}:secret:demo/dev/db/sql-migrator-password-')
+            + '[A-Za-z0-9]{6}', value['MigrationSecretArn']) is not None, 'DATABASE_MIGRATOR_SECRET_REQUIRED')
+    return dict(value)
+
+
+def database_environment(security, endpoint, database):
+    security=database_security(security)
+    require(isinstance(endpoint,str) and re.fullmatch(r'(?:127\.0\.0\.1|10\.[0-9.]+|172\.[0-9.]+|192\.168\.[0-9.]+)',endpoint),
+            'DATABASE_SECURITY_ENDPOINT_REQUIRED')
+    import ipaddress
+    address=ipaddress.ip_address(endpoint)
+    require(address.version==4 and (address.is_loopback or any(address in ipaddress.ip_network(c)
+            for c in ('10.0.0.0/8','172.16.0.0/12','192.168.0.0/16'))), 'DATABASE_SECURITY_ENDPOINT_REQUIRED')
+    require(isinstance(database,str) and re.fullmatch(r'recoverydb(?:_restore_r[0-9]{8}[a-z0-9]{1,8})?',database),
+            'DATABASE_SECURITY_DATABASE_REQUIRED')
+    return [{'name':name,'value':value} for name,value in (
+        ('Database__SecurityProfile','validated-v2'),
+        ('Database__ExpectedRuntimeUser',security['RuntimeUser']),
+        ('Database__ExpectedSqlEndpoint','tcp:'+endpoint+',1433'),
+        ('Database__ExpectedDatabase',database),
+        ('Database__ExpectedCertificateHostName',security['CertificateHostName']))]
+
+
 def service_plan(value):
     """Offline consistency only; never acquires E2, changes a secret or switches traffic."""
     import ipaddress
@@ -326,12 +357,16 @@ def service_plan(value):
         from host import timestamp, event_order
     finally:
         sys.path[:] = original_path
-    require(set(value) == {'Trial', 'ColdReceipt', 'Network', 'Connection', 'Release', 'Delivery',
+    security=database_security(value['DatabaseSecurity']) if 'DatabaseSecurity' in value else None
+    require(set(value)-{'DatabaseSecurity'} == {'Trial', 'ColdReceipt', 'Network', 'Connection', 'Release', 'Delivery',
                            'PublicApiId', 'PublicUrl', 'ReviewedUtc', 'RecoveryRequestedUtc'}, 'SERVICE_PLAN_SHAPE')
     name = trial(value['Trial'])
     receipt, net, conn, release, delivery = (value[k] for k in ('ColdReceipt','Network','Connection','Release','Delivery'))
     require(receipt['Trial'] == name and receipt['Status'] == 'TARGET_RECOVERED_REVIEW_EVIDENCE'
             and receipt['Checkdb'] == 'RESTORED_CHECKDB_READABLE', 'COLD_RESTORE_REQUIRED')
+    if security is not None:
+        require(receipt.get('DatabaseSecurity')==security and receipt.get('PrincipalAdoption')=='RUNTIME_MINIMAL_MIGRATOR_DISABLED',
+                'STRICT_RESTORE_PRINCIPAL_RECEIPT_REQUIRED')
     fence = receipt['ColdFence']
     require(fence and fence['Status'] == 'EXACT_SOURCE_TERMINATED'
             and fence['Source'] == receipt['Source'] and fence['Target'] == receipt['Target']
@@ -396,7 +431,7 @@ def service_plan(value):
     normal_request = workflow_request('deploy-dev',json.dumps(payload),delivery['operation_id'])
     rollback_request = workflow_request('deploy-dev',json.dumps(rollback),delivery['rollback_operation_id'])
     color = delivery['candidate_color']
-    return {'Status':'SERVICE_CUTOVER_DRY_PLAN','Trial':name,'AllowsActivation':False,'AwsExecuted':False,
+    result={'Status':'SERVICE_CUTOVER_DRY_PLAN','Trial':name,'AllowsActivation':False,'AwsExecuted':False,
             'EvidenceAuthenticated':False,'FullEcsRecoveryProven':False,
             'InputSha256':hashlib.sha256(encoded(value)).hexdigest(),
             'ConnectionMetadata':{'Endpoint':str(ip),'Port':1433,'Database':conn['Database'],
@@ -436,6 +471,12 @@ def service_plan(value):
                 'Schema compatibility must come from protected qualified release and restore facts, not caller assertions',
                 'Existing E3 plus public API checks and same-VPC routes/NACLs need native receipts',
                 'SSM transport, full resource plan/IAM/budget not approved here']}
+    result['DatabaseSecurityProfile']='validated-v2' if security else 'legacy-v1'
+    if security:
+        result['ProposedTaskEnvironmentAppend'] += database_environment(security,str(ip),conn['Database'])
+        result['RendererArguments'][-2:-2] = ['--database-security-plan','REVIEWED_SERVICE_INPUT.json']
+        result['BlockingLiveGates'].append('Strict SQL TLS/principal receipt, qualified lab-trust image and protected security binding require native admission')
+    return result
 
 
 
@@ -477,7 +518,7 @@ def service_taskdef(value, candidate):
     for row in app['environment']:
         row['value'] = env[row['name']]
     app['environment'] = [row for row in app['environment'] if row['name'] != 'Database__RunMigrationsOnStartup']
-    app['environment'].append({'name':'Database__RunMigrationsOnStartup','value':'false'})
+    app['environment'] += plan['ProposedTaskEnvironmentAppend']
     app['secrets'][0]['valueFrom'] = plan['ConnectionMetadata']['SecretReference']
     require(candidate == expected, 'RECOVERY_TASKDEF_NOT_EXACT_REVIEWED_PROJECTION')
     return {'Status':'OFFLINE_RECOVERY_TASKDEF_REVIEW_PASS','Trial':value['Trial'],

@@ -430,3 +430,14 @@ without adding another deploy owner or alternate SSM route. See the concrete
 for external effects and zero skips. Historical native receipts, packaged runtime
 and authority remain unchanged. Full cold SQL-to-Fargate/public recovery and current
 portable Sentinel native acceptance remain required; no AWS cycle is approved here.
+
+
+### 2026-10-27 — Strict recovery delivery preparation (local only)
+
+The existing validated-v2 API TLS/runtime policy is connected to synthetic source,
+restore, versioned private connection handoff and the opt-in protected WP4 V2 task
+projection. No new PKI or transport; legacy loopback stays explicit. Runtime never
+auto-migrates, and the separate migrator must complete before runtime activation.
+See [contract and 154-test local evidence](../../operations/sql-backup/recovery/STRICT-DATABASE-RECOVERY.md).
+No SQL handshake, native execution, installed approval, cloud access or budget is
+created by this change. Original histories and unmodified V1 remain preserved.

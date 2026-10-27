@@ -2068,11 +2068,12 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/recovery/bundle.py": {
-      "sha256": "21e7eaf7c471aca26646ff4ca495644f20e605b5506b0584f362d7862e5df3c1",
+      "sha256": "b2f54747e896ac12bcac9d194b235169dd44dbd2791d6b550ae6e86670114b72",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          76
+          38,
+          77
         ],
         "executable-dependency": [
           19,
@@ -2082,7 +2083,8 @@
           23,
           24,
           25,
-          36
+          36,
+          38
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -2169,33 +2171,35 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/recovery/host.py": {
-      "sha256": "e6b9d74d001cae8086a0f86b679d416d8c17a673d324be7f71e54ff19aa6a4fa",
+      "sha256": "271c8ae9fb4985aaf4ed6d224944ee7147a0e683cf46bb1960a03ca88b9af9a7",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          122,
-          124,
-          141,
-          143,
-          145,
+          155,
+          157,
+          174,
           176,
-          177,
           178,
-          199,
-          203,
-          242,
-          253,
-          321
+          209,
+          210,
+          211,
+          232,
+          236,
+          275,
+          286,
+          391
         ],
         "executable-dependency": [
-          111,
-          113,
-          140,
-          321,
-          323,
-          325,
-          356,
-          372
+          144,
+          146,
+          173,
+          358,
+          391,
+          392,
+          394,
+          396,
+          427,
+          443
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -2214,14 +2218,14 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/recovery/prepare.py": {
-      "sha256": "c7455328836be6fb5f85a3786bd506e84c9044ffc2d63061266e30d0568603ee",
+      "sha256": "aeca9f8bfad3a7ea797140cd6eb9efcf3807ae224fcd4d111184593737e7bc05",
       "declarations": [],
       "signals": {
         "role-input": [
           71,
           151,
-          467,
-          468
+          508,
+          509
         ],
         "launch-or-mutation": [
           12,
@@ -2248,13 +2252,14 @@
           135,
           204,
           208,
-          384,
-          387,
-          411,
-          412,
-          474,
-          527,
-          528
+          324,
+          419,
+          422,
+          446,
+          447,
+          515,
+          568,
+          569
         ],
         "executable-dependency": [
           42,
@@ -2262,11 +2267,11 @@
           151,
           219,
           247,
-          375,
-          405,
-          456,
-          472,
-          518
+          410,
+          440,
+          497,
+          513,
+          559
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -2415,32 +2420,35 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/recovery/test_connection_version.py": {
-      "sha256": "44ebebfd4e1bdb250515c40f5f5ec510c6ac86628052b7bf9420646a4bc2592d",
+      "sha256": "3e2d072a607d3320c9bfac7b8c17ae53fabca00e14868b29ec27acd047b1ef7f",
       "declarations": [],
       "signals": {
+        "launch-or-mutation": [
+          21
+        ],
         "executable-dependency": [
-          30,
-          33,
           34,
+          37,
           38,
-          39,
-          41,
           42,
-          47,
-          79,
-          80,
+          43,
+          45,
+          46,
+          51,
           85,
-          90,
-          97,
-          108,
-          119,
-          121,
+          86,
+          91,
+          96,
+          103,
+          114,
+          125,
           127,
-          128,
+          133,
           134,
-          135,
-          139,
-          147
+          140,
+          141,
+          145,
+          153
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -2595,15 +2603,16 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/recovery/test_service_renderer.py": {
-      "sha256": "76f216445549922a384d6e36b650a278cdde1e386a8c8c66c7fe56762c0d5bbf",
+      "sha256": "d18d54c8fecd307789dd4cbf2917868cba09737eae6517a0296350ad5100875b",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           31,
           65,
           66,
-          140,
-          151
+          112,
+          165,
+          176
         ],
         "executable-dependency": [
           28,
@@ -2611,9 +2620,9 @@
           42,
           59,
           60,
-          128,
-          158,
-          159
+          153,
+          183,
+          184
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -4142,9 +4151,13 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/normal_delivery/recovery.py": {
-      "sha256": "94b7001da2f5f77ddd355b59e5184a6e249da4c8e1bbd53317487fac3518fbb9",
+      "sha256": "382e517d3dad97226af8fb26ace695e3f2556caa2192bd4bfc5c6fa4070da0fd",
       "declarations": [],
-      "signals": {},
+      "signals": {
+        "launch-or-mutation": [
+          109
+        ]
+      },
       "semantic_status": "UNVERIFIED"
     },
     "scripts/original_dev.py": {
@@ -4378,35 +4391,36 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/render-demo-api-taskdef.sh": {
-      "sha256": "4f45e1e77bacd217856eccf91ed35f7f0065dc7732af9a15b8546a8c463dc5f2",
+      "sha256": "a17b05863feb9ed91d774a1cf729d593f375e2e92b2e87fa4a61aab260147804",
       "declarations": [],
       "signals": {
         "role-input": [
-          136,
-          137,
-          143,
-          144,
-          156,
-          157,
-          171,
-          172
+          166,
+          167,
+          173,
+          174,
+          187,
+          188,
+          202,
+          203
         ],
         "launch-or-mutation": [
-          24,
-          113,
-          120,
-          122,
-          143,
-          144,
-          145
+          26,
+          119,
+          126,
+          128,
+          140,
+          173,
+          174,
+          175
         ],
         "executable-dependency": [
-          20,
-          36,
-          37,
-          174,
-          176,
-          198
+          22,
+          38,
+          39,
+          205,
+          207,
+          229
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -5922,17 +5936,20 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/normal_delivery/test_recovery_v2.py": {
-      "sha256": "e09a0d52c7723440fa64b29aefe86cb7a9a37abd38ea52e0606906574f8f90f2",
+      "sha256": "5a22d79f730926c8ad8dd9e90c134f763d538713dee1efda8c7a7f001fede0d8",
       "declarations": [],
       "signals": {
         "role-input": [
-          225
+          254
+        ],
+        "launch-or-mutation": [
+          105
         ],
         "executable-dependency": [
-          144,
-          220,
-          226,
-          227
+          173,
+          249,
+          255,
+          256
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -6481,7 +6498,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/run_recovery_ci.py": {
-      "sha256": "bae478ef9063f119160e5f6d77fadd08c25295bfabb60152d465a9dd035af6ff",
+      "sha256": "1cfdd8d928f2cf8efcaab8d841f305ef84243f73ea43d89ff0d2404560f9235e",
       "declarations": [],
       "signals": {
         "executable-dependency": [
@@ -12237,6 +12254,51 @@
       "signals": {
         "executable-dependency": [
           80
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "operations/sql-backup/recovery/test_strict_database_recovery.py": {
+      "sha256": "cadb6826d5086a62aee17cb90981c74b36099d41503cde8927fde4be10e8de57",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          17,
+          72
+        ],
+        "executable-dependency": [
+          72,
+          74,
+          76,
+          77,
+          79,
+          80,
+          81,
+          82,
+          84,
+          85,
+          92,
+          100,
+          113
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "operations/sql-backup/recovery/strict-database-local.json": {
+      "sha256": "bb89ec85ee4285699f74ea389550365fd0ef32727778f993c9a606eca8d58347",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          109,
+          110,
+          111,
+          112,
+          113,
+          114,
+          115,
+          116,
+          117,
+          118
         ]
       },
       "semantic_status": "UNVERIFIED"

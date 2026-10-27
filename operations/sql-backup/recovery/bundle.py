@@ -35,6 +35,7 @@ def runtime_sources():
     root = base.parents[2]
     paths = {name: base / name for name in ('host.py', 'prepare.py', 'verify_effective.py', 'bootstrap.sh')}
     paths.update({name: root / name for name in SERVICE_SUPPORT})
+    paths['sql-principals.sh']=root/'terraform/infra/data/sql-principals.sh'
     require(all(path.is_file() and not any(p.is_symlink() for p in (path, *path.parents))
                 for path in paths.values()), 'BUNDLE_RUNTIME_SOURCE_UNAVAILABLE')
     return {name: path.read_bytes() for name, path in paths.items()}

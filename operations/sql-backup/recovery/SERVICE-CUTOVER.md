@@ -215,3 +215,12 @@ Linux permissions, real systemd/SQL behavior or AWS execution. No WSL fallback,
 service installation, network change, credential access or new dependency occurred.
 The explicit existing CI runner includes the transition suite; hosted/native Linux
 acceptance remains for the approved VM/CI environment and future admitted cycle.
+
+
+## Strict database recovery opt-in â€” 27 October 2026
+
+[Current strict source/restore and protected task handoff](STRICT-DATABASE-RECOVERY.md)
+connects the existing validated-v2 API policy to the recovery helper and renderer.
+New private connection writes require verified strict principal metadata; legacy
+loopback history is preserved and never used as fallback. Source-only implementation
+and 154 affected Linux tests do not establish SQL TLS or native ECS acceptance.

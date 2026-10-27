@@ -99,6 +99,35 @@ def setup(operation=OP, records=None):
 
 
 class RecoveryV2Tests(unittest.TestCase):
+    def test_protected_strict_database_projection_requires_matching_evidence_and_no_migration_credential(self):
+        facts=approve(CurrentFacts());config=facts.bindings['deploy-dev']
+        security=dict(Profile='validated-v2',RuntimeUser='recovery_app',MigrationUser='recovery_migrator',
+            MigrationSecretArn=f'arn:aws:secretsmanager:{REGION}:{ACCOUNT}:secret:demo/dev/db/sql-migrator-password-AbCdEf',
+            CertificateHostName='sql.demo.internal')
+        config['recovery']['database_security']=security
+        evidence=config['recovery']['evidence']
+        evidence.update(database_security_sha256=a.sha(a.canonical(security)),
+            principal_adoption='RUNTIME_MINIMAL_MIGRATOR_DISABLED',sql_tls_receipt_sha256='9'*64)
+        config['recovery']['evidence_sha256']=a.sha(a.canonical(evidence))
+        base=r.base_binding(config,'deploy-dev',ACCOUNT,REGION)
+        r.validate_recovery(config,base,OP,1000)
+        task,service=r.build_runtime(config,URI,1);r.check_task_model(task,config,URI)
+        env={e['name']:e['value'] for e in task['containerDefinitions'][0]['environment']}
+        self.assertEqual(env['Database__SecurityProfile'],'validated-v2')
+        self.assertEqual(env['Database__ExpectedSqlEndpoint'],'tcp:10.77.1.8,1433')
+        self.assertEqual(env['Database__ExpectedDatabase'],'recoverydb_restore_r20261024c1t')
+        self.assertNotIn('DB_MIGRATION_CONN_STRING',env)
+        self.assertNotIn('MigrationSecretArn',str(task))
+        altered=copy.deepcopy(task);altered['containerDefinitions'][0]['environment'][-1]['value']='wrong.invalid'
+        with self.assertRaises(ValueError):r.check_task_model(altered,config,URI)
+        for mutate in (lambda c:c['recovery']['evidence'].pop('sql_tls_receipt_sha256'),
+                       lambda c:c['recovery']['evidence'].update(principal_adoption='LEGACY_DB_OWNER'),
+                       lambda c:c['recovery']['database_security'].update(CertificateHostName='*.demo.internal'),
+                       lambda c:c['recovery']['database_security'].update(MigrationSecretArn=base['secret_arn'])):
+            c=copy.deepcopy(config);mutate(c)
+            c['recovery']['evidence_sha256']=a.sha(a.canonical(c['recovery']['evidence']))
+            with self.assertRaises(ValueError):r.validate_recovery(c,base,OP,1000)
+
     def test_opt_in_v2_authorizes_exact_secret_model_qualified_image_and_no_migrations(self):
         f,auth,_,_,_,_,_=setup()
         intent=auth.authorize(a.canonical(dict(release_id=f.q['release_id'],replicas=2)))

@@ -66,6 +66,9 @@ class ServiceRendererTests(unittest.TestCase):
             aws = deny/'aws';aws.write_text('#!/bin/sh\nprintf forbidden > "'+str(marker)+'"\nexit 97\n',encoding='utf-8');aws.chmod(0o700)
             out = root/'candidate.json'
             args = prepare.service_plan(value)['RendererArguments'][2:]
+            if '--database-security-plan' in args:
+                security_plan=root/'service-security.json';security_plan.write_text(json.dumps(value))
+                args[args.index('--database-security-plan')+1]=str(security_plan)
             if not recovery:
                 args.remove('--recovery')
                 index=args.index('--kms-key-id');del args[index:index+2]
@@ -102,6 +105,28 @@ class ServiceRendererTests(unittest.TestCase):
             self.assertEqual(env['Database__RunMigrationsOnStartup'],'false')
             self.assertNotIn('environment',candidate['containerDefinitions'][1])
             self.assertNotIn('secrets',candidate['containerDefinitions'][1])
+
+    def test_real_strict_renderer_binds_all_api_security_fields_and_refuses_drift(self):
+        value=self.real_fixture()
+        value['DatabaseSecurity']={'Profile':'validated-v2','RuntimeUser':'recovery_app',
+            'MigrationUser':'recovery_migrator','MigrationSecretArn':f'arn:aws:secretsmanager:{prepare.REGION}:{prepare.ACCOUNT}:secret:demo/dev/db/sql-migrator-password-AbCdEf',
+            'CertificateHostName':'sql.demo.internal'}
+        value['ColdReceipt'].update(DatabaseSecurity=value['DatabaseSecurity'],PrincipalAdoption='RUNTIME_MINIMAL_MIGRATOR_DISABLED')
+        result,payload=self.materialize(value)
+        self.assertEqual(result.returncode,0,result.stderr)
+        task=json.loads(payload);prepare.service_taskdef(value,task)
+        env={e['name']:e['value'] for e in task['containerDefinitions'][0]['environment']}
+        self.assertEqual(env['Database__SecurityProfile'],'validated-v2')
+        self.assertEqual(env['Database__ExpectedSqlEndpoint'],'tcp:10.77.1.8,1433')
+        self.assertEqual(env['Database__ExpectedCertificateHostName'],'sql.demo.internal')
+        self.assertNotIn('DB_MIGRATION_CONN_STRING',env)
+        self.assertNotIn('MigrationSecretArn',str(task))
+        self.assertNotIn('environment',task['containerDefinitions'][1])
+        for key,bad in (('Database__SecurityProfile','legacy-v1'),('Database__ExpectedSqlEndpoint','tcp:10.0.0.1,1433'),
+                        ('Database__ExpectedCertificateHostName','wrong.invalid')):
+            altered=json.loads(payload)
+            next(e for e in altered['containerDefinitions'][0]['environment'] if e['name']==key)['value']=bad
+            with self.assertRaises(ValueError):prepare.service_taskdef(value,altered)
 
     def test_real_normal_render_preserves_unversioned_secret_and_migration_defaults(self):
         value=self.real_fixture();result,payload=self.materialize(value,recovery=False)

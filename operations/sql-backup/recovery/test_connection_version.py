@@ -17,6 +17,10 @@ from test_service_plan import fixture
 class ConnectionVersionTests(unittest.TestCase):
     def setUp(self):
         self.value=fixture()
+        self.value['DatabaseSecurity']={'Profile':'validated-v2','RuntimeUser':'recovery_app','MigrationUser':'recovery_migrator',
+            'MigrationSecretArn':f'arn:aws:secretsmanager:{prepare.REGION}:{prepare.ACCOUNT}:secret:demo/dev/db/sql-migrator-password-AbCdEf',
+            'CertificateHostName':'sql.demo.internal'}
+        self.value['ColdReceipt'].update(DatabaseSecurity=self.value['DatabaseSecurity'],PrincipalAdoption='RUNTIME_MINIMAL_MIGRATOR_DISABLED')
         self.value['ColdReceipt']['ColdFence']['SourceLaunchUtc']='2026-10-24T18:00:00Z'
         self.now='2026-10-24T19:10:01Z'
         self.identity=self.value['ColdReceipt']['Target']
@@ -74,7 +78,9 @@ class ConnectionVersionTests(unittest.TestCase):
         payload=self.private_values[0]
         self.assertEqual(payload['VersionStages'],[self.stage])
         self.assertEqual(payload['ClientRequestToken'],self.conn['VersionId'])
-        self.assertIn('Server=10.77.1.8;',payload['SecretString'])
+        self.assertIn('Server=tcp:10.77.1.8,1433;',payload['SecretString'])
+        self.assertIn('Encrypt=True;TrustServerCertificate=False;HostNameInCertificate=sql.demo.internal;',payload['SecretString'])
+        self.assertNotIn('recovery_migrator',payload['SecretString'])
         self.assertIn('Password="SYNTHETIC;password""quoted";',payload['SecretString'])
         self.assertEqual(sum('put-secret-value' in c for c in self.commands),1)
         self.assertNotIn('update-secret-version-stage',str(self.commands))

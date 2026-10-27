@@ -99,15 +99,48 @@ def options(name):
             'ProposedMaxAgeHours': 2, 'RetainLocalVerifiedBackups': 2}
 
 
-def connection(user, password, database, endpoint='127.0.0.1'):
+def connection(user, password, database, endpoint='127.0.0.1', *, security=None, administrative=False):
     # SqlClient quote escapes semicolons, braces and embedded double quotes.
-    require(isinstance(password, str) and password and '\n' not in password and '\r' not in password, 'INVALID_CREDENTIAL')
+    require(isinstance(password, str) and password and '\n' not in password and '\r' not in password and '\0' not in password, 'INVALID_CREDENTIAL')
     runtime_verify.checked_endpoint(endpoint)
+    require(isinstance(user,str) and re.fullmatch('[A-Za-z_][A-Za-z0-9_]{0,63}',user)
+            and isinstance(database,str) and re.fullmatch('[A-Za-z_][A-Za-z0-9_]{0,127}',database), 'INVALID_SQL_IDENTITY')
     quoted = '"' + password.replace('"', '""') + '"'
+    if security is not None:
+        from prepare import database_security
+        security=database_security(security)
+        if not administrative:
+            from prepare import database_environment
+            database_environment(security,endpoint,database)
+        require(user in (security['RuntimeUser'],security['MigrationUser']) or administrative and user=='sa',
+                'DATABASE_SECURITY_IDENTITY_MISMATCH')
+        return (f'Server=tcp:{endpoint},1433;Database={database};User Id={user};Password={quoted};'
+                f'Encrypt=True;TrustServerCertificate=False;HostNameInCertificate={security["CertificateHostName"]};')
+    # Historical local-only compatibility; never a fallback for a supplied strict contract.
+    require(endpoint=='127.0.0.1', 'LEGACY_UNTRUSTED_CONNECTION_LOOPBACK_ONLY')
     return f'Server={endpoint};Database={database};User Id={user};Password={quoted};Encrypt=True;TrustServerCertificate=True;'
 
 
+def database_process_environment(security, database, endpoint='127.0.0.1'):
+    from prepare import database_environment
+    # An inherited runtime/migrator connection must never reach the other process.
+    env={key:value for key,value in os.environ.items() if key in ('PATH','HOME','LANG','LC_ALL','DOTNET_ROOT')}
+    env.update(AWS_REGION=REGION,AWS_DEFAULT_REGION=REGION,AWS_CONFIG_FILE='/dev/null',
+               AWS_SHARED_CREDENTIALS_FILE='/dev/null',AWS_EC2_METADATA_V1_DISABLED='true',AWS_MAX_ATTEMPTS='1',
+               ASPNETCORE_ENVIRONMENT='Production',Database__RunMigrationsOnStartup='false')
+    env.update({row['name']:row['value'] for row in database_environment(security,endpoint,database)})
+    return env
+
+
 class Port:
+    def configure_security(self, security):
+        from prepare import database_security
+        self.database_security=database_security(security)
+
+    def sql_tls_args(self):
+        security=getattr(self,'database_security',None)
+        return ['-N','-F',security['CertificateHostName']] if security is not None else ['-C']
+
     def run(self, command, env=None, body=None, timeout=630):
         try:
             result = subprocess.run(command, input=body, env=env, capture_output=True, text=True, timeout=timeout, check=False)
@@ -128,7 +161,7 @@ class Port:
         def fresh_query():
             env = dict(os.environ, SQLCMDPASSWORD=password)
             try:
-                return subprocess.run(['/opt/mssql-tools18/bin/sqlcmd', '-S', 'tcp:' + expected_ip + ',1433', '-C', '-U', 'sa', '-d', 'master', '-l', '5', '-b', '-h', '-1', '-W'],
+                return subprocess.run(['/opt/mssql-tools18/bin/sqlcmd', '-S', 'tcp:' + expected_ip + ',1433', *self.sql_tls_args(), '-U', 'sa', '-d', 'master', '-l', '5', '-b', '-h', '-1', '-W'],
                     env=env, input='SET NOCOUNT ON; SET XACT_ABORT ON;\n' + runtime_verify.FRESH_QUERY,
                     capture_output=True, text=True, check=False, timeout=15)
             finally:
@@ -264,14 +297,17 @@ class Port:
 
     def sql(self, password, statement):
         env = dict(os.environ, SQLCMDPASSWORD=password)
-        return self.run(['/opt/mssql-tools18/bin/sqlcmd', '-S', '127.0.0.1', '-C', '-U', 'sa', '-l', '5', '-b', '-h', '-1', '-W'],
+        return self.run(['/opt/mssql-tools18/bin/sqlcmd', '-S', 'tcp:127.0.0.1,1433', *self.sql_tls_args(), '-x', '-U', 'sa', '-l', '5', '-b', '-h', '-1', '-W'],
                         env, 'SET NOCOUNT ON; SET XACT_ABORT ON;\n' + statement, timeout=610)
 
     @contextmanager
     def api(self, executable, password, database, migrate):
-        env = dict(os.environ, DB_CONN_STRING=connection('recovery_app', password, database),
-                   KMS_KEY_ID=TEXT_KEY, AWS_REGION=REGION, AWS_DEFAULT_REGION=REGION,
-                   ASPNETCORE_ENVIRONMENT='Production', ASPNETCORE_URLS='http://127.0.0.1:5088',
+        security=getattr(self,'database_security',None)
+        require(security is None or migrate is False,'DATABASE_RUNTIME_MIGRATION_FORBIDDEN')
+        env = (database_process_environment(security,database) if security is not None else dict(os.environ))
+        env.update(DB_CONN_STRING=connection('recovery_app',password,database,security=security),
+                   KMS_KEY_ID=TEXT_KEY,AWS_REGION=REGION,AWS_DEFAULT_REGION=REGION,
+                   ASPNETCORE_ENVIRONMENT='Production',ASPNETCORE_URLS='http://127.0.0.1:5088',
                    Database__RunMigrationsOnStartup=str(migrate).lower())
         process = subprocess.Popen(['runuser', '-u', 'mssql', '--', str(executable)], env=env,
                                    start_new_session=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -314,11 +350,46 @@ class Port:
         with opener.open(request, timeout=10) as response:
             return json.loads(response.read(65537))
 
+    def principals(self, phase, database, admin_password, app_password=None, migration_password=None):
+        from prepare import database_environment
+        security=self.database_security
+        database_environment(security,'127.0.0.1',database)
+        require(phase in ('prepare','activate_runtime'),'DATABASE_PRINCIPAL_PHASE_INVALID')
+        helper=Path(__file__).with_name('sql-principals.sh')
+        require(helper.is_file() and not helper.is_symlink() and
+                hashlib.sha256(helper.read_bytes().replace(b'\r\n',b'\n')).hexdigest()=='c67844a051205f82a04c5abea2d253c927b4d52a615efd091e4ac93f55ffccab',
+                'REVIEWED_PRINCIPAL_HELPER_REQUIRED')
+        env=database_process_environment(security,database)
+        env.update(APP_DB=database,APP_USER=security['RuntimeUser'],MIGRATION_USER=security['MigrationUser'],
+                   SQLCMDPASSWORD=admin_password,CERTIFICATE_HOSTNAME=security['CertificateHostName'])
+        if phase=='prepare':
+            require(bool(app_password) and bool(migration_password),'DATABASE_SEPARATE_CREDENTIALS_REQUIRED')
+            env.update(APP_PASS=app_password,MIGRATION_PASS=migration_password)
+        script="""set -euo pipefail
+source "$1"
+sql_principals_execute() {
+  /opt/mssql-tools18/bin/sqlcmd -S tcp:127.0.0.1,1433 -N -F "$CERTIFICATE_HOSTNAME" -U SA -d "$APP_DB" -b -x -l 15 -t 30 >/dev/null 2>&1
+}
+"""+'sql_principals_'+phase+' --ack-reviewed-sql-privilege-change\n'
+        try:self.run(['/bin/bash','--noprofile','--norc','-c',script,'reviewed-principals',str(helper)],env=env,timeout=60)
+        finally:
+            for key in ('SQLCMDPASSWORD','APP_PASS','MIGRATION_PASS'):env.pop(key,None)
+
+    def migrate(self, executable, password, database):
+        security=self.database_security
+        env=database_process_environment(security,database)
+        env['DB_MIGRATION_CONN_STRING']=connection(security['MigrationUser'],password,database,security=security)
+        try:
+            output=self.run(['runuser','-u','mssql','--',str(executable),'database-migrate','--confirm-schema-change'],env=env)
+            require(output.strip()=='DATABASE_MIGRATION_COMPLETED','DATABASE_MIGRATION_RESULT_UNKNOWN')
+        finally:env.pop('DB_MIGRATION_CONN_STRING',None)
+
     def backup(self, executable, config, password, restore=None):
         env = dict(os.environ)
         for key in ('SQL_BACKUP_CONNECTION_STRING', 'SQL_VERIFY_CONNECTION_STRING', 'SQL_RESTORE_CONNECTION_STRING'):
-            env[key] = connection('sa', password, 'master')
-        command = ['runuser', '-u', 'mssql', '--', str(executable), 'restore' if restore else 'backup', '--config', str(config), '--aws', '--ec2-role', '--local-sql-self-signed']
+            env[key] = connection('sa',password,'master',security=getattr(self,'database_security',None),administrative=True)
+        command = ['runuser', '-u', 'mssql', '--', str(executable), 'restore' if restore else 'backup', '--config', str(config), '--aws', '--ec2-role']
+        if getattr(self,'database_security',None) is None: command.append('--local-sql-self-signed')
         if restore:
             command += ['--manifest-key', restore['Receipt']['ManifestKey'], '--manifest-version', restore['Receipt']['ManifestVersion'],
                         '--target', 'recoverydb_restore_' + restore['Trial']]
@@ -485,6 +556,13 @@ def write_connection_version(port, value, identity, directory, approved_sha256):
     require(all(identity[k]==target[k] for k in ('accountId','region','instanceId','availabilityZone')),
             'CONNECTION_TARGET_IDENTITY_MISMATCH')
     before=check_application_listener(port,value,identity)
+    security=value.get('DatabaseSecurity')
+    if security is not None:
+        from prepare import database_security
+        database_security(security)
+        require(value['ColdReceipt'].get('DatabaseSecurity')==security
+                and value['ColdReceipt'].get('PrincipalAdoption')=='RUNTIME_MINIMAL_MIGRATOR_DISABLED',
+                'STRICT_RESTORE_PRINCIPAL_RECEIPT_REQUIRED')
     conn=value['Connection'];arn=conn['SecretArn'];version=conn['VersionId']
     stage='ecs-recovery-'+value['Trial']
     metadata=port.connection_aws('secretsmanager','describe-secret','--secret-id',arn)
@@ -494,8 +572,9 @@ def write_connection_version(port, value, identity, directory, approved_sha256):
     require(type(stages) is dict and len([v for v,labels in stages.items() if 'AWSCURRENT' in labels])==1
             and version not in stages and all(stage not in labels for labels in stages.values()),
             'CONNECTION_VERSION_OR_STAGE_REQUIRES_REVIEW')
+    require(security is not None,'STRICT_PRIVATE_CONNECTION_REQUIRED')
     password=port.secret(APP_SECRET)
-    secret=connection('recovery_app',password,conn['Database'],endpoint=conn['Endpoint'])
+    secret=connection('recovery_app',password,conn['Database'],endpoint=conn['Endpoint'],security=security)
     try:
         result=port.put_connection_version(arn,version,stage,secret,directory)
     finally:
@@ -512,19 +591,31 @@ def write_connection_version(port, value, identity, directory, approved_sha256):
              'ServiceInputSha256':expected,'Target':target,'SecretArn':arn,
              'VersionId':version,'CustomStage':stage,'SecretKeyArn':conn['SecretKeyArn'],
              'Endpoint':conn['Endpoint'],'Database':conn['Database'],'ObservedUtc':utc(),
+             'DatabaseSecurityProfile':'validated-v2','CertificateHostName':security['CertificateHostName'],
              'OriginalStagesPreserved':True,'PlaintextExported':False,'AllowsActivation':False,
              'OwnerAuthorityEstablishedByAcknowledgement':False,'FullEcsRecoveryProven':False}
     return dict(receipt,ConnectionReceiptSha256=hashlib.sha256(encoded(receipt)).hexdigest())
 
 
 def source(port, name, config, backup, api, identity):
+    security=getattr(port,'database_security',None)
     sa = port.secret(SA_SECRET)
     runtime = checked_runtime(port, identity, sa)
     app = port.secret(APP_SECRET)
     escaped = app.replace("'", "''")
-    port.sql(sa, f"IF DB_ID(N'recoverydb') IS NOT NULL OR SUSER_ID(N'recovery_app') IS NOT NULL THROW 51000,'Existing source',1;\nGO\nCREATE DATABASE recoverydb;\nGO\nCREATE LOGIN recovery_app WITH PASSWORD=N'{escaped}';\nGO\nUSE recoverydb; CREATE USER recovery_app FOR LOGIN recovery_app; ALTER ROLE db_owner ADD MEMBER recovery_app;")
+    if security is None:
+        port.sql(sa, f"IF DB_ID(N'recoverydb') IS NOT NULL OR SUSER_ID(N'recovery_app') IS NOT NULL THROW 51000,'Existing source',1;\nGO\nCREATE DATABASE recoverydb;\nGO\nCREATE LOGIN recovery_app WITH PASSWORD=N'{escaped}';\nGO\nUSE recoverydb; CREATE USER recovery_app FOR LOGIN recovery_app; ALTER ROLE db_owner ADD MEMBER recovery_app;")
+    else:
+        port.sql(sa,"IF DB_ID(N'recoverydb') IS NOT NULL THROW 51000,'Existing source',1; CREATE DATABASE recoverydb;")
+        migration=port.secret(security['MigrationSecretArn'])
+        try:
+            require(migration!=app,'DATABASE_SEPARATE_CREDENTIALS_REQUIRED')
+            port.principals('prepare','recoverydb',sa,app,migration)
+            port.migrate(api,migration,'recoverydb')
+            port.principals('activate_runtime','recoverydb',sa)
+        finally:migration=None
     before, after = name + '-before', name + '-after'
-    with port.api(api, app, 'recoverydb', True):
+    with port.api(api, app, 'recoverydb', security is None):
         requested = utc()
         pre = port.http('POST', '/text', {'text': before})
         committed = utc()
@@ -538,6 +629,7 @@ def source(port, name, config, backup, api, identity):
         require(post['text'] == after, 'POST_BACKUP_MARKER_NOT_CONFIRMED')
     # No application process survives this action. SQL stays UP until explicit quiesce.
     return {'Status': 'SOURCE_BACKED_UP', 'Trial': name, 'Source': identity, 'RuntimePrecheck': runtime, 'PreMarker': before,
+            'DatabaseSecurity':security,'PrincipalAdoption':'RUNTIME_MINIMAL_MIGRATOR_DISABLED' if security else 'LEGACY_DB_OWNER',
             'PreMarkerId': pre['id'], 'PreMarkerRequestUtc': requested, 'PreMarkerConfirmedUtc': committed, 'PostMarker': after,
             'PostMarkerConfirmedUtc': utc(), 'Receipt': receipt, 'CompletedUtc': utc()}
 
@@ -601,6 +693,8 @@ def check_api_recovery(port, source_record, probe, require_ready=True):
 
 def restore(port, name, config, backup, api, identity, source_record, failure, cold_request=None):
     check_source_runtime(source_record)
+    security=getattr(port,'database_security',None)
+    require(security==source_record.get('DatabaseSecurity'),'RESTORE_DATABASE_SECURITY_MISMATCH')
     fence = None
     m = source_record['Receipt']['Manifest']
     if cold_request is None:
@@ -631,7 +725,21 @@ def restore(port, name, config, backup, api, identity, source_record, failure, c
     escaped = app.replace("'", "''")
     if cold_request is not None:
         fence = port.confirm_cold_fence(cold_request, identity)
-    port.sql(sa, f"IF SUSER_ID(N'recovery_app') IS NOT NULL THROW 51000,'Existing target login',1; CREATE LOGIN recovery_app WITH PASSWORD=N'{escaped}'; USE [{target}]; ALTER USER recovery_app WITH LOGIN=recovery_app;")
+    if security is None:
+        port.sql(sa, f"IF SUSER_ID(N'recovery_app') IS NOT NULL THROW 51000,'Existing target login',1; CREATE LOGIN recovery_app WITH PASSWORD=N'{escaped}'; USE [{target}]; ALTER USER recovery_app WITH LOGIN=recovery_app;")
+    else:
+        migration=port.secret(security['MigrationSecretArn'])
+        try:
+            require(migration!=app,'DATABASE_SEPARATE_CREDENTIALS_REQUIRED')
+            escaped_migration=migration.replace("'","''")
+            # Rebind the two restored contained database users to this new host's
+            # explicit logins before the existing minimal-permission adoption.
+            port.sql(sa,f"IF SUSER_ID(N'recovery_app') IS NOT NULL OR SUSER_ID(N'recovery_migrator') IS NOT NULL THROW 51000,'Existing target login',1; CREATE LOGIN recovery_app WITH PASSWORD=N'{escaped}'; ALTER LOGIN recovery_app DISABLE; CREATE LOGIN recovery_migrator WITH PASSWORD=N'{escaped_migration}'; USE [{target}]; ALTER USER recovery_app WITH LOGIN=recovery_app; ALTER USER recovery_migrator WITH LOGIN=recovery_migrator;")
+            port.principals('prepare',target,sa,app,migration)
+            port.migrate(api,migration,target)
+            port.principals('activate_runtime',target,sa)
+        finally:migration=None
+
     if cold_request is not None:
         fence = port.confirm_cold_fence(cold_request, identity)
     with port.api(api, app, target, False):
@@ -643,7 +751,8 @@ def restore(port, name, config, backup, api, identity, source_record, failure, c
             'RtoColdHostSeconds': (timestamp(ready) - timestamp(cold_request['RecoveryRequestedUtc'])).total_seconds() if cold_request else None,
             'DeployedEcsApiProven': False, 'Status': 'TARGET_RECOVERED_REVIEW_EVIDENCE', 'Trial': name, 'Source': source_record['Source'], 'Target': identity,
             'ManifestVersion': source_record['Receipt']['ManifestVersion'], 'BackupVersion': m['BackupVersion'],
-            'ApiRecoveryCheck': api_check,
+            'ApiRecoveryCheck': api_check,'DatabaseSecurity':security,
+            'PrincipalAdoption':'RUNTIME_MINIMAL_MIGRATOR_DISABLED' if security else 'LEGACY_DB_OWNER',
             'RestoreStartedUtc':restore_started,'RestoreCompletedUtc':restore_completed,
             'Checkdb': result['Status'], 'RuntimePrecheck': runtime, 'ReadyAndDecryptedMarkersConfirmedUtc': ready,
             'RtoWarmTargetSeconds': (timestamp(ready) - timestamp(failure['FailureDeclaredUtc'])).total_seconds() if cold_request is None else None,
@@ -663,6 +772,8 @@ def main():
     p.add_argument('--listener-plan', type=Path)
     p.add_argument('--connection-write-approved-sha256')
     p.add_argument('--listener-transition-approved-sha256')
+    p.add_argument('--database-security',type=Path)
+    p.add_argument('--database-security-approved-sha256')
     p.add_argument('--backup', type=Path)
     p.add_argument('--api', type=Path)
     p.add_argument('--backup-sha256')
@@ -687,6 +798,15 @@ def main():
     # Durable local STARTED marker remains on failure/unknown; never blind replay.
     private_write(output.with_suffix('.started'), {'Trial': a.trial, 'Action': a.action, 'Utc': utc()})
     port = Port()
+    if a.database_security is not None:
+        from prepare import database_security
+        require(a.action in ('source','restore'),'DATABASE_SECURITY_ACTION_MISMATCH')
+        raw=a.database_security.read_bytes()
+        require(re.fullmatch('[a-f0-9]{64}',a.database_security_approved_sha256 or '')
+                and hashlib.sha256(raw).hexdigest()==a.database_security_approved_sha256,'DATABASE_SECURITY_ACK_REQUIRED')
+        port.configure_security(database_security(json.loads(raw)))
+    else:
+        require(a.database_security_approved_sha256 is None,'DATABASE_SECURITY_ACK_ACTION_MISMATCH')
     fence_index = [0]
     def record_fence(receipt):
         private_write(a.directory / ('fence-' + str(fence_index[0]) + '.json'), receipt)
