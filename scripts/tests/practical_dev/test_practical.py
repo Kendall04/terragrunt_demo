@@ -158,9 +158,27 @@ class Tests(unittest.TestCase):
         doc=json.loads((p.ROOT/'terraform/infra/security/authority.json').read_text());records={}
         for key in {k for values in doc['ownership_closure']['consumers'].values() for k in values}:records[key]=dict(available=True,value='arn:offline:'+key)
         doc['ownership_closure']['publications'][ACCOUNT+'/'+REGION]=dict(records=records);auth.write_text(json.dumps(doc))
-        user=source/'terraform/infra/data/user_data.sh';user.parent.mkdir(parents=True);user.write_bytes((p.ROOT/'terraform/infra/data/user_data.sh').read_bytes())
+        for name in ('user_data.sh','sql-principals.sh','sql-principals.sh.gz.b64','cohost-bootstrap.sh.tftpl'):
+            target=source/'terraform/infra/data'/name;target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes((p.ROOT/'terraform/infra/data'/name).read_bytes())
         self.patch=patch.object(p,'ROOT',source);self.patch.start();self.addCleanup(self.patch.stop)
         self.config=copy.deepcopy(CONFIG);self.fake=Fake();self.session=p.Session(self.config,base/'session',self.fake);self.session.initialize()
+    def test_bootstrap_dependencies_are_exact_and_source_bound(self):
+        marker=self.session.source()
+        for name in ('user_data.sh','sql-principals.sh','sql-principals.sh.gz.b64','cohost-bootstrap.sh.tftpl'):
+            relative='terraform/infra/data/'+name
+            self.assertEqual(marker['sources'][relative],p.sha((p.ROOT/relative).read_bytes()))
+            self.assertEqual((self.session.directory/relative).read_bytes(),(p.ROOT/relative).read_bytes())
+        extra=p.ROOT/'terraform/infra/data/not-an-admitted-bootstrap.sh';extra.write_text('must never be copied')
+        other=p.Session(self.config,self.session.directory.parent/'exact-source-only',self.fake);other.initialize()
+        self.assertFalse((other.directory/'terraform/infra/data/not-an-admitted-bootstrap.sh').exists())
+    def test_changed_sql_principal_payload_is_rejected(self):
+        payload=self.session.directory/'terraform/infra/data/sql-principals.sh.gz.b64'
+        payload.write_bytes(payload.read_bytes()+b'tampered')
+        with self.assertRaisesRegex(ValueError,'source changed'):self.session.source()
+    def test_missing_sql_principal_source_is_not_silently_omitted(self):
+        (p.ROOT/'terraform/infra/data/sql-principals.sh').unlink()
+        other=p.Session(self.config,self.session.directory.parent/'missing-source',self.fake)
+        with self.assertRaisesRegex(ValueError,'required original source input missing'):other.initialize()
     def apply(self,down=False,network=False):
         review=self.session.prepare(down,network);result=self.session.apply(review['plan_id'],review['confirmation'],review['sql_confirmation']);return result
     def all_up(self):

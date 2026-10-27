@@ -239,8 +239,11 @@ class Session:
         require(not self.directory.exists(),'new session directory, no adoption')
         files={}
         tracked={v for v in self.process.run(['git','ls-files'],cwd=ROOT).decode().splitlines()}
-        for base in ('terraform/modules/target/dev','terraform/infra/security/authority.json','terraform/infra/data/user_data.sh'):
+        for base in ('terraform/modules/target/dev','terraform/infra/security/authority.json',
+                     'terraform/infra/data/user_data.sh','terraform/infra/data/sql-principals.sh',
+                     'terraform/infra/data/sql-principals.sh.gz.b64','terraform/infra/data/cohost-bootstrap.sh.tftpl'):
             path=ROOT/base
+            require(path.exists(),'required original source input missing: '+base)
             for file in ([path] if path.is_file() else path.rglob('*')):
                 if file.is_file():
                     require(not file.is_symlink() and not any(p in ('.terraform','.terragrunt-cache') for p in file.parts),'clean tracked root')
