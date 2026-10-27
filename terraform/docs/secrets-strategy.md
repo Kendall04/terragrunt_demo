@@ -12,6 +12,17 @@ but was destroyed. No forensic/cleanup task is required for deleted state.
 The next deployment must verify the invariant through evidence; no AWS inspection
 has been performed as part of this documentation bootstrap.
 
+## Local SQL security follow-up - 2026-10-27
+
+[Implementation and admission boundary](sql-runtime-security.md) separates an explicit
+migration command from the data-only runtime and adds opt-in validated-v2 SQL TLS/
+effective-permission guards. Startup migrations now default off. TARGET DEV/PROD
+Fargate general egress narrows to HTTPS while retaining exact SQL/1433. No controls
+were installed; legacy bootstrap remains db_owner/TrustServerCertificate=True,
+SQL host egress and internal HTTP remain unresolved. The table below describes
+that legacy deployed recipe, not acceptance of the strict profile. Certificate
+inputs, reviewed privilege handoff, Linux artifacts and native tests are pending.
+
 ## CURRENT CONTRACT — secret ownership and encryption
 
 [Neutral protected resources](../infra/security/modules/protected_resources/main.tf.json)

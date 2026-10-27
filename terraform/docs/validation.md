@@ -50,8 +50,9 @@ validate/render/write outputs. --plan-only still permits initialization and AWS
 reads. AWS CLI --generate-cli-skeleton output used in hygiene is an offline
 shape check, not a real task registration or runtime test.
 
-When application code is run outside its isolated tests, startup migrations are
-enabled by default and KMS operations use the credential chain. A local API start
+Startup migrations now default off; legacy opt-in or the explicit confirmed migration
+command can still mutate SQL. validated-v2 performs a native read-only permission
+check at startup. KMS operations use the credential chain. A local API start
 can contact configured services and mutate a database. Tests disable startup
 migrations and replace healthy readiness checks; inspect configuration before
 broadening integration tests.

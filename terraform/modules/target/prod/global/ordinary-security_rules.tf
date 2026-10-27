@@ -99,9 +99,9 @@ resource "aws_security_group_rule" "fargate_demo_egress_to_db" {
 resource "aws_security_group_rule" "fargate_egress_any" {
   type              = "egress"
   security_group_id = aws_security_group.fargate_demo.id
-  protocol          = "-1"
-  from_port         = 0
-  to_port           = 0
+  protocol          = "tcp"
+  from_port         = 443
+  to_port           = 443
   cidr_blocks       = ["0.0.0.0/0"]
-  description       = "Fargate outbound to Internet via NAT"
+  description       = "HTTPS for AWS APIs, ECR image layers and logs via NAT"
 }

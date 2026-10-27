@@ -14,9 +14,12 @@ health gates or schema compatibility; security docs for credential/KMS changes.
   requires per-task one-shot /ready evidence before promotion.
 - DB_CONN_STRING is required outside Development. APP_ENV is not ASP.NET's
   environment selector. SDK credentials use the runtime chain.
-- Startup migrations currently use db_owner and affect the shared database.
-  Old/new colors must be considered together; image rollback does not undo schema.
-  Privilege separation and reliable rollback remain unresolved targets.
+- Startup migrations default off. Legacy startup migration must be explicitly enabled;
+  validated-v2 refuses it. The explicit database-migrate command uses a separate
+  supplied connection and requires schema-change confirmation. No migration
+  credential belongs in a runtime task. See ../terraform/docs/sql-runtime-security.md.
+  Existing SQL bootstrap still grants db_owner; strict opt-in requires a reviewed
+  permission/certificate handoff. Image rollback never undoes the shared schema.
 - Tests use doubles and disable migrations. A normal local app start may mutate
   a configured DB and contact KMS. dotnet build/test writes outputs and restore
   uses dependencies/cache; do not run in strict read-only work.

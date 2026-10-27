@@ -1,5 +1,14 @@
 # V2 local completion checkpoint - 2026-10-23
 
+## Security implementation follow-up - 2026-10-27
+
+The security row below is the pre-increment reconciliation. Its local runtime/
+migration and SQL TLS contract gaps now have concrete opt-in code and tests; see
+[the security increment](sql-runtime-security.md). Supplied certificate/trust,
+reviewed database privileges/migration ordering, native validation, internal HTTP
+treatment and SQL host egress remain open. No deployment/access acceptance follows
+from the source change, and the prior API artifact is stale for this increment.
+
 ## Finite original-scope reconciliation - 2026-10-27
 
 This is the agreed six-block status, not a reduced replacement project. Evidence

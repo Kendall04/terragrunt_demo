@@ -9898,7 +9898,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/modules/target/dev/global/ordinary-security_rules.tf": {
-      "sha256": "40ad15f8fdc83b315f75317089a49914b98dbdae195e34511f12d9f43d1b3c35",
+      "sha256": "0d49a1de990dc7b5806ade01cdb47d9ae0f9de15c5dc52094c3a6dbc6b4a1146",
       "declarations": [
         {
           "kind": "resource",
@@ -11131,7 +11131,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/modules/target/prod/global/ordinary-security_rules.tf": {
-      "sha256": "40ad15f8fdc83b315f75317089a49914b98dbdae195e34511f12d9f43d1b3c35",
+      "sha256": "0d49a1de990dc7b5806ade01cdb47d9ae0f9de15c5dc52094c3a6dbc6b4a1146",
       "declarations": [
         {
           "kind": "resource",
@@ -12083,7 +12083,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/recovery/runtime-candidate.json": {
-      "sha256": "db1569a5bf52b8dc47a2a186ce64bd7bf5cd133edee559796eb264901c08b44e",
+      "sha256": "51c81a62d799fdb085ab1e42e391178adc687e7f32f1e3d6ad0c69d9688cbf32",
       "declarations": [],
       "signals": {},
       "semantic_status": "UNVERIFIED"
@@ -12107,6 +12107,22 @@
         "launch-or-mutation": [
           58,
           64
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "demo-api/deploy/database-security.validated-v2.json": {
+      "sha256": "61e6580a4df91d0fc17dd45fd357c6f634569d76c47c17023969be7255117ce6",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/tests/reproducibility/test_app_egress.py": {
+      "sha256": "389451aefb4b3b54c35446d754507f456a616a6b0868b1fb0df4229cd1f881b9",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          11
         ]
       },
       "semantic_status": "UNVERIFIED"

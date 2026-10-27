@@ -1,5 +1,5 @@
 {
-  "Status": "LOCAL_REPRODUCIBLE_RUNTIME_CURRENT_SOURCE_NOT_NATIVE",
+  "Status": "HISTORICAL_LOCAL_RUNTIME_API_SECURITY_SOURCE_CHANGED_REBUILD_REQUIRED",
   "SourceCommit": "f27e26c804e966f408113e538c9390dc53f97819",
   "IncludesRecoveryCorrectionCommit": "993293f1cd26d08316379de953dfb0809602be0a",
   "Archive": {
@@ -82,5 +82,10 @@
   "Uploaded": false,
   "CurrentNativeAcceptance": false,
   "PreviousArtifactsRemainHistorical": true,
-  "MaterializedRuntimeNeedsSeparateNativeCycle": true
+  "MaterializedRuntimeNeedsSeparateNativeCycle": true,
+  "SecuritySourceFollowUp": {
+    "CompiledApiReuseAllowedForNewSecuritySource": false,
+    "ExecutionAuthorized": false,
+    "Reason": "Database security policy and default migration behavior changed after the sealed API binary; retain archive unchanged and qualify new Linux API before a future trial."
+  }
 }
