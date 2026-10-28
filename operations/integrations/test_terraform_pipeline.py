@@ -42,6 +42,7 @@ class TerraformContractTests(unittest.TestCase):
         for field in ['integrationContractVersion','ecs-backup-managed-v3','supportedModes','sourceCommit','zipSha256','upstreamCommit']:self.assertIn(field,v)
     def test_data_guards_and_default_disabled_ingress(self):
         self.assertFalse(self.x['variable']['enable_ingestion']['default'])
+        self.assertNotIn("c",self.x["locals"])
         self.assertFalse(self.x['variable']['allow_data_retirement']['default'])
         self.assertEqual(self.r['aws_dynamodb_table']['state']['deletion_protection_enabled'],'${!var.allow_data_retirement}')
         self.assertFalse(self.r['aws_s3_bucket']['archive']['force_destroy'])

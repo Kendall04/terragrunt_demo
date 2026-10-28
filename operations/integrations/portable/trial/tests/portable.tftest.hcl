@@ -30,6 +30,10 @@ run "closed_input_output" {
     error_message = "Connect the actual consumer factory."
   }
   assert {
+    condition     = output.package_manifest_sha256 == filesha256(var.package_manifest_path)
+    error_message = "Expose the exact admitted receipt identity without exposing its contents."
+  }
+  assert {
     condition     = local.config.topicArn == aws_sns_topic.notices.arn && jsondecode(file(var.package_manifest_path)).configSha256 == filesha256(var.config_path)
     error_message = "SNS/config/ZIP receipt must be the same package."
   }

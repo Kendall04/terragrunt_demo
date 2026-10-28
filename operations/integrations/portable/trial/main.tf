@@ -39,3 +39,4 @@ output "runtime_roles" { value = module.runtime.ecs_runtime_roles }
 output "runtime_boundaries" { value = module.runtime.ecs_boundaries }
 output "producer_policy_proposal" { value = module.runtime.producer_policies }
 output "scope" { value = { deployment = local.config.deployment, account = local.config.account, region = local.config.region, bucket = module.runtime.archive_bucket, table = module.runtime.table_name, bus = module.runtime.event_bus_arn, topic = aws_sns_topic.notices.arn } }
+output "package_manifest_sha256" { value = filesha256(var.package_manifest_path) }

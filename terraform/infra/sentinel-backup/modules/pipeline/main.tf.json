@@ -86,7 +86,6 @@
     }
   },
   "locals": {
-    "c": "${var.config}",
     "name": "${var.config.run_id}",
     "tags": {
       "Project": "${var.config.project}",
