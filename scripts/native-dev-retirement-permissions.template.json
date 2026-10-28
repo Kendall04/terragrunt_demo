@@ -1,0 +1,50 @@
+{
+  "status": "REVIEW_TEMPLATE_NOT_INSTALLABLE_UNTIL_BOUND",
+  "role": "arn:aws:iam::341936017254:role/TerragruntDemoDevOperator",
+  "purpose": "Only the two missing EC2 companion resource classes. Preserve existing primary-resource grants, all Deny and managed policy versions. No authority from this file.",
+  "binding": "Bind approved UTC start/end and the four exact Name tags from the NEW native plan. Verify no existing foreign object matches. After apply restrict/review finite actual state-owned IDs. Never use EKS/default VPC IDs or the old session-04 plan.",
+  "verification": "Review actual installed policies, boundary/SCP and all resource contexts; local audit/IAM simulation is not proof of effective AWS authorization. In a separately authorized session use supported EC2 DryRun on actual trial IDs, then verify DryRunOperation rather than UnauthorizedOperation. Do not dispatch destructive probes.",
+  "reversal": "Separate IAM owner removes only this named temporary inline delta after closure/stop. Do not replace Part4, delete historical versions, revoke required cleanup access early or alter protected bucket policies.",
+  "policy": {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Sid": "DetachOnlyNewDevVpcCompanion",
+        "Effect": "Allow",
+        "Action": "ec2:DetachInternetGateway",
+        "Resource": "arn:aws:ec2:us-east-1:341936017254:vpc/*",
+        "Condition": {
+          "StringEquals": {
+            "aws:RequestedRegion": "us-east-1",
+            "aws:ResourceTag/Project": "demo",
+            "aws:ResourceTag/Environment": "dev",
+            "aws:ResourceTag/Name": "demo-dev-vpc"
+          },
+          "DateGreaterThanEquals": { "aws:CurrentTime": "BIND_APPROVED_START_UTC" },
+          "DateLessThan": { "aws:CurrentTime": "BIND_APPROVED_END_UTC" }
+        }
+      },
+      {
+        "Sid": "DisassociateOnlyNewDevSubnetCompanions",
+        "Effect": "Allow",
+        "Action": "ec2:DisassociateRouteTable",
+        "Resource": "arn:aws:ec2:us-east-1:341936017254:subnet/*",
+        "Condition": {
+          "StringEquals": {
+            "aws:RequestedRegion": "us-east-1",
+            "aws:ResourceTag/Project": "demo",
+            "aws:ResourceTag/Environment": "dev",
+            "aws:ResourceTag/Name": [
+              "BIND_PLANNED_PUBLIC_SUBNET_NAME_1",
+              "BIND_PLANNED_PUBLIC_SUBNET_NAME_2",
+              "BIND_PLANNED_PRIVATE_SUBNET_NAME_1",
+              "BIND_PLANNED_PRIVATE_SUBNET_NAME_2"
+            ]
+          },
+          "DateGreaterThanEquals": { "aws:CurrentTime": "BIND_APPROVED_START_UTC" },
+          "DateLessThan": { "aws:CurrentTime": "BIND_APPROVED_END_UTC" }
+        }
+      }
+    ]
+  }
+}

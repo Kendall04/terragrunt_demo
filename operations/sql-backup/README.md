@@ -1,5 +1,7 @@
 # SQL backup/restore increment
 
+> Infrastructure now uses [native DEV operations](../../terraform/docs/native-dev-lifecycle.md). E16 checkpoints below are historical; SQL backup/recovery/artifact/secret contracts remain unchanged.
+
 Current status - 2026-10-21: native/S3-KMS component qualification and real
 EC2-role manual plus two hourly backups passed. The temporary service/runtime
 was retired; residual network closure and permission removal completed that
@@ -185,7 +187,7 @@ additional variable charges; no zero-cost or total-price promise is made.
 
 Retirement plan must be approved with the session: remove the isolated restore
 instance/EBS and its temporary configuration/access; stop scheduled work before
-supervised E16 DOWN. Retain backup objects, backup CMK and original text key for
+native Terraform reviewed DOWN. Retain backup objects, backup CMK and original text key for
 the owner-selected horizon. Deletion, retention changes, IAM changes and another
 UP/DOWN remain unapproved; never delete backup keys just to report a zero bill.
 

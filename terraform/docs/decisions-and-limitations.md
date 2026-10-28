@@ -1,5 +1,7 @@
 # Decisions, limitations and improvement register
 
+> **Current DEV operations (2026-10-28):** use the [native Terraform lifecycle](native-dev-lifecycle.md). E16 execution/session requirements below are historical; independent security and delivery contracts remain.
+
 Authoritative owner reconciliation: 2026-09-18. Implementation evidence lives in
 [architecture](architecture.md), [delivery](deployment.md),
 [operations](bootstrap.md) and [security](secrets-strategy.md).
@@ -224,9 +226,9 @@ records the complete resource/state graph, existing WP5/WP6 commands, thin DEV
 entry and separate UP installation versus DOWN finality blockers. No reduced
 lab, authority bypass, activation or AWS operation is introduced.
 
-## E16 supervised original DEV mode (2026-10-13)
+## Historical E16 supervised mode (retired 2026-10-28)
 
-The [E16 current operator contract](e16-practical-dev-lifecycle.md) implements
+The [historical E16 operator record](e16-practical-dev-lifecycle.md) implements
 per-layer original DEV saved-plan review/apply and observed shutdown under an
 explicitly authorized, exclusive existing-human state-writer transfer. Default
 mode remains inert; PROD/shared/security-root ownership is retained. Existing
@@ -441,3 +443,13 @@ auto-migrates, and the separate migrator must complete before runtime activation
 See [contract and 154-test local evidence](../../operations/sql-backup/recovery/STRICT-DATABASE-RECOVERY.md).
 No SQL handshake, native execution, installed approval, cloud access or budget is
 created by this change. Original histories and unmodified V1 remain preserved.
+
+
+## Native DEV lifecycle - owner decision 2026-10-28
+
+E16 is no longer an execution dependency. Use the five original Terraform roots,
+existing exclusive DEV operator and reviewed native saved plans per layer. Keep
+E2, E13, WP3/WP4, remote state/versioning/locking, protected IAM and secret/backup
+retention. Unrelated historical SDC UNKNOWN does not block independent new IDs;
+demonstrate actual target/controller linkage. Session-04 is historical only; a
+new authorized native plan is required. No AWS or policy change was executed.

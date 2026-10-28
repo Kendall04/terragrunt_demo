@@ -1,5 +1,7 @@
 # Development and validation entry points
 
+> **Current DEV operations (2026-10-28):** use the [native Terraform lifecycle](native-dev-lifecycle.md). E16 execution/session requirements below are historical; independent security and delivery contracts remain.
+
 The WP3C [internal release implementation](e1-internal-release.md) adds hermetic
 adapter/authority acceptance and provider-free selective-compute fixtures.
 These never constitute live AWS isolation or deployment evidence.
@@ -647,9 +649,9 @@ records the complete resource/state graph, existing WP5/WP6 commands, thin DEV
 entry and separate UP installation versus DOWN finality blockers. No reduced
 lab, authority bypass, activation or AWS operation is introduced.
 
-## E16 supervised original DEV mode (2026-10-13)
+## Historical E16 supervised mode (retired 2026-10-28)
 
-The [E16 current operator contract](e16-practical-dev-lifecycle.md) implements
+The [historical E16 operator record](e16-practical-dev-lifecycle.md) implements
 per-layer original DEV saved-plan review/apply and observed shutdown under an
 explicitly authorized, exclusive existing-human state-writer transfer. Default
 mode remains inert; PROD/shared/security-root ownership is retained. Existing
@@ -1547,3 +1549,14 @@ Actual unchanged locked restore PASS, build PASS0warnings/0errors; a temporary p
 Managed tests using the installed Windows SDK: API107 PASS; backup62 PASS/1 intentionally skipped native SQL test. New dependency lock contracts3 PASS in WSL. Observer suite29 PASS in WSL includes root/status negatives supporting the SSM explanation. A Linux SDK was not available in WSL, no SDK was installed, and no new container build or hosted CI was executed. Prior71-test cold recovery CI qualification is unchanged, not rerun or relabelled as part of this managed validation.
 
 Files: `.github/workflows/ci-dotnet.yml`, `demo-api/Dockerfile`, four locks, strict container tests and `.github/scripts/ci/tests/test_dotnet_locks.py`. This adds reproducibility guards; it does not publish a release, change OIDC, activate a workflow remotely or claim ECS/SQL native E2E. Remaining provider-lock provenance, Linux/container acceptance and current vulnerability findings remain separate gates. Existing historical binaries/archives are not overwritten or relabelled with new provenance.
+
+
+## Native DEV extraction - 2026-10-28
+
+Retired only E16 wrapper tests: 65 executor, 9 discard-diagnostics, 6 metadata
+forwarding, and one first-deployment profile-parser method. Source remains at the
+archived commit. Six companion-resource permission regressions and provider-free
+S3 policy/SNS assertions moved to `scripts/tests/native_ecs` and remain in E1.
+Native plan review adds foreign-scope, replacement, drift, direction and delivery
+field rejection. Independent ECS, E2, E13, WP3/WP4, SQL, Sentinel and Terraform/host
+validations remain. The E16-only SQL revalidation wrapper is retired.

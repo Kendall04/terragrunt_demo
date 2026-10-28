@@ -46,7 +46,7 @@ No CloudFormation, nuevo servicio de negocio, PKI o segunda SQL permanente.
 Para el proyecto completo, los otros TARGET actuales suman73 direcciones propuestas
 (global49,data5,platform1,apps9,edge9). Sustituir el bloque Sentinel antiguo29 por62
 da un **candidato aritmético135**, NO un plan integrado ni recursos nuevos ya admitidos.
-El flujo práctico materializa los TARGET originales (`scripts/practical_dev.py:216-243`);
+El [procedimiento nativo DEV](../../../terraform/docs/native-dev-lifecycle.md) usa directamente los cinco roots TARGET originales;
 el portable está preparado como root aislado, sin selección integrada demostrada en
 ese flujo. El opt-in de la nueva unidad/selector debe revisarse e instalarse con
 autoridad nueva antes del ensayo conjunto. No aplicar ambos a los mismos nombres ni cambiar gestores por recurso.

@@ -4,11 +4,11 @@ Revisión local sobre `1d9dc31471139ad6ed31bdc57deacaf96023dfdc`. Cero llamadas 
 
 ## Corrección y recomendación ejecutiva
 
-La ausencia de los tres controladores **no impide usar E16 para preparar/desplegar los cinco roots originales**. `scripts/practical_dev.py:idle()` permite expresamente que no existan. Restaurar el CI/CD protegido sigue dentro del alcance final, pero no es requisito previo de toda preparación del ensayo. Corrige la interpretación anterior de esa ausencia como bloqueo absoluto.
+La ausencia de los tres controladores no impide planificar los cinco roots con el [procedimiento Terraform nativo](../../../terraform/docs/native-dev-lifecycle.md). E16 fue retirado el 28-oct. CI/CD protegido conserva su propia admisión; no es requisito del primer plan de red.
 
 El par de emergencia sí tiene implementación WP4D; los dos pares de infraestructura usan WP5. Sus declaraciones WP2C son inertes hasta una instalación verificada. No equivale a tres proyectos y tres funciones con un Allow genérico: hay paquetes, imágenes, seis roles, permisos y datos protegidos de cada perfil.
 
-Recomiendo preparar primero los planes del modo supervisado existente y reconciliar el estado security antes de autorizar una instalación de control. **No solicitar aún un apply del bootstrap completo:** actualmente no hay plan acotado a esos seis nodos, seis digests de imagen/versiones S3 admitidos ni selección de modo de escritura compatible. No es una petición de ampliar permisos o de levantar SQL para investigar.
+Recomiendo preparar primero los planes nativos revisados y reconciliar el estado security antes de autorizar una instalación de control. **No solicitar aún un apply del bootstrap completo:** actualmente no hay plan acotado a esos seis nodos, seis digests de imagen/versiones S3 admitidos ni selección de modo de escritura compatible. No es una petición de ampliar permisos o de levantar SQL para investigar.
 
 ## Recursos exactos del bootstrap funcional candidato
 

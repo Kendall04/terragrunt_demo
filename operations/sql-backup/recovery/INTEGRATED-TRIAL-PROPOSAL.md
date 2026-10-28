@@ -95,8 +95,7 @@ plane resources are not permission to recreate them.
 | **Total** | **102** | Includes three terraform_data addresses; source-to-target replacement adds one EC2 incarnation at the same data address, not a second permanent DB resource. |
 
 Source: `terraform/modules/target/dev/{global,data,platform,apps,edge}` and
-`terraform/infra/sentinel-backup/main.tf.json` and its modules. E16 is confirmed to
-materialize these TARGET sources: `scripts/practical_dev.py:215–251`; it does not run
+`terraform/infra/sentinel-backup/main.tf.json` and its modules. The native DEV procedure uses these original TARGET roots directly; it does not run
 the retired legacy roots. Empty protected NAT launch slots initially reduce global
 to 43; the full configured global graph is 49. Saved plans must verify this expansion.
 
@@ -108,7 +107,7 @@ not hidden free resources. The NATs here are **EC2 NAT instances**, not NAT Gate
 
 Keep existing runtime names, e.g. `demo-dev-data-sql-instance`, cluster
 `demo-dev-main-cluster`, and the blue/green application family. Terraform owns the
-skeleton; WP4/E2 alone owns delivery revisions, counts and routing. E16 and WP5 cannot
+skeleton; WP4/E2 alone owns delivery revisions, counts and routing. Infrastructure Terraform and WP5 cannot
 write the same runtime states concurrently. Security/control-plane IAM is reused only
 after identity/hash/existence checks, never created by an indiscriminate security apply.
 In particular, protected launch templates, the gateway/CodeBuild factory and NAT
@@ -169,7 +168,7 @@ after denial without new relevant authority.
 | Actor/change | Proposed scope, exposure and reversal |
 | --- | --- |
 | Existing administrator | `arn:aws:iam::341936017254:user/cnp-cert-admin`, existing Windows `cnp-cert-dev`; prepare/reverse exact deltas only. No switch to admin to execute a denied workload command. |
-| Lifecycle operator | `arn:aws:iam::341936017254:role/TerragruntDemoDevOperator`; same E16 lifecycle/saved plans. Existing five-layer permissions must be checked rather than inferred from snapshots. |
+| Lifecycle operator | `arn:aws:iam::341936017254:role/TerragruntDemoDevOperator`; native Terraform lifecycle/saved plans. Existing five-layer permissions must be checked rather than inferred from snapshots. |
 | Part4 explicit Deny | Exception only for CreateRole/PutRolePolicy on the two new Sentinel roles and PutBucketPolicy/DeleteBucket on the exact new bucket. Preserve other-role restrictions, AttachRolePolicy Deny, KMS deletion Deny and original-secret deletion Deny. Exception bounded to the approved window; restore original effective document at closure. |
 | Managed-policy history | Last retained Part4 snapshot had v5 effective and five slots, including recreated historical v7. If still full, save exact nondefault content before replacement. Restore content, but version ID/creation date cannot be restored. **Fresh version inventory decides whether this irreversible loss is needed.** No silent eviction. Part7 has no proposed blanket relaxation. |
 | Operator temporary inline | Only pipeline create/read/update/delete/tag for the exact R resources, own archive/code objects and versions, own table/indexes, exact queues/topic/rule/log groups, two roles/boundaries and PassRole only to Lambda. Compute complete aggregate size before installation; do not attach an eleventh policy to escape a size limit. Remove only this run's inline/deltas after readback. |
@@ -197,7 +196,7 @@ and [version deletion semantics](https://docs.aws.amazon.com/secretsmanager/late
 
 1. **Before paid creation:** current identity/account, concurrency, originals/hashes,
    actual source/AMI/app digest, dependencies and policy/lock/version availability;
-   compare the five E16 plans plus Sentinel with this inventory. Resolve all local
+   compare the five native per-layer plans plus Sentinel with this inventory. Resolve all local
    gaps and SSM admission first. Save destroy dependencies and ownership; no source
    receipt or policy snapshot substitutes for current authorization.
 2. Create only the own network and source in the common DEV VPC. Two NAT EC2 slots,

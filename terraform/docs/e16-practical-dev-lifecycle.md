@@ -1,5 +1,7 @@
 # E16: practical supervised original DEV lifecycle
 
+> **HISTORICAL ONLY - retired by the owner on 2026-10-28.** Do not run commands below. Use [native DEV operations](native-dev-lifecycle.md). Source/tests remain in Git at `29b30011b3a4dc9e22ffad6e3351494ae8f1e838`, local tag `archive/e16-supervised-20261028`. Private evidence and E16-named backend Deny policies are preserved.
+
 ## Explicit owner authorization and boundary
 
 2026-10-13: retain the complete original architecture. The owner also explicitly
@@ -11,8 +13,8 @@ selects that ARN in the existing neutral root; E16 creates no role or credential
 No installation or AWS operation occurred. Main baseline `98fa727032b8837198f8b07e5a09a086359db182`
 is integrated; E16 branches from it, not a stacked/unmerged predecessor.
 
-[original_dev.py](../../scripts/original_dev.py) adds `dev` commands backed by
-[practical_dev.py](../../scripts/practical_dev.py). The adapter invokes real AWS CLI
+`scripts/original_dev.py` at the same local archive tag adds `dev` commands backed by
+`scripts/practical_dev.py` (local archive: `git show archive/e16-supervised-20261028:scripts/practical_dev.py`). The adapter invokes real AWS CLI
 and Terraform when subsequently authorized; tests replace only the process port.
 Existing WP6 entry commands and advanced E15-C/D/E/F/G/H mode remain available and
 unchanged. E16 never writes/releases E2 or claims a protected closure certificate.
