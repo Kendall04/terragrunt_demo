@@ -1,5 +1,11 @@
 # Admisión mínima del primer plan E16
 
+> **Histórico, 28-oct-2026:** E16 está retirado. Este contrato y sus autorizaciones
+> no son el camino operativo actual. Usar el [procedimiento DEV nativo](../../../terraform/docs/native-dev-lifecycle.md)
+> con un nuevo plan, el mismo operador y estados originales, locking y permisos
+> de retirada verificados; apply requiere autorización separada. El plan E16
+> anterior se conserva como evidencia y no se aplicará.
+
 Solicitud preparada; **ninguna autorización AWS nueva queda ejecutada por este
 documento**. Evidencia previa conservada en `logs/certification-20261027`;
 su E16 histórico de 43 creaciones no es un plan vigente. La preparación portable

@@ -2,6 +2,11 @@
 
 > **Current DEV operations (2026-10-28):** use the [native Terraform lifecycle](native-dev-lifecycle.md). E16 execution/session requirements below are historical; independent security and delivery contracts remain.
 
+The combined portable-security/native-lifecycle tree retains the 44 E1 checks and
+24 WP7 methods. Its core regression baseline is 1053: the prior 1050 plus three
+portable security/authority cases. The separately run E16-only tests retired with
+their executor; independent backend/retirement checks moved to `native_ecs`.
+
 The WP3C [internal release implementation](e1-internal-release.md) adds hermetic
 adapter/authority acceptance and provider-free selective-compute fixtures.
 These never constitute live AWS isolation or deployment evidence.

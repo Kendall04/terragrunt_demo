@@ -55,8 +55,10 @@ rendered by the generator, then run with `terraform test -filter=tests/portable.
 and child `terraform test -filter=tests/security.tftest.hcl` after offline
 `init -backend=false -lockfile=readonly` / `validate`. No GitHub Actions or AWS calls.
 
-Next is the [minimal E16 PLAN-ONLY admission](PLAN-ONLY-E16.md), separate from
-deployment. Earlier 62-resource, security-pending and retirement-toggle checkpoints
+Next is a newly authorized network PLAN-ONLY under the
+[native DEV procedure](../../../terraform/docs/native-dev-lifecycle.md), separate
+from deployment. The [E16 admission](PLAN-ONLY-E16.md) is historical only.
+Earlier 62-resource, security-pending and retirement-toggle checkpoints
 below and in the dated proposals are historical. The cumulative certification logs
 and unapplied draft patch remain untouched; they must not be replayed over this code.
 
