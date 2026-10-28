@@ -94,7 +94,15 @@ resource "aws_iam_instance_profile" "node" {
     def test_real_portable_files_remain_all_visible_and_unsupported(self):
         d=Discovery(ROOT,names=(KNOWN,))
         rows=[r for r in d.records if r['source'].startswith('operations/integrations/portable/')]
-        self.assertEqual(len(rows),65)
+        # The lint fix added one public receipt hash output, not another permission.
+        # All previous 65 declarations remain included in CURRENT discovery.
+        self.assertEqual(len(rows),66)
+        receipt=[r for r in rows if r['source']=='operations/integrations/portable/trial/main.tf'
+                 and r.get('declaration',{}).get('kind')=='output'
+                 and r.get('declaration',{}).get('id')=='operations/integrations/portable/trial/main.tf#output:package_manifest_sha256:']
+        self.assertEqual(len(receipt),1)
+        self.assertEqual(receipt[0]['admission'],'NON_SECURITY_RELEVANT')
+        self.assertEqual(receipt[0]['affects'],[])
         self.assertEqual(sum(r['admission']=='UNSUPPORTED_APPLICABLE' for r in rows),34)
         self.assertTrue(any(r.get('mechanism_schema')=='aws_dynamodb_table' for r in rows))
         self.assertEqual(sum(bool(r.get('policy_action_domain')) for r in rows),4)

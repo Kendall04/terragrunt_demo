@@ -60,17 +60,17 @@
       "purpose": "Existing Sentinel6.27 root/pipeline/optional observer. Default ingestion, dispatch and observer remain OFF. Future plans/access require approval."
     },
     "terraform/infra/sentinel-backup/modules/observer/main.tf.json": {
-      "sha256_lf": "c3976f70f85585378d28d8f1370c368527be6c941fe0b5a19dd5cf732289efb8",
+      "sha256_lf": "fe323627f58be70b6a080c3c4d411fc819942def23028b27c5316dad6e1561ab",
       "introduced_by": "4d6e2292cd58313c5c35bdb06fd988546092b924",
-      "last_changed_by": "2c8c3e7b79ba84029ec3965ea0cb4202cc0ddd55",
+      "last_changed_by": "783d85314b016932a8dc824601f450a526ff9ded",
       "owner": "SEPARATE_SENTINEL_ADMIN_ROOT",
       "classification": "LOCAL_INTEGRATION_SOURCE",
       "purpose": "Existing Sentinel6.27 root/pipeline/optional observer. Default ingestion, dispatch and observer remain OFF. Future plans/access require approval."
     },
     "terraform/infra/sentinel-backup/modules/pipeline/main.tf.json": {
-      "sha256_lf": "f01672993caee677595d51ce2cd52ae00e9749da2fe72a0bcb2c0a55bfda7a57",
+      "sha256_lf": "dada748725e359c598b0677bd308794dd4e57f2120b6ce2a38160acb4001ce3b",
       "introduced_by": "ca919a7d24f6e62286b2aa134ed7e44458904f70",
-      "last_changed_by": "2c8c3e7b79ba84029ec3965ea0cb4202cc0ddd55",
+      "last_changed_by": "783d85314b016932a8dc824601f450a526ff9ded",
       "owner": "SEPARATE_SENTINEL_ADMIN_ROOT",
       "classification": "LOCAL_INTEGRATION_SOURCE",
       "purpose": "Existing Sentinel6.27 root/pipeline/optional observer. Default ingestion, dispatch and observer remain OFF. Future plans/access require approval."
@@ -100,17 +100,17 @@
       "purpose": "Isolated signed portable provider lock; does not replace AWS 5.100 TARGET locks."
     },
     "operations/integrations/portable/trial/main.tf": {
-      "sha256_lf": "9afcfc9831bef453dc432dc16639d4a0796f3183f31902ddc1fc08634beb2b4f",
+      "sha256_lf": "3a3d7644eb1dacf280ce2b505ff24bdfb84b4c466c6d10bd84b5db4c53ebc057",
       "introduced_by": "25f037e04b0e059e868c66b0c8282d410452bfd9",
-      "last_changed_by": "25f037e04b0e059e868c66b0c8282d410452bfd9",
+      "last_changed_by": "783d85314b016932a8dc824601f450a526ff9ded",
       "owner": "ECS_PORTABLE_LOCAL_INTEGRATION",
       "classification": "LOCAL_INTEGRATION_SOURCE",
       "purpose": "Reviewed opt-in portable trial wrapper; requires staged runtime and explicit package inputs, not execution authority."
     },
     "operations/integrations/portable/trial/tests/portable.tftest.hcl": {
-      "sha256_lf": "cbbe6bf698e9eda3c77a9ac060f8d4fafb416b7a7b5b686c79396dce2624134a",
+      "sha256_lf": "fdd2d1153be03d92dbdd4c68d4a9fc43f1f8bc783e346f289f3a08dc1d9445ce",
       "introduced_by": "25f037e04b0e059e868c66b0c8282d410452bfd9",
-      "last_changed_by": "25f037e04b0e059e868c66b0c8282d410452bfd9",
+      "last_changed_by": "783d85314b016932a8dc824601f450a526ff9ded",
       "owner": "ECS_PORTABLE_LOCAL_INTEGRATION",
       "classification": "OFFLINE_MOCK_PLAN",
       "purpose": "Portable module mocked-provider tests with placeholder paths; no native evidence or deployment authority."

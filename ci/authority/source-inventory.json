@@ -6660,7 +6660,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/model.py": {
-      "sha256": "08faf347cbcb4904a4a13f3b679c91c2923296cf123333cdae5226ae04b9cfc1",
+      "sha256": "0521a84844966b07ca1b959e0dabee0cfc270eaca72d6c3a7a7dbaeef993f5ed",
       "declarations": [],
       "signals": {
         "credential-acquisition": [

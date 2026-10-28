@@ -344,7 +344,7 @@ inputs = {
 # Source coverage is distinct from execution authority. Only these eighteen
 # already reviewed paths may supplement the closed generated TARGET graph.
 SUPPLEMENTAL_CATALOG = 'ci/authority/target/supplemental-iac.json'
-SUPPLEMENTAL_CATALOG_SHA256 = '2e1329b21efb023c8dbab5b4f584a12df43e6e728637a9c5bc78e1a0f6624c83'
+SUPPLEMENTAL_CATALOG_SHA256 = '9747de274f6f8eccb6321ade5d9e4a2381db21b705ffe3524616f8b391f6253f'
 SUPPLEMENTAL_IAC_FILES = frozenset(('operations/integrations/portable/aws-6.28.lock.hcl', 'operations/integrations/portable/trial/.terraform.lock.hcl', 'operations/integrations/portable/trial/main.tf', 'operations/integrations/portable/trial/runtime/main.tf', 'operations/integrations/portable/trial/runtime/outputs.tf', 'operations/integrations/portable/trial/tests/portable.tftest.hcl', 'operations/integrations/portable/trial/versions.tf', 'operations/integrations/ssm-diagnostic/review/bootstrap/.terraform.lock.hcl', 'operations/integrations/ssm-diagnostic/review/bootstrap/main.tf.json', 'operations/integrations/ssm-diagnostic/review/runtime/.terraform.lock.hcl', 'operations/integrations/ssm-diagnostic/review/runtime/main.tf.json', 'operations/sql-backup/recovery/provider.lock.hcl', 'terraform/infra/sentinel-backup/.terraform.lock.hcl', 'terraform/infra/sentinel-backup/main.tf.json', 'terraform/infra/sentinel-backup/modules/observer/main.tf.json', 'terraform/infra/sentinel-backup/modules/pipeline/main.tf.json', 'terraform/infra/sentinel-backup/tests/observer.tftest.hcl', 'terraform/live/sentinel-backup/terragrunt.hcl'))
 SUPPORT_FILES[SUPPLEMENTAL_CATALOG] = SUPPLEMENTAL_CATALOG_SHA256
 
