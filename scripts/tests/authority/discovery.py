@@ -9,7 +9,7 @@ import json
 import math
 import re
 from contracts import load_json
-from current_controls import finite_keys, resource_policy_scope, schema_scope, SCHEMAS, disjoint_function, s3_policy_target, disjoint_s3
+from current_controls import finite_keys, resource_policy_scope, schema_scope, SCHEMAS, disjoint_function, s3_policy_target, s3_logging_targets, disjoint_s3
 from evaluator import Unsupported, matches
 
 IGNORED_DIRECTORIES = {".git", ".terraform", ".terragrunt-cache", "node_modules", "__pycache__"}
@@ -529,6 +529,11 @@ class Discovery:
                         service, attrs = schema_scope(typ, body)
                         affects = ["api:" + service, "alternate-paths"]
                         record["mechanism_schema"] = typ
+                        if typ == "aws_s3_bucket_logging":
+                            try:
+                                record["s3_target_binding"] = s3_logging_targets(body, str(Path(rel).parent), resources, local_strings)
+                            except (Unsupported, ValueError, KeyError, TypeError):
+                                pass  # Either unresolved bucket retains the entire S3 mechanism.
                         reason = "Inspected mechanism attributes/children; affected API and alternate paths retained, no execution grant"
                     except (Unsupported, ValueError, KeyError, TypeError):
                         reason = "Uninspected resource schema/control/hook"

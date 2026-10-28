@@ -27,8 +27,8 @@ class SupplementalIacTests(unittest.TestCase):
         before=json.dumps(doc['wp6']['approvals'],sort_keys=True)
         generated=model.wiring(doc)
         supplemental=model.reviewed_supplemental_iac(ROOT)
-        self.assertEqual(len(supplemental),20)
-        self.assertTrue({'terraform/infra/sentinel-backup/modules/pipeline/storage-security.tf','terraform/infra/sentinel-backup/modules/pipeline/tests/security.tftest.hcl'} <= supplemental)
+        self.assertEqual(len(supplemental),22)
+        self.assertTrue({'terraform/infra/sentinel-backup/modules/pipeline/storage-security.tf','terraform/infra/sentinel-backup/modules/pipeline/tests/security.tftest.hcl', 'operations/integrations/portable/trial/runtime/security.tf', 'operations/integrations/portable/trial/runtime/tests/security.tftest.hcl'} <= supplemental)
         self.assertFalse(supplemental&set(generated))
         model.admit_configuration_paths(ROOT,generated)
         self.assertEqual(before,json.dumps(model.load_authority(ROOT)['wp6']['approvals'],sort_keys=True))
@@ -60,7 +60,9 @@ class SupplementalIacTests(unittest.TestCase):
                      'operations/sql-backup/recovery/provider.lock.hcl',
                      'operations/integrations/portable/trial/main.tf',
                      'operations/integrations/portable/aws-6.28.lock.hcl',
-                     'operations/integrations/portable/trial/runtime/main.tf'):
+                     'operations/integrations/portable/trial/runtime/main.tf',
+                     'operations/integrations/portable/trial/runtime/security.tf',
+                     'operations/integrations/portable/trial/runtime/tests/security.tftest.hcl'):
             path=root/name;original=path.read_bytes();path.write_bytes(original+b'\n# unreviewed change\n')
             with self.subTest(path=name),self.assertRaisesRegex(Unsupported,'supplemental source drift'):
                 model.reviewed_supplemental_iac(root)
@@ -83,7 +85,7 @@ class SupplementalIacTests(unittest.TestCase):
         root=self.fixture()
         name='terraform/live/sentinel-backup/terragrunt.hcl'
         path=root/name;path.write_bytes(path.read_bytes().replace(b'\r\n',b'\n').replace(b'\n',b'\r\n'))
-        self.assertEqual(len(model.reviewed_supplemental_iac(root)),20)
+        self.assertEqual(len(model.reviewed_supplemental_iac(root)),22)
 
     def test_symlink_is_rejected_before_following_source_bytes(self):
         root=self.fixture();path=root/'terraform/infra/sentinel-backup/main.tf.json'
@@ -122,6 +124,16 @@ class SupplementalIacTests(unittest.TestCase):
         def denied(path):raise PermissionError('isolated fixture unreadable')
         for check in (model.configuration_paths,lambda p:list(inventory.sources(p))):
             with patch.object(os,'scandir',side_effect=denied),self.assertRaises(PermissionError):check(root)
+        template='operations/integrations/portable/templates/security.tf.tftpl'
+        path=root/template;path.parent.mkdir(parents=True,exist_ok=True)
+        shutil.copyfile(ROOT/template,path)
+        sources=inventory.scan(root)
+        self.assertIn(template,sources)
+        for record in sources.values():record['semantic_status']='UNVERIFIED'
+        (root/'ci/authority/source-inventory.json').write_text(json.dumps({'sources':sources}))
+        self.assertEqual(inventory.verify(root),[])
+        path.write_bytes(path.read_bytes()+b'\n# unreviewed template mutation\n')
+        self.assertEqual(inventory.verify(root),['SOURCE_DRIFT_REQUIRES_REVIEW: '+template])
 
 
 if __name__=='__main__':unittest.main(verbosity=2)

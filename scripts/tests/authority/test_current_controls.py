@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
-from current_controls import resource_policy_scope, schema_scope, SCHEMAS, disjoint_function
+from current_controls import resource_policy_scope, schema_scope, SCHEMAS, disjoint_function, s3_policy_target, s3_logging_targets, disjoint_s3
 from discovery import Discovery
 from evaluator import Unsupported
 
@@ -94,18 +94,18 @@ resource "aws_iam_instance_profile" "node" {
     def test_real_portable_files_remain_all_visible_and_unsupported(self):
         d=Discovery(ROOT,names=(KNOWN,))
         rows=[r for r in d.records if r['source'].startswith('operations/integrations/portable/')]
-        # The lint fix added one public receipt hash output, not another permission.
-        # All previous 65 declarations remain included in CURRENT discovery.
-        self.assertEqual(len(rows),66)
+        # All previous declarations plus security inputs, metadata, owned logging and
+        # outputs remain visible; applicable controls are still UNKNOWN.
+        self.assertEqual(len(rows),86)
         receipt=[r for r in rows if r['source']=='operations/integrations/portable/trial/main.tf'
                  and r.get('declaration',{}).get('kind')=='output'
                  and r.get('declaration',{}).get('id')=='operations/integrations/portable/trial/main.tf#output:package_manifest_sha256:']
         self.assertEqual(len(receipt),1)
         self.assertEqual(receipt[0]['admission'],'NON_SECURITY_RELEVANT')
         self.assertEqual(receipt[0]['affects'],[])
-        self.assertEqual(sum(r['admission']=='UNSUPPORTED_APPLICABLE' for r in rows),34)
+        self.assertEqual(sum(r['admission']=='UNSUPPORTED_APPLICABLE' for r in rows),44)
         self.assertTrue(any(r.get('mechanism_schema')=='aws_dynamodb_table' for r in rows))
-        self.assertEqual(sum(bool(r.get('policy_action_domain')) for r in rows),4)
+        self.assertEqual(sum(bool(r.get('policy_action_domain')) for r in rows),5)
 
     def test_resource_policy_action_scope_is_query_specific_not_a_grant(self):
         text='''resource "aws_sns_topic_policy" "x" {
@@ -293,5 +293,47 @@ resource "aws_lambda_permission" "tick" {
         self.assertEqual(d.records[0]['admission'],'UNSUPPORTED_APPLICABLE')
         for extra in ('policy=var.policy','provisioner "local-exec" { command="not-run" }','dynamic "target_object_key_format" { for_each=var.items }'):
             self.assertTrue(self.discover(text.replace(' target_prefix=var.prefix',' target_prefix=var.prefix\n '+extra)).taints('github'))
+
+    def test_explicit_logging_dependencies_do_not_admit_dynamic_hooks(self):
+        body='bucket=var.bucket\ntarget_bucket=var.logs\ndepends_on=[aws_s3_bucket_policy.logs, aws_s3_bucket_public_access_block.logs]'
+        self.assertEqual(schema_scope('aws_s3_bucket_logging',body)[0],'s3')
+        for dependency in ('var.dependencies','[module.logs]','[evil()]','[aws_s3_bucket_policy.logs, var.other]'):
+            with self.subTest(dependency=dependency),self.assertRaises(Unsupported):
+                schema_scope('aws_s3_bucket_logging',body.replace('[aws_s3_bucket_policy.logs, aws_s3_bucket_public_access_block.logs]',dependency))
+        bound=body.replace('bucket=var.bucket','bucket=aws_s3_bucket.archive.id').replace('target_bucket=var.logs','target_bucket=aws_s3_bucket.logs.id')
+        resources={('.', 'aws_s3_bucket', name):'bucket="'+name+'-owned"' for name in ('archive','logs')}
+        proof=s3_logging_targets(bound,'.',resources,{})
+        self.assertTrue(disjoint_s3(proof,'arn:aws:s3:::foreign-bucket/key'))
+        for name in ('archive','logs'):
+            self.assertFalse(disjoint_s3(proof,'arn:aws:s3:::'+name+'-owned/key'))
+            for changed in (bound.replace('aws_s3_bucket.'+name+'.id','var.foreign'),bound.replace('aws_s3_bucket.'+name+'.id','aws_s3_bucket.missing.id')):
+                with self.assertRaises((Unsupported,KeyError)):s3_logging_targets(changed,'.',resources,{})
+            for declaration in ('bucket=var.unresolved','bucket="foreign-bucket"'):
+                changed={**resources,('.', 'aws_s3_bucket',name):declaration}
+                self.assertFalse(disjoint_s3(s3_logging_targets(bound,'.',changed,{}),'arn:aws:s3:::foreign-bucket/key'))
+            with self.assertRaises(Unsupported):
+                s3_logging_targets(bound,'.',{**resources,('.', 'aws_s3_bucket',name):resources[('.', 'aws_s3_bucket',name)]+'\nprovisioner "local-exec" { command="not-run" }'},{})
+
+    def test_encryption_condition_scope_keeps_matching_permission_unknown(self):
+        body='''bucket=aws_s3_bucket.archive.id
+policy=jsonencode({Version="2012-10-17",Statement=[{Effect="Deny",Principal="*",Action="s3:PutObject",Resource="${aws_s3_bucket.archive.arn}/*",Condition={StringNotEquals={"s3:x-amz-server-side-encryption"="aws:kms"},Null={"s3:x-amz-server-side-encryption"="false"}}}]})'''
+        self.assertEqual(resource_policy_scope(body,'aws_s3_bucket_policy'),('s3:PutObject',))
+        text='resource "aws_s3_bucket_policy" "archive" {\n'+body+'\n}'
+        self.assertTrue(self.discover(text).taints('api:s3',action='s3:PutObject'))
+        for old,new in (('StringNotEquals','StringNotEqualsIfExists'),('"false"','var.context'),('"s3:PutObject"','var.actions')):
+            with self.subTest(new=new),self.assertRaises((Unsupported,ValueError)):
+                resource_policy_scope(body.replace(old,new),'aws_s3_bucket_policy')
+
+    def test_logging_object_suffix_cannot_change_bound_bucket_identity(self):
+        body='''bucket=aws_s3_bucket.logs.id
+policy=jsonencode({Version="2012-10-17",Statement=[{Effect="Allow",Principal={Service="logging.s3.amazonaws.com"},Action="s3:PutObject",Resource="${aws_s3_bucket.logs.arn}/${local.prefix}*"}]})'''
+        resources={('.', 'aws_s3_bucket', 'logs'):'bucket="own-logs"\nforce_destroy=false'}
+        binding=s3_policy_target(body,'.',resources,{})
+        self.assertEqual(binding['patterns'],['own-logs'])
+        self.assertEqual(binding['resourceReferencesChecked'],1)
+        for target in ('${aws_s3_bucket.foreign.arn}/${local.prefix}*','${aws_s3_bucket.logs.arn}${local.prefix}*','${aws_s3_bucket.logs.arn}/${evil()}'):
+            changed=body.replace('${aws_s3_bucket.logs.arn}/${local.prefix}*',target)
+            with self.subTest(target=target),self.assertRaises(Unsupported):
+                s3_policy_target(changed,'.',resources,{})
 
 if __name__=='__main__':unittest.main(verbosity=2)

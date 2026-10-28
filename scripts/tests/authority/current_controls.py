@@ -147,7 +147,7 @@ def resource_policy_scope(body, typ):
             scalar_expression(st['Sid'])
         if 'Condition' in st:
             for op, fields in object_fields(st['Condition']).items():
-                if op not in ('Bool', 'StringEquals', 'ArnEquals', 'ArnLike'):
+                if op not in ('Bool', 'Null', 'StringEquals', 'StringNotEquals', 'ArnEquals', 'ArnLike'):
                     raise Unsupported('unmodeled resource condition operator')
                 tests = object_fields(fields)
                 if not tests:
@@ -156,7 +156,7 @@ def resource_policy_scope(body, typ):
                     if not key or '${' in key:
                         raise Unsupported('invalid context key')
                     scalar_or_list(val)
-                    if op == 'Bool' and val not in ('"true"', '"false"'):
+                    if op in ('Bool', 'Null') and val not in ('"true"', '"false"'):
                         raise Unsupported('unmodeled Boolean condition')
     if not actions:
         raise Unsupported('empty policy needs no positive admission')
@@ -171,7 +171,7 @@ SCHEMAS = {
    'global_secondary_index': ('name hash_key range_key projection_type', {}),
    'dynamic': None, 'point_in_time_recovery': ('enabled recovery_period_in_days', {}),
    'server_side_encryption': ('enabled', {}), 'lifecycle': ('', {'precondition': ('condition error_message', {})})}),
- 'aws_s3_bucket_logging': ('s3', 'bucket expected_bucket_owner target_bucket target_prefix', {}),
+ 'aws_s3_bucket_logging': ('s3', 'bucket expected_bucket_owner target_bucket target_prefix depends_on', {}),
  'aws_sqs_queue': ('sqs', 'for_each name message_retention_seconds sqs_managed_sse_enabled visibility_timeout_seconds redrive_policy', {}),
  'aws_cloudwatch_event_bus': ('events', 'name', {}),
  'aws_lambda_alias': ('lambda', 'for_each name function_name function_version', {}),
@@ -191,6 +191,11 @@ def schema_scope(typ, body):
         aa = attributes(rest)
         if set(aa) - set(allowed.split()):
             raise Unsupported('uninspected mechanism attributes')
+        if 'depends_on' in aa:
+            # Explicit ordering only; no module, call, dynamic dependency or hook.
+            dependencies = aa['depends_on'].strip()
+            if not re.fullmatch(r'\[\s*aws_s3_bucket_(?:policy|ownership_controls|server_side_encryption_configuration|public_access_block)\.\w+(?:\s*,\s*aws_s3_bucket_(?:policy|ownership_controls|server_side_encryption_configuration|public_access_block)\.\w+)*\s*\]', dependencies):
+                raise Unsupported('uninspected logging dependency')
         for kind, label, name, content in bb:
             if kind not in nested or name is not None:
                 raise Unsupported('uninspected mechanism child')
@@ -243,18 +248,10 @@ def symbolic_string(expression, local_values, directory, active=()):
     return matcher.sub(lambda m: symbolic_string(m[1], local_values, directory, active), value)
 
 
-def s3_policy_target(body, directory, resources, local_values):
-    """Bind every policy Resource to its single same-module bucket declaration.
-
-    Only target disjointness is proved; an overlapping request remains UNKNOWN
-    regardless of principal/transport assumptions. No resource name is allowlisted.
-    """
-    from source import attributes, blocks, split_top
-    resource_policy_scope(body, 'aws_s3_bucket_policy')
-    nested, rest = blocks(body);attrs = attributes(rest)
-    if nested or 'count' in attrs or 'for_each' in attrs:
-        raise Unsupported('expanded S3 policy identity')
-    ref = re.fullmatch(r'aws_s3_bucket\.(\w+)\.id', attrs['bucket'])
+def s3_bucket_identity(expression, directory, resources):
+    """Resolve only a declared same-module bucket with inspected identity/hooks."""
+    from source import attributes, blocks
+    ref = re.fullmatch(r'aws_s3_bucket\.(\w+)\.id', expression)
     if not ref:
         raise Unsupported('unbound S3 policy bucket')
     target = resources.get((directory, 'aws_s3_bucket', ref[1]))
@@ -271,21 +268,52 @@ def s3_policy_target(body, directory, resources, local_values):
         for k, t, n, b in guards:
             if (k, t, n) != ('precondition', None, None) or set(attributes(b)) != {'condition', 'error_message'}:
                 raise Unsupported('uninspected S3 lifecycle hook')
+    return ref[1], bucket
+
+
+def s3_logging_targets(body, directory, resources, local_values):
+    """Both source and destination stay relevant; only disjoint buckets excluded."""
+    _, attrs = schema_scope('aws_s3_bucket_logging', body)
+    targets = [s3_bucket_identity(attrs[key], directory, resources) for key in ('bucket', 'target_bucket')]
+    return dict(bucketDeclarations=['aws_s3_bucket.'+name for name, _ in targets],
+                patterns=[symbolic_string(bucket['bucket'],local_values,directory) for _, bucket in targets],
+                meaning='SOURCE_AND_DESTINATION_SCOPE_ONLY; matching permission remains UNKNOWN')
+
+
+def s3_policy_target(body, directory, resources, local_values):
+    """Bind every policy Resource to its single same-module bucket declaration.
+
+    Only target disjointness is proved; an overlapping request remains UNKNOWN
+    regardless of principal/transport assumptions. No resource name is allowlisted.
+    """
+    from source import attributes, blocks, split_top
+    resource_policy_scope(body, 'aws_s3_bucket_policy')
+    nested, rest = blocks(body);attrs = attributes(rest)
+    if nested or 'count' in attrs or 'for_each' in attrs:
+        raise Unsupported('expanded S3 policy identity')
+    name, bucket = s3_bucket_identity(attrs['bucket'], directory, resources)
     expr=attrs['policy'];doc=object_fields(expr[11:-1]);statements=doc['Statement']
     if not (statements.startswith('[') and statements.endswith(']')):
         raise Unsupported('unbound S3 statement construction')
-    arn='aws_s3_bucket.'+ref[1]+'.arn';allowed={arn, json.dumps('${'+arn+'}/*')}
+    arn='aws_s3_bucket.'+name+'.arn';allowed={arn, json.dumps('${'+arn+'}/*')}
     count=0
     for raw in split_top(statements[1:-1]):
         st=object_fields(raw);actions=json.loads(st['Action']);actions=actions if isinstance(actions,list) else [actions]
         if not all(a.lower().startswith('s3:') for a in actions):
             raise Unsupported('cross-service S3 policy action')
         rr=st['Resource'];refs=split_top(rr[1:-1]) if rr.startswith('[') and rr.endswith(']') else [rr]
-        if not refs or any(x not in allowed for x in refs):
+        def own_object_prefix(value):
+            # An already-bound bucket ARN followed by '/' cannot change bucket
+            # identity, even when the object suffix itself is unresolved.
+            if not value.startswith('"${'+arn+'}/'):
+                return False
+            scalar_expression(value)
+            return True
+        if not refs or any(x not in allowed and not own_object_prefix(x) for x in refs):
             raise Unsupported('policy Resource not bound to its bucket ARN')
         count+=len(refs)
     if not count:raise Unsupported('empty S3 policy target')
-    return dict(bucketDeclaration='aws_s3_bucket.'+ref[1], arnReference=arn,
+    return dict(bucketDeclaration='aws_s3_bucket.'+name, arnReference=arn,
                 resourceReferencesChecked=count, patterns=[symbolic_string(bucket['bucket'],local_values,directory)],
                 meaning='TARGET_SCOPE_ONLY; matching identity/context permission remains UNKNOWN')
 

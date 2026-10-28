@@ -1,5 +1,11 @@
 # Siguiente ensayo nativo de ECS: alcance actualizado y límites
 
+**Checkpoint histórico, supersedido en la siguiente admisión:** solicitar primero
+el [plan E16 de red, sin despliegue](PLAN-ONLY-E16.md). La seguridad/retirada portable
+ya está implementada localmente y el inventario mock vigente es 69, descrito en
+[README](README.md). La propuesta de empezar desplegando portable y sus importes
+inferiores no son autorización ni el camino crítico actual.
+
 Preparación local desde956c38a,26-oct-2026. No autorización de gasto, acceso, publicación,
 instalación ni creación. No preflight privado AWS esta noche. Los ensayos anteriores
 están cerrados; USD6/102 no son presupuesto ni inventario vigentes.
