@@ -1559,27 +1559,28 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/test_observer_host.py": {
-      "sha256": "693f03ef627588ffa884934bf2e3129afae6d991583f98d9fecfe22c258eef58",
+      "sha256": "102ab4afc80b2bd8c6b241ba74191468cfada76cf79c1dee34231906c9a39421",
       "declarations": [],
       "signals": {
         "role-input": [
-          122
+          127
         ],
         "launch-or-mutation": [
           15,
           24,
-          88
+          88,
+          122
         ],
         "executable-dependency": [
           88,
           89,
           94,
           95,
-          124,
-          128,
-          140,
-          141,
-          169
+          129,
+          133,
+          145,
+          146,
+          174
         ],
         "security-control": [
           116
@@ -1594,30 +1595,34 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/test_terraform_pipeline.py": {
-      "sha256": "69613f58d2ab251ca4d91f72dfe810722b5b2000fc3a214604f1cd0fed9b8a26",
+      "sha256": "5eaceeb27c2c0a3d5e8efde9315ae51df45cb7807c7ff41719ad8764a63961ab",
       "declarations": [],
       "signals": {
         "role-input": [
-          55
+          69
         ],
         "launch-or-mutation": [
-          6,
-          73,
-          76,
-          84,
-          85,
-          86,
-          87
+          9,
+          87,
+          90,
+          98,
+          99,
+          100,
+          101,
+          117,
+          122
         ],
         "security-control": [
-          13,
-          16,
-          17,
-          23,
-          52,
-          58,
-          59,
-          66
+          26,
+          29,
+          30,
+          36,
+          66,
+          72,
+          73,
+          80,
+          132,
+          141
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -5082,7 +5087,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/final_acceptance/gate.py": {
-      "sha256": "9f5b8a2b39394855c7ee3edc3682c5a63c7ba87d4c9b9af14e61b914f47a8fe3",
+      "sha256": "cc5a0244ff8db8c242b276593f999bf99686513208c8c60775908154ec86e0f1",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -6660,7 +6665,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/model.py": {
-      "sha256": "0521a84844966b07ca1b959e0dabee0cfc270eaca72d6c3a7a7dbaeef993f5ed",
+      "sha256": "4700445bab26cebf6d2f895453c3591c7f9afcd07c1f8dd5e9587276de072dae",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -6886,19 +6891,22 @@
       "semantic_status": "CURRENT_FACT"
     },
     "scripts/tests/security_root/test_supplemental_iac.py": {
-      "sha256": "7545a35807a30ae413c27590cd694b08393eb8617ef83121df308f1e5cfa837c",
+      "sha256": "e7050c399128a111071b0ce3ea9b56ddcaa7fad192b1760c67f500133445d152",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           20,
-          44,
-          46,
-          56,
+          31,
+          45,
+          47,
+          57,
+          58,
           59,
-          74,
-          81,
-          86,
-          96
+          62,
+          77,
+          84,
+          89,
+          99
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -8806,20 +8814,21 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/sentinel-backup/main.tf.json": {
-      "sha256": "33b41754830251ac983f0fe4e067d4d41f60b6cb6003c0dd78b10de859bace32",
+      "sha256": "b9a7bd77a54276d01a707c485bbfb46f843b8dc71e8002682680d80b4b259eb8",
       "declarations": [],
       "signals": {
         "role-input": [
           27,
           55,
-          118
+          136
         ],
         "launch-or-mutation": [
           2,
           11,
           12,
           18,
-          55
+          55,
+          114
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -8839,18 +8848,18 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/sentinel-backup/modules/observer/main.tf.json": {
-      "sha256": "fe323627f58be70b6a080c3c4d411fc819942def23028b27c5316dad6e1561ab",
+      "sha256": "17105a0344edd742800a8373971e5afde919ac5f494638f26b2084f54b617e3a",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
-          196
+          204
         ],
         "role-input": [
-          53,
-          207,
-          255,
-          286,
-          302
+          61,
+          215,
+          263,
+          294,
+          310
         ],
         "launch-or-mutation": [
           2,
@@ -8859,103 +8868,119 @@
           37,
           41,
           42,
-          53,
-          59,
-          62,
-          63,
-          241
+          54,
+          61,
+          67,
+          70,
+          71,
+          249
         ],
         "executable-dependency": [
-          241,
-          274,
-          275
+          249,
+          282,
+          283
         ],
         "security-control": [
-          112,
-          185,
-          192,
-          195,
-          196,
+          120,
+          193,
           200,
           203,
-          207,
-          210,
-          255,
-          278,
-          290,
-          303
+          204,
+          208,
+          211,
+          215,
+          218,
+          263,
+          286,
+          298,
+          311
         ]
       },
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/sentinel-backup/modules/pipeline/main.tf.json": {
-      "sha256": "dada748725e359c598b0677bd308794dd4e57f2120b6ce2a38160acb4001ce3b",
+      "sha256": "c4949d42a36d0b1518a1ae8e6ca797658e2b6e8319ed1192215534e1d6c9de24",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
-          314,
-          320
+          235,
+          241
         ],
         "role-input": [
           13,
           41,
           80,
-          101,
-          258,
-          262,
-          274,
-          489
+          115,
+          185,
+          189,
+          195,
+          410
         ],
         "launch-or-mutation": [
           2,
           5,
           6,
           41,
-          98,
-          99,
-          100,
-          102,
-          103,
-          258,
-          262,
-          274,
-          289,
-          294,
-          302,
-          307,
-          329,
-          334,
-          489,
-          537
+          92,
+          112,
+          113,
+          114,
+          116,
+          117,
+          160,
+          185,
+          189,
+          195,
+          210,
+          215,
+          223,
+          228,
+          250,
+          255,
+          410,
+          458,
+          506,
+          511,
+          514,
+          517,
+          531,
+          534,
+          537,
+          540,
+          553,
+          574,
+          585,
+          588,
+          591
         ],
         "executable-dependency": [
-          489,
-          537
+          410,
+          458
         ],
         "security-control": [
-          225,
-          255,
-          271,
-          283,
-          299,
+          150,
+          182,
+          192,
+          204,
+          220,
+          232,
+          235,
+          236,
+          241,
+          242,
+          246,
+          249,
+          254,
+          261,
           311,
-          314,
-          315,
-          320,
-          321,
           325,
-          328,
-          333,
-          340,
-          390,
-          404,
-          454,
-          480,
-          481,
-          486,
-          514,
-          549,
-          555
+          375,
+          401,
+          402,
+          407,
+          435,
+          470,
+          476
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -9017,27 +9042,50 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/sentinel-backup/tests/observer.tftest.hcl": {
-      "sha256": "17d50283ebd29e72420b10ecd48d0fca4ef040e4bd22b51620d2370782d610a1",
+      "sha256": "e3b6625e59167a41680c0ca6663dc5be3613498e19cf6893601a677bcf51e96c",
       "declarations": [],
       "signals": {
         "role-input": [
-          20
+          32
         ],
         "launch-or-mutation": [
           3,
-          20,
-          21,
-          43,
-          52,
-          53,
-          85
+          12,
+          13,
+          32,
+          33,
+          55,
+          64,
+          65,
+          97,
+          125,
+          134,
+          135,
+          148,
+          149,
+          162,
+          163,
+          176,
+          177,
+          190,
+          191,
+          204,
+          205
         ],
         "executable-dependency": [
-          62,
-          78
+          74,
+          90,
+          123,
+          131,
+          145,
+          159,
+          173,
+          187,
+          201
         ],
         "security-control": [
-          84
+          5,
+          96
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -12606,6 +12654,103 @@
         ],
         "executable-dependency": [
           3
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/infra/sentinel-backup/modules/pipeline/storage-security.tf": {
+      "sha256": "6e10aa8c2cbd8919bd268b4f96002de957f8fabcdca8f8f5cf5aa4db2dee08a0",
+      "declarations": [
+        {
+          "kind": "data",
+          "type": "aws_kms_key",
+          "name": "archive",
+          "line": 1
+        },
+        {
+          "kind": "data",
+          "type": "aws_kms_key",
+          "name": "notices",
+          "line": 3
+        },
+        {
+          "kind": "resource",
+          "type": "aws_dynamodb_table",
+          "name": "state",
+          "line": 7
+        },
+        {
+          "kind": "resource",
+          "type": "aws_s3_bucket",
+          "name": "archive",
+          "line": 73
+        },
+        {
+          "kind": "resource",
+          "type": "aws_s3_bucket_versioning",
+          "name": "archive",
+          "line": 79
+        },
+        {
+          "kind": "resource",
+          "type": "aws_s3_bucket_server_side_encryption_configuration",
+          "name": "archive",
+          "line": 86
+        },
+        {
+          "kind": "resource",
+          "type": "aws_sns_topic",
+          "name": "notices",
+          "line": 104
+        },
+        {
+          "kind": "resource",
+          "type": "aws_s3_bucket_logging",
+          "name": "archive",
+          "line": 117
+        }
+      ],
+      "signals": {
+        "launch-or-mutation": [
+          98
+        ],
+        "security-control": [
+          2,
+          3,
+          90,
+          108
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "terraform/infra/sentinel-backup/modules/pipeline/tests/security.tftest.hcl": {
+      "sha256": "43d369f7bb6724dc2f0fa3f7e305d56412674059e4731fdfd90f24934c8e6cfa",
+      "declarations": [],
+      "signals": {
+        "role-input": [
+          23
+        ],
+        "launch-or-mutation": [
+          2,
+          23,
+          24,
+          45,
+          46,
+          55
+        ],
+        "executable-dependency": [
+          53,
+          61,
+          70,
+          79,
+          88
+        ],
+        "security-control": [
+          4,
+          63,
+          72,
+          81,
+          90
         ]
       },
       "semantic_status": "UNVERIFIED"

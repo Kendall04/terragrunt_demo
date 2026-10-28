@@ -105,6 +105,24 @@
     "dispatch_schedule_enabled": {
       "type": "bool",
       "default": false
+    },
+    "security": {
+      "type": "object({ archive_kms_key_arn=string, notice_kms_key_arn=string, access_log_bucket=string, access_log_prefix=string, access_log_retention_days=number })",
+      "nullable": false,
+      "validation": [
+        {
+          "condition": "${alltrue([for key in [var.security.archive_kms_key_arn,var.security.notice_kms_key_arn] : can(regex(\"^arn:aws:kms:${var.config.region}:${var.config.account}:key/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$\",key))]) && var.security.archive_kms_key_arn != var.security.notice_kms_key_arn}",
+          "error_message": "Two distinct, exact, same-account/region customer-managed symmetric key ARNs required; no aliases, defaults or implicit historic-key reuse."
+        },
+        {
+          "condition": "${var.security.access_log_bucket == \"snt-logs-${var.config.run_id}-${var.config.account}\" && length(var.security.access_log_bucket)<=63 && var.security.access_log_prefix == \"sentinel/${var.config.run_id}/\" && var.security.access_log_retention_days>=1 && var.security.access_log_retention_days<=30 && floor(var.security.access_log_retention_days)==var.security.access_log_retention_days}",
+          "error_message": "Dedicated run/account log destination and prefix, with explicit1..30 day retention required; destination is externally owned and must be verified before apply."
+        },
+        {
+          "condition": "${!var.enable_observer || try(alltrue([for key in [var.security.archive_kms_key_arn,var.security.notice_kms_key_arn] : !contains([var.observer.backup_key_arn,var.observer.text_key_arn,var.observer.ebs_key_arn],key)]),false)}",
+          "error_message": "Do not reuse any configured original-backup, text-data or host-disk key for Sentinel."
+        }
+      ]
     }
   },
   "module": {
@@ -116,14 +134,16 @@
       "enable_dispatch_schedule": "${var.enable_dispatch_schedule}",
       "dispatch_schedule_expression": "${var.dispatch_schedule_expression}",
       "distribution_reader": "${var.enable_observer ? {role_arn=var.config.sender_role_arn,key=\"observer-packages/${var.observer.bundle_sha256}.tar.gz\"} : null}",
-      "dispatch_schedule_enabled": "${var.dispatch_schedule_enabled}"
+      "dispatch_schedule_enabled": "${var.dispatch_schedule_enabled}",
+      "security": "${var.security}"
     },
     "observer": {
       "source": "./modules/observer",
       "count": "${var.enable_observer ? 1 : 0}",
       "config": "${var.config}",
       "host": "${var.observer}",
-      "distribution_ready_bucket": "${module.pipeline.distribution_ready_bucket}"
+      "distribution_ready_bucket": "${module.pipeline.distribution_ready_bucket}",
+      "distribution_key_arn": "${var.security.archive_kms_key_arn}"
     }
   },
   "output": {

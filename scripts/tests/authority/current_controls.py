@@ -166,9 +166,12 @@ def resource_policy_scope(body, typ):
 # Only inspected attributes/children get a mechanism scope. This is not a type
 # allowlist: unknown attributes, nested hooks and control destinations fail closed.
 SCHEMAS = {
- 'aws_dynamodb_table': ('dynamodb', 'name billing_mode hash_key range_key deletion_protection_enabled', {
-   'dynamic': None, 'point_in_time_recovery': ('enabled', {}),
+ 'aws_dynamodb_table': ('dynamodb', 'name billing_mode hash_key range_key deletion_protection_enabled tags', {
+   'attribute': ('name type', {}),
+   'global_secondary_index': ('name hash_key range_key projection_type', {}),
+   'dynamic': None, 'point_in_time_recovery': ('enabled recovery_period_in_days', {}),
    'server_side_encryption': ('enabled', {}), 'lifecycle': ('', {'precondition': ('condition error_message', {})})}),
+ 'aws_s3_bucket_logging': ('s3', 'bucket expected_bucket_owner target_bucket target_prefix', {}),
  'aws_sqs_queue': ('sqs', 'for_each name message_retention_seconds sqs_managed_sse_enabled visibility_timeout_seconds redrive_policy', {}),
  'aws_cloudwatch_event_bus': ('events', 'name', {}),
  'aws_lambda_alias': ('lambda', 'for_each name function_name function_version', {}),

@@ -197,3 +197,53 @@ AL2023 bootstrap, Lambda/DynamoDB cursor and teardown were demonstrated. SSM
 authorization remained blocked; periodic producer/checker/SQS/notice acceptance
 is not established. Earlier proposal/qualification documents are dated snapshots,
 not current deployment authority. No live resources or new budget are implied.
+
+
+## Managed security contract - local correction 2026-10-28
+
+The retained managed module remains fully in CURRENT analysis. Its five existing
+storage/topic addresses moved to `modules/pipeline/storage-security.tf` without
+renaming physical names. One logging resource and two DescribeKey metadata reads
+are added; keys and the log destination are external references, not resources
+created by this module. Earlier b1/b2 plans and receipts are historical and are not
+updated or retroactively qualified by this source change.
+
+The root now requires a non-null `security` object with no defaults:
+
+| Field | Required contract |
+| --- | --- |
+| `archive_kms_key_arn` | Dedicated same-account/region canonical key ARN; CUSTOMER, enabled, symmetric ENCRYPT_DECRYPT is checked through DescribeKey. |
+| `notice_kms_key_arn` | A distinct dedicated key with the same metadata checks. No aliases or implicit historical-key reuse. |
+| `access_log_bucket` | Explicit own destination named `snt-logs-<run_id>-<account>`, separate from the archive. |
+| `access_log_prefix` | Exactly `sentinel/<run_id>/`. |
+| `access_log_retention_days` | Explicit integer 1..30; destination owner must install/verify its lifecycle. This input/output is not proof that external retention exists. |
+
+The source archive defaults to its CMK, uses object-level KMS context (bucket keys
+are disabled), and rejects explicitly different algorithms/keys or customer-provided
+encryption. Versioning and force_destroy=false stay intact. DynamoDB has explicit
+AWS-managed encryption and PITR with a one-day recovery window; deletion protection
+remains on until the existing explicit retirement gate. SNS uses the separate key.
+
+Only dispatcher gains GenerateDataKey/Decrypt on exact archive/notice keys, via
+the matching S3/SNS service and object-prefix/topic context within the existing
+runtime window. Ingest gains no KMS permissions. If the existing observer is used,
+its boundary and inline gain only Decrypt for its exact versioned distribution
+object through S3; original backup/text/EBS key permissions are unchanged.
+
+`security_requirements` exports proposals for the security owner: key-policy
+relationships (including CloudWatch), artifact lifecycle permissions, exact log
+delivery prefix, and verification steps. They are not installed policies or
+execution authority. Future planning needs DescribeKey only on the two selected
+keys. Future deployment still needs verified dedicated-key ownership, same-account/
+region SSE-S3 log destination, log delivery/lifecycle policy, Lambda artifact access,
+and a fresh cost/retirement plan including PITR backups and external keys/logs.
+No historical key is selected, created or modified by this local correction.
+
+Official references: [SNS key permissions](https://docs.aws.amazon.com/sns/latest/dg/sns-key-management.html),
+[SNS topic context](https://docs.aws.amazon.com/sns/latest/dg/sns-enable-encryption-for-topic.html),
+[S3 access logging](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ServerLogs.html),
+and [the pinned provider table schema](https://raw.githubusercontent.com/hashicorp/terraform-provider-aws/v6.27.0/website/docs/r/dynamodb_table.html.markdown).
+Native mock tests check the effective planned controls and reject foreign/aliased/
+reused keys, invalid destinations, AWS-managed/disabled/asymmetric/foreign-owner
+key metadata. These do not prove real key-policy authorization, inbox delivery,
+PITR recovery or any AWS deployment. No old SSM denial was retried.

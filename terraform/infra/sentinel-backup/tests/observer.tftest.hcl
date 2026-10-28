@@ -1,8 +1,20 @@
 # Native Terraform schema/expression/mock plans only. No credentialed provider API.
 # The text fixtures deliberately are NOT real ZIP/tar releases.
-mock_provider "aws" {}
+mock_provider "aws" {
+  override_during = plan
+  mock_data "aws_kms_key" {
+    defaults = { enabled = true, key_manager = "CUSTOMER", key_spec = "SYMMETRIC_DEFAULT", key_usage = "ENCRYPT_DECRYPT", aws_account_id = "341936017254" }
+  }
+}
 
 variables {
+  security = {
+    archive_kms_key_arn       = "arn:aws:kms:us-east-1:341936017254:key/44444444-4444-4444-8444-444444444444"
+    notice_kms_key_arn        = "arn:aws:kms:us-east-1:341936017254:key/55555555-5555-4555-8555-555555555555"
+    access_log_bucket         = "snt-logs-ecs-sentinel-offline-341936017254"
+    access_log_prefix         = "sentinel/ecs-sentinel-offline/"
+    access_log_retention_days = 1
+  }
   config = {
     account                 = "341936017254"
     region                  = "us-east-1"
@@ -65,15 +77,15 @@ run "pipeline_default_off" {
     error_message = "Observer must remain disabled by default."
   }
   assert {
-    condition     = length(jsondecode(output.pipeline.distribution_policy_json).Statement) == 2
-    error_message = "No distribution-reader exception unless observer explicitly selected."
+    condition     = length(jsondecode(output.pipeline.distribution_policy_json).Statement) == 6
+    error_message = "Two original isolation denies plus four encryption denies; no distribution-reader exception unless observer explicitly selected."
   }
 }
 
 run "observer_scheduled" {
   assert {
     condition     = output.pipeline.dispatch_rule_state == "DISABLED"
-    error_message = "All43 resources may exist, but no automatic dispatch before SNS confirmation."
+    error_message = "All44 resources may exist, but no automatic dispatch before SNS confirmation."
   }
   command = plan
   override_data {
@@ -94,15 +106,107 @@ run "observer_scheduled" {
     error_message = "Creating the host must not start the producer."
   }
   assert {
-    condition     = length(jsondecode(output.pipeline.distribution_policy_json).Statement) == 4
+    condition     = length(jsondecode(output.pipeline.distribution_policy_json).Statement) == 8
     error_message = "Host needs explicit deny outside artifact plus mutation deny."
   }
   assert {
-    condition     = jsondecode(output.pipeline.distribution_policy_json).Statement[3].NotAction == ["s3:GetObjectVersion"]
+    condition     = jsondecode(output.pipeline.distribution_policy_json).Statement[7].NotAction == ["s3:GetObjectVersion"]
     error_message = "Host distribution must never include latest reads or mutation."
   }
   assert {
     condition     = alltrue([for s in jsondecode(output.observer.runtime_policy_json).Statement : !contains(s.Action, "ec2:TerminateInstances") && !contains(s.Action, "sns:Publish") && !contains(s.Action, "s3:PutObject")])
     error_message = "Observer role cannot change infrastructure or publish notices."
   }
+}
+
+run "effective_security_controls" {
+  command = plan
+  assert {
+    condition     = output.pipeline.security_controls.table_encryption_enabled && output.pipeline.security_controls.table_pitr_enabled && output.pipeline.security_controls.table_pitr_days == 1 && output.pipeline.security_controls.archive_algorithm == "aws:kms" && output.pipeline.security_controls.archive_key_arn == var.security.archive_kms_key_arn && output.pipeline.security_controls.notice_key_arn == var.security.notice_kms_key_arn && output.pipeline.security_controls.log_bucket == var.security.access_log_bucket && output.pipeline.security_controls.log_prefix == var.security.access_log_prefix
+    error_message = "Actual planned resource controls must match the explicit admitted security references."
+  }
+}
+
+run "reject_foreign_key_account" {
+  command = plan
+  variables {
+    security = {
+      archive_kms_key_arn       = "arn:aws:kms:us-east-1:111122223333:key/44444444-4444-4444-8444-444444444444"
+      notice_kms_key_arn        = "arn:aws:kms:us-east-1:341936017254:key/55555555-5555-4555-8555-555555555555"
+      access_log_bucket         = "snt-logs-ecs-sentinel-offline-341936017254"
+      access_log_prefix         = "sentinel/ecs-sentinel-offline/"
+      access_log_retention_days = 1
+    }
+  }
+  expect_failures = [var.security]
+}
+
+run "reject_aliased_key" {
+  command = plan
+  variables {
+    security = {
+      archive_kms_key_arn       = "arn:aws:kms:us-east-1:341936017254:alias/aws/s3"
+      notice_kms_key_arn        = "arn:aws:kms:us-east-1:341936017254:key/55555555-5555-4555-8555-555555555555"
+      access_log_bucket         = "snt-logs-ecs-sentinel-offline-341936017254"
+      access_log_prefix         = "sentinel/ecs-sentinel-offline/"
+      access_log_retention_days = 1
+    }
+  }
+  expect_failures = [var.security]
+}
+
+run "reject_shared_security_key" {
+  command = plan
+  variables {
+    security = {
+      archive_kms_key_arn       = "arn:aws:kms:us-east-1:341936017254:key/44444444-4444-4444-8444-444444444444"
+      notice_kms_key_arn        = "arn:aws:kms:us-east-1:341936017254:key/44444444-4444-4444-8444-444444444444"
+      access_log_bucket         = "snt-logs-ecs-sentinel-offline-341936017254"
+      access_log_prefix         = "sentinel/ecs-sentinel-offline/"
+      access_log_retention_days = 1
+    }
+  }
+  expect_failures = [var.security]
+}
+
+run "reject_historical_log_bucket" {
+  command = plan
+  variables {
+    security = {
+      archive_kms_key_arn       = "arn:aws:kms:us-east-1:341936017254:key/44444444-4444-4444-8444-444444444444"
+      notice_kms_key_arn        = "arn:aws:kms:us-east-1:341936017254:key/55555555-5555-4555-8555-555555555555"
+      access_log_bucket         = "original-backups-never-target"
+      access_log_prefix         = "sentinel/ecs-sentinel-offline/"
+      access_log_retention_days = 1
+    }
+  }
+  expect_failures = [var.security]
+}
+
+run "reject_foreign_log_prefix" {
+  command = plan
+  variables {
+    security = {
+      archive_kms_key_arn       = "arn:aws:kms:us-east-1:341936017254:key/44444444-4444-4444-8444-444444444444"
+      notice_kms_key_arn        = "arn:aws:kms:us-east-1:341936017254:key/55555555-5555-4555-8555-555555555555"
+      access_log_bucket         = "snt-logs-ecs-sentinel-offline-341936017254"
+      access_log_prefix         = "other/run/"
+      access_log_retention_days = 1
+    }
+  }
+  expect_failures = [var.security]
+}
+
+run "reject_unbounded_logs" {
+  command = plan
+  variables {
+    security = {
+      archive_kms_key_arn       = "arn:aws:kms:us-east-1:341936017254:key/44444444-4444-4444-8444-444444444444"
+      notice_kms_key_arn        = "arn:aws:kms:us-east-1:341936017254:key/55555555-5555-4555-8555-555555555555"
+      access_log_bucket         = "snt-logs-ecs-sentinel-offline-341936017254"
+      access_log_prefix         = "sentinel/ecs-sentinel-offline/"
+      access_log_retention_days = 0
+    }
+  }
+  expect_failures = [var.security]
 }

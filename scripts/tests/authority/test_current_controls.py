@@ -163,6 +163,7 @@ policy=jsonencode({Version="2012-10-17",Statement=length(local.producers)>0 ? [{
         bodies={
           'aws_dynamodb_table':'name="x"\npoint_in_time_recovery {\n enabled=true\n}',
           'aws_sqs_queue':'name="x"\nredrive_policy=var.redrive',
+          'aws_s3_bucket_logging':'bucket=var.bucket\nexpected_bucket_owner=var.account\ntarget_bucket=var.logs\ntarget_prefix=var.prefix',
           'aws_cloudwatch_event_bus':'name="x"',
           'aws_lambda_alias':'name="live"\nfunction_name=var.fn\nfunction_version=var.version',
           'aws_lambda_event_source_mapping':'function_name=var.fn\nevent_source_arn=var.queue',
@@ -256,5 +257,41 @@ resource "aws_lambda_permission" "tick" {
         self.assertFalse(disjoint_function(['demo-worker'],None))
         self.assertFalse(disjoint_function(['demo-worker'],'arn:aws:lambda:us-west-2:444455556666:function:demo-worker:live'))
 
+
+
+
+    def test_literal_table_security_children_keep_dynamodb_unknown(self):
+        text='''resource "aws_dynamodb_table" "state" {
+ name=var.name
+ billing_mode="PAY_PER_REQUEST"
+ hash_key="PK"
+ tags=local.tags
+ attribute { name="PK" }
+ global_secondary_index { name="Due" }
+ server_side_encryption { enabled=true }
+ point_in_time_recovery { recovery_period_in_days=1 }
+}'''
+        d=self.discover(text)
+        self.assertEqual(d.taints('github'),[])
+        self.assertEqual(len(d.taints('api:dynamodb')),1)
+        self.assertEqual(d.records[0]['admission'],'UNSUPPORTED_APPLICABLE')
+        for old,new in [('tags=local.tags','tags=local.tags\n policy=var.policy'),
+                        ('enabled=true','enabled=true\n kms_key_arn=var.key'),
+                        ('hash_key="PK"','hash_key="PK"\n provisioner "local-exec" { command="not-run" }')]:
+            self.assertTrue(self.discover(text.replace(old,new)).taints('github'))
+
+    def test_logging_target_schema_keeps_s3_and_hooks_unknown(self):
+        text='''resource "aws_s3_bucket_logging" "archive" {
+ bucket=aws_s3_bucket.archive.id
+ expected_bucket_owner=var.account
+ target_bucket=var.log_bucket
+ target_prefix=var.prefix
+}'''
+        d=self.discover(text)
+        self.assertEqual(d.taints('github'),[])
+        self.assertEqual(len(d.taints('api:s3')),1)
+        self.assertEqual(d.records[0]['admission'],'UNSUPPORTED_APPLICABLE')
+        for extra in ('policy=var.policy','provisioner "local-exec" { command="not-run" }','dynamic "target_object_key_format" { for_each=var.items }'):
+            self.assertTrue(self.discover(text.replace(' target_prefix=var.prefix',' target_prefix=var.prefix\n '+extra)).taints('github'))
 
 if __name__=='__main__':unittest.main(verbosity=2)

@@ -117,6 +117,11 @@ class HostTests(unittest.TestCase):
         p=json.loads(x['locals']['policy'][len('${jsonencode('):-2]);acts={a for s in p['Statement'] for a in s['Action']}
         self.assertFalse(any(a.startswith(('ec2:','iam:','sns:','dynamodb:','secretsmanager:')) for a in acts));self.assertNotIn('s3:PutObject',acts);self.assertEqual({a for a in acts if a.startswith('kms:')},{'kms:Decrypt'})
         self.assertTrue(all('DateLessThan' in s['Condition'] for s in p['Statement']));self.assertIn('ssmmessages:OpenDataChannel',acts)
+        own=[s for s in p['Statement'] if s.get('Sid')=='ReadOnlyExactEncryptedDistributionObject']
+        self.assertEqual(len(own),1);self.assertEqual(own[0]['Action'],['kms:Decrypt']);self.assertEqual(own[0]['Resource'],'${var.distribution_key_arn}')
+        self.assertEqual(own[0]['Condition']['StringEquals']['kms:EncryptionContext:aws:s3:arn'],'arn:aws:s3:::${local.bucket}/${local.object_key}')
+        self.assertEqual(own[0]['Condition']['StringEquals']['kms:ViaService'],'s3.${var.config.region}.amazonaws.com')
+
     def test_default_off_and_same_sender_role_contract(self):
         r=json.loads((TF/'main.tf.json').read_text());self.assertFalse(r['variable']['enable_observer']['default']);self.assertIsNone(r['variable']['observer']['default']);self.assertNotIn('depends_on',r['module']['observer']);self.assertIn('module.pipeline.distribution_ready_bucket',r['module']['observer']['distribution_ready_bucket'])
         m=json.loads((TF/'modules/observer/main.tf.json').read_text());checks=json.dumps(m['resource']['aws_instance']['observer']['lifecycle']);self.assertIn('sender_role_arn==local.role_arn',checks)
