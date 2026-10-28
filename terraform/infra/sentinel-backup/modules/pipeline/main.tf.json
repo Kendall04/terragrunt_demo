@@ -1,0 +1,627 @@
+{
+  "terraform": {
+    "required_version": "= 1.13.4",
+    "required_providers": {
+      "aws": {
+        "source": "hashicorp/aws",
+        "version": "= 6.27.0"
+      }
+    }
+  },
+  "variable": {
+    "config": {
+      "type": "object({ account = string, region = string, run_id = string, project = string, subject = string, scope = string, owner = string, mode = string, starts_at = string, expires_at = string, sender_label = string, notification_mode = string, email = string, sender_role_arn = string, lifecycle_principal_arn = string, artifact_path = string, artifact_manifest_path = string, artifact_sha256 = string, source_commit = string, upstream_commit = string, evidence_seconds = number, budget_seconds = number, check_seconds = number, hold_seconds = number, dedup_seconds = number, signal_age_seconds = number, audit_seconds = number, effect_seconds = number, log_retention_days = number, queue_retention_seconds = number, dlq_retention_seconds = number, watchdog_seconds = optional(number,0), observer_expected_up = optional(bool,false) })",
+      "nullable": false,
+      "validation": [
+        {
+          "condition": "${can(regex(\"^ecs-sentinel-[a-z0-9-]{1,24}$\",var.config.run_id)) && can(regex(\"^[0-9]{12}$\",var.config.account)) && can(regex(\"^[a-z]{2}(-[a-z]+)+-[0-9]$\",var.config.region))}",
+          "error_message": "Explicit isolated run/account/region required."
+        },
+        {
+          "condition": "${var.config.mode == \"synthetic-trial\" || var.config.mode == \"observer-check\"}",
+          "error_message": "Only explicitly selected synthetic replay or observer-check admission."
+        },
+        {
+          "condition": "${can(regex(\"^[a-f0-9]{64}$\",var.config.artifact_sha256)) && can(regex(\"^[a-f0-9]{40}$\",var.config.source_commit)) && var.config.upstream_commit == \"0e8fc55333ddde3b9816885915310a7e69f3de45\"}",
+          "error_message": "Exact immutable artifact/source and original Sentinel revision required."
+        },
+        {
+          "condition": "${contains([1,3,5,7,14,30],var.config.log_retention_days) && var.config.queue_retention_seconds >= 60 && var.config.dlq_retention_seconds >= var.config.queue_retention_seconds && var.config.dlq_retention_seconds <= 1209600}",
+          "error_message": "Choose explicit bounded log/queue retention; DLQ cannot expire first."
+        },
+        {
+          "condition": "${can(regex(\"^[a-z0-9][a-z0-9._-]{0,63}$\",var.config.project)) && can(regex(\"^[a-z0-9][a-z0-9._-]{0,63}$\",var.config.subject))}",
+          "error_message": "ASCII project/subject binding required for cross-language namespace identity."
+        },
+        {
+          "condition": "${var.config.evidence_seconds > 0 && var.config.budget_seconds > 0 && var.config.check_seconds > 0 && var.config.hold_seconds >= 0 && var.config.signal_age_seconds > 0 && var.config.dedup_seconds >= var.config.signal_age_seconds && var.config.audit_seconds > 0 && var.config.effect_seconds > 0 && floor(var.config.evidence_seconds) == var.config.evidence_seconds && floor(var.config.budget_seconds) == var.config.budget_seconds && floor(var.config.check_seconds) == var.config.check_seconds && floor(var.config.hold_seconds) == var.config.hold_seconds && floor(var.config.dedup_seconds) == var.config.dedup_seconds && floor(var.config.signal_age_seconds) == var.config.signal_age_seconds && floor(var.config.audit_seconds) == var.config.audit_seconds && floor(var.config.effect_seconds) == var.config.effect_seconds}",
+          "error_message": "Explicit integer retention/evaluation seconds required; dedup covers signal age."
+        },
+        {
+          "condition": "${can(regex(\"^arn:aws:iam::[0-9]{12}:role/\",var.config.sender_role_arn)) && split(\":\",var.config.sender_role_arn)[4] == var.config.account && can(regex(\"^arn:aws:iam::[0-9]{12}:(role|user)/\",var.config.lifecycle_principal_arn)) && split(\":\",var.config.lifecycle_principal_arn)[4] == var.config.account}",
+          "error_message": "Select existing same-account sender role and separate lifecycle principal."
+        },
+        {
+          "condition": "${can(regex(\"Z$\",var.config.starts_at)) && can(regex(\"Z$\",var.config.expires_at)) && try(timecmp(var.config.expires_at,var.config.starts_at)>0 && timecmp(var.config.expires_at,timeadd(var.config.starts_at,\"24h\"))<=0,false)}",
+          "error_message": "Current managed runtime is finite: explicit UTC start/expiry within24h. No permanent schedule is silently authorized."
+        },
+        {
+          "condition": "${try(jsondecode(file(var.config.artifact_manifest_path)).zipSha256 == var.config.artifact_sha256 && jsondecode(file(var.config.artifact_manifest_path)).sourceCommit == var.config.source_commit && jsondecode(file(var.config.artifact_manifest_path)).upstreamCommit == var.config.upstream_commit && jsondecode(file(var.config.artifact_manifest_path)).integrationContractVersion == \"ecs-backup-managed-v3\" && contains(jsondecode(file(var.config.artifact_manifest_path)).supportedModes,var.config.mode),false) && try(contains(jsondecode(file(var.config.artifact_manifest_path)).capabilities,\"trial-one-epoch-notices-v1\"),false)}",
+          "error_message": "New v3 qualified artifact manifest must match mode/digest/source; old trial binaries are refused."
+        },
+        {
+          "condition": "${var.config.watchdog_seconds >= 0 && var.config.watchdog_seconds <= 86400 && floor(var.config.watchdog_seconds)==var.config.watchdog_seconds && (var.config.watchdog_seconds==0 || var.config.mode==\"observer-check\")}",
+          "error_message": "Explicit watchdog deadline requires observer-check mode;0 disables it. Expected-UP is separately explicit."
+        }
+      ]
+    },
+    "enable_ingestion": {
+      "type": "bool",
+      "default": false
+    },
+    "allow_data_retirement": {
+      "type": "bool",
+      "default": false
+    },
+    "enable_dispatch_schedule": {
+      "type": "bool",
+      "default": false
+    },
+    "dispatch_schedule_expression": {
+      "type": "string",
+      "nullable": true,
+      "default": null,
+      "validation": {
+        "condition": "${!var.enable_dispatch_schedule || can(regex(\"^rate\\\\(([1-9]|[1-5][0-9]|60) minutes?\\\\)$\",var.dispatch_schedule_expression))}",
+        "error_message": "Enable only with an explicitly reviewed rate of1..60 minutes."
+      }
+    },
+    "distribution_reader": {
+      "type": "object({role_arn=string,key=string})",
+      "default": null
+    },
+    "dispatch_schedule_enabled": {
+      "type": "bool",
+      "default": false
+    },
+    "security": {
+      "type": "object({ archive_kms_key_arn=string, notice_kms_key_arn=string, access_log_bucket=string, access_log_prefix=string, access_log_retention_days=number })",
+      "nullable": false,
+      "validation": [
+        {
+          "condition": "${alltrue([for key in [var.security.archive_kms_key_arn,var.security.notice_kms_key_arn] : can(regex(\"^arn:aws:kms:${var.config.region}:${var.config.account}:key/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$\",key))]) && var.security.archive_kms_key_arn != var.security.notice_kms_key_arn}",
+          "error_message": "Two distinct, exact, same-account/region customer-managed symmetric key ARNs required; no aliases, defaults or implicit historic-key reuse."
+        },
+        {
+          "condition": "${var.security.access_log_bucket == \"snt-logs-${var.config.run_id}-${var.config.account}\" && length(var.security.access_log_bucket)<=63 && var.security.access_log_prefix == \"sentinel/${var.config.run_id}/\" && var.security.access_log_retention_days>=1 && var.security.access_log_retention_days<=30 && floor(var.security.access_log_retention_days)==var.security.access_log_retention_days}",
+          "error_message": "Dedicated run/account log destination and prefix, with explicit1..30 day retention required; destination is externally owned and must be verified before apply."
+        }
+      ]
+    }
+  },
+  "locals": {
+    "name": "${var.config.run_id}",
+    "tags": {
+      "Project": "${var.config.project}",
+      "Environment": "sandbox",
+      "Owner": "${var.config.owner}",
+      "RunId": "${var.config.run_id}"
+    },
+    "bucket_name": "${var.config.run_id}-${var.config.account}",
+    "namespace": "NS#${local.binding_hash}",
+    "table_arn": "arn:aws:dynamodb:${var.config.region}:${var.config.account}:table/${var.config.run_id}",
+    "queue_arn": "arn:aws:sqs:${var.config.region}:${var.config.account}:${var.config.run_id}-ingestion",
+    "topic_arn": "arn:aws:sns:${var.config.region}:${var.config.account}:${var.config.run_id}-notices",
+    "role_arns": {
+      "ingest": "arn:aws:iam::${var.config.account}:role/${var.config.run_id}-ingest-role",
+      "dispatch": "arn:aws:iam::${var.config.account}:role/${var.config.run_id}-dispatch-role"
+    },
+    "archive_prefix": "sentinel/v3/${local.binding_hash}",
+    "binding_hash": "${sha256(jsonencode([var.config.project,\"sandbox\",var.config.run_id]))}"
+  },
+  "resource": {
+    "aws_s3_bucket_public_access_block": {
+      "archive": {
+        "bucket": "${aws_s3_bucket.archive.id}",
+        "block_public_acls": true,
+        "block_public_policy": true,
+        "ignore_public_acls": true,
+        "restrict_public_buckets": true
+      }
+    },
+    "aws_s3_bucket_ownership_controls": {
+      "archive": {
+        "bucket": "${aws_s3_bucket.archive.id}",
+        "rule": {
+          "object_ownership": "BucketOwnerEnforced"
+        }
+      }
+    },
+    "aws_s3_object": {
+      "code": {
+        "bucket": "${aws_s3_bucket.archive.id}",
+        "key": "packages/${var.config.artifact_sha256}.zip",
+        "source": "${var.config.artifact_path}",
+        "source_hash": "${var.config.artifact_sha256}",
+        "depends_on": [
+          "aws_s3_bucket_versioning.archive",
+          "aws_s3_bucket_server_side_encryption_configuration.archive",
+          "aws_s3_bucket_public_access_block.archive",
+          "aws_s3_bucket_policy.archive"
+        ],
+        "lifecycle": {
+          "precondition": [
+            {
+              "condition": "${filesha256(var.config.artifact_path) == var.config.artifact_sha256}",
+              "error_message": "Artifact bytes must match approved immutable SHA256."
+            }
+          ]
+        },
+        "server_side_encryption": "aws:kms",
+        "kms_key_id": "${var.security.archive_kms_key_arn}"
+      }
+    },
+    "aws_sqs_queue": {
+      "dlq": {
+        "name": "${local.name}-dlq",
+        "message_retention_seconds": "${var.config.dlq_retention_seconds}",
+        "sqs_managed_sse_enabled": true,
+        "redrive_allow_policy": "${jsonencode({redrivePermission=\"byQueue\",sourceQueueArns=[local.queue_arn]})}",
+        "tags": "${local.tags}"
+      },
+      "ingestion": {
+        "name": "${local.name}-ingestion",
+        "message_retention_seconds": "${var.config.queue_retention_seconds}",
+        "visibility_timeout_seconds": 90,
+        "receive_wait_time_seconds": 20,
+        "sqs_managed_sse_enabled": true,
+        "redrive_policy": "${jsonencode({deadLetterTargetArn=aws_sqs_queue.dlq.arn,maxReceiveCount=5})}",
+        "tags": "${local.tags}"
+      }
+    },
+    "aws_sqs_queue_policy": {
+      "ingestion": {
+        "queue_url": "${aws_sqs_queue.ingestion.id}",
+        "policy": "${jsonencode({\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Deny\",\"Principal\":\"*\",\"Action\":\"sqs:*\",\"Resource\":\"${aws_sqs_queue.ingestion.arn}\",\"Condition\":{\"Bool\":{\"aws:SecureTransport\":\"false\",\"aws:PrincipalIsAWSService\":\"false\"}}},{\"Effect\":\"Deny\",\"Principal\":\"*\",\"Action\":\"sqs:SendMessage\",\"Resource\":\"${aws_sqs_queue.ingestion.arn}\",\"Condition\":{\"ArnNotEquals\":{\"aws:PrincipalArn\":\"${var.config.sender_role_arn}\"}}},{\"Effect\":\"Deny\",\"Principal\":\"*\",\"Action\":\"sqs:*\",\"Resource\":\"${aws_sqs_queue.ingestion.arn}\",\"Condition\":{\"ArnNotEquals\":{\"aws:PrincipalArn\":[\"${var.config.lifecycle_principal_arn}\",\"${local.role_arns.ingest}\",\"${var.config.sender_role_arn}\"]},\"Bool\":{\"aws:PrincipalIsAWSService\":\"false\"}}}]})}"
+      },
+      "dlq": {
+        "queue_url": "${aws_sqs_queue.dlq.id}",
+        "policy": "${jsonencode({\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Deny\",\"Principal\":\"*\",\"Action\":\"sqs:*\",\"Resource\":\"${aws_sqs_queue.dlq.arn}\",\"Condition\":{\"Bool\":{\"aws:SecureTransport\":\"false\",\"aws:PrincipalIsAWSService\":\"false\"}}},{\"Effect\":\"Deny\",\"Principal\":\"*\",\"Action\":\"sqs:*\",\"Resource\":\"${aws_sqs_queue.dlq.arn}\",\"Condition\":{\"ArnNotEquals\":{\"aws:PrincipalArn\":[\"${var.config.lifecycle_principal_arn}\",\"${local.role_arns.ingest}\",\"${var.config.sender_role_arn}\"]},\"Bool\":{\"aws:PrincipalIsAWSService\":\"false\"}}}]})}"
+      }
+    },
+    "aws_sns_topic_policy": {
+      "notices": {
+        "arn": "${aws_sns_topic.notices.arn}",
+        "policy": "${jsonencode({\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Deny\",\"Principal\":\"*\",\"Action\":\"sns:Publish\",\"Resource\":\"${local.topic_arn}\",\"Condition\":{\"ArnNotEquals\":{\"aws:PrincipalArn\":\"${local.role_arns.dispatch}\"}}},{\"Effect\":\"Deny\",\"Principal\":\"*\",\"Action\":[\"sns:Publish\",\"sns:Subscribe\",\"sns:GetTopicAttributes\",\"sns:SetTopicAttributes\",\"sns:DeleteTopic\"],\"Resource\":\"${local.topic_arn}\",\"Condition\":{\"Bool\":{\"aws:SecureTransport\":\"false\",\"aws:PrincipalIsAWSService\":\"false\"}}}]})}"
+      }
+    },
+    "aws_sns_topic_subscription": {
+      "email": {
+        "topic_arn": "${aws_sns_topic.notices.arn}",
+        "protocol": "email",
+        "endpoint": "${var.config.email}",
+        "depends_on": [
+          "aws_sns_topic_policy.notices"
+        ]
+      }
+    },
+    "aws_cloudwatch_log_group": {
+      "ingest": {
+        "name": "/aws/lambda/${local.name}-ingest",
+        "retention_in_days": "${var.config.log_retention_days}",
+        "tags": "${local.tags}"
+      },
+      "dispatch": {
+        "name": "/aws/lambda/${local.name}-dispatch",
+        "retention_in_days": "${var.config.log_retention_days}",
+        "tags": "${local.tags}"
+      }
+    },
+    "aws_iam_policy": {
+      "ingest_boundary": {
+        "name": "${local.name}-ingest-boundary",
+        "policy": "${jsonencode({\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"dynamodb:GetItem\",\"dynamodb:PutItem\",\"dynamodb:UpdateItem\",\"dynamodb:DeleteItem\",\"dynamodb:ConditionCheckItem\"],\"Resource\":\"${local.table_arn}\",\"Condition\":{\"ForAllValues:StringEquals\":{\"dynamodb:LeadingKeys\":[\"${local.namespace}\"]},\"Null\":{\"dynamodb:LeadingKeys\":\"false\"}}},{\"Effect\":\"Allow\",\"Action\":[\"logs:CreateLogStream\",\"logs:PutLogEvents\"],\"Resource\":\"arn:aws:logs:${var.config.region}:${var.config.account}:log-group:/aws/lambda/${var.config.run_id}-ingest:log-stream:*\"},{\"Effect\":\"Allow\",\"Action\":[\"sqs:ReceiveMessage\",\"sqs:DeleteMessage\",\"sqs:GetQueueAttributes\"],\"Resource\":\"${local.queue_arn}\"}]})}",
+        "tags": "${local.tags}"
+      },
+      "dispatch_boundary": {
+        "name": "${local.name}-dispatch-boundary",
+        "policy": "${jsonencode({\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"dynamodb:GetItem\",\"dynamodb:PutItem\",\"dynamodb:UpdateItem\",\"dynamodb:DeleteItem\",\"dynamodb:ConditionCheckItem\"],\"Resource\":\"${local.table_arn}\",\"Condition\":{\"ForAllValues:StringEquals\":{\"dynamodb:LeadingKeys\":[\"${local.namespace}\"]},\"Null\":{\"dynamodb:LeadingKeys\":\"false\"}}},{\"Effect\":\"Allow\",\"Action\":[\"logs:CreateLogStream\",\"logs:PutLogEvents\"],\"Resource\":\"arn:aws:logs:${var.config.region}:${var.config.account}:log-group:/aws/lambda/${var.config.run_id}-dispatch:log-stream:*\"},{\"Effect\":\"Allow\",\"Action\":[\"s3:GetObject\",\"s3:PutObject\"],\"Resource\":\"arn:aws:s3:::${local.bucket_name}/${local.archive_prefix}/*\"},{\"Effect\":\"Allow\",\"Action\":[\"sns:Publish\"],\"Resource\":\"${local.topic_arn}\"},{\"Effect\":\"Allow\",\"Action\":[\"dynamodb:Query\"],\"Resource\":\"${local.table_arn}\",\"Condition\":{\"ForAllValues:StringEquals\":{\"dynamodb:LeadingKeys\":[\"${local.namespace}\"]},\"Null\":{\"dynamodb:LeadingKeys\":\"false\"}}},{\"Sid\":\"OwnArchiveKmsThroughS3\",\"Effect\":\"Allow\",\"Action\":[\"kms:GenerateDataKey\",\"kms:Decrypt\"],\"Resource\":\"${var.security.archive_kms_key_arn}\",\"Condition\":{\"StringEquals\":{\"aws:RequestedRegion\":\"${var.config.region}\",\"kms:CallerAccount\":\"${var.config.account}\",\"kms:ViaService\":\"s3.${var.config.region}.amazonaws.com\"},\"DateGreaterThanEquals\":{\"aws:CurrentTime\":\"${var.config.starts_at}\"},\"DateLessThan\":{\"aws:CurrentTime\":\"${var.config.expires_at}\"},\"StringLike\":{\"kms:EncryptionContext:aws:s3:arn\":\"arn:aws:s3:::${local.bucket_name}/${local.archive_prefix}/*\"}}},{\"Sid\":\"OwnNoticeKmsThroughSns\",\"Effect\":\"Allow\",\"Action\":[\"kms:GenerateDataKey\",\"kms:Decrypt\"],\"Resource\":\"${var.security.notice_kms_key_arn}\",\"Condition\":{\"StringEquals\":{\"aws:RequestedRegion\":\"${var.config.region}\",\"kms:CallerAccount\":\"${var.config.account}\",\"kms:ViaService\":\"sns.${var.config.region}.amazonaws.com\",\"kms:EncryptionContext:aws:sns:topicArn\":\"${local.topic_arn}\"},\"DateGreaterThanEquals\":{\"aws:CurrentTime\":\"${var.config.starts_at}\"},\"DateLessThan\":{\"aws:CurrentTime\":\"${var.config.expires_at}\"}}}]})}",
+        "tags": "${local.tags}"
+      }
+    },
+    "aws_iam_role": {
+      "ingest": {
+        "name": "${local.name}-ingest-role",
+        "assume_role_policy": "${jsonencode({\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"lambda.amazonaws.com\"},\"Action\":\"sts:AssumeRole\"}]})}",
+        "permissions_boundary": "${aws_iam_policy.ingest_boundary.arn}",
+        "tags": "${local.tags}"
+      },
+      "dispatch": {
+        "name": "${local.name}-dispatch-role",
+        "assume_role_policy": "${jsonencode({\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"lambda.amazonaws.com\"},\"Action\":\"sts:AssumeRole\"}]})}",
+        "permissions_boundary": "${aws_iam_policy.dispatch_boundary.arn}",
+        "tags": "${local.tags}"
+      }
+    },
+    "aws_iam_role_policy": {
+      "ingest": {
+        "name": "BackupOnly",
+        "role": "${aws_iam_role.ingest.id}",
+        "policy": "${jsonencode({\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"dynamodb:GetItem\",\"dynamodb:PutItem\",\"dynamodb:UpdateItem\",\"dynamodb:DeleteItem\",\"dynamodb:ConditionCheckItem\"],\"Resource\":\"${local.table_arn}\",\"Condition\":{\"ForAllValues:StringEquals\":{\"dynamodb:LeadingKeys\":[\"${local.namespace}\"]},\"Null\":{\"dynamodb:LeadingKeys\":\"false\"}}},{\"Effect\":\"Allow\",\"Action\":[\"logs:CreateLogStream\",\"logs:PutLogEvents\"],\"Resource\":\"arn:aws:logs:${var.config.region}:${var.config.account}:log-group:/aws/lambda/${var.config.run_id}-ingest:log-stream:*\"},{\"Effect\":\"Allow\",\"Action\":[\"sqs:ReceiveMessage\",\"sqs:DeleteMessage\",\"sqs:GetQueueAttributes\"],\"Resource\":\"${local.queue_arn}\"}]})}"
+      },
+      "dispatch": {
+        "name": "BackupOnly",
+        "role": "${aws_iam_role.dispatch.id}",
+        "policy": "${jsonencode({\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"dynamodb:GetItem\",\"dynamodb:PutItem\",\"dynamodb:UpdateItem\",\"dynamodb:DeleteItem\",\"dynamodb:ConditionCheckItem\"],\"Resource\":\"${local.table_arn}\",\"Condition\":{\"ForAllValues:StringEquals\":{\"dynamodb:LeadingKeys\":[\"${local.namespace}\"]},\"Null\":{\"dynamodb:LeadingKeys\":\"false\"}}},{\"Effect\":\"Allow\",\"Action\":[\"logs:CreateLogStream\",\"logs:PutLogEvents\"],\"Resource\":\"arn:aws:logs:${var.config.region}:${var.config.account}:log-group:/aws/lambda/${var.config.run_id}-dispatch:log-stream:*\"},{\"Effect\":\"Allow\",\"Action\":[\"s3:GetObject\",\"s3:PutObject\"],\"Resource\":\"arn:aws:s3:::${local.bucket_name}/${local.archive_prefix}/*\"},{\"Effect\":\"Allow\",\"Action\":[\"sns:Publish\"],\"Resource\":\"${local.topic_arn}\"},{\"Effect\":\"Allow\",\"Action\":[\"dynamodb:Query\"],\"Resource\":\"${local.table_arn}\",\"Condition\":{\"ForAllValues:StringEquals\":{\"dynamodb:LeadingKeys\":[\"${local.namespace}\"]},\"Null\":{\"dynamodb:LeadingKeys\":\"false\"}}},{\"Sid\":\"OwnArchiveKmsThroughS3\",\"Effect\":\"Allow\",\"Action\":[\"kms:GenerateDataKey\",\"kms:Decrypt\"],\"Resource\":\"${var.security.archive_kms_key_arn}\",\"Condition\":{\"StringEquals\":{\"aws:RequestedRegion\":\"${var.config.region}\",\"kms:CallerAccount\":\"${var.config.account}\",\"kms:ViaService\":\"s3.${var.config.region}.amazonaws.com\"},\"DateGreaterThanEquals\":{\"aws:CurrentTime\":\"${var.config.starts_at}\"},\"DateLessThan\":{\"aws:CurrentTime\":\"${var.config.expires_at}\"},\"StringLike\":{\"kms:EncryptionContext:aws:s3:arn\":\"arn:aws:s3:::${local.bucket_name}/${local.archive_prefix}/*\"}}},{\"Sid\":\"OwnNoticeKmsThroughSns\",\"Effect\":\"Allow\",\"Action\":[\"kms:GenerateDataKey\",\"kms:Decrypt\"],\"Resource\":\"${var.security.notice_kms_key_arn}\",\"Condition\":{\"StringEquals\":{\"aws:RequestedRegion\":\"${var.config.region}\",\"kms:CallerAccount\":\"${var.config.account}\",\"kms:ViaService\":\"sns.${var.config.region}.amazonaws.com\",\"kms:EncryptionContext:aws:sns:topicArn\":\"${local.topic_arn}\"},\"DateGreaterThanEquals\":{\"aws:CurrentTime\":\"${var.config.starts_at}\"},\"DateLessThan\":{\"aws:CurrentTime\":\"${var.config.expires_at}\"}}}]})}"
+      }
+    },
+    "aws_lambda_function": {
+      "ingest": {
+        "function_name": "${local.name}-ingest",
+        "role": "${aws_iam_role.ingest.arn}",
+        "runtime": "dotnet10",
+        "architectures": [
+          "x86_64"
+        ],
+        "handler": "Ecs.Backup.Managed::Ecs.Backup.Managed.IngestFunction::Handler",
+        "s3_bucket": "${aws_s3_bucket.archive.id}",
+        "s3_key": "${aws_s3_object.code.key}",
+        "s3_object_version": "${aws_s3_object.code.version_id}",
+        "source_code_hash": "${filebase64sha256(var.config.artifact_path)}",
+        "timeout": 15,
+        "memory_size": 512,
+        "reserved_concurrent_executions": 2,
+        "environment": {
+          "variables": {
+            "SENTINEL_MODE": "${var.config.mode}",
+            "SENTINEL_RUN_ID": "${local.name}",
+            "SENTINEL_ACCOUNT": "${var.config.account}",
+            "SENTINEL_REGION": "${var.config.region}",
+            "SENTINEL_PROJECT": "${var.config.project}",
+            "SENTINEL_CONSUMER": "${local.name}",
+            "SENTINEL_SUBJECT": "${var.config.subject}",
+            "SENTINEL_SERVICE": "sql-backup",
+            "SENTINEL_SCOPE": "${var.config.scope}",
+            "SENTINEL_FAILURE_SIGNATURE": "backup-health",
+            "SENTINEL_QUEUE_ARN": "${local.queue_arn}",
+            "SENTINEL_TABLE": "${local.name}",
+            "SENTINEL_BUCKET": "${local.bucket_name}",
+            "SENTINEL_NAMESPACE": "${local.namespace}",
+            "SENTINEL_ARCHIVE_PREFIX": "${local.archive_prefix}",
+            "SENTINEL_TOPIC_ARN": "${local.topic_arn}",
+            "SENTINEL_OWNER": "${tostring(var.config.owner)}",
+            "SENTINEL_SENDER_LABEL": "${tostring(var.config.sender_label)}",
+            "SENTINEL_NOTIFICATION_MODE": "${tostring(var.config.notification_mode)}",
+            "SENTINEL_STARTS_AT": "${tostring(var.config.starts_at)}",
+            "SENTINEL_EXPIRES_AT": "${tostring(var.config.expires_at)}",
+            "SENTINEL_EVIDENCE_SECONDS": "${tostring(var.config.evidence_seconds)}",
+            "SENTINEL_BUDGET_SECONDS": "${tostring(var.config.budget_seconds)}",
+            "SENTINEL_CHECK_SECONDS": "${tostring(var.config.check_seconds)}",
+            "SENTINEL_HOLD_SECONDS": "${tostring(var.config.hold_seconds)}",
+            "SENTINEL_DEDUP_SECONDS": "${tostring(var.config.dedup_seconds)}",
+            "SENTINEL_SIGNAL_AGE_SECONDS": "${tostring(var.config.signal_age_seconds)}",
+            "SENTINEL_AUDIT_SECONDS": "${tostring(var.config.audit_seconds)}",
+            "SENTINEL_EFFECT_SECONDS": "${tostring(var.config.effect_seconds)}",
+            "SENTINEL_WATCHDOG_SECONDS": "${tostring(var.config.watchdog_seconds)}",
+            "SENTINEL_OBSERVER_EXPECTED_UP": "${tostring(var.config.observer_expected_up)}"
+          }
+        },
+        "tags": "${local.tags}",
+        "depends_on": [
+          "aws_iam_role_policy.ingest",
+          "aws_cloudwatch_log_group.ingest"
+        ],
+        "lifecycle": {
+          "precondition": [
+            {
+              "condition": "${aws_s3_object.code.version_id != \"null\" && aws_s3_object.code.version_id != \"\"}",
+              "error_message": "A real immutable S3 version is required."
+            }
+          ]
+        }
+      },
+      "dispatch": {
+        "function_name": "${local.name}-dispatch",
+        "role": "${aws_iam_role.dispatch.arn}",
+        "runtime": "dotnet10",
+        "architectures": [
+          "x86_64"
+        ],
+        "handler": "Ecs.Backup.Managed::Ecs.Backup.Managed.DispatchFunction::Reconcile",
+        "s3_bucket": "${aws_s3_bucket.archive.id}",
+        "s3_key": "${aws_s3_object.code.key}",
+        "s3_object_version": "${aws_s3_object.code.version_id}",
+        "source_code_hash": "${filebase64sha256(var.config.artifact_path)}",
+        "timeout": 15,
+        "memory_size": 512,
+        "reserved_concurrent_executions": 1,
+        "environment": {
+          "variables": {
+            "SENTINEL_MODE": "${var.config.mode}",
+            "SENTINEL_RUN_ID": "${local.name}",
+            "SENTINEL_ACCOUNT": "${var.config.account}",
+            "SENTINEL_REGION": "${var.config.region}",
+            "SENTINEL_PROJECT": "${var.config.project}",
+            "SENTINEL_CONSUMER": "${local.name}",
+            "SENTINEL_SUBJECT": "${var.config.subject}",
+            "SENTINEL_SERVICE": "sql-backup",
+            "SENTINEL_SCOPE": "${var.config.scope}",
+            "SENTINEL_FAILURE_SIGNATURE": "backup-health",
+            "SENTINEL_QUEUE_ARN": "${local.queue_arn}",
+            "SENTINEL_TABLE": "${local.name}",
+            "SENTINEL_BUCKET": "${local.bucket_name}",
+            "SENTINEL_NAMESPACE": "${local.namespace}",
+            "SENTINEL_ARCHIVE_PREFIX": "${local.archive_prefix}",
+            "SENTINEL_TOPIC_ARN": "${local.topic_arn}",
+            "SENTINEL_OWNER": "${tostring(var.config.owner)}",
+            "SENTINEL_SENDER_LABEL": "${tostring(var.config.sender_label)}",
+            "SENTINEL_NOTIFICATION_MODE": "${tostring(var.config.notification_mode)}",
+            "SENTINEL_STARTS_AT": "${tostring(var.config.starts_at)}",
+            "SENTINEL_EXPIRES_AT": "${tostring(var.config.expires_at)}",
+            "SENTINEL_EVIDENCE_SECONDS": "${tostring(var.config.evidence_seconds)}",
+            "SENTINEL_BUDGET_SECONDS": "${tostring(var.config.budget_seconds)}",
+            "SENTINEL_CHECK_SECONDS": "${tostring(var.config.check_seconds)}",
+            "SENTINEL_HOLD_SECONDS": "${tostring(var.config.hold_seconds)}",
+            "SENTINEL_DEDUP_SECONDS": "${tostring(var.config.dedup_seconds)}",
+            "SENTINEL_SIGNAL_AGE_SECONDS": "${tostring(var.config.signal_age_seconds)}",
+            "SENTINEL_AUDIT_SECONDS": "${tostring(var.config.audit_seconds)}",
+            "SENTINEL_EFFECT_SECONDS": "${tostring(var.config.effect_seconds)}",
+            "SENTINEL_WATCHDOG_SECONDS": "${tostring(var.config.watchdog_seconds)}",
+            "SENTINEL_OBSERVER_EXPECTED_UP": "${tostring(var.config.observer_expected_up)}"
+          }
+        },
+        "tags": "${local.tags}",
+        "depends_on": [
+          "aws_iam_role_policy.dispatch",
+          "aws_cloudwatch_log_group.dispatch"
+        ],
+        "lifecycle": {
+          "precondition": [
+            {
+              "condition": "${aws_s3_object.code.version_id != \"null\" && aws_s3_object.code.version_id != \"\"}",
+              "error_message": "A real immutable S3 version is required."
+            }
+          ]
+        }
+      }
+    },
+    "aws_lambda_event_source_mapping": {
+      "ingestion": {
+        "event_source_arn": "${aws_sqs_queue.ingestion.arn}",
+        "function_name": "${aws_lambda_function.ingest.arn}",
+        "enabled": "${var.enable_ingestion}",
+        "batch_size": 5,
+        "function_response_types": [
+          "ReportBatchItemFailures"
+        ],
+        "scaling_config": {
+          "maximum_concurrency": 2
+        },
+        "depends_on": [
+          "aws_iam_role_policy.ingest",
+          "aws_sqs_queue_policy.ingestion"
+        ],
+        "tags": "${local.tags}"
+      }
+    },
+    "aws_s3_bucket_policy": {
+      "archive": {
+        "bucket": "${aws_s3_bucket.archive.id}",
+        "policy": "${jsonencode({Version=\"2012-10-17\",Statement=concat([{\"Sid\":\"RejectExplicitNonKmsEncryption\",\"Effect\":\"Deny\",\"Principal\":\"*\",\"Action\":[\"s3:PutObject\"],\"Resource\":\"arn:aws:s3:::${local.bucket_name}/*\",\"Condition\":{\"StringNotEquals\":{\"s3:x-amz-server-side-encryption\":\"aws:kms\"},\"Null\":{\"s3:x-amz-server-side-encryption\":\"false\"}}},{\"Sid\":\"RejectForeignExplicitKmsKey\",\"Effect\":\"Deny\",\"Principal\":\"*\",\"Action\":[\"s3:PutObject\"],\"Resource\":\"arn:aws:s3:::${local.bucket_name}/*\",\"Condition\":{\"StringNotEquals\":{\"s3:x-amz-server-side-encryption-aws-kms-key-id\":\"${var.security.archive_kms_key_arn}\"},\"Null\":{\"s3:x-amz-server-side-encryption-aws-kms-key-id\":\"false\"}}},{\"Sid\":\"RequireKeyForExplicitKms\",\"Effect\":\"Deny\",\"Principal\":\"*\",\"Action\":[\"s3:PutObject\"],\"Resource\":\"arn:aws:s3:::${local.bucket_name}/*\",\"Condition\":{\"StringEquals\":{\"s3:x-amz-server-side-encryption\":\"aws:kms\"},\"Null\":{\"s3:x-amz-server-side-encryption-aws-kms-key-id\":\"true\"}}},{\"Sid\":\"RejectCustomerProvidedEncryption\",\"Effect\":\"Deny\",\"Principal\":\"*\",\"Action\":[\"s3:PutObject\"],\"Resource\":\"arn:aws:s3:::${local.bucket_name}/*\",\"Condition\":{\"Null\":{\"s3:x-amz-server-side-encryption-customer-algorithm\":\"false\"}}}],[{Effect=\"Deny\",Principal=\"*\",Action=\"s3:*\",Resource=[\"arn:aws:s3:::${local.bucket_name}\",\"arn:aws:s3:::${local.bucket_name}/*\"],Condition={Bool={\"aws:SecureTransport\"=\"false\",\"aws:PrincipalIsAWSService\"=\"false\"}}},{Effect=\"Deny\",Principal=\"*\",Action=\"s3:*\",Resource=[\"arn:aws:s3:::${local.bucket_name}\",\"arn:aws:s3:::${local.bucket_name}/*\"],Condition={ArnNotEquals={\"aws:PrincipalArn\"=concat([var.config.lifecycle_principal_arn,local.role_arns.dispatch],var.distribution_reader==null?[]:[var.distribution_reader.role_arn])},Bool={\"aws:PrincipalIsAWSService\"=\"false\"}}}],jsondecode(var.distribution_reader==null?\"[]\":jsonencode([{Effect=\"Deny\",Principal=\"*\",Action=\"s3:*\",NotResource=\"arn:aws:s3:::${local.bucket_name}/${var.distribution_reader.key}\",Condition={ArnEquals={\"aws:PrincipalArn\"=var.distribution_reader.role_arn}}},{Effect=\"Deny\",Principal=\"*\",NotAction=[\"s3:GetObjectVersion\"],Resource=\"arn:aws:s3:::${local.bucket_name}/${var.distribution_reader.key}\",Condition={ArnEquals={\"aws:PrincipalArn\"=var.distribution_reader.role_arn}}}])))})}"
+      }
+    },
+    "aws_cloudwatch_event_rule": {
+      "dispatch": {
+        "count": "${var.enable_dispatch_schedule ? 1 : 0}",
+        "name": "${local.name}-dispatch",
+        "schedule_expression": "${var.dispatch_schedule_expression}",
+        "state": "${var.dispatch_schedule_enabled ? \"ENABLED\" : \"DISABLED\"}",
+        "tags": "${local.tags}"
+      }
+    },
+    "aws_cloudwatch_event_target": {
+      "dispatch": {
+        "count": "${var.enable_dispatch_schedule ? 1 : 0}",
+        "rule": "${aws_cloudwatch_event_rule.dispatch[0].name}",
+        "target_id": "backup-dispatch",
+        "arn": "${aws_lambda_function.dispatch.arn}",
+        "input": "{}",
+        "retry_policy": {
+          "maximum_event_age_in_seconds": 60,
+          "maximum_retry_attempts": 0
+        }
+      }
+    },
+    "aws_lambda_permission": {
+      "dispatch_schedule": {
+        "count": "${var.enable_dispatch_schedule ? 1 : 0}",
+        "statement_id": "OnlyOwnBackupSchedule",
+        "action": "lambda:InvokeFunction",
+        "function_name": "${aws_lambda_function.dispatch.function_name}",
+        "principal": "events.amazonaws.com",
+        "source_arn": "${aws_cloudwatch_event_rule.dispatch[0].arn}",
+        "source_account": "${var.config.account}"
+      }
+    }
+  },
+  "output": {
+    "queue_url": {
+      "value": "${aws_sqs_queue.ingestion.id}"
+    },
+    "mapping_uuid": {
+      "value": "${aws_lambda_event_source_mapping.ingestion.uuid}"
+    },
+    "dispatch_function_arn": {
+      "value": "${aws_lambda_function.dispatch.arn}"
+    },
+    "sender_policy_proposal": {
+      "value": "${jsonencode({Version=\"2012-10-17\",Statement=[{Effect=\"Allow\",Action=[\"sqs:SendMessage\"],Resource=local.queue_arn,Condition={StringEquals={\"aws:RequestedRegion\"=var.config.region}}}]})}"
+    },
+    "runtime_binding": {
+      "value": {
+        "namespace": "${local.namespace}",
+        "archive_prefix": "${local.archive_prefix}"
+      }
+    },
+    "artifact_version": {
+      "value": "${aws_s3_object.code.version_id}"
+    },
+    "distribution_policy_json": {
+      "value": "${aws_s3_bucket_policy.archive.policy}"
+    },
+    "distribution_ready_bucket": {
+      "value": "${aws_s3_bucket.archive.id}",
+      "depends_on": [
+        "aws_s3_bucket_versioning.archive",
+        "aws_s3_bucket_policy.archive",
+        "aws_s3_bucket_server_side_encryption_configuration.archive",
+        "aws_s3_bucket_public_access_block.archive",
+        "aws_s3_bucket_ownership_controls.archive"
+      ]
+    },
+    "dispatch_rule_state": {
+      "value": "${var.enable_dispatch_schedule ? aws_cloudwatch_event_rule.dispatch[0].state : null}"
+    },
+    "security_requirements": {
+      "value": {
+        "status": "EXTERNAL_SECURITY_OWNER_VERIFICATION_REQUIRED_NOT_AUTHORITY",
+        "archive_key_arn": "${var.security.archive_kms_key_arn}",
+        "notice_key_arn": "${var.security.notice_kms_key_arn}",
+        "access_log_bucket": "${var.security.access_log_bucket}",
+        "access_log_prefix": "${var.security.access_log_prefix}",
+        "access_log_retention_days": "${var.security.access_log_retention_days}",
+        "table_pitr_days": 1,
+        "table_encryption": "AWS managed DynamoDB key; explicit enabled=true",
+        "runtime_kms_grants": [
+          {
+            "Sid": "OwnArchiveKmsThroughS3",
+            "Effect": "Allow",
+            "Action": [
+              "kms:GenerateDataKey",
+              "kms:Decrypt"
+            ],
+            "Resource": "${var.security.archive_kms_key_arn}",
+            "Condition": {
+              "StringEquals": {
+                "aws:RequestedRegion": "${var.config.region}",
+                "kms:CallerAccount": "${var.config.account}",
+                "kms:ViaService": "s3.${var.config.region}.amazonaws.com"
+              },
+              "DateGreaterThanEquals": {
+                "aws:CurrentTime": "${var.config.starts_at}"
+              },
+              "DateLessThan": {
+                "aws:CurrentTime": "${var.config.expires_at}"
+              },
+              "StringLike": {
+                "kms:EncryptionContext:aws:s3:arn": "arn:aws:s3:::${local.bucket_name}/${local.archive_prefix}/*"
+              }
+            }
+          },
+          {
+            "Sid": "OwnNoticeKmsThroughSns",
+            "Effect": "Allow",
+            "Action": [
+              "kms:GenerateDataKey",
+              "kms:Decrypt"
+            ],
+            "Resource": "${var.security.notice_kms_key_arn}",
+            "Condition": {
+              "StringEquals": {
+                "aws:RequestedRegion": "${var.config.region}",
+                "kms:CallerAccount": "${var.config.account}",
+                "kms:ViaService": "sns.${var.config.region}.amazonaws.com",
+                "kms:EncryptionContext:aws:sns:topicArn": "${local.topic_arn}"
+              },
+              "DateGreaterThanEquals": {
+                "aws:CurrentTime": "${var.config.starts_at}"
+              },
+              "DateLessThan": {
+                "aws:CurrentTime": "${var.config.expires_at}"
+              }
+            }
+          }
+        ],
+        "artifact_lifecycle_kms_proposal": {
+          "principal_arn": "${var.config.lifecycle_principal_arn}",
+          "key_arn": "${var.security.archive_kms_key_arn}",
+          "actions": [
+            "kms:GenerateDataKey",
+            "kms:Decrypt"
+          ],
+          "via_service": "s3.${var.config.region}.amazonaws.com",
+          "encryption_context": "arn:aws:s3:::${local.bucket_name}/packages/*",
+          "expires_at": "${var.config.expires_at}"
+        },
+        "distribution_reader_kms_proposal": {
+          "reader": "${var.distribution_reader}",
+          "key_arn": "${var.security.archive_kms_key_arn}",
+          "actions": [
+            "kms:Decrypt"
+          ],
+          "via_service": "s3.${var.config.region}.amazonaws.com",
+          "only_exact_reader_object": true,
+          "expires_at": "${var.config.expires_at}"
+        },
+        "notice_cloudwatch_key_policy_proposal": {
+          "service": "cloudwatch.amazonaws.com",
+          "key_arn": "${var.security.notice_kms_key_arn}",
+          "actions": [
+            "kms:GenerateDataKey",
+            "kms:Decrypt"
+          ],
+          "source_account": "${var.config.account}",
+          "source_arn_pattern": "arn:aws:cloudwatch:${var.config.region}:${var.config.account}:alarm:${var.config.run_id}-*",
+          "encryption_context_topic_arn": "${local.topic_arn}"
+        },
+        "log_destination_statement_proposal": {
+          "Effect": "Allow",
+          "Principal": {
+            "Service": "logging.s3.amazonaws.com"
+          },
+          "Action": [
+            "s3:PutObject"
+          ],
+          "Resource": "arn:aws:s3:::${var.security.access_log_bucket}/${var.security.access_log_prefix}*",
+          "Condition": {
+            "StringEquals": {
+              "aws:SourceAccount": "${var.config.account}"
+            },
+            "ArnEquals": {
+              "aws:SourceArn": "arn:aws:s3:::${local.bucket_name}"
+            }
+          }
+        },
+        "preflight": [
+          "Verify dedicated CUSTOMER SYMMETRIC_DEFAULT ENCRYPT_DECRYPT enabled keys; no historical key reuse",
+          "Verify key policies admit exact required principals/services; IAM alone is insufficient",
+          "Verify same-account/region log bucket uses SSE-S3 and owner-managed exact prefix retention1..30days; no policy installed here",
+          "Verify Lambda artifact SSE-KMS service/deployment access before deployment; not proven by mock plans",
+          "Verify DynamoDB managed-key/PITR permissions and retirement/backups costs"
+        ],
+        "key_metadata_plan_reads": {
+          "actions": [
+            "kms:DescribeKey"
+          ],
+          "resources": [
+            "${var.security.archive_kms_key_arn}",
+            "${var.security.notice_kms_key_arn}"
+          ],
+          "notRuntimeGrant": true
+        }
+      }
+    },
+    "security_controls": {
+      "value": {
+        "table_encryption_enabled": "${one(aws_dynamodb_table.state.server_side_encryption).enabled}",
+        "table_pitr_enabled": "${one(aws_dynamodb_table.state.point_in_time_recovery).enabled}",
+        "table_pitr_days": "${one(aws_dynamodb_table.state.point_in_time_recovery).recovery_period_in_days}",
+        "archive_algorithm": "${one(one(aws_s3_bucket_server_side_encryption_configuration.archive.rule).apply_server_side_encryption_by_default).sse_algorithm}",
+        "archive_key_arn": "${one(one(aws_s3_bucket_server_side_encryption_configuration.archive.rule).apply_server_side_encryption_by_default).kms_master_key_id}",
+        "notice_key_arn": "${aws_sns_topic.notices.kms_master_key_id}",
+        "log_bucket": "${aws_s3_bucket_logging.archive.target_bucket}",
+        "log_prefix": "${aws_s3_bucket_logging.archive.target_prefix}"
+      }
+    }
+  }
+}

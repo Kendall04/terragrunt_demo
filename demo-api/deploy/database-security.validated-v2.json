@@ -1,0 +1,10 @@
+{
+  "Database": {
+    "SecurityProfile": "validated-v2",
+    "RunMigrationsOnStartup": false,
+    "ExpectedSqlEndpoint": null,
+    "ExpectedDatabase": null,
+    "ExpectedCertificateHostName": null,
+    "ExpectedRuntimeUser": null
+  }
+}

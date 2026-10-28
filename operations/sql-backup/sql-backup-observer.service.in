@@ -1,0 +1,26 @@
+# INERT proposal: deploy outside the SQL host failure domain, after reviewed role/config installation.
+[Unit]
+Description=Independent SQL backup health check and local transition candidates
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=@OBSERVER_USER@
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+StateDirectory=terragrunt-demo-backup-observer
+StateDirectoryMode=0700
+Environment=AWS_EC2_METADATA_V1_DISABLED=true
+Environment=DOTNET_CLI_TELEMETRY_OPTOUT=1
+ExecStart=/usr/bin/python3 -I -B /opt/terragrunt-demo/sql-backup/observer.py run --config @OBSERVER_CONFIG@ --executable @BACKUP_EXECUTABLE@ --state-directory /var/lib/terragrunt-demo-backup-observer --subject @OBSERVER_SUBJECT@ --expected-up @EXPECTED_UP@ --repeat-after-seconds @REMINDER_SECONDS@ --aws --ec2-role
+# Native CLI TimeoutSeconds remains <=600; this is an outer termination reserve.
+TimeoutStartSec=660
+KillSignal=SIGTERM
+SendSIGKILL=no
+# Health attention is JSON, not a systemd failure/automatic retry on every tick.
+SuccessExitStatus=1
+Restart=no

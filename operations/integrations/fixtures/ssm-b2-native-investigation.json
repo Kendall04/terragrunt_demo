@@ -1,0 +1,675 @@
+{
+  "Classification": "CAPTURED_NATIVE_READONLY_NOT_NEW_EXECUTION",
+  "NativeReadAtUtc": "2026-10-24T17:54:56.060786+00:00",
+  "Identity": {
+    "Account": "341936017254",
+    "Arn": "arn:aws:iam::341936017254:user/cnp-cert-admin"
+  },
+  "ReadCalls": [
+    {
+      "Service": "sts",
+      "Action": "get_caller_identity",
+      "Status": "READ_OK"
+    },
+    {
+      "Service": "cloudtrail",
+      "Action": "lookup_events",
+      "Status": "READ_OK"
+    },
+    {
+      "Service": "ssm",
+      "Action": "get_command_invocation",
+      "Status": "READ_OK"
+    },
+    {
+      "Service": "ssm",
+      "Action": "get_command_invocation",
+      "Status": "READ_OK"
+    },
+    {
+      "Service": "iam",
+      "Action": "get_role",
+      "Status": "READ_OK"
+    }
+  ],
+  "CloudTrailSendCommand": [
+    {
+      "EventId": "524b7c80-4fe5-463d-95a9-c17e03f72c4a",
+      "EventTime": "2026-10-24T06:40:56Z",
+      "EventName": "SendCommand",
+      "AwsRegion": "us-east-1",
+      "PrincipalArn": "arn:aws:sts::341936017254:assumed-role/TerragruntDemoDevOperator/ecs-sentinel-r20261024b2-observer-status",
+      "IssuerArn": "arn:aws:iam::341936017254:role/TerragruntDemoDevOperator",
+      "ErrorCode": null,
+      "ErrorMessage": null,
+      "DocumentName": "ecs-sentinel-r20261024b2-observer-control",
+      "DocumentVersion": "1",
+      "DocumentHash": "29b383c0a0a1731781ab6c3f828d5945de4afdbbc8912b17f2f495b52a3a66fe",
+      "DocumentHashType": "Sha256",
+      "InstanceIds": [
+        "i-009e213ec6cf1e3cb"
+      ],
+      "RequestedAction": "REDACTED_OR_NON_OBJECT",
+      "CommandId": "e5d894d1-1ce7-4d49-8c4f-bd8a72f5ede3",
+      "AdditionalEventData": null
+    },
+    {
+      "EventId": "254a45b0-55a4-4cd0-af79-289645d6a0c7",
+      "EventTime": "2026-10-24T06:09:13Z",
+      "EventName": "SendCommand",
+      "AwsRegion": "us-east-1",
+      "PrincipalArn": "arn:aws:sts::341936017254:assumed-role/TerragruntDemoDevOperator/ecs-sentinel-r20261024b2-observer-status",
+      "IssuerArn": "arn:aws:iam::341936017254:role/TerragruntDemoDevOperator",
+      "ErrorCode": null,
+      "ErrorMessage": null,
+      "DocumentName": "ecs-sentinel-r20261024b2-observer-control",
+      "DocumentVersion": "1",
+      "DocumentHash": "29b383c0a0a1731781ab6c3f828d5945de4afdbbc8912b17f2f495b52a3a66fe",
+      "DocumentHashType": "Sha256",
+      "InstanceIds": [
+        "i-009e213ec6cf1e3cb"
+      ],
+      "RequestedAction": "REDACTED_OR_NON_OBJECT",
+      "CommandId": "a3894787-1d3d-430a-9d6d-900578376935",
+      "AdditionalEventData": null
+    }
+  ],
+  "NativeInvocation": [
+    {
+      "CommandId": "a3894787-1d3d-430a-9d6d-900578376935",
+      "InstanceId": "i-009e213ec6cf1e3cb",
+      "DocumentName": "ecs-sentinel-r20261024b2-observer-control",
+      "DocumentVersion": "1",
+      "PluginName": "ObserverControl",
+      "Status": "Failed",
+      "StatusDetails": "AccessDenied",
+      "ResponseCode": -1,
+      "ExecutionStartDateTime": null,
+      "ExecutionEndDateTime": ""
+    },
+    {
+      "CommandId": "e5d894d1-1ce7-4d49-8c4f-bd8a72f5ede3",
+      "InstanceId": "i-009e213ec6cf1e3cb",
+      "DocumentName": "ecs-sentinel-r20261024b2-observer-control",
+      "DocumentVersion": "1",
+      "PluginName": "ObserverControl",
+      "Status": "Failed",
+      "StatusDetails": "AccessDenied",
+      "ResponseCode": -1,
+      "ExecutionStartDateTime": null,
+      "ExecutionEndDateTime": ""
+    }
+  ],
+  "Correlation": {
+    "Identity": "arn:aws:iam::341936017254:user/cnp-cert-admin",
+    "ReadOnly": true,
+    "Events": [
+      {
+        "EventName": "AssumeRole",
+        "EventId": "072620c0-4d73-4d03-8e2c-a6fe187fb3e7",
+        "EventTime": "2026-10-24T06:40:55Z",
+        "PrincipalArn": "arn:aws:iam::341936017254:user/cnp-cert-admin",
+        "ErrorCode": null,
+        "ErrorMessage": null,
+        "RoleArn": "arn:aws:iam::341936017254:role/TerragruntDemoDevOperator",
+        "SessionPolicyPresent": false,
+        "PolicyArnsPresent": false,
+        "TagsPresent": false,
+        "DurationSeconds": 3600
+      },
+      {
+        "EventName": "AssumeRole",
+        "EventId": "e5c2371e-61df-4d13-bdf7-f5c70d1a25aa",
+        "EventTime": "2026-10-24T06:09:12Z",
+        "PrincipalArn": "arn:aws:iam::341936017254:user/cnp-cert-admin",
+        "ErrorCode": null,
+        "ErrorMessage": null,
+        "RoleArn": "arn:aws:iam::341936017254:role/TerragruntDemoDevOperator",
+        "SessionPolicyPresent": false,
+        "PolicyArnsPresent": false,
+        "TagsPresent": false,
+        "DurationSeconds": 3600
+      },
+      {
+        "EventName": "PutRolePolicy",
+        "EventId": "9c38ddbc-b134-4628-80a7-37049ee5ed74",
+        "EventTime": "2026-10-24T06:39:00Z",
+        "PrincipalArn": "arn:aws:iam::341936017254:user/cnp-cert-admin",
+        "ErrorCode": null,
+        "ErrorMessage": null,
+        "PolicyName": "SentinelObserverr20261024b2",
+        "PolicyContentAvailable": true,
+        "PolicyCanonicalSha256": "9d566ec1b589ec6bfdacd74ab882eef911ee8e2d99078ecdbe8b212f6a0bf8f6",
+        "SendStatements": [
+          {
+            "Effect": "Allow",
+            "Action": [
+              "ssm:SendCommand"
+            ],
+            "Resource": [
+              "arn:aws:ssm:us-east-1:341936017254:document/ecs-sentinel-r20261024b2-observer-control"
+            ],
+            "Condition": {
+              "Bool": {
+                "aws:ViaAWSService": "false"
+              },
+              "DateLessThan": {
+                "aws:CurrentTime": "2026-10-25T05:41:51Z"
+              },
+              "StringEquals": {
+                "aws:RequestedRegion": "us-east-1"
+              }
+            }
+          },
+          {
+            "Effect": "Allow",
+            "Action": [
+              "ssm:SendCommand"
+            ],
+            "Resource": [
+              "arn:aws:ec2:us-east-1:341936017254:instance/*"
+            ],
+            "Condition": {
+              "Bool": {
+                "aws:ViaAWSService": "false"
+              },
+              "DateLessThan": {
+                "aws:CurrentTime": "2026-10-25T05:41:51Z"
+              },
+              "StringEquals": {
+                "aws:RequestedRegion": "us-east-1",
+                "ssm:resourceTag/Trial": "ecs-sentinel-r20261024b2"
+              }
+            }
+          },
+          {
+            "Effect": "Allow",
+            "Action": [
+              "ssm:SendCommand"
+            ],
+            "Resource": [
+              "arn:aws:ssm:us-east-1:341936017254:document/ecs-sentinel-r20261024b2-observer-control"
+            ],
+            "Condition": {
+              "Bool": {
+                "aws:ViaAWSService": "true"
+              },
+              "DateLessThan": {
+                "aws:CurrentTime": "2026-10-25T05:41:51Z"
+              },
+              "StringEquals": {
+                "aws:RequestedRegion": "us-east-1"
+              }
+            }
+          },
+          {
+            "Effect": "Allow",
+            "Action": [
+              "ssm:SendCommand"
+            ],
+            "Resource": [
+              "arn:aws:ec2:us-east-1:341936017254:instance/*"
+            ],
+            "Condition": {
+              "Bool": {
+                "aws:ViaAWSService": "true"
+              },
+              "DateLessThan": {
+                "aws:CurrentTime": "2026-10-25T05:41:51Z"
+              },
+              "StringEquals": {
+                "aws:RequestedRegion": "us-east-1",
+                "ssm:resourceTag/Trial": "ecs-sentinel-r20261024b2"
+              }
+            }
+          },
+          {
+            "Sid": "ExactOwnObserverViaSsmServiceContext",
+            "Effect": "Allow",
+            "Action": [
+              "ssm:SendCommand"
+            ],
+            "Resource": [
+              "arn:aws:ssm:us-east-1:341936017254:document/ecs-sentinel-r20261024b2-observer-control",
+              "arn:aws:ec2:us-east-1:341936017254:instance/i-009e213ec6cf1e3cb"
+            ],
+            "Condition": {
+              "Bool": {
+                "aws:ViaAWSService": "true"
+              },
+              "DateLessThan": {
+                "aws:CurrentTime": "2026-10-25T05:41:51Z"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "EventName": "PutRolePolicy",
+        "EventId": "19d8f99f-bf18-47a3-ac10-1a8e803e4c26",
+        "EventTime": "2026-10-24T06:15:37Z",
+        "PrincipalArn": "arn:aws:iam::341936017254:user/cnp-cert-admin",
+        "ErrorCode": null,
+        "ErrorMessage": null,
+        "PolicyName": "SentinelObserverr20261024b2",
+        "PolicyContentAvailable": true,
+        "PolicyCanonicalSha256": "9e81270887ed0311fcd6e5df12bc0002c4d61681107461104fb3f7b24a8cfe14",
+        "SendStatements": [
+          {
+            "Effect": "Allow",
+            "Action": [
+              "ssm:SendCommand"
+            ],
+            "Resource": [
+              "arn:aws:ssm:us-east-1:341936017254:document/ecs-sentinel-r20261024b2-observer-control"
+            ],
+            "Condition": {
+              "Bool": {
+                "aws:ViaAWSService": "false"
+              },
+              "DateLessThan": {
+                "aws:CurrentTime": "2026-10-25T05:41:51Z"
+              },
+              "StringEquals": {
+                "aws:RequestedRegion": "us-east-1"
+              }
+            }
+          },
+          {
+            "Effect": "Allow",
+            "Action": [
+              "ssm:SendCommand"
+            ],
+            "Resource": [
+              "arn:aws:ec2:us-east-1:341936017254:instance/*"
+            ],
+            "Condition": {
+              "Bool": {
+                "aws:ViaAWSService": "false"
+              },
+              "DateLessThan": {
+                "aws:CurrentTime": "2026-10-25T05:41:51Z"
+              },
+              "StringEquals": {
+                "aws:RequestedRegion": "us-east-1",
+                "ssm:resourceTag/Trial": "ecs-sentinel-r20261024b2"
+              }
+            }
+          },
+          {
+            "Effect": "Allow",
+            "Action": [
+              "ssm:SendCommand"
+            ],
+            "Resource": [
+              "arn:aws:ssm:us-east-1:341936017254:document/ecs-sentinel-r20261024b2-observer-control"
+            ],
+            "Condition": {
+              "Bool": {
+                "aws:ViaAWSService": "true"
+              },
+              "DateLessThan": {
+                "aws:CurrentTime": "2026-10-25T05:41:51Z"
+              },
+              "StringEquals": {
+                "aws:RequestedRegion": "us-east-1"
+              }
+            }
+          },
+          {
+            "Effect": "Allow",
+            "Action": [
+              "ssm:SendCommand"
+            ],
+            "Resource": [
+              "arn:aws:ec2:us-east-1:341936017254:instance/*"
+            ],
+            "Condition": {
+              "Bool": {
+                "aws:ViaAWSService": "true"
+              },
+              "DateLessThan": {
+                "aws:CurrentTime": "2026-10-25T05:41:51Z"
+              },
+              "StringEquals": {
+                "aws:RequestedRegion": "us-east-1",
+                "ssm:resourceTag/Trial": "ecs-sentinel-r20261024b2"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "EventName": "PutRolePolicy",
+        "EventId": "cac16699-cd23-4345-8807-6ec8c648c531",
+        "EventTime": "2026-10-24T05:59:16Z",
+        "PrincipalArn": "arn:aws:iam::341936017254:user/cnp-cert-admin",
+        "ErrorCode": null,
+        "ErrorMessage": null,
+        "PolicyName": "SentinelObserverr20261024b2",
+        "PolicyContentAvailable": true,
+        "PolicyCanonicalSha256": "ca7a2801d8d77cf114824983c702441d316f1b0789cbdb4956dc9eb8ff9a3d38",
+        "SendStatements": [
+          {
+            "Effect": "Allow",
+            "Action": [
+              "ssm:SendCommand"
+            ],
+            "Resource": [
+              "arn:aws:ssm:us-east-1:341936017254:document/ecs-sentinel-r20261024b2-observer-control"
+            ],
+            "Condition": {
+              "Bool": {
+                "aws:ViaAWSService": "false"
+              },
+              "DateLessThan": {
+                "aws:CurrentTime": "2026-10-25T05:41:51Z"
+              },
+              "StringEquals": {
+                "aws:RequestedRegion": "us-east-1"
+              }
+            }
+          },
+          {
+            "Effect": "Allow",
+            "Action": [
+              "ssm:SendCommand"
+            ],
+            "Resource": [
+              "arn:aws:ec2:us-east-1:341936017254:instance/*"
+            ],
+            "Condition": {
+              "Bool": {
+                "aws:ViaAWSService": "false"
+              },
+              "DateLessThan": {
+                "aws:CurrentTime": "2026-10-25T05:41:51Z"
+              },
+              "StringEquals": {
+                "aws:RequestedRegion": "us-east-1",
+                "ssm:resourceTag/Trial": "ecs-sentinel-r20261024b2"
+              }
+            }
+          },
+          {
+            "Effect": "Allow",
+            "Action": [
+              "ssm:SendCommand"
+            ],
+            "Resource": [
+              "arn:aws:ssm:us-east-1:341936017254:document/ecs-sentinel-r20261024b2-observer-control"
+            ],
+            "Condition": {
+              "Bool": {
+                "aws:ViaAWSService": "true"
+              },
+              "DateLessThan": {
+                "aws:CurrentTime": "2026-10-25T05:41:51Z"
+              },
+              "StringEquals": {
+                "aws:RequestedRegion": "us-east-1"
+              }
+            }
+          },
+          {
+            "Effect": "Allow",
+            "Action": [
+              "ssm:SendCommand"
+            ],
+            "Resource": [
+              "arn:aws:ec2:us-east-1:341936017254:instance/*"
+            ],
+            "Condition": {
+              "Bool": {
+                "aws:ViaAWSService": "true"
+              },
+              "DateLessThan": {
+                "aws:CurrentTime": "2026-10-25T05:41:51Z"
+              },
+              "StringEquals": {
+                "aws:RequestedRegion": "us-east-1",
+                "ssm:resourceTag/Trial": "ecs-sentinel-r20261024b2"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "EventName": "PutRolePolicy",
+        "EventId": "821353e1-f261-4ec0-b4a8-1a88342452e8",
+        "EventTime": "2026-10-24T05:41:53Z",
+        "PrincipalArn": "arn:aws:iam::341936017254:user/cnp-cert-admin",
+        "ErrorCode": null,
+        "ErrorMessage": null,
+        "PolicyName": "SentinelObserverr20261024b2",
+        "PolicyContentAvailable": true,
+        "PolicyCanonicalSha256": "969f09687f2e8977d7642b55df126b8e2bada8e7e5963233a75ced6b4b75c5aa",
+        "SendStatements": [
+          {
+            "Effect": "Allow",
+            "Action": [
+              "ssm:SendCommand"
+            ],
+            "Resource": [
+              "arn:aws:ssm:us-east-1:341936017254:document/ecs-sentinel-r20261024b2-observer-control"
+            ],
+            "Condition": {
+              "Bool": {
+                "aws:ViaAWSService": "false"
+              },
+              "DateLessThan": {
+                "aws:CurrentTime": "2026-10-25T05:41:51Z"
+              },
+              "StringEquals": {
+                "aws:RequestedRegion": "us-east-1"
+              }
+            }
+          },
+          {
+            "Effect": "Allow",
+            "Action": [
+              "ssm:SendCommand"
+            ],
+            "Resource": [
+              "arn:aws:ec2:us-east-1:341936017254:instance/*"
+            ],
+            "Condition": {
+              "Bool": {
+                "aws:ViaAWSService": "false"
+              },
+              "DateLessThan": {
+                "aws:CurrentTime": "2026-10-25T05:41:51Z"
+              },
+              "StringEquals": {
+                "aws:RequestedRegion": "us-east-1",
+                "ssm:resourceTag/Trial": "ecs-sentinel-r20261024b2"
+              }
+            }
+          },
+          {
+            "Effect": "Allow",
+            "Action": [
+              "ssm:SendCommand"
+            ],
+            "Resource": [
+              "arn:aws:ssm:us-east-1:341936017254:document/ecs-sentinel-r20261024b2-observer-control"
+            ],
+            "Condition": {
+              "Bool": {
+                "aws:ViaAWSService": "true"
+              },
+              "DateLessThan": {
+                "aws:CurrentTime": "2026-10-25T05:41:51Z"
+              },
+              "StringEquals": {
+                "aws:RequestedRegion": "us-east-1"
+              }
+            }
+          },
+          {
+            "Effect": "Allow",
+            "Action": [
+              "ssm:SendCommand"
+            ],
+            "Resource": [
+              "arn:aws:ec2:us-east-1:341936017254:instance/*"
+            ],
+            "Condition": {
+              "Bool": {
+                "aws:ViaAWSService": "true"
+              },
+              "DateLessThan": {
+                "aws:CurrentTime": "2026-10-25T05:41:51Z"
+              },
+              "StringEquals": {
+                "aws:RequestedRegion": "us-east-1",
+                "ssm:resourceTag/Trial": "ecs-sentinel-r20261024b2"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "EventName": "GetDocument",
+        "EventId": "740a2c87-571b-4968-9511-bba6ba02620a",
+        "EventTime": "2026-10-24T06:40:56Z",
+        "PrincipalArn": "arn:aws:sts::341936017254:assumed-role/TerragruntDemoDevOperator/ecs-sentinel-r20261024b2-observer-status",
+        "ErrorCode": null,
+        "ErrorMessage": null,
+        "Name": "ecs-sentinel-r20261024b2-observer-control",
+        "Version": null,
+        "ClientFamily": "Boto3"
+      },
+      {
+        "EventName": "GetDocument",
+        "EventId": "46a7ce5f-1a66-4128-8925-9d044b6b2a03",
+        "EventTime": "2026-10-24T06:34:29Z",
+        "PrincipalArn": "arn:aws:sts::341936017254:assumed-role/TerragruntDemoDevOperator/ecs-sentinel-r20261024b2-plan-destroy-preview",
+        "ErrorCode": null,
+        "ErrorMessage": null,
+        "Name": "ecs-sentinel-r20261024b2-observer-control",
+        "Version": "$LATEST",
+        "ClientFamily": "Terraform"
+      },
+      {
+        "EventName": "GetDocument",
+        "EventId": "cdf49a97-669f-4cb8-bfd5-922faa496562",
+        "EventTime": "2026-10-24T06:34:04Z",
+        "PrincipalArn": "arn:aws:sts::341936017254:assumed-role/TerragruntDemoDevOperator/ecs-sentinel-r20261024b2-plan-create",
+        "ErrorCode": null,
+        "ErrorMessage": null,
+        "Name": "ecs-sentinel-r20261024b2-observer-control",
+        "Version": "$LATEST",
+        "ClientFamily": "Terraform"
+      },
+      {
+        "EventName": "GetDocument",
+        "EventId": "213200ec-3961-480f-8dbf-7ad360e09b99",
+        "EventTime": "2026-10-24T06:19:41Z",
+        "PrincipalArn": "arn:aws:sts::341936017254:assumed-role/TerragruntDemoDevOperator/ecs-sentinel-r20261024b2-finish-plan",
+        "ErrorCode": null,
+        "ErrorMessage": null,
+        "Name": "ecs-sentinel-r20261024b2-observer-control",
+        "Version": "$LATEST",
+        "ClientFamily": "Terraform"
+      },
+      {
+        "EventName": "GetDocument",
+        "EventId": "619d0ad5-b682-45a3-9d6f-f2cafd93c4fa",
+        "EventTime": "2026-10-24T06:09:12Z",
+        "PrincipalArn": "arn:aws:sts::341936017254:assumed-role/TerragruntDemoDevOperator/ecs-sentinel-r20261024b2-observer-status",
+        "ErrorCode": null,
+        "ErrorMessage": null,
+        "Name": "ecs-sentinel-r20261024b2-observer-control",
+        "Version": null,
+        "ClientFamily": "Boto3"
+      },
+      {
+        "EventName": "GetDocument",
+        "EventId": "bb9c5ae1-5b03-4b12-b875-89fae53f1942",
+        "EventTime": "2026-10-24T05:59:48Z",
+        "PrincipalArn": "arn:aws:sts::341936017254:assumed-role/TerragruntDemoDevOperator/ecs-sentinel-r20261024b2-resume-plan",
+        "ErrorCode": null,
+        "ErrorMessage": null,
+        "Name": "ecs-sentinel-r20261024b2-observer-control",
+        "Version": "$LATEST",
+        "ClientFamily": "Terraform"
+      },
+      {
+        "EventName": "GetDocument",
+        "EventId": "e65b0792-ccd4-4cb0-98a4-542a610aba6a",
+        "EventTime": "2026-10-24T05:47:09Z",
+        "PrincipalArn": "arn:aws:sts::341936017254:assumed-role/TerragruntDemoDevOperator/ecs-sentinel-r20261024b2-apply",
+        "ErrorCode": null,
+        "ErrorMessage": null,
+        "Name": "ecs-sentinel-r20261024b2-observer-control",
+        "Version": "$LATEST",
+        "ClientFamily": "Terraform"
+      }
+    ],
+    "Calls": [
+      {
+        "Status": "READ_OK",
+        "FilterEventName": "AssumeRole",
+        "Api": "cloudtrail:LookupEvents"
+      },
+      {
+        "Status": "READ_OK",
+        "FilterEventName": "PutRolePolicy",
+        "Api": "cloudtrail:LookupEvents"
+      },
+      {
+        "Status": "READ_OK",
+        "FilterEventName": "GetDocument",
+        "Api": "cloudtrail:LookupEvents"
+      }
+    ],
+    "Truncated": {
+      "AssumeRole": false,
+      "PutRolePolicy": false,
+      "GetDocument": false
+    }
+  },
+  "CurrentOperator": {
+    "ObservedUtc": "2026-10-24T17:57:51.103864+00:00",
+    "Identity": "arn:aws:iam::341936017254:user/cnp-cert-admin",
+    "Mutations": 0,
+    "CurrentInlineNames": [],
+    "InlineTruncated": false,
+    "AttachedPolicyNames": [
+      "TerragruntDemoDevOperatorPart7",
+      "TerragruntDemoDevOperatorPart1",
+      "TerragruntDemoDevOperatorPart8",
+      "TerragruntDemoDevOperatorPart9",
+      "TerragruntDemoDevOperatorPart6",
+      "TerragruntDemoDevOperatorPart4",
+      "TerragruntDemoDevOperatorPart2",
+      "TerragruntDemoDevOperatorPart5",
+      "TerragruntDemoDevOperatorPart3",
+      "TerragruntDemoDevOperatorPart0"
+    ],
+    "AttachedTruncated": false,
+    "Part4": {
+      "DefaultVersionId": "v5",
+      "PolicyId": "ANPAU7HHZR5TP35BFFDNU",
+      "CanonicalCompactSha256": "2dee64162063bf48daa6be793a92399fd8383104cd102078ae4bd7427a7876e2",
+      "EqualsSavedOriginal": true
+    },
+    "Part7": {
+      "DefaultVersionId": "v3",
+      "PolicyId": "ANPAU7HHZR5TB3QUDAUQH",
+      "CanonicalCompactSha256": "01ac28532b77b0266632d5714dc909a1638b7d1d54df5d3de27e02ed5dfaad59",
+      "EqualsSavedOriginal": true
+    }
+  },
+  "OriginalRawEvidenceSha256": {
+    "readonly.json": "eec7db45bfd8a499846abe4f3035d48f09d17da2fc0b2f9700aeeb9eec2fca93",
+    "cloudtrail-correlation.json": "cae05f807a2a48cc81c50c8144ba7ce8fea380d625209dae40329fc4c6fb7111",
+    "current-operator-readback.json": "69cc5dae379bf158d542b0530fe78312ebf263ff289e114de01288ca1d2561d3"
+  },
+  "SourceIpRemoved": true,
+  "CredentialsOrCommandBodiesIncluded": false,
+  "AwsMutations": 0,
+  "SendCommandRetried": false,
+  "ExactAsyncEvaluationContextKnown": false
+}

@@ -1,0 +1,195 @@
+{
+  "EvaluationResults": [
+    {
+      "EvalActionName": "s3:DeleteBucket",
+      "EvalResourceName": "arn:aws:s3:::${BucketName}/${KeyName}",
+      "EvalDecision": "explicitDeny",
+      "MatchedStatements": [
+        {
+          "SourcePolicyId": "PolicyInputList.2",
+          "SourcePolicyType": "IAM Policy",
+          "StartPosition": {
+            "Line": 1,
+            "Column": 3268
+          },
+          "EndPosition": {
+            "Line": 1,
+            "Column": 3443
+          }
+        },
+        {
+          "SourcePolicyId": "PolicyInputList.1",
+          "SourcePolicyType": "IAM Policy",
+          "StartPosition": {
+            "Line": 1,
+            "Column": 3131
+          },
+          "EndPosition": {
+            "Line": 1,
+            "Column": 3300
+          }
+        }
+      ],
+      "MissingContextValues": [],
+      "EvalDecisionDetails": {},
+      "ResourceSpecificResults": [
+        {
+          "EvalResourceName": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254",
+          "EvalResourceDecision": "allowed",
+          "MatchedStatements": [
+            {
+              "SourcePolicyId": "PolicyInputList.2",
+              "SourcePolicyType": "IAM Policy",
+              "StartPosition": {
+                "Line": 1,
+                "Column": 3268
+              },
+              "EndPosition": {
+                "Line": 1,
+                "Column": 3443
+              }
+            }
+          ]
+        },
+        {
+          "EvalResourceName": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254-other",
+          "EvalResourceDecision": "explicitDeny",
+          "MatchedStatements": [
+            {
+              "SourcePolicyId": "PolicyInputList.1",
+              "SourcePolicyType": "IAM Policy",
+              "StartPosition": {
+                "Line": 1,
+                "Column": 3131
+              },
+              "EndPosition": {
+                "Line": 1,
+                "Column": 3300
+              }
+            }
+          ]
+        },
+        {
+          "EvalResourceName": "arn:aws:s3:::ecs-sentinel-r20261023b2-341936017254",
+          "EvalResourceDecision": "explicitDeny",
+          "MatchedStatements": [
+            {
+              "SourcePolicyId": "PolicyInputList.1",
+              "SourcePolicyType": "IAM Policy",
+              "StartPosition": {
+                "Line": 1,
+                "Column": 3131
+              },
+              "EndPosition": {
+                "Line": 1,
+                "Column": 3300
+              }
+            }
+          ]
+        },
+        {
+          "EvalResourceName": "arn:aws:s3:::ecs-sentinel-r20261023b1-111111111111",
+          "EvalResourceDecision": "explicitDeny",
+          "MatchedStatements": [
+            {
+              "SourcePolicyId": "PolicyInputList.1",
+              "SourcePolicyType": "IAM Policy",
+              "StartPosition": {
+                "Line": 1,
+                "Column": 3131
+              },
+              "EndPosition": {
+                "Line": 1,
+                "Column": 3300
+              }
+            }
+          ]
+        },
+        {
+          "EvalResourceName": "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1",
+          "EvalResourceDecision": "explicitDeny",
+          "MatchedStatements": [
+            {
+              "SourcePolicyId": "PolicyInputList.1",
+              "SourcePolicyType": "IAM Policy",
+              "StartPosition": {
+                "Line": 1,
+                "Column": 3131
+              },
+              "EndPosition": {
+                "Line": 1,
+                "Column": 3300
+              }
+            }
+          ]
+        },
+        {
+          "EvalResourceName": "arn:aws:s3:::e1-wp4-dev-341936017254-us-east-1",
+          "EvalResourceDecision": "explicitDeny",
+          "MatchedStatements": [
+            {
+              "SourcePolicyId": "PolicyInputList.1",
+              "SourcePolicyType": "IAM Policy",
+              "StartPosition": {
+                "Line": 1,
+                "Column": 3131
+              },
+              "EndPosition": {
+                "Line": 1,
+                "Column": 3300
+              }
+            }
+          ]
+        },
+        {
+          "EvalResourceName": "arn:aws:s3:::unrelated-bucket",
+          "EvalResourceDecision": "explicitDeny",
+          "MatchedStatements": [
+            {
+              "SourcePolicyId": "PolicyInputList.1",
+              "SourcePolicyType": "IAM Policy",
+              "StartPosition": {
+                "Line": 1,
+                "Column": 3131
+              },
+              "EndPosition": {
+                "Line": 1,
+                "Column": 3300
+              }
+            }
+          ]
+        },
+        {
+          "EvalResourceName": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254/object",
+          "EvalResourceDecision": "explicitDeny",
+          "MatchedStatements": [
+            {
+              "SourcePolicyId": "PolicyInputList.1",
+              "SourcePolicyType": "IAM Policy",
+              "StartPosition": {
+                "Line": 1,
+                "Column": 3131
+              },
+              "EndPosition": {
+                "Line": 1,
+                "Column": 3300
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "IsTruncated": false,
+  "ResponseMetadata": {
+    "RequestId": "38b87297-9dd5-44ab-a260-613c8a19babc",
+    "HTTPStatusCode": 200,
+    "HTTPHeaders": {
+      "date": "Fri, 23 Oct 2026 21:08:28 GMT",
+      "x-amzn-requestid": "38b87297-9dd5-44ab-a260-613c8a19babc",
+      "content-type": "text/xml",
+      "content-length": "7360"
+    },
+    "RetryAttempts": 0
+  }
+}

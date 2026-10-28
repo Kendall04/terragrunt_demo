@@ -1,0 +1,30 @@
+{
+  "Trial": "r20261024cold",
+  "Mode": "CROSS_AZ",
+  "TargetAz": "us-east-1b",
+  "RecoveryRequestedUtc": "2026-10-24T12:00:00Z",
+  "NowUtc": "2026-10-24T12:10:00Z",
+  "SqlAmiId": "ami-33333333333333333",
+  "MaxBackupAgeSeconds": 7200,
+  "ArtifactSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "SourceRecord": {
+    "Trial": "r20261023az6",
+    "Status": "SOURCE_BACKED_UP",
+    "Source": {
+      "accountId": "341936017254",
+      "region": "us-east-1",
+      "instanceId": "i-11111111111111111",
+      "availabilityZone": "us-east-1a"
+    },
+    "Receipt": {
+      "ManifestKey": "terragrunt-demo/dev/sql-backups/ec2-20261016/r20261023az6/runs/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/manifest.json",
+      "ManifestVersion": "fixture-manifest-v1",
+      "Manifest": {
+        "StartedUtc": "2026-10-24T11:55:00Z",
+        "CompletedUtc": "2026-10-24T11:56:00Z",
+        "NativeChecksumVerified": true,
+        "BackupVersion": "fixture-backup-v1"
+      }
+    }
+  }
+}

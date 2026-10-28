@@ -1,0 +1,12 @@
+docs/interactive/*.html text eol=lf whitespace=-blank-at-eol
+docs/interactive/*.txt text eol=lf
+docs/interactive/source/*.json text eol=lf
+portfolio/archify-pins.json text eol=lf
+operations/integrations/trial-review/part4-amendment/** text eol=lf
+
+# Deterministic SQL helper payload must hash identically on Windows and Linux.
+terraform/infra/data/sql-principals.sh text eol=lf
+terraform/infra/data/sql-principals.sh.gz.b64 text eol=lf
+
+demo-api/deploy/trust/*.crt text eol=lf
+demo-api/deploy/trust/*.json text eol=lf

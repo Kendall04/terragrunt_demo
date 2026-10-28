@@ -1,0 +1,246 @@
+{
+  "terraform": {
+    "required_version": ">= 1.10.0, < 2.0.0",
+    "backend": {
+      "s3": {
+        "key": "e1/security/terraform.tfstate",
+        "encrypt": true,
+        "use_lockfile": true
+      }
+    },
+    "required_providers": {
+      "aws": {
+        "source": "hashicorp/aws",
+        "version": "~> 5.50"
+      }
+    }
+  },
+  "variable": {
+    "aws_account_id": {
+      "type": "string",
+      "nullable": false,
+      "validation": {
+        "condition": "${can(regex(\"^[0-9]{12}$\", var.aws_account_id))}",
+        "error_message": "Supply the admin-selected account ID."
+      }
+    },
+    "aws_region": {
+      "type": "string",
+      "nullable": false,
+      "validation": {
+        "condition": "${can(regex(\"^[a-z]{2}(-[a-z]+)+-[0-9]+$\", var.aws_region))}",
+        "error_message": "Supply the admin-selected AWS region."
+      }
+    },
+    "security_admin_principal_arn": {
+      "type": "string",
+      "nullable": false,
+      "validation": {
+        "condition": "${can(regex(\"^arn:aws:iam::[0-9]{12}:(role|user)/[A-Za-z0-9+=,.@_/-]+$\", var.security_admin_principal_arn)) && split(\":\", var.security_admin_principal_arn)[4] == var.aws_account_id}",
+        "error_message": "Supply an existing separately held IAM admin principal in the selected account, never root/session/requester credentials."
+      }
+    },
+    "dev_operator_arn": {
+      "type": "string",
+      "default": null,
+      "nullable": true
+    },
+    "dev_nat_launch_inputs": {
+      "type": "any",
+      "default": {},
+      "validation": {
+        "condition": "${alltrue([for key,value in var.dev_nat_launch_inputs: contains([\"dev/a\",\"dev/b\"],key) && value.environment==\"dev\" && value.account==var.aws_account_id && value.region==var.aws_region])}",
+        "error_message": "Only exact-account DEV NAT network bindings are permitted."
+      }
+    },
+    "dev_nat_installations": {
+      "type": "any",
+      "default": {},
+      "validation": {
+        "condition": "${alltrue([for key,value in var.dev_nat_installations: contains([\"nat-recovery/nat-dev/assign_eip\",\"nat-recovery/nat-dev/change_rt\",\"nat-recovery/nat-dev/disable_sdc\"],key)])}",
+        "error_message": "Only the three original DEV NAT duties may be installed."
+      }
+    },
+    "dev_nat_runtime_approvals": {
+      "type": "any",
+      "default": {},
+      "validation": {
+        "condition": "${alltrue([for key,value in var.dev_nat_runtime_approvals: contains([\"nat-recovery/nat-dev/assign_eip\",\"nat-recovery/nat-dev/change_rt\",\"nat-recovery/nat-dev/disable_sdc\"],key)])}",
+        "error_message": "Only the three original DEV NAT duties may be installed."
+      }
+    },
+    "dev_nat_network_binding": {
+      "type": "any",
+      "default": null,
+      "nullable": true,
+      "validation": {
+        "condition": "${var.dev_nat_network_binding==null ? true : try(var.dev_nat_network_binding.schema==\"E1_WP4D_PROTECTED_NAT_NETWORK_V1\" && var.dev_nat_network_binding.environment==\"dev\" && var.dev_nat_network_binding.account==var.aws_account_id && var.dev_nat_network_binding.region==var.aws_region,false)}",
+        "error_message": "Only the original DEV NAT network installation is supported."
+      }
+    },
+    "dev_cicd_installation_only": {
+      "type": "bool",
+      "default": false
+    },
+    "wp3_installations": {
+      "type": "any",
+      "default": {},
+      "validation": {
+        "condition": "${alltrue([for key,value in var.wp3_installations: contains([\"request-gateway/release\", \"build/release\", \"qualification-finalizer/qualification\", \"status/status-neutral\"],key)])}",
+        "error_message": "Only existing neutral WP3 responsibilities may be installed."
+      }
+    },
+    "dev_delivery_installations": {
+      "type": "any",
+      "default": {},
+      "validation": {
+        "condition": "${alltrue([for key,value in var.dev_delivery_installations: contains([\"request-gateway/deploy-dev\", \"normal-delivery/deploy-dev\", \"cleanup-recovery/cleanup-dev\"],key)])}",
+        "error_message": "Only the three original WP4 DEV delivery responsibilities may be installed."
+      }
+    },
+    "wp3_runtime_approvals": {
+      "type": "any",
+      "default": {},
+      "validation": {
+        "condition": "${alltrue([for key,value in var.wp3_runtime_approvals: contains([\"request-gateway/release\", \"build/release\", \"qualification-finalizer/qualification\", \"status/status-neutral\", \"payload/dotnet\", \"payload/image\", \"payload/probe\"],key)])}",
+        "error_message": "Only existing neutral WP3 responsibilities may be installed."
+      }
+    },
+    "dev_delivery_runtime_approvals": {
+      "type": "any",
+      "default": {},
+      "validation": {
+        "condition": "${alltrue([for key,value in var.dev_delivery_runtime_approvals: contains([\"request-gateway/deploy-dev\", \"normal-delivery/deploy-dev\", \"cleanup-recovery/cleanup-dev\"],key)])}",
+        "error_message": "Only the three original WP4 DEV delivery responsibilities may be installed."
+      }
+    },
+    "dev_delivery_binding": {
+      "type": "any",
+      "default": null,
+      "nullable": true,
+      "validation": {
+        "condition": "${var.dev_delivery_binding==null ? true : try(var.dev_delivery_binding.schema==\"E1_WP4D_PROTECTED_ENVIRONMENT_V1\" && var.dev_delivery_binding.environment==\"dev\" && var.dev_delivery_binding.account==var.aws_account_id && var.dev_delivery_binding.region==var.aws_region && var.dev_delivery_binding.repository==\"demo-shared-demo-ms\",false)}",
+        "error_message": "Only exact-account DEV delivery with the neutral qualified repository is supported."
+      }
+    },
+    "dev_delivery_contract": {
+      "type": "string",
+      "default": "V1",
+      "nullable": false,
+      "validation": {
+        "condition": "${contains([\"V1\",\"SQL_RESTORE_NO_MIGRATIONS_V2\"],var.dev_delivery_contract)}",
+        "error_message": "Only protected V1 or DEV SQL recovery V2 is supported."
+      }
+    }
+  },
+  "provider": {
+    "aws": {
+      "region": "${var.aws_region}",
+      "allowed_account_ids": [
+        "${var.aws_account_id}"
+      ]
+    }
+  },
+  "locals": {
+    "authority": "${jsondecode(templatefile(\"${path.module}/authority.json\", { security_admin_principal_arn = var.security_admin_principal_arn }))}"
+  },
+  "module": {
+    "request_identities": {
+      "source": "./modules/request_identities",
+      "authority": "${local.authority}",
+      "account_id": "${var.aws_account_id}",
+      "region": "${var.aws_region}",
+      "endpoints": "${{for key,v in data.aws_lambda_function.request_gateway:\"request-gateway/${key}\"=>v.qualified_arn}}",
+      "dev_cicd_installation_only": "${var.dev_cicd_installation_only}"
+    },
+    "control_bundle_storage": {
+      "source": "./modules/control_bundle_storage",
+      "catalog": "${local.authority.control_bundles}",
+      "account_id": "${var.aws_account_id}",
+      "region": "${var.aws_region}",
+      "admin_arn": "${var.security_admin_principal_arn}",
+      "runtime_readers": "${merge(module.controller_compute.internal_release.bundle_readers, module.controller_compute.wp4d.bundle_readers, module.controller_compute.wp5.bundle_readers)}"
+    },
+    "controller_compute": {
+      "source": "./modules/controller_compute",
+      "authority": "${local.authority}",
+      "account_id": "${var.aws_account_id}",
+      "region": "${var.aws_region}",
+      "admin_arn": "${var.security_admin_principal_arn}",
+      "installations": "${merge(local.authority.internal_release.installations,var.wp3_installations)}",
+      "runtime_approvals": "${merge(local.authority.internal_release.runtime_approvals,var.wp3_runtime_approvals)}",
+      "wp4d_installations": "${merge(local.authority.wp4d.installations,var.dev_nat_installations,var.dev_delivery_installations)}",
+      "wp4d_runtime_approvals": "${merge(local.authority.wp4d.runtime_approvals,var.dev_nat_runtime_approvals,var.dev_delivery_runtime_approvals)}",
+      "wp4d_environment_bindings": "${merge(local.authority.wp4d.environment_bindings,jsondecode(var.dev_nat_network_binding==null ? \"{}\" : jsonencode({dev=var.dev_nat_network_binding})))}",
+      "wp5_installations": "${local.authority.wp5.installations}",
+      "wp5_runtime_approvals": "${local.authority.wp5.runtime_approvals}",
+      "wp5_environment_bindings": "${local.authority.wp5.environment_bindings}",
+      "dev_operator_arn": "${var.dev_operator_arn}",
+      "dev_cicd_installation_only": "${var.dev_cicd_installation_only}",
+      "dev_delivery_binding": "${var.dev_delivery_binding}",
+      "dev_delivery_contract": "${var.dev_delivery_contract}"
+    },
+    "protected_resources": {
+      "source": "./modules/protected_resources",
+      "account_id": "${var.aws_account_id}",
+      "region": "${var.aws_region}"
+    },
+    "lifecycle_foundations": {
+      "source": "./modules/lifecycle_foundations",
+      "account_id": "${var.aws_account_id}",
+      "region": "${var.aws_region}",
+      "admin_arn": "${var.security_admin_principal_arn}",
+      "nat_launch_inputs": "${merge(local.authority.wp5.nat_launch_inputs,var.dev_nat_launch_inputs)}",
+      "dev_operator_arn": "${var.dev_operator_arn}"
+    }
+  },
+  "output": {
+    "foundation": {
+      "value": {
+        "stage": "${local.authority.stage}",
+        "authority_sha256": "${filesha256(\"${path.module}/authority.json\")}",
+        "target_accepted": false,
+        "request_role_arns": "${module.request_identities.role_arns}"
+      }
+    },
+    "protected_interface_contract": {
+      "value": "${local.authority.interfaces}",
+      "description": "Reserved ARN/ID-only publication interfaces; unavailable until later slices. Do not give consumers remote-state access."
+    },
+    "control_bundle_reservation": {
+      "value": "${module.control_bundle_storage.reservation}",
+      "description": "TARGET reservation only; no installed bundle, consumer read grant or operational controller."
+    },
+    "controller_compute_foundation": {
+      "value": "${module.controller_compute.foundation}",
+      "description": "TARGET compute declarations only; zero Lambda/CodeBuild instances, no invocation authorization."
+    },
+    "protected_output_candidates": {
+      "value": "${module.protected_resources.protected_output_candidates}"
+    },
+    "protected_dev_output_candidates": {
+      "value": "${module.protected_resources.protected_dev_output_candidates}"
+    },
+    "internal_release": {
+      "value": "${module.controller_compute.internal_release}"
+    },
+    "wp4d": {
+      "value": "${module.controller_compute.wp4d}"
+    },
+    "wp5": {
+      "value": "${module.controller_compute.wp5}"
+    },
+    "wp6": {
+      "value": "${module.request_identities.wp6}"
+    }
+  },
+  "data": {
+    "aws_lambda_function": {
+      "request_gateway": {
+        "for_each": "${{for key,v in local.authority.wp6.approvals:key=>v if !startswith(key,\"plan-\")}}",
+        "function_name": "${\"e1-gateway-${each.key}\"}",
+        "qualifier": "${each.value.gateway_version}"
+      }
+    }
+  }
+}

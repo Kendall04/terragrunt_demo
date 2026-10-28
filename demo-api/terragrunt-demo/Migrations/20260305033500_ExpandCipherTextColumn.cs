@@ -1,9 +1,13 @@
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using terragrunt_demo.Data;
 
 #nullable disable
 
 namespace terragrunt_demo.Migrations
 {
+    [DbContext(typeof(AppDbContext))]
+    [Migration("20260305033500_ExpandCipherTextColumn")]
     public partial class ExpandCipherTextColumn : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)

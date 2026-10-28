@@ -1,0 +1,27 @@
+#!/bin/bash
+set -euo pipefail
+umask 077
+/usr/bin/python3 -I -B - <<'PY'
+import base64,hashlib,json,os,pathlib,shutil,subprocess,tarfile,tempfile
+c=json.loads(base64.b64decode('${binding_base64}',validate=True))
+e={k:os.environ[k] for k in ('PATH','LANG','LC_ALL') if k in os.environ}
+e.update(AWS_CONFIG_FILE=os.devnull,AWS_SHARED_CREDENTIALS_FILE=os.devnull,AWS_EC2_METADATA_V1_DISABLED='true',AWS_MAX_ATTEMPTS='1',AWS_PAGER='')
+cli=os.path.realpath(shutil.which('aws') or '/missing')
+if not pathlib.Path(cli).is_file():raise SystemExit('AMI_AWSCLI_REQUIRED')
+with tempfile.TemporaryDirectory(prefix='ecs-observer-') as directory:
+    archive=pathlib.Path(directory)/'observer.tar.gz'
+    result=subprocess.run([cli,'s3api','get-object','--bucket',c['bucket'],'--key',c['key'],'--version-id',c['version'],'--expected-bucket-owner',c['account'],'--region',c['region'],'--cli-connect-timeout','5','--cli-read-timeout','30','--no-cli-pager',str(archive)],capture_output=True,env=e,timeout=45)
+    if result.returncode:raise SystemExit('BUNDLE_FETCH_UNCONFIRMED_NO_RETRY')
+    h=hashlib.sha256()
+    with archive.open('rb') as f:
+        for b in iter(lambda:f.read(1048576),b''):h.update(b)
+    if h.hexdigest()!=c['sha256']:raise SystemExit('BUNDLE_HASH_MISMATCH')
+    with tarfile.open(archive,'r:gz') as t:
+        entries=[v for v in t.getmembers() if v.name=='observer_host.py']
+        if len(entries)!=1 or not entries[0].isfile() or entries[0].size>65536:raise SystemExit('INSTALLER_MEMBER_REQUIRED')
+        installer=pathlib.Path(directory)/'observer_host.py'
+        with installer.open('xb') as out:out.write(t.extractfile(entries[0]).read())
+    args=['/usr/bin/python3','-I','-B',str(installer),'install','--archive',str(archive),'--sha256',c['sha256'],'--config-base64',base64.b64encode(json.dumps(c['host']).encode()).decode()]
+    result=subprocess.run(args,env=e)
+    if result.returncode:raise SystemExit('INSTALL_UNCONFIRMED_TIMER_NOT_STARTED')
+PY

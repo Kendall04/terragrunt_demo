@@ -1,0 +1,55 @@
+{
+  "provider": {
+    "aws": {
+      "region": "${var.region}",
+      "allowed_account_ids": [
+        "${var.account_id}"
+      ]
+    }
+  },
+  "variable": {
+    "account_id": {
+      "type": "string",
+      "nullable": false
+    },
+    "region": {
+      "type": "string",
+      "nullable": false
+    },
+    "protected_inputs": {
+      "type": "map(string)",
+      "nullable": false
+    }
+  },
+  "locals": {
+    "authority": "${jsondecode(file(\"${path.module}/../../../../infra/security/authority.json\"))}",
+    "publication": "${try(local.authority.ownership_closure.publications[\"${var.account_id}/${var.region}\"], null)}",
+    "expected": "${try({ for k in [\"prod/kms\", \"prod/repository\", \"neutral/repository\", \"neutral/artifacts\", \"neutral/oidc\"] : k => local.publication.records[k].value if local.publication.records[k].available }, {})}"
+  },
+  "resource": {
+    "terraform_data": {
+      "protected_input": {
+        "input": "${var.protected_inputs}",
+        "lifecycle": {
+          "precondition": {
+            "condition": "${local.publication != null && length(local.expected) == 5 && var.protected_inputs == tomap(local.expected)}",
+            "error_message": "Missing/unavailable/substituted protected publication. No local security-resource fallback."
+          }
+        }
+      }
+    }
+  },
+  "output": {
+    "protected_inputs": {
+      "value": "${terraform_data.protected_input.output}"
+    }
+  },
+  "terraform": {
+    "backend": {
+      "s3": {
+        "encrypt": true,
+        "use_lockfile": true
+      }
+    }
+  }
+}

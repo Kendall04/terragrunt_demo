@@ -1,0 +1,34 @@
+{
+  "status": "OFFLINE_REVIEW_NOT_AUTHORIZED",
+  "runId": "ecs-sentinel-r20261023b1",
+  "account": "341936017254",
+  "region": "us-east-1",
+  "operator": "arn:aws:iam::341936017254:role/TerragruntDemoDevOperator",
+  "mainResources": 16,
+  "bootstrapResources": 3,
+  "resourceTypes": [
+    "AWS::DynamoDB::Table",
+    "AWS::IAM::Role",
+    "AWS::Lambda::EventSourceMapping",
+    "AWS::Lambda::Function",
+    "AWS::Logs::LogGroup",
+    "AWS::S3::Bucket",
+    "AWS::S3::BucketPolicy",
+    "AWS::SNS::Subscription",
+    "AWS::SNS::Topic",
+    "AWS::SNS::TopicPolicy",
+    "AWS::SQS::Queue",
+    "AWS::SQS::QueuePolicy"
+  ],
+  "newStacks": [
+    "ecs-sentinel-r20261023b1",
+    "ecs-sentinel-r20261023b1-bootstrap"
+  ],
+  "noCloudCalls": true,
+  "retainedAfterMainStackDelete": [
+    "Sentinel",
+    "Archive"
+  ],
+  "wildcardException": "CreateEventSourceMapping lacks resource scoping: exact function ARN/region. DescribeLogGroups is regional metadata-only and lacks resource scoping for CF provider reads. Mapping UUID operations remain function-bound; run-tag writes only.",
+  "permissionBoundary": "CF role cannot edit its own policy or the two runtime boundaries; runtime IAM and NAT capabilities absent."
+}

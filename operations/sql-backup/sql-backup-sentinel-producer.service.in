@@ -1,0 +1,23 @@
+# INERT replacement for observer unit; never run both against the same state.
+# Existing independent host and explicit role/CLI/config/cadence review required.
+[Unit]
+Description=Backup observer with durable SQS delivery candidate
+After=network-online.target
+Wants=network-online.target
+[Service]
+Type=oneshot
+User=@OBSERVER_USER@
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+StateDirectory=terragrunt-demo-backup-observer
+StateDirectoryMode=0700
+Environment=AWS_EC2_METADATA_V1_DISABLED=true
+ExecStart=/usr/bin/python3 -I -B /opt/terragrunt-demo/sql-backup/sentinel_publish.py --config @OBSERVER_CONFIG@ --executable @BACKUP_EXECUTABLE@ --aws-cli @AWS_CLI@ --state-directory /var/lib/terragrunt-demo-backup-observer --subject @OBSERVER_SUBJECT@ --expected-up @EXPECTED_UP@ --repeat-after-seconds @REMINDER_SECONDS@ --account @AWS_ACCOUNT@ --region @AWS_REGION@ --run-id @SENTINEL_RUN_ID@ --publish-attempts @PUBLISH_ATTEMPTS@ --expires-at @SENTINEL_EXPIRES_AT@ --aws --ec2-role
+TimeoutStartSec=660
+KillSignal=SIGTERM
+SendSIGKILL=no
+SuccessExitStatus=1
+Restart=no

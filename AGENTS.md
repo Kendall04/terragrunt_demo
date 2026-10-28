@@ -16,8 +16,17 @@ needed for the task; this file is a map, not the architecture reference.
 - Production independence from dev-owned resources is a TARGET requirement;
   current dev/shared ownership is a known defect, not a convention to perpetuate.
 - Cost and single-operator safety are design constraints. SQL Server stays on EC2.
-  Database durability is important but deferred until redeployed AWS can support
-  safe experiments near program end. Do not select its solution prematurely.
+  The owner authorized the first local V2 SQL backup/restore increment on
+  2026-10-16. Its [runbook](operations/sql-backup/README.md) and
+  [validation boundary](terraform/docs/validation.md#sql-backuprestore-local-increment---2026-10-16)
+  separate native Express proof, the accepted S3/KMS component drill and future
+  EC2 installation. The [local service contract](operations/sql-backup/README.md#local-service-increment---2026-10-16)
+  adds packaging/cleanup/inhibition; it installs no host service or cloud access.
+  [EC2 installation preparation](operations/sql-backup/EC2-INSTALL-REVIEW.md) has
+  received grouped owner approval. The [execution checkpoint](terraform/docs/validation.md#approved-ec2-backup-execution-preflight---2026-10-16)
+  remains paused before creation pending [human review of the revised plan-only source](operations/sql-backup/LOCAL-PLAN-REVIEW.md).
+  A new bounded historical-risk disposition preserves UNKNOWN and authorizes no
+  apply/deletion; exact session binding and every other E16 guard remain required.
 
 ## Read when
 
@@ -31,6 +40,11 @@ needed for the task; this file is a map, not the architecture reference.
 | Requirement/tradeoff or improvement selection | [Decisions and backlog](terraform/docs/decisions-and-limitations.md) |
 | Any validation execution | [Validation and side effects](terraform/docs/validation.md) |
 
+The owner authorized the .NET 10 LTS source migration on 2026-10-16.
+[Current local qualification](terraform/docs/validation.md#net-10-lts-local-migration---2026-10-16)
+records the SDK/image pins, test boundary and shared checkout. Historical .NET 8
+AWS trials do not prove deployment of the .NET 10 source.
+
 ## Validation and hazards
 
 Use git diff/status and local link review for docs. App checks live in
@@ -41,6 +55,8 @@ generate files and contact AWS. Deployment/rollback commands mutate resources.
 Do not install dependencies, access AWS or deploy merely because a doc lists a command.
 
 Preserve digest-based delivery and secret metadata/value separation.
-Rollback is not proven; release metadata defaults are not test evidence.
+The dated [DEV rollback evidence](terraform/docs/deployment.md#real-sourcetransport-qualification-and-distinct-digest-dev-rollback)
+proves one qualified application A-to-B-to-A trial, not PROD recovery or database
+restore. Release metadata defaults are not test evidence.
 Update the authoritative docs alongside future behavior changes. Historical
 case-study/interview/phase-plan material and PNGs are not operational authority.

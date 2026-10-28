@@ -1,0 +1,132 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "sts:GetCallerIdentity"
+      ],
+      "Resource": [
+        "*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        },
+        "DateLessThan": {
+          "aws:CurrentTime": "${var.expires_at}"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ssmmessages:CreateControlChannel",
+        "ssmmessages:CreateDataChannel",
+        "ssmmessages:OpenControlChannel",
+        "ssmmessages:OpenDataChannel"
+      ],
+      "Resource": [
+        "*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        },
+        "DateLessThan": {
+          "aws:CurrentTime": "${var.expires_at}"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ssm:GetDocument",
+        "ssm:DescribeDocument"
+      ],
+      "Resource": [
+        "arn:aws:ssm:us-east-1:341936017254:document/ecs-sentinel-ssmdiag-r20261024d1-observer-control"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        },
+        "DateLessThan": {
+          "aws:CurrentTime": "${var.expires_at}"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ssm:UpdateInstanceInformation"
+      ],
+      "Resource": [
+        "arn:aws:ec2:us-east-1:341936017254:instance/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1",
+          "ssm:resourceTag/Trial": "ecs-sentinel-ssmdiag-r20261024d1"
+        },
+        "DateLessThan": {
+          "aws:CurrentTime": "${var.expires_at}"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": [
+        "arn:aws:logs:us-east-1:341936017254:log-group:/ecs/ssm-diagnostic/ecs-sentinel-ssmdiag-r20261024d1:log-stream:*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        },
+        "DateLessThan": {
+          "aws:CurrentTime": "${var.expires_at}"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:DescribeLogStreams"
+      ],
+      "Resource": [
+        "arn:aws:logs:us-east-1:341936017254:log-group:/ecs/ssm-diagnostic/ecs-sentinel-ssmdiag-r20261024d1",
+        "arn:aws:logs:us-east-1:341936017254:log-group:/ecs/ssm-diagnostic/ecs-sentinel-ssmdiag-r20261024d1:*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        },
+        "DateLessThan": {
+          "aws:CurrentTime": "${var.expires_at}"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "logs:DescribeLogGroups"
+      ],
+      "Resource": [
+        "*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        },
+        "DateLessThan": {
+          "aws:CurrentTime": "${var.expires_at}"
+        }
+      }
+    }
+  ]
+}

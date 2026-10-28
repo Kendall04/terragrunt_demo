@@ -1,0 +1,150 @@
+{
+  "classification": "CURRENT_FACT",
+  "meaning": "Reviewed restricted policy-permission applicability vocabulary; all other requests UNKNOWN",
+  "sources": [
+    "https://docs.aws.amazon.com/service-authorization/latest/reference/list_ecs.html",
+    "https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_condition_operators.html",
+    "https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html"
+  ],
+  "actions": {
+    "iam:putrolepolicy": {
+      "resources": [
+        "arn:aws:iam::*:role/*"
+      ],
+      "context": [],
+      "dependencies": [],
+      "scope": "PRIMITIVE_POLICY_PERMISSION",
+      "dependency_note": "Graph composes PassRole and ECS service trust explicitly for runtime registration/activation. Not general API success or delegation proof."
+    },
+    "iam:createpolicyversion": {
+      "resources": [
+        "arn:aws:iam::*:policy/*"
+      ],
+      "context": [],
+      "dependencies": [],
+      "scope": "PRIMITIVE_POLICY_PERMISSION",
+      "dependency_note": "Graph composes PassRole and ECS service trust explicitly for runtime registration/activation. Not general API success or delegation proof."
+    },
+    "iam:updateassumerolepolicy": {
+      "resources": [
+        "arn:aws:iam::*:role/*"
+      ],
+      "context": [],
+      "dependencies": [],
+      "scope": "PRIMITIVE_POLICY_PERMISSION",
+      "dependency_note": "Graph composes PassRole and ECS service trust explicitly for runtime registration/activation. Not general API success or delegation proof."
+    },
+    "iam:passrole": {
+      "resources": [
+        "arn:aws:iam::*:role/*"
+      ],
+      "context": [
+        "iam:PassedToService"
+      ],
+      "dependencies": [],
+      "scope": "PRIMITIVE_POLICY_PERMISSION",
+      "dependency_note": "Graph composes PassRole and ECS service trust explicitly for runtime registration/activation. Not general API success or delegation proof."
+    },
+    "ecs:registertaskdefinition": {
+      "resources": [
+        "arn:aws:ecs:*:*:task-definition/*"
+      ],
+      "context": [],
+      "dependencies": [],
+      "scope": "PRIMITIVE_POLICY_PERMISSION",
+      "dependency_note": "Graph composes PassRole and ECS service trust explicitly for runtime registration/activation. Not general API success or delegation proof."
+    },
+    "ecs:updateservice": {
+      "resources": [
+        "arn:aws:ecs:*:*:service/*"
+      ],
+      "context": [],
+      "dependencies": [],
+      "scope": "PRIMITIVE_POLICY_PERMISSION",
+      "dependency_note": "Graph composes PassRole and ECS service trust explicitly for runtime registration/activation. Not general API success or delegation proof."
+    },
+    "elasticloadbalancing:modifylistener": {
+      "resources": [
+        "arn:aws:elasticloadbalancing:*:*:listener/app/*"
+      ],
+      "context": [],
+      "dependencies": [],
+      "scope": "PRIMITIVE_POLICY_PERMISSION",
+      "dependency_note": "Graph composes PassRole and ECS service trust explicitly for runtime registration/activation. Not general API success or delegation proof."
+    },
+    "s3:putobject": {
+      "resources": [
+        "arn:aws:s3:::*/*"
+      ],
+      "context": [],
+      "dependencies": [],
+      "scope": "PRIMITIVE_POLICY_PERMISSION",
+      "dependency_note": "Graph composes PassRole and ECS service trust explicitly for runtime registration/activation. Not general API success or delegation proof."
+    },
+    "s3:getobject": {
+      "resources": [
+        "arn:aws:s3:::*/*"
+      ],
+      "context": [],
+      "dependencies": [],
+      "scope": "PRIMITIVE_POLICY_PERMISSION",
+      "dependency_note": "Graph composes PassRole and ECS service trust explicitly for runtime registration/activation. Not general API success or delegation proof."
+    },
+    "ecr:putimage": {
+      "resources": [
+        "arn:aws:ecr:*:*:repository/*"
+      ],
+      "context": [],
+      "dependencies": [],
+      "scope": "PRIMITIVE_POLICY_PERMISSION",
+      "dependency_note": "Graph composes PassRole and ECS service trust explicitly for runtime registration/activation. Not general API success or delegation proof."
+    },
+    "lambda:updatefunctioncode": {
+      "resources": [
+        "arn:aws:lambda:*:*:function:*"
+      ],
+      "context": [],
+      "dependencies": [],
+      "scope": "PRIMITIVE_POLICY_PERMISSION",
+      "dependency_note": "Graph composes PassRole and ECS service trust explicitly for runtime registration/activation. Not general API success or delegation proof."
+    },
+    "lambda:invokefunction": {
+      "resources": [
+        "arn:aws:lambda:*:*:function:*"
+      ],
+      "context": [],
+      "dependencies": [],
+      "scope": "PRIMITIVE_POLICY_PERMISSION",
+      "dependency_note": "Graph composes PassRole and ECS service trust explicitly for runtime registration/activation. Not general API success or delegation proof."
+    },
+    "iam:createpolicy": {
+      "resources": [
+        "arn:aws:iam::*:policy/*"
+      ],
+      "context": [],
+      "dependencies": [],
+      "scope": "PRIMITIVE_POLICY_PERMISSION",
+      "dependency_note": "Graph composes PassRole and ECS service trust explicitly for runtime registration/activation. Not general API success or delegation proof."
+    },
+    "iam:setdefaultpolicyversion": {
+      "resources": [
+        "arn:aws:iam::*:policy/*"
+      ],
+      "context": [],
+      "dependencies": [],
+      "scope": "PRIMITIVE_POLICY_PERMISSION",
+      "dependency_note": "Graph composes PassRole and ECS service trust explicitly for runtime registration/activation. Not general API success or delegation proof."
+    },
+    "iam:attachrolepolicy": {
+      "resources": [
+        "arn:aws:iam::*:role/*"
+      ],
+      "context": [
+        "iam:PolicyARN"
+      ],
+      "dependencies": [],
+      "scope": "PRIMITIVE_POLICY_PERMISSION",
+      "dependency_note": "Graph composes PassRole and ECS service trust explicitly for runtime registration/activation. Not general API success or delegation proof."
+    }
+  }
+}

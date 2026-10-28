@@ -1,0 +1,25 @@
+{
+  "verifiedOn": "2026-10-16",
+  "method": "docker buildx imagetools inspect against public Microsoft Container Registry; selected linux/amd64 child manifest and image configuration inspected by digest",
+  "platform": "linux/amd64",
+  "appUid": 1654,
+  "bases": {
+    "base": {
+      "tag": "mcr.microsoft.com/dotnet/aspnet:10.0.13",
+      "indexDigest": "sha256:d5633778c754e89a386882eddf8dbee6942447a8a4b8267c19cf1e1158d0b0ac",
+      "manifestDigest": "sha256:e4b445f93a5deeb6bd7de300febceb8dd7e481ac65ccf1b474eddc3642a3010f",
+      "configDigest": "sha256:db13e9e7957d64b9e61e7b71f48126d899f6a36813c9ffcf1afe5bd7ab1d63fb",
+      "dotnetVersion": "10.0.13",
+      "aspnetVersion": "10.0.13"
+    },
+    "build": {
+      "tag": "mcr.microsoft.com/dotnet/sdk:10.0.402",
+      "indexDigest": "sha256:0d99ebf1ccad15037b5c98c9fe8979d6b8dbac23812feae2277a0b277b5c5ffa",
+      "manifestDigest": "sha256:3a48280a9a7c6276c3eeaba1efa6a08820f18c84fb9e6274c187719ecfaf9fbc",
+      "configDigest": "sha256:9cd0d6fa04def99891bf4d5a29eb9a3878b6041f9cc25cb389ea0df2177d23fd",
+      "dotnetVersion": "10.0.13",
+      "aspnetVersion": "10.0.13",
+      "sdkVersion": "10.0.402"
+    }
+  }
+}

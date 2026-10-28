@@ -1,0 +1,14 @@
+// Portable source-policy checks, not a JavaScript sandbox or browser/a11y test.
+import assert from 'node:assert/strict';
+export function assertPortfolioContract({html,app,css,contract,topologies}){
+ assert.equal(contract.mode,'demo');assert.equal(contract.liveConnected,false);assert.equal(contract.data,'synthetic-memory');assert.equal(contract.provenance,'archify-3.1.0-with-hand-authored-inspector');
+ assert.match(html,/DEMO LOCAL/);assert.match(html,/NO GENERADO POR ARCHIFY/);assert.match(html,/HISTÓRICO/);assert.match(html,/Sin conexión con AWS/);assert.match(html,/PKI fuera de alcance de ECS/);assert.doesNotMatch(html,/PKI, mTLS y rotación entre servicios/);assert.match(html,/pendiente/i);assert.match(html,/no cifra, no consulta SQL/);
+ assert.doesNotMatch([html,app,css].join('\n'),/\b(?:src|href)\s*=\s*["'](?:https?:|\/\/|javascript:)|(?:https?:)?\/\/[^\s"'<>]+|\b(?:fetch|WebSocket|EventSource)\s*\(|XMLHttpRequest|sendBeacon|serviceWorker|@import|import\s*\(/i,'External/network-capable source requires explicit review');
+ assert.doesNotMatch([html,app,css].join('\n'),/AWS\s+(?:LIVE|CONECTADO)|CONEXI[ÓO]N\s+AWS\s+ACTIVA|MODO\s+LIVE\s+ACTIVO|data-mode=["']live["']/i,'False live-status claim');
+ const views=[...html.matchAll(/<section id="([^"]+)" class="view"([^>]*)>/g)];assert.deepEqual(views.map(row=>row[1]),['demo','architecture','evidence']);assert(!views[0][2].includes('hidden'));assert(views.slice(1).every(row=>row[2].includes('hidden')));
+ for(const view of ['demo','architecture','evidence'])assert.match(html,new RegExp(`data-view="${view}"`));
+ assert.equal((html.match(/<h1 tabindex="-1">/g)||[]).length,3);assert.match(html,/class="skip-link" href="#main-content"/);assert.match(html,/<main id="main-content" tabindex="-1">/);assert.match(html,/label for="message"/);assert.match(html,/role="status" aria-live="polite"/);assert.match(html,/role="group" aria-label="Componentes de la arquitectura"/);
+ assert.match(app,/history\.pushState/);assert.match(app,/'popstate'/);assert.match(app,/if\(moveFocus\).*focus/);assert.match(app,/setAttribute\('aria-label'/);assert.match(app,/textContent=row\.text/);assert.doesNotMatch(app,/innerHTML|localStorage|sessionStorage/);
+ assert.deepEqual(Object.keys(topologies),['original','az6']);for(const value of Object.values(topologies)){assert.equal(value.mode,'historical');assert.equal(new Set(value.nodes.map(node=>node[0])).size,value.nodes.length);assert(value.nodes.every(node=>node.length===6&&node.every(text=>typeof text==='string'&&text.length>0)));}
+ assert.deepEqual(topologies.original.nodes.map(node=>node[0]),['gateway','link','alb','ecs','sql','kms']);assert.deepEqual(topologies.az6.nodes.map(node=>node[0]),['source','backup','target','api','nat']);assert.match(topologies.az6.note,/No creó ECS ni ALB/);assert.match(topologies.az6.note,/reparaciones/);assert.match(topologies.original.note,/NAT Instances/);assert.match(topologies.original.flow,/API ↔ KMS/);
+}

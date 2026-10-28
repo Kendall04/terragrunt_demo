@@ -5,6 +5,7 @@
 # ==============================================================
 # Do not enable shell tracing here. This script handles DB passwords fetched
 # from Secrets Manager, and tracing would leak them into cloud-init logs.
+set +x
 set -euo pipefail
 
 # ------------------------------
@@ -17,6 +18,22 @@ APP_USER='${APP_USER}'
 
 SA_SECRET_ARN='${SA_SECRET_ARN}'
 APP_SECRET_ARN='${APP_SECRET_ARN}'
+SQL_SECURITY_PROFILE='${SQL_SECURITY_PROFILE}'
+MIGRATION_USER='${MIGRATION_USER}'
+MIGRATION_SECRET_ARN='${MIGRATION_SECRET_ARN}'
+
+case "$SQL_SECURITY_PROFILE" in
+  legacy-v1) ;;
+  validated-v2)
+    # Public deterministic helper payload, not a downloaded script or secret.
+    SQL_PRINCIPAL_SOURCE="$(printf '%s' '${SQL_PRINCIPAL_HELPERS}' | base64 -d | gzip -d)"
+    [[ "$(printf '%s\n' "$SQL_PRINCIPAL_SOURCE" | sha256sum | cut -d' ' -f1)" == '${SQL_PRINCIPAL_SHA256}' ]]
+    source /dev/stdin <<< "$SQL_PRINCIPAL_SOURCE"
+    unset SQL_PRINCIPAL_SOURCE
+    sql_principals_validate
+    [[ -n "$MIGRATION_SECRET_ARN" ]] ;;
+  *) echo SQL_SECURITY_PROFILE_UNKNOWN >&2; exit 64 ;;
+esac
 
 export DEBIAN_FRONTEND=noninteractive
 
@@ -24,7 +41,9 @@ export DEBIAN_FRONTEND=noninteractive
 # 1) Install base packages and AWS CLI
 # ---------------------------------------
 apt-get update -y
-apt-get install -y curl ca-certificates gnupg lsb-release software-properties-common awscli
+apt-get install -y curl ca-certificates gnupg lsb-release software-properties-common
+# Keep the CLI for Secrets Manager without optional documentation/rendering packages.
+apt-get install -y --no-install-recommends awscli
 
 # -----------------------------------------------------
 # Retrieve SA and application passwords from Secrets Manager
@@ -60,6 +79,9 @@ get_secret_value() {
 
 SA_PASS="$(get_secret_value "$SA_SECRET_ARN" "SQL SA")"
 APP_PASS="$(get_secret_value "$APP_SECRET_ARN" "SQL app user")"
+if [ "$SQL_SECURITY_PROFILE" = validated-v2 ]; then
+  MIGRATION_PASS="$(get_secret_value "$MIGRATION_SECRET_ARN" "SQL migrator")"
+fi
 
 # -----------------------------------------------------
 # 2) Configure Microsoft repositories securely (keyrings)
@@ -115,6 +137,10 @@ SQLCMDPASSWORD="$SA_PASS" sqlcmd -S localhost -C -U SA -b -Q \
 # ----------------------------------------------------
 # 9) Create login and grant DB permissions to the user
 # ----------------------------------------------------
+if [ "$SQL_SECURITY_PROFILE" = validated-v2 ]; then
+  # Leaves runtime disabled until reviewed migration, schema verification and handoff.
+  SQLCMDPASSWORD="$SA_PASS" sql_principals_prepare --ack-reviewed-sql-privilege-change
+else
 APP_PASS_SQL="$(printf '%s' "$APP_PASS" | sed "s/'/''/g")"
 
 SQLCMDPASSWORD="$SA_PASS" sqlcmd -S localhost -C -U SA -b -d "$APP_DB" <<SQL
@@ -126,12 +152,13 @@ IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = N'$APP_USER')
 
 ALTER ROLE db_owner ADD MEMBER [$APP_USER];
 SQL
+fi
 
 # ----------------------------------------------------
 # Done
 # ----------------------------------------------------
-echo "SQL Server 2022 Express is ready with DB '$APP_DB' and user '$APP_USER'." \
+echo "SQL Server installed; profile=$SQL_SECURITY_PROFILE. validated-v2 still requires migration/runtime admission." \
   > /var/log/sql_install_done
 
 unset SA_PASS APP_PASS
-unset APP_PASS_SQL
+unset APP_PASS_SQL MIGRATION_PASS SQLCMDPASSWORD

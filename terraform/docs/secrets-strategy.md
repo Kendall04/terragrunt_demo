@@ -12,10 +12,22 @@ but was destroyed. No forensic/cleanup task is required for deleted state.
 The next deployment must verify the invariant through evidence; no AWS inspection
 has been performed as part of this documentation bootstrap.
 
+## Local SQL security follow-up - 2026-10-27
+
+[Implementation and admission boundary](sql-runtime-security.md) separates an explicit
+migration command from the data-only runtime and adds opt-in validated-v2 SQL TLS/
+effective-permission guards. Startup migrations now default off. TARGET DEV/PROD
+Fargate general egress narrows to HTTPS while retaining exact SQL/1433. No controls
+were installed; legacy bootstrap remains db_owner/TrustServerCertificate=True,
+an opt-in bootstrap now prepares a separate migrator and disabled minimal runtime.
+SQL host egress and internal HTTP remain unresolved. The table below describes
+that legacy deployed recipe, not acceptance of the strict profile. Certificate
+inputs, reviewed privilege handoff, Linux artifacts and native tests are pending.
+
 ## CURRENT CONTRACT — secret ownership and encryption
 
-[Secrets layer](../infra/secrets) creates metadata containers only via
-[secret_metadata](../infra/secrets/modules/secret_metadata/main.tf):
+[Neutral protected resources](../infra/security/modules/protected_resources/main.tf.json)
+create secret metadata containers only:
 
 - demo/<env>/db/sql-sa-password
 - demo/<env>/db/sql-app-password
@@ -24,7 +36,7 @@ has been performed as part of this documentation bootstrap.
 Terraform does not create secret versions or generate the passwords.
 [bootstrap-db-secrets.sh](../../scripts/bootstrap-db-secrets.sh) writes values
 outside Terraform; its lower-level entry point requires
---confirm-secret-value-bootstrap. Prefer the staged wrapper sequence in
+--confirm-secret-value-bootstrap. Use the explicit administrator/lifecycle sequence in
 [bootstrap](bootstrap.md), not a graph-wide initial apply.
 
 Existing passwords stay unchanged unless --rotate is requested. A different
@@ -38,29 +50,30 @@ the connection string; application task roles use KMS Encrypt/Decrypt.
 A per-environment customer-managed KMS key encrypts both secret values and text;
 rotation is enabled and deletion waits 30 days. EBS defaults to its AWS-managed
 key. Loss of the text key affects decryptability independently of DB backups.
-Evidence: [data IAM](../infra/data/main.tf),
-[app IAM](../infra/apps/fargate/demo.tf),
-[KMS](../infra/shared/modules/kms_key/key.tf).
+Evidence: [data IAM](../modules/target/dev/data/ordinary-main.tf),
+[app IAM](../modules/target/dev/apps/ordinary-demo.tf),
+[KMS](../infra/security/modules/protected_resources/main.tf.json).
 
-## CURRENT CONTRACT — identity boundaries and limitations
+## CURRENT CONTRACT — final E1 protected authority
 
-GitHub authentication uses OIDC environment-shaped subjects. Branch/reviewer
-restrictions must be externally configured; checked-in workflows do not prove
-them. Desired protected main/PR/check/approval governance is a TARGET.
+[WP6 protected workflows](e1-protected-workflows.md) supplies exact environment,
+repository, audience and immutable reusable-entry OIDC trust templates. All eleven
+request identities remain deny-only until genuine protected installation and
+G1-G9 conformance are supplied. Internal execution roles retain service-only trust,
+exact PassRole/resource boundaries and no external OIDC acquisition. Ordinary
+infra callers cannot administer security; delivery/recovery cannot administer
+lifecycle, qualifications, eligibility, code installation or IAM.
 
-CI has ReadOnlyAccess plus explicit secret/parameter-read and decrypt denies.
-Infrastructure CD also denies direct secret access and selected GitHub-role
-mutation, but grants broad infrastructure APIs including EC2/ECS/Lambda/KMS.
-Normal and high-risk CD share that permission policy. The high-risk role is
-declared for both environments with a dev-infra-approval trust subject.
-These are hardening concerns, not demonstrated least-privilege isolation.
-An explicit direct-secret-read deny does not by itself prevent indirect access
-through mutable workloads.
+Workflows now use only pinned closed requests or a separate read-only plan identity.
+They expose no legacy AWS-role secrets, static keys, role chaining, app-CD/TG_CD
+fallback or direct ECS/ALB/infra mutation. Sanitized result readers cannot write
+protected evidence/configuration; protected object policies deny internal reads.
+External environment branch/reviewer controls remain unverified.
 
-Evidence: [IAM locals](../infra/shared/modules/iam_github/locals.tf),
-[CI role](../infra/shared/modules/iam_github/github_terragrunt_ci.tf),
-[CD roles](../infra/shared/modules/iam_github/github_terragrunt_cd.tf),
-[delivery roles](../infra/shared/modules/iam_github/github_delivery_split.tf).
+WP7 removes legacy broad roles, policies, attachments, default OIDC trusts,
+PassRole grants and environment roots from operational configuration. They survive
+only as inert digest-pinned source data for regression/provenance. No residual AWS
+session exists to revoke in this undeployed account. See [WP7](e1-final-acceptance.md).
 
 ## CURRENT CONTRACT versus security decisions
 
@@ -71,11 +84,11 @@ Evidence: [IAM locals](../infra/shared/modules/iam_github/locals.tf),
 | Internal ALB HTTP:8080 | UNRESOLVED TLS decision; blue/green does not require HTTP |
 | Encrypt=True;TrustServerCertificate=True SQL connection | UNRESOLVED certificate-validation review |
 | Runtime user db_owner; migrations at task startup | UNRESOLVED migration/runtime privilege separation |
-| Dev-owned OIDC/artifact resources consumed by prod | TARGET: production operational independence; mechanism unresolved |
+| Neutral protected OIDC/artifact dependencies | E1 security ownership corrected; broader operational independence remains a target |
 
-Evidence: [routes](../infra/edge/modules/apigateway/routes.tf),
-[SG rules](../infra/global/security_rules.tf),
-[ALB](../infra/global/modules/alb/alb.tf),
+Evidence: [routes](../modules/target/dev/edge/modules/apigateway/routes.tf),
+[SG rules](../modules/target/dev/global/ordinary-security_rules.tf),
+[ALB](../modules/target/dev/global/modules/alb/alb.tf),
 [connection bootstrap](../../scripts/bootstrap-db-secrets.sh),
 [SQL setup](../infra/data/user_data.sh).
 
@@ -90,3 +103,63 @@ metadata-only configuration proves the whole operational path safe.
 
 Least privilege, stricter provenance and environment independence remain targets.
 Do not invent certificate/account architectures or silently accept these gaps.
+
+## CURRENT CONTRACT — protected administration and installation
+
+The neutral [security root](../infra/security/README.md) owns security controls and
+workload role/secret metadata bindings. Ordinary/high-risk lifecycle cannot
+administer IAM/OIDC/KMS, secret policies, protected storage or its own execution
+dependencies. Sensitive bootstrap/update remains separately authenticated operator
+authority. Public requesters have no PassRole/AssumeRole; internal trusts are
+service-only. Exact PassRole belongs to accepted service-specific execution roles
+and fixed workload tuples. App DB/KMS and execution pull/log/secret injection remain.
+
+Admin-only versioned control storage, package digest, exact S3 VersionId/readback,
+approved immutable runtime image and current environment membership are required
+for installation. Caller flags cannot activate compute. Eleven request identities,
+sixteen WP4D and eight WP5 bindings stay inactive. Repository acceptance does not
+verify live IAM/provider behavior, external grants, GitHub settings or bootstrap.
+
+## E15-E/F combined DEV quiescence boundary
+
+[Combined contract and remaining decisions](e15ef-combined-quiescence.md) wires
+separate ECS/NAT guards into protected WP5/E15-D, with immutable UNKNOWN evidence
+and the original E2 hold. Whole-operation ownership/stage order, terminal ECS
+cluster handoff, installed authenticated adapters and issued-effect settlement
+remain unavailable. Complete DOWN stays denied; no IAM or activation is added.
+
+## E15-G operational component follow-up
+
+[E15-G](e15g-operational-teardown.md) adds original-E2-owner composition, bounded
+ECS drain, sealed terminal cohort handoff and residual completion checks.
+Complete installed DOWN remains PARTIALLY_READY and denied: NAT executor/effect
+closure, authentic ECS closure, whole-operation preparation and exhaustive
+residual installation remain required. No IAM/activation or live AWS evidence.
+
+## E16 supervised original DEV mode (2026-10-13)
+
+The [E16 current operator contract](e16-practical-dev-lifecycle.md) implements
+per-layer original DEV saved-plan review/apply and observed shutdown under an
+explicitly authorized, exclusive existing-human state-writer transfer. Default
+mode remains inert; PROD/shared/security-root ownership is retained. Existing
+WP3/WP4 delivery and E13 recovery remain. E15-G/H advanced finality contracts are
+not weakened or activated. Source readiness is distinct from genuine installation
+and live AWS validation; no AWS operations occurred.
+
+## Proposed EC2 backup credential installation (2026-10-16)
+
+The [grouped installation review](../../operations/sql-backup/EC2-INSTALL-REVIEW.md)
+proposes two dedicated local SQL logins. After explicit approval, root on the
+selected EC2 instance would use its existing SA-secret read permission, generate
+passwords locally, and store only the two connection strings in root:root 0600
+files under a 0700 directory on encrypted EBS. systemd LoadCredential supplies
+private runtime copies to the backup job. SA remains process-only, and no secret
+value enters Terraform, argv, SSM command text, output, evidence or Git. No new
+secret container, text-key grant or application-login change is proposed.
+
+This is an uninstalled lab proposal. The source plans without access by default;
+actual bootstrap requires root, reviewed package/config, explicit approval hash
+and exact IMDS role/account. Existing logins/credentials or an uncertain receipt
+block replay. Reboot persistence is limited to that disposable encrypted EBS;
+no managed rotation, cross-host continuity or production credential guarantee
+is introduced. Preserve security-admin ownership of the separate role/KMS overlay.

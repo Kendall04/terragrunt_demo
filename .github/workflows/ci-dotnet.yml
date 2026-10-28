@@ -7,7 +7,7 @@ on:
         description: ".NET SDK version"
         required: false
         type: string
-        default: "8.0.x"
+        default: "10.0.402"
 
 permissions:
   contents: read
@@ -19,29 +19,46 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Require the repository .NET SDK
+        env:
+          DOTNET_VERSION: ${{ inputs.dotnet_version }}
+        run: |
+          python3 -I -B -c 'import json, os; assert os.environ["DOTNET_VERSION"] == json.load(open("global.json"))["sdk"]["version"]'
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
         with:
           dotnet-version: ${{ inputs.dotnet_version }}
 
       - name: Cache NuGet
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/packages.lock.json', 'global.json') }}
           restore-keys: |
             ${{ runner.os }}-nuget-
 
+      - name: Validate dependency lock contracts (offline)
+        run: python3 -I -B -m unittest discover -s .github/scripts/ci/tests -p test_dotnet_locks.py -v
+
       - name: Restore dependencies
-        run: dotnet restore ./demo-api/terragrunt-demo.sln
+        run: dotnet restore ./demo-api/terragrunt-demo.sln --locked-mode
 
       - name: Build
         run: dotnet build ./demo-api/terragrunt-demo.sln --configuration Release --no-restore
 
       - name: Run tests
         run: dotnet test ./demo-api/terragrunt-demo.sln --configuration Release --no-build --verbosity normal
+
+      - name: Validate SQL backup host contracts
+        run: |
+          docker run --rm --network none --entrypoint /var/lang/bin/python3 \
+            --mount type=bind,source="${GITHUB_WORKSPACE}/operations/sql-backup",target=/src,readonly \
+            --mount type=bind,source="${GITHUB_WORKSPACE}/operations/integrations/portable",target=/integrations/portable,readonly \
+            -w /src public.ecr.aws/lambda/python@sha256:c05509c1a303e7ca10acc26782f530ff1a8573411132e2a67c1924d687a65a96 \
+            -I -B -m unittest discover -s /src -p 'test_*.py' -v
 
       - name: Validate readiness deployment contracts
         run: |
@@ -50,10 +67,12 @@ jobs:
             /bin/bash --noprofile --norc scripts/tests/run-offline-readiness-tests.sh
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+        with:
+          version: v0.37.1
 
       - name: Cache Docker layers
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ hashFiles('demo-api/**/*.csproj') }}-${{ hashFiles('demo-api/Dockerfile') }}
@@ -61,7 +80,7 @@ jobs:
             ${{ runner.os }}-buildx-
 
       - name: Build Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5
         with:
           context: ./demo-api
           file: ./demo-api/Dockerfile

@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net10.0": {
+      "sentinel.application": {
+        "type": "Project",
+        "dependencies": {
+          "Sentinel.Core": "[1.0.0, )"
+        }
+      },
+      "sentinel.core": {
+        "type": "Project"
+      },
+      "sentinel.ingestion": {
+        "type": "Project",
+        "dependencies": {
+          "Sentinel.Application": "[1.0.0, )"
+        }
+      }
+    }
+  }
+}

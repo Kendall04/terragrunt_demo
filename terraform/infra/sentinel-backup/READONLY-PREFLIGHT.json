@@ -1,0 +1,161 @@
+{
+  "schemaVersion": 1,
+  "status": "NOT_EXECUTED_WAIT_PARENT_READONLY_COORDINATION",
+  "profile": "cnp-cert-dev (Windows only)",
+  "account": "341936017254",
+  "region": "us-east-1",
+  "noAssumeRole": true,
+  "noSecretValuesOrCredentials": true,
+  "noResourceWrites": true,
+  "selectedFromExistingEvidence": {
+    "run_id": "ecs-sentinel-r20261024b2",
+    "sender_role_arn": "arn:aws:iam::341936017254:role/ecs-sentinel-r20261024b2-observer",
+    "lifecycle_principal_arn": "arn:aws:iam::341936017254:role/TerragruntDemoDevOperator",
+    "backup_bucket": "terragrunt-demo-sql-backup-341936017254-fa48a32dc9",
+    "backup_prefix": "terragrunt-demo/dev/sql-backups/ec2-20261016/r20261023az6",
+    "manifest_key": "terragrunt-demo/dev/sql-backups/ec2-20261016/r20261023az6/runs/e943dc4d28a24821a24d82b0bd96e83c/manifest.json",
+    "manifest_version": "CYIUpf3MeemuGMTGJywYR1R5FREdmx8Z",
+    "backup_key_arn_expected": "arn:aws:kms:us-east-1:341936017254:key/30f01bb6-03b5-4e5f-b7a8-e304fe607ced",
+    "text_key_arn_metadata_only": "arn:aws:kms:us-east-1:341936017254:key/50d3fe36-8128-4d09-ac13-8f5536a230a7",
+    "backend_bucket": "e1-lifecycle-dev-341936017254-us-east-1",
+    "new_state_key": "sentinel-backup/ecs-sentinel-r20261024b2/terraform.tfstate",
+    "new_lock_key": "sentinel-backup/ecs-sentinel-r20261024b2/terraform.tfstate.tflock",
+    "sourceManifestReceiptSha256": "df0ebf0b9dac2ba36067c6e85fd2bc74e5d5995a526237446f593211aa7eae74",
+    "priorPacketSha256": "5994cbc4e83f3708d774da99d26864244ef8dfdf1eb38cfe722a62c2daa50920"
+  },
+  "reads": [
+    {
+      "service": "sts",
+      "operation": "GetCallerIdentity",
+      "target": "current Windows profile only",
+      "purpose": "confirm existing admin principal/account, no role assumption"
+    },
+    {
+      "service": "ssm",
+      "operation": "GetParameter",
+      "arguments": {
+        "Name": "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-x86_64",
+        "WithDecryption": false
+      },
+      "purpose": "public non-secret AMI selector; resolve once then pin ID, never leave latest in Terraform"
+    },
+    {
+      "service": "ec2",
+      "operation": "DescribeImages",
+      "arguments": {
+        "Owners": [
+          "amazon"
+        ],
+        "ImageIds": [
+          "RESULT_OF_PUBLIC_AMI_PARAMETER"
+        ]
+      },
+      "purpose": "record canonical ID/owner/name/x86_64/HVM/EBS/available and root volume size<=8, require ordinary standard AL2023"
+    },
+    {
+      "service": "kms",
+      "operation": "DescribeKey",
+      "arguments": {
+        "KeyId": "alias/aws/ebs"
+      },
+      "purpose": "canonical ARN, enabled AWS-managed key, avoid unknown EBS account-default CMK"
+    },
+    {
+      "service": "s3",
+      "operation": "HeadObject",
+      "arguments": {
+        "Bucket": "terragrunt-demo-sql-backup-341936017254-fa48a32dc9",
+        "Key": "terragrunt-demo/dev/sql-backups/ec2-20261016/r20261023az6/runs/e943dc4d28a24821a24d82b0bd96e83c/manifest.json",
+        "VersionId": "CYIUpf3MeemuGMTGJywYR1R5FREdmx8Z",
+        "ExpectedBucketOwner": "341936017254"
+      },
+      "purpose": "confirm retained exact native manifest version, owner, encryption key and length<=64KiB; absence is a technical gap, not permission to synthesize healthy"
+    },
+    {
+      "service": "s3",
+      "operation": "GetObject",
+      "arguments": {
+        "Bucket": "terragrunt-demo-sql-backup-341936017254-fa48a32dc9",
+        "Key": "terragrunt-demo/dev/sql-backups/ec2-20261016/r20261023az6/runs/e943dc4d28a24821a24d82b0bd96e83c/manifest.json",
+        "VersionId": "CYIUpf3MeemuGMTGJywYR1R5FREdmx8Z",
+        "ExpectedBucketOwner": "341936017254"
+      },
+      "purpose": "at most64KiB manifest metadata only, no .bak or SQL secrets; record original Started/CompletedUtc/database/key bindings/hash unchanged"
+    },
+    {
+      "service": "s3",
+      "operation": "ListObjectsV2",
+      "arguments": {
+        "Bucket": "terragrunt-demo-sql-backup-341936017254-fa48a32dc9",
+        "Prefix": "terragrunt-demo/dev/sql-backups/ec2-20261016/r20261023az6/runs/",
+        "MaxKeys": 100,
+        "ExpectedBucketOwner": "341936017254"
+      },
+      "purpose": "ensure current immutable namespace agrees with retained native identity; one bounded page, stop/report unexpected pagination"
+    },
+    {
+      "service": "s3",
+      "operation": "GetBucketPolicy",
+      "arguments": {
+        "Bucket": "terragrunt-demo-sql-backup-341936017254-fa48a32dc9",
+        "ExpectedBucketOwner": "341936017254"
+      },
+      "purpose": "check whether a narrow new observer read exception is required; no policy modification"
+    },
+    {
+      "service": "kms",
+      "operation": "GetKeyPolicy",
+      "arguments": {
+        "KeyId": "arn:aws:kms:us-east-1:341936017254:key/30f01bb6-03b5-4e5f-b7a8-e304fe607ced",
+        "PolicyName": "default"
+      },
+      "purpose": "snapshot/hash existing backup key policy; derive only missing via-S3 manifest decrypt scope, no text-key reads"
+    },
+    {
+      "service": "iam",
+      "operation": "GetRole/ListRolePolicies/ListAttachedRolePolicies/GetRolePolicy/GetPolicy/GetPolicyVersion/ListPolicyVersions",
+      "target": "role/TerragruntDemoDevOperator and only its referenced policies; Part4 ARN arn:aws:iam::341936017254:policy/TerragruntDemoDevOperatorPart4",
+      "purpose": "current effective policy/boundary snapshots and inline/attachment quota; derive minimal missing delta, preserve every original version before any future consent"
+    },
+    {
+      "service": "s3",
+      "operation": "GetBucketPolicy/GetBucketEncryption/GetBucketVersioning",
+      "target": "e1-lifecycle-dev-341936017254-us-east-1",
+      "purpose": "review exact NEW state/lock access; never retrieve original state bodies"
+    },
+    {
+      "service": "inventory",
+      "operation": "exact-name absence reads",
+      "targets": [
+        "ecs-sentinel-r20261024b2",
+        "ecs-sentinel-r20261024b2-ingest",
+        "ecs-sentinel-r20261024b2-dispatch",
+        "ecs-sentinel-r20261024b2-ingestion",
+        "ecs-sentinel-r20261024b2-dlq",
+        "ecs-sentinel-r20261024b2-notices",
+        "ecs-sentinel-r20261024b2-observer",
+        "ecs-sentinel-r20261024b2-observer-boundary",
+        "ecs-sentinel-r20261024b2-observer-control",
+        "ecs-sentinel-r20261024b2-341936017254"
+      ],
+      "purpose": "use service-specific Describe/Get, no broad unrelated inventory; retain AccessDenied instead of interpreting it as absence"
+    }
+  ],
+  "stopOnDenial": true,
+  "unresolvedInputs": [
+    "official pinned AL2023 AMI ID/owner/root size",
+    "canonical enabled AWS-managed EBS key ARN",
+    "current retained manifest/read policy and age evidence",
+    "effective lifecycle delta/current original policy hashes and version capacity",
+    "actual T0/expiry and native saved create/destroy plans"
+  ],
+  "notRequested": [
+    "secret value",
+    "SQL credential",
+    "backup data .bak",
+    "Windows token file",
+    "WSL credentials",
+    "GetParameter decryption",
+    "new IAM/access configuration"
+  ]
+}

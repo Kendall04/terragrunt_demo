@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "kind": "LOCAL_API_IMAGE_QUALIFICATION_NOT_RELEASE_APPROVAL",
+  "sourceCommit": "c0da05bec7bd1681826a468d4041d9222d462838",
+  "sourceFileSetSha256": "f9700d0d2f4c9a17f03653ff375db1356fa6f6b1633baae03f73ba8e7e19ec87",
+  "dockerfileSha256": "1bcf22803d95232078f49ccbb028fc8d697c1dd38aca941d2cdc3e6940c77238",
+  "packageLockSha256": "26854fbfc60ebbc465a755594800a446c39afb56838009e8b681e9c98ec9826e",
+  "image": {
+    "localTag": "ecs-demo-api:c0da05b-net10-local",
+    "manifestDigest": "sha256:c8a59d8dc9f9f8dcc7cc624f803817f49dafcdf40ec4a538474211de4c8911f9",
+    "configDigest": "sha256:59d5d4d6a1ee1dc15facf093745b432db7d34348b33b7351effe1e146b26912e",
+    "configDigestSource": "Same build exporter log",
+    "platform": "linux/amd64",
+    "uncompressedBytes": 456433882
+  },
+  "qualification": {
+    "lockedRestoreAndPublish": true,
+    "unchangedDockerfile": true,
+    "nativeLocalSmoke": {
+      "healthStatus": 200,
+      "healthLiveStatus": 200,
+      "readyWithoutDependenciesStatus": 503,
+      "actualUid": 1654,
+      "runtimes": [
+        "Microsoft.AspNetCore.App 10.0.13 [/usr/share/dotnet/shared/Microsoft.AspNetCore.App]",
+        "Microsoft.NETCore.App 10.0.13 [/usr/share/dotnet/shared/Microsoft.NETCore.App]"
+      ]
+    },
+    "limits": {
+      "memoryBytes": 536870912,
+      "cpus": 1,
+      "network": "none",
+      "readOnlyRoot": true,
+      "capabilities": "ALL_DROPPED"
+    },
+    "ownDisposableContainerAbsent": true,
+    "migrationsEnabled": false,
+    "syntheticConfigurationOnly": true
+  },
+  "boundaries": {
+    "awsExecuted": false,
+    "nativeSqlExecuted": false,
+    "kmsExecuted": false,
+    "ecrPublished": false,
+    "hostedCiQualified": false,
+    "releaseApproved": false,
+    "fullRecoveryProven": false,
+    "independentReproducibilityProven": false,
+    "cveAssessmentProven": false
+  },
+  "buildMetadataSha256": "2a7ce9741782a154c2bdb097245c2b8ceb898edca8ce10b51905c415030088fe",
+  "nativeQualificationSha256": "b1274413882abff110eaf72c40d716052f68e7139332cad4ac265cbf11c8fd02"
+}

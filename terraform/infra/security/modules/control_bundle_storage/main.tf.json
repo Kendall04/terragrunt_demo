@@ -1,0 +1,94 @@
+{
+  "terraform": {
+    "required_providers": {
+      "aws": {
+        "source": "hashicorp/aws",
+        "version": "~> 5.50"
+      }
+    }
+  },
+  "variable": {
+    "catalog": {
+      "type": "any"
+    },
+    "account_id": {
+      "type": "string"
+    },
+    "region": {
+      "type": "string"
+    },
+    "admin_arn": {
+      "type": "string"
+    },
+    "runtime_readers": {
+      "type": "map(string)",
+      "default": {}
+    }
+  },
+  "resource": {
+    "aws_s3_bucket": {
+      "bundles": {
+        "bucket": "${\"${var.catalog.storage.bucket_prefix}${var.account_id}-${var.region}\"}",
+        "force_destroy": "${var.catalog.storage.force_destroy}",
+        "lifecycle": {
+          "prevent_destroy": true
+        },
+        "tags": {
+          "E1Owner": "${var.catalog.storage.owner}",
+          "E1Stage": "${var.catalog.stage}"
+        }
+      }
+    },
+    "aws_s3_bucket_versioning": {
+      "bundles": {
+        "bucket": "${aws_s3_bucket.bundles.id}",
+        "versioning_configuration": {
+          "status": "${var.catalog.storage.versioning}"
+        }
+      }
+    },
+    "aws_s3_bucket_public_access_block": {
+      "bundles": {
+        "bucket": "${aws_s3_bucket.bundles.id}",
+        "block_public_acls": "${var.catalog.storage.public_access_block}",
+        "block_public_policy": "${var.catalog.storage.public_access_block}",
+        "ignore_public_acls": "${var.catalog.storage.public_access_block}",
+        "restrict_public_buckets": "${var.catalog.storage.public_access_block}"
+      }
+    },
+    "aws_s3_bucket_ownership_controls": {
+      "bundles": {
+        "bucket": "${aws_s3_bucket.bundles.id}",
+        "rule": {
+          "object_ownership": "${var.catalog.storage.object_ownership}"
+        }
+      }
+    },
+    "aws_s3_bucket_server_side_encryption_configuration": {
+      "bundles": {
+        "bucket": "${aws_s3_bucket.bundles.id}",
+        "rule": {
+          "apply_server_side_encryption_by_default": {
+            "sse_algorithm": "${var.catalog.storage.encryption}"
+          }
+        }
+      }
+    },
+    "aws_s3_bucket_policy": {
+      "bundles": {
+        "bucket": "${aws_s3_bucket.bundles.id}",
+        "policy": "${length(var.runtime_readers) == 0 ? replace(replace(jsonencode(var.catalog.storage.policy), \"__BUCKET_ARN__\", aws_s3_bucket.bundles.arn), \"__ADMIN_ARN__\", var.admin_arn) : jsonencode({ Version = \"2012-10-17\", Statement = [{ Sid = \"AdminMutations\", Effect = \"Deny\", Principal = \"*\", NotAction = \"s3:GetObjectVersion\", Resource = [aws_s3_bucket.bundles.arn, \"${aws_s3_bucket.bundles.arn}/*\"], Condition = { ArnNotEquals = { \"aws:PrincipalArn\" = var.admin_arn } } }, { Sid = \"ExactRuntimeReaders\", Effect = \"Deny\", Principal = \"*\", Action = \"s3:GetObjectVersion\", Resource = \"${aws_s3_bucket.bundles.arn}/*\", Condition = { ArnNotEquals = { \"aws:PrincipalArn\" = concat([var.admin_arn], values(var.runtime_readers)) } } }, { Sid = \"TLS\", Effect = \"Deny\", Principal = \"*\", Action = \"s3:*\", Resource = [aws_s3_bucket.bundles.arn, \"${aws_s3_bucket.bundles.arn}/*\"], Condition = { Bool = { \"aws:SecureTransport\" = \"false\" } } }, { Sid = \"CreateOnly\", Effect = \"Deny\", Principal = \"*\", Action = \"s3:PutObject\", Resource = \"${aws_s3_bucket.bundles.arn}/*\", Condition = { StringNotEquals = { \"s3:if-none-match\" = \"*\" } } }] })}"
+      }
+    }
+  },
+  "output": {
+    "reservation": {
+      "value": {
+        "bucket_id": "${aws_s3_bucket.bundles.id}",
+        "catalog": "${var.catalog}",
+        "operational": false,
+        "installation": "UNVERIFIED"
+      }
+    }
+  }
+}

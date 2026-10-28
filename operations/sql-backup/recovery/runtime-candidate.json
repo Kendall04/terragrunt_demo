@@ -1,0 +1,91 @@
+{
+  "Status": "HISTORICAL_LOCAL_RUNTIME_API_SECURITY_SOURCE_CHANGED_REBUILD_REQUIRED",
+  "SourceCommit": "f27e26c804e966f408113e538c9390dc53f97819",
+  "IncludesRecoveryCorrectionCommit": "993293f1cd26d08316379de953dfb0809602be0a",
+  "Archive": {
+    "Name": "recovery-f27e26c.tar",
+    "Bytes": 301281280,
+    "Sha256": "4ba9e29c02443f52304133f79ab4f5f8c203bffdef9b13c63ccdbe1052a9d60f",
+    "Files": 635,
+    "BundleContract": "RECOVERY_HOST_WITH_SERVICE_VALIDATORS_V2"
+  },
+  "HelperZip": {
+    "Name": "recovery-helpers-f27e26c.zip",
+    "Bytes": 69692,
+    "Sha256": "4a6ecc6518459681ab24132ca56a7996dcc9556f6cf6303781bfd4f2308cd787",
+    "Files": 14
+  },
+  "PublishedBinaryReuse": {
+    "api": {
+      "SourceCommit": "6b2ea751df9b04dc4244f2ddd9c120c74c431fa1",
+      "VerifiedPublishedFiles": 383,
+      "AdditionalMetadataFiles": [],
+      "CompiledSourceUnchanged": true,
+      "ActualRuntimeVersionsMatchCurrentLock": true,
+      "PackageVersionsChecked": 34
+    },
+    "backup": {
+      "SourceCommit": "b2bf8d82938e690561a85e45b3ab9e2a383413cf",
+      "VerifiedPublishedFiles": 237,
+      "AdditionalMetadataFiles": [
+        "local-component-manifest.json"
+      ],
+      "CompiledSourceUnchanged": true,
+      "ActualRuntimeVersionsMatchCurrentLock": true,
+      "PackageVersionsChecked": 31
+    }
+  },
+  "StreamRebuild": {
+    "Identical": true,
+    "Sha256": "4ba9e29c02443f52304133f79ab4f5f8c203bffdef9b13c63ccdbe1052a9d60f",
+    "PhysicalArchivesCreated": 1
+  },
+  "ExtractedConsumer": {
+    "Status": "PACKAGED_SERVICE_PLAN_PASS",
+    "Environment": "Existing Windows Python3.13, isolated child, synthetic metadata, external effects forbidden",
+    "OriginalCheckoutOnImportPath": false,
+    "LinuxExecuted": false
+  },
+  "PairedArtifacts": {
+    "PortableCohost": {
+      "File": "SqlBackup-portable-0359baf.tar",
+      "Sha256": "081b62f739cd309e84abf64b5c8e327bf6b7445214f37d85069fa070f0e2f24f",
+      "Bytes": 133703680,
+      "RehashedLocally": true
+    },
+    "PortableLambda": {
+      "File": "ecs-portable-lambda-25f037e.zip",
+      "Sha256": "4e89587b2760b5ec6d4a37a4bc6327ed6f770d0316d2e1f3fba32d4b1d54cca7",
+      "Bytes": 3783279,
+      "RehashedLocally": true
+    }
+  },
+  "PortableCi": {
+    "Bridge": 14,
+    "Publisher": 19,
+    "Wiring": 4,
+    "CloudExecuted": false,
+    "DiscoverySuites": 18,
+    "DiscoveredTests": 253,
+    "HostedCiExecuted": false
+  },
+  "ExecutionAuthorized": false,
+  "SsmAuthorizationResolved": false,
+  "IncludesListenerTransitionCommit": "24b87642d00a81befcfe4b9805c4e6a55bf78c1e",
+  "RestoreTimingCommit": "f27e26c804e966f408113e538c9390dc53f97819",
+  "RestoreTimingCases": {
+    "ColdExecution": 4,
+    "PreparedTarget": 1,
+    "NativeEffects": "DOUBLES_ONLY"
+  },
+  "Installed": false,
+  "Uploaded": false,
+  "CurrentNativeAcceptance": false,
+  "PreviousArtifactsRemainHistorical": true,
+  "MaterializedRuntimeNeedsSeparateNativeCycle": true,
+  "SecuritySourceFollowUp": {
+    "CompiledApiReuseAllowedForNewSecuritySource": false,
+    "ExecutionAuthorized": false,
+    "Reason": "Database security policy and default migration behavior changed after the sealed API binary; retain archive unchanged and qualify new Linux API before a future trial."
+  }
+}

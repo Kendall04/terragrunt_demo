@@ -15,9 +15,32 @@ if (ReadinessProbe.IsProbeCommand(args))
     return await ReadinessProbe.RunCommandAsync(args);
 }
 
-var builder = WebApplication.CreateBuilder(args);
+// Keep the exact operation arguments out of ASP.NET's key/value argument parser.
+var isMigrationCommand = args.Length > 0 && args[0] == "database-migrate";
+var builder = WebApplication.CreateBuilder(isMigrationCommand ? Array.Empty<string>() : args);
 
 var configuration = builder.Configuration;
+// Explicit deployment-only operation. No web host, KMS service or runtime-identity fallback.
+if (isMigrationCommand)
+{
+    try
+    {
+        var migrationConnection = DatabaseSecurityPolicy.MigrationConnection(configuration, args);
+        await using var migrationDb = new AppDbContext(
+            new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(migrationConnection).Options);
+        await migrationDb.Database.MigrateAsync();
+        Console.WriteLine("DATABASE_MIGRATION_COMPLETED");
+        return 0;
+    }
+    catch (Exception)
+    {
+        // Never print connection strings, credentials or provider exception details.
+        Console.Error.WriteLine("DATABASE_MIGRATION_REFUSED_OR_FAILED");
+        return 1;
+    }
+}
+
+DatabaseSecurityPolicy.ValidateStartup(configuration);
 
 // 1) EF Core DbContext. ECS provides DB_CONN_STRING; local Development can use
 // appsettings DefaultConnection.
@@ -67,9 +90,22 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+if (DatabaseSecurityPolicy.IsValidated(configuration))
+{
+    var runtimeConnection = GetRequiredConnectionString(configuration, app.Environment);
+    try { await RuntimeDatabasePermissions.CheckAsync(runtimeConnection); }
+    catch (Exception) { throw new InvalidOperationException("DATABASE_RUNTIME_PERMISSIONS_OR_CONNECTION_REFUSED"); }
+}
+else
+{
+    app.Logger.LogWarning("Database security profile legacy-v1: server certificate and least privilege are not admitted.");
+}
+
+app.Logger.LogInformation("Application revision: rollback-proof-v2.");
+
 // 8) Apply migrations on startup when enabled. Fail fast so a task never serves
 // traffic with an unknown schema state.
-var runMigrationsOnStartup = configuration.GetValue("Database:RunMigrationsOnStartup", true);
+var runMigrationsOnStartup = configuration.GetValue("Database:RunMigrationsOnStartup", false);
 if (runMigrationsOnStartup)
 {
     using (var scope = app.Services.CreateScope())
@@ -165,7 +201,7 @@ static string GetRequiredConnectionString(
             "DB_CONN_STRING must be configured outside Development. In Development, DefaultConnection may be used.");
     }
 
-    return connectionString;
+    return DatabaseSecurityPolicy.RuntimeConnection(appConfiguration, connectionString);
 }
 
 public partial class Program

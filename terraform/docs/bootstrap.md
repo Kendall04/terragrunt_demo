@@ -1,5 +1,12 @@
 # Bootstrap, operations and recovery
 
+> **Dated context:** the 2026-09-18 empty-account baseline below preceded the two real DEV
+> cycles. Final DOWN is complete; see [current closure and short
+> operations](portfolio-operations.md). The proven supervised path is
+> [E16](e16-practical-dev-lifecycle.md), distinct from the advanced WP5 whole-DOWN gates
+> discussed below. Retained installation and new resource bindings still need genuine
+> verification before any separately authorized reconstruction.
+
 ## Accepted context and operating model
 
 Owner reconciliation on 2026-09-18: no AWS infrastructure is deployed. Previous
@@ -13,59 +20,54 @@ objectives remain open; do not assume enterprise redundancy requirements.
 Read [decisions](decisions-and-limitations.md) and [validation](validation.md)
 before using any operational command.
 
-## CURRENT CONTRACT — reconstruction sequence
+[E2-R interrupted-owner runbook](e2r-owner-recovery.md#operator-runbook) supplies
+read-only head diagnosis. It identifies the missing executor-termination and
+remote-quiescence guarantees; no administrative release command is implemented.
 
-The Bash wrappers require an AWS-authenticated operator, Terraform, Terragrunt,
-jq and ripgrep; app deployment additionally needs Docker.
-Project name is fixed to demo. Defaults use dev/us-east-1 and the local
-terraform-lab profile; --use-instance-role selects the default credential chain.
-Ensure the credential chain actually targets the intended identity.
+## CURRENT CONTRACT — protected greenfield reconstruction
 
-[bootstrap.sh](../../scripts/bootstrap.sh) full-dev-bootstrap executes:
+[E15](e15-ephemeral-lifecycle.md) supplies local status/UP/DOWN preparation and
+residual review. Teardown retains backend, state, evidence, ECR and protected
+control resources. Its operator runbook distinguishes per-layer teardown from
+a complete live shutdown and keeps interrupted/UNCERTAIN ownership blocked.
 
-1. Validate inputs and initialize backend resources.
-2. Apply shared, then secrets metadata.
-3. Write SQL password secret values outside Terraform.
-4. Apply global networking, then data.
-5. Write the DB connection-string secret using the DB host.
-6. Apply platform; stop before apps/fargate and edge.
+WP7 retires the legacy roots and direct local bootstrap/deploy entry points.
+[bootstrap.sh](../../ci/authority/retired/scripts/bootstrap.sh.txt), [deploy.sh](../../ci/authority/retired/scripts/deploy.sh.txt)
+and the standalone blue/green entry fail before credential discovery or AWS calls.
+They cannot initialize the retired topology or select broader fallback authority.
+Use the accepted [lifecycle](e1-protected-environment-lifecycle.md),
+[installation](e1-ownership-publication.md) and [workflow](e1-protected-workflows.md)
+contracts for future separately authorized reconstruction:
 
-Do not replace this with graph-wide apply: the graph cannot represent secret
-value writes between layers. full-dev-bootstrap is dev-only and rejects
---plan-only. Individual apply-* --plan-only operations still initialize/read AWS;
-they are not offline checks.
+1. The separately authenticated administrator establishes the neutral security
+   root, protected state/control storage and workload identities. Ordinary
+   lifecycle and GitHub jobs cannot install or update this authority.
+2. The administrator installs exact reviewed packages and images, records genuine
+   version/readback/membership evidence and publishes the protected bindings.
+   Missing prerequisites keep compute inactive.
+3. The administrator writes SQL password values outside Terraform through the
+   explicit [secret bootstrap](../../scripts/bootstrap-db-secrets.sh), then the
+   authorized lifecycle controller reconciles fixed environment layers in order.
+   Connection-string publication follows the genuine DB binding. No graph-wide
+   operation substitutes for these interleaved metadata/value steps.
+4. The protected release controller and independent finalizer qualify an approved
+   immutable release. Dev delivery and independent prod approval use their own
+   bounded gateways; history rollback uses current eligibility.
 
-[deploy.sh](../../scripts/deploy.sh) full-dev-deploy runs base bootstrap first,
-then builds/selects an image, resolves its digest, reconciles the app skeleton,
-and invokes blue/green deployment. deploy-app assumes the base already exists.
---include-edge adds edge; --smoke-test waits for active service/target health and
-calls /ready. Without --include-edge the public API layer is separate.
+These are represented authorization paths, not a claim that installation or a
+live bootstrap run succeeded. All eleven external identities, sixteen WP4D and
+eight WP5 bindings remain inactive. No historical AWS migration/session revocation
+is required or claimed for this empty account.
 
-Example invocation shape, **for a separately authorized deployment only**:
+## CURRENT CONTRACT — protected state
 
-```bash
-scripts/deploy.sh full-dev-deploy --env dev --region us-east-1 --profile terraform-lab --include-edge --smoke-test
-```
-
-For an instance/default-chain operation, use --use-instance-role and ensure an
-inherited named AWS_PROFILE does not select unintended credentials.
-Do not infer permission to clear/change local configuration from this example.
-Prod wrapper operations require --confirm-prod; full dev commands are not prod
-bootstrap. Review current workflow support in [deployment](deployment.md).
-
-## CURRENT CONTRACT — remote state
-
-Bootstrap configures S3 versioning, AES256 default encryption, public-access
-blocking and bucket-owner-enforced ownership. It installs a TLS-only policy when
-no policy exists; an existing policy is left unchanged and needs review.
-DynamoDB supplies locking. Wrappers export TF_STATE_BUCKET and TF_STATE_TABLE
-with account-qualified defaults.
-
-Raw roots have different fallback names and environment overrides. Check directory,
-TG_ENV, region, identity and backend together before any initialization. Layer
-state keys alone do not separate environments. Backend creation is an imperative
-bootstrap responsibility, not proof that state exists now.
-Evidence: [bootstrap script](../../scripts/bootstrap.sh), [root](../live/dev/root.hcl).
+The neutral [security root](../infra/security/README.md) has a distinct admin-only
+backend. Protected lifecycle state has separate environment buckets and fixed
+`e1/lifecycle/<env>/<layer>/terraform.tfstate` keys with S3 lockfiles. Only the
+installed lifecycle binding selects backend/resource inputs. Public plan identities
+read nonsensitive own-environment state; ordinary requesters cannot write state,
+read security state or administer buckets/policies. Legacy TG_ENV/profile/backend
+fallbacks no longer select an operational root. Live backend creation is unverified.
 
 ## CURRENT CONTRACT — observability and recovery limits
 
@@ -74,13 +76,16 @@ Container Insights, ALB target 5xx/latency alarms, DB status/CPU/credit alarms a
 NAT capacity alarms routed to SNS email. Subscription confirmation and delivery
 have not been verified. No deployed signal is currently assumed.
 
-Known defects: ECS task-count alarms use AWS/ECS rather than the Container
-Insights namespace; NAT ASGs do not configure collection of the group metrics
-their alarms require. Missing data is treated as non-breaching. Alarm existence
-is not evidence of operational coverage.
-Evidence: [ECS alarm](../infra/apps/fargate/modules/ecs_service/alarm_ecs_service.tf),
-[NAT alarms](../infra/global/modules/nat/alarms_nat.tf),
-[ASGs](../infra/global/modules/nat/autoscaling_group.tf).
+[E7 configuration](e7-cloudwatch-alarms.md) corrects active dev/prod task counts
+to `ECS/ContainerInsights` with cluster/service dimensions and explicitly enables
+NAT ASG desired/InService metrics at one-minute granularity. Capacity math drops
+samples when either operand is missing. Gauge alarms use `missing` so sustained
+absence is unknown; sparse ALB 5xx events retain `notBreaching`. Existing SNS
+ALARM/OK actions remain; insufficient-data notifications are not configured.
+Alarm existence is not evidence of metric publication or operational coverage.
+Evidence: [ECS alarm](../modules/target/dev/apps/modules/ecs_service/alarm_ecs_service.tf),
+[NAT alarms](../modules/target/dev/global/wp5-nat-alarms-a.tf),
+[ASGs](../modules/target/dev/global/wp5-nat.tf.json).
 
 NAT recovery performs three independent launch-event actions, without configured
 DLQ or forwarding probe. EC2 health does not prove NAT function. AMI changes are
@@ -91,12 +96,15 @@ SQL bootstrap waits for secret availability, installs packages from public
 repositories, then uses a fixed wait before SQL setup. SSM access is configured
 for the DB. No repository-defined SQL backup/restore or separate persistent data
 volume exists. Root storage is deleted on termination.
-Evidence: [data](../infra/data/main.tf), [user data](../infra/data/user_data.sh).
+Evidence: [data](../modules/target/dev/data/ordinary-main.tf), [user data](../infra/data/user_data.sh).
 
 If future deployment fails, runtime traffic, service revision, candidate rule,
 cleanup schedule and S3 current record may disagree. Inspect verified evidence
 before choosing recovery; a failed workflow is not proof no traffic moved.
 No tested automatic rollback or restore runbook is claimed here.
+The provider-free [E4 runbook](e4-post-switch-recovery.md) now covers one bounded
+post-switch continuation and read-only diagnostics. It does not prove live restore
+or provide an administrative unlock/resume command.
 
 ## TARGET / UNRESOLVED — future operational evidence
 
@@ -117,3 +125,70 @@ Recovery objectives, safe destructive-test boundaries, alert responses, capacity
 patching and budgets need later decisions. Historical teardown snippets are not
 a safe operating procedure; no current data should be assumed disposable merely
 because this is a demo.
+
+[WP7 final acceptance and installation limits](e1-final-acceptance.md) records the
+retirement and provider-free evidence; no old root is an installation option.
+
+## E13 NAT recovery and administrator maintenance
+
+Use the [E13 runbook](e13-nat-reliability.md) for separate EventBridge/Lambda
+failure containment, exact launch-time bootstrap/network evidence, DLQ triage and
+administrator-approved AMI/template replacement. Three narrow mutation journals
+and a completed bootstrap do not prove private-subnet egress. Genuine forwarding,
+queue/destination behavior, SNS/KMS notification and single-AZ rollout/rollback
+remain live prerequisites; routine lifecycle cannot update ASG launch identity.
+
+## E15-E/F combined DEV quiescence boundary
+
+[Combined contract and remaining decisions](e15ef-combined-quiescence.md) wires
+separate ECS/NAT guards into protected WP5/E15-D, with immutable UNKNOWN evidence
+and the original E2 hold. Whole-operation ownership/stage order, terminal ECS
+cluster handoff, installed authenticated adapters and issued-effect settlement
+remain unavailable. Complete DOWN stays denied; no IAM or activation is added.
+
+## E15-G operational component follow-up
+
+[E15-G](e15g-operational-teardown.md) adds original-E2-owner composition, bounded
+ECS drain, sealed terminal cohort handoff and residual completion checks.
+Complete installed DOWN remains PARTIALLY_READY and denied: NAT executor/effect
+closure, authentic ECS closure, whole-operation preparation and exhaustive
+residual installation remain required. No IAM/activation or live AWS evidence.
+
+
+## E15-H trusted NAT source increment
+
+[E15-H](e15h-nat-trusted-closure.md) selects one bounded CAS admission coordinator,
+adds cooperative E13 dispatch/seal accounting and native ASG read contracts under
+the original E15-G owner. Installed authentication, callable-version coverage and
+remote finality remain unproved; networking and complete DOWN still fail closed.
+No IAM policy, active binding or AWS resource is installed by this increment.
+
+## Original complete DEV lifecycle (2026-10-13)
+
+The owner restored the original full architecture. E15-S was explicitly reverted;
+E15-S2 is not integrated. The [first-session procedure](original-full-lifecycle.md)
+records the complete resource/state graph, existing WP5/WP6 commands, thin DEV
+entry and separate UP installation versus DOWN finality blockers. No reduced
+lab, authority bypass, activation or AWS operation is introduced.
+
+## E16 supervised original DEV mode (2026-10-13)
+
+The [E16 current operator contract](e16-practical-dev-lifecycle.md) implements
+per-layer original DEV saved-plan review/apply and observed shutdown under an
+explicitly authorized, exclusive existing-human state-writer transfer. Default
+mode remains inert; PROD/shared/security-root ownership is retained. Existing
+WP3/WP4 delivery and E13 recovery remain. E15-G/H advanced finality contracts are
+not weakened or activated. Source readiness is distinct from genuine installation
+and live AWS validation; no AWS operations occurred.
+
+
+The [first real DEV session](first-real-dev-deployment.md) records authentic account-specific bootstrap progress and the Windows-local Terraform path; its partial prerequisites are not full deployment evidence.
+
+
+## Current second-cycle live checkpoint
+
+The [second real DEV cycle](second-real-dev-cycle.md) records reconstruction after
+the completed first DOWN, authentic replacement IDs, staged NAT/E13 rebinding,
+real SQL/KMS application verification and retained costs. This later live evidence
+supersedes assumptions of an empty account for this exact DEV account/region;
+it does not activate PROD or replace the protected installation contracts.

@@ -1,0 +1,75 @@
+{
+  "Classification": "EXPECTED_CONTRACT_NOT_NATIVE_SAVED_PLAN",
+  "PrimaryResources": [
+    {
+      "Owner": "cnp-cert-admin",
+      "Address": "aws_iam_policy.boundary"
+    },
+    {
+      "Owner": "cnp-cert-admin",
+      "Address": "aws_iam_role.node"
+    },
+    {
+      "Owner": "cnp-cert-admin",
+      "Address": "aws_iam_instance_profile.node"
+    },
+    {
+      "Owner": "cnp-cert-admin",
+      "Address": "aws_iam_role_policy.node"
+    },
+    {
+      "Owner": "TerragruntDemoDevOperator",
+      "Address": "aws_vpc.diag"
+    },
+    {
+      "Owner": "TerragruntDemoDevOperator",
+      "Address": "aws_internet_gateway.diag"
+    },
+    {
+      "Owner": "TerragruntDemoDevOperator",
+      "Address": "aws_subnet.diag"
+    },
+    {
+      "Owner": "TerragruntDemoDevOperator",
+      "Address": "aws_route_table.diag"
+    },
+    {
+      "Owner": "TerragruntDemoDevOperator",
+      "Address": "aws_route_table_association.diag"
+    },
+    {
+      "Owner": "TerragruntDemoDevOperator",
+      "Address": "aws_route.internet"
+    },
+    {
+      "Owner": "TerragruntDemoDevOperator",
+      "Address": "aws_security_group.diag"
+    },
+    {
+      "Owner": "TerragruntDemoDevOperator",
+      "Address": "aws_cloudwatch_log_group.diag"
+    },
+    {
+      "Owner": "TerragruntDemoDevOperator",
+      "Address": "aws_ssm_document.control"
+    },
+    {
+      "Owner": "TerragruntDemoDevOperator",
+      "Address": "aws_instance.node"
+    }
+  ],
+  "Count": 14,
+  "Implicit": [
+    "root volume",
+    "primary ENI",
+    "temporary public IPv4",
+    "VPC default route table/security group/network ACL"
+  ],
+  "AccessDeltas": [
+    "temporary operator inline SsmDiagnosticr20261024d1",
+    "exact runtime backend state/lock exception"
+  ],
+  "Part4AndPart7": "UNCHANGED",
+  "BackupKmsOrBucketChanges": false,
+  "SessionManagerEnabled": false
+}

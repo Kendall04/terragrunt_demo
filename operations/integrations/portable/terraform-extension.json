@@ -1,0 +1,57 @@
+{
+  "upstreamCommit": "b3d0b3b595a9257bb6d4d849c899bf4e8dbc2828",
+  "upstreamSha256": "1b412dc5d48c52ec8a17ad567569e33a648d553a0aaab6f65d677461e0d09195",
+  "preparedSha256": "b4830d8174a6aaef68a77960a4a830c84d5b56f5ff920c2dbe90ee8b3c05e92d",
+  "changes": [
+    "Factor identical existing runtime policies into local map; no action/resource change",
+    "Four runtime-role boundaries mirror exact existing inline capabilities without cyclic role dependency",
+    "Tags on new roles only",
+    "Point four Lambda handlers to consumer formatter host",
+    "Separate explicit alarm-notice opt-in default false; runtime activation does not enable alarm emails"
+  ],
+  "resourceAddresses": {
+    "upstream": 55,
+    "boundaries": 4,
+    "preparedModule": 59,
+    "externalConsumerSns": 3,
+    "possibleTotal": 62,
+    "mockPlanTotal": 62,
+    "mockPlanOnly": true
+  },
+  "provider": "6.28.0 isolated exact override; original6.70 and global5.100 unchanged",
+  "appliedToAws": false,
+  "rootSha256": "3a3d7644eb1dacf280ce2b505ff24bdfb84b4c466c6d10bd84b5db4c53ebc057",
+  "consumerOutputsSha256": "25f20f6e0a8d0edd2843e51764f34a686c7cf2125fc1e6235d72f7b05d8cee7c",
+  "reviewedMaterialization": {
+    "upstreamCommit": "b3d0b3b595a9257bb6d4d849c899bf4e8dbc2828",
+    "upstreamModuleSha256": "1b412dc5d48c52ec8a17ad567569e33a648d553a0aaab6f65d677461e0d09195",
+    "generator": "operations/integrations/portable/prepare_module.py",
+    "preparedRuntimeSha256": "c6f824686abe5e171bcef9bb181e4d238db0de4b977c2df776908009630043e7",
+    "files": {
+      "operations/integrations/portable/trial/runtime/main.tf": "c6f824686abe5e171bcef9bb181e4d238db0de4b977c2df776908009630043e7",
+      "operations/integrations/portable/trial/runtime/outputs.tf": "f37244f35283c605a052fc9592d7c5e86e558e9d3a43a03665d7658d070e5f65",
+      "operations/integrations/portable/trial/.terraform.lock.hcl": "258de7a3dbd3a5eeffed0eec35becd0f4b134380a929bc09c456805fa851259e",
+      "operations/integrations/portable/trial/versions.tf": "6339a32b1016abf2f998076c311c04ed8967db3eade2e49194b2fa635b398299"
+    },
+    "defaultEnabled": false,
+    "deploymentAuthorized": false,
+    "providerGlobalChanged": false
+  },
+  "archiveNameContract": {
+    "namespacePrefix": "snt-",
+    "futureResourcesOnly": true,
+    "maxLength": 63,
+    "characterSubset": "lowercase letters, digits, hyphens; starts/ends alphanumeric",
+    "reservedSuffixesRejected": [
+      "-s3alias",
+      "--ol-s3",
+      "--x-s3",
+      "--table-s3",
+      "-an"
+    ],
+    "invalidNames": "plan precondition fails; no truncation or legacy fallback",
+    "existingBucketsRenamed": false,
+    "appliedToAws": false,
+    "source": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html"
+  }
+}

@@ -1,0 +1,3706 @@
+{
+  "format_version": 1,
+  "classification": "TARGET_REQUIREMENT",
+  "stage": "E1_WP2A_PROTECTED_SECURITY_ROOT_FOUNDATION",
+  "security_admin": {
+    "owner": "SECURITY_ROOT_OWNED",
+    "authentication": "SEPARATELY_HELD_HUMAN_AUTHORITY",
+    "created_by_this_root": false,
+    "verification": "UNVERIFIED"
+  },
+  "backend": {
+    "owner": "SECURITY_ROOT_OWNED",
+    "bootstrap": "EXTERNAL_ADMIN_PRECONDITION",
+    "bucket_input": "E1_SECURITY_STATE_BUCKET",
+    "region_input": "E1_SECURITY_STATE_REGION",
+    "key": "e1/security/terraform.tfstate",
+    "encrypt": true,
+    "use_lockfile": true,
+    "ordinary_access": "NONE",
+    "prerequisites": [
+      "DEDICATED_ADMIN_ONLY_BUCKET",
+      "VERSIONING",
+      "PUBLIC_ACCESS_BLOCK",
+      "TLS_ONLY",
+      "ADMIN_ONLY_STATE_AND_LOCK_ACCESS",
+      "NO_ORDINARY_REMOTE_STATE_READ"
+    ]
+  },
+  "ownership": {
+    "categories": [
+      "DELIVERY_CONTROLLER_OWNED",
+      "EXTERNAL_GOVERNANCE",
+      "HIGH_RISK_LIFECYCLE_OWNED",
+      "ORDINARY_LIFECYCLE_OWNED",
+      "RECOVERY_CONTROLLER_OWNED",
+      "SECURITY_ROOT_OWNED",
+      "UNVERIFIED"
+    ],
+    "protected_classes": {
+      "artifact_and_evidence_protection": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "implementation": "WP2B_BUNDLE_FOUNDATION_ONLY"
+      },
+      "controller_code_and_configuration": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "implementation": "WP2C_INERT_COMPUTE_FOUNDATION"
+      },
+      "controller_iam": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "implementation": "WP2C_INERT_COMPUTE_FOUNDATION"
+      },
+      "kms_authority": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "implementation": "WP2D_EXTRACTED_DECLARATIONS"
+      },
+      "oidc": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "implementation": "WP2D_EXTRACTED_DECLARATIONS"
+      },
+      "permissions_boundaries": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "implementation": "DEFERRED"
+      },
+      "recovery_iam": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "implementation": "WP2D_EXTRACTED_DECLARATIONS"
+      },
+      "request_identities": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "implementation": "WP2A_DECLARED_INERT"
+      },
+      "secret_metadata_and_policy": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "implementation": "WP2D_EXTRACTED_DECLARATIONS"
+      },
+      "security_state_and_lock": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "implementation": "DEFERRED"
+      },
+      "shared_ecr_security": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "implementation": "WP2D_EXTRACTED_DECLARATIONS"
+      },
+      "workload_iam": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "implementation": "WP2D_EXTRACTED_DECLARATIONS"
+      }
+    },
+    "operational_classes": {
+      "network_and_platform_skeletons": "ORDINARY_LIFECYCLE_OWNED",
+      "data_and_apps_skeletons": "HIGH_RISK_LIFECYCLE_OWNED",
+      "normal_revision_count_and_forwarding": "DELIVERY_CONTROLLER_OWNED",
+      "existing_color_restore_and_bounded_repair": "RECOVERY_CONTROLLER_OWNED",
+      "github_protections": "EXTERNAL_GOVERNANCE",
+      "live_account_conformance": "UNVERIFIED"
+    }
+  },
+  "request_identities": {
+    "deploy-dev": {
+      "name": "e1-request-deploy-dev",
+      "owner": "SECURITY_ROOT_OWNED",
+      "stage": "INERT",
+      "environment": "dev",
+      "oidc_expectation": {
+        "context": "e1-dev-deploy",
+        "job_workflow_ref": "Kendall04/terragrunt_demo/.github/workflows/e1-dev-deploy.yml",
+        "commit": null,
+        "verification": "UNVERIFIED"
+      }
+    },
+    "emergency-dev": {
+      "name": "e1-request-emergency-dev",
+      "owner": "SECURITY_ROOT_OWNED",
+      "stage": "INERT",
+      "environment": "dev",
+      "oidc_expectation": {
+        "context": "e1-dev-emergency",
+        "job_workflow_ref": "Kendall04/terragrunt_demo/.github/workflows/e1-dev-emergency.yml",
+        "commit": null,
+        "verification": "UNVERIFIED"
+      }
+    },
+    "emergency-prod": {
+      "name": "e1-request-emergency-prod",
+      "owner": "SECURITY_ROOT_OWNED",
+      "stage": "INERT",
+      "environment": "prod",
+      "oidc_expectation": {
+        "context": "e1-prod-emergency",
+        "job_workflow_ref": "Kendall04/terragrunt_demo/.github/workflows/e1-prod-emergency.yml",
+        "commit": null,
+        "verification": "UNVERIFIED"
+      }
+    },
+    "infra-dev": {
+      "name": "e1-request-infra-dev",
+      "owner": "SECURITY_ROOT_OWNED",
+      "stage": "INERT",
+      "environment": "dev",
+      "oidc_expectation": {
+        "context": "e1-infra-dev",
+        "job_workflow_ref": "Kendall04/terragrunt_demo/.github/workflows/e1-infra-dev.yml",
+        "commit": null,
+        "verification": "UNVERIFIED"
+      }
+    },
+    "infra-high-risk-dev": {
+      "name": "e1-request-infra-high-risk-dev",
+      "owner": "SECURITY_ROOT_OWNED",
+      "stage": "INERT",
+      "environment": "dev",
+      "oidc_expectation": {
+        "context": "e1-infra-high-risk-dev",
+        "job_workflow_ref": "Kendall04/terragrunt_demo/.github/workflows/e1-infra-high-risk-dev.yml",
+        "commit": null,
+        "verification": "UNVERIFIED"
+      }
+    },
+    "infra-high-risk-prod": {
+      "name": "e1-request-infra-high-risk-prod",
+      "owner": "SECURITY_ROOT_OWNED",
+      "stage": "INERT",
+      "environment": "prod",
+      "oidc_expectation": {
+        "context": "e1-infra-high-risk-prod",
+        "job_workflow_ref": "Kendall04/terragrunt_demo/.github/workflows/e1-infra-high-risk-prod.yml",
+        "commit": null,
+        "verification": "UNVERIFIED"
+      }
+    },
+    "infra-prod": {
+      "name": "e1-request-infra-prod",
+      "owner": "SECURITY_ROOT_OWNED",
+      "stage": "INERT",
+      "environment": "prod",
+      "oidc_expectation": {
+        "context": "e1-infra-prod",
+        "job_workflow_ref": "Kendall04/terragrunt_demo/.github/workflows/e1-infra-prod.yml",
+        "commit": null,
+        "verification": "UNVERIFIED"
+      }
+    },
+    "plan-dev": {
+      "name": "e1-request-plan-dev",
+      "owner": "SECURITY_ROOT_OWNED",
+      "stage": "INERT",
+      "environment": "dev",
+      "oidc_expectation": {
+        "context": "e1-plan-dev",
+        "job_workflow_ref": "Kendall04/terragrunt_demo/.github/workflows/e1-plan-dev.yml",
+        "commit": null,
+        "verification": "UNVERIFIED"
+      }
+    },
+    "plan-prod": {
+      "name": "e1-request-plan-prod",
+      "owner": "SECURITY_ROOT_OWNED",
+      "stage": "INERT",
+      "environment": "prod",
+      "oidc_expectation": {
+        "context": "e1-plan-prod",
+        "job_workflow_ref": "Kendall04/terragrunt_demo/.github/workflows/e1-plan-prod.yml",
+        "commit": null,
+        "verification": "UNVERIFIED"
+      }
+    },
+    "promote-prod": {
+      "name": "e1-request-promote-prod",
+      "owner": "SECURITY_ROOT_OWNED",
+      "stage": "INERT",
+      "environment": "prod",
+      "oidc_expectation": {
+        "context": "e1-prod-promote",
+        "job_workflow_ref": "Kendall04/terragrunt_demo/.github/workflows/e1-prod-promote.yml",
+        "commit": null,
+        "verification": "UNVERIFIED"
+      }
+    },
+    "release": {
+      "name": "e1-request-release",
+      "owner": "SECURITY_ROOT_OWNED",
+      "stage": "INERT",
+      "environment": "neutral",
+      "oidc_expectation": {
+        "context": "e1-release",
+        "job_workflow_ref": "Kendall04/terragrunt_demo/.github/workflows/e1-release.yml",
+        "commit": null,
+        "verification": "UNVERIFIED"
+      }
+    }
+  },
+  "policies": {
+    "inert_trust": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Deny",
+          "Action": "sts:AssumeRole",
+          "Principal": {
+            "AWS": "${security_admin_principal_arn}"
+          }
+        }
+      ]
+    },
+    "inert_permissions": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Deny",
+          "Action": "*",
+          "Resource": "*"
+        }
+      ]
+    }
+  },
+  "governance": {
+    "owner": "EXTERNAL_GOVERNANCE",
+    "verification": "UNVERIFIED",
+    "include_claim_keys": [
+      "repo",
+      "context",
+      "job_workflow_ref"
+    ],
+    "oidc_cutover": "NOT_IMPLEMENTED"
+  },
+  "interfaces": {
+    "artifact_and_evidence_ids": {
+      "owner": "SECURITY_ROOT_OWNED",
+      "status": "UNAVAILABLE",
+      "transport": "ADMIN_PUBLISHED_ARN_ID_RECORD",
+      "secret_values": false,
+      "security_state_access": false
+    },
+    "kms_key_arns": {
+      "owner": "SECURITY_ROOT_OWNED",
+      "status": "UNAVAILABLE",
+      "transport": "ADMIN_PUBLISHED_ARN_ID_RECORD",
+      "secret_values": false,
+      "security_state_access": false
+    },
+    "qualified_controller_endpoints": {
+      "owner": "SECURITY_ROOT_OWNED",
+      "status": "UNAVAILABLE",
+      "transport": "ADMIN_PUBLISHED_ARN_ID_RECORD",
+      "secret_values": false,
+      "security_state_access": false
+    },
+    "recovery_role_arns": {
+      "owner": "SECURITY_ROOT_OWNED",
+      "status": "UNAVAILABLE",
+      "transport": "ADMIN_PUBLISHED_ARN_ID_RECORD",
+      "secret_values": false,
+      "security_state_access": false
+    },
+    "secret_metadata_arns": {
+      "owner": "SECURITY_ROOT_OWNED",
+      "status": "UNAVAILABLE",
+      "transport": "ADMIN_PUBLISHED_ARN_ID_RECORD",
+      "secret_values": false,
+      "security_state_access": false
+    },
+    "shared_ecr_ids": {
+      "owner": "SECURITY_ROOT_OWNED",
+      "status": "UNAVAILABLE",
+      "transport": "ADMIN_PUBLISHED_ARN_ID_RECORD",
+      "secret_values": false,
+      "security_state_access": false
+    },
+    "workload_role_arns": {
+      "owner": "SECURITY_ROOT_OWNED",
+      "status": "UNAVAILABLE",
+      "transport": "ADMIN_PUBLISHED_ARN_ID_RECORD",
+      "secret_values": false,
+      "security_state_access": false
+    }
+  },
+  "control_bundles": {
+    "stage": "E1_WP2B_PROTECTED_CONTROL_BUNDLE_FOUNDATION",
+    "format": "E1_BUNDLE_JSON_V1",
+    "owner": "SECURITY_ROOT_OWNED",
+    "source": "terraform/infra/security/bundles/NOTICE.txt",
+    "storage": {
+      "id": "control-bundles",
+      "owner": "SECURITY_ROOT_OWNED",
+      "bucket_prefix": "e1-control-bundles-",
+      "prefix": "bundles/sha256/",
+      "versioning": "Enabled",
+      "encryption": "AES256",
+      "public_access_block": true,
+      "object_ownership": "BucketOwnerEnforced",
+      "force_destroy": false,
+      "prevent_destroy": true,
+      "live": "UNVERIFIED",
+      "readers": [],
+      "policy": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Sid": "AdminOnly",
+            "Effect": "Deny",
+            "Principal": "*",
+            "Action": "s3:*",
+            "Resource": [
+              "__BUCKET_ARN__",
+              "__BUCKET_ARN__/*"
+            ],
+            "Condition": {
+              "ArnNotEquals": {
+                "aws:PrincipalArn": "__ADMIN_ARN__"
+              }
+            }
+          },
+          {
+            "Sid": "RequireTLS",
+            "Effect": "Deny",
+            "Principal": "*",
+            "Action": "s3:*",
+            "Resource": [
+              "__BUCKET_ARN__",
+              "__BUCKET_ARN__/*"
+            ],
+            "Condition": {
+              "Bool": {
+                "aws:SecureTransport": "false"
+              }
+            }
+          },
+          {
+            "Sid": "RequireCreateOnly",
+            "Effect": "Deny",
+            "Principal": "*",
+            "Action": "s3:PutObject",
+            "Resource": "__BUCKET_ARN__/*",
+            "Condition": {
+              "Null": {
+                "s3:if-none-match": "true"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "installation": {
+      "installer": "SECURITY_ROOT_OWNED",
+      "authentication": "SEPARATELY_HELD_HUMAN_AUTHORITY",
+      "approval": "EXTERNAL_UNVERIFIED",
+      "upload": "CONDITIONAL_SINGLE_PUT",
+      "replacement": "NEW_CONTENT_ID_REQUIRES_ADMIN_REVIEW",
+      "version_capture": "READ_BACK_EXACT_VERSION_AND_VERIFY",
+      "live": "UNVERIFIED",
+      "active_set": []
+    },
+    "runtime_contract": {
+      "overrides": {
+        "artifact_key": "FORBIDDEN",
+        "buildspec": "FORBIDDEN",
+        "cache": "FORBIDDEN",
+        "command": "FORBIDDEN",
+        "debug": "FORBIDDEN",
+        "environment_variables": "FORBIDDEN",
+        "image": "FORBIDDEN",
+        "logging": "FORBIDDEN",
+        "network": "FORBIDDEN",
+        "plugins": "FORBIDDEN",
+        "script": "FORBIDDEN",
+        "secondary_sources": "FORBIDDEN",
+        "service_role": "FORBIDDEN",
+        "source": "FORBIDDEN",
+        "source_revision": "FORBIDDEN",
+        "terraform_bundle": "FORBIDDEN",
+        "terragrunt_bundle": "FORBIDDEN"
+      },
+      "dependencies": "REVIEWED_IN_BUNDLE_OR_DIGEST_PINNED_IMAGE",
+      "image": null,
+      "buildspec": null,
+      "execution": "NOT_IMPLEMENTED"
+    },
+    "classes": {
+      "request-gateway": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "state": "RESERVED",
+        "operational": false,
+        "consumers": {
+          "deploy-dev": "dev",
+          "emergency-dev": "dev",
+          "emergency-prod": "prod",
+          "infra-dev": "dev",
+          "infra-high-risk-dev": "dev",
+          "infra-high-risk-prod": "prod",
+          "infra-prod": "prod",
+          "promote-prod": "prod",
+          "release": "neutral"
+        },
+        "sha256": "c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
+        "engine": "LAMBDA"
+      },
+      "build": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "state": "RESERVED",
+        "operational": false,
+        "consumers": {
+          "release": "neutral"
+        },
+        "sha256": "ef9ce1edd5331ea6dccebfa4ea9783c40650fd6b075e87c2ce0f3c6553701ec4",
+        "engine": "CODEBUILD"
+      },
+      "qualification-finalizer": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "state": "RESERVED",
+        "operational": false,
+        "consumers": {
+          "qualification": "neutral"
+        },
+        "sha256": "0e34a5cd928e91694083a46aba1291b1526b7c1c47faaed4fe51a4ea60eb8fae",
+        "engine": "LAMBDA"
+      },
+      "status": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "state": "RESERVED",
+        "operational": false,
+        "consumers": {
+          "status-neutral": "neutral",
+          "status-dev": "dev",
+          "status-prod": "prod"
+        },
+        "sha256": "e2df102912bf4c302c8a7e1cb3951b97c1219a1c7e26234b05dfe4eb02890684",
+        "engine": "LAMBDA"
+      },
+      "environment-lifecycle": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "state": "RESERVED",
+        "operational": false,
+        "consumers": {
+          "infra-dev": "dev",
+          "infra-high-risk-dev": "dev",
+          "infra-high-risk-prod": "prod",
+          "infra-prod": "prod"
+        },
+        "sha256": "ec6506979a772686a41fcdfb02cfaa7255c1e459517ccf3a3d45117dda553f14",
+        "engine": "CODEBUILD"
+      },
+      "normal-delivery": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "state": "RESERVED",
+        "operational": false,
+        "consumers": {
+          "deploy-dev": "dev",
+          "promote-prod": "prod"
+        },
+        "sha256": "b4b70fe16d42d090ca5da575a8da6527475d5a597f45c7005f3b882331d7c298",
+        "engine": "CODEBUILD"
+      },
+      "emergency-recovery": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "state": "RESERVED",
+        "operational": false,
+        "consumers": {
+          "emergency-dev": "dev",
+          "emergency-prod": "prod"
+        },
+        "sha256": "95af1e11b9a78ba1e7f96c74df25fb386a95664a7fcfd252745365bb5c148d97",
+        "engine": "CODEBUILD"
+      },
+      "cleanup-recovery": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "state": "RESERVED",
+        "operational": false,
+        "consumers": {
+          "cleanup-dev": "dev",
+          "cleanup-prod": "prod"
+        },
+        "sha256": "16af2a5223599a22de134e7a73659a85aec54297d76ae22e39e80d4405f3e726",
+        "engine": "LAMBDA"
+      },
+      "nat-recovery": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "state": "RESERVED",
+        "operational": false,
+        "consumers": {
+          "nat-dev": "dev",
+          "nat-prod": "prod"
+        },
+        "sha256": "f6441b2b13b86a6512f7df875fb9e5025a66196ffb93265b78d5c13950e2301b",
+        "engine": "LAMBDA"
+      }
+    },
+    "consumer_references": {
+      "request-gateway/deploy-dev": {
+        "class": "request-gateway",
+        "consumer": "deploy-dev",
+        "bundle_id": "sha256:c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
+        "sha256": "c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "request-gateway/emergency-dev": {
+        "class": "request-gateway",
+        "consumer": "emergency-dev",
+        "bundle_id": "sha256:c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
+        "sha256": "c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "request-gateway/emergency-prod": {
+        "class": "request-gateway",
+        "consumer": "emergency-prod",
+        "bundle_id": "sha256:c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
+        "sha256": "c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "request-gateway/infra-dev": {
+        "class": "request-gateway",
+        "consumer": "infra-dev",
+        "bundle_id": "sha256:c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
+        "sha256": "c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "request-gateway/infra-high-risk-dev": {
+        "class": "request-gateway",
+        "consumer": "infra-high-risk-dev",
+        "bundle_id": "sha256:c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
+        "sha256": "c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "request-gateway/infra-high-risk-prod": {
+        "class": "request-gateway",
+        "consumer": "infra-high-risk-prod",
+        "bundle_id": "sha256:c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
+        "sha256": "c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "request-gateway/infra-prod": {
+        "class": "request-gateway",
+        "consumer": "infra-prod",
+        "bundle_id": "sha256:c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
+        "sha256": "c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "request-gateway/promote-prod": {
+        "class": "request-gateway",
+        "consumer": "promote-prod",
+        "bundle_id": "sha256:c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
+        "sha256": "c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "request-gateway/release": {
+        "class": "request-gateway",
+        "consumer": "release",
+        "bundle_id": "sha256:c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
+        "sha256": "c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "build/release": {
+        "class": "build",
+        "consumer": "release",
+        "bundle_id": "sha256:ef9ce1edd5331ea6dccebfa4ea9783c40650fd6b075e87c2ce0f3c6553701ec4",
+        "sha256": "ef9ce1edd5331ea6dccebfa4ea9783c40650fd6b075e87c2ce0f3c6553701ec4",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/ef9ce1edd5331ea6dccebfa4ea9783c40650fd6b075e87c2ce0f3c6553701ec4.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "qualification-finalizer/qualification": {
+        "class": "qualification-finalizer",
+        "consumer": "qualification",
+        "bundle_id": "sha256:0e34a5cd928e91694083a46aba1291b1526b7c1c47faaed4fe51a4ea60eb8fae",
+        "sha256": "0e34a5cd928e91694083a46aba1291b1526b7c1c47faaed4fe51a4ea60eb8fae",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/0e34a5cd928e91694083a46aba1291b1526b7c1c47faaed4fe51a4ea60eb8fae.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "status/status-neutral": {
+        "class": "status",
+        "consumer": "status-neutral",
+        "bundle_id": "sha256:e2df102912bf4c302c8a7e1cb3951b97c1219a1c7e26234b05dfe4eb02890684",
+        "sha256": "e2df102912bf4c302c8a7e1cb3951b97c1219a1c7e26234b05dfe4eb02890684",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/e2df102912bf4c302c8a7e1cb3951b97c1219a1c7e26234b05dfe4eb02890684.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "status/status-dev": {
+        "class": "status",
+        "consumer": "status-dev",
+        "bundle_id": "sha256:e2df102912bf4c302c8a7e1cb3951b97c1219a1c7e26234b05dfe4eb02890684",
+        "sha256": "e2df102912bf4c302c8a7e1cb3951b97c1219a1c7e26234b05dfe4eb02890684",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/e2df102912bf4c302c8a7e1cb3951b97c1219a1c7e26234b05dfe4eb02890684.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "status/status-prod": {
+        "class": "status",
+        "consumer": "status-prod",
+        "bundle_id": "sha256:e2df102912bf4c302c8a7e1cb3951b97c1219a1c7e26234b05dfe4eb02890684",
+        "sha256": "e2df102912bf4c302c8a7e1cb3951b97c1219a1c7e26234b05dfe4eb02890684",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/e2df102912bf4c302c8a7e1cb3951b97c1219a1c7e26234b05dfe4eb02890684.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "environment-lifecycle/infra-dev": {
+        "class": "environment-lifecycle",
+        "consumer": "infra-dev",
+        "bundle_id": "sha256:ec6506979a772686a41fcdfb02cfaa7255c1e459517ccf3a3d45117dda553f14",
+        "sha256": "ec6506979a772686a41fcdfb02cfaa7255c1e459517ccf3a3d45117dda553f14",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/ec6506979a772686a41fcdfb02cfaa7255c1e459517ccf3a3d45117dda553f14.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "environment-lifecycle/infra-high-risk-dev": {
+        "class": "environment-lifecycle",
+        "consumer": "infra-high-risk-dev",
+        "bundle_id": "sha256:ec6506979a772686a41fcdfb02cfaa7255c1e459517ccf3a3d45117dda553f14",
+        "sha256": "ec6506979a772686a41fcdfb02cfaa7255c1e459517ccf3a3d45117dda553f14",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/ec6506979a772686a41fcdfb02cfaa7255c1e459517ccf3a3d45117dda553f14.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "environment-lifecycle/infra-high-risk-prod": {
+        "class": "environment-lifecycle",
+        "consumer": "infra-high-risk-prod",
+        "bundle_id": "sha256:ec6506979a772686a41fcdfb02cfaa7255c1e459517ccf3a3d45117dda553f14",
+        "sha256": "ec6506979a772686a41fcdfb02cfaa7255c1e459517ccf3a3d45117dda553f14",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/ec6506979a772686a41fcdfb02cfaa7255c1e459517ccf3a3d45117dda553f14.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "environment-lifecycle/infra-prod": {
+        "class": "environment-lifecycle",
+        "consumer": "infra-prod",
+        "bundle_id": "sha256:ec6506979a772686a41fcdfb02cfaa7255c1e459517ccf3a3d45117dda553f14",
+        "sha256": "ec6506979a772686a41fcdfb02cfaa7255c1e459517ccf3a3d45117dda553f14",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/ec6506979a772686a41fcdfb02cfaa7255c1e459517ccf3a3d45117dda553f14.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "normal-delivery/deploy-dev": {
+        "class": "normal-delivery",
+        "consumer": "deploy-dev",
+        "bundle_id": "sha256:b4b70fe16d42d090ca5da575a8da6527475d5a597f45c7005f3b882331d7c298",
+        "sha256": "b4b70fe16d42d090ca5da575a8da6527475d5a597f45c7005f3b882331d7c298",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/b4b70fe16d42d090ca5da575a8da6527475d5a597f45c7005f3b882331d7c298.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "normal-delivery/promote-prod": {
+        "class": "normal-delivery",
+        "consumer": "promote-prod",
+        "bundle_id": "sha256:b4b70fe16d42d090ca5da575a8da6527475d5a597f45c7005f3b882331d7c298",
+        "sha256": "b4b70fe16d42d090ca5da575a8da6527475d5a597f45c7005f3b882331d7c298",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/b4b70fe16d42d090ca5da575a8da6527475d5a597f45c7005f3b882331d7c298.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "emergency-recovery/emergency-dev": {
+        "class": "emergency-recovery",
+        "consumer": "emergency-dev",
+        "bundle_id": "sha256:95af1e11b9a78ba1e7f96c74df25fb386a95664a7fcfd252745365bb5c148d97",
+        "sha256": "95af1e11b9a78ba1e7f96c74df25fb386a95664a7fcfd252745365bb5c148d97",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/95af1e11b9a78ba1e7f96c74df25fb386a95664a7fcfd252745365bb5c148d97.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "emergency-recovery/emergency-prod": {
+        "class": "emergency-recovery",
+        "consumer": "emergency-prod",
+        "bundle_id": "sha256:95af1e11b9a78ba1e7f96c74df25fb386a95664a7fcfd252745365bb5c148d97",
+        "sha256": "95af1e11b9a78ba1e7f96c74df25fb386a95664a7fcfd252745365bb5c148d97",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/95af1e11b9a78ba1e7f96c74df25fb386a95664a7fcfd252745365bb5c148d97.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "cleanup-recovery/cleanup-dev": {
+        "class": "cleanup-recovery",
+        "consumer": "cleanup-dev",
+        "bundle_id": "sha256:16af2a5223599a22de134e7a73659a85aec54297d76ae22e39e80d4405f3e726",
+        "sha256": "16af2a5223599a22de134e7a73659a85aec54297d76ae22e39e80d4405f3e726",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/16af2a5223599a22de134e7a73659a85aec54297d76ae22e39e80d4405f3e726.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "cleanup-recovery/cleanup-prod": {
+        "class": "cleanup-recovery",
+        "consumer": "cleanup-prod",
+        "bundle_id": "sha256:16af2a5223599a22de134e7a73659a85aec54297d76ae22e39e80d4405f3e726",
+        "sha256": "16af2a5223599a22de134e7a73659a85aec54297d76ae22e39e80d4405f3e726",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/16af2a5223599a22de134e7a73659a85aec54297d76ae22e39e80d4405f3e726.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "nat-recovery/nat-dev": {
+        "class": "nat-recovery",
+        "consumer": "nat-dev",
+        "bundle_id": "sha256:f6441b2b13b86a6512f7df875fb9e5025a66196ffb93265b78d5c13950e2301b",
+        "sha256": "f6441b2b13b86a6512f7df875fb9e5025a66196ffb93265b78d5c13950e2301b",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/f6441b2b13b86a6512f7df875fb9e5025a66196ffb93265b78d5c13950e2301b.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      },
+      "nat-recovery/nat-prod": {
+        "class": "nat-recovery",
+        "consumer": "nat-prod",
+        "bundle_id": "sha256:f6441b2b13b86a6512f7df875fb9e5025a66196ffb93265b78d5c13950e2301b",
+        "sha256": "f6441b2b13b86a6512f7df875fb9e5025a66196ffb93265b78d5c13950e2301b",
+        "storage": "control-bundles",
+        "key": "bundles/sha256/f6441b2b13b86a6512f7df875fb9e5025a66196ffb93265b78d5c13950e2301b.json",
+        "version_id": null,
+        "installation": "UNVERIFIED",
+        "operational": false
+      }
+    }
+  },
+  "controller_compute": {
+    "stage": "E1_WP2C_PROTECTED_CONTROLLER_COMPUTE_FOUNDATION",
+    "owner": "SECURITY_ROOT_OWNED",
+    "declared": true,
+    "operational": false,
+    "live": "UNVERIFIED",
+    "creation_supported": false,
+    "classes": {
+      "request-gateway": "SKELETON_DECLARED",
+      "build": "SKELETON_DECLARED",
+      "qualification-finalizer": "RESERVED_ONLY",
+      "status": "RESERVED_ONLY",
+      "environment-lifecycle": "SKELETON_DECLARED",
+      "normal-delivery": "SKELETON_DECLARED",
+      "emergency-recovery": "SKELETON_DECLARED",
+      "cleanup-recovery": "RESERVED_ONLY",
+      "nat-recovery": "RESERVED_ONLY"
+    },
+    "nodes": {
+      "request-gateway/deploy-dev": {
+        "name": "e1-gateway-deploy-dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "gateway",
+        "engine": "LAMBDA",
+        "bundle_binding": "request-gateway/deploy-dev",
+        "request_identity": "deploy-dev",
+        "downstream": "normal-delivery/deploy-dev",
+        "role_name": "e1-gateway-deploy-dev-exec",
+        "role_class": "GATEWAY_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "request-gateway/emergency-dev": {
+        "name": "e1-gateway-emergency-dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "gateway",
+        "engine": "LAMBDA",
+        "bundle_binding": "request-gateway/emergency-dev",
+        "request_identity": "emergency-dev",
+        "downstream": "emergency-recovery/emergency-dev",
+        "role_name": "e1-gateway-emergency-dev-exec",
+        "role_class": "GATEWAY_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "request-gateway/emergency-prod": {
+        "name": "e1-gateway-emergency-prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "gateway",
+        "engine": "LAMBDA",
+        "bundle_binding": "request-gateway/emergency-prod",
+        "request_identity": "emergency-prod",
+        "downstream": "emergency-recovery/emergency-prod",
+        "role_name": "e1-gateway-emergency-prod-exec",
+        "role_class": "GATEWAY_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "request-gateway/infra-dev": {
+        "name": "e1-gateway-infra-dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "gateway",
+        "engine": "LAMBDA",
+        "bundle_binding": "request-gateway/infra-dev",
+        "request_identity": "infra-dev",
+        "downstream": "environment-lifecycle/infra-dev",
+        "role_name": "e1-gateway-infra-dev-exec",
+        "role_class": "GATEWAY_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "request-gateway/infra-high-risk-dev": {
+        "name": "e1-gateway-infra-high-risk-dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "gateway",
+        "engine": "LAMBDA",
+        "bundle_binding": "request-gateway/infra-high-risk-dev",
+        "request_identity": "infra-high-risk-dev",
+        "downstream": "environment-lifecycle/infra-high-risk-dev",
+        "role_name": "e1-gateway-infra-high-risk-dev-exec",
+        "role_class": "GATEWAY_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "request-gateway/infra-high-risk-prod": {
+        "name": "e1-gateway-infra-high-risk-prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "gateway",
+        "engine": "LAMBDA",
+        "bundle_binding": "request-gateway/infra-high-risk-prod",
+        "request_identity": "infra-high-risk-prod",
+        "downstream": "environment-lifecycle/infra-high-risk-prod",
+        "role_name": "e1-gateway-infra-high-risk-prod-exec",
+        "role_class": "GATEWAY_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "request-gateway/infra-prod": {
+        "name": "e1-gateway-infra-prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "gateway",
+        "engine": "LAMBDA",
+        "bundle_binding": "request-gateway/infra-prod",
+        "request_identity": "infra-prod",
+        "downstream": "environment-lifecycle/infra-prod",
+        "role_name": "e1-gateway-infra-prod-exec",
+        "role_class": "GATEWAY_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "request-gateway/promote-prod": {
+        "name": "e1-gateway-promote-prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "gateway",
+        "engine": "LAMBDA",
+        "bundle_binding": "request-gateway/promote-prod",
+        "request_identity": "promote-prod",
+        "downstream": "normal-delivery/promote-prod",
+        "role_name": "e1-gateway-promote-prod-exec",
+        "role_class": "GATEWAY_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "request-gateway/release": {
+        "name": "e1-gateway-release",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "gateway",
+        "engine": "LAMBDA",
+        "bundle_binding": "request-gateway/release",
+        "request_identity": "release",
+        "downstream": "build/release",
+        "role_name": "e1-gateway-release-exec",
+        "role_class": "GATEWAY_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "build/release": {
+        "name": "e1-controller-release",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "controller",
+        "engine": "CODEBUILD",
+        "bundle_binding": "build/release",
+        "request_identity": null,
+        "downstream": null,
+        "role_name": "e1-controller-release-exec",
+        "role_class": "CONTROLLER_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "environment-lifecycle/infra-dev": {
+        "name": "e1-controller-infra-dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "controller",
+        "engine": "CODEBUILD",
+        "bundle_binding": "environment-lifecycle/infra-dev",
+        "request_identity": null,
+        "downstream": null,
+        "role_name": "e1-controller-infra-dev-exec",
+        "role_class": "CONTROLLER_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "environment-lifecycle/infra-high-risk-dev": {
+        "name": "e1-controller-infra-high-risk-dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "controller",
+        "engine": "CODEBUILD",
+        "bundle_binding": "environment-lifecycle/infra-high-risk-dev",
+        "request_identity": null,
+        "downstream": null,
+        "role_name": "e1-controller-infra-high-risk-dev-exec",
+        "role_class": "CONTROLLER_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "environment-lifecycle/infra-high-risk-prod": {
+        "name": "e1-controller-infra-high-risk-prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "controller",
+        "engine": "CODEBUILD",
+        "bundle_binding": "environment-lifecycle/infra-high-risk-prod",
+        "request_identity": null,
+        "downstream": null,
+        "role_name": "e1-controller-infra-high-risk-prod-exec",
+        "role_class": "CONTROLLER_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "environment-lifecycle/infra-prod": {
+        "name": "e1-controller-infra-prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "controller",
+        "engine": "CODEBUILD",
+        "bundle_binding": "environment-lifecycle/infra-prod",
+        "request_identity": null,
+        "downstream": null,
+        "role_name": "e1-controller-infra-prod-exec",
+        "role_class": "CONTROLLER_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "normal-delivery/deploy-dev": {
+        "name": "e1-controller-deploy-dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "controller",
+        "engine": "CODEBUILD",
+        "bundle_binding": "normal-delivery/deploy-dev",
+        "request_identity": null,
+        "downstream": null,
+        "role_name": "e1-controller-deploy-dev-exec",
+        "role_class": "CONTROLLER_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "normal-delivery/promote-prod": {
+        "name": "e1-controller-promote-prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "controller",
+        "engine": "CODEBUILD",
+        "bundle_binding": "normal-delivery/promote-prod",
+        "request_identity": null,
+        "downstream": null,
+        "role_name": "e1-controller-promote-prod-exec",
+        "role_class": "CONTROLLER_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "emergency-recovery/emergency-dev": {
+        "name": "e1-controller-emergency-dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "controller",
+        "engine": "CODEBUILD",
+        "bundle_binding": "emergency-recovery/emergency-dev",
+        "request_identity": null,
+        "downstream": null,
+        "role_name": "e1-controller-emergency-dev-exec",
+        "role_class": "CONTROLLER_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      },
+      "emergency-recovery/emergency-prod": {
+        "name": "e1-controller-emergency-prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "kind": "controller",
+        "engine": "CODEBUILD",
+        "bundle_binding": "emergency-recovery/emergency-prod",
+        "request_identity": null,
+        "downstream": null,
+        "role_name": "e1-controller-emergency-prod-exec",
+        "role_class": "CONTROLLER_EXECUTION",
+        "declared": true,
+        "operational": false,
+        "prerequisites": {
+          "accepted_controller_contract": false,
+          "accepted_request_trust_wiring": false,
+          "complete_role_permissions": false,
+          "installed_bundle": false,
+          "verified_readback": false
+        },
+        "image_digest_uri": null
+      }
+    },
+    "invocation": {
+      "permission": "DEFERRED_NO_STARTBUILD_OR_INVOKE",
+      "selection": "PROTECTED_CONFIGURATION_ONLY",
+      "start_build_fields": [
+        "projectName"
+      ],
+      "requester_overrides": {
+        "artifactsOverride": "FORBIDDEN",
+        "autoRetryLimitOverride": "FORBIDDEN",
+        "buildStatusConfigOverride": "FORBIDDEN",
+        "buildspecOverride": "FORBIDDEN",
+        "bundle": "FORBIDDEN",
+        "cacheOverride": "FORBIDDEN",
+        "certificateOverride": "FORBIDDEN",
+        "command": "FORBIDDEN",
+        "computeTypeOverride": "FORBIDDEN",
+        "debugSessionEnabled": "FORBIDDEN",
+        "encryptionKeyOverride": "FORBIDDEN",
+        "environmentTypeOverride": "FORBIDDEN",
+        "environmentVariablesOverride": "FORBIDDEN",
+        "fleetOverride": "FORBIDDEN",
+        "gitCloneDepthOverride": "FORBIDDEN",
+        "gitSubmodulesConfigOverride": "FORBIDDEN",
+        "hostKernelOverride": "FORBIDDEN",
+        "idempotencyToken": "FORBIDDEN",
+        "imageOverride": "FORBIDDEN",
+        "imagePullCredentialsTypeOverride": "FORBIDDEN",
+        "insecureSslOverride": "FORBIDDEN",
+        "logsConfigOverride": "FORBIDDEN",
+        "privilegedModeOverride": "FORBIDDEN",
+        "projectName": "FORBIDDEN",
+        "queuedTimeoutInMinutesOverride": "FORBIDDEN",
+        "registryCredentialOverride": "FORBIDDEN",
+        "reportBuildStatusOverride": "FORBIDDEN",
+        "script": "FORBIDDEN",
+        "secondaryArtifactsOverride": "FORBIDDEN",
+        "secondarySourcesOverride": "FORBIDDEN",
+        "secondarySourcesVersionOverride": "FORBIDDEN",
+        "serviceRoleOverride": "FORBIDDEN",
+        "sourceAuthOverride": "FORBIDDEN",
+        "sourceLocationOverride": "FORBIDDEN",
+        "sourceTypeOverride": "FORBIDDEN",
+        "sourceVersion": "FORBIDDEN",
+        "timeoutInMinutesOverride": "FORBIDDEN"
+      },
+      "envelope": {
+        "schema": "E1_WP2C_INACTIVE_V1"
+      },
+      "max_envelope_bytes": 256,
+      "unknown_fields": "REJECT"
+    },
+    "consumption": {
+      "selection": "PROTECTED_CONFIGURATION_ONLY",
+      "identity_fields": [
+        "class",
+        "consumer",
+        "sha256",
+        "key",
+        "version_id"
+      ],
+      "version": "EXACT_NON_NULL_INSTALLED_VERSION_REQUIRED",
+      "readback": "VERIFY_EXACT_BYTES_BEFORE_EXECUTION",
+      "reservation_authorizes_invocation": false,
+      "executable_format": "DEFERRED_WP2B_JSON_IS_NOT_EXECUTABLE"
+    },
+    "runtime": {
+      "overrides": {
+        "artifact_key": "FORBIDDEN",
+        "buildspec": "FORBIDDEN",
+        "cache": "FORBIDDEN",
+        "command": "FORBIDDEN",
+        "debug": "FORBIDDEN",
+        "environment_variables": "FORBIDDEN",
+        "image": "FORBIDDEN",
+        "logging": "FORBIDDEN",
+        "network": "FORBIDDEN",
+        "plugins": "FORBIDDEN",
+        "script": "FORBIDDEN",
+        "secondary_sources": "FORBIDDEN",
+        "service_role": "FORBIDDEN",
+        "source": "FORBIDDEN",
+        "source_revision": "FORBIDDEN",
+        "terraform_bundle": "FORBIDDEN",
+        "terragrunt_bundle": "FORBIDDEN"
+      },
+      "lambda_package_type": "Image",
+      "lambda_reserved_concurrency": 0,
+      "codebuild_source_type": "NO_SOURCE",
+      "codebuild_artifacts_type": "NO_ARTIFACTS",
+      "codebuild_environment_type": "LINUX_CONTAINER",
+      "codebuild_compute_type": "BUILD_GENERAL1_SMALL",
+      "codebuild_privileged_mode": false,
+      "codebuild_cache_type": "NO_CACHE",
+      "codebuild_logs_status": "DISABLED",
+      "codebuild_timeout_minutes": 5,
+      "buildspec": {
+        "version": "0.2",
+        "phases": {
+          "build": {
+            "commands": [
+              "exit 1"
+            ]
+          }
+        }
+      },
+      "entrypoint": "FAIL_CLOSED_NO_BUNDLE_EXECUTION",
+      "environment_keys": [
+        "E1_PROTECTED_CONFIGURATION"
+      ]
+    },
+    "role_trust": {
+      "LAMBDA": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Deny",
+            "Action": "sts:AssumeRole",
+            "Principal": {
+              "Service": "lambda.amazonaws.com"
+            }
+          }
+        ]
+      },
+      "CODEBUILD": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Deny",
+            "Action": "sts:AssumeRole",
+            "Principal": {
+              "Service": "codebuild.amazonaws.com"
+            }
+          }
+        ]
+      }
+    },
+    "role_permissions_source": "authority.policies.inert_permissions",
+    "future_codebuild_trust": "SERVICE_ONLY_EXACT_PROJECT_ARN_AND_ACCOUNT_REVIEW_REQUIRED"
+  },
+  "ownership_closure": {
+    "stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE",
+    "resources": {
+      "dev/sql": {
+        "kind": "role",
+        "name": "demo-dev-data-sql-ec2-role",
+        "source": "terraform/infra/data/main.tf",
+        "scope": "dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/dev/sql",
+        "service": "ec2.amazonaws.com",
+        "mode": "SQL"
+      },
+      "dev/flow": {
+        "kind": "role",
+        "name": "demo-dev-vpc-flow-logs-role",
+        "source": "terraform/infra/global/modules/vpc/vpc.tf",
+        "scope": "dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/dev/flow",
+        "service": "vpc-flow-logs.amazonaws.com",
+        "mode": "FLOW"
+      },
+      "dev/nat": {
+        "kind": "role",
+        "name": "demo-dev-nat-role",
+        "source": "terraform/infra/global/modules/nat/iam_nat.tf",
+        "scope": "dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/dev/nat",
+        "service": "ec2.amazonaws.com",
+        "mode": "NAT_INSTANCE"
+      },
+      "dev/nat-recovery": {
+        "kind": "role",
+        "name": "demo-dev-lambda-nat-role",
+        "source": "terraform/infra/global/modules/nat/iam_lambda_nat.tf",
+        "scope": "dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/dev/nat-recovery",
+        "service": "lambda.amazonaws.com",
+        "mode": "INERT"
+      },
+      "dev/cleanup": {
+        "kind": "role",
+        "name": "demo-dev-scale-down-old-color-role",
+        "source": "terraform/infra/apps/fargate/iam_lambda_scale_down.tf",
+        "scope": "dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/dev/cleanup",
+        "service": "lambda.amazonaws.com",
+        "mode": "INERT"
+      },
+      "dev/blue-task": {
+        "kind": "role",
+        "name": "demo-dev-app-api-blue-task-role",
+        "source": "terraform/infra/apps/fargate/modules/ecs_service/iam.tf",
+        "scope": "dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/dev/blue-task",
+        "service": "ecs-tasks.amazonaws.com",
+        "mode": "TASK"
+      },
+      "dev/blue-exec": {
+        "kind": "role",
+        "name": "demo-dev-app-api-blue-exec-role",
+        "source": "terraform/infra/apps/fargate/modules/ecs_service/iam.tf",
+        "scope": "dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/dev/blue-exec",
+        "service": "ecs-tasks.amazonaws.com",
+        "mode": "EXEC"
+      },
+      "dev/green-task": {
+        "kind": "role",
+        "name": "demo-dev-app-api-green-task-role",
+        "source": "terraform/infra/apps/fargate/modules/ecs_service/iam.tf",
+        "scope": "dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/dev/green-task",
+        "service": "ecs-tasks.amazonaws.com",
+        "mode": "TASK"
+      },
+      "dev/green-exec": {
+        "kind": "role",
+        "name": "demo-dev-app-api-green-exec-role",
+        "source": "terraform/infra/apps/fargate/modules/ecs_service/iam.tf",
+        "scope": "dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/dev/green-exec",
+        "service": "ecs-tasks.amazonaws.com",
+        "mode": "EXEC"
+      },
+      "dev/sql-profile": {
+        "kind": "profile",
+        "name": "demo-dev-data-sql-ec2-profile",
+        "source": "terraform/infra/data/main.tf",
+        "scope": "dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/dev/sql-profile",
+        "role": "dev/sql"
+      },
+      "dev/nat-profile": {
+        "kind": "profile",
+        "name": "demo-dev-nat-instance-profile",
+        "source": "terraform/infra/global/modules/nat/iam_nat.tf",
+        "scope": "dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/dev/nat-profile",
+        "role": "dev/nat"
+      },
+      "dev/kms": {
+        "kind": "key",
+        "name": "alias/dev-kms-service",
+        "source": "terraform/infra/shared/modules/kms_key/key.tf",
+        "scope": "dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/dev/kms"
+      },
+      "dev/sa": {
+        "kind": "secret",
+        "name": "demo/dev/db/sql-sa-password",
+        "source": "terraform/infra/secrets/modules/secret_metadata/main.tf",
+        "scope": "dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/dev/sa",
+        "key": "dev/kms"
+      },
+      "dev/db-user": {
+        "kind": "secret",
+        "name": "demo/dev/db/sql-app-password",
+        "source": "terraform/infra/secrets/modules/secret_metadata/main.tf",
+        "scope": "dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/dev/db-user",
+        "key": "dev/kms"
+      },
+      "dev/connection": {
+        "kind": "secret",
+        "name": "demo/dev/app/db-connection-string",
+        "source": "terraform/infra/secrets/modules/secret_metadata/main.tf",
+        "scope": "dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/dev/connection",
+        "key": "dev/kms"
+      },
+      "dev/repository": {
+        "kind": "repository",
+        "name": "demo-dev-shared-demo-ms",
+        "source": "terraform/infra/shared/modules/ecr/main.tf",
+        "scope": "dev",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/dev/repository"
+      },
+      "prod/sql": {
+        "kind": "role",
+        "name": "demo-prod-data-sql-ec2-role",
+        "source": "terraform/infra/data/main.tf",
+        "scope": "prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/prod/sql",
+        "service": "ec2.amazonaws.com",
+        "mode": "SQL"
+      },
+      "prod/flow": {
+        "kind": "role",
+        "name": "demo-prod-vpc-flow-logs-role",
+        "source": "terraform/infra/global/modules/vpc/vpc.tf",
+        "scope": "prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/prod/flow",
+        "service": "vpc-flow-logs.amazonaws.com",
+        "mode": "FLOW"
+      },
+      "prod/nat": {
+        "kind": "role",
+        "name": "demo-prod-nat-role",
+        "source": "terraform/infra/global/modules/nat/iam_nat.tf",
+        "scope": "prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/prod/nat",
+        "service": "ec2.amazonaws.com",
+        "mode": "NAT_INSTANCE"
+      },
+      "prod/nat-recovery": {
+        "kind": "role",
+        "name": "demo-prod-lambda-nat-role",
+        "source": "terraform/infra/global/modules/nat/iam_lambda_nat.tf",
+        "scope": "prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/prod/nat-recovery",
+        "service": "lambda.amazonaws.com",
+        "mode": "INERT"
+      },
+      "prod/cleanup": {
+        "kind": "role",
+        "name": "demo-prod-scale-down-old-color-role",
+        "source": "terraform/infra/apps/fargate/iam_lambda_scale_down.tf",
+        "scope": "prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/prod/cleanup",
+        "service": "lambda.amazonaws.com",
+        "mode": "INERT"
+      },
+      "prod/blue-task": {
+        "kind": "role",
+        "name": "demo-prod-app-api-blue-task-role",
+        "source": "terraform/infra/apps/fargate/modules/ecs_service/iam.tf",
+        "scope": "prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/prod/blue-task",
+        "service": "ecs-tasks.amazonaws.com",
+        "mode": "TASK"
+      },
+      "prod/blue-exec": {
+        "kind": "role",
+        "name": "demo-prod-app-api-blue-exec-role",
+        "source": "terraform/infra/apps/fargate/modules/ecs_service/iam.tf",
+        "scope": "prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/prod/blue-exec",
+        "service": "ecs-tasks.amazonaws.com",
+        "mode": "EXEC"
+      },
+      "prod/green-task": {
+        "kind": "role",
+        "name": "demo-prod-app-api-green-task-role",
+        "source": "terraform/infra/apps/fargate/modules/ecs_service/iam.tf",
+        "scope": "prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/prod/green-task",
+        "service": "ecs-tasks.amazonaws.com",
+        "mode": "TASK"
+      },
+      "prod/green-exec": {
+        "kind": "role",
+        "name": "demo-prod-app-api-green-exec-role",
+        "source": "terraform/infra/apps/fargate/modules/ecs_service/iam.tf",
+        "scope": "prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/prod/green-exec",
+        "service": "ecs-tasks.amazonaws.com",
+        "mode": "EXEC"
+      },
+      "prod/sql-profile": {
+        "kind": "profile",
+        "name": "demo-prod-data-sql-ec2-profile",
+        "source": "terraform/infra/data/main.tf",
+        "scope": "prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/prod/sql-profile",
+        "role": "prod/sql"
+      },
+      "prod/nat-profile": {
+        "kind": "profile",
+        "name": "demo-prod-nat-instance-profile",
+        "source": "terraform/infra/global/modules/nat/iam_nat.tf",
+        "scope": "prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/prod/nat-profile",
+        "role": "prod/nat"
+      },
+      "prod/kms": {
+        "kind": "key",
+        "name": "alias/prod-kms-service",
+        "source": "terraform/infra/shared/modules/kms_key/key.tf",
+        "scope": "prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/prod/kms"
+      },
+      "prod/sa": {
+        "kind": "secret",
+        "name": "demo/prod/db/sql-sa-password",
+        "source": "terraform/infra/secrets/modules/secret_metadata/main.tf",
+        "scope": "prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/prod/sa",
+        "key": "prod/kms"
+      },
+      "prod/db-user": {
+        "kind": "secret",
+        "name": "demo/prod/db/sql-app-password",
+        "source": "terraform/infra/secrets/modules/secret_metadata/main.tf",
+        "scope": "prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/prod/db-user",
+        "key": "prod/kms"
+      },
+      "prod/connection": {
+        "kind": "secret",
+        "name": "demo/prod/app/db-connection-string",
+        "source": "terraform/infra/secrets/modules/secret_metadata/main.tf",
+        "scope": "prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/prod/connection",
+        "key": "prod/kms"
+      },
+      "prod/repository": {
+        "kind": "repository",
+        "name": "demo-prod-shared-demo-ms",
+        "source": "terraform/infra/shared/modules/ecr/main.tf",
+        "scope": "prod",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/prod/repository"
+      },
+      "neutral/repository": {
+        "kind": "repository",
+        "name": "demo-shared-demo-ms",
+        "source": "terraform/infra/shared/modules/ecr/main.tf",
+        "scope": "neutral",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/neutral/repository"
+      },
+      "neutral/artifacts": {
+        "kind": "bucket",
+        "name": "demo-release-artifacts-",
+        "source": "terraform/infra/shared/release_artifacts_bucket.tf",
+        "scope": "neutral",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/neutral/artifacts"
+      },
+      "neutral/oidc": {
+        "kind": "oidc",
+        "name": "token.actions.githubusercontent.com",
+        "source": "terraform/infra/shared/modules/iam_github/github_terragrunt_ci.tf",
+        "scope": "neutral",
+        "owner": "SECURITY_ROOT_OWNED",
+        "declaration": "module.protected_resources/neutral/oidc"
+      }
+    },
+    "recovery": {
+      "dev/cleanup": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "scope": "dev",
+        "state": "DISABLED_RESERVED",
+        "operational": false,
+        "available": false,
+        "value": null,
+        "materialization": "WP4_OPERATIONAL_ACTIVATION",
+        "foundation": "WP2_PROTECTED_FOUNDATION",
+        "legacy_source": "terraform/infra/apps/fargate/lambda_scale_down.tf",
+        "legacy_classification": "CURRENT_TRANSITIONAL_EXCLUSION",
+        "role": "dev/cleanup",
+        "bundle": "cleanup-recovery/cleanup-dev",
+        "events_enabled": false,
+        "invocation_enabled": false,
+        "configuration": "ADMIN_INSTALLED_ONLY",
+        "user_data": null,
+        "reserved_relations": {
+          "function": "demo-dev-scale-down-old-color-lambda",
+          "rule": "demo-dev-scale-down-old-color-rule",
+          "services": [
+            "demo-dev-app-api-blue-svc",
+            "demo-dev-app-api-green-svc"
+          ]
+        }
+      },
+      "dev/nat-functions": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "scope": "dev",
+        "state": "DISABLED_RESERVED",
+        "operational": false,
+        "available": false,
+        "value": null,
+        "materialization": "WP4_OPERATIONAL_ACTIVATION",
+        "foundation": "WP2_PROTECTED_FOUNDATION",
+        "legacy_source": "terraform/infra/global/modules/nat/lambda_nat.tf",
+        "legacy_classification": "CURRENT_TRANSITIONAL_EXCLUSION",
+        "role": "dev/nat-recovery",
+        "bundle": "nat-recovery/nat-dev",
+        "events_enabled": false,
+        "invocation_enabled": false,
+        "configuration": "ADMIN_INSTALLED_ONLY",
+        "user_data": null,
+        "reserved_relations": {
+          "functions": [
+            "demo-dev-assign-eip-lambda",
+            "demo-dev-change-rt-lambda",
+            "demo-dev-disable-sdc-lambda"
+          ],
+          "rule": "demo-dev-on-ec2-running",
+          "asgs": [
+            "demo-dev-asg-nat-a",
+            "demo-dev-asg-nat-b"
+          ],
+          "profile": "dev/nat-profile",
+          "launch_templates": [
+            "demo-dev-nat-a-",
+            "demo-dev-nat-b-"
+          ]
+        }
+      },
+      "dev/nat-events": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "scope": "dev",
+        "state": "DISABLED_RESERVED",
+        "operational": false,
+        "available": false,
+        "value": null,
+        "materialization": "WP4_OPERATIONAL_ACTIVATION",
+        "foundation": "WP2_PROTECTED_FOUNDATION",
+        "legacy_source": "terraform/infra/global/modules/nat/events_nat.tf",
+        "legacy_classification": "CURRENT_TRANSITIONAL_EXCLUSION",
+        "role": "dev/nat-recovery",
+        "bundle": "nat-recovery/nat-dev",
+        "events_enabled": false,
+        "invocation_enabled": false,
+        "configuration": "ADMIN_INSTALLED_ONLY",
+        "user_data": null,
+        "reserved_relations": {
+          "functions": [
+            "demo-dev-assign-eip-lambda",
+            "demo-dev-change-rt-lambda",
+            "demo-dev-disable-sdc-lambda"
+          ],
+          "rule": "demo-dev-on-ec2-running",
+          "asgs": [
+            "demo-dev-asg-nat-a",
+            "demo-dev-asg-nat-b"
+          ],
+          "profile": "dev/nat-profile",
+          "launch_templates": [
+            "demo-dev-nat-a-",
+            "demo-dev-nat-b-"
+          ]
+        }
+      },
+      "dev/nat-launch": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "scope": "dev",
+        "state": "DISABLED_RESERVED",
+        "operational": false,
+        "available": false,
+        "value": null,
+        "materialization": "WP4_OPERATIONAL_ACTIVATION",
+        "foundation": "WP2_PROTECTED_FOUNDATION",
+        "legacy_source": "terraform/infra/global/modules/nat/launch_template.tf",
+        "legacy_classification": "CURRENT_TRANSITIONAL_EXCLUSION",
+        "role": "dev/nat",
+        "bundle": "nat-recovery/nat-dev",
+        "events_enabled": false,
+        "invocation_enabled": false,
+        "configuration": "ADMIN_INSTALLED_ONLY",
+        "user_data": "PROTECTED_NOT_ORDINARY_SELECTED",
+        "reserved_relations": {
+          "functions": [
+            "demo-dev-assign-eip-lambda",
+            "demo-dev-change-rt-lambda",
+            "demo-dev-disable-sdc-lambda"
+          ],
+          "rule": "demo-dev-on-ec2-running",
+          "asgs": [
+            "demo-dev-asg-nat-a",
+            "demo-dev-asg-nat-b"
+          ],
+          "profile": "dev/nat-profile",
+          "launch_templates": [
+            "demo-dev-nat-a-",
+            "demo-dev-nat-b-"
+          ]
+        }
+      },
+      "prod/cleanup": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "scope": "prod",
+        "state": "DISABLED_RESERVED",
+        "operational": false,
+        "available": false,
+        "value": null,
+        "materialization": "WP4_OPERATIONAL_ACTIVATION",
+        "foundation": "WP2_PROTECTED_FOUNDATION",
+        "legacy_source": "terraform/infra/apps/fargate/lambda_scale_down.tf",
+        "legacy_classification": "CURRENT_TRANSITIONAL_EXCLUSION",
+        "role": "prod/cleanup",
+        "bundle": "cleanup-recovery/cleanup-prod",
+        "events_enabled": false,
+        "invocation_enabled": false,
+        "configuration": "ADMIN_INSTALLED_ONLY",
+        "user_data": null,
+        "reserved_relations": {
+          "function": "demo-prod-scale-down-old-color-lambda",
+          "rule": "demo-prod-scale-down-old-color-rule",
+          "services": [
+            "demo-prod-app-api-blue-svc",
+            "demo-prod-app-api-green-svc"
+          ]
+        }
+      },
+      "prod/nat-functions": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "scope": "prod",
+        "state": "DISABLED_RESERVED",
+        "operational": false,
+        "available": false,
+        "value": null,
+        "materialization": "WP4_OPERATIONAL_ACTIVATION",
+        "foundation": "WP2_PROTECTED_FOUNDATION",
+        "legacy_source": "terraform/infra/global/modules/nat/lambda_nat.tf",
+        "legacy_classification": "CURRENT_TRANSITIONAL_EXCLUSION",
+        "role": "prod/nat-recovery",
+        "bundle": "nat-recovery/nat-prod",
+        "events_enabled": false,
+        "invocation_enabled": false,
+        "configuration": "ADMIN_INSTALLED_ONLY",
+        "user_data": null,
+        "reserved_relations": {
+          "functions": [
+            "demo-prod-assign-eip-lambda",
+            "demo-prod-change-rt-lambda",
+            "demo-prod-disable-sdc-lambda"
+          ],
+          "rule": "demo-prod-on-ec2-running",
+          "asgs": [
+            "demo-prod-asg-nat-a",
+            "demo-prod-asg-nat-b"
+          ],
+          "profile": "prod/nat-profile",
+          "launch_templates": [
+            "demo-prod-nat-a-",
+            "demo-prod-nat-b-"
+          ]
+        }
+      },
+      "prod/nat-events": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "scope": "prod",
+        "state": "DISABLED_RESERVED",
+        "operational": false,
+        "available": false,
+        "value": null,
+        "materialization": "WP4_OPERATIONAL_ACTIVATION",
+        "foundation": "WP2_PROTECTED_FOUNDATION",
+        "legacy_source": "terraform/infra/global/modules/nat/events_nat.tf",
+        "legacy_classification": "CURRENT_TRANSITIONAL_EXCLUSION",
+        "role": "prod/nat-recovery",
+        "bundle": "nat-recovery/nat-prod",
+        "events_enabled": false,
+        "invocation_enabled": false,
+        "configuration": "ADMIN_INSTALLED_ONLY",
+        "user_data": null,
+        "reserved_relations": {
+          "functions": [
+            "demo-prod-assign-eip-lambda",
+            "demo-prod-change-rt-lambda",
+            "demo-prod-disable-sdc-lambda"
+          ],
+          "rule": "demo-prod-on-ec2-running",
+          "asgs": [
+            "demo-prod-asg-nat-a",
+            "demo-prod-asg-nat-b"
+          ],
+          "profile": "prod/nat-profile",
+          "launch_templates": [
+            "demo-prod-nat-a-",
+            "demo-prod-nat-b-"
+          ]
+        }
+      },
+      "prod/nat-launch": {
+        "owner": "SECURITY_ROOT_OWNED",
+        "scope": "prod",
+        "state": "DISABLED_RESERVED",
+        "operational": false,
+        "available": false,
+        "value": null,
+        "materialization": "WP4_OPERATIONAL_ACTIVATION",
+        "foundation": "WP2_PROTECTED_FOUNDATION",
+        "legacy_source": "terraform/infra/global/modules/nat/launch_template.tf",
+        "legacy_classification": "CURRENT_TRANSITIONAL_EXCLUSION",
+        "role": "prod/nat",
+        "bundle": "nat-recovery/nat-prod",
+        "events_enabled": false,
+        "invocation_enabled": false,
+        "configuration": "ADMIN_INSTALLED_ONLY",
+        "user_data": "PROTECTED_NOT_ORDINARY_SELECTED",
+        "reserved_relations": {
+          "functions": [
+            "demo-prod-assign-eip-lambda",
+            "demo-prod-change-rt-lambda",
+            "demo-prod-disable-sdc-lambda"
+          ],
+          "rule": "demo-prod-on-ec2-running",
+          "asgs": [
+            "demo-prod-asg-nat-a",
+            "demo-prod-asg-nat-b"
+          ],
+          "profile": "prod/nat-profile",
+          "launch_templates": [
+            "demo-prod-nat-a-",
+            "demo-prod-nat-b-"
+          ]
+        }
+      }
+    },
+    "consumers": {
+      "dev/shared": [
+        "dev/kms",
+        "dev/repository",
+        "neutral/repository",
+        "neutral/artifacts",
+        "neutral/oidc"
+      ],
+      "dev/data": [
+        "dev/sql-profile",
+        "dev/sa",
+        "dev/db-user",
+        "dev/kms"
+      ],
+      "dev/apps": [
+        "dev/blue-task",
+        "dev/blue-exec",
+        "dev/green-task",
+        "dev/green-exec",
+        "dev/connection",
+        "dev/kms"
+      ],
+      "dev/global": [
+        "dev/flow",
+        "dev/nat-profile"
+      ],
+      "dev/secrets": [
+        "dev/sa",
+        "dev/db-user",
+        "dev/connection",
+        "dev/kms"
+      ],
+      "prod/shared": [
+        "prod/kms",
+        "prod/repository",
+        "neutral/repository",
+        "neutral/artifacts",
+        "neutral/oidc"
+      ],
+      "prod/data": [
+        "prod/sql-profile",
+        "prod/sa",
+        "prod/db-user",
+        "prod/kms"
+      ],
+      "prod/apps": [
+        "prod/blue-task",
+        "prod/blue-exec",
+        "prod/green-task",
+        "prod/green-exec",
+        "prod/connection",
+        "prod/kms"
+      ],
+      "prod/global": [
+        "prod/flow",
+        "prod/nat-profile"
+      ],
+      "prod/secrets": [
+        "prod/sa",
+        "prod/db-user",
+        "prod/connection",
+        "prod/kms"
+      ]
+    },
+    "dependencies": {
+      "dev/sql": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/dev/sql",
+          "fixed-trust/dev/sql",
+          "fixed-permissions/dev/sql",
+          "dev/kms",
+          "dev/sa",
+          "dev/db-user"
+        ]
+      },
+      "dev/flow": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/dev/flow",
+          "fixed-trust/dev/flow",
+          "fixed-permissions/dev/flow"
+        ]
+      },
+      "dev/nat": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/dev/nat",
+          "fixed-trust/dev/nat",
+          "fixed-permissions/dev/nat"
+        ]
+      },
+      "dev/nat-recovery": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/dev/nat-recovery",
+          "fixed-trust/dev/nat-recovery",
+          "fixed-permissions/dev/nat-recovery"
+        ]
+      },
+      "dev/cleanup": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/dev/cleanup",
+          "fixed-trust/dev/cleanup",
+          "fixed-permissions/dev/cleanup"
+        ]
+      },
+      "dev/blue-task": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/dev/blue-task",
+          "fixed-trust/dev/blue-task",
+          "fixed-permissions/dev/blue-task",
+          "dev/kms"
+        ]
+      },
+      "dev/blue-exec": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/dev/blue-exec",
+          "fixed-trust/dev/blue-exec",
+          "fixed-permissions/dev/blue-exec",
+          "dev/kms",
+          "dev/connection"
+        ]
+      },
+      "dev/green-task": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/dev/green-task",
+          "fixed-trust/dev/green-task",
+          "fixed-permissions/dev/green-task",
+          "dev/kms"
+        ]
+      },
+      "dev/green-exec": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/dev/green-exec",
+          "fixed-trust/dev/green-exec",
+          "fixed-permissions/dev/green-exec",
+          "dev/kms",
+          "dev/connection"
+        ]
+      },
+      "dev/sql-profile": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/dev/sql-profile",
+          "dev/sql"
+        ]
+      },
+      "dev/nat-profile": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/dev/nat-profile",
+          "dev/nat"
+        ]
+      },
+      "dev/kms": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/dev/kms"
+        ]
+      },
+      "dev/sa": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/dev/sa",
+          "dev/kms"
+        ]
+      },
+      "dev/db-user": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/dev/db-user",
+          "dev/kms"
+        ]
+      },
+      "dev/connection": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/dev/connection",
+          "dev/kms"
+        ]
+      },
+      "dev/repository": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/dev/repository"
+        ]
+      },
+      "prod/sql": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/prod/sql",
+          "fixed-trust/prod/sql",
+          "fixed-permissions/prod/sql",
+          "prod/kms",
+          "prod/sa",
+          "prod/db-user"
+        ]
+      },
+      "prod/flow": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/prod/flow",
+          "fixed-trust/prod/flow",
+          "fixed-permissions/prod/flow"
+        ]
+      },
+      "prod/nat": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/prod/nat",
+          "fixed-trust/prod/nat",
+          "fixed-permissions/prod/nat"
+        ]
+      },
+      "prod/nat-recovery": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/prod/nat-recovery",
+          "fixed-trust/prod/nat-recovery",
+          "fixed-permissions/prod/nat-recovery"
+        ]
+      },
+      "prod/cleanup": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/prod/cleanup",
+          "fixed-trust/prod/cleanup",
+          "fixed-permissions/prod/cleanup"
+        ]
+      },
+      "prod/blue-task": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/prod/blue-task",
+          "fixed-trust/prod/blue-task",
+          "fixed-permissions/prod/blue-task",
+          "prod/kms"
+        ]
+      },
+      "prod/blue-exec": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/prod/blue-exec",
+          "fixed-trust/prod/blue-exec",
+          "fixed-permissions/prod/blue-exec",
+          "prod/kms",
+          "prod/connection"
+        ]
+      },
+      "prod/green-task": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/prod/green-task",
+          "fixed-trust/prod/green-task",
+          "fixed-permissions/prod/green-task",
+          "prod/kms"
+        ]
+      },
+      "prod/green-exec": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/prod/green-exec",
+          "fixed-trust/prod/green-exec",
+          "fixed-permissions/prod/green-exec",
+          "prod/kms",
+          "prod/connection"
+        ]
+      },
+      "prod/sql-profile": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/prod/sql-profile",
+          "prod/sql"
+        ]
+      },
+      "prod/nat-profile": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/prod/nat-profile",
+          "prod/nat"
+        ]
+      },
+      "prod/kms": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/prod/kms"
+        ]
+      },
+      "prod/sa": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/prod/sa",
+          "prod/kms"
+        ]
+      },
+      "prod/db-user": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/prod/db-user",
+          "prod/kms"
+        ]
+      },
+      "prod/connection": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/prod/connection",
+          "prod/kms"
+        ]
+      },
+      "prod/repository": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/prod/repository"
+        ]
+      },
+      "neutral/repository": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/neutral/repository"
+        ]
+      },
+      "neutral/artifacts": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/neutral/artifacts"
+        ]
+      },
+      "neutral/oidc": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP2_PROTECTED_FOUNDATION",
+        "depends_on": [
+          "authority.ownership_closure",
+          "protected-publication/neutral/oidc"
+        ]
+      },
+      "recovery/dev/cleanup": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP4_OPERATIONAL_ACTIVATION",
+        "depends_on": [
+          "dev/cleanup",
+          "cleanup-recovery/cleanup-dev",
+          "protected-config/dev/cleanup",
+          "protected-publication/recovery/dev/cleanup"
+        ]
+      },
+      "recovery/dev/nat-functions": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP4_OPERATIONAL_ACTIVATION",
+        "depends_on": [
+          "dev/nat-recovery",
+          "nat-recovery/nat-dev",
+          "protected-config/dev/nat-functions",
+          "protected-publication/recovery/dev/nat-functions"
+        ]
+      },
+      "recovery/dev/nat-events": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP4_OPERATIONAL_ACTIVATION",
+        "depends_on": [
+          "dev/nat-recovery",
+          "nat-recovery/nat-dev",
+          "protected-config/dev/nat-events",
+          "protected-publication/recovery/dev/nat-events"
+        ]
+      },
+      "recovery/dev/nat-launch": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP4_OPERATIONAL_ACTIVATION",
+        "depends_on": [
+          "dev/nat",
+          "nat-recovery/nat-dev",
+          "protected-config/dev/nat-launch",
+          "protected-publication/recovery/dev/nat-launch"
+        ]
+      },
+      "recovery/prod/cleanup": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP4_OPERATIONAL_ACTIVATION",
+        "depends_on": [
+          "prod/cleanup",
+          "cleanup-recovery/cleanup-prod",
+          "protected-config/prod/cleanup",
+          "protected-publication/recovery/prod/cleanup"
+        ]
+      },
+      "recovery/prod/nat-functions": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP4_OPERATIONAL_ACTIVATION",
+        "depends_on": [
+          "prod/nat-recovery",
+          "nat-recovery/nat-prod",
+          "protected-config/prod/nat-functions",
+          "protected-publication/recovery/prod/nat-functions"
+        ]
+      },
+      "recovery/prod/nat-events": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP4_OPERATIONAL_ACTIVATION",
+        "depends_on": [
+          "prod/nat-recovery",
+          "nat-recovery/nat-prod",
+          "protected-config/prod/nat-events",
+          "protected-publication/recovery/prod/nat-events"
+        ]
+      },
+      "recovery/prod/nat-launch": {
+        "writer": "SECURITY_ROOT_OWNED",
+        "phase": "WP4_OPERATIONAL_ACTIVATION",
+        "depends_on": [
+          "prod/nat",
+          "nat-recovery/nat-prod",
+          "protected-config/prod/nat-launch",
+          "protected-publication/recovery/prod/nat-launch"
+        ]
+      }
+    },
+    "legacy": "CURRENT_TRANSITIONAL_EXCLUSION",
+    "publication": "ADMIN_PUBLISHED_ARN_ID_RECORD",
+    "live": "UNVERIFIED",
+    "state_migration": "NOT_PERFORMED",
+    "record_schema": "E1_PROTECTED_OUTPUT_V1",
+    "installed_schema": "E1_INSTALLED_REFERENCE_V1",
+    "installation_activates_compute": false,
+    "legacy_automation": "EXCLUDED_NOT_COPIED_WP6_WP7",
+    "backend": "EXTERNAL_ADMIN_PRECONDITION",
+    "publications": {
+      "341936017254/us-east-1": {
+        "account": "341936017254",
+        "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+        "publisher": "SECURITY_ADMIN_EXTERNAL_BOOTSTRAP",
+        "records": {
+          "dev/blue-exec": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "role",
+            "declaration": "module.protected_resources/dev/blue-exec",
+            "logical_id": "dev/blue-exec",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": "arn:aws:iam::341936017254:role/demo-dev-app-api-blue-exec-role"
+          },
+          "dev/blue-task": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "role",
+            "declaration": "module.protected_resources/dev/blue-task",
+            "logical_id": "dev/blue-task",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": "arn:aws:iam::341936017254:role/demo-dev-app-api-blue-task-role"
+          },
+          "dev/cleanup": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "role",
+            "declaration": "module.protected_resources/dev/cleanup",
+            "logical_id": "dev/cleanup",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": "arn:aws:iam::341936017254:role/demo-dev-scale-down-old-color-role"
+          },
+          "dev/connection": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "secret",
+            "declaration": "module.protected_resources/dev/connection",
+            "logical_id": "dev/connection",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": "arn:aws:secretsmanager:us-east-1:341936017254:secret:demo/dev/app/db-connection-string-72ytze"
+          },
+          "dev/db-user": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "secret",
+            "declaration": "module.protected_resources/dev/db-user",
+            "logical_id": "dev/db-user",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": "arn:aws:secretsmanager:us-east-1:341936017254:secret:demo/dev/db/sql-app-password-2Shh56"
+          },
+          "dev/flow": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "role",
+            "declaration": "module.protected_resources/dev/flow",
+            "logical_id": "dev/flow",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": "arn:aws:iam::341936017254:role/demo-dev-vpc-flow-logs-role"
+          },
+          "dev/green-exec": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "role",
+            "declaration": "module.protected_resources/dev/green-exec",
+            "logical_id": "dev/green-exec",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": "arn:aws:iam::341936017254:role/demo-dev-app-api-green-exec-role"
+          },
+          "dev/green-task": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "role",
+            "declaration": "module.protected_resources/dev/green-task",
+            "logical_id": "dev/green-task",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": "arn:aws:iam::341936017254:role/demo-dev-app-api-green-task-role"
+          },
+          "dev/kms": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "key",
+            "declaration": "module.protected_resources/dev/kms",
+            "logical_id": "dev/kms",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": "arn:aws:kms:us-east-1:341936017254:key/50d3fe36-8128-4d09-ac13-8f5536a230a7"
+          },
+          "dev/nat": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "role",
+            "declaration": "module.protected_resources/dev/nat",
+            "logical_id": "dev/nat",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": "arn:aws:iam::341936017254:role/demo-dev-nat-role"
+          },
+          "dev/nat-profile": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "profile",
+            "declaration": "module.protected_resources/dev/nat-profile",
+            "logical_id": "dev/nat-profile",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": "arn:aws:iam::341936017254:instance-profile/demo-dev-nat-instance-profile"
+          },
+          "dev/nat-recovery": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "role",
+            "declaration": "module.protected_resources/dev/nat-recovery",
+            "logical_id": "dev/nat-recovery",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": "arn:aws:iam::341936017254:role/demo-dev-lambda-nat-role"
+          },
+          "dev/repository": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "repository",
+            "declaration": "module.protected_resources/dev/repository",
+            "logical_id": "dev/repository",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": "arn:aws:ecr:us-east-1:341936017254:repository/demo-dev-shared-demo-ms"
+          },
+          "dev/sa": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "secret",
+            "declaration": "module.protected_resources/dev/sa",
+            "logical_id": "dev/sa",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": "arn:aws:secretsmanager:us-east-1:341936017254:secret:demo/dev/db/sql-sa-password-30fCjc"
+          },
+          "dev/sql": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "role",
+            "declaration": "module.protected_resources/dev/sql",
+            "logical_id": "dev/sql",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": "arn:aws:iam::341936017254:role/demo-dev-data-sql-ec2-role"
+          },
+          "dev/sql-profile": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "profile",
+            "declaration": "module.protected_resources/dev/sql-profile",
+            "logical_id": "dev/sql-profile",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": "arn:aws:iam::341936017254:instance-profile/demo-dev-data-sql-ec2-profile"
+          },
+          "recovery/dev/cleanup": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": false,
+            "class": "recovery",
+            "declaration": "reservation/recovery/dev/cleanup",
+            "logical_id": "recovery/dev/cleanup",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": null
+          },
+          "recovery/dev/nat-events": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": false,
+            "class": "recovery",
+            "declaration": "reservation/recovery/dev/nat-events",
+            "logical_id": "recovery/dev/nat-events",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": null
+          },
+          "recovery/dev/nat-functions": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": false,
+            "class": "recovery",
+            "declaration": "reservation/recovery/dev/nat-functions",
+            "logical_id": "recovery/dev/nat-functions",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": null
+          },
+          "recovery/dev/nat-launch": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": false,
+            "class": "recovery",
+            "declaration": "reservation/recovery/dev/nat-launch",
+            "logical_id": "recovery/dev/nat-launch",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": null
+          }
+        },
+        "region": "us-east-1",
+        "schema": "E1_DEV_OUTPUT_PUBLICATION_V1"
+      }
+    },
+    "recovery_source_identities": {
+      "terraform/infra/apps/fargate/lambda/scale_down_old_color.py": "e3cdf48ad7056068475704cf8ec7a528c571e3944d2e41ada529bddc33ab656e",
+      "terraform/infra/global/modules/nat/lambda/assign_eip.py": "ea0a2b5f8bee20d348bb805333822f27dfc47f320767e5886f3ead40167a41bd",
+      "terraform/infra/global/modules/nat/lambda/change_rt.py": "bb239c6e800f60bc07f6c7681654c435cc7e1081e083f3fc3c4c110adb3cbeab",
+      "terraform/infra/global/modules/nat/lambda/disable_sdc.py": "ab8864f9ca81e39a02aa070a708154c5d283c37815bde73628bbbc821d333a98",
+      "terraform/infra/global/modules/nat/launch_template.tf": "091c4fc897e200981f08769109036d4e84a2661be628d5f02608e1b786472691"
+    },
+    "recovery_source_use": "CURRENT_IDENTIFICATION_ONLY_NOT_APPROVED_EXECUTABLE",
+    "extraction_inventory": {
+      "shared": {
+        "security": [
+          "IAM/OIDC",
+          "KMS key/alias",
+          "ECR/repository lifecycle",
+          "release bucket/controls/lifecycle"
+        ],
+        "ordinary": [
+          "SNS alerts"
+        ],
+        "legacy_automation": "CURRENT_TRANSITIONAL_EXCLUSION"
+      },
+      "data": {
+        "security": [
+          "SQL role/trust/inline policy/managed attachment/profile"
+        ],
+        "ordinary": [
+          "SQL EC2/storage/alarms"
+        ]
+      },
+      "apps": {
+        "security": [
+          "color task/execution roles/trust/attachments",
+          "DB secret/KMS policies",
+          "cleanup role/policy",
+          "disabled cleanup code/config/invocation"
+        ],
+        "ordinary": [
+          "ECS service/logs/alarms",
+          "zero-count skeleton; WP5 execution"
+        ]
+      },
+      "global": {
+        "security": [
+          "flow-log IAM",
+          "NAT role/profile",
+          "inert NAT recovery role/policy",
+          "disabled NAT code/config/events/invocation/launch/user-data"
+        ],
+        "ordinary": [
+          "VPC/subnets/SG",
+          "NAT ASGs/EIPs",
+          "ALB/TGs",
+          "flow log/log group"
+        ]
+      },
+      "secrets": {
+        "security": [
+          "secret metadata/KMS linkage"
+        ],
+        "ordinary": []
+      },
+      "security": {
+        "security": [
+          "WP2A requests",
+          "WP2B storage",
+          "WP2C compute/roles",
+          "WP2D declarations/publication"
+        ],
+        "ordinary": []
+      },
+      "external": {
+        "security": [
+          "admin authentication",
+          "security backend/lock"
+        ],
+        "ordinary": []
+      }
+    }
+  },
+  "internal_release": {
+    "schema": "E1_WP3C_SPLIT_PLANE_V1",
+    "owner": "SECURITY_ROOT_OWNED",
+    "selected": {
+      "request-gateway/release": {
+        "name": "e1-gateway-release",
+        "engine": "LAMBDA",
+        "bundle_digest": "c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b"
+      },
+      "build/release": {
+        "name": "e1-controller-release",
+        "engine": "CODEBUILD",
+        "bundle_digest": "ef9ce1edd5331ea6dccebfa4ea9783c40650fd6b075e87c2ce0f3c6553701ec4"
+      },
+      "qualification-finalizer/qualification": {
+        "name": "e1-qualification-finalizer",
+        "engine": "LAMBDA",
+        "bundle_digest": "0e34a5cd928e91694083a46aba1291b1526b7c1c47faaed4fe51a4ea60eb8fae"
+      },
+      "status/status-neutral": {
+        "name": "e1-status-neutral",
+        "engine": "LAMBDA",
+        "bundle_digest": "e2df102912bf4c302c8a7e1cb3951b97c1219a1c7e26234b05dfe4eb02890684"
+      }
+    },
+    "workers": {
+      "dotnet": {
+        "name": "e1-controller-release-payload-dotnet",
+        "owner": "build/release",
+        "role": "e1-controller-release-payload-exec",
+        "privileged": false,
+        "source": "NO_SOURCE",
+        "buildspec": {
+          "version": "0.2",
+          "phases": {
+            "install": {
+              "on-failure": "ABORT",
+              "commands": [
+                "python3 /opt/e1/scripts/internal_release/worker.py source"
+              ]
+            },
+            "pre_build": {
+              "on-failure": "ABORT",
+              "commands": [
+                "dotnet restore ./demo-api/terragrunt-demo.sln"
+              ]
+            },
+            "build": {
+              "on-failure": "ABORT",
+              "commands": [
+                "dotnet build ./demo-api/terragrunt-demo.sln --configuration Release --no-restore"
+              ]
+            },
+            "post_build": {
+              "on-failure": "ABORT",
+              "commands": [
+                "dotnet test ./demo-api/terragrunt-demo.sln --configuration Release --no-build --verbosity normal"
+              ]
+            }
+          }
+        }
+      },
+      "image": {
+        "name": "e1-controller-release-payload-image",
+        "owner": "build/release",
+        "role": "e1-controller-release-payload-exec",
+        "privileged": true,
+        "source": "NO_SOURCE",
+        "buildspec": {
+          "version": "0.2",
+          "phases": {
+            "install": {
+              "on-failure": "ABORT",
+              "commands": [
+                "python3 /opt/e1/scripts/internal_release/worker.py source",
+                "mkdir -p /etc/docker; printf '%s' '{\"features\":{\"containerd-snapshotter\":true}}' > /etc/docker/daemon.json",
+                "nohup dockerd --host=unix:///var/run/docker.sock >/tmp/e1-dockerd.log 2>&1 &",
+                "i=0; until docker info >/dev/null 2>&1; do i=$((i+1)); test \"$i\" -lt 30 || exit 1; sleep 1; done"
+              ]
+            },
+            "build": {
+              "on-failure": "ABORT",
+              "commands": [
+                "docker buildx build --provenance=false --sbom=false --platform linux/amd64 --output type=oci,dest=/tmp/e1-image.tar -f demo-api/Dockerfile demo-api",
+                "python3 /opt/e1/scripts/internal_release/worker.py output"
+              ]
+            }
+          }
+        }
+      },
+      "probe": {
+        "name": "e1-controller-release-payload-probe",
+        "owner": "build/release",
+        "role": "e1-controller-release-payload-exec",
+        "privileged": false,
+        "source": "NO_SOURCE",
+        "buildspec": {
+          "version": "0.2",
+          "phases": {
+            "pre_build": {
+              "on-failure": "ABORT",
+              "commands": [
+                "out=$(dotnet /app/terragrunt-demo.dll readiness-probe --check-capability) && test \"$out\" = readiness-probe-capability=available"
+              ]
+            },
+            "build": {
+              "on-failure": "ABORT",
+              "commands": [
+                "rc=0; READINESS_PROBE_TIMEOUT_SECONDS=1 READINESS_PROBE_REQUEST_TIMEOUT_SECONDS=1 READINESS_PROBE_INTERVAL_SECONDS=1 dotnet /app/terragrunt-demo.dll readiness-probe || rc=$?; test \"$rc\" -eq 1"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "support_sha256": "2083e148541eceb18d82d481377c80267e0cf13921c321817acca72353f358e0",
+    "installations": {},
+    "runtime_approvals": {},
+    "live": "UNVERIFIED_NOT_DEPLOYED",
+    "external_invocation": [],
+    "controller_skeleton_identities": 18,
+    "subordinate_worker_identities": 1,
+    "reserved_lambda_bindings": [
+      "qualification-finalizer/qualification",
+      "status/status-neutral"
+    ]
+  },
+  "wp4d": {
+    "schema": "E1_WP4D_MATERIALIZATION_V1",
+    "owner": "SECURITY_ROOT_OWNED",
+    "selected": {
+      "request-gateway/deploy-dev": {
+        "name": "e1-gateway-deploy-dev",
+        "role": "e1-gateway-deploy-dev-exec",
+        "engine": "LAMBDA",
+        "environment": "dev",
+        "reservation": "request-gateway/deploy-dev",
+        "package_sha256": "e411857643985b525273c203ee00cf657a11421b71157ee3b70b8ed1e9775351",
+        "dependencies": [
+          "normal-delivery/deploy-dev",
+          "cleanup-recovery/cleanup-dev"
+        ]
+      },
+      "request-gateway/promote-prod": {
+        "name": "e1-gateway-promote-prod",
+        "role": "e1-gateway-promote-prod-exec",
+        "engine": "LAMBDA",
+        "environment": "prod",
+        "reservation": "request-gateway/promote-prod",
+        "package_sha256": "8b8e257111d4a1eb11faf658412b805752da6340cd5862d357f8b813cd5185a0",
+        "dependencies": [
+          "normal-delivery/promote-prod",
+          "cleanup-recovery/cleanup-prod"
+        ]
+      },
+      "request-gateway/emergency-dev": {
+        "name": "e1-gateway-emergency-dev",
+        "role": "e1-gateway-emergency-dev-exec",
+        "engine": "LAMBDA",
+        "environment": "dev",
+        "reservation": "request-gateway/emergency-dev",
+        "package_sha256": "da57a0730f9c5be78d718cdad65ad63c871438dd6373f2ff34676ca41df74e0c",
+        "dependencies": [
+          "emergency-recovery/emergency-dev",
+          "cleanup-recovery/cleanup-dev"
+        ]
+      },
+      "request-gateway/emergency-prod": {
+        "name": "e1-gateway-emergency-prod",
+        "role": "e1-gateway-emergency-prod-exec",
+        "engine": "LAMBDA",
+        "environment": "prod",
+        "reservation": "request-gateway/emergency-prod",
+        "package_sha256": "2248ae9fbb8f1e7296a5154f42d53fb547c896dcebdebe24b543da7b31f0d8c0",
+        "dependencies": [
+          "emergency-recovery/emergency-prod",
+          "cleanup-recovery/cleanup-prod"
+        ]
+      },
+      "normal-delivery/deploy-dev": {
+        "name": "e1-controller-deploy-dev",
+        "role": "e1-controller-deploy-dev-exec",
+        "engine": "CODEBUILD",
+        "environment": "dev",
+        "reservation": "normal-delivery/deploy-dev",
+        "package_sha256": "c187295ad39af14808af6536da724cfd77d6d466323d63dc7aabcbb7d3247881",
+        "dependencies": [
+          "request-gateway/deploy-dev",
+          "cleanup-recovery/cleanup-dev"
+        ]
+      },
+      "normal-delivery/promote-prod": {
+        "name": "e1-controller-promote-prod",
+        "role": "e1-controller-promote-prod-exec",
+        "engine": "CODEBUILD",
+        "environment": "prod",
+        "reservation": "normal-delivery/promote-prod",
+        "package_sha256": "2b931a96591f5e2516b0817e80b9ce447e65b7163bcdb438a2824d3b66037a73",
+        "dependencies": [
+          "request-gateway/promote-prod",
+          "cleanup-recovery/cleanup-prod"
+        ]
+      },
+      "emergency-recovery/emergency-dev": {
+        "name": "e1-controller-emergency-dev",
+        "role": "e1-controller-emergency-dev-exec",
+        "engine": "CODEBUILD",
+        "environment": "dev",
+        "reservation": "emergency-recovery/emergency-dev",
+        "package_sha256": "614ac54e21ce8c9d779ed50b285af2d9ac8c120739f56f3cbd48e90a52493a40",
+        "dependencies": [
+          "request-gateway/emergency-dev",
+          "cleanup-recovery/cleanup-dev"
+        ]
+      },
+      "emergency-recovery/emergency-prod": {
+        "name": "e1-controller-emergency-prod",
+        "role": "e1-controller-emergency-prod-exec",
+        "engine": "CODEBUILD",
+        "environment": "prod",
+        "reservation": "emergency-recovery/emergency-prod",
+        "package_sha256": "a8dea31a58107b592261ecc87e98874edc1a5ae325b47453752efbaa2622bff4",
+        "dependencies": [
+          "request-gateway/emergency-prod",
+          "cleanup-recovery/cleanup-prod"
+        ]
+      },
+      "cleanup-recovery/cleanup-dev": {
+        "name": "e1-cleanup-recovery-cleanup-dev",
+        "role": "e1-cleanup-recovery-cleanup-dev-exec",
+        "engine": "LAMBDA",
+        "environment": "dev",
+        "reservation": "cleanup-recovery/cleanup-dev",
+        "package_sha256": "75302c7e8c2fb3e445158390b5c06efa5d721e9e284149e4c836de1233fe06c2",
+        "dependencies": []
+      },
+      "cleanup-recovery/cleanup-prod": {
+        "name": "e1-cleanup-recovery-cleanup-prod",
+        "role": "e1-cleanup-recovery-cleanup-prod-exec",
+        "engine": "LAMBDA",
+        "environment": "prod",
+        "reservation": "cleanup-recovery/cleanup-prod",
+        "package_sha256": "60318a96ac3ae200b371705fcd21aa1cd4c4d380598460333a50a7c481f7d2fd",
+        "dependencies": []
+      },
+      "nat-recovery/nat-dev/assign_eip": {
+        "name": "e1-nat-recovery-nat-dev-assign-eip",
+        "role": "e1-nat-recovery-nat-dev-assign-eip-exec",
+        "engine": "LAMBDA",
+        "environment": "dev",
+        "reservation": "nat-recovery/nat-dev",
+        "package_sha256": "c2dd08cf539325d94a38a8eca4ae1e24b78aed5f05132dbf09f0623f170da6ed",
+        "dependencies": []
+      },
+      "nat-recovery/nat-dev/change_rt": {
+        "name": "e1-nat-recovery-nat-dev-change-rt",
+        "role": "e1-nat-recovery-nat-dev-change-rt-exec",
+        "engine": "LAMBDA",
+        "environment": "dev",
+        "reservation": "nat-recovery/nat-dev",
+        "package_sha256": "62ab9a0b359b3c734e23e9f028fdec47e5dcd849ef2b29220e7cdb62517eb80f",
+        "dependencies": []
+      },
+      "nat-recovery/nat-dev/disable_sdc": {
+        "name": "e1-nat-recovery-nat-dev-disable-sdc",
+        "role": "e1-nat-recovery-nat-dev-disable-sdc-exec",
+        "engine": "LAMBDA",
+        "environment": "dev",
+        "reservation": "nat-recovery/nat-dev",
+        "package_sha256": "afdd388a7d1f175d3fb7c638c6ab97b3610f1907e6f049e1eba79713833ff79f",
+        "dependencies": []
+      },
+      "nat-recovery/nat-prod/assign_eip": {
+        "name": "e1-nat-recovery-nat-prod-assign-eip",
+        "role": "e1-nat-recovery-nat-prod-assign-eip-exec",
+        "engine": "LAMBDA",
+        "environment": "prod",
+        "reservation": "nat-recovery/nat-prod",
+        "package_sha256": "f7ddee0d6268254eac4d4c01e59a67c5a86ab549fd9b1dbb63a28ffca41dc254",
+        "dependencies": []
+      },
+      "nat-recovery/nat-prod/change_rt": {
+        "name": "e1-nat-recovery-nat-prod-change-rt",
+        "role": "e1-nat-recovery-nat-prod-change-rt-exec",
+        "engine": "LAMBDA",
+        "environment": "prod",
+        "reservation": "nat-recovery/nat-prod",
+        "package_sha256": "db655e0d02e80123183b911281f46ea61525b4b2c7e3b22f3e353e3c511cca37",
+        "dependencies": []
+      },
+      "nat-recovery/nat-prod/disable_sdc": {
+        "name": "e1-nat-recovery-nat-prod-disable-sdc",
+        "role": "e1-nat-recovery-nat-prod-disable-sdc-exec",
+        "engine": "LAMBDA",
+        "environment": "prod",
+        "reservation": "nat-recovery/nat-prod",
+        "package_sha256": "8240d275f6fb1fc3d3ac2de059c572de97115206f7ec460cd521cab3d3ad4c7a",
+        "dependencies": []
+      }
+    },
+    "installations": {},
+    "runtime_approvals": {},
+    "environment_bindings": {},
+    "external_invocation": [],
+    "live": "UNVERIFIED_NOT_DEPLOYED"
+  },
+  "wp5": {
+    "schema": "E1_WP5_LIFECYCLE_V1",
+    "owner": "SECURITY_ROOT_OWNED",
+    "selected": {
+      "request-gateway/infra-dev": {
+        "name": "e1-gateway-infra-dev",
+        "role": "e1-gateway-infra-dev-exec",
+        "environment": "dev",
+        "engine": "LAMBDA",
+        "required_inputs": {
+          "shared": [
+            "account_id",
+            "protected_inputs",
+            "region"
+          ],
+          "secrets": [
+            "account_id",
+            "protected_inputs",
+            "region"
+          ],
+          "global": [
+            "account_id",
+            "alerts_topic_arn",
+            "protected_inputs",
+            "region"
+          ],
+          "data": [
+            "account_id",
+            "alerts_topic_arn",
+            "db_instance_sg_id",
+            "private_subnet_ids",
+            "protected_inputs",
+            "protected_sql_ami",
+            "region"
+          ],
+          "platform": [
+            "account_id",
+            "region"
+          ],
+          "apps": [
+            "account_id",
+            "alb_listener_arn",
+            "alerts_topic_arn",
+            "cluster_arn",
+            "cluster_name",
+            "demo_blue_tg_arn",
+            "demo_green_tg_arn",
+            "demo_sg_id",
+            "private_subnet_ids",
+            "protected_inputs",
+            "region"
+          ],
+          "edge": [
+            "account_id",
+            "alb_listener_arn",
+            "private_subnet_ids",
+            "region",
+            "vpc_link_sg_id"
+          ]
+        },
+        "package_sha256": "d2a10b738c7c833d0d897e914c1637dc53baf39de94aabe756f60999fbbd3d17"
+      },
+      "environment-lifecycle/infra-dev": {
+        "name": "e1-controller-infra-dev",
+        "role": "e1-controller-infra-dev-exec",
+        "environment": "dev",
+        "engine": "CODEBUILD",
+        "required_inputs": {
+          "shared": [
+            "account_id",
+            "protected_inputs",
+            "region"
+          ],
+          "secrets": [
+            "account_id",
+            "protected_inputs",
+            "region"
+          ],
+          "global": [
+            "account_id",
+            "alerts_topic_arn",
+            "protected_inputs",
+            "region"
+          ],
+          "data": [
+            "account_id",
+            "alerts_topic_arn",
+            "db_instance_sg_id",
+            "private_subnet_ids",
+            "protected_inputs",
+            "protected_sql_ami",
+            "region"
+          ],
+          "platform": [
+            "account_id",
+            "region"
+          ],
+          "apps": [
+            "account_id",
+            "alb_listener_arn",
+            "alerts_topic_arn",
+            "cluster_arn",
+            "cluster_name",
+            "demo_blue_tg_arn",
+            "demo_green_tg_arn",
+            "demo_sg_id",
+            "private_subnet_ids",
+            "protected_inputs",
+            "region"
+          ],
+          "edge": [
+            "account_id",
+            "alb_listener_arn",
+            "private_subnet_ids",
+            "region",
+            "vpc_link_sg_id"
+          ]
+        },
+        "package_sha256": "b4026c9c9b61aafa79fde80433b033e4c5e73ced4f9f75baa8f303b7f2b2b1d8"
+      },
+      "request-gateway/infra-prod": {
+        "name": "e1-gateway-infra-prod",
+        "role": "e1-gateway-infra-prod-exec",
+        "environment": "prod",
+        "engine": "LAMBDA",
+        "required_inputs": {
+          "shared": [
+            "account_id",
+            "alert_email",
+            "protected_inputs",
+            "region"
+          ],
+          "secrets": [
+            "account_id",
+            "protected_inputs",
+            "region"
+          ],
+          "global": [
+            "account_id",
+            "alerts_topic_arn",
+            "protected_inputs",
+            "region"
+          ],
+          "data": [
+            "account_id",
+            "alerts_topic_arn",
+            "db_instance_sg_id",
+            "private_subnet_ids",
+            "protected_inputs",
+            "protected_sql_ami",
+            "region"
+          ],
+          "platform": [
+            "account_id",
+            "region"
+          ],
+          "apps": [
+            "account_id",
+            "alb_listener_arn",
+            "alerts_topic_arn",
+            "cluster_arn",
+            "cluster_name",
+            "demo_blue_tg_arn",
+            "demo_green_tg_arn",
+            "demo_sg_id",
+            "private_subnet_ids",
+            "protected_inputs",
+            "region"
+          ],
+          "edge": [
+            "account_id",
+            "alb_listener_arn",
+            "private_subnet_ids",
+            "region",
+            "vpc_link_sg_id"
+          ]
+        },
+        "package_sha256": "1e2db8cb3f6a9d9f7569eb050919e678f986d46e01a5e0fb3e91b8d1138c5add"
+      },
+      "environment-lifecycle/infra-prod": {
+        "name": "e1-controller-infra-prod",
+        "role": "e1-controller-infra-prod-exec",
+        "environment": "prod",
+        "engine": "CODEBUILD",
+        "required_inputs": {
+          "shared": [
+            "account_id",
+            "alert_email",
+            "protected_inputs",
+            "region"
+          ],
+          "secrets": [
+            "account_id",
+            "protected_inputs",
+            "region"
+          ],
+          "global": [
+            "account_id",
+            "alerts_topic_arn",
+            "protected_inputs",
+            "region"
+          ],
+          "data": [
+            "account_id",
+            "alerts_topic_arn",
+            "db_instance_sg_id",
+            "private_subnet_ids",
+            "protected_inputs",
+            "protected_sql_ami",
+            "region"
+          ],
+          "platform": [
+            "account_id",
+            "region"
+          ],
+          "apps": [
+            "account_id",
+            "alb_listener_arn",
+            "alerts_topic_arn",
+            "cluster_arn",
+            "cluster_name",
+            "demo_blue_tg_arn",
+            "demo_green_tg_arn",
+            "demo_sg_id",
+            "private_subnet_ids",
+            "protected_inputs",
+            "region"
+          ],
+          "edge": [
+            "account_id",
+            "alb_listener_arn",
+            "private_subnet_ids",
+            "region",
+            "vpc_link_sg_id"
+          ]
+        },
+        "package_sha256": "0098c1b175c119a1fa945532c66ba4bf251e4dbadd3c71671e7fcec916989d70"
+      },
+      "request-gateway/infra-high-risk-dev": {
+        "name": "e1-gateway-infra-high-risk-dev",
+        "role": "e1-gateway-infra-high-risk-dev-exec",
+        "environment": "dev",
+        "engine": "LAMBDA",
+        "required_inputs": {
+          "shared": [
+            "account_id",
+            "protected_inputs",
+            "region"
+          ],
+          "secrets": [
+            "account_id",
+            "protected_inputs",
+            "region"
+          ],
+          "global": [
+            "account_id",
+            "alerts_topic_arn",
+            "protected_inputs",
+            "region"
+          ],
+          "data": [
+            "account_id",
+            "alerts_topic_arn",
+            "db_instance_sg_id",
+            "private_subnet_ids",
+            "protected_inputs",
+            "protected_sql_ami",
+            "region"
+          ],
+          "platform": [
+            "account_id",
+            "region"
+          ],
+          "apps": [
+            "account_id",
+            "alb_listener_arn",
+            "alerts_topic_arn",
+            "cluster_arn",
+            "cluster_name",
+            "demo_blue_tg_arn",
+            "demo_green_tg_arn",
+            "demo_sg_id",
+            "private_subnet_ids",
+            "protected_inputs",
+            "region"
+          ],
+          "edge": [
+            "account_id",
+            "alb_listener_arn",
+            "private_subnet_ids",
+            "region",
+            "vpc_link_sg_id"
+          ]
+        },
+        "package_sha256": "3da2ee562f7870caad6caa6e4ec1c3fe0d4e0a3a00f33b3f16922481f6ad03d7"
+      },
+      "environment-lifecycle/infra-high-risk-dev": {
+        "name": "e1-controller-infra-high-risk-dev",
+        "role": "e1-controller-infra-high-risk-dev-exec",
+        "environment": "dev",
+        "engine": "CODEBUILD",
+        "required_inputs": {
+          "shared": [
+            "account_id",
+            "protected_inputs",
+            "region"
+          ],
+          "secrets": [
+            "account_id",
+            "protected_inputs",
+            "region"
+          ],
+          "global": [
+            "account_id",
+            "alerts_topic_arn",
+            "protected_inputs",
+            "region"
+          ],
+          "data": [
+            "account_id",
+            "alerts_topic_arn",
+            "db_instance_sg_id",
+            "private_subnet_ids",
+            "protected_inputs",
+            "protected_sql_ami",
+            "region"
+          ],
+          "platform": [
+            "account_id",
+            "region"
+          ],
+          "apps": [
+            "account_id",
+            "alb_listener_arn",
+            "alerts_topic_arn",
+            "cluster_arn",
+            "cluster_name",
+            "demo_blue_tg_arn",
+            "demo_green_tg_arn",
+            "demo_sg_id",
+            "private_subnet_ids",
+            "protected_inputs",
+            "region"
+          ],
+          "edge": [
+            "account_id",
+            "alb_listener_arn",
+            "private_subnet_ids",
+            "region",
+            "vpc_link_sg_id"
+          ]
+        },
+        "package_sha256": "ec269fa1b915bb64c06483a3361c59909a6ec39df01da930e0e625a788015581"
+      },
+      "request-gateway/infra-high-risk-prod": {
+        "name": "e1-gateway-infra-high-risk-prod",
+        "role": "e1-gateway-infra-high-risk-prod-exec",
+        "environment": "prod",
+        "engine": "LAMBDA",
+        "required_inputs": {
+          "shared": [
+            "account_id",
+            "alert_email",
+            "protected_inputs",
+            "region"
+          ],
+          "secrets": [
+            "account_id",
+            "protected_inputs",
+            "region"
+          ],
+          "global": [
+            "account_id",
+            "alerts_topic_arn",
+            "protected_inputs",
+            "region"
+          ],
+          "data": [
+            "account_id",
+            "alerts_topic_arn",
+            "db_instance_sg_id",
+            "private_subnet_ids",
+            "protected_inputs",
+            "protected_sql_ami",
+            "region"
+          ],
+          "platform": [
+            "account_id",
+            "region"
+          ],
+          "apps": [
+            "account_id",
+            "alb_listener_arn",
+            "alerts_topic_arn",
+            "cluster_arn",
+            "cluster_name",
+            "demo_blue_tg_arn",
+            "demo_green_tg_arn",
+            "demo_sg_id",
+            "private_subnet_ids",
+            "protected_inputs",
+            "region"
+          ],
+          "edge": [
+            "account_id",
+            "alb_listener_arn",
+            "private_subnet_ids",
+            "region",
+            "vpc_link_sg_id"
+          ]
+        },
+        "package_sha256": "d01548ad0610147a3cc6a459d2044f6063f89dd7cdd7e79082e80ce1d1526ce5"
+      },
+      "environment-lifecycle/infra-high-risk-prod": {
+        "name": "e1-controller-infra-high-risk-prod",
+        "role": "e1-controller-infra-high-risk-prod-exec",
+        "environment": "prod",
+        "engine": "CODEBUILD",
+        "required_inputs": {
+          "shared": [
+            "account_id",
+            "alert_email",
+            "protected_inputs",
+            "region"
+          ],
+          "secrets": [
+            "account_id",
+            "protected_inputs",
+            "region"
+          ],
+          "global": [
+            "account_id",
+            "alerts_topic_arn",
+            "protected_inputs",
+            "region"
+          ],
+          "data": [
+            "account_id",
+            "alerts_topic_arn",
+            "db_instance_sg_id",
+            "private_subnet_ids",
+            "protected_inputs",
+            "protected_sql_ami",
+            "region"
+          ],
+          "platform": [
+            "account_id",
+            "region"
+          ],
+          "apps": [
+            "account_id",
+            "alb_listener_arn",
+            "alerts_topic_arn",
+            "cluster_arn",
+            "cluster_name",
+            "demo_blue_tg_arn",
+            "demo_green_tg_arn",
+            "demo_sg_id",
+            "private_subnet_ids",
+            "protected_inputs",
+            "region"
+          ],
+          "edge": [
+            "account_id",
+            "alb_listener_arn",
+            "private_subnet_ids",
+            "region",
+            "vpc_link_sg_id"
+          ]
+        },
+        "package_sha256": "5dca9e8bec5a971c27a418316656d40e673cd2d37729671b5cac0c10a5d0d1fc"
+      }
+    },
+    "installations": {},
+    "runtime_approvals": {},
+    "environment_bindings": {},
+    "active_contracts": {},
+    "nat_launch_inputs": {},
+    "external_invocation": [],
+    "live": "UNVERIFIED_NOT_DEPLOYED"
+  },
+  "wp6": {
+    "schema": "E1_WP6_PROTECTED_REQUESTS_V1",
+    "owner": "SECURITY_ROOT_OWNED",
+    "repository": "Kendall04/terragrunt_demo",
+    "audience": "sts.amazonaws.com",
+    "selected": {
+      "plan-dev": {
+        "name": "e1-request-plan-dev",
+        "environment": "dev",
+        "context": "e1-plan-dev",
+        "workflow": "Kendall04/terragrunt_demo/.github/workflows/e1-plan-dev.yml",
+        "ref": "refs/heads/develop",
+        "kind": "PLAN_READ_ONLY",
+        "gateway": null,
+        "human_approval": false
+      },
+      "plan-prod": {
+        "name": "e1-request-plan-prod",
+        "environment": "prod",
+        "context": "e1-plan-prod",
+        "workflow": "Kendall04/terragrunt_demo/.github/workflows/e1-plan-prod.yml",
+        "ref": "refs/heads/main",
+        "kind": "PLAN_READ_ONLY",
+        "gateway": null,
+        "human_approval": false
+      },
+      "infra-dev": {
+        "name": "e1-request-infra-dev",
+        "environment": "dev",
+        "context": "e1-infra-dev",
+        "workflow": "Kendall04/terragrunt_demo/.github/workflows/e1-infra-dev.yml",
+        "ref": "refs/heads/develop",
+        "kind": "GATEWAY_REQUEST",
+        "gateway": "e1-gateway-infra-dev",
+        "human_approval": false
+      },
+      "infra-prod": {
+        "name": "e1-request-infra-prod",
+        "environment": "prod",
+        "context": "e1-infra-prod",
+        "workflow": "Kendall04/terragrunt_demo/.github/workflows/e1-infra-prod.yml",
+        "ref": "refs/heads/main",
+        "kind": "GATEWAY_REQUEST",
+        "gateway": "e1-gateway-infra-prod",
+        "human_approval": false
+      },
+      "infra-high-risk-dev": {
+        "name": "e1-request-infra-high-risk-dev",
+        "environment": "dev",
+        "context": "e1-infra-high-risk-dev",
+        "workflow": "Kendall04/terragrunt_demo/.github/workflows/e1-infra-high-risk-dev.yml",
+        "ref": "refs/heads/develop",
+        "kind": "GATEWAY_REQUEST",
+        "gateway": "e1-gateway-infra-high-risk-dev",
+        "human_approval": true
+      },
+      "infra-high-risk-prod": {
+        "name": "e1-request-infra-high-risk-prod",
+        "environment": "prod",
+        "context": "e1-infra-high-risk-prod",
+        "workflow": "Kendall04/terragrunt_demo/.github/workflows/e1-infra-high-risk-prod.yml",
+        "ref": "refs/heads/main",
+        "kind": "GATEWAY_REQUEST",
+        "gateway": "e1-gateway-infra-high-risk-prod",
+        "human_approval": true
+      },
+      "release": {
+        "name": "e1-request-release",
+        "environment": "neutral",
+        "context": "e1-release",
+        "workflow": "Kendall04/terragrunt_demo/.github/workflows/e1-release.yml",
+        "ref": "refs/heads/codex/final-github-actions-cicd",
+        "kind": "GATEWAY_REQUEST",
+        "gateway": "e1-gateway-release",
+        "human_approval": false
+      },
+      "deploy-dev": {
+        "name": "e1-request-deploy-dev",
+        "environment": "dev",
+        "context": "e1-dev-deploy",
+        "workflow": "Kendall04/terragrunt_demo/.github/workflows/e1-dev-deploy.yml",
+        "ref": "refs/heads/codex/final-github-actions-cicd",
+        "kind": "GATEWAY_REQUEST",
+        "gateway": "e1-gateway-deploy-dev",
+        "human_approval": false
+      },
+      "promote-prod": {
+        "name": "e1-request-promote-prod",
+        "environment": "prod",
+        "context": "e1-prod-promote",
+        "workflow": "Kendall04/terragrunt_demo/.github/workflows/e1-prod-promote.yml",
+        "ref": "refs/heads/main",
+        "kind": "GATEWAY_REQUEST",
+        "gateway": "e1-gateway-promote-prod",
+        "human_approval": true
+      },
+      "emergency-dev": {
+        "name": "e1-request-emergency-dev",
+        "environment": "dev",
+        "context": "e1-dev-emergency",
+        "workflow": "Kendall04/terragrunt_demo/.github/workflows/e1-dev-emergency.yml",
+        "ref": "refs/heads/develop",
+        "kind": "GATEWAY_REQUEST",
+        "gateway": "e1-gateway-emergency-dev",
+        "human_approval": true
+      },
+      "emergency-prod": {
+        "name": "e1-request-emergency-prod",
+        "environment": "prod",
+        "context": "e1-prod-emergency",
+        "workflow": "Kendall04/terragrunt_demo/.github/workflows/e1-prod-emergency.yml",
+        "ref": "refs/heads/main",
+        "kind": "GATEWAY_REQUEST",
+        "gateway": "e1-gateway-emergency-prod",
+        "human_approval": true
+      }
+    },
+    "source_sha256": {
+      "ci/authority/governance.json": "97d1ba5258e937627e6c048360be76a582c6e49fc95124a8e355e9ec5ec940e0",
+      "scripts/workflow_requests/contract.py": "c1f41c8cc1fadc8b820c4c127e776937a30ba27f70ef16de1112b23c6d9d806e",
+      "scripts/workflow_requests/client.py": "898414be092fbbf99c472869cdf33c4642f71d3d7fa4dd48ec60148d12c5e3da",
+      "scripts/workflow_requests/render.py": "3d6b776094c98d818474ca50a48969d01cc7554a34fadc8bc2c4026511932859",
+      ".github/workflows/cd-scope.yml": "eb77443dcd775afaadba8a8adb68c58db55b96ddc3955ea5acd3c1ae5f96d5dd",
+      "scripts/lifecycle/contract.py": "a15c4083aaa8f2eb72580075cb324c59ae90cea79c50909e618f4d808b3ab582",
+      "scripts/wp4d/gateway.py": "aed8a94814a08127142e60cd589e4c6621a94c070d5ac133e2270a77cbaea5f6",
+      "scripts/normal_delivery/delivery.py": "1a4ab9b9e29f5c1a6343bc2702824ce2f9a9956d0d801c86e393c338016fd7ea",
+      "scripts/normal_delivery/authorization.py": "d7aee75e1b139c6e401103dd12ffbd3ca5fda777131c942abdced8674f63a3a6",
+      ".github/workflows/e1-plan-dev.yml": "f129eea900b574cd2ff0ee7bd4f46a9f23922097a7f1c83790b43f6849f33dcf",
+      ".github/workflows/e1-plan-prod.yml": "3cf7b5ad619ae5b43becc719a00d15587cffe7081f48aceba044bf0b1b8fe18a",
+      ".github/workflows/e1-infra-dev.yml": "2088086cba8c1d9a5aa74b0509dccf675d0c507c3dc91d2cd63fd68364cbe227",
+      ".github/workflows/e1-infra-prod.yml": "cfe6b1f6a02e80ee1aa706d41ff23da646316846e23b259b57b1dc43e4a572e9",
+      ".github/workflows/e1-infra-high-risk-dev.yml": "b4c28c746e3070110076948da146266f7d64d80a7338e23ed6df0784ebde837d",
+      ".github/workflows/e1-infra-high-risk-prod.yml": "bbd044b6eb1232d9b3bbe34f0e7d3fbcec7f2a582165bc6bb6104d4b7360119b",
+      ".github/workflows/e1-release.yml": "e11b079eb937662d2f5603fb573dd14e924f25c0f3c763566ccae90072d6dc2b",
+      ".github/workflows/e1-dev-deploy.yml": "d8049cc260380bd1be0d2b914580c615eece8c0bc80e227f6adab7b6119b65f6",
+      ".github/workflows/e1-prod-promote.yml": "e1d020e1a71c1d320b6b13e6b91610843cfaffc84227464593a4c335b9c14b0c",
+      ".github/workflows/e1-dev-emergency.yml": "a6b497e7f21795dfe665a44807ef77dd4854775e5f24d204d1b874385a66d88e",
+      ".github/workflows/e1-prod-emergency.yml": "5314136503db6c93119f14c05a33534df646e0284b6a2c6809837b99ab266823"
+    },
+    "approvals": {},
+    "live": "UNVERIFIED_NOT_DEPLOYED",
+    "legacy_retirement": "WP7"
+  }
+}

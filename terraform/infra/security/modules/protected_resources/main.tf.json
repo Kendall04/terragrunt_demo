@@ -1,0 +1,1284 @@
+{
+  "terraform": {
+    "required_providers": {
+      "aws": {
+        "source": "hashicorp/aws",
+        "version": "~> 5.50"
+      }
+    }
+  },
+  "variable": {
+    "account_id": {
+      "type": "string"
+    },
+    "region": {
+      "type": "string"
+    }
+  },
+  "resource": {
+    "aws_iam_role": {
+      "dev_sql": {
+        "name": "demo-dev-data-sql-ec2-role",
+        "assume_role_policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Principal\": {\"Service\": \"ec2.amazonaws.com\"}, \"Action\": \"sts:AssumeRole\"}]}",
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      },
+      "dev_flow": {
+        "name": "demo-dev-vpc-flow-logs-role",
+        "assume_role_policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Principal\": {\"Service\": \"vpc-flow-logs.amazonaws.com\"}, \"Action\": \"sts:AssumeRole\"}]}",
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      },
+      "dev_nat": {
+        "name": "demo-dev-nat-role",
+        "assume_role_policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Principal\": {\"Service\": \"ec2.amazonaws.com\"}, \"Action\": \"sts:AssumeRole\"}]}",
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      },
+      "dev_nat_recovery": {
+        "name": "demo-dev-lambda-nat-role",
+        "assume_role_policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Deny\", \"Principal\": {\"Service\": \"lambda.amazonaws.com\"}, \"Action\": \"sts:AssumeRole\"}]}",
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      },
+      "dev_cleanup": {
+        "name": "demo-dev-scale-down-old-color-role",
+        "assume_role_policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Deny\", \"Principal\": {\"Service\": \"lambda.amazonaws.com\"}, \"Action\": \"sts:AssumeRole\"}]}",
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      },
+      "dev_blue_task": {
+        "name": "demo-dev-app-api-blue-task-role",
+        "assume_role_policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Principal\": {\"Service\": \"ecs-tasks.amazonaws.com\"}, \"Action\": \"sts:AssumeRole\"}]}",
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      },
+      "dev_blue_exec": {
+        "name": "demo-dev-app-api-blue-exec-role",
+        "assume_role_policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Principal\": {\"Service\": \"ecs-tasks.amazonaws.com\"}, \"Action\": \"sts:AssumeRole\"}]}",
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      },
+      "dev_green_task": {
+        "name": "demo-dev-app-api-green-task-role",
+        "assume_role_policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Principal\": {\"Service\": \"ecs-tasks.amazonaws.com\"}, \"Action\": \"sts:AssumeRole\"}]}",
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      },
+      "dev_green_exec": {
+        "name": "demo-dev-app-api-green-exec-role",
+        "assume_role_policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Principal\": {\"Service\": \"ecs-tasks.amazonaws.com\"}, \"Action\": \"sts:AssumeRole\"}]}",
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      },
+      "prod_sql": {
+        "name": "demo-prod-data-sql-ec2-role",
+        "assume_role_policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Principal\": {\"Service\": \"ec2.amazonaws.com\"}, \"Action\": \"sts:AssumeRole\"}]}",
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      },
+      "prod_flow": {
+        "name": "demo-prod-vpc-flow-logs-role",
+        "assume_role_policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Principal\": {\"Service\": \"vpc-flow-logs.amazonaws.com\"}, \"Action\": \"sts:AssumeRole\"}]}",
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      },
+      "prod_nat": {
+        "name": "demo-prod-nat-role",
+        "assume_role_policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Principal\": {\"Service\": \"ec2.amazonaws.com\"}, \"Action\": \"sts:AssumeRole\"}]}",
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      },
+      "prod_nat_recovery": {
+        "name": "demo-prod-lambda-nat-role",
+        "assume_role_policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Deny\", \"Principal\": {\"Service\": \"lambda.amazonaws.com\"}, \"Action\": \"sts:AssumeRole\"}]}",
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      },
+      "prod_cleanup": {
+        "name": "demo-prod-scale-down-old-color-role",
+        "assume_role_policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Deny\", \"Principal\": {\"Service\": \"lambda.amazonaws.com\"}, \"Action\": \"sts:AssumeRole\"}]}",
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      },
+      "prod_blue_task": {
+        "name": "demo-prod-app-api-blue-task-role",
+        "assume_role_policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Principal\": {\"Service\": \"ecs-tasks.amazonaws.com\"}, \"Action\": \"sts:AssumeRole\"}]}",
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      },
+      "prod_blue_exec": {
+        "name": "demo-prod-app-api-blue-exec-role",
+        "assume_role_policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Principal\": {\"Service\": \"ecs-tasks.amazonaws.com\"}, \"Action\": \"sts:AssumeRole\"}]}",
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      },
+      "prod_green_task": {
+        "name": "demo-prod-app-api-green-task-role",
+        "assume_role_policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Principal\": {\"Service\": \"ecs-tasks.amazonaws.com\"}, \"Action\": \"sts:AssumeRole\"}]}",
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      },
+      "prod_green_exec": {
+        "name": "demo-prod-app-api-green-exec-role",
+        "assume_role_policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Principal\": {\"Service\": \"ecs-tasks.amazonaws.com\"}, \"Action\": \"sts:AssumeRole\"}]}",
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      }
+    },
+    "aws_iam_role_policy_attachment": {
+      "dev_sql": {
+        "role": "${aws_iam_role.dev_sql.name}",
+        "policy_arn": "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+      },
+      "dev_blue_exec": {
+        "role": "${aws_iam_role.dev_blue_exec.name}",
+        "policy_arn": "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+      },
+      "dev_green_exec": {
+        "role": "${aws_iam_role.dev_green_exec.name}",
+        "policy_arn": "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+      },
+      "prod_sql": {
+        "role": "${aws_iam_role.prod_sql.name}",
+        "policy_arn": "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+      },
+      "prod_blue_exec": {
+        "role": "${aws_iam_role.prod_blue_exec.name}",
+        "policy_arn": "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+      },
+      "prod_green_exec": {
+        "role": "${aws_iam_role.prod_green_exec.name}",
+        "policy_arn": "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+      }
+    },
+    "aws_iam_role_policy": {
+      "dev_sql": {
+        "name": "wp2d-dev_sql",
+        "role": "${aws_iam_role.dev_sql.id}",
+        "policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Action\": [\"secretsmanager:GetSecretValue\"], \"Resource\": [\"${aws_secretsmanager_secret.dev_sa.arn}\", \"${aws_secretsmanager_secret.dev_db_user.arn}\"]}, {\"Effect\": \"Allow\", \"Action\": [\"kms:Decrypt\"], \"Resource\": \"${aws_kms_key.dev_kms.arn}\"}]}"
+      },
+      "dev_flow": {
+        "name": "wp2d-dev_flow",
+        "role": "${aws_iam_role.dev_flow.id}",
+        "policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Action\": [\"logs:CreateLogGroup\", \"logs:CreateLogStream\", \"logs:PutLogEvents\", \"logs:DescribeLogGroups\", \"logs:DescribeLogStreams\"], \"Resource\": \"arn:aws:logs:${var.region}:${var.account_id}:log-group:/aws/vpc/demo-dev-flow-logs\"}]}"
+      },
+      "dev_nat": {
+        "name": "wp2d-dev_nat",
+        "role": "${aws_iam_role.dev_nat.id}",
+        "policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Action\": [\"ec2:DescribeInstances\", \"ec2:DescribeRouteTables\", \"ec2:DescribeNetworkInterfaces\"], \"Resource\": \"*\"}]}"
+      },
+      "dev_nat_recovery": {
+        "name": "wp2d-dev_nat_recovery",
+        "role": "${aws_iam_role.dev_nat_recovery.id}",
+        "policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Deny\", \"Action\": \"*\", \"Resource\": \"*\"}]}"
+      },
+      "dev_cleanup": {
+        "name": "wp2d-dev_cleanup",
+        "role": "${aws_iam_role.dev_cleanup.id}",
+        "policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Deny\", \"Action\": \"*\", \"Resource\": \"*\"}]}"
+      },
+      "dev_blue_task": {
+        "name": "wp2d-dev_blue_task",
+        "role": "${aws_iam_role.dev_blue_task.id}",
+        "policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Action\": [\"kms:Encrypt\", \"kms:Decrypt\"], \"Resource\": \"${aws_kms_key.dev_kms.arn}\"}]}"
+      },
+      "dev_blue_exec": {
+        "name": "wp2d-dev_blue_exec",
+        "role": "${aws_iam_role.dev_blue_exec.id}",
+        "policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Action\": [\"secretsmanager:GetSecretValue\", \"secretsmanager:DescribeSecret\"], \"Resource\": [\"${aws_secretsmanager_secret.dev_connection.arn}\"]}, {\"Effect\": \"Allow\", \"Action\": [\"kms:Decrypt\"], \"Resource\": \"${aws_kms_key.dev_kms.arn}\"}]}"
+      },
+      "dev_green_task": {
+        "name": "wp2d-dev_green_task",
+        "role": "${aws_iam_role.dev_green_task.id}",
+        "policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Action\": [\"kms:Encrypt\", \"kms:Decrypt\"], \"Resource\": \"${aws_kms_key.dev_kms.arn}\"}]}"
+      },
+      "dev_green_exec": {
+        "name": "wp2d-dev_green_exec",
+        "role": "${aws_iam_role.dev_green_exec.id}",
+        "policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Action\": [\"secretsmanager:GetSecretValue\", \"secretsmanager:DescribeSecret\"], \"Resource\": [\"${aws_secretsmanager_secret.dev_connection.arn}\"]}, {\"Effect\": \"Allow\", \"Action\": [\"kms:Decrypt\"], \"Resource\": \"${aws_kms_key.dev_kms.arn}\"}]}"
+      },
+      "prod_sql": {
+        "name": "wp2d-prod_sql",
+        "role": "${aws_iam_role.prod_sql.id}",
+        "policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Action\": [\"secretsmanager:GetSecretValue\"], \"Resource\": [\"${aws_secretsmanager_secret.prod_sa.arn}\", \"${aws_secretsmanager_secret.prod_db_user.arn}\"]}, {\"Effect\": \"Allow\", \"Action\": [\"kms:Decrypt\"], \"Resource\": \"${aws_kms_key.prod_kms.arn}\"}]}"
+      },
+      "prod_flow": {
+        "name": "wp2d-prod_flow",
+        "role": "${aws_iam_role.prod_flow.id}",
+        "policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Action\": [\"logs:CreateLogGroup\", \"logs:CreateLogStream\", \"logs:PutLogEvents\", \"logs:DescribeLogGroups\", \"logs:DescribeLogStreams\"], \"Resource\": \"arn:aws:logs:${var.region}:${var.account_id}:log-group:/aws/vpc/demo-prod-flow-logs\"}]}"
+      },
+      "prod_nat": {
+        "name": "wp2d-prod_nat",
+        "role": "${aws_iam_role.prod_nat.id}",
+        "policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Action\": [\"ec2:DescribeInstances\", \"ec2:DescribeRouteTables\", \"ec2:DescribeNetworkInterfaces\"], \"Resource\": \"*\"}]}"
+      },
+      "prod_nat_recovery": {
+        "name": "wp2d-prod_nat_recovery",
+        "role": "${aws_iam_role.prod_nat_recovery.id}",
+        "policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Deny\", \"Action\": \"*\", \"Resource\": \"*\"}]}"
+      },
+      "prod_cleanup": {
+        "name": "wp2d-prod_cleanup",
+        "role": "${aws_iam_role.prod_cleanup.id}",
+        "policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Deny\", \"Action\": \"*\", \"Resource\": \"*\"}]}"
+      },
+      "prod_blue_task": {
+        "name": "wp2d-prod_blue_task",
+        "role": "${aws_iam_role.prod_blue_task.id}",
+        "policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Action\": [\"kms:Encrypt\", \"kms:Decrypt\"], \"Resource\": \"${aws_kms_key.prod_kms.arn}\"}]}"
+      },
+      "prod_blue_exec": {
+        "name": "wp2d-prod_blue_exec",
+        "role": "${aws_iam_role.prod_blue_exec.id}",
+        "policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Action\": [\"secretsmanager:GetSecretValue\", \"secretsmanager:DescribeSecret\"], \"Resource\": [\"${aws_secretsmanager_secret.prod_connection.arn}\"]}, {\"Effect\": \"Allow\", \"Action\": [\"kms:Decrypt\"], \"Resource\": \"${aws_kms_key.prod_kms.arn}\"}]}"
+      },
+      "prod_green_task": {
+        "name": "wp2d-prod_green_task",
+        "role": "${aws_iam_role.prod_green_task.id}",
+        "policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Action\": [\"kms:Encrypt\", \"kms:Decrypt\"], \"Resource\": \"${aws_kms_key.prod_kms.arn}\"}]}"
+      },
+      "prod_green_exec": {
+        "name": "wp2d-prod_green_exec",
+        "role": "${aws_iam_role.prod_green_exec.id}",
+        "policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Action\": [\"secretsmanager:GetSecretValue\", \"secretsmanager:DescribeSecret\"], \"Resource\": [\"${aws_secretsmanager_secret.prod_connection.arn}\"]}, {\"Effect\": \"Allow\", \"Action\": [\"kms:Decrypt\"], \"Resource\": \"${aws_kms_key.prod_kms.arn}\"}]}"
+      }
+    },
+    "aws_iam_instance_profile": {
+      "dev_sql_profile": {
+        "name": "demo-dev-data-sql-ec2-profile",
+        "role": "${aws_iam_role.dev_sql.name}",
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      },
+      "dev_nat_profile": {
+        "name": "demo-dev-nat-instance-profile",
+        "role": "${aws_iam_role.dev_nat.name}",
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      },
+      "prod_sql_profile": {
+        "name": "demo-prod-data-sql-ec2-profile",
+        "role": "${aws_iam_role.prod_sql.name}",
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      },
+      "prod_nat_profile": {
+        "name": "demo-prod-nat-instance-profile",
+        "role": "${aws_iam_role.prod_nat.name}",
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      }
+    },
+    "aws_kms_key": {
+      "dev_kms": {
+        "description": "KMS for the encryption microservice",
+        "key_usage": "ENCRYPT_DECRYPT",
+        "is_enabled": true,
+        "enable_key_rotation": true,
+        "deletion_window_in_days": 30,
+        "multi_region": false,
+        "policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Sid\": \"EnableIAMUserPermissions\", \"Effect\": \"Allow\", \"Principal\": {\"AWS\": \"arn:aws:iam::${var.account_id}:root\"}, \"Action\": \"kms:*\", \"Resource\": \"*\"}]}",
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      },
+      "prod_kms": {
+        "description": "KMS for the encryption microservice",
+        "key_usage": "ENCRYPT_DECRYPT",
+        "is_enabled": true,
+        "enable_key_rotation": true,
+        "deletion_window_in_days": 30,
+        "multi_region": false,
+        "policy": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Sid\": \"EnableIAMUserPermissions\", \"Effect\": \"Allow\", \"Principal\": {\"AWS\": \"arn:aws:iam::${var.account_id}:root\"}, \"Action\": \"kms:*\", \"Resource\": \"*\"}]}",
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      }
+    },
+    "aws_kms_alias": {
+      "dev_kms": {
+        "name": "alias/dev-kms-service",
+        "target_key_id": "${aws_kms_key.dev_kms.key_id}"
+      },
+      "prod_kms": {
+        "name": "alias/prod-kms-service",
+        "target_key_id": "${aws_kms_key.prod_kms.key_id}"
+      }
+    },
+    "aws_secretsmanager_secret": {
+      "dev_sa": {
+        "name": "demo/dev/db/sql-sa-password",
+        "kms_key_id": "${aws_kms_key.dev_kms.arn}",
+        "recovery_window_in_days": 0,
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      },
+      "dev_db_user": {
+        "name": "demo/dev/db/sql-app-password",
+        "kms_key_id": "${aws_kms_key.dev_kms.arn}",
+        "recovery_window_in_days": 0,
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      },
+      "dev_connection": {
+        "name": "demo/dev/app/db-connection-string",
+        "kms_key_id": "${aws_kms_key.dev_kms.arn}",
+        "recovery_window_in_days": 0,
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      },
+      "prod_sa": {
+        "name": "demo/prod/db/sql-sa-password",
+        "kms_key_id": "${aws_kms_key.prod_kms.arn}",
+        "recovery_window_in_days": 0,
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      },
+      "prod_db_user": {
+        "name": "demo/prod/db/sql-app-password",
+        "kms_key_id": "${aws_kms_key.prod_kms.arn}",
+        "recovery_window_in_days": 0,
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      },
+      "prod_connection": {
+        "name": "demo/prod/app/db-connection-string",
+        "kms_key_id": "${aws_kms_key.prod_kms.arn}",
+        "recovery_window_in_days": 0,
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      }
+    },
+    "aws_ecr_repository": {
+      "dev_repository": {
+        "name": "demo-dev-shared-demo-ms",
+        "image_tag_mutability": "IMMUTABLE",
+        "image_scanning_configuration": {
+          "scan_on_push": true
+        },
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      },
+      "prod_repository": {
+        "name": "demo-prod-shared-demo-ms",
+        "image_tag_mutability": "IMMUTABLE",
+        "image_scanning_configuration": {
+          "scan_on_push": true
+        },
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      },
+      "neutral_repository": {
+        "name": "demo-shared-demo-ms",
+        "image_tag_mutability": "IMMUTABLE",
+        "image_scanning_configuration": {
+          "scan_on_push": true
+        },
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      }
+    },
+    "aws_s3_bucket": {
+      "neutral_artifacts": {
+        "bucket": "demo-release-artifacts-${var.account_id}",
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      }
+    },
+    "aws_s3_bucket_public_access_block": {
+      "neutral_artifacts": {
+        "bucket": "${aws_s3_bucket.neutral_artifacts.id}",
+        "block_public_acls": true,
+        "block_public_policy": true,
+        "ignore_public_acls": true,
+        "restrict_public_buckets": true
+      }
+    },
+    "aws_s3_bucket_versioning": {
+      "neutral_artifacts": {
+        "bucket": "${aws_s3_bucket.neutral_artifacts.id}",
+        "versioning_configuration": {
+          "status": "Enabled"
+        }
+      }
+    },
+    "aws_s3_bucket_ownership_controls": {
+      "neutral_artifacts": {
+        "bucket": "${aws_s3_bucket.neutral_artifacts.id}",
+        "rule": {
+          "object_ownership": "BucketOwnerEnforced"
+        }
+      }
+    },
+    "aws_s3_bucket_server_side_encryption_configuration": {
+      "neutral_artifacts": {
+        "bucket": "${aws_s3_bucket.neutral_artifacts.id}",
+        "rule": {
+          "apply_server_side_encryption_by_default": {
+            "sse_algorithm": "AES256"
+          }
+        }
+      }
+    },
+    "aws_s3_bucket_lifecycle_configuration": {
+      "neutral_artifacts": {
+        "bucket": "${aws_s3_bucket.neutral_artifacts.id}",
+        "rule": {
+          "id": "retain-release-history",
+          "status": "Enabled",
+          "filter": {
+            "prefix": ""
+          },
+          "abort_incomplete_multipart_upload": {
+            "days_after_initiation": 7
+          }
+        }
+      }
+    },
+    "aws_iam_openid_connect_provider": {
+      "neutral_oidc": {
+        "url": "https://token.actions.githubusercontent.com",
+        "client_id_list": [
+          "sts.amazonaws.com"
+        ],
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
+        }
+      }
+    }
+  },
+  "output": {
+    "protected_output_candidates": {
+      "value": {
+        "dev/sql": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "role",
+          "logical_id": "dev/sql",
+          "declaration": "module.protected_resources/dev/sql",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.dev_sql.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/flow": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "role",
+          "logical_id": "dev/flow",
+          "declaration": "module.protected_resources/dev/flow",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.dev_flow.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/nat": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "role",
+          "logical_id": "dev/nat",
+          "declaration": "module.protected_resources/dev/nat",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.dev_nat.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/nat-recovery": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "role",
+          "logical_id": "dev/nat-recovery",
+          "declaration": "module.protected_resources/dev/nat-recovery",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.dev_nat_recovery.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/cleanup": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "role",
+          "logical_id": "dev/cleanup",
+          "declaration": "module.protected_resources/dev/cleanup",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.dev_cleanup.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/blue-task": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "role",
+          "logical_id": "dev/blue-task",
+          "declaration": "module.protected_resources/dev/blue-task",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.dev_blue_task.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/blue-exec": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "role",
+          "logical_id": "dev/blue-exec",
+          "declaration": "module.protected_resources/dev/blue-exec",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.dev_blue_exec.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/green-task": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "role",
+          "logical_id": "dev/green-task",
+          "declaration": "module.protected_resources/dev/green-task",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.dev_green_task.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/green-exec": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "role",
+          "logical_id": "dev/green-exec",
+          "declaration": "module.protected_resources/dev/green-exec",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.dev_green_exec.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/sql-profile": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "profile",
+          "logical_id": "dev/sql-profile",
+          "declaration": "module.protected_resources/dev/sql-profile",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_instance_profile.dev_sql_profile.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/nat-profile": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "profile",
+          "logical_id": "dev/nat-profile",
+          "declaration": "module.protected_resources/dev/nat-profile",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_instance_profile.dev_nat_profile.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/kms": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "key",
+          "logical_id": "dev/kms",
+          "declaration": "module.protected_resources/dev/kms",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_kms_key.dev_kms.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/sa": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "secret",
+          "logical_id": "dev/sa",
+          "declaration": "module.protected_resources/dev/sa",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_secretsmanager_secret.dev_sa.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/db-user": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "secret",
+          "logical_id": "dev/db-user",
+          "declaration": "module.protected_resources/dev/db-user",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_secretsmanager_secret.dev_db_user.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/connection": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "secret",
+          "logical_id": "dev/connection",
+          "declaration": "module.protected_resources/dev/connection",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_secretsmanager_secret.dev_connection.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/repository": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "repository",
+          "logical_id": "dev/repository",
+          "declaration": "module.protected_resources/dev/repository",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_ecr_repository.dev_repository.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "prod/sql": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "prod",
+          "class": "role",
+          "logical_id": "prod/sql",
+          "declaration": "module.protected_resources/prod/sql",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.prod_sql.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "prod/flow": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "prod",
+          "class": "role",
+          "logical_id": "prod/flow",
+          "declaration": "module.protected_resources/prod/flow",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.prod_flow.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "prod/nat": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "prod",
+          "class": "role",
+          "logical_id": "prod/nat",
+          "declaration": "module.protected_resources/prod/nat",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.prod_nat.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "prod/nat-recovery": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "prod",
+          "class": "role",
+          "logical_id": "prod/nat-recovery",
+          "declaration": "module.protected_resources/prod/nat-recovery",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.prod_nat_recovery.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "prod/cleanup": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "prod",
+          "class": "role",
+          "logical_id": "prod/cleanup",
+          "declaration": "module.protected_resources/prod/cleanup",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.prod_cleanup.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "prod/blue-task": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "prod",
+          "class": "role",
+          "logical_id": "prod/blue-task",
+          "declaration": "module.protected_resources/prod/blue-task",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.prod_blue_task.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "prod/blue-exec": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "prod",
+          "class": "role",
+          "logical_id": "prod/blue-exec",
+          "declaration": "module.protected_resources/prod/blue-exec",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.prod_blue_exec.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "prod/green-task": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "prod",
+          "class": "role",
+          "logical_id": "prod/green-task",
+          "declaration": "module.protected_resources/prod/green-task",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.prod_green_task.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "prod/green-exec": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "prod",
+          "class": "role",
+          "logical_id": "prod/green-exec",
+          "declaration": "module.protected_resources/prod/green-exec",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.prod_green_exec.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "prod/sql-profile": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "prod",
+          "class": "profile",
+          "logical_id": "prod/sql-profile",
+          "declaration": "module.protected_resources/prod/sql-profile",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_instance_profile.prod_sql_profile.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "prod/nat-profile": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "prod",
+          "class": "profile",
+          "logical_id": "prod/nat-profile",
+          "declaration": "module.protected_resources/prod/nat-profile",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_instance_profile.prod_nat_profile.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "prod/kms": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "prod",
+          "class": "key",
+          "logical_id": "prod/kms",
+          "declaration": "module.protected_resources/prod/kms",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_kms_key.prod_kms.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "prod/sa": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "prod",
+          "class": "secret",
+          "logical_id": "prod/sa",
+          "declaration": "module.protected_resources/prod/sa",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_secretsmanager_secret.prod_sa.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "prod/db-user": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "prod",
+          "class": "secret",
+          "logical_id": "prod/db-user",
+          "declaration": "module.protected_resources/prod/db-user",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_secretsmanager_secret.prod_db_user.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "prod/connection": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "prod",
+          "class": "secret",
+          "logical_id": "prod/connection",
+          "declaration": "module.protected_resources/prod/connection",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_secretsmanager_secret.prod_connection.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "prod/repository": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "prod",
+          "class": "repository",
+          "logical_id": "prod/repository",
+          "declaration": "module.protected_resources/prod/repository",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_ecr_repository.prod_repository.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "neutral/repository": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "neutral",
+          "class": "repository",
+          "logical_id": "neutral/repository",
+          "declaration": "module.protected_resources/neutral/repository",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_ecr_repository.neutral_repository.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "neutral/artifacts": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "neutral",
+          "class": "bucket",
+          "logical_id": "neutral/artifacts",
+          "declaration": "module.protected_resources/neutral/artifacts",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_s3_bucket.neutral_artifacts.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "neutral/oidc": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "neutral",
+          "class": "oidc",
+          "logical_id": "neutral/oidc",
+          "declaration": "module.protected_resources/neutral/oidc",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_openid_connect_provider.neutral_oidc.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "recovery/dev/cleanup": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "recovery",
+          "logical_id": "recovery/dev/cleanup",
+          "declaration": "reservation/recovery/dev/cleanup",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": false,
+          "value": null,
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "recovery/dev/nat-functions": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "recovery",
+          "logical_id": "recovery/dev/nat-functions",
+          "declaration": "reservation/recovery/dev/nat-functions",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": false,
+          "value": null,
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "recovery/dev/nat-events": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "recovery",
+          "logical_id": "recovery/dev/nat-events",
+          "declaration": "reservation/recovery/dev/nat-events",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": false,
+          "value": null,
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "recovery/dev/nat-launch": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "recovery",
+          "logical_id": "recovery/dev/nat-launch",
+          "declaration": "reservation/recovery/dev/nat-launch",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": false,
+          "value": null,
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "recovery/prod/cleanup": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "prod",
+          "class": "recovery",
+          "logical_id": "recovery/prod/cleanup",
+          "declaration": "reservation/recovery/prod/cleanup",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": false,
+          "value": null,
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "recovery/prod/nat-functions": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "prod",
+          "class": "recovery",
+          "logical_id": "recovery/prod/nat-functions",
+          "declaration": "reservation/recovery/prod/nat-functions",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": false,
+          "value": null,
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "recovery/prod/nat-events": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "prod",
+          "class": "recovery",
+          "logical_id": "recovery/prod/nat-events",
+          "declaration": "reservation/recovery/prod/nat-events",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": false,
+          "value": null,
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "recovery/prod/nat-launch": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "prod",
+          "class": "recovery",
+          "logical_id": "recovery/prod/nat-launch",
+          "declaration": "reservation/recovery/prod/nat-launch",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": false,
+          "value": null,
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        }
+      }
+    },
+    "protected_dev_output_candidates": {
+      "value": {
+        "dev/sql": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "role",
+          "logical_id": "dev/sql",
+          "declaration": "module.protected_resources/dev/sql",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.dev_sql.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/flow": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "role",
+          "logical_id": "dev/flow",
+          "declaration": "module.protected_resources/dev/flow",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.dev_flow.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/nat": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "role",
+          "logical_id": "dev/nat",
+          "declaration": "module.protected_resources/dev/nat",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.dev_nat.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/nat-recovery": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "role",
+          "logical_id": "dev/nat-recovery",
+          "declaration": "module.protected_resources/dev/nat-recovery",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.dev_nat_recovery.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/cleanup": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "role",
+          "logical_id": "dev/cleanup",
+          "declaration": "module.protected_resources/dev/cleanup",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.dev_cleanup.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/blue-task": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "role",
+          "logical_id": "dev/blue-task",
+          "declaration": "module.protected_resources/dev/blue-task",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.dev_blue_task.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/blue-exec": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "role",
+          "logical_id": "dev/blue-exec",
+          "declaration": "module.protected_resources/dev/blue-exec",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.dev_blue_exec.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/green-task": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "role",
+          "logical_id": "dev/green-task",
+          "declaration": "module.protected_resources/dev/green-task",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.dev_green_task.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/green-exec": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "role",
+          "logical_id": "dev/green-exec",
+          "declaration": "module.protected_resources/dev/green-exec",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_role.dev_green_exec.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/sql-profile": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "profile",
+          "logical_id": "dev/sql-profile",
+          "declaration": "module.protected_resources/dev/sql-profile",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_instance_profile.dev_sql_profile.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/nat-profile": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "profile",
+          "logical_id": "dev/nat-profile",
+          "declaration": "module.protected_resources/dev/nat-profile",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_iam_instance_profile.dev_nat_profile.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/kms": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "key",
+          "logical_id": "dev/kms",
+          "declaration": "module.protected_resources/dev/kms",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_kms_key.dev_kms.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/sa": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "secret",
+          "logical_id": "dev/sa",
+          "declaration": "module.protected_resources/dev/sa",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_secretsmanager_secret.dev_sa.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/db-user": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "secret",
+          "logical_id": "dev/db-user",
+          "declaration": "module.protected_resources/dev/db-user",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_secretsmanager_secret.dev_db_user.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/connection": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "secret",
+          "logical_id": "dev/connection",
+          "declaration": "module.protected_resources/dev/connection",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_secretsmanager_secret.dev_connection.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "dev/repository": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "repository",
+          "logical_id": "dev/repository",
+          "declaration": "module.protected_resources/dev/repository",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": true,
+          "value": "${aws_ecr_repository.dev_repository.arn}",
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "recovery/dev/cleanup": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "recovery",
+          "logical_id": "recovery/dev/cleanup",
+          "declaration": "reservation/recovery/dev/cleanup",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": false,
+          "value": null,
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "recovery/dev/nat-functions": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "recovery",
+          "logical_id": "recovery/dev/nat-functions",
+          "declaration": "reservation/recovery/dev/nat-functions",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": false,
+          "value": null,
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "recovery/dev/nat-events": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "recovery",
+          "logical_id": "recovery/dev/nat-events",
+          "declaration": "reservation/recovery/dev/nat-events",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": false,
+          "value": null,
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        },
+        "recovery/dev/nat-launch": {
+          "schema": "E1_PROTECTED_OUTPUT_V1",
+          "owner": "SECURITY_ROOT_OWNED",
+          "scope": "dev",
+          "class": "recovery",
+          "logical_id": "recovery/dev/nat-launch",
+          "declaration": "reservation/recovery/dev/nat-launch",
+          "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+          "available": false,
+          "value": null,
+          "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
+        }
+      }
+    }
+  }
+}

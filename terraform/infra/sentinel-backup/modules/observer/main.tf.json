@@ -1,0 +1,329 @@
+{
+  "terraform": {
+    "required_version": "= 1.13.4",
+    "required_providers": {
+      "aws": {
+        "source": "hashicorp/aws",
+        "version": "= 6.27.0"
+      }
+    }
+  },
+  "variable": {
+    "config": {
+      "type": "any",
+      "nullable": false
+    },
+    "host": {
+      "type": "object({ ami_id=string, ebs_key_arn=string, availability_zone=string, bundle_path=string, bundle_manifest_path=string, bundle_sha256=string, bundle_source_commit=string, backup_bucket=string, backup_prefix=string, missing_prefix=string, backup_key_arn=string, text_key_arn=string, database=string, max_age_hours=number, cadence_seconds=number, publish_attempts=number })",
+      "nullable": false,
+      "validation": [
+        {
+          "condition": "${can(regex(\"^ami-[a-f0-9]{17}$\",var.host.ami_id)) && can(regex(\"^us-east-1[a-z]$\",var.host.availability_zone))}",
+          "error_message": "Explicit exact x86 AL2023 AMI and zone required; no latest selector."
+        },
+        {
+          "condition": "${can(regex(\"^[a-f0-9]{64}$\",var.host.bundle_sha256)) && can(regex(\"^[a-f0-9]{40}$\",var.host.bundle_source_commit)) && try(filesha256(var.host.bundle_path)==var.host.bundle_sha256 && jsondecode(file(var.host.bundle_manifest_path)).bundleSha256==var.host.bundle_sha256 && jsondecode(file(var.host.bundle_manifest_path)).sourceCommit==var.host.bundle_source_commit && jsondecode(file(var.host.bundle_manifest_path)).contract==\"ecs-observer-host-v2\",false)}",
+          "error_message": "Exact local host bundle/manifest/source must be qualified before plan."
+        },
+        {
+          "condition": "${var.host.max_age_hours>=1 && var.host.max_age_hours<=168 && floor(var.host.max_age_hours)==var.host.max_age_hours && var.host.cadence_seconds>=60 && var.host.cadence_seconds<=3600 && floor(var.host.cadence_seconds)==var.host.cadence_seconds && var.host.publish_attempts>=1 && var.host.publish_attempts<=3 && floor(var.host.publish_attempts)==var.host.publish_attempts}",
+          "error_message": "Explicit integer host observation/attempt bounds."
+        },
+        {
+          "condition": "${can(regex(\"^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$\",var.host.backup_bucket)) && can(regex(\"^[a-z0-9][a-z0-9/_-]{1,120}$\",var.host.backup_prefix)) && !strcontains(var.host.backup_prefix,\"//\") && can(regex(\"^[a-z0-9][a-z0-9/_-]{1,120}$\",var.host.missing_prefix)) && startswith(var.host.missing_prefix,\"sentinel-observer/${var.config.run_id}/\") && var.host.missing_prefix!=var.host.backup_prefix && !strcontains(var.host.missing_prefix,\"//\")}",
+          "error_message": "Exact original read prefix and distinct own empty prefix required."
+        },
+        {
+          "condition": "${can(regex(\"^arn:aws:kms:us-east-1:341936017254:key/[a-f0-9-]{36}$\",var.host.backup_key_arn)) && can(regex(\"^arn:aws:kms:us-east-1:341936017254:key/[a-f0-9-]{36}$\",var.host.text_key_arn)) && can(regex(\"^[A-Za-z][A-Za-z0-9_]{0,63}$\",var.host.database)) && !contains([\"master\",\"model\",\"msdb\",\"tempdb\"],lower(var.host.database))}",
+          "error_message": "Existing exact key metadata and user database required; no new key/SQL."
+        },
+        {
+          "condition": "${can(regex(\"^arn:aws:kms:us-east-1:341936017254:key/[a-f0-9-]{36}$\",var.host.ebs_key_arn))}",
+          "error_message": "Explicit canonical aws/ebs key ARN required; do not inherit an unknown account default."
+        }
+      ]
+    },
+    "distribution_ready_bucket": {
+      "type": "string",
+      "nullable": false
+    },
+    "distribution_key_arn": {
+      "type": "string",
+      "nullable": false,
+      "validation": {
+        "condition": "${can(regex(\"^arn:aws:kms:${var.config.region}:${var.config.account}:key/[a-f0-9-]{36}$\",var.distribution_key_arn)) && !contains([var.host.backup_key_arn,var.host.text_key_arn,var.host.ebs_key_arn],var.distribution_key_arn)}",
+        "error_message": "Exact own distribution CMK required; cannot reuse backup, text-data or EBS key."
+      }
+    }
+  },
+  "locals": {
+    "name": "${var.config.run_id}-observer",
+    "role_arn": "arn:aws:iam::${var.config.account}:role/${var.config.run_id}-observer",
+    "bucket": "${var.config.run_id}-${var.config.account}",
+    "object_key": "observer-packages/${var.host.bundle_sha256}.tar.gz",
+    "tags": {
+      "Project": "${var.config.project}",
+      "Trial": "${var.config.run_id}",
+      "ManagedBy": "terraform",
+      "Component": "backup-observer"
+    },
+    "document_arn": "arn:aws:ssm:${var.config.region}:${var.config.account}:document/${var.config.run_id}-observer-control",
+    "policy": "${jsonencode({\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"sts:GetCallerIdentity\"],\"Resource\":\"*\",\"Condition\":{\"StringEquals\":{\"aws:RequestedRegion\":\"${var.config.region}\"},\"DateLessThan\":{\"aws:CurrentTime\":\"${var.config.expires_at}\"}}},{\"Effect\":\"Allow\",\"Action\":[\"sqs:SendMessage\"],\"Resource\":\"arn:aws:sqs:${var.config.region}:${var.config.account}:${var.config.run_id}-ingestion\",\"Condition\":{\"StringEquals\":{\"aws:RequestedRegion\":\"${var.config.region}\"},\"DateLessThan\":{\"aws:CurrentTime\":\"${var.config.expires_at}\"}}},{\"Effect\":\"Allow\",\"Action\":[\"s3:GetObjectVersion\"],\"Resource\":\"arn:aws:s3:::${local.bucket}/${local.object_key}\",\"Condition\":{\"StringEquals\":{\"aws:RequestedRegion\":\"${var.config.region}\"},\"DateLessThan\":{\"aws:CurrentTime\":\"${var.config.expires_at}\"}}},{\"Effect\":\"Allow\",\"Action\":[\"s3:ListBucket\"],\"Resource\":\"arn:aws:s3:::${var.host.backup_bucket}\",\"Condition\":{\"StringEquals\":{\"aws:RequestedRegion\":\"${var.config.region}\"},\"DateLessThan\":{\"aws:CurrentTime\":\"${var.config.expires_at}\"},\"StringLike\":{\"s3:prefix\":[\"${var.host.backup_prefix}/runs/\",\"${var.host.missing_prefix}/runs/\"]}}},{\"Effect\":\"Allow\",\"Action\":[\"s3:GetObject\",\"s3:GetObjectVersion\"],\"Resource\":\"arn:aws:s3:::${var.host.backup_bucket}/${var.host.backup_prefix}/runs/*/manifest.json\",\"Condition\":{\"StringEquals\":{\"aws:RequestedRegion\":\"${var.config.region}\"},\"DateLessThan\":{\"aws:CurrentTime\":\"${var.config.expires_at}\"}}},{\"Effect\":\"Allow\",\"Action\":[\"kms:Decrypt\"],\"Resource\":\"${var.host.backup_key_arn}\",\"Condition\":{\"StringEquals\":{\"aws:RequestedRegion\":\"${var.config.region}\",\"kms:ViaService\":\"s3.us-east-1.amazonaws.com\"},\"DateLessThan\":{\"aws:CurrentTime\":\"${var.config.expires_at}\"},\"StringLike\":{\"kms:EncryptionContext:aws:s3:arn\":\"arn:aws:s3:::${var.host.backup_bucket}/${var.host.backup_prefix}/runs/*/manifest.json\"}}},{\"Effect\":\"Allow\",\"Action\":[\"ssmmessages:CreateControlChannel\",\"ssmmessages:CreateDataChannel\",\"ssmmessages:OpenControlChannel\",\"ssmmessages:OpenDataChannel\"],\"Resource\":\"*\",\"Condition\":{\"StringEquals\":{\"aws:RequestedRegion\":\"${var.config.region}\"},\"DateLessThan\":{\"aws:CurrentTime\":\"${var.config.expires_at}\"}}},{\"Effect\":\"Allow\",\"Action\":[\"ssm:GetDocument\",\"ssm:DescribeDocument\"],\"Resource\":\"${local.document_arn}\",\"Condition\":{\"StringEquals\":{\"aws:RequestedRegion\":\"${var.config.region}\"},\"DateLessThan\":{\"aws:CurrentTime\":\"${var.config.expires_at}\"}}},{\"Effect\":\"Allow\",\"Action\":[\"ssm:UpdateInstanceInformation\"],\"Resource\":\"arn:aws:ec2:${var.config.region}:${var.config.account}:instance/*\",\"Condition\":{\"StringEquals\":{\"aws:RequestedRegion\":\"${var.config.region}\",\"ssm:resourceTag/Trial\":\"${var.config.run_id}\"},\"DateLessThan\":{\"aws:CurrentTime\":\"${var.config.expires_at}\"}}},{\"Sid\":\"ReadOnlyExactEncryptedDistributionObject\",\"Effect\":\"Allow\",\"Action\":[\"kms:Decrypt\"],\"Resource\":\"${var.distribution_key_arn}\",\"Condition\":{\"StringEquals\":{\"aws:RequestedRegion\":\"${var.config.region}\",\"kms:CallerAccount\":\"${var.config.account}\",\"kms:ViaService\":\"s3.${var.config.region}.amazonaws.com\",\"kms:EncryptionContext:aws:s3:arn\":\"arn:aws:s3:::${local.bucket}/${local.object_key}\"},\"DateLessThan\":{\"aws:CurrentTime\":\"${var.config.expires_at}\"}}}]})}"
+  },
+  "data": {
+    "aws_ami": {
+      "observer": {
+        "most_recent": false,
+        "owners": [
+          "amazon"
+        ],
+        "filter": [
+          {
+            "name": "image-id",
+            "values": [
+              "${var.host.ami_id}"
+            ]
+          },
+          {
+            "name": "name",
+            "values": [
+              "al2023-ami-2023.*-kernel-*-x86_64"
+            ]
+          },
+          {
+            "name": "architecture",
+            "values": [
+              "x86_64"
+            ]
+          },
+          {
+            "name": "root-device-type",
+            "values": [
+              "ebs"
+            ]
+          },
+          {
+            "name": "virtualization-type",
+            "values": [
+              "hvm"
+            ]
+          },
+          {
+            "name": "state",
+            "values": [
+              "available"
+            ]
+          }
+        ]
+      }
+    },
+    "aws_kms_key": {
+      "ebs": {
+        "key_id": "${var.host.ebs_key_arn}"
+      }
+    }
+  },
+  "resource": {
+    "aws_vpc": {
+      "observer": {
+        "cidr_block": "10.204.0.0/24",
+        "enable_dns_support": true,
+        "enable_dns_hostnames": true,
+        "tags": "${local.tags}"
+      }
+    },
+    "aws_internet_gateway": {
+      "observer": {
+        "vpc_id": "${aws_vpc.observer.id}",
+        "tags": "${local.tags}"
+      }
+    },
+    "aws_subnet": {
+      "observer": {
+        "vpc_id": "${aws_vpc.observer.id}",
+        "cidr_block": "10.204.0.0/28",
+        "availability_zone": "${var.host.availability_zone}",
+        "map_public_ip_on_launch": false,
+        "tags": "${local.tags}"
+      }
+    },
+    "aws_route_table": {
+      "observer": {
+        "vpc_id": "${aws_vpc.observer.id}",
+        "tags": "${local.tags}"
+      }
+    },
+    "aws_route": {
+      "internet": {
+        "route_table_id": "${aws_route_table.observer.id}",
+        "destination_cidr_block": "0.0.0.0/0",
+        "gateway_id": "${aws_internet_gateway.observer.id}"
+      }
+    },
+    "aws_route_table_association": {
+      "observer": {
+        "subnet_id": "${aws_subnet.observer.id}",
+        "route_table_id": "${aws_route_table.observer.id}"
+      }
+    },
+    "aws_security_group": {
+      "observer": {
+        "name": "${local.name}",
+        "description": "No inbound, outbound HTTPS only; no public listener",
+        "vpc_id": "${aws_vpc.observer.id}",
+        "ingress": [],
+        "egress": [
+          {
+            "description": "Public AWS API and SSM HTTPS; no NAT",
+            "from_port": 443,
+            "to_port": 443,
+            "protocol": "tcp",
+            "cidr_blocks": [
+              "0.0.0.0/0"
+            ],
+            "ipv6_cidr_blocks": [],
+            "prefix_list_ids": [],
+            "security_groups": [],
+            "self": false
+          }
+        ],
+        "tags": "${local.tags}"
+      }
+    },
+    "aws_iam_policy": {
+      "observer_boundary": {
+        "name": "${local.name}-boundary",
+        "policy": "${local.policy}",
+        "tags": "${local.tags}"
+      }
+    },
+    "aws_iam_role": {
+      "observer": {
+        "name": "${local.name}",
+        "permissions_boundary": "${aws_iam_policy.observer_boundary.arn}",
+        "assume_role_policy": "${jsonencode({Version=\"2012-10-17\",Statement=[{Effect=\"Allow\",Principal={Service=\"ec2.amazonaws.com\"},Action=\"sts:AssumeRole\"}]})}",
+        "tags": "${local.tags}"
+      }
+    },
+    "aws_iam_role_policy": {
+      "observer": {
+        "name": "ObserverOnly",
+        "role": "${aws_iam_role.observer.id}",
+        "policy": "${local.policy}"
+      }
+    },
+    "aws_iam_instance_profile": {
+      "observer": {
+        "name": "${local.name}",
+        "role": "${aws_iam_role.observer.name}",
+        "tags": "${local.tags}"
+      }
+    },
+    "aws_s3_object": {
+      "host_bundle": {
+        "bucket": "${local.bucket}",
+        "key": "${local.object_key}",
+        "source": "${var.host.bundle_path}",
+        "source_hash": "${var.host.bundle_sha256}",
+        "server_side_encryption": "AES256",
+        "content_type": "application/gzip",
+        "lifecycle": {
+          "precondition": [
+            {
+              "condition": "${filesha256(var.host.bundle_path)==var.host.bundle_sha256}",
+              "error_message": "Host bundle changed."
+            },
+            {
+              "condition": "${var.distribution_ready_bucket==local.bucket}",
+              "error_message": "Distribution bucket policy/versioning/security must be ready before upload."
+            }
+          ]
+        }
+      }
+    },
+    "aws_ssm_document": {
+      "observer_control": {
+        "name": "${var.config.run_id}-observer-control",
+        "document_type": "Command",
+        "document_format": "JSON",
+        "content": "${jsonencode({schemaVersion=\"2.2\",description=\"Finite observer only, no arbitrary shell parameter\",parameters={Action={type=\"String\",allowedValues=[\"status\",\"evidence\",\"start\",\"stop\",\"once\",\"healthy\",\"missing\",\"stale\",\"fail\"],allowedPattern=\"^(status|evidence|start|stop|once|healthy|missing|stale|fail)$\"}},mainSteps=[{action=\"aws:runShellScript\",name=\"ObserverControl\",inputs={timeoutSeconds=\"90\",runCommand=[\"/usr/bin/python3 -I -B /opt/terragrunt-demo/observer/observer_host.py control --action '{{ Action }}'\"]}}]})}",
+        "tags": "${local.tags}"
+      }
+    },
+    "aws_instance": {
+      "observer": {
+        "ami": "${data.aws_ami.observer.id}",
+        "instance_type": "t3.micro",
+        "availability_zone": "${var.host.availability_zone}",
+        "subnet_id": "${aws_subnet.observer.id}",
+        "vpc_security_group_ids": [
+          "${aws_security_group.observer.id}"
+        ],
+        "associate_public_ip_address": true,
+        "iam_instance_profile": "${aws_iam_instance_profile.observer.name}",
+        "monitoring": false,
+        "credit_specification": {
+          "cpu_credits": "standard"
+        },
+        "metadata_options": {
+          "http_endpoint": "enabled",
+          "http_tokens": "required",
+          "http_put_response_hop_limit": 1,
+          "instance_metadata_tags": "disabled"
+        },
+        "root_block_device": {
+          "volume_type": "gp3",
+          "volume_size": 8,
+          "encrypted": true,
+          "delete_on_termination": true,
+          "tags": "${local.tags}",
+          "kms_key_id": "${var.host.ebs_key_arn}"
+        },
+        "user_data_replace_on_change": true,
+        "user_data": "${templatefile(\"${path.module}/bootstrap.sh.tftpl\",{binding_base64=base64encode(jsonencode({bucket=local.bucket,key=local.object_key,version=aws_s3_object.host_bundle.version_id,sha256=var.host.bundle_sha256,account=var.config.account,region=var.config.region,host={account=var.config.account,region=var.config.region,run_id=var.config.run_id,subject=var.config.subject,bucket=var.host.backup_bucket,prefix=var.host.backup_prefix,missing_prefix=var.host.missing_prefix,backup_key_arn=var.host.backup_key_arn,text_key_arn=var.host.text_key_arn,database=var.host.database,max_age_hours=var.host.max_age_hours,expires_at=var.config.expires_at,cadence_seconds=var.host.cadence_seconds,publish_attempts=var.host.publish_attempts}}))})}",
+        "tags": "${local.tags}",
+        "depends_on": [
+          "aws_iam_role_policy.observer",
+          "aws_ssm_document.observer_control",
+          "aws_route.internet",
+          "aws_route_table_association.observer"
+        ],
+        "lifecycle": {
+          "precondition": [
+            {
+              "condition": "${var.config.account==\"341936017254\" && var.config.region==\"us-east-1\" && var.config.mode==\"observer-check\" && var.config.sender_role_arn==local.role_arn}",
+              "error_message": "Existing checker supports only exact account/region/EC2 sender contract."
+            },
+            {
+              "condition": "${data.aws_kms_key.ebs.key_manager==\"AWS\" && data.aws_kms_key.ebs.arn==var.host.ebs_key_arn}",
+              "error_message": "Observer disk uses a verified AWS-managed key, not a customer key policy."
+            }
+          ]
+        }
+      }
+    }
+  },
+  "output": {
+    "instance_id": {
+      "value": "${aws_instance.observer.id}"
+    },
+    "role_arn": {
+      "value": "${aws_iam_role.observer.arn}"
+    },
+    "control_document_arn": {
+      "value": "${aws_ssm_document.observer_control.arn}"
+    },
+    "bundle_version_id": {
+      "value": "${aws_s3_object.host_bundle.version_id}"
+    },
+    "timer_state": {
+      "value": "INSTALLED_INERT_OPERATOR_START_AFTER_SNS_CONFIRMATION"
+    },
+    "ssm_wildcard_capability": {
+      "value": "SSM messaging channel APIs use regional Resource *; UpdateInstanceInformation is limited to exact Trial-tagged EC2 resources, pending native validation."
+    },
+    "runtime_policy_json": {
+      "value": "${local.policy}"
+    }
+  }
+}

@@ -1,0 +1,75 @@
+{
+  "Status": "LOCAL_PREPARATION_VALIDATED_CLOUD_NOT_EXECUTED",
+  "Baseline": "c435eac30a7157ffdc1ad804f5cd2004e6dec0a9",
+  "OfflineUnitTests": 25,
+  "ExternalIoDuringUnitTests": "Audit hook rejects sockets and subprocesses; host transport is fake",
+  "Terraform": {
+    "Version": "1.13.4",
+    "Provider": "hashicorp/aws 5.100.0 windows_amd64 from existing local cache",
+    "ProviderLockSha256": "901a282544168f6b5d1567b13c91e9009129a2bc0cc92bf4c934e140efdae904",
+    "Init": "backend=false, get=false, lockfile=readonly, local mirror only",
+    "Validate": "valid=true, error_count=0, warning_count=0",
+    "FormatCheck": "PASS",
+    "Resources": 20,
+    "AwsPlanExecuted": false,
+    "LiveIamSimulation": false
+  },
+  "BootstrapSyntax": "Git Bash -n PASS; no script execution or VM",
+  "RealLinuxPublish": {
+    "Status": "BOTH_PROJECTS_PUBLISHED_LINUX_X64_SELF_CONTAINED",
+    "Sdk": "10.0.402",
+    "Runtime": "10.0.13",
+    "OriginalApplicationSourceChanged": false,
+    "PrivateSdk": {
+      "Status": "PRIVATE_WORKSPACE_SDK_VERIFIED",
+      "Sdk": "10.0.402",
+      "Url": "https://builds.dotnet.microsoft.com/dotnet/Sdk/10.0.402/dotnet-sdk-10.0.402-win-x64.zip",
+      "Sha512": "ae4fd528cb7e9f6af6aaf7de36715a69f761f183744f1bb3025d19f5a92447090ec561410e46266c1d10a63781ed6f3de771760bc76c876d87daabc367b898cd",
+      "Bytes": 300755826,
+      "SystemSdkChanged": false
+    },
+    "InitialAttempt": "SDK absent on Windows; preserved outside Git. Private pinned SDK resolved this.",
+    "NuGet": "Official HTTPS succeeded outside sandbox TLS restriction, without bypass or TLS-disable.",
+    "Bundle": {
+      "Status": "REAL_LINUX_BUNDLE_INSPECTED_NOT_DEPLOYED",
+      "RecordedUtc": "2026-10-21T19:42:55.001943+00:00",
+      "ArchiveName": "recovery-e1f8ee3.tar",
+      "Sha256": "d745816853bb22a8e5be8df7155d0bdfd367deb31fd3ddeb05ce92eefd3fffa0",
+      "Bytes": 301025280,
+      "Files": 622,
+      "SourceCommit": "e1f8ee3dc419d1b1de667be8474e4d62448c76c5",
+      "Runtime": "10.0.13",
+      "ApiBinarySha256": "ccc57145ff729cfc1febe51b09b8f82d81a0860313115b3ebca848ab4afabc83",
+      "BackupBinarySha256": "fc0d8f66b34d2982ef55337f13e728f9479b94e4fb883c3b32ab211f7bbf054d",
+      "CloudExecuted": false
+    }
+  },
+  "LiveHostActionsExecuted": false,
+  "CloudRecoveryPass": false,
+  "RpoRtoMeasured": false,
+  "AwsMutations": false,
+  "CloudStateWrites": false,
+  "NewBudgetApproved": false,
+  "Notes": "Terraform schema validation is separate from manual structural fixture plan review; neither authorizes creation. Provider init matched the prior local lock, not a fresh registry-signature verification. Existing historical cloud evidence is unchanged.",
+  "ExistingRetirementRegressionTests": 6,
+  "DocumentationLinksChecked": 139,
+  "AwsCredentialsReadOrChanged": false,
+  "NarrowCorrectionR1": {
+    "FixCommit": "e1f8ee3dc419d1b1de667be8474e4d62448c76c5",
+    "OriginalDuplicateFixture": "REFUSED_DUPLICATE_RESOURCE_ID",
+    "RegressionCases": [
+      "duplicate IDs within EC2/subnet/route-table lists",
+      "duplicate IDs across alias state blocks",
+      "missing second host refused",
+      "two distinct host IDs emit two distinct exact ARNs"
+    ],
+    "ChangedPackagedFiles": [
+      "prepare.py"
+    ],
+    "PreviousArtifactSha256": "b6980ac23fad692df0b06f019242be0131288b50fc30a1fb9a1c61c2aec23b06",
+    "BlueprintSha256Unchanged": "352b48fce39880c3b72fe048d8a009a82c99009562750995c78d952f91d506f6",
+    "AdditionalNegativesRepeat": "CANCELLED_NO_OUTPUT_NO_RESULTS_COUNTED; session 67899 ended exit 1 after Ctrl-C",
+    "ManualLimits": "AMI/AZ evaluated bindings and destroy before-state ownership remain manual preflight obligations.",
+    "LinuxExecution": "NOT_EXECUTED; no SSH or VM used"
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "classification": "LOCAL_TARGETED_REGRESSION_NOT_NATIVE_ACCEPTANCE",
+  "baseCohostSource": "0359bafa1fbb3c48ebc53ce29836acf034381108",
+  "baseDocumentation": "956c38aceb8a7231dc5bbb9ec71a32cbf286a6fe",
+  "upstream": "b3d0b3b595a9257bb6d4d849c899bf4e8dbc2828",
+  "baseHandlerChecks": 17,
+  "addedCompositionChecks": 8,
+  "totalHandlerChecks": 25,
+  "portfolioNodeTests": 18,
+  "sameSubjectDlls": {
+    "Sentinel.Worker.Lambda.dll": true,
+    "Sentinel.Portable.dll": true,
+    "Sentinel.Portable.Aws.dll": true,
+    "Ecs.Backup.Portable.Host.dll": true
+  },
+  "generatedArchifyBytesChanged": false,
+  "integratedObservabilityDiagram": "DEFERRED_UNTIL_NATIVE_E2E",
+  "browserRender": {
+    "Scope": "LOCAL_RENDER_NOT_LIVE_OR_FULL_PLAYWRIGHT_ACCESSIBILITY",
+    "PersonalProfile": false,
+    "StartedAws": false,
+    "ForceCleanup": false,
+    "ProfileRetainedAsOwnSyntheticTestEvidence": true,
+    "Renders": [
+      {
+        "name": "desktop",
+        "requestedViewport": [
+          1440,
+          2600
+        ],
+        "imageDimensions": [
+          1440,
+          2600
+        ],
+        "MainChromeExitedNormally": true,
+        "ScreenshotSha256": "c5a0a2b001a636f1431c11efcc7d5e04b37abdff4fd70bf866d944db29bb4a7e",
+        "DomSha256": "421449c85dfb0f7b55103e3ce570c788ce51f1d00b8b233b815a2e1e2526e25a",
+        "NativeBackgroundTrafficMeasured": false
+      },
+      {
+        "name": "narrow",
+        "requestedViewport": [
+          390,
+          5000
+        ],
+        "imageDimensions": [
+          390,
+          5000
+        ],
+        "MainChromeExitedNormally": true,
+        "ScreenshotSha256": "25375b82a8828aba2c075778882b7d18d187c9b570c9a13dfbe5fa9a71093a50",
+        "DomSha256": "421449c85dfb0f7b55103e3ce570c788ce51f1d00b8b233b815a2e1e2526e25a",
+        "NativeBackgroundTrafficMeasured": false
+      }
+    ],
+    "ServerClosed": true,
+    "Status": "PASS"
+  },
+  "awsCalls": 0,
+  "nativePortableProven": false,
+  "executionAuthorized": false,
+  "evidenceSha256": {
+    "flow-build.log": "b373294ba1ed7b8c1d58459bc0584c44eefb6485aa15203d35fb69c680031b31",
+    "flow-result.log": "e5910526ed718a37c2471ee5ea72423e062432cb31a6663589e2c0d0053f701a",
+    "handler-flow-result.json": "e92555ec0327f9acbec71645ea954f60b22cdb882267d7f2d831c3909cef1e02",
+    "ecs-overnight-node-final.log": "7d3a4858d6c31e3ad09a77662eccd51229e7bdd7ef48f20401df0c0a1bc97f1a",
+    "receipt.json": "44435bd832486ad30f67e176b852b6580b67fd675a0b791bafaef67243f186b1"
+  }
+}

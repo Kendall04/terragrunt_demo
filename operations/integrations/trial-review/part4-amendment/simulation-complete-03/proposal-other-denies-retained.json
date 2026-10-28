@@ -1,0 +1,334 @@
+{
+  "EvaluationResults": [
+    {
+      "EvalActionName": "iam:CreateRole",
+      "EvalResourceName": "arn:aws:iam::${Account}:${ResourceType}/${ResourceName}",
+      "EvalDecision": "explicitDeny",
+      "MatchedStatements": [
+        {
+          "SourcePolicyId": "PolicyInputList.1",
+          "SourcePolicyType": "IAM Policy",
+          "StartPosition": {
+            "Line": 1,
+            "Column": 2948
+          },
+          "EndPosition": {
+            "Line": 1,
+            "Column": 3131
+          }
+        }
+      ],
+      "MissingContextValues": [],
+      "EvalDecisionDetails": {},
+      "ResourceSpecificResults": [
+        {
+          "EvalResourceName": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254",
+          "EvalResourceDecision": "implicitDeny"
+        },
+        {
+          "EvalResourceName": "arn:aws:iam::341936017254:role/ecs-sentinel-r20261023b1-ingest-role",
+          "EvalResourceDecision": "explicitDeny",
+          "MatchedStatements": [
+            {
+              "SourcePolicyId": "PolicyInputList.1",
+              "SourcePolicyType": "IAM Policy",
+              "StartPosition": {
+                "Line": 1,
+                "Column": 2948
+              },
+              "EndPosition": {
+                "Line": 1,
+                "Column": 3131
+              }
+            }
+          ]
+        },
+        {
+          "EvalResourceName": "arn:aws:kms:us-east-1:341936017254:key/00000000-0000-4000-8000-000000000000",
+          "EvalResourceDecision": "implicitDeny"
+        },
+        {
+          "EvalResourceName": "arn:aws:secretsmanager:us-east-1:341936017254:secret:synthetic-no-secret-value-000000",
+          "EvalResourceDecision": "implicitDeny"
+        }
+      ]
+    },
+    {
+      "EvalActionName": "iam:PutRolePolicy",
+      "EvalResourceName": "arn:aws:iam::${Account}:${ResourceType}/${ResourceName}",
+      "EvalDecision": "explicitDeny",
+      "MatchedStatements": [
+        {
+          "SourcePolicyId": "PolicyInputList.1",
+          "SourcePolicyType": "IAM Policy",
+          "StartPosition": {
+            "Line": 1,
+            "Column": 2948
+          },
+          "EndPosition": {
+            "Line": 1,
+            "Column": 3131
+          }
+        }
+      ],
+      "MissingContextValues": [],
+      "EvalDecisionDetails": {},
+      "ResourceSpecificResults": [
+        {
+          "EvalResourceName": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254",
+          "EvalResourceDecision": "implicitDeny"
+        },
+        {
+          "EvalResourceName": "arn:aws:iam::341936017254:role/ecs-sentinel-r20261023b1-ingest-role",
+          "EvalResourceDecision": "explicitDeny",
+          "MatchedStatements": [
+            {
+              "SourcePolicyId": "PolicyInputList.1",
+              "SourcePolicyType": "IAM Policy",
+              "StartPosition": {
+                "Line": 1,
+                "Column": 2948
+              },
+              "EndPosition": {
+                "Line": 1,
+                "Column": 3131
+              }
+            }
+          ]
+        },
+        {
+          "EvalResourceName": "arn:aws:kms:us-east-1:341936017254:key/00000000-0000-4000-8000-000000000000",
+          "EvalResourceDecision": "implicitDeny"
+        },
+        {
+          "EvalResourceName": "arn:aws:secretsmanager:us-east-1:341936017254:secret:synthetic-no-secret-value-000000",
+          "EvalResourceDecision": "implicitDeny"
+        }
+      ]
+    },
+    {
+      "EvalActionName": "iam:AttachRolePolicy",
+      "EvalResourceName": "arn:aws:iam::${Account}:${ResourceType}/${ResourceName}",
+      "EvalDecision": "explicitDeny",
+      "MatchedStatements": [
+        {
+          "SourcePolicyId": "PolicyInputList.1",
+          "SourcePolicyType": "IAM Policy",
+          "StartPosition": {
+            "Line": 1,
+            "Column": 2948
+          },
+          "EndPosition": {
+            "Line": 1,
+            "Column": 3131
+          }
+        }
+      ],
+      "MissingContextValues": [],
+      "EvalDecisionDetails": {},
+      "ResourceSpecificResults": [
+        {
+          "EvalResourceName": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254",
+          "EvalResourceDecision": "implicitDeny"
+        },
+        {
+          "EvalResourceName": "arn:aws:iam::341936017254:role/ecs-sentinel-r20261023b1-ingest-role",
+          "EvalResourceDecision": "explicitDeny",
+          "MatchedStatements": [
+            {
+              "SourcePolicyId": "PolicyInputList.1",
+              "SourcePolicyType": "IAM Policy",
+              "StartPosition": {
+                "Line": 1,
+                "Column": 2948
+              },
+              "EndPosition": {
+                "Line": 1,
+                "Column": 3131
+              }
+            }
+          ]
+        },
+        {
+          "EvalResourceName": "arn:aws:kms:us-east-1:341936017254:key/00000000-0000-4000-8000-000000000000",
+          "EvalResourceDecision": "implicitDeny"
+        },
+        {
+          "EvalResourceName": "arn:aws:secretsmanager:us-east-1:341936017254:secret:synthetic-no-secret-value-000000",
+          "EvalResourceDecision": "implicitDeny"
+        }
+      ]
+    },
+    {
+      "EvalActionName": "s3:PutBucketPolicy",
+      "EvalResourceName": "arn:aws:s3:::${BucketName}/${KeyName}",
+      "EvalDecision": "explicitDeny",
+      "MatchedStatements": [
+        {
+          "SourcePolicyId": "PolicyInputList.1",
+          "SourcePolicyType": "IAM Policy",
+          "StartPosition": {
+            "Line": 1,
+            "Column": 2948
+          },
+          "EndPosition": {
+            "Line": 1,
+            "Column": 3131
+          }
+        }
+      ],
+      "MissingContextValues": [],
+      "EvalDecisionDetails": {},
+      "ResourceSpecificResults": [
+        {
+          "EvalResourceName": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254",
+          "EvalResourceDecision": "explicitDeny",
+          "MatchedStatements": [
+            {
+              "SourcePolicyId": "PolicyInputList.1",
+              "SourcePolicyType": "IAM Policy",
+              "StartPosition": {
+                "Line": 1,
+                "Column": 2948
+              },
+              "EndPosition": {
+                "Line": 1,
+                "Column": 3131
+              }
+            }
+          ]
+        },
+        {
+          "EvalResourceName": "arn:aws:iam::341936017254:role/ecs-sentinel-r20261023b1-ingest-role",
+          "EvalResourceDecision": "implicitDeny"
+        },
+        {
+          "EvalResourceName": "arn:aws:kms:us-east-1:341936017254:key/00000000-0000-4000-8000-000000000000",
+          "EvalResourceDecision": "implicitDeny"
+        },
+        {
+          "EvalResourceName": "arn:aws:secretsmanager:us-east-1:341936017254:secret:synthetic-no-secret-value-000000",
+          "EvalResourceDecision": "implicitDeny"
+        }
+      ]
+    },
+    {
+      "EvalActionName": "kms:ScheduleKeyDeletion",
+      "EvalResourceName": "arn:aws:kms:${Region}:${Account}:${ResourceType}/${Id}",
+      "EvalDecision": "explicitDeny",
+      "MatchedStatements": [
+        {
+          "SourcePolicyId": "PolicyInputList.1",
+          "SourcePolicyType": "IAM Policy",
+          "StartPosition": {
+            "Line": 1,
+            "Column": 2948
+          },
+          "EndPosition": {
+            "Line": 1,
+            "Column": 3131
+          }
+        }
+      ],
+      "MissingContextValues": [],
+      "EvalDecisionDetails": {},
+      "ResourceSpecificResults": [
+        {
+          "EvalResourceName": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254",
+          "EvalResourceDecision": "implicitDeny"
+        },
+        {
+          "EvalResourceName": "arn:aws:iam::341936017254:role/ecs-sentinel-r20261023b1-ingest-role",
+          "EvalResourceDecision": "implicitDeny"
+        },
+        {
+          "EvalResourceName": "arn:aws:kms:us-east-1:341936017254:key/00000000-0000-4000-8000-000000000000",
+          "EvalResourceDecision": "explicitDeny",
+          "MatchedStatements": [
+            {
+              "SourcePolicyId": "PolicyInputList.1",
+              "SourcePolicyType": "IAM Policy",
+              "StartPosition": {
+                "Line": 1,
+                "Column": 2948
+              },
+              "EndPosition": {
+                "Line": 1,
+                "Column": 3131
+              }
+            }
+          ]
+        },
+        {
+          "EvalResourceName": "arn:aws:secretsmanager:us-east-1:341936017254:secret:synthetic-no-secret-value-000000",
+          "EvalResourceDecision": "implicitDeny"
+        }
+      ]
+    },
+    {
+      "EvalActionName": "secretsmanager:DeleteSecret",
+      "EvalResourceName": "arn:aws:secretsmanager:${Region}:${Account}:secret:${SecretId}",
+      "EvalDecision": "explicitDeny",
+      "MatchedStatements": [
+        {
+          "SourcePolicyId": "PolicyInputList.1",
+          "SourcePolicyType": "IAM Policy",
+          "StartPosition": {
+            "Line": 1,
+            "Column": 2948
+          },
+          "EndPosition": {
+            "Line": 1,
+            "Column": 3131
+          }
+        }
+      ],
+      "MissingContextValues": [],
+      "EvalDecisionDetails": {},
+      "ResourceSpecificResults": [
+        {
+          "EvalResourceName": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254",
+          "EvalResourceDecision": "implicitDeny"
+        },
+        {
+          "EvalResourceName": "arn:aws:iam::341936017254:role/ecs-sentinel-r20261023b1-ingest-role",
+          "EvalResourceDecision": "implicitDeny"
+        },
+        {
+          "EvalResourceName": "arn:aws:kms:us-east-1:341936017254:key/00000000-0000-4000-8000-000000000000",
+          "EvalResourceDecision": "implicitDeny"
+        },
+        {
+          "EvalResourceName": "arn:aws:secretsmanager:us-east-1:341936017254:secret:synthetic-no-secret-value-000000",
+          "EvalResourceDecision": "explicitDeny",
+          "MatchedStatements": [
+            {
+              "SourcePolicyId": "PolicyInputList.1",
+              "SourcePolicyType": "IAM Policy",
+              "StartPosition": {
+                "Line": 1,
+                "Column": 2948
+              },
+              "EndPosition": {
+                "Line": 1,
+                "Column": 3131
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "IsTruncated": false,
+  "ResponseMetadata": {
+    "RequestId": "180c28b9-8ff7-43f8-b2e8-7fb8a7f76684",
+    "HTTPStatusCode": 200,
+    "HTTPHeaders": {
+      "date": "Fri, 23 Oct 2026 21:08:51 GMT",
+      "x-amzn-requestid": "180c28b9-8ff7-43f8-b2e8-7fb8a7f76684",
+      "content-type": "text/xml",
+      "content-length": "13934"
+    },
+    "RetryAttempts": 0
+  }
+}

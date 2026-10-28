@@ -1,0 +1,135 @@
+{
+  "terraform": {
+    "required_providers": {
+      "aws": {
+        "source": "hashicorp/aws",
+        "version": "~> 5.50"
+      }
+    }
+  },
+  "variable": {
+    "account_id": {
+      "type": "string"
+    },
+    "region": {
+      "type": "string"
+    },
+    "admin_arn": {
+      "type": "string"
+    },
+    "nat_launch_inputs": {
+      "type": "any",
+      "default": {}
+    },
+    "dev_operator_arn": {
+      "type": "string",
+      "default": null,
+      "nullable": true,
+      "validation": {
+        "condition": "${var.dev_operator_arn == null ? true : (startswith(var.dev_operator_arn,\"arn:aws:iam::${var.account_id}:role/\") && can(regex(\"^arn:aws:iam::[0-9]{12}:role/[A-Za-z0-9+=,.@_-]+$\",var.dev_operator_arn)))}",
+        "error_message": "Existing explicitly approved DEV operator role required."
+      }
+    }
+  },
+  "locals": {
+    "nat_userdata": "#!/bin/bash\n# Fixed reviewed bootstrap. No credentials or arbitrary remote commands.\nset -euo pipefail\nexec >/dev/console 2>&1\ntrap 'echo E13_NAT_BOOTSTRAP_FAILED' ERR\ntimeout 180 yum -y install iptables-services\nprintf '%s\\n' 'net.ipv4.ip_forward=1' 'net.ipv4.conf.all.rp_filter=2' > /etc/sysctl.d/99-nat.conf\nsysctl -p /etc/sysctl.d/99-nat.conf\niptables -t nat -C POSTROUTING -o eth0 -j MASQUERADE || iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE\nservice iptables save\nsystemctl enable --now iptables\n# Read back configuration before emitting evidence; launch success is insufficient.\ntest \"$(sysctl -n net.ipv4.ip_forward)\" = 1\ntest \"$(sysctl -n net.ipv4.conf.all.rp_filter)\" = 2\niptables -t nat -C POSTROUTING -o eth0 -j MASQUERADE\nsystemctl is-active --quiet iptables\nip -4 route show default | grep -Eq '^default via [0-9.]+ dev eth0( |$)'\n# Fixed IMDSv2 endpoint. Token is neither traced nor persisted.\ntoken=$(curl --fail --silent --show-error --connect-timeout 2 --max-time 5 -X PUT -H 'X-aws-ec2-metadata-token-ttl-seconds: 60' http://169.254.169.254/latest/api/token)\ninstance=$(curl --fail --silent --show-error --connect-timeout 2 --max-time 5 -H \"X-aws-ec2-metadata-token: $token\" http://169.254.169.254/latest/meta-data/instance-id)\nunset token\n[[ \"$instance\" =~ ^i-[0-9a-f]{8,17}$ ]]\nprintf 'E13_NAT_BOOTSTRAP_V1 %s %s CONFIGURED\\n' \"$instance\" \"$(date +%s)\"\n# Host egress is deliberately not represented as private-subnet forwarding proof.\n",
+    "nat_ready": "${{for key,v in var.nat_launch_inputs:key=>v if try(contains([\"dev/a\",\"dev/b\",\"prod/a\",\"prod/b\"],key) && v.installation==\"ADMIN_VERIFIED_NETWORK_BINDING\" && v.environment==split(\"/\",key)[0] && v.account==var.account_id && v.region==var.region && can(regex(\"^ami-[0-9a-f]{8,17}$\",v.ami)) && can(regex(\"^subnet-[0-9a-f]{8,17}$\",v.subnet)) && can(regex(\"^sg-[0-9a-f]{8,17}$\",v.security_group)),false)}}"
+  },
+  "resource": {
+    "aws_s3_bucket": {
+      "state": {
+        "for_each": "${toset([\"dev\",\"prod\"])}",
+        "bucket": "${\"e1-lifecycle-${each.key}-${var.account_id}-${var.region}\"}",
+        "force_destroy": false
+      }
+    },
+    "aws_s3_bucket_versioning": {
+      "state": {
+        "for_each": "${aws_s3_bucket.state}",
+        "bucket": "${each.value.id}",
+        "versioning_configuration": {
+          "status": "Enabled"
+        }
+      }
+    },
+    "aws_s3_bucket_server_side_encryption_configuration": {
+      "state": {
+        "for_each": "${aws_s3_bucket.state}",
+        "bucket": "${each.value.id}",
+        "rule": {
+          "apply_server_side_encryption_by_default": {
+            "sse_algorithm": "AES256"
+          }
+        }
+      }
+    },
+    "aws_s3_bucket_public_access_block": {
+      "state": {
+        "for_each": "${aws_s3_bucket.state}",
+        "bucket": "${each.value.id}",
+        "block_public_acls": true,
+        "block_public_policy": true,
+        "ignore_public_acls": true,
+        "restrict_public_buckets": true
+      }
+    },
+    "aws_s3_bucket_policy": {
+      "state": {
+        "for_each": "${aws_s3_bucket.state}",
+        "bucket": "${each.value.id}",
+        "policy": "${jsonencode({Version=\"2012-10-17\",Statement=concat([{Sid=\"TLSOnly\",Effect=\"Deny\",Principal=\"*\",Action=\"s3:*\",Resource=[each.value.arn,\"${each.value.arn}/*\"],Condition={Bool={\"aws:SecureTransport\"=\"false\"}}},{Sid=\"OnlyOwnEnvironmentAndAdmin\",Effect=\"Deny\",Principal=\"*\",Action=\"s3:*\",Resource=[each.value.arn,\"${each.value.arn}/*\"],Condition={ArnNotEquals={\"aws:PrincipalArn\"=concat([var.admin_arn,\"arn:aws:iam::${var.account_id}:role/e1-request-plan-${each.key}\",\"arn:aws:iam::${var.account_id}:role/e1-request-infra-${each.key}\",\"arn:aws:iam::${var.account_id}:role/e1-request-infra-high-risk-${each.key}\"],[for name in [\"e1-gateway-infra-${each.key}\",\"e1-gateway-infra-high-risk-${each.key}\",\"e1-controller-infra-${each.key}\",\"e1-controller-infra-high-risk-${each.key}\"]:\"arn:aws:iam::${var.account_id}:role/${name}-exec\"],each.key==\"dev\" && var.dev_operator_arn!=null ? [var.dev_operator_arn] : [])}}},{Sid=\"ExternalNoWrite\",Effect=\"Deny\",Principal=\"*\",NotAction=[\"s3:GetObject\",\"s3:ListBucket\"],Resource=[each.value.arn,\"${each.value.arn}/*\"],Condition={ArnLike={\"aws:PrincipalArn\"=\"arn:aws:iam::${var.account_id}:role/e1-request-*\"}}},{Sid=\"ExternalOnlyOwnPublic\",Effect=\"Deny\",Principal=\"*\",Action=\"s3:GetObject\",NotResource=[\"${each.value.arn}/operations/environment-lifecycle/infra-${each.key}/*/public.json\",\"${each.value.arn}/operations/environment-lifecycle/infra-high-risk-${each.key}/*/public.json\"],Condition={ArnEquals={\"aws:PrincipalArn\"=[\"arn:aws:iam::${var.account_id}:role/e1-request-infra-${each.key}\",\"arn:aws:iam::${var.account_id}:role/e1-request-infra-high-risk-${each.key}\"]}}},{Sid=\"PlanOnlyOwnState\",Effect=\"Deny\",Principal=\"*\",Action=\"s3:GetObject\",NotResource=[for layer in [\"shared\",\"secrets\",\"global\",\"data\",\"platform\",\"apps\",\"edge\"]:\"${each.value.arn}/e1/lifecycle/${each.key}/${layer}/terraform.tfstate\"],Condition={ArnEquals={\"aws:PrincipalArn\"=\"arn:aws:iam::${var.account_id}:role/e1-request-plan-${each.key}\"}}}],jsondecode(each.key==\"dev\" && var.dev_operator_arn!=null ? jsonencode([{Sid=\"E16ExclusiveDevRuntimeWriter\",Effect=\"Deny\",Principal=\"*\",Action=[\"s3:PutObject\",\"s3:DeleteObject\"],Resource=flatten([for layer in [\"global\",\"data\",\"platform\",\"apps\",\"edge\"]:[\"${each.value.arn}/e1/lifecycle/dev/${layer}/terraform.tfstate\",\"${each.value.arn}/e1/lifecycle/dev/${layer}/terraform.tfstate.tflock\"]]),Condition={ArnNotEquals={\"aws:PrincipalArn\"=var.dev_operator_arn}}},{Sid=\"E16RetainStateObjects\",Effect=\"Deny\",Principal=\"*\",Action=[\"s3:DeleteObject\"],Resource=[for layer in [\"global\",\"data\",\"platform\",\"apps\",\"edge\"]:\"${each.value.arn}/e1/lifecycle/dev/${layer}/terraform.tfstate\"],Condition={ArnEquals={\"aws:PrincipalArn\"=var.dev_operator_arn}}},{Sid=\"E16RuntimeStateObjects\",Effect=\"Allow\",Principal={AWS=var.dev_operator_arn},Action=[\"s3:GetObject\",\"s3:PutObject\"],Resource=flatten([for layer in [\"global\",\"data\",\"platform\",\"apps\",\"edge\"]:[\"${each.value.arn}/e1/lifecycle/dev/${layer}/terraform.tfstate\",\"${each.value.arn}/e1/lifecycle/dev/${layer}/terraform.tfstate.tflock\"]])},{Sid=\"E16RuntimeLockDelete\",Effect=\"Allow\",Principal={AWS=var.dev_operator_arn},Action=[\"s3:DeleteObject\"],Resource=[for layer in [\"global\",\"data\",\"platform\",\"apps\",\"edge\"]:\"${each.value.arn}/e1/lifecycle/dev/${layer}/terraform.tfstate.tflock\"]},{Sid=\"E16RuntimeList\",Effect=\"Allow\",Principal={AWS=var.dev_operator_arn},Action=[\"s3:ListBucket\"],Resource=[each.value.arn],Condition={StringLike={\"s3:prefix\"=[for layer in [\"global\",\"data\",\"platform\",\"apps\",\"edge\"]:\"e1/lifecycle/dev/${layer}/terraform.tfstate*\"]}}},{Sid=\"E16RuntimeBackendRead\",Effect=\"Allow\",Principal={AWS=var.dev_operator_arn},Action=[\"s3:GetBucketLocation\",\"s3:GetBucketVersioning\",\"s3:GetBucketPublicAccessBlock\",\"s3:GetBucketPolicy\",\"s3:GetEncryptionConfiguration\"],Resource=[each.value.arn]},{Sid=\"E16NoOtherDevObjects\",Effect=\"Deny\",Principal=\"*\",Action=[\"s3:GetObject\",\"s3:PutObject\",\"s3:DeleteObject\"],NotResource=flatten([for layer in [\"global\",\"data\",\"platform\",\"apps\",\"edge\"]:[\"${each.value.arn}/e1/lifecycle/dev/${layer}/terraform.tfstate\",\"${each.value.arn}/e1/lifecycle/dev/${layer}/terraform.tfstate.tflock\"]]),Condition={ArnEquals={\"aws:PrincipalArn\"=var.dev_operator_arn}}},{Sid=\"E16NoBackendAdministration\",Effect=\"Deny\",Principal=\"*\",NotAction=[\"s3:GetBucketLocation\",\"s3:GetBucketVersioning\",\"s3:GetBucketPublicAccessBlock\",\"s3:GetBucketPolicy\",\"s3:GetEncryptionConfiguration\",\"s3:ListBucket\",\"s3:GetObject\",\"s3:PutObject\",\"s3:DeleteObject\"],Resource=[each.value.arn,\"${each.value.arn}/*\"],Condition={ArnEquals={\"aws:PrincipalArn\"=var.dev_operator_arn}}}]) : \"[]\"))})}"
+      }
+    },
+    "aws_launch_template": {
+      "nat": {
+        "for_each": "${local.nat_ready}",
+        "name": "${\"demo-${each.value.environment}-lt-nat-${split(\"/\",each.key)[1]}\"}",
+        "image_id": "${each.value.ami}",
+        "instance_type": "t3.micro",
+        "user_data": "${base64encode(local.nat_userdata)}",
+        "iam_instance_profile": {
+          "name": "${\"demo-${each.value.environment}-nat-instance-profile\"}"
+        },
+        "network_interfaces": {
+          "subnet_id": "${each.value.subnet}",
+          "security_groups": [
+            "${each.value.security_group}"
+          ],
+          "associate_public_ip_address": true,
+          "delete_on_termination": true
+        },
+        "metadata_options": {
+          "http_tokens": "required"
+        },
+        "tag_specifications": {
+          "resource_type": "instance",
+          "tags": {
+            "Environment": "${each.value.environment}",
+            "Role": "nat",
+            "Group": "${split(\"/\",each.key)[1]}",
+            "Az": "${each.value.az}",
+            "Project": "demo"
+          }
+        },
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "Environment": "${each.value.environment}"
+        },
+        "lifecycle": {
+          "prevent_destroy": true
+        }
+      }
+    }
+  },
+  "output": {
+    "state_buckets": {
+      "value": "${{for key,v in aws_s3_bucket.state:key=>v.id}}"
+    },
+    "live": {
+      "value": "UNVERIFIED_NOT_DEPLOYED"
+    },
+    "nat_installation_candidates": {
+      "value": "${{for key,v in aws_launch_template.nat:key=>{id=v.id,version=v.latest_version,user_data_sha256=sha256(local.nat_userdata),verification=\"UNVERIFIED_REQUIRES_EXACT_LIVE_READBACK\"}}}"
+    }
+  }
+}

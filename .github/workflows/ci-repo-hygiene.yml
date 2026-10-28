@@ -13,35 +13,50 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
 
-      - name: Setup Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: stable
+      - name: Validate local portfolio contracts (no dependencies or browser)
+        shell: bash
+        run: |
+          set -euo pipefail
+          node -e "if (Number(process.versions.node.split('.')[0]) < 20) throw new Error('Existing Node 20+ required; no installation performed')"
+          node --test portfolio/test-contract.mjs
 
-      - name: Install actionlint
-        run: go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+      - name: Validate backup observer and signal contracts (offline)
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -I -B -m unittest discover -s operations/sql-backup -p test_observer.py -v
+          python3 -I -B -m unittest discover -s operations/sql-backup -p test_local_signals.py -v
+          python3 -I -B -m unittest discover -s operations/sql-backup -p test_sentinel_publish.py -v
+          python3 -I -B -m unittest discover -s operations/integrations -p test_terraform_pipeline.py -v
+          python3 -I -B -m unittest discover -s operations/integrations -p test_package_managed.py -v
+          python3 -I -B -m unittest discover -s operations/integrations -p test_observer_host.py -v
+
+      - name: Validate recovery and portable Sentinel suites (offline, zero skips)
+        shell: bash
+        run: python3 -I -B scripts/tests/run_recovery_ci.py
+
+      - name: Test infrastructure and CI reproducibility
+        run: python3 -I -B -m unittest discover -s scripts/tests/reproducibility -v
+
+      - name: Install verified hygiene tools
+        run: python3 -I -B .github/scripts/ci/install-tools.py actionlint shellcheck terraform terragrunt
 
       - name: Actionlint
         run: |
-          "$(go env GOPATH)/bin/actionlint"
+          actionlint
 
       - name: Bash syntax
         run: |
           set -euo pipefail
-          for file in scripts/*.sh scripts/tests/*.sh; do
+          for file in scripts/*.sh scripts/tests/*.sh scripts/nat/*.sh .github/scripts/cd/*.sh .github/scripts/cd/tests/*.sh; do
             bash -n "$file"
           done
           bash -n scripts/tests/fake-readiness-aws
 
-      - name: Install ShellCheck
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y shellcheck
-
       - name: Shellcheck
-        run: shellcheck scripts/*.sh scripts/tests/*.sh scripts/tests/fake-readiness-aws
+        run: shellcheck scripts/*.sh scripts/tests/*.sh scripts/nat/*.sh .github/scripts/cd/*.sh .github/scripts/cd/tests/*.sh scripts/tests/fake-readiness-aws
 
       - name: Validate Demo API task definition and readiness gate
         shell: bash
@@ -159,18 +174,6 @@ jobs:
           ' "$deployment_s3_output_file" >/dev/null
 
           rm -f "$manifest_file" "$deployment_record_file" "$rollback_record_file" "$publish_output_file" "$deployment_s3_output_file"
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.13.4
-
-      - name: Install Terragrunt
-        run: |
-          TG_VERSION="0.93.3"
-          curl -L "https://github.com/gruntwork-io/terragrunt/releases/download/v${TG_VERSION}/terragrunt_linux_amd64" -o terragrunt
-          chmod +x terragrunt
-          sudo mv terragrunt /usr/local/bin/terragrunt
 
       - name: Terraform fmt
         run: terraform fmt -check -recursive

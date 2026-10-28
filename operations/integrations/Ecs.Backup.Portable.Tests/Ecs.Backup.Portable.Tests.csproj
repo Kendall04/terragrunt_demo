@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+ <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><TreatWarningsAsErrors>true</TreatWarningsAsErrors></PropertyGroup>
+ <ItemGroup><ProjectReference Include="$(PortableSentinelSourceRoot)/src/Sentinel.Portable/Sentinel.Portable.csproj" /><ProjectReference Include="$(PortableSentinelSourceRoot)/src/Sentinel.Persistence.Fakes/Sentinel.Persistence.Fakes.csproj" /></ItemGroup>
+ <Target Name="RequireExplicitPortableSource" BeforeTargets="PrepareForBuild"><Error Condition="!Exists('$(PortableSentinelSourceRoot)/ecs-portable-source-receipt.json')" Text="Prepare the exact portable source before building; legacy source root is not substituted." /></Target>
+</Project>

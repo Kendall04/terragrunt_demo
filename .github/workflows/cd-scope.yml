@@ -1,0 +1,148 @@
+name: CD Scope (no AWS)
+on:
+  workflow_call:
+    outputs:
+      app_changed:
+        value: ${{ jobs.detect_cd_scope.outputs.app_changed }}
+      safe_layers:
+        value: ${{ jobs.detect_cd_scope.outputs.safe_layers }}
+      high_risk_layers:
+        value: ${{ jobs.detect_cd_scope.outputs.high_risk_layers }}
+      critical_manual_only_changed:
+        value: ${{ jobs.detect_cd_scope.outputs.critical_manual_only_changed }}
+      unmapped_high_risk_paths:
+        value: ${{ jobs.detect_cd_scope.outputs.unmapped_high_risk_paths }}
+permissions:
+  contents: read
+  pull-requests: read
+env:
+  DEPLOY_ENV: ${{ github.ref == 'refs/heads/main' && 'prod' || 'dev' }}
+jobs:
+  detect_cd_scope:
+    name: Detect CD Scope
+    runs-on: ubuntu-latest
+    outputs:
+      target_env: ${{ steps.scope.outputs.target_env }}
+      app_changed: ${{ steps.scope.outputs.app_changed }}
+      infra_changed: ${{ steps.scope.outputs.infra_changed }}
+      safe_dev_infra_changed: ${{ steps.scope.outputs.safe_dev_infra_changed }}
+      safe_infra_changed: ${{ steps.scope.outputs.safe_dev_infra_changed }}
+      high_risk_dev_infra_changed: ${{ steps.scope.outputs.high_risk_dev_infra_changed }}
+      high_risk_managed_changed: ${{ steps.scope.outputs.high_risk_managed_changed }}
+      critical_manual_only_changed: ${{ steps.scope.outputs.critical_manual_only_changed }}
+      prod_infra_changed: ${{ steps.scope.outputs.prod_infra_changed }}
+      infra_workflow_changed: ${{ steps.scope.outputs.infra_workflow_changed }}
+      docs_only: ${{ steps.scope.outputs.docs_only }}
+      safe_layers: ${{ steps.scope.outputs.safe_layers }}
+      high_risk_layers: ${{ steps.scope.outputs.high_risk_layers }}
+      critical_manual_only_layers: ${{ steps.scope.outputs.critical_manual_only_layers }}
+      unmapped_high_risk_paths: ${{ steps.scope.outputs.unmapped_high_risk_paths }}
+      changed_app_paths: ${{ steps.scope.outputs.changed_app_paths }}
+      changed_infra_paths: ${{ steps.scope.outputs.changed_infra_paths }}
+      changed_high_risk_paths: ${{ steps.scope.outputs.changed_high_risk_paths }}
+      critical_manual_only_paths: ${{ steps.scope.outputs.critical_manual_only_paths }}
+      infra_paths: ${{ steps.scope.outputs.changed_infra_paths }}
+      safe_infra_paths: ${{ steps.scope.outputs.safe_infra_paths }}
+      high_risk_paths: ${{ steps.scope.outputs.changed_high_risk_paths }}
+      prod_infra_paths: ${{ steps.scope.outputs.prod_infra_paths }}
+      infra_workflow_paths: ${{ steps.scope.outputs.infra_workflow_paths }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+
+      - name: Paths filter
+        id: filter
+        uses: dorny/paths-filter@v4
+        with:
+          list-files: json
+          base: ${{ github.event.before }}
+          ref: ${{ github.sha }}
+          filters: |
+            infra_raw:
+              - 'terraform/live/**'
+              - 'terraform/infra/**'
+              - '.github/workflows/cd.yml'
+              - '.github/workflows/cd-terragrunt.yml'
+              - '.github/workflows/ci-terragrunt*.yml'
+              - '.github/actions/aws-oidc/action.yml'
+              - '.github/actions/resolve-backend/action.yml'
+              - '.github/scripts/cd/**'
+            safe_dev_infra:
+              - 'terraform/live/dev/shared/**'
+              - 'terraform/live/dev/secrets/**'
+              - 'terraform/live/dev/global/**'
+              - 'terraform/live/dev/platform/**'
+              - 'terraform/live/dev/edge/**'
+              - 'terraform/infra/shared/**'
+              - 'terraform/infra/secrets/**'
+              - 'terraform/infra/global/**'
+              - 'terraform/infra/platform/**'
+              - 'terraform/infra/edge/**'
+            high_risk_dev_infra:
+              - 'terraform/live/dev/data/**'
+              - 'terraform/live/dev/apps/**'
+              - 'terraform/live/dev/root.hcl'
+              - 'terraform/live/dev/**/root.hcl'
+              - 'terraform/infra/data/**'
+              - 'terraform/infra/apps/**'
+              - 'terraform/infra/modules/**'
+              - 'terraform/infra/**/modules/**'
+            prod_infra:
+              - 'terraform/live/prod/**'
+            infra_workflow:
+              - '.github/workflows/cd.yml'
+              - '.github/workflows/cd-terragrunt.yml'
+              - '.github/workflows/ci-terragrunt*.yml'
+              - '.github/actions/aws-oidc/action.yml'
+              - '.github/actions/resolve-backend/action.yml'
+              - '.github/scripts/cd/**'
+            app:
+              - 'demo-api/**'
+              - 'scripts/ecs-blue-green-deploy.sh'
+              - 'scripts/ecs-readiness-gate.sh'
+              - 'scripts/aws-response-boundary.sh'
+              - 'scripts/alb-route-target.jq'
+              - 'scripts/bounded-process.py'
+              - 'scripts/render-demo-api-taskdef.sh'
+              - 'scripts/render-release-manifest.sh'
+              - 'scripts/render-deployment-record.sh'
+              - 'scripts/publish-release-manifest-s3.sh'
+              - 'scripts/read-release-manifest-s3.sh'
+              - 'scripts/write-deployment-record-s3.sh'
+              - 'scripts/check-deploy-resources.sh'
+              - 'scripts/validate-image-digest.sh'
+              - 'scripts/validate-release-manifest.sh'
+              - 'scripts/validate-deployment-record.sh'
+              - 'ci/schemas/**'
+              - '.github/workflows/cd-demo-api.yml'
+              - '.github/workflows/release-build.yml'
+              - '.github/workflows/deploy-dev.yml'
+              - '.github/workflows/promote-prod.yml'
+              - '.github/actions/**'
+            docs:
+              - 'README.md'
+              - 'terraform/docs/**'
+
+      - name: Resolve CD scope
+        id: scope
+        shell: bash
+        env:
+          TARGET_ENV: ${{ env.DEPLOY_ENV }}
+          APP_CHANGED: ${{ steps.filter.outputs.app }}
+          INFRA_RAW_CHANGED: ${{ steps.filter.outputs.infra_raw }}
+          SAFE_INFRA_CHANGED: ${{ steps.filter.outputs.safe_dev_infra }}
+          HIGH_RISK_INFRA_CHANGED: ${{ steps.filter.outputs.high_risk_dev_infra }}
+          PROD_INFRA_CHANGED: ${{ steps.filter.outputs.prod_infra }}
+          INFRA_WORKFLOW_CHANGED: ${{ steps.filter.outputs.infra_workflow }}
+          DOCS_CHANGED: ${{ steps.filter.outputs.docs }}
+          APP_PATHS: ${{ steps.filter.outputs.app_files }}
+          INFRA_PATHS: ${{ steps.filter.outputs.infra_raw_files }}
+          SAFE_INFRA_PATHS: ${{ steps.filter.outputs.safe_dev_infra_files }}
+          HIGH_RISK_PATHS: ${{ steps.filter.outputs.high_risk_dev_infra_files }}
+          PROD_INFRA_PATHS: ${{ steps.filter.outputs.prod_infra_files }}
+          INFRA_WORKFLOW_PATHS: ${{ steps.filter.outputs.infra_workflow_files }}
+        run: |
+          set -euo pipefail
+          .github/scripts/cd/detect-scope.sh

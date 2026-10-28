@@ -6,6 +6,7 @@ trap 'rm -rf "$scratch"' EXIT
 
 # Step env supports the job context, not status-check functions. Check the
 # binding as well as the extracted shell so the rejected V1 cannot regress.
+# shellcheck disable=SC2016 # Match the literal GitHub expression in the workflow.
 grep -Fxq '          JOB_STATUS: ${{ job.status }}' "$ROOT/.github/workflows/ci-cd-safety.yml"
 
 # Execute the workflow's actual Bash, rather than a duplicate implementation.

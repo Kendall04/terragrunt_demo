@@ -1,0 +1,22 @@
+{
+  "NotificationEmail": null,
+  "SenderLabel": null,
+  "NotificationMode": null,
+  "Owner": null,
+  "StartsAt": null,
+  "ExpiresAt": null,
+  "PackageKey": "packages/2e0035796d753cd8f72304fa7946a6da9ca99549516984cd25a1933c0f557c99.zip",
+  "PackageVersion": "BASE_ONLY_UNPUBLISHED",
+  "LogRetentionDays": null,
+  "QueueRetentionSeconds": null,
+  "DlqRetentionSeconds": null,
+  "EvidenceSeconds": null,
+  "BudgetSeconds": null,
+  "CheckSeconds": null,
+  "HoldSeconds": null,
+  "DedupSeconds": null,
+  "SignalAgeSeconds": null,
+  "AuditSeconds": null,
+  "EffectSeconds": null,
+  "DeployRuntime": "false"
+}

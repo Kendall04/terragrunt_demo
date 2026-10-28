@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "upstreamCommit": "b3d0b3b595a9257bb6d4d849c899bf4e8dbc2828",
+  "file": "src/Sentinel.Portable.Lambda/Function.cs",
+  "baseSha256": "02eba4830ab8e971febacf98d7522c6cb72b940eccffd8eb8d0d264ccbcf090f",
+  "purpose": "Optional consumer SNS formatter injection; default construction keeps upstream behavior",
+  "replacements": [
+    {
+      "before": "public sealed class Function {",
+      "after": "public sealed class Function {\n    private readonly Func<IncidentNotice,(string Subject,string Message)>? snsFormat;\n    public Function() {}\n    public Function(Func<IncidentNotice,(string Subject,string Message)> snsFormat) { this.snsFormat=snsFormat??throw new ArgumentNullException(nameof(snsFormat)); }"
+    },
+    {
+      "before": "new Notifications(c,sns,http,Environment.GetEnvironmentVariable,Before)",
+      "after": "new Notifications(c,sns,http,Environment.GetEnvironmentVariable,Before,snsFormat)"
+    }
+  ]
+}
