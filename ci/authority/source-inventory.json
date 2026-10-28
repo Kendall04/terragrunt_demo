@@ -6665,7 +6665,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/model.py": {
-      "sha256": "4700445bab26cebf6d2f895453c3591c7f9afcd07c1f8dd5e9587276de072dae",
+      "sha256": "4e92fa85602c012a9ab7af35dbf9d5d19da74b931123696557e176828f606a07",
       "declarations": [],
       "signals": {
         "credential-acquisition": [

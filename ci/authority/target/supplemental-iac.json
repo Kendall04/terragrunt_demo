@@ -54,7 +54,7 @@
     "terraform/infra/sentinel-backup/main.tf.json": {
       "sha256_lf": "b9a7bd77a54276d01a707c485bbfb46f843b8dc71e8002682680d80b4b259eb8",
       "introduced_by": "ca919a7d24f6e62286b2aa134ed7e44458904f70",
-      "last_changed_by": "LOCAL_MANAGED_SECURITY_PENDING_COMMIT",
+      "last_changed_by": "f84cad9643e258701bd1a4059e39405545358d9c",
       "owner": "SEPARATE_SENTINEL_ADMIN_ROOT",
       "classification": "LOCAL_INTEGRATION_SOURCE",
       "purpose": "Existing Sentinel6.27 root/pipeline/optional observer. Default ingestion, dispatch and observer remain OFF. Future plans/access require approval."
@@ -62,7 +62,7 @@
     "terraform/infra/sentinel-backup/modules/observer/main.tf.json": {
       "sha256_lf": "17105a0344edd742800a8373971e5afde919ac5f494638f26b2084f54b617e3a",
       "introduced_by": "4d6e2292cd58313c5c35bdb06fd988546092b924",
-      "last_changed_by": "LOCAL_MANAGED_SECURITY_PENDING_COMMIT",
+      "last_changed_by": "f84cad9643e258701bd1a4059e39405545358d9c",
       "owner": "SEPARATE_SENTINEL_ADMIN_ROOT",
       "classification": "LOCAL_INTEGRATION_SOURCE",
       "purpose": "Existing Sentinel6.27 root/pipeline/optional observer. Default ingestion, dispatch and observer remain OFF. Future plans/access require approval."
@@ -70,7 +70,7 @@
     "terraform/infra/sentinel-backup/modules/pipeline/main.tf.json": {
       "sha256_lf": "c4949d42a36d0b1518a1ae8e6ca797658e2b6e8319ed1192215534e1d6c9de24",
       "introduced_by": "ca919a7d24f6e62286b2aa134ed7e44458904f70",
-      "last_changed_by": "LOCAL_MANAGED_SECURITY_PENDING_COMMIT",
+      "last_changed_by": "f84cad9643e258701bd1a4059e39405545358d9c",
       "owner": "SEPARATE_SENTINEL_ADMIN_ROOT",
       "classification": "LOCAL_INTEGRATION_SOURCE",
       "purpose": "Existing Sentinel6.27 root/pipeline/optional observer. Default ingestion, dispatch and observer remain OFF. Future plans/access require approval."
@@ -78,7 +78,7 @@
     "terraform/infra/sentinel-backup/tests/observer.tftest.hcl": {
       "sha256_lf": "e3b6625e59167a41680c0ca6663dc5be3613498e19cf6893601a677bcf51e96c",
       "introduced_by": "4d6e2292cd58313c5c35bdb06fd988546092b924",
-      "last_changed_by": "LOCAL_MANAGED_SECURITY_PENDING_COMMIT",
+      "last_changed_by": "f84cad9643e258701bd1a4059e39405545358d9c",
       "owner": "SEPARATE_SENTINEL_ADMIN_ROOT",
       "classification": "OFFLINE_MOCK_PLAN",
       "purpose": "Mock-provider plan-only fixture; not AWS acceptance or executable delivery authority."
@@ -149,16 +149,16 @@
     },
     "terraform/infra/sentinel-backup/modules/pipeline/storage-security.tf": {
       "sha256_lf": "6e10aa8c2cbd8919bd268b4f96002de957f8fabcdca8f8f5cf5aa4db2dee08a0",
-      "introduced_by": "LOCAL_MANAGED_SECURITY_PENDING_COMMIT",
-      "last_changed_by": "LOCAL_MANAGED_SECURITY_PENDING_COMMIT",
+      "introduced_by": "f84cad9643e258701bd1a4059e39405545358d9c",
+      "last_changed_by": "f84cad9643e258701bd1a4059e39405545358d9c",
       "owner": "ECS_MANAGED_SECURITY_LOCAL",
       "classification": "LOCAL_INTEGRATION_SOURCE",
       "purpose": "Owner-approved maintained managed security controls/negative mock evidence; no execution authority and no CURRENT exclusion."
     },
     "terraform/infra/sentinel-backup/modules/pipeline/tests/security.tftest.hcl": {
       "sha256_lf": "43d369f7bb6724dc2f0fa3f7e305d56412674059e4731fdfd90f24934c8e6cfa",
-      "introduced_by": "LOCAL_MANAGED_SECURITY_PENDING_COMMIT",
-      "last_changed_by": "LOCAL_MANAGED_SECURITY_PENDING_COMMIT",
+      "introduced_by": "f84cad9643e258701bd1a4059e39405545358d9c",
+      "last_changed_by": "f84cad9643e258701bd1a4059e39405545358d9c",
       "owner": "ECS_MANAGED_SECURITY_LOCAL",
       "classification": "OFFLINE_MOCK_PLAN",
       "purpose": "Owner-approved maintained managed security controls/negative mock evidence; no execution authority and no CURRENT exclusion."
