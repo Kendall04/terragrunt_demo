@@ -1,5 +1,7 @@
 # Architecture and current contracts
 
+> **Current DEV operations (2026-10-28):** use the [native Terraform lifecycle](native-dev-lifecycle.md). E16 execution/session requirements below are historical; independent security and delivery contracts remain.
+
 > **Closure status — 2026-10-16:** the complete original DEV topology below was deployed and
 > exercised, then destroyed. The [portfolio operations guide](portfolio-operations.md)
 > distinguishes retained security/control resources from the empty runtime states. Early
@@ -271,9 +273,9 @@ records the complete resource/state graph, existing WP5/WP6 commands, thin DEV
 entry and separate UP installation versus DOWN finality blockers. No reduced
 lab, authority bypass, activation or AWS operation is introduced.
 
-## E16 supervised original DEV mode (2026-10-13)
+## Historical E16 supervised mode (retired 2026-10-28)
 
-The [E16 current operator contract](e16-practical-dev-lifecycle.md) implements
+The [historical E16 operator record](e16-practical-dev-lifecycle.md) implements
 per-layer original DEV saved-plan review/apply and observed shutdown under an
 explicitly authorized, exclusive existing-human state-writer transfer. Default
 mode remains inert; PROD/shared/security-root ownership is retained. Existing

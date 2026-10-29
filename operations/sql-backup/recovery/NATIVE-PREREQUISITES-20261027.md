@@ -1,5 +1,7 @@
 # ECS native trial prerequisites — 27 October 2026
 
+> Infrastructure execution now follows the [native DEV procedure](../../../terraform/docs/native-dev-lifecycle.md). E16 source-copy checkpoints below are historical; use the checked-in roots directly.
+
 Status: preparation only; no deployment authorization, executable integrated plan or total budget is claimed. Source baseline `dc6b2a62ab9aad0b5725e6303fa1b492a6b5774f`. This checkpoint supersedes the old 102/USD6 proposal as an admission description; it does not alter historical receipts or approvals.
 
 ## Verified state and ownership

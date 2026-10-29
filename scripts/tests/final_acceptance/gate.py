@@ -42,8 +42,8 @@ CRITERIA = {
     'AC16': SUITES + ADDITIONAL_SUITES,
 }
 CHECKS = (
-    ('practical_dev', ('python', '-I', '-B', 'scripts/tests/practical_dev/run.py')),
-    ('practical_dev_static', ('python', '-I', '-B', 'scripts/tests/practical_dev/check_static.py')),
+    ('native_ecs', ('python', '-I', '-B', 'scripts/tests/native_ecs/run.py')),
+    ('native_backend_static', ('python', '-I', '-B', 'scripts/tests/native_ecs/check_backend.py')),
     ('original_dev', ('python', '-I', '-B', 'scripts/tests/original_dev/run.py')),
     ('nat_trusted_closure', ('python', '-I', '-B', 'scripts/tests/nat_closure/run.py')),
     ('operational_teardown', ('python', '-I', '-B', 'scripts/tests/operational_teardown/run.py')),
@@ -154,10 +154,10 @@ def main():
             if path.is_file():
                 hashes[path.relative_to(ROOT).as_posix()] = hashlib.sha256(path.read_bytes()).hexdigest()
     regression = sum(records[k].get('executed', 0) for k in SUITES if k != 'final_acceptance')
-    # 1048 previous methods + 2 closed managed-security schema/mutation methods.
+    # 1050 previous methods + 3 portable-security scope/mutation methods.
     # Existing assertions and UNKNOWN/failure gates remain binding; count is no pass.
-    if regression != 1050:
-        errors.append(f'Accepted regression count changed: {regression} != 1050')
+    if regression != 1053:
+        errors.append(f'Accepted regression count changed: {regression} != 1053')
     static_good = all(records[n]['status'] == 'PASS' for n, _ in CHECKS)
     criteria = {key: {'status': 'PASS' if static_good and not errors and all(records[n]['status'] == 'PASS' for n in names) else 'FAIL',
                       'evidence_suites': list(names)} for key, names in CRITERIA.items()}

@@ -1,4 +1,66 @@
-# Portable Sentinel integration - first local contract increment
+# Portable Sentinel integration
+
+## Current security and retirement contract
+
+The reviewed root now requires two **distinct external customer-managed KMS key
+ARNs**, no defaults or aliases. Account/region/UUID, enabled state, symmetric
+ENCRYPT_DECRYPT use and CUSTOMER ownership are checked, including DescribeKey
+metadata in a future native plan. Archive SSE-KMS uses object encryption context
+(bucket keys OFF); SNS uses its separate key. Worker inline policy and boundary
+mirror only GenerateDataKey/Decrypt for the exact keys, service/context and explicit
+UTC window (maximum eight hours). `external_key_policy_requirements` exports
+review-only statements for each enclosing key, never installs/replaces a key policy.
+Existing administration/Denies and the external key owner's approval remain required.
+
+The child owns a dedicated `snt-logs-<deployment>-<account>` bucket, SSE-S3,
+BucketOwnerEnforced, all four public blocks, TLS policy, exact archive source/account
+delivery grant and 30-day prefix lifecycle. Archive logging explicitly depends on
+these controls. Neither bucket permits force_destroy. DynamoDB retains SSE and
+PITR with **one day** explicit recovery period. Audit is constrained to **7 days**;
+effects remain **7 days** in the unchanged pinned Portable Installation.Storage
+contract. Queues retain **14 days** and CloudWatch/access logs **30 days**.
+
+Deletion protection stays ON with `retirement=null`, including `enabled=true`.
+A retirement transition requires the exact owned table ARN, SHA256 of a separately
+approved transition receipt and literal `DISABLE DELETION PROTECTION <table ARN>`,
+with both enabled flags false. The hash is a binding, not proof of authorization.
+No table lookup/update, adoption/import or imperative teardown route is introduced.
+
+Retire through the existing owner/state, with checkpoints in the preserved
+`logs/certification-20261027/RETIREMENT.md`: stop publisher, plan/review/apply runtime
+and alarm inhibition; reconcile ACK/outbox/in-flight effects and preserve evidence;
+bind state lineage/serial, table ARN and approval receipt; plan the explicit
+protection transition and reject any unrelated change before its separately
+authorized apply. Then use the owner's saved destroy plan with the **same** inputs.
+Keep archive and logs until export/retention decisions and the manifest authorize
+finite S3 deletion batches, including archive versions/delete markers; re-list and
+reconcile each batch, multipart uploads and late access logs. `force_destroy=false`
+blocks a nonempty bucket. Destroy archive logging/source before the destination;
+preserve external CMKs, backups, secrets, remote states and version history. On
+interruption keep the receipt/state/checkpoints, refresh and review a new plan;
+never replay an old binary, disable locks or manually delete around Terraform.
+Verify absence of owned operational resources, retained-data costs and reversal of
+temporary permissions. Nothing in this procedure authorizes its execution now.
+
+`prepare_module.py` still pins upstream b3d0b3b and its original module hash;
+`templates/security.tf.tftpl` is the maintained addition, reproduced into the child.
+Linux local qualification: Terraform **1.13.4**, AWS **6.28.0**, root **5/5** and child
+**22/22** mock-plan tests, schema validate root/child, repeated exact generation and
+upstream-tamper rejection. The authenticated Linux package h1 was **added** to both
+portable locks; every existing hash/version remains. The current mock inventory is
+**69 creates** (previous 62 plus seven logging resources); no AWS resources/IDs or
+native acceptance are inferred. Tests use a deliberately inert mock ZIP, not a
+new qualification of the existing executable artifact. Root and child tests are
+rendered by the generator, then run with `terraform test -filter=tests/portable.tftest.hcl`
+and child `terraform test -filter=tests/security.tftest.hcl` after offline
+`init -backend=false -lockfile=readonly` / `validate`. No GitHub Actions or AWS calls.
+
+Next is a newly authorized network PLAN-ONLY under the
+[native DEV procedure](../../../terraform/docs/native-dev-lifecycle.md), separate
+from deployment. The [E16 admission](PLAN-ONLY-E16.md) is historical only.
+Earlier 62-resource, security-pending and retirement-toggle checkpoints
+below and in the dated proposals are historical. The cumulative certification logs
+and unapplied draft patch remain untouched; they must not be replayed over this code.
 
 ## Portable cohost package - current local qualification
 
@@ -10,7 +72,7 @@ No installed authority, current IAM or cloud acceptance is implied. Earlier date
 checkpoints describing an unconnected API remain historical.
 
 
-## Executable package and mock-plan closure - current
+## Executable package and prior mock-plan checkpoint
 
 The source-bound Lambda ZIP from `25f037e` is 3,783,279 bytes, SHA256
 `4e89587b2760b5ec6d4a37a4bc6327ed6f770d0316d2e1f3fba32d4b1d54cca7`.

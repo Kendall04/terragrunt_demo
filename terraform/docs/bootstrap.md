@@ -1,11 +1,6 @@
 # Bootstrap, operations and recovery
 
-> **Dated context:** the 2026-09-18 empty-account baseline below preceded the two real DEV
-> cycles. Final DOWN is complete; see [current closure and short
-> operations](portfolio-operations.md). The proven supervised path is
-> [E16](e16-practical-dev-lifecycle.md), distinct from the advanced WP5 whole-DOWN gates
-> discussed below. Retained installation and new resource bindings still need genuine
-> verification before any separately authorized reconstruction.
+> **Current DEV operations (2026-10-28):** use the [native Terraform lifecycle](native-dev-lifecycle.md). E16 execution is retired. Dated installation history below preserves independent security and delivery controls.
 
 ## Accepted context and operating model
 

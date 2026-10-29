@@ -13,7 +13,7 @@ class S3NamespaceTests(unittest.TestCase):
     def setUp(self):
         tmp=tempfile.TemporaryDirectory(prefix='e1-s3-binding-');self.addCleanup(tmp.cleanup)
         self.root=Path(tmp.name)
-        self.source=(ROOT/'operations/integrations/portable/trial/runtime/main.tf').read_text()
+        self.source='\n'.join((ROOT/'operations/integrations/portable/trial/runtime'/n).read_text() for n in ('main.tf','security.tf'))
 
     def discover(self,text):
         (self.root/'main.tf').write_text(text,encoding='utf-8')
@@ -28,11 +28,12 @@ class S3NamespaceTests(unittest.TestCase):
         b=policy['s3_target_binding']
         self.assertEqual(b['bucketDeclaration'],'aws_s3_bucket.archive')
         self.assertEqual(b['arnReference'],'aws_s3_bucket.archive.arn')
-        self.assertEqual(b['resourceReferencesChecked'],2)
+        self.assertEqual(b['resourceReferencesChecked'],6)
         self.assertEqual(b['patterns'],['snt-*-*-*'])
         self.assertEqual(policy['admission'],'UNSUPPORTED_APPLICABLE')
         self.assertEqual(self.query(d),[])
-        self.assertEqual(len(self.query(d,'arn:aws:s3:::snt-example-111122223333-us-east-1/key')),1)
+        # The archive policy and the new logging source both remain UNKNOWN here.
+        self.assertEqual(len(self.query(d,'arn:aws:s3:::snt-example-111122223333-us-east-1/key')),2)
 
     def test_removed_namespace_or_colliding_literal_restores_unknown(self):
         for changed in (self.source.replace('"snt-${lower(local.name)}-', '"${lower(local.name)}-'),

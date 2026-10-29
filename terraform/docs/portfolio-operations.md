@@ -1,92 +1,10 @@
-# Portfolio closure and practical DEV operations
+# Portfolio and native DEV operations
 
-## Closure snapshot — 2026-10-16
-
-The original full DEV system completed UP → VERIFY → DOWN, was reconstructed,
-and passed real qualification, blue/green, distinct-digest rollback and NAT
-replacement trials. Final DOWN completed at 05:38 UTC on October 16 (October 15,
-23:38 in Costa Rica). The API is offline; **do not start another session as part
-of project closure**. Historical sections describing running DEV are dated
-checkpoints, not the present resource state.
-
-A new read-only AWS inventory on October 16 confirmed all five runtime states
-empty and their S3 lockfiles absent; the cluster INACTIVE with zero tasks/services;
-no matching runtime EC2, EBS, EIPs, NAT ASGs, ALB/target groups, API/VPC Link, VPC,
-subnets or ENIs. Native service observations supplemented state inspection.
-No self-owned AMIs or EBS snapshots were observed in the account/region. This is
-a bounded project inventory, not an account-wide billing certification.
-
-The audit used the explicitly authorized `cnp-cert-dev` profile in the verified
-project account and `us-east-1`. Raw inventory, state inspection and publication
-review stay in private local evidence outside Git; no secret values were read.
-[Final teardown evidence](e16-practical-dev-lifecycle.md#final-real-dev-down-completed--2026-10-16-utc)
-records the destructive plans, approvals, permission removal and terminal results.
-E2 remains generation 14 RELEASED. The old E13 SDC attempt remains historically
-UNKNOWN: the owner's exact-attempt residual-risk disposition allowed shutdown,
-not fabricated ABSENT/APPLIED/SUCCESS. Original FAILURE and versioned S3 evidence
-remain intact. Its archived, explicitly authorized SQS message was acknowledged;
-there was no queue purge or alteration of historical failure evidence.
-
-## Prerequisites for a separately authorized future session
-
-1. Read [E16](e16-practical-dev-lifecycle.md), [bootstrap](bootstrap.md),
-   [security](secrets-strategy.md) and [validation](validation.md). Use the
-   reviewed source/locks and existing supported toolchain: Python, AWS CLI,
-   Terraform 1.13.4, Terragrunt 0.93.3, .NET 10.0.402 and Linux/Docker where needed.
-2. Configure legitimate temporary AWS authentication locally. Scrub overriding
-   credential environment variables; explicitly select the approved profile and
-   region. Verify effective account/caller before any AWS-facing process; never
-   fall back to `default`. Do not transfer sessions between machines or put keys
-   in GitHub, source, Terraform variables or shell output.
-3. Retain/verify the separate security backend and the private, versioned,
-   encrypted runtime S3 backend with native S3 lockfiles. The five keys are
-   `e1/lifecycle/dev/<layer>/terraform.tfstate`, default Terraform workspace only.
-   E16's installed exclusive DEV writer policy must match the selected operator;
-   WP5 must not concurrently write these same states. PROD/shared/security state
-   is excluded. A local JSON declaration alone is not installation evidence.
-4. Keep configuration/session directories outside Git with restrictive access.
-   E16 configuration uses `E16_SUPERVISED_DEV_V1`, exact account/region/profile,
-   operator ARN, clean source commit and the approved per-layer variables.
-   Read secret *metadata* through the approved path; bootstrap secret values
-   out of band. Do not place secret values in plans, state, logs or user data.
-5. Reconcile any E2 ACTIVE owner, unfinished build, stale plan or unknown effect
-   before continuing. Previously retained history is not permission to seize
-   authority or reuse the historical SDC exception for another attempt.
-
-## Original UP and functional verification
-
-Use the existing operator; this alias is a readable example, not an additional
-execution authority. The paths must point to a reviewed private configuration
-and session directory. Do not execute it during closure.
-
-```bash
-dev() { python scripts/original_dev.py dev "$@" --config /private/dev/config.json --directory /private/dev/session; }
-dev init
-dev status
-dev bootstrap-status
-dev up-plan
-# Inspect the real full preview, preview.json and saved binary.
-dev apply --plan-id <reviewed-id> --confirm '<exact printed APPLY DEV confirmation>'
-# Prepare/review/apply the next layer only after the previous result is understood.
-```
-
-Order: **global → data → platform → apps → edge**. A fresh network first needs
-`bootstrap-network-plan`: create the original VPC/subnets/EIPs/ALB skeleton, then
-bind the real new subnet/SG/EIP/route IDs into existing security-root NAT launch
-and E13 installation. Only then create both ASGs with a new reviewed global plan.
-Do not reactivate retained NAT triggers against the destroyed session's IDs.
-SQL uses approved Ubuntu 22.04 x86-64 / SQL Server 2022 Express bootstrap, existing
-secret metadata and a newly observed private address. Refresh the connection
-secret through the approved bootstrap before applications consume it. See E16's
-[staged installation](e16-practical-dev-lifecycle.md#first-empty-account-installation-staged-without-invented-ids).
-
-The operator applies the exact saved plan after source, configuration, state,
-identity and binary checks. Five states are separate transactions. Partial apply
-is not completion, and `up-plan` does not qualify an image or start application
-traffic. Use the existing WP3/WP4 handoff below, then `dev verify`: current AWS
-network/NAT/SQL/ECS/API observations, per-task readiness and actual `/ready` plus
-POST/GET `/text` SQL/KMS checks. This command writes test data and is not a pure
-read-only audit. No functional probe is appropriate against the destroyed API.
+Use the [native DEV lifecycle](native-dev-lifecycle.md): network, NAT HA, data,
+platform, apps, edge; DOWN reverses dependencies. E16 is retired. The existing
+operator, S3 backends/versioning/locks, E2 and E13 remain. Every native saved plan
+requires review and separate explicit approval. The guide covers network-only
+retirement; the records below are dated history, not a new AWS inventory.
 
 ## CI/CD, release and rollback boundary
 
@@ -109,33 +27,6 @@ until a future authorized session has verified its runtime and bindings.
 [Real A → B → A evidence](deployment.md#real-sourcetransport-qualification-and-distinct-digest-dev-rollback)
 contains the complete releases/digests and Actions runs. It proves rollback of an
 unchanged-schema application, not recovery of deleted SQL data or PROD operation.
-
-## Supervised DOWN and failure handling
-
-1. Confirm identity/backend, record resource IDs, save a private inventory and
-   verify no conflicting Terraform/WP3/WP4/E2 operation. Obtain separate explicit
-   infrastructure-destruction and permanent SQL/EBS-loss approvals.
-2. Use `dev inhibit` with its exact confirmation; observe controllers, ECS,
-   published Lambda versions, logs, queues, ASG activity and known E13 effects.
-   Do not equate missing metrics, empty approximate queue counts or disabling
-   EventBridge with finality. Drain ECS and normally stop SQL before terminating
-   NAT needed for their connectivity. Reconcile effects and review inhibition
-   through `dev review-inhibition` before a destructive apply.
-3. Prepare each `dev down-plan`, inspect its actual scope and apply that saved
-   binary in **edge → apps → platform → data → global** order. `data` additionally
-   requires `--confirm-sql-loss 'PERMANENTLY LOSE DEV SQL <binary-hash>'`.
-   E16 rechecks state/plan integrity and ordering; never silently regenerate a
-   different approved plan or use `destroy -auto-approve`.
-4. On failure, stop advancing. Preserve state, binary, preview and receipts;
-   inspect native resource state and reconcile before reviewing a fresh plan.
-   No blind retry, state deletion, automatic force-unlock, owner takeover or
-   historical SUCCESS fabrication. Exceptional temporary permissions or exact
-   historical-risk dispositions from the completed session do not carry forward.
-5. Run `dev residual` and independent service reads of recorded resource IDs,
-   parent VPC/ENIs and tagged resources. Check all five empty states and absent
-   locks. Report confirmed removal, pending deletion, deliberately retained,
-   unexpected and unverified resources separately. Tags or empty state alone do
-   not establish complete removal or a zero AWS bill.
 
 ## Retained resources and possible charges
 

@@ -24,9 +24,11 @@ needed for the task; this file is a map, not the architecture reference.
   adds packaging/cleanup/inhibition; it installs no host service or cloud access.
   [EC2 installation preparation](operations/sql-backup/EC2-INSTALL-REVIEW.md) has
   received grouped owner approval. The [execution checkpoint](terraform/docs/validation.md#approved-ec2-backup-execution-preflight---2026-10-16)
-  remains paused before creation pending [human review of the revised plan-only source](operations/sql-backup/LOCAL-PLAN-REVIEW.md).
-  A new bounded historical-risk disposition preserves UNKNOWN and authorizes no
-  apply/deletion; exact session binding and every other E16 guard remain required.
+  and E16 plan-only review are historical, not approval for new creation.
+  Historical SDC remains UNKNOWN and authorizes no apply/deletion.
+  The owner retired the E16 executor on 2026-10-28; use the
+  [native DEV procedure](terraform/docs/native-dev-lifecycle.md). Existing IAM, E2,
+  E13, backups/secrets and native backend protections remain required.
 
 ## Read when
 

@@ -1,5 +1,10 @@
 # Portable Sentinel: proposed native trial, not deployment authority
 
+Historical proposal: current security/retirement contracts and the **69-resource
+mock** inventory supersede the 62-resource checkpoint below; see [README](README.md).
+The immediate next gate is a new [native network PLAN-ONLY](../../../terraform/docs/native-dev-lifecycle.md), without deploying
+Sentinel or installing all CI/CD controllers. Earlier amounts remain unapproved.
+
 The executable package is qualified locally from ECS `25f037e04b0e059e868c66b0c8282d410452bfd9`
 and upstream `b3d0b3b595a9257bb6d4d849c899bf4e8dbc2828`. It is a managed,
 framework-dependent `dotnet10` Lambda ZIP, not the Python controller or SQL-host tar.

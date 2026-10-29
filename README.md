@@ -114,9 +114,10 @@ Terraform/Terragrunt separate the runtime into five states:
 
 DOWN reverses this order. The separately protected security root, S3 state
 backends/versions, KMS/secrets, ECR, identities and release evidence are retained.
-E16 grants one operator exclusive write authority over the five DEV state/lock
-pairs. Terraform owns skeletons; WP4 owns task revisions, desired counts and ALB
-traffic. Protected delivery does not acquire Terraform state-write authority.
+The existing operator retains exclusive write authority over the five DEV
+state/lock pairs, independently of any executor. Terraform owns skeletons;
+WP4 owns task revisions, desired counts and ALB traffic. Protected delivery
+does not acquire Terraform state-write authority.
 
 ## CI/CD and verified results
 
@@ -152,15 +153,16 @@ PROD and WP5 execution were not demonstrated or enabled by these DEV trials.
 
 Start with the [short operations and retained-cost guide](terraform/docs/portfolio-operations.md).
 It explains prerequisites, staged bootstrap, plan review, release handoff, failure
-handling and supervised teardown. Commands can mutate AWS: documentation is not
-permission to run them. No automatic UP, DOWN or retained-resource cleanup is part
+handling and native Terraform teardown. E16 is retired from the operating path.
+Commands can mutate AWS: documentation is not permission to run them.
+No automatic UP, DOWN or retained-resource cleanup is part
 of this closure.
 
 | Reference | Purpose |
 | --- | --- |
 | [Architecture](terraform/docs/architecture.md) | Network, application/data contracts, layer and state ownership |
 | [Deployment](terraform/docs/deployment.md) | Protected release, promotion, rollback and dated evidence |
-| [E16 operator](terraform/docs/e16-practical-dev-lifecycle.md) | Actual original DEV saved-plan workflow and completed shutdown |
+| [Native DEV lifecycle](terraform/docs/native-dev-lifecycle.md) | Terraform UP, staged NAT, partial/full DOWN and explicit approvals |
 | [Bootstrap](terraform/docs/bootstrap.md) / [security](terraform/docs/secrets-strategy.md) | Durable installation, secret metadata/value separation and authority |
 | [Decisions and limitations](terraform/docs/decisions-and-limitations.md) | Explicit tradeoffs, unresolved targets and accepted constraints |
 | [Validation](terraform/docs/validation.md) | Test meaning, toolchain and command side effects |

@@ -1,5 +1,7 @@
 # Static assessment of E16 state exposure - 2026-10-17
 
+> Historical E16 review only; executor/revalidation wrapper retired 2026-10-28. Use [native DEV operations](../../terraform/docs/native-dev-lifecycle.md). No prior approval carries forward.
+
 Conclusion: **the current global stage should not contain secret values by design**.
 The current five runtime stages also have no identified Terraform path that
 generates/reads/stores credential values. This is a strong, concrete source-based

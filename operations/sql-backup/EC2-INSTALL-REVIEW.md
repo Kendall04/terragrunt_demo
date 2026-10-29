@@ -27,7 +27,7 @@ Its existing wp2d-dev_sql policy reads the two original DB secrets and decrypts
 with the original text key; this preparation changes neither that policy nor trust.
 
 Activate only the original global/data stages needed for this component, through
-existing E16 reviewed saved plans and separately administered NAT/E13 setup:
+native Terraform reviewed saved plans and separately administered NAT/E13 setup:
 the same two-AZ VPC, four subnets, two original NAT slots/EIPs, internal ALB and
 private SQL EC2. Keep SQL on t3a.small/30-GiB encrypted gp3, IMDSv2 required, no
 public IP or inbound SSH, no new SQL ingress. Preserve both NAT slots and E13
@@ -177,7 +177,7 @@ After local idleness and evidence export, remove only the owned SQL users/logins
 new credential files/drop-in and named role inline policy; remove the two remaining
 new EC2 key-use Sids, preserving current administrator/other statements. Remove
 only the owned endpoint by its recorded ID before original global DOWN. Retire
-the newly activated global/data runtime using existing supervised E16 plans,
+the newly activated global/data runtime using native Terraform reviewed plans,
 including disposable SQL/EBS, both NAT ASGs/EIPs and internal ALB. This runtime
 retirement and synthetic SQL loss belong in the same approval scope. Do not delete
 retained bucket, keys, historical versions, existing roles or original secrets.

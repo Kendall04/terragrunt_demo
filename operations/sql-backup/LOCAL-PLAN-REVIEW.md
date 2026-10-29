@@ -1,5 +1,7 @@
 # Local review candidate: E16 init/plan only
 
+> Historical E16 review only; executor/revalidation wrapper retired 2026-10-28. Use [native DEV operations](../../terraform/docs/native-dev-lifecycle.md). No prior approval carries forward.
+
 Status: LOCAL SOURCE EDITS ONLY. No rejected operation has been retried. No
 Terraform/AWS/runtime command, remote-state read, denied diagnostic read, Norton
 change, credential handoff or apply occurred in this local review task.

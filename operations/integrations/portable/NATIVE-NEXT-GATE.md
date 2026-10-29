@@ -1,5 +1,12 @@
 # Siguiente ensayo nativo de ECS: alcance actualizado y límites
 
+**Checkpoint histórico, supersedido en la siguiente admisión:** solicitar primero
+un nuevo [plan nativo de red, sin despliegue](../../../terraform/docs/native-dev-lifecycle.md).
+E16 está retirado; su plan anterior es evidencia histórica. La seguridad/retirada portable
+ya está implementada localmente y el inventario mock vigente es 69, descrito en
+[README](README.md). La propuesta de empezar desplegando portable y sus importes
+inferiores no son autorización ni el camino crítico actual.
+
 Preparación local desde956c38a,26-oct-2026. No autorización de gasto, acceso, publicación,
 instalación ni creación. No preflight privado AWS esta noche. Los ensayos anteriores
 están cerrados; USD6/102 no son presupuesto ni inventario vigentes.
@@ -40,7 +47,7 @@ No CloudFormation, nuevo servicio de negocio, PKI o segunda SQL permanente.
 Para el proyecto completo, los otros TARGET actuales suman73 direcciones propuestas
 (global49,data5,platform1,apps9,edge9). Sustituir el bloque Sentinel antiguo29 por62
 da un **candidato aritmético135**, NO un plan integrado ni recursos nuevos ya admitidos.
-El flujo práctico materializa los TARGET originales (`scripts/practical_dev.py:216-243`);
+El [procedimiento nativo DEV](../../../terraform/docs/native-dev-lifecycle.md) usa directamente los cinco roots TARGET originales;
 el portable está preparado como root aislado, sin selección integrada demostrada en
 ese flujo. El opt-in de la nueva unidad/selector debe revisarse e instalarse con
 autoridad nueva antes del ensayo conjunto. No aplicar ambos a los mismos nombres ni cambiar gestores por recurso.

@@ -92,25 +92,25 @@
       "purpose": "Fixed local Sentinel source; external reviewed backend/config inputs still required. Not E16/WP5 TARGET or permission to bootstrap a backend."
     },
     "operations/integrations/portable/aws-6.28.lock.hcl": {
-      "sha256_lf": "258de7a3dbd3a5eeffed0eec35becd0f4b134380a929bc09c456805fa851259e",
+      "sha256_lf": "439f2de16c7252c3b011a85b116f5facd53151ce754138704b15c38ea0257d69",
       "introduced_by": "d1e8d9b571b5f6dfad368074b60f5ee800c22a0d",
-      "last_changed_by": "d1e8d9b571b5f6dfad368074b60f5ee800c22a0d",
+      "last_changed_by": "local portable security increment after b0f7d0dcd990ff42cd476e2777ce90120bb31282",
       "owner": "ECS_PORTABLE_LOCAL_INTEGRATION",
       "classification": "PROVIDER_LOCK_INPUT",
       "purpose": "Isolated signed portable provider lock; does not replace AWS 5.100 TARGET locks."
     },
     "operations/integrations/portable/trial/main.tf": {
-      "sha256_lf": "3a3d7644eb1dacf280ce2b505ff24bdfb84b4c466c6d10bd84b5db4c53ebc057",
+      "sha256_lf": "f6111ddd8c4afd02be846c45fcaf2e9945794c87212abb4323db121197e46704",
       "introduced_by": "25f037e04b0e059e868c66b0c8282d410452bfd9",
-      "last_changed_by": "783d85314b016932a8dc824601f450a526ff9ded",
+      "last_changed_by": "local portable security increment after b0f7d0dcd990ff42cd476e2777ce90120bb31282",
       "owner": "ECS_PORTABLE_LOCAL_INTEGRATION",
       "classification": "LOCAL_INTEGRATION_SOURCE",
       "purpose": "Reviewed opt-in portable trial wrapper; requires staged runtime and explicit package inputs, not execution authority."
     },
     "operations/integrations/portable/trial/tests/portable.tftest.hcl": {
-      "sha256_lf": "fdd2d1153be03d92dbdd4c68d4a9fc43f1f8bc783e346f289f3a08dc1d9445ce",
+      "sha256_lf": "b410f4c2e67273586be8075f6fc7b92079462fa0f23d4dd76a438d3e65931c50",
       "introduced_by": "25f037e04b0e059e868c66b0c8282d410452bfd9",
-      "last_changed_by": "783d85314b016932a8dc824601f450a526ff9ded",
+      "last_changed_by": "local portable security increment after b0f7d0dcd990ff42cd476e2777ce90120bb31282",
       "owner": "ECS_PORTABLE_LOCAL_INTEGRATION",
       "classification": "OFFLINE_MOCK_PLAN",
       "purpose": "Portable module mocked-provider tests with placeholder paths; no native evidence or deployment authority."
@@ -124,9 +124,9 @@
       "purpose": "Same reviewed output declarations relocated into the real materialized child module; no declarations excluded."
     },
     "operations/integrations/portable/trial/runtime/main.tf": {
-      "sha256_lf": "c6f824686abe5e171bcef9bb181e4d238db0de4b977c2df776908009630043e7",
+      "sha256_lf": "4ba7b617aad158c118baabe919642f8398a7fd01e8b185cff19ebcbf06b279cb",
       "introduced_by": "04e665d75973377357298333092711ac1c43d753",
-      "last_changed_by": "736c361cb15405e0a9dd9d7e25913b66d642bbdd",
+      "last_changed_by": "local portable security increment after b0f7d0dcd990ff42cd476e2777ce90120bb31282",
       "owner": "ECS_PORTABLE_LOCAL_INTEGRATION",
       "classification": "LOCAL_INTEGRATION_SOURCE",
       "purpose": "Materialized pinned upstream plus reviewed ECS boundaries/handlers and owner-approved future snt- archive namespace; no deployment authority."
@@ -140,9 +140,9 @@
       "purpose": "Exact isolated AWS 6.28 constraint in the portable root; no global provider change."
     },
     "operations/integrations/portable/trial/.terraform.lock.hcl": {
-      "sha256_lf": "258de7a3dbd3a5eeffed0eec35becd0f4b134380a929bc09c456805fa851259e",
+      "sha256_lf": "439f2de16c7252c3b011a85b116f5facd53151ce754138704b15c38ea0257d69",
       "introduced_by": "04e665d75973377357298333092711ac1c43d753",
-      "last_changed_by": "04e665d75973377357298333092711ac1c43d753",
+      "last_changed_by": "local portable security increment after b0f7d0dcd990ff42cd476e2777ce90120bb31282",
       "owner": "ECS_PORTABLE_LOCAL_INTEGRATION",
       "classification": "PROVIDER_LOCK_INPUT",
       "purpose": "Existing signed isolated AWS 6.28 lock copied as the root lock; no new provider version."
@@ -162,6 +162,22 @@
       "owner": "ECS_MANAGED_SECURITY_LOCAL",
       "classification": "OFFLINE_MOCK_PLAN",
       "purpose": "Owner-approved maintained managed security controls/negative mock evidence; no execution authority and no CURRENT exclusion."
+    },
+    "operations/integrations/portable/trial/runtime/security.tf": {
+      "sha256_lf": "c29f49a8f4b8a5395c349745762b55e0950e29074f848ec28e22094fe0e659cd",
+      "introduced_by": "local portable security increment after b0f7d0dcd990ff42cd476e2777ce90120bb31282",
+      "last_changed_by": "local portable security increment after b0f7d0dcd990ff42cd476e2777ce90120bb31282",
+      "owner": "ECS_PORTABLE_LOCAL_INTEGRATION",
+      "classification": "LOCAL_INTEGRATION_SOURCE",
+      "purpose": "Exact owned portable security/retirement source; upstream pin preserved. Local qualification only, no native plan or execution authority."
+    },
+    "operations/integrations/portable/trial/runtime/tests/security.tftest.hcl": {
+      "sha256_lf": "8733652c4b66c0f5335f9ff043ed46224fb1a30a33ca26c113d72cc14866c43a",
+      "introduced_by": "local portable security increment after b0f7d0dcd990ff42cd476e2777ce90120bb31282",
+      "last_changed_by": "local portable security increment after b0f7d0dcd990ff42cd476e2777ce90120bb31282",
+      "owner": "ECS_PORTABLE_LOCAL_INTEGRATION",
+      "classification": "OFFLINE_MOCK_PLAN",
+      "purpose": "Exact owned portable security/retirement source; upstream pin preserved. Local qualification only, no native plan or execution authority."
     }
   }
 }

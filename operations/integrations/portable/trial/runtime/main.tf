@@ -40,7 +40,7 @@ resource "aws_dynamodb_table" "state" {
   billing_mode                = "PAY_PER_REQUEST"
   hash_key                    = "PK"
   range_key                   = "SK"
-  deletion_protection_enabled = true
+  deletion_protection_enabled = var.retirement == null
   dynamic "attribute" {
     for_each = toset(["PK", "SK", "DuePK", "DueSK", "ActivePK", "ActiveSK", "CleanPK", "CleanSK"])
     content {
@@ -57,7 +57,10 @@ resource "aws_dynamodb_table" "state" {
       projection_type = "ALL"
     }
   }
-  point_in_time_recovery { enabled = true }
+  point_in_time_recovery {
+    enabled                 = true
+    recovery_period_in_days = 1
+  }
   server_side_encryption { enabled = true }
   lifecycle {
     precondition {
@@ -89,16 +92,8 @@ resource "aws_s3_bucket_versioning" "archive" {
   bucket = aws_s3_bucket.archive.id
   versioning_configuration { status = "Enabled" }
 }
-resource "aws_s3_bucket_server_side_encryption_configuration" "archive" {
-  bucket = aws_s3_bucket.archive.id
-  rule {
-    apply_server_side_encryption_by_default { sse_algorithm = "AES256" }
-  }
-}
-resource "aws_s3_bucket_policy" "archive" {
-  bucket = aws_s3_bucket.archive.id
-  policy = jsonencode({ Version = "2012-10-17", Statement = [{ Effect = "Deny", Principal = "*", Action = "s3:*", Resource = [aws_s3_bucket.archive.arn, "${aws_s3_bucket.archive.arn}/*"], Condition = { Bool = { "aws:SecureTransport" = "false" } } }] })
-}
+
+
 resource "aws_sqs_queue" "dead" {
   for_each                  = toset(["reports", "operations"])
   name                      = "${local.name}-${each.key}-dlq"
@@ -157,12 +152,14 @@ locals {
     { Effect = "Allow", Action = ["sqs:ReceiveMessage", "sqs:DeleteMessage", "sqs:GetQueueAttributes"], Resource = aws_sqs_queue.reports.arn }
     ] : [], component == "worker" ? [
     { Effect = "Allow", Action = ["s3:PutObject", "s3:GetObject"], Resource = "${aws_s3_bucket.archive.arn}/${local.archive_prefix}" }
+    ] : [], component == "worker" ? [local.archive_kms_statement
     ] : [], component == "worker" && length(local.read_actions) > 0 ? [
     { Effect = "Allow", Action = local.read_actions, Resource = "*", Condition = { StringEquals = { "aws:RequestedRegion" = local.config.region } } }
     ] : [], component == "worker" && length([for m in local.config.monitors : m if m.kind == "s3-object"]) > 0 ? [
     { Effect = "Allow", Action = ["s3:GetObject"], Resource = [for m in local.config.monitors : "${m.resource}/${m.selector}" if m.kind == "s3-object"] }
     ] : [], component == "worker" && length(local.actions) > 0 ? [
     { Effect = "Allow", Action = ["sns:Publish"], Resource = local.actions }
+    ] : [], component == "worker" && length(local.actions) > 0 ? [local.notice_kms_statement
   ] : []) }) }
 }
 resource "aws_iam_role_policy" "runtime" {
@@ -305,4 +302,10 @@ resource "aws_iam_policy" "ecs_boundary" {
   for_each = local.roles
   name     = "${local.name}-${each.key}-boundary"
   policy   = local.ecs_runtime_policies[each.key]
+  lifecycle {
+    precondition {
+      condition     = each.key != "worker" || (data.aws_kms_key.notices.key_manager == "CUSTOMER" && data.aws_kms_key.notices.enabled && data.aws_kms_key.notices.key_spec == "SYMMETRIC_DEFAULT" && data.aws_kms_key.notices.key_usage == "ENCRYPT_DECRYPT" && data.aws_kms_key.notices.aws_account_id == local.config.account && data.aws_kms_key.notices.arn == var.security.notice_kms_key_arn)
+      error_message = "DescribeKey must prove the exact enabled same-account customer symmetric notice key."
+    }
+  }
 }

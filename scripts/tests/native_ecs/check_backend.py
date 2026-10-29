@@ -20,7 +20,7 @@ def console(expression,environment,operator,wp4=False):
         locals_value.update({k:source[k] for k in ('wp4d_bucket_readers','wp4d_bucket_writers','e2_lifecycle_writers')})
         locals_value['wp4d_active']={}
     variables={name:dict(type='any',default=value) for name,value in dict(account_id=ACCOUNT,region=REGION,admin_arn=ADMIN,dev_operator_arn=operator).items()}
-    with tempfile.TemporaryDirectory(prefix='e16-static-') as directory:
+    with tempfile.TemporaryDirectory(prefix='native-backend-static-') as directory:
         Path(directory,'main.tf.json').write_text(json.dumps(dict(variable=variables,locals=locals_value)),encoding='utf-8')
         env={k:v for k,v in os.environ.items() if not k.upper().startswith(('AWS','AMAZON','TF_','TERRAGRUNT')) and 'PROXY' not in k.upper()}
         env.update(AWS_EC2_METADATA_DISABLED='true',AWS_CONFIG_FILE=os.devnull,AWS_SHARED_CREDENTIALS_FILE=os.devnull,CHECKPOINT_DISABLE='1')
@@ -54,7 +54,7 @@ for label,env_expr in (('nat_failure_queue','each.value.environment'),('nat_asyn
         # Wrap the native string as JSON, using the same provider-free console.
         result=console('${jsonencode('+replaced+')}',env,None)
         assert result==f'arn:aws:sns:{REGION}:{ACCOUNT}:demo-{env}'+('-shared' if env=='dev' else '')+'-alerts',result
-print('E16 actual Terraform policy: null unchanged, PROD unchanged, exclusive 5-state/lock scope; DEV SNS matches shared root PASS')
+print('Native operator actual Terraform policy: null unchanged, PROD unchanged, exclusive 5-state/lock scope; DEV SNS matches shared root PASS')
 
 # Evaluate the complete generated protected-evidence policy, including WP6
 # extensions. Nullable selection and PROD must preserve all earlier statements.
@@ -71,4 +71,4 @@ assert len(observations['E16ObservationObjects']['Resource'])==4
 assert observations['E16ObservationOnly']['NotResource']==observations['E16ObservationObjects']['Resource']
 assert OP not in observations['Writers']['Condition']['ArnNotEquals']['aws:PrincipalArn']
 assert OP in observations['Readers']['Condition']['ArnNotEquals']['aws:PrincipalArn']
-print('E16 actual protected E2/E13 read-only policy: old/null/PROD preserved; no write authority PASS')
+print('Native operator actual protected E2/E13 read-only policy: old/null/PROD preserved; no write authority PASS')

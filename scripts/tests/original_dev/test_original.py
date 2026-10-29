@@ -77,6 +77,10 @@ class Tests(unittest.TestCase):
     def test_plan_and_preflight_not_full_application_health(self):
         self.assertEqual(operator.select('plan',json.dumps(dict(operation='plan',layer='global'))),'plan-dev')
         self.assertEqual(operator.select('verify-infrastructure',json.dumps(dict(operation='preflight',layer='apps'))),'plan-dev')
+    def test_retired_supervised_entry_stops_before_credentials(self):
+        with patch.object(client,'main',side_effect=AssertionError('no AWS')),self.assertRaisesRegex(ValueError,'executor retired'):
+            operator.main(['dev','apply'])
+
     def test_original_source_graph_and_no_lab_left(self):
         root=operator.ROOT
         self.assertFalse((root/'scripts/simple_lab.py').exists());self.assertFalse((root/'scripts/lab_resources.py').exists())

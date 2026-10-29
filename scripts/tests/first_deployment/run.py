@@ -72,14 +72,6 @@ class Tests(unittest.TestCase):
    lock=(ROOT/'terraform/modules/target/dev'/layer/'.terraform.lock.hcl').read_text();self.assertIn('hashicorp/aws',lock);self.assertNotIn('hashicorp/tls',lock)
    self.assertIn('hashicorp/tls',(ROOT/'terraform/modules/target/prod'/layer/'.terraform.lock.hcl').read_text())
 
- def test_public_profile_requires_same_operator_and_region(self):
-  from scripts.practical_dev import Process
-  config=dict(profile='cnp-cert-dev',region='us-east-1',operator_arn='arn:aws:iam::'+ACCOUNT+':role/DemoDevOperator')
-  file=self.dir/'operator.config';raw='[profile cnp-cert-dev]\nregion=us-east-1\nsource_profile=cnp-cert-dev\nrole_arn='+config['operator_arn']+'\nrole_session_name=demo\nduration_seconds=3600\nca_bundle=C:/public-ca.pem\n'
-  file.write_text(raw);self.assertEqual(Process(config,file).aws_config_file,file.resolve())
-  for changed in (raw.replace('us-east-1','us-west-2'),raw.replace('role/DemoDevOperator','role/Foreign'),raw+'aws_access_key_id=FORBIDDEN\n',raw+'credential_process=arbitrary\n'):
-   file.write_text(changed)
-   with self.assertRaises(ValueError):Process(config,file)
  def test_dev_publication_does_not_change_prod_package(self):
   import wp5
   self.dev_records();before=copy.deepcopy(self.doc);before['ownership_closure']['publications']={}
