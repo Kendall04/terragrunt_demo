@@ -61,13 +61,24 @@ def main():
     # Invoke config uses the same authoritative stable target binding map.
     fake["aws_cloudwatch_event_target"]={"wp4d_nat":{key:{"arn":"synthetic"} for key in doc["wp4d"]["selected"] if key.startswith("nat-recovery/")}}
     local["invocations"]=project(resource["aws_lambda_function_event_invoke_config"]["wp4d_nat"])
+    local["permissions"]=project(resource["aws_lambda_permission"]["wp4d_nat"])
+    local["rules"]=project(resource["aws_cloudwatch_event_rule"]["wp4d_nat"])
+    concurrency=expression(resource["aws_lambda_function"]["wp4d"]["reserved_concurrent_executions"])[2:-1]
+    local["concurrency"]="${{for key,value in local.wp4d_gateways : key => "+concurrency+"}}"
     local["queue_policies"]=project(resource["aws_sqs_queue_policy"]["nat_failures"])
     local["queue_alarms"]=project(resource["aws_cloudwatch_metric_alarm"]["nat_failure_queue"])
     env={k:v for k,v in os.environ.items() if not k.upper().startswith(("AWS","AMAZON","BOTO","TF_","TERRAGRUNT")) and "PROXY" not in k.upper()}
     env.update(AWS_EC2_METADATA_DISABLED="true",AWS_CONFIG_FILE=os.devnull,AWS_SHARED_CREDENTIALS_FILE=os.devnull,CHECKPOINT_DISABLE="1")
     with tempfile.TemporaryDirectory(prefix="e13-provider-free-") as directory:
         path=Path(directory)/"main.tf.json"
-        for name,i,r,b in (("undeployed",{},{},{}),("all-synthetic",installs,images,bindings)):
+        # Versions here are synthetic fixtures, never claims about AWS state.
+        cases=[("undeployed",{},{},{},True,True,"4"),
+               ("installed-inhibited",installs,images,bindings,True,True,"4"),
+               ("future-version-inhibited",installs,images,bindings,True,True,"9"),
+               ("nat-only-explicit-activation",installs,images,bindings,False,True,"9"),
+               ("delivery-only-explicit-activation",installs,images,bindings,True,False,"9"),
+               ("both-explicit-activations",installs,images,bindings,False,False,"9")]
+        for name,i,r,b,nat_inhibited,delivery_inhibited,version in cases:
             values={"authority":doc,"account_id":ACCOUNT,"region":REGION,"admin_arn":f"arn:aws:iam::{ACCOUNT}:role/SeparateAdmin",
                     "wp4d_installations":i,"wp4d_runtime_approvals":r,"wp4d_environment_bindings":b,"dev_delivery_binding":None,**fake}
             # Inert resources must also stay inert in the synthetic provider map.
@@ -76,8 +87,16 @@ def main():
                 values["aws_sqs_queue"]={k:{} for k in queues}
                 values["aws_cloudwatch_event_target"]={"wp4d_nat":{}}
             variables={key:{"type":"any","default":value} for key,value in values.items()}
+            # Exercise the actual typed child inputs and resource expressions.
+            for key,value in (("dev_nat_inhibited",nat_inhibited),("dev_delivery_inhibited",delivery_inhibited)):
+                variables[key]={**tf["variable"][key],"default":value}
+            functions=copy.deepcopy(fake["aws_lambda_function"])
+            for function in functions["wp4d"].values():
+                function["version"]=version
+                function["qualified_arn"]=function["qualified_arn"].rsplit(":",1)[0]+":"+version
+            variables["aws_lambda_function"]["default"]=functions
             path.write_text(json.dumps({"variable":variables,"locals":local_case}),encoding="utf-8")
-            query='jsonencode({targets=local.targets,invocations=local.invocations,queues=local.nat_failure_queues,policies=local.queue_policies,alarms=local.queue_alarms})'
+            query='jsonencode({targets=local.targets,invocations=local.invocations,permissions=local.permissions,rules=local.rules,concurrency=local.concurrency,queues=local.nat_failure_queues,policies=local.queue_policies,alarms=local.queue_alarms})'
             result=subprocess.run([terraform,"console","-no-color"],input=query+"\n",text=True,capture_output=True,cwd=directory,env=env,timeout=30)
             if result.returncode: raise AssertionError(name+": "+result.stderr)
             try: actual=console_json(result.stdout)
@@ -91,8 +110,19 @@ def main():
                     assert target["dead_letter_config"]["arn"]==queues["nat_delivery_failed"][environment]["arn"]
                     assert target["retry_policy"]==dict(maximum_event_age_in_seconds=900,maximum_retry_attempts=3)
                     invocation=actual["invocations"][binding]
-                    assert invocation["qualifier"]=="7" and invocation["maximum_retry_attempts"]==1
+                    assert invocation["qualifier"]==version and invocation["maximum_retry_attempts"]==1
                     assert invocation["destination_config"]["on_failure"]["destination"]==queues["nat_execution_failed"][environment]["arn"]
+                    permission=actual["permissions"][binding]
+                    assert permission["qualifier"]==version and permission["principal"]=="events.amazonaws.com"
+                    assert permission["source_account"]==ACCOUNT
+                    assert permission["source_arn"]==fake["aws_cloudwatch_event_rule"]["wp4d_nat"][environment]["arn"]
+                    assert target["arn"].endswith(":"+version)
+                for binding,limit in actual["concurrency"].items():
+                    held=(binding.startswith("nat-recovery/nat-dev/") and nat_inhibited) or (
+                        binding in ("request-gateway/deploy-dev","cleanup-recovery/cleanup-dev") and delivery_inhibited)
+                    assert limit==(0 if held else 1),(name,binding,limit)
+                assert actual["rules"]["dev"]["state"]==("DISABLED" if nat_inhibited else "ENABLED")
+                assert actual["rules"]["prod"]["state"] is None, 'PROD must retain its previously unspecified state'
                 for key,record in actual["policies"].items():
                     environment,kind=key.split("/"); policy=json.loads(record["policy"])
                     send=[v for v in policy["Statement"] if v["Action"]=="sqs:SendMessage"]
