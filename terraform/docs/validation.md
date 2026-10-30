@@ -16,6 +16,14 @@ uses 1.13.4/AWS 5.100.0 in a disposable backend-disabled root with network disab
 These checks do not prove effective AWS permissions, a security plan's six
 possible auxiliary replacements, live delivery, forwarding or rollback.
 
+Historical DEV delivery preservation adds seven WP4D regression methods (1066
+core regressions, still 44 E1 checks and 24 WP7 methods). Closed synthetic
+fingerprints exercise the generated Terraform predicates; private readbacks
+separately verify the three fixed installation fingerprints and exact historical
+configuration bytes. The current package catalog, WP3/WP5, NAT/PROD admission,
+backends and IAM templates remain unchanged. Neither fixture approval digests
+nor local acceptance constitute administrative approval or AWS plan evidence.
+
 The WP3C [internal release implementation](e1-internal-release.md) adds hermetic
 adapter/authority acceptance and provider-free selective-compute fixtures.
 These never constitute live AWS isolation or deployment evidence.

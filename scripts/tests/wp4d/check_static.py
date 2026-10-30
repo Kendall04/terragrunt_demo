@@ -27,7 +27,7 @@ def main():
     authority = json.loads((wp4d.ROOT/'terraform/infra/security/authority.json').read_text())
     tf = json.loads((wp4d.ROOT/'terraform/infra/security/modules/controller_compute/main.tf.json').read_text())
     locals_ = {key: value for key, value in tf['locals'].items() if key in (
-        'wp4d_contract', 'wp4d_candidates', 'wp4d_ready', 'wp4d_active', 'wp4d_policy_templates',
+        'wp4d_historical_installations', 'wp4d_historical_ready', 'wp4d_contract', 'wp4d_candidates', 'wp4d_ready', 'wp4d_active', 'wp4d_policy_templates',
         'wp4d_project_names', 'wp4d_cleanup_names', 'wp4d_config', 'wp4d_gateways', 'wp4d_nat_events', 'wp4d_nat_targets')}
     locals_['evidence_bucket'] = f'e1-evidence-{ACCOUNT}-{REGION}'
     policy = tf['resource']['aws_iam_role_policy']['wp4d']['policy'][2:-1].replace('each.value', 'v').replace('each.key', 'key')
@@ -66,6 +66,7 @@ def main():
                 'authority': authority, 'account_id': ACCOUNT, 'region': REGION,
                 'wp4d_installations': i, 'wp4d_runtime_approvals': r,
                 'wp4d_environment_bindings': b, 'dev_delivery_binding': overlay,
+                'dev_delivery_preservation_approval_sha256': None, 'dev_nat_inhibited': True, 'dev_delivery_inhibited': True,
                 'dev_delivery_contract': 'SQL_RESTORE_NO_MIGRATIONS_V2' if name=='dev-recovery-v2' else 'V1'}.items()}
             selected_locals=copy.deepcopy(locals_)
             if overlay is not None:selected_locals['evidence_bucket']=f'demo-release-artifacts-{ACCOUNT}'
@@ -194,6 +195,8 @@ def main():
             assert result.returncode==0,result.stderr
             assert console_json(result.stdout)==expected
         print('Real Terraform recovery subnet: original default, either reviewed subnet, foreign/invalid negatives PASS')
+    from test_historical_delivery import check_terraform
+    check_terraform(terraform, environment)
 
 
 

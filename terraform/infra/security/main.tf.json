@@ -50,6 +50,15 @@
       "default": true,
       "nullable": false
     },
+    "dev_delivery_preservation_approval_sha256": {
+      "type": "string",
+      "default": null,
+      "nullable": true,
+      "validation": {
+        "condition": "${var.dev_delivery_preservation_approval_sha256 == null ? true : can(regex(\"^[0-9a-f]{64}$\",var.dev_delivery_preservation_approval_sha256)) && var.dev_delivery_inhibited && var.dev_delivery_contract == \"V1\"}",
+        "error_message": "Historical DEV preservation requires a separately approved manifest digest, V1 and DEV delivery inhibition."
+      }
+    },
     "dev_operator_arn": {
       "type": "string",
       "default": null,
@@ -184,6 +193,7 @@
       "wp4d_environment_bindings": "${merge(local.authority.wp4d.environment_bindings,jsondecode(var.dev_nat_network_binding==null ? \"{}\" : jsonencode({dev=var.dev_nat_network_binding})))}",
       "dev_nat_inhibited": "${var.dev_nat_inhibited}",
       "dev_delivery_inhibited": "${var.dev_delivery_inhibited}",
+      "dev_delivery_preservation_approval_sha256": "${var.dev_delivery_preservation_approval_sha256}",
       "wp5_installations": "${local.authority.wp5.installations}",
       "wp5_runtime_approvals": "${local.authority.wp5.runtime_approvals}",
       "wp5_environment_bindings": "${local.authority.wp5.environment_bindings}",

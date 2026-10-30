@@ -154,10 +154,22 @@ def main():
             if path.is_file():
                 hashes[path.relative_to(ROOT).as_posix()] = hashlib.sha256(path.read_bytes()).hexdigest()
     regression = sum(records[k].get('executed', 0) for k in SUITES if k != 'final_acceptance')
-    # 1050 previous methods + 3 portable-security + 6 DEV inhibition methods.
+    # 1050 previous + 3 portable-security + 6 DEV inhibition + 7 preservation.
     # Existing assertions and UNKNOWN/failure gates remain binding; count is no pass.
-    if regression != 1059:
-        errors.append(f'Accepted regression count changed: {regression} != 1059')
+    preservation_methods = {
+        'test_allowlist_is_exact_and_separate_from_current_catalog',
+        'test_source_fingerprints_cannot_be_supplied_by_caller',
+        'test_closed_fixture_preserves_all_three_without_fabricated_history',
+        'test_approval_v1_and_delivery_inhibition_are_required',
+        'test_every_identity_dimension_rejects_drift',
+        'test_resource_bindings_names_and_dependencies_cannot_change',
+        'test_nat_prod_and_current_catalog_remain_unchanged',
+    }
+    required_ids = {'test_historical_delivery.HistoricalDelivery.' + name for name in preservation_methods}
+    if not required_ids <= set(records['wp4d'].get('test_ids', [])):
+        errors.append('Historical preservation coverage is incomplete')
+    if regression != 1066:
+        errors.append(f'Accepted regression count changed: {regression} != 1066')
     static_good = all(records[n]['status'] == 'PASS' for n, _ in CHECKS)
     criteria = {key: {'status': 'PASS' if static_good and not errors and all(records[n]['status'] == 'PASS' for n in names) else 'FAIL',
                       'evidence_suites': list(names)} for key, names in CRITERIA.items()}

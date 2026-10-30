@@ -13,6 +13,29 @@ import re
 OWNER = "SECURITY_ROOT_OWNED"
 ROOT = Path(__file__).resolve().parents[3]
 
+# Separate from the current package catalog. Reproduced byte-for-byte from this
+# authentic revision; installation fingerprints bind exact S3 versions, images,
+# resource addresses/names and every input to the installed V1 configuration.
+# No private configuration, image URI or S3 VersionId is checked in.
+HISTORICAL_SOURCE = "57c8c0b46f875d60b5144040309d5e3d2bf2c3c6"
+HISTORICAL_DELIVERY = {
+    "request-gateway/deploy-dev": {
+        "package_sha256": "e113ae86c672bb19428dde8fcb0088a5773898bff4c2b2eaeeee2b4559201fe5",
+        "installation_sha256": "989298c922dea79c81d8adf92c02a6afde6345415ad511888d775c96ded34e32",
+        "address": 'module.controller_compute.aws_lambda_function.wp4d["request-gateway/deploy-dev"]',
+    },
+    "normal-delivery/deploy-dev": {
+        "package_sha256": "ed34067952fc32d657ba42feb6fb55e45bffe8e9991877c1b670331483fd0cee",
+        "installation_sha256": "0813ff2b563f9aae259780a05cb2fcbb146c4f07efeac1c3276e9a0266387992",
+        "address": 'module.controller_compute.aws_codebuild_project.wp4d["normal-delivery/deploy-dev"]',
+    },
+    "cleanup-recovery/cleanup-dev": {
+        "package_sha256": "ea8c36cf06cdc483aab3b3ff4da0578b3fbb7660423b6abd9804c9cc8de5c595",
+        "installation_sha256": "c630114f9a01f9a25c6351dfc8878c383405bca6740a132e8d7814baece2e152",
+        "address": 'module.controller_compute.aws_lambda_function.wp4d["cleanup-recovery/cleanup-dev"]',
+    },
+}
+
 # Names for the eight WP2C nodes are read from that canonical reservation. The
 # remaining names are the two WP2B reserved classes expanded by environment;
 # NAT's three handlers deliberately get three independent execution identities.
@@ -334,8 +357,36 @@ def complete_nat_slots(resources):
     return True
 
 
+def historical_identity(binding, selected, install, runtime, resources, account, region,
+                        evidence_bucket):
+    """Closed preservation identity; markers cannot substitute for these bytes."""
+    return {"account": account, "region": region,
+            "address": HISTORICAL_DELIVERY[binding]["address"],
+            "name": selected["name"], "engine": selected["engine"],
+            "bundle": {field: install[field] for field in
+                       ("binding", "bucket", "key", "version_id", "sha256")},
+            "runtime_image": runtime["uri"], "resources": resources,
+            "evidence_bucket": evidence_bucket}
+
+
+def _normal_installation(key, digest, install, account, region):
+    return (install == {"binding": key, "sha256": digest,
+                        "bucket": f"e1-control-bundles-{account}-{region}",
+                        "key": f"bundles/sha256/{digest}.json",
+                        "version_id": install["version_id"],
+                        "installation": "VERIFIED", "readback": "EXACT_VERSION_BYTES_VERIFIED",
+                        "version_origin": "CONDITIONAL_WRITE_RETURN",
+                        "publisher": "SECURITY_ADMIN_EXTERNAL_BOOTSTRAP"}
+            and type(install["version_id"]) is str
+            and install["version_id"] == install["version_id"].strip()
+            and 0 < len(install["version_id"]) <= 1024
+            and install["version_id"].lower() not in ("null", "latest"))
+
+
 def creation_supported(authority, installations, runtime_approvals, environment_bindings,
-                       account, region):
+                       account, region, *, preservation_approval=None,
+                       dev_nat_inhibited=True, dev_delivery_inhibited=True,
+                       delivery_contract="V1", evidence_bucket=None):
     """Provider-free projection of the Terraform admission gate.
 
     Input records may be synthetic. A returned node is creation-supported by
@@ -348,23 +399,29 @@ def creation_supported(authority, installations, runtime_approvals, environment_
             install, runtime, resources = (installations[key], runtime_approvals[key],
                                            environment_bindings[env])
             digest = selected["package_sha256"]
-            if not (install == {"binding": key, "sha256": digest,
-                               "bucket": f"e1-control-bundles-{account}-{region}",
-                               "key": f"bundles/sha256/{digest}.json",
-                               "version_id": install["version_id"],
-                               "installation": "VERIFIED",
-                               "readback": "EXACT_VERSION_BYTES_VERIFIED",
-                               "version_origin": "CONDITIONAL_WRITE_RETURN",
-                               "publisher": "SECURITY_ADMIN_EXTERNAL_BOOTSTRAP"}
-                    and type(install["version_id"]) is str and
-                    install["version_id"] == install["version_id"].strip() and
-                    0 < len(install["version_id"]) <= 1024 and
-                    install["version_id"].lower() not in ("null", "latest")):
-                continue
+            preserved = (key in HISTORICAL_DELIVERY and dev_delivery_inhibited and delivery_contract == "V1"
+                         and type(preservation_approval) is str
+                         and re.fullmatch(r"[0-9a-f]{64}", preservation_approval) is not None
+                         and install.get("source_commit") == HISTORICAL_SOURCE
+                         and hashlib.sha256(canonical(historical_identity(
+                             key, selected, install, runtime, resources, account, region,
+                             evidence_bucket or f"demo-release-artifacts-{account}")).rstrip(b"\n")).hexdigest()
+                         == HISTORICAL_DELIVERY[key]["installation_sha256"])
+            if preserved:
+                digest = HISTORICAL_DELIVERY[key]["package_sha256"]
+            if preserved:
+                if not (install["binding"] == key and install["sha256"] == digest
+                        and runtime["binding"] == key and runtime["package_sha256"] == digest
+                        and runtime["owner"] == OWNER
+                        and install["readback"] == "EXACT_VERSION_BYTES_VERIFIED"):
+                    continue
+            else:
+                if not _normal_installation(key, digest, install, account, region):
+                    continue
             repository = "e1-wp4d-" + key.replace("/", "-").replace("_", "-")
-            if not (runtime == {"binding": key, "owner": OWNER,
+            if not ((preserved or runtime == {"binding": key, "owner": OWNER,
                                "approval": "ADMIN_VERIFIED", "package_sha256": digest,
-                               "uri": runtime["uri"]} and
+                               "uri": runtime["uri"]}) and
                     re.fullmatch(rf"{account}[.]dkr[.]ecr[.]{region}[.]amazonaws[.]com/"
                                  rf"{repository}@sha256:[0-9a-f]{{64}}", runtime["uri"])):
                 continue
@@ -670,9 +727,15 @@ def extend(tf):
         "wp4d_environment_bindings": {"type": "any", "default": {}},
         "dev_delivery_binding": {"type": "any", "default": None, "nullable": True},
         "dev_delivery_contract": {"type":"string", "default":"V1", "nullable":False, "validation": {"condition":ex('contains(["V1","SQL_RESTORE_NO_MIGRATIONS_V2"],var.dev_delivery_contract)'), "error_message":"Only protected V1 or DEV SQL recovery V2 is supported."}},
+        "dev_delivery_preservation_approval_sha256": {
+            "type": "string", "default": None, "nullable": True,
+            "validation": {
+                "condition": ex('var.dev_delivery_preservation_approval_sha256 == null ? true : can(regex("^[0-9a-f]{64}$",var.dev_delivery_preservation_approval_sha256)) && var.dev_delivery_inhibited && var.dev_delivery_contract == "V1"'),
+                "error_message": "Historical DEV preservation requires a separately approved manifest digest, V1 and DEV delivery inhibition."}},
     })
     local = tf["locals"]
     local["wp4d_contract"] = ex("var.authority.wp4d")
+    local["wp4d_historical_installations"] = HISTORICAL_DELIVERY
     local["wp4d_candidates"] = ex('{ for key, v in local.wp4d_contract.selected : key => merge(v, { install = try(var.wp4d_installations[key], null), runtime = try(var.wp4d_runtime_approvals[key], null), resources = try(jsondecode(contains(["request-gateway/deploy-dev","normal-delivery/deploy-dev","cleanup-recovery/cleanup-dev"],key) && var.dev_delivery_binding != null ? jsonencode(var.dev_delivery_binding) : jsonencode(var.wp4d_environment_bindings[v.environment])), null) }) }')
     checks = [
         "v.install.binding == key", "v.install.sha256 == v.package_sha256",
@@ -750,9 +813,24 @@ def extend(tf):
         'sort([for slot in v.resources.nat_slots : slot.asg]) == sort(["demo-dev-asg-nat-a","demo-dev-asg-nat-b"])']
     full_ready = 'try(' + ' && '.join(checks) + ', false)'
     nat_ready = 'try(' + ' && '.join(nat_checks) + ', false)'
-    local["wp4d_ready"] = ex('{ for key, v in local.wp4d_candidates : key => v if '
+    # Preserve every applicable resource/identity check. Only the historical
+    # creation/approval markers are replaced by NEW owner approval and a closed
+    # installation fingerprint. NAT/PROD keep the original admission unchanged.
+    historical_checks = [c.replace('v.package_sha256', 'local.wp4d_historical_installations[key].package_sha256')
+                         for c in checks if c not in (
+                             'v.install.installation == "VERIFIED"',
+                             'v.install.version_origin == "CONDITIONAL_WRITE_RETURN"',
+                             'v.install.publisher == "SECURITY_ADMIN_EXTERNAL_BOOTSTRAP"',
+                             'v.runtime.approval == "ADMIN_VERIFIED"')]
+    historical_checks += [
+        'can(regex("^[0-9a-f]{64}$",var.dev_delivery_preservation_approval_sha256))',
+        'var.dev_delivery_inhibited && var.dev_delivery_contract == "V1"',
+        'v.install.source_commit == "' + HISTORICAL_SOURCE + '"',
+        'sha256(jsonencode({account=var.account_id,region=var.region,address=local.wp4d_historical_installations[key].address,name=v.name,engine=v.engine,bundle={binding=v.install.binding,bucket=v.install.bucket,key=v.install.key,version_id=v.install.version_id,sha256=v.install.sha256},runtime_image=v.runtime.uri,resources=v.resources,evidence_bucket=local.evidence_bucket})) == local.wp4d_historical_installations[key].installation_sha256']
+    local["wp4d_historical_ready"] = ex('{for key,v in local.wp4d_candidates:key=>merge(v,{package_sha256=local.wp4d_historical_installations[key].package_sha256}) if try(' + ' && '.join(historical_checks) + ',false)}')
+    local["wp4d_ready"] = ex('{ for key, v in local.wp4d_candidates : key => try(local.wp4d_historical_ready[key],v) if '
         '(startswith(key,"nat-recovery/nat-dev/") && try(v.resources.schema == "E1_WP4D_PROTECTED_NAT_NETWORK_V1",false) ? '
-        + nat_ready + ' : ' + full_ready + ') }')
+        + nat_ready + ' : ' + full_ready + ') || contains(keys(local.wp4d_historical_ready),key) }')
     local["wp4d_active"] = ex('{ for key, v in local.wp4d_ready : key => v if alltrue([for dependency in v.dependencies : contains(keys(local.wp4d_ready), dependency)]) }')
     local["wp4d_gateways"] = ex('{ for key, v in local.wp4d_active : key => v if v.engine == "LAMBDA" }')
     local["wp4d_projects"] = ex('{ for key, v in local.wp4d_active : key => v if v.engine == "CODEBUILD" }')
@@ -763,7 +841,7 @@ def extend(tf):
         for key in RESERVED if key.startswith("request-gateway/")}
     local["wp4d_policy_templates"] = {key: json.dumps(_template(key), sort_keys=True)
                                       for key in RESERVED}
-    local["wp4d_config"] = ex('{ for key, v in local.wp4d_active : key => jsonencode(merge({ binding = key, account = var.account_id, region = var.region, environment = v.environment, bundle = { binding = key, bucket = v.install.bucket, key = v.install.key, version_id = v.install.version_id, sha256 = v.install.sha256 }, runtime_image = v.runtime.uri, project = contains(keys(local.wp4d_project_names), key) ? local.wp4d_project_names[key] : v.name, evidence_bucket = "e1-wp4-${v.environment}-${var.account_id}-${var.region}", dev_evidence_bucket = "e1-wp4-dev-${var.account_id}-${var.region}", admin_bucket = startswith(key,"nat-recovery/nat-dev/") ? "e1-evidence-${var.account_id}-${var.region}" : local.evidence_bucket, repository = v.resources.repository, resources = jsondecode(startswith(key,"nat-recovery/nat-dev/") || key=="request-gateway/deploy-dev" ? "{}" : key=="cleanup-recovery/cleanup-dev" ? jsonencode({environment=v.environment,colors=v.resources.colors,cleanup=v.resources.cleanup}) : jsonencode(v.resources)), nat_slots = contains(["request-gateway/deploy-dev","cleanup-recovery/cleanup-dev"],key) ? [] : v.resources.nat_slots }, key == "normal-delivery/deploy-dev" ? { delivery_contract = var.dev_delivery_contract } : {})) }')
+    local["wp4d_config"] = ex('{ for key, v in local.wp4d_active : key => jsonencode(merge({ binding = key, account = var.account_id, region = var.region, environment = v.environment, bundle = { binding = key, bucket = v.install.bucket, key = v.install.key, version_id = v.install.version_id, sha256 = v.install.sha256 }, runtime_image = v.runtime.uri, project = contains(keys(local.wp4d_project_names), key) ? local.wp4d_project_names[key] : v.name, evidence_bucket = "e1-wp4-${v.environment}-${var.account_id}-${var.region}", dev_evidence_bucket = "e1-wp4-dev-${var.account_id}-${var.region}", admin_bucket = startswith(key,"nat-recovery/nat-dev/") ? "e1-evidence-${var.account_id}-${var.region}" : local.evidence_bucket, repository = v.resources.repository, resources = jsondecode(startswith(key,"nat-recovery/nat-dev/") || key=="request-gateway/deploy-dev" ? "{}" : key=="cleanup-recovery/cleanup-dev" ? jsonencode({environment=v.environment,colors=v.resources.colors,cleanup=v.resources.cleanup}) : jsonencode(v.resources)), nat_slots = contains(["request-gateway/deploy-dev","cleanup-recovery/cleanup-dev"],key) ? [] : v.resources.nat_slots }, key == "normal-delivery/deploy-dev" ? (contains(keys(local.wp4d_historical_ready),key) ? {} : { delivery_contract = var.dev_delivery_contract }) : {})) }')
     resources = tf["resource"]
     trust = ex('jsonencode({ Version = "2012-10-17", Statement = [{ Effect = "Allow", Action = "sts:AssumeRole", Principal = { Service = each.value.engine == "LAMBDA" ? "lambda.amazonaws.com" : "codebuild.amazonaws.com" }, Condition = each.value.engine == "CODEBUILD" ? { StringEquals = { "aws:SourceAccount" = var.account_id }, ArnEquals = { "aws:SourceArn" = "arn:aws:codebuild:${var.region}:${var.account_id}:project/${each.value.name}" } } : {} }] })')
     old = resources["aws_iam_role"]["execution"]
@@ -950,4 +1028,7 @@ def extend(tf):
     tf["output"]["wp4d"] = {"value": {"active_bindings": ex("keys(local.wp4d_active)"),
         "bundle_readers": ex('{ for k,v in local.wp4d_active : k => "arn:aws:iam::${var.account_id}:role/${v.role}" }'),
         "external_invocations": [], "live": "UNVERIFIED_NOT_DEPLOYED"}}
+    tf["output"]["wp4d"]["precondition"] = {
+        "condition": ex('var.dev_delivery_preservation_approval_sha256 == null ? true : alltrue([for key in keys(local.wp4d_historical_installations): contains(keys(local.wp4d_historical_ready),key) && contains(keys(local.wp4d_active),key)])'),
+        "error_message": "Approved historical preservation must retain all three exact installed bindings and dependencies; mismatches must not become deletions."}
     return tf

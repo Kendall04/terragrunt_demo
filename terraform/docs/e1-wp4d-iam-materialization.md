@@ -163,6 +163,45 @@ nonblank alone does not prove task-to-target membership.
 
 ## Verification and remaining work
 
+### Explicit preservation of the three historical DEV delivery installations
+
+`dev_delivery_preservation_approval_sha256` defaults to null. A separately
+approved reconstructed administrative manifest may enable preservation of exactly
+`request-gateway/deploy-dev`, `normal-delivery/deploy-dev` and
+`cleanup-recovery/cleanup-dev`. This is a NEW preservation decision, not evidence
+that the original tfvars or historical administrative approvals were recovered.
+Keep `dev_cicd_installation_only=true` (DERIVED from installed addresses),
+`dev_nat_inhibited=true`, `dev_delivery_inhibited=true` and the V1 contract.
+
+The generator keeps the current package catalog unchanged. A separate closed
+allowlist pins the three historical package hashes, their authentic source
+`57c8c0b46f875d60b5144040309d5e3d2bf2c3c6`, and installation fingerprints.
+Each fingerprint covers the exact S3 VersionId, bucket/key/hash, immutable ECR
+image, Terraform address, resource name/engine, complete protected environment
+binding and evidence bucket. Private configurations and versions stay outside
+Git. A caller cannot select another historical package or supply a replacement
+fingerprint. All applicable resource checks and dependency gates still apply.
+An output precondition rejects any incomplete preservation instead of turning
+failed admission into proposed deletion. This does not replace review of the
+full native plan and refreshed state before any separately authorized apply.
+
+Historical configuration is emitted without adding `delivery_contract`, including
+for the original V1 CodeBuild project. Its installed runtime predates that field
+and rejects it. Current-package V1/V2 selection remains unchanged. The exception
+cannot activate delivery, NAT or PROD, and does not change WP3/WP5 admission,
+IAM templates, backends, published Lambda versions or qualified auxiliaries.
+A later separately authorized NAT activation is independent: it must not remove
+the three preserved delivery bindings or enable delivery.
+
+The three newer NAT bundles change `scripts/wp4d/runtime.py` and shared recovery
+modules. Their loader requires the image's `runtime.py` and `installed.py` bytes
+to match the selected bundle. A valid bundle SHA or existing image URI is not
+proof of compatibility. Before publication, establish the exact image bootstrap
+provenance or build separately authorized compatible images by immutable digest;
+never republish delivery as an incidental part of a NAT update. Offline tests
+prove declarations only. New administrative approvals, S3 publication receipts,
+live plan review and installation remain separate operations.
+
 The provider-free WP4D suite tests exact action/resource/condition tuples,
 trust, invocation, dev/prod isolation, package determinism, selective gating,
 and representative task-to-target membership. Existing WP1-WP4C regression
