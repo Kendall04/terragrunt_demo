@@ -1694,30 +1694,30 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/SqlBackup.Tests/CleanupTests.cs": {
-      "semantic_status": "UNVERIFIED",
       "sha256": "bd3ef013bea6aa8846c7520ddb46f1406ecc191b9b8688146feac359e24b6925",
       "declarations": [],
-      "signals": {}
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/SqlBackup.Tests/ProcessSafetyTests.cs": {
-      "semantic_status": "UNVERIFIED",
       "sha256": "c85ce231388f0cd3e12f4d6f1bb408d3ae68e8fcb3cdff39c1ba2f9c66f96631",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           39
         ]
-      }
+      },
+      "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/SqlBackup.Tests/ProtocolTests.cs": {
-      "semantic_status": "UNVERIFIED",
       "sha256": "0cb180e3fd2185b228549a3ab815400a012d1409eb82feef9e8126b9fdb77f64",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           18
         ]
-      }
+      },
+      "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/SqlBackup.Tests/ReceiptReplayTests.cs": {
       "sha256": "403133eb8482bf407db4e4d769f7f7a9e66a35f3ab2eb03a846b04a5bf7cebf4",
@@ -1730,19 +1730,18 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/SqlBackup.Tests/S3AdapterTests.cs": {
-      "semantic_status": "UNVERIFIED",
       "sha256": "af8c8bff55c41ea6e04d0495b9daea57f9f3867eba4c79a5d937a54259cc5cd7",
       "declarations": [],
-      "signals": {}
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/SqlBackup.Tests/SqlBackup.Tests.csproj": {
-      "semantic_status": "UNVERIFIED",
       "sha256": "0c085a06da2be5c633ca69ebd709d89f4a1c7bead2ed8c2c242492d4bd79092a",
       "declarations": [],
-      "signals": {}
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/SqlBackup.Tests/SqlExpressIntegrationTests.cs": {
-      "semantic_status": "UNVERIFIED",
       "sha256": "de1b4efc9d84a673fa64adf7fda8b64774e6efc7e451bc96898afde45b945a96",
       "declarations": [],
       "signals": {
@@ -1753,7 +1752,8 @@
           19,
           23
         ]
-      }
+      },
+      "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/SqlBackup.Tests/packages.lock.json": {
       "sha256": "e9b5d5815d7595165fa81be75c7af512f216b3d59c23536acb72aff1f8832d3c",
@@ -1762,13 +1762,12 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/SqlBackup/Cleanup.cs": {
-      "semantic_status": "UNVERIFIED",
       "sha256": "177022d6b46de380f975f240b820a9e7f2c65c3247edbf09ae3dff4f5654c8e3",
       "declarations": [],
-      "signals": {}
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/SqlBackup/CloudPreview.cs": {
-      "semantic_status": "UNVERIFIED",
       "sha256": "d6fb08f075bf5aaa9bb21673748be63a9ad5aac72df92bff8930138078d01bab",
       "declarations": [],
       "signals": {
@@ -1793,10 +1792,10 @@
           26,
           27
         ]
-      }
+      },
+      "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/SqlBackup/Contracts.cs": {
-      "semantic_status": "UNVERIFIED",
       "sha256": "a2436181bc7b5f3d787449223d85ae06122e468e96b91385b4cc334cbd32fd8b",
       "declarations": [],
       "signals": {
@@ -1804,10 +1803,10 @@
           15,
           33
         ]
-      }
+      },
+      "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/SqlBackup/NativeSql.cs": {
-      "semantic_status": "UNVERIFIED",
       "sha256": "5cb7e034839f916f23fd056d3108e8ffce8d100d84ec3095eb7b3262d91b6b0c",
       "declarations": [],
       "signals": {
@@ -1822,10 +1821,10 @@
           38,
           39
         ]
-      }
+      },
+      "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/SqlBackup/Program.cs": {
-      "semantic_status": "UNVERIFIED",
       "sha256": "c90b8d7485f77d26333a357639a5a83f6e79462ece2767a54d2e1973e7e9edc1",
       "declarations": [],
       "signals": {
@@ -1838,13 +1837,14 @@
           52,
           64
         ]
-      }
+      },
+      "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/SqlBackup/Protocol.cs": {
-      "semantic_status": "UNVERIFIED",
       "sha256": "c7eb695610cc55d2624831be299413d4812155add35698d505e04fc41dca3781",
       "declarations": [],
-      "signals": {}
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/SqlBackup/ReceiptReplayStore.cs": {
       "sha256": "0b2f0677ac02a8629dfeb6070c78ada9c75e205e1a8af4884230e936ee131e03",
@@ -1853,7 +1853,6 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/SqlBackup/S3Store.cs": {
-      "semantic_status": "UNVERIFIED",
       "sha256": "8d48207e823661fb3caa83c19e07abd361934da5d8ce2efa8fd4558d65ada02f",
       "declarations": [],
       "signals": {
@@ -1861,13 +1860,14 @@
           12,
           28
         ]
-      }
+      },
+      "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/SqlBackup/SqlBackup.csproj": {
-      "semantic_status": "UNVERIFIED",
       "sha256": "2c5c9a6a12088f7b934b5f6dfe76419c7a42d3fe77a0cf9664cfda478feb5b05",
       "declarations": [],
-      "signals": {}
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/SqlBackup/packages.lock.json": {
       "sha256": "a8acb90bd533e11b1114fc49a7e521eac46f502790280810fef14ada4e941b2a",
@@ -1898,7 +1898,6 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/ec2_prepare.py": {
-      "semantic_status": "UNVERIFIED",
       "sha256": "f2368300cb1463939a36c7f4c82ee80b7a9c643ca7373c6c083c32120169183e",
       "declarations": [],
       "signals": {
@@ -1929,10 +1928,10 @@
         "security-control": [
           63
         ]
-      }
+      },
+      "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/ec2_snapshot.py": {
-      "semantic_status": "UNVERIFIED",
       "sha256": "0258204138190db0e700054d657b04c48319f2f4390c82bfaf31958289534549",
       "declarations": [],
       "signals": {
@@ -1948,17 +1947,18 @@
           35,
           40
         ]
-      }
+      },
+      "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/host.py": {
-      "semantic_status": "UNVERIFIED",
       "sha256": "787bff71d6a8916c3f32e2de765b34f6723b2a6e3ecd5f9b340980d5f68bdee2",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           89
         ]
-      }
+      },
+      "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/local_release.py": {
       "sha256": "77146b950b20da1cbe5c00c73d03b1d555a4c941d96e1f54f66cb04dc6d21822",
@@ -2002,7 +2002,6 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/proposed-lab.json": {
-      "semantic_status": "UNVERIFIED",
       "sha256": "8b4af524325caaadb468e62add84d835ffae36e9b406be2e61b31fc73a861b15",
       "declarations": [],
       "signals": {
@@ -2012,7 +2011,8 @@
           7,
           8
         ]
-      }
+      },
+      "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/recovery/authorization.py": {
       "sha256": "1319a401b57abf53badf4f99ad37e567d0cadc36e9a11e88fddc339af8eaac4f",
@@ -2693,7 +2693,6 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/run-sql-lab.py": {
-      "semantic_status": "UNVERIFIED",
       "sha256": "da32c861307c733eed0d9dd7a10e1f7c6fe9a004dbd316adc7aaa1e794f16095",
       "declarations": [],
       "signals": {
@@ -2716,7 +2715,8 @@
           83,
           84
         ]
-      }
+      },
+      "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/sentinel_publish.py": {
       "sha256": "a3506dde996bce136cbdfd6ff8d9d999fd4b03f315b4ae14a6d33300aee56091",
@@ -2778,7 +2778,6 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/sql-backup.service.in": {
-      "semantic_status": "UNVERIFIED",
       "sha256": "b5251fca941552f725389ddf21d42527fc403381b27b9984250e385123492460",
       "declarations": [],
       "signals": {
@@ -2788,16 +2787,16 @@
         "executable-dependency": [
           21
         ]
-      }
+      },
+      "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/sql-backup.timer.in": {
-      "semantic_status": "UNVERIFIED",
       "sha256": "832097e3e5a746d19bb8a8d4399d32609dedc3bdbcca95eba3ed15492514c49a",
       "declarations": [],
-      "signals": {}
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/test_ec2.py": {
-      "semantic_status": "UNVERIFIED",
       "sha256": "5bc41291182eeaac525cbaf0bd1653068e4968208096ffb802844392da176334",
       "declarations": [],
       "signals": {
@@ -2822,7 +2821,8 @@
         "security-control": [
           48
         ]
-      }
+      },
+      "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/test_host.py": {
       "sha256": "a2f7993ca65dd635c53c534fb925b82e630c92f114746bd62cd258f11095bba1",
@@ -4935,13 +4935,13 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/final_acceptance/gate.py": {
-      "sha256": "6ca614cf79e4c9159b81fc8b1193fc66e4676bc843bec6678a131f22d68fbf50",
+      "sha256": "561807bdc9db7ab8cfe9df392697f0c2d19fd5d01655fe173f503e7d82417874",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           69,
           152,
-          174
+          186
         ],
         "executable-dependency": [
           3,
@@ -5500,7 +5500,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/nat/check_static.py": {
-      "sha256": "3a96b307b27a84955a94e02cc76ac94d3fe5d63c135645e9040ab62ef622dc5e",
+      "sha256": "d75ec238a8984fb28c9e359baa782deecc28cb4bc39c3dc5f1b654b3d27b51c3",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -5512,20 +5512,20 @@
           50,
           54,
           56,
-          82,
-          100,
-          132,
-          134,
+          83,
+          101,
+          133,
           135,
-          137
+          136,
+          138
         ],
         "executable-dependency": [
-          59
+          60
         ],
         "security-control": [
-          64,
-          68,
-          127
+          65,
+          69,
+          128
         ]
       },
       "semantic_status": "CURRENT_FACT"
@@ -6384,7 +6384,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/model.py": {
-      "sha256": "2b9b0d1378b195d64ef8d648506b36998226a3482847c49d21d34de631e23a17",
+      "sha256": "b15b50f849c47ead52347ab9ce0ba2d14beb9b22873e8d8d68757f439ee94a70",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -6698,170 +6698,171 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/wp4d.py": {
-      "sha256": "89475c1b771e1a911ece0fcfd056544dd95584e30e9449afb7175f5b61b5521e",
+      "sha256": "88692b425ab6023a24489294187a1a0e4244f5b7fa951c89aff731637b6801dd",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
-          768,
-          771
+          846,
+          849
         ],
         "launch-or-mutation": [
-          53,
-          393,
-          394,
-          395,
-          398,
-          401,
-          402,
-          407,
-          418,
-          419,
-          443,
-          444,
-          456,
-          478,
-          481,
-          546,
-          548,
-          549,
-          564,
-          565,
-          566,
-          569,
-          575,
-          586,
-          589,
-          625,
+          76,
+          450,
+          451,
+          452,
+          455,
+          458,
+          459,
+          464,
+          475,
+          476,
+          500,
+          501,
+          513,
+          535,
+          538,
+          603,
+          605,
+          606,
+          621,
+          622,
+          623,
           626,
-          634,
-          705,
-          706,
-          707,
-          708,
-          709,
-          711,
-          719,
-          740,
+          632,
+          643,
+          646,
+          682,
+          683,
+          691,
           768,
+          769,
+          770,
           771,
-          781,
-          811,
-          831,
-          832,
-          835,
-          837,
-          841,
-          850,
-          852,
-          860,
-          865,
-          873,
-          885,
-          907,
+          772,
+          774,
+          782,
+          803,
+          846,
+          849,
+          859,
+          889,
+          909,
+          910,
+          913,
           915,
-          923,
+          919,
+          928,
           930,
-          949,
-          951
+          938,
+          943,
+          951,
+          963,
+          985,
+          993,
+          1001,
+          1008,
+          1027,
+          1029
         ],
         "executable-dependency": [
-          35,
-          36,
-          37,
-          39,
-          40,
-          41,
-          48,
-          49,
-          52,
-          53,
-          57,
           58,
           59,
           60,
-          61,
           62,
           63,
+          64,
+          71,
+          72,
+          75,
+          76,
+          80,
+          81,
           82,
           83,
-          87,
-          89,
-          91,
-          93,
+          84,
+          85,
+          86,
+          105,
+          106,
+          110,
+          112,
           114,
-          115,
-          117,
-          118,
-          120,
-          121,
-          127,
-          128,
-          134,
+          116,
+          137,
           138,
-          142,
+          140,
+          141,
           143,
-          148,
-          149,
-          153,
+          144,
+          150,
+          151,
           157,
           161,
-          162,
-          170,
-          173,
-          174,
-          178,
-          179,
-          183,
+          165,
+          166,
+          171,
+          172,
+          176,
+          180,
           184,
-          188,
-          189,
+          185,
           193,
-          194,
-          203,
-          285,
-          326,
-          743,
-          766,
-          791,
-          802,
-          835,
-          838,
-          839,
-          840,
-          841,
-          843,
+          196,
+          197,
+          201,
+          202,
+          206,
+          207,
+          211,
+          212,
+          216,
+          217,
+          226,
+          308,
+          349,
+          806,
+          829,
           844,
-          865,
-          873,
-          907
+          869,
+          880,
+          913,
+          916,
+          917,
+          918,
+          919,
+          921,
+          922,
+          943,
+          951,
+          985
         ],
         "security-control": [
-          769,
-          771,
-          772,
-          773,
-          774,
-          776,
-          778,
-          785,
-          793,
-          800,
-          813,
-          833,
-          838,
-          842,
-          843,
-          845,
-          846,
-          853,
+          847,
+          849,
+          850,
+          851,
+          852,
           854,
-          864,
-          867,
-          890,
-          905,
+          856,
+          863,
+          871,
+          878,
+          891,
+          911,
+          916,
+          920,
+          921,
+          923,
+          924,
           931,
-          938,
-          946
+          932,
+          942,
+          945,
+          968,
+          983,
+          1009,
+          1016,
+          1024
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -7268,7 +7269,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/wp4d/check_static.py": {
-      "sha256": "5471ee454a48f716c07d3a60d996e217804a8ed3e916775f5ea1bbee52a51f55",
+      "sha256": "b0509b05352e9ba0a64b2c0e1dc35f513d2df82d4a71e19e6244f4b4fc9b6ff0",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -7277,24 +7278,26 @@
           25,
           27,
           28,
-          73,
-          114,
-          117,
-          126,
+          74,
+          115,
+          118,
           127,
-          129,
-          133,
-          138,
-          143,
-          158,
-          167,
-          179,
-          185,
-          187,
-          193
+          128,
+          130,
+          134,
+          139,
+          144,
+          159,
+          168,
+          180,
+          186,
+          188,
+          194,
+          198,
+          199
         ],
         "executable-dependency": [
-          185
+          186
         ],
         "security-control": [
           33,
@@ -8025,11 +8028,11 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/main.tf.json": {
-      "sha256": "eaa73d1e8304da2ea3800e3ddc2d2cfbfa06364b20227371dabc62739de8242d",
+      "sha256": "5b57d9509990b1a546756a97233a3820d09668ca370f10164d4663e3e7abd884",
       "declarations": [],
       "signals": {
         "role-input": [
-          215
+          225
         ],
         "launch-or-mutation": [
           2,
@@ -8037,7 +8040,7 @@
           12,
           13,
           39,
-          147
+          156
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -8062,53 +8065,40 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/modules/controller_compute/main.tf.json": {
-      "sha256": "8cb1eaa2a24ed83d1ce0134b60089650d394075a8c111399c7f7ae774acc312f",
+      "sha256": "bccaeb8d613c8274f5f806f01430c58262a107966a3cb38bc26efc7e02338a7f",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
-          111,
-          123,
-          290,
-          311,
-          316
+          120,
+          132,
+          317,
+          338,
+          343
         ],
         "role-input": [
-          104,
-          387,
-          504,
-          1069
+          113,
+          414,
+          531,
+          1096
         ],
         "launch-or-mutation": [
           2,
           4,
           5,
-          129,
-          132,
-          139,
-          140,
+          138,
           141,
-          142,
-          177,
-          193,
-          194,
-          195,
-          196,
-          197,
-          198,
-          199,
-          200,
-          201,
-          202,
+          148,
+          149,
+          150,
+          151,
           203,
           204,
-          205,
-          206,
-          207,
-          208,
-          212,
-          213,
-          214,
+          220,
           221,
+          222,
+          223,
+          224,
+          225,
           226,
           227,
           228,
@@ -8117,89 +8107,104 @@
           231,
           232,
           233,
-          274,
-          290,
-          311,
-          316,
-          340,
-          350,
-          362,
-          531,
-          567,
-          607,
-          663,
-          669,
-          674,
-          768,
-          772,
-          777,
-          784,
-          790,
-          814,
-          847,
-          869,
+          234,
+          235,
+          239,
+          240,
+          241,
+          248,
+          253,
+          254,
+          255,
+          256,
+          257,
+          258,
+          259,
+          260,
+          301,
+          317,
+          338,
+          343,
+          367,
+          377,
+          389,
+          558,
+          594,
+          634,
+          690,
+          696,
+          701,
+          795,
+          799,
+          804,
+          811,
+          817,
+          841,
           874,
-          879,
-          884,
-          970,
-          989,
-          1007,
-          1028,
-          1076,
-          1084
+          896,
+          901,
+          906,
+          911,
+          997,
+          1016,
+          1034,
+          1055,
+          1103,
+          1115
         ],
         "executable-dependency": [
-          105,
-          177,
-          210,
-          236,
-          362,
-          395,
-          420,
-          445,
-          508,
-          584,
-          625,
-          777,
-          790,
-          970
+          114,
+          203,
+          204,
+          237,
+          263,
+          389,
+          422,
+          447,
+          472,
+          535,
+          611,
+          652,
+          804,
+          817,
+          997
         ],
         "security-control": [
-          104,
-          237,
-          286,
-          290,
-          306,
-          311,
-          316,
-          319,
-          323,
-          332,
+          113,
+          264,
+          313,
+          317,
           333,
-          337,
-          347,
-          348,
-          369,
-          406,
-          412,
-          431,
-          437,
-          455,
-          456,
-          465,
-          544,
-          580,
-          615,
-          621,
-          656,
-          765,
-          824,
-          828,
-          866,
-          966,
-          1032,
-          1045,
-          1049
+          338,
+          343,
+          346,
+          350,
+          359,
+          360,
+          364,
+          374,
+          375,
+          396,
+          433,
+          439,
+          458,
+          464,
+          482,
+          483,
+          492,
+          571,
+          607,
+          642,
+          648,
+          683,
+          792,
+          851,
+          855,
+          893,
+          993,
+          1059,
+          1072,
+          1076
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -12902,7 +12907,6 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/wp4d/test_dev_inhibition.py": {
-      "semantic_status": "UNVERIFIED",
       "sha256": "b34a7a8cfe5af0191321c7ee2f87e5b4cdb6693dd8c6abb9efbe7bb9dc6e2ece",
       "declarations": [],
       "signals": {
@@ -12918,7 +12922,22 @@
           51,
           57
         ]
-      }
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/tests/wp4d/test_historical_delivery.py": {
+      "sha256": "e3a2b66343e7469ae79a80c93a11b98e0505a19fea186c5d320a4304a5502ece",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          18,
+          22,
+          121,
+          124,
+          145
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",
