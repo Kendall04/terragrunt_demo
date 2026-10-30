@@ -7,6 +7,7 @@ import copy
 import hashlib
 import json
 from pathlib import Path
+import re
 import subprocess
 import tempfile
 import unittest
@@ -164,7 +165,25 @@ class InstalledPreservation(unittest.TestCase):
         protected=json.loads((ROOT/'terraform/infra/security/modules/protected_resources/main.tf.json').read_text())
         prod=[v for resources in protected['resource'].values() for name,v in resources.items() if name.startswith('prod_')]
         self.assertEqual(len(prod),29)
-        self.assertTrue(all('count' not in v and 'for_each' not in v for v in prod))
+        self.assertTrue(all(v['count']=='${var.dev_cicd_installation_only ? 0 : 1}' and 'for_each' not in v for v in prod))
+
+    def test_protected_dev_and_neutral_contract_stays_byte_equivalent(self):
+        p=json.loads((ROOT/'terraform/infra/security/modules/protected_resources/main.tf.json').read_text())
+        common={kind:{n:v for n,v in rows.items() if not n.startswith('prod_')} for kind,rows in p['resource'].items()}
+        common={k:v for k,v in common.items() if v}
+        # Frozen from the reviewed c26e6c5 source, not regenerated expectations.
+        original={'resource':common,'output':p['output']['protected_dev_output_candidates']}
+        self.assertEqual(hashlib.sha256(json.dumps(original,sort_keys=True,separators=(',',':')).encode()).hexdigest(),
+                         'f42e2e02117754afb7cf8aeebea0b158d3d07b3009851877450342f8b97ae08c')
+
+    def test_future_prod_indexing_preserves_all_security_attributes(self):
+        p=json.loads((ROOT/'terraform/infra/security/modules/protected_resources/main.tf.json').read_text())
+        prod={kind:{n:{k:v for k,v in body.items() if k!='count'} for n,body in rows.items() if n.startswith('prod_')}
+              for kind,rows in p['resource'].items()}
+        prod={k:v for k,v in prod.items() if v}
+        normalized=re.sub(r'(aws_[a-z0-9_]+\.prod_[a-z0-9_]+)\[0\]',r'\1',json.dumps(prod,sort_keys=True,separators=(',',':')))
+        self.assertEqual(hashlib.sha256(normalized.encode()).hexdigest(),
+                         '6dba03f9b7e55adf38d817c66658ade9c8be2075c501f94d47e9dfb713d6f22a')
 
 
 def check_terraform(terraform,environment):
@@ -231,6 +250,7 @@ def check_terraform(terraform,environment):
             assert not evaluate({field:'foreign'})['wp4d_valid']
         assert not evaluate(locals_override={'wp3_outer_buildspec':{'version':'foreign'}})['wp3_valid']
     check_reconciliation(terraform,environment)
+    check_protected_selection(terraform,environment)
     print('Installed graph: closed WP3/NAT/WP6 preservation, negative mutations, inhibition and limited selectors PASS')
 
 
@@ -299,3 +319,50 @@ def check_reconciliation(terraform, environment):
         assert out['complete'] and not out['active'] and out['qualifier']=='27'
         assert all(v==1 for v in out['concurrency'].values())
         assert len(out['repositories'])==7 and len(out['wp5'])==8 and out['states']==['dev','prod'] and len(out['declarations'])==18
+
+
+def check_protected_selection(terraform, environment):
+    """Evaluate generated counts, guarded outputs and policy dependencies offline."""
+    module=json.loads((ROOT/'terraform/infra/security/modules/protected_resources/main.tf.json').read_text())
+    reference=re.compile(r'\b(aws_[a-z0-9_]+)\.([a-z0-9_]+)(\[0\])?\.([a-z0-9_]+)')
+    def rewrite(value):
+        if isinstance(value,str):
+            return reference.sub(lambda m:'var.references.'+m[1]+'.'+m[2]+(m[3] or '')+'.'+m[4],value)
+        if isinstance(value,list):return [rewrite(v) for v in value]
+        if isinstance(value,dict):return {k:rewrite(v) for k,v in value.items()}
+        return value
+    resources={};counts={}
+    for kind,rows in module['resource'].items():
+        for name,body in rows.items():
+            address=kind+'.'+name
+            counts[address]=body.get('count',1)
+            value=rewrite({k:v for k,v in body.items() if k!='count'})
+            resources[address]=('${var.dev_cicd_installation_only ? null : '+json.dumps(value)+'}'
+                                if name.startswith('prod_') else value)
+    local=dict(counts=counts,resources=resources,
+        candidates=rewrite(module['output']['protected_output_candidates']['value']),
+        dev_candidates=rewrite(module['output']['protected_dev_output_candidates']['value']))
+    with tempfile.TemporaryDirectory(prefix='protected-selection-offline-') as directory:
+        for limited in (True,False):
+            references={}
+            for kind,rows in module['resource'].items():
+                references[kind]={}
+                for name in rows:
+                    value={k:'fixture-'+name+'-'+k for k in ('arn','id','name','key_id')}
+                    references[kind][name]=([] if limited else [value]) if name.startswith('prod_') else value
+            variables={k:{'type':'any','default':v} for k,v in dict(account_id='123456789012',region='us-east-1',
+                dev_cicd_installation_only=limited,references=references).items()}
+            (Path(directory)/'main.tf.json').write_text(json.dumps(dict(variable=variables,locals=local)),encoding='utf-8')
+            query='jsonencode({counts=local.counts,resources=local.resources,candidates=local.candidates,dev_candidates=local.dev_candidates})\n'
+            p=subprocess.run([terraform,'console','-no-color'],cwd=directory,input=query,
+                             capture_output=True,text=True,env=environment,timeout=30)
+            if p.returncode or 'Error:' in p.stderr:raise AssertionError(p.stderr)
+            out=decode(p.stdout)
+            prod={k:v for k,v in out['counts'].items() if '.prod_' in k}
+            assert len(prod)==29 and all(v==(0 if limited else 1) for v in prod.values())
+            assert all((v is None)==limited for k,v in out['resources'].items() if '.prod_' in k)
+            for key,record in out['candidates'].items():
+                if key.startswith('prod/'):
+                    assert record['available'] is (not limited)
+                    assert (record['value'] is None)==limited
+            assert all(v['available'] for k,v in out['dev_candidates'].items() if not k.startswith('recovery/'))

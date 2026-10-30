@@ -205,6 +205,24 @@ class Retention(unittest.TestCase):
         full = configuration['output']['protected_output_candidates']['value']
         self.assertEqual(configuration['output'].pop('protected_dev_output_candidates')['value'],
                          {key:record for key,record in full.items() if record['scope']=='dev'})
+        # Normalize only the authorized future PROD indexing. Keep the original
+        # historical checksum, so any policy/security attribute drift still fails.
+        self.assertEqual(configuration['variable'].pop('dev_cicd_installation_only'),
+                         {'type':'bool','default':False})
+        indexed=0
+        for rows in configuration['resource'].values():
+            for name,body in rows.items():
+                if name.startswith('prod_'):
+                    self.assertEqual(body.pop('count'),'${var.dev_cicd_installation_only ? 0 : 1}')
+                    indexed+=1
+        self.assertEqual(indexed,29)
+        for key,record in full.items():
+            if record['scope']=='prod' and not key.startswith('recovery/'):
+                self.assertEqual(record['available'],'${!var.dev_cicd_installation_only}')
+                match=re.fullmatch(r'\$\{var\.dev_cicd_installation_only \? null : (aws_[a-z0-9_]+\.prod_[a-z0-9_]+\[0\]\.arn)\}',record['value'])
+                self.assertIsNotNone(match)
+                record.update(available=True,value='${'+match[1]+'}')
+        configuration=json.loads(re.sub(r'(aws_[a-z0-9_]+\.prod_[a-z0-9_]+)\[0\]',r'\1',json.dumps(configuration)))
         self.assertEqual(checksum(configuration),
                          baseline["configuration_without_lifecycle_sha256"])
         from scripts.tests.workflows.historical_snapshot import before_authorized_trial, source_transport_snapshot

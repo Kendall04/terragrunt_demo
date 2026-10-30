@@ -249,7 +249,8 @@
     "protected_resources": {
       "source": "./modules/protected_resources",
       "account_id": "${var.aws_account_id}",
-      "region": "${var.aws_region}"
+      "region": "${var.aws_region}",
+      "dev_cicd_installation_only": "${var.dev_cicd_installation_only}"
     },
     "lifecycle_foundations": {
       "source": "./modules/lifecycle_foundations",

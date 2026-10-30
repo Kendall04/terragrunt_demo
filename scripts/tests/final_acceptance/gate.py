@@ -154,7 +154,8 @@ def main():
             if path.is_file():
                 hashes[path.relative_to(ROOT).as_posix()] = hashlib.sha256(path.read_bytes()).hexdigest()
     regression = sum(records[k].get('executed', 0) for k in SUITES if k != 'final_acceptance')
-    # 1050 previous + 3 portable-security + 6 DEV inhibition + 7 delivery + 8 installed-graph preservation.
+    # 1050 previous + 3 portable-security + 6 DEV inhibition + 7 delivery +
+    # 8 installed-graph preservation + 2 limited-PROD security invariants.
     # Existing assertions and UNKNOWN/failure gates remain binding; count is no pass.
     preservation_methods = {
         'test_allowlist_is_exact_and_separate_from_current_catalog',
@@ -177,12 +178,14 @@ def main():
         'test_partial_preservation_has_blocking_preconditions',
         'test_normal_installation_receipts_remain_required',
         'test_limited_ecr_selection_is_closed_not_caller_controlled',
+        'test_protected_dev_and_neutral_contract_stays_byte_equivalent',
+        'test_future_prod_indexing_preserves_all_security_attributes',
     }
     required_installed = {'test_installed_preservation.InstalledPreservation.' + name for name in installed_methods}
     if not required_installed <= set(records['security_root'].get('test_ids', [])):
         errors.append('Installed graph preservation coverage is incomplete')
-    if regression != 1074:
-        errors.append(f'Accepted regression count changed: {regression} != 1074')
+    if regression != 1076:
+        errors.append(f'Accepted regression count changed: {regression} != 1076')
     static_good = all(records[n]['status'] == 'PASS' for n, _ in CHECKS)
     criteria = {key: {'status': 'PASS' if static_good and not errors and all(records[n]['status'] == 'PASS' for n in names) else 'FAIL',
                       'evidence_suites': list(names)} for key, names in CRITERIA.items()}

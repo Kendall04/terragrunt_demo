@@ -75,6 +75,11 @@ def output_fixture(doc):
             "repository": f"arn:aws:ecr:{REGION}:{ACCOUNT}:repository/{name}",
             "bucket": f"arn:aws:s3:::{name}{ACCOUNT}", "oidc": f"arn:aws:iam::{ACCOUNT}:oidc-provider/{name}"}
         records[key]["value"] = values[item["kind"]]
+        if item["scope"] == "prod":
+            # This fixture represents evaluated Terraform outputs in full mode.
+            # The console test separately verifies both real selector branches.
+            assert records[key]["available"] == own.ex("!var.dev_cicd_installation_only")
+            records[key]["available"] = True
     return records
 
 

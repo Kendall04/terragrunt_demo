@@ -298,6 +298,7 @@ def wiring(doc):
     # unchanged. A DEV trial must not materialize inert WP5/PROD reservations
     # merely because a shared Terraform collection is referenced by a Lambda.
     root['variable']['dev_cicd_installation_only']={'type':'bool','default':False}
+    root['module']['protected_resources']['dev_cicd_installation_only']=expression('var.dev_cicd_installation_only')
     root['module']['controller_compute']['dev_cicd_installation_only']=expression('var.dev_cicd_installation_only')
     compute_module['variable']['dev_cicd_installation_only']={'type':'bool','default':False}
     # These four local declaration receipts have no instances in the installed

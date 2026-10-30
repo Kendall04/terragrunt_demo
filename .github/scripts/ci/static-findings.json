@@ -568,7 +568,7 @@
         "file": "terraform/infra/security/modules/protected_resources/main.tf.json",
         "resource": "module.protected_resources",
         "message": "Image scanning is not enabled.",
-        "source_sha256": "a30384b8bb973cfa0fda316734b650f974272304b9b6f31c755a98e87ef8bf8b"
+        "source_sha256": "b0673ff3eb84713829cee1720d4bd531fd86696bac650dd4343fbca025efa2be"
       }
     ]
   }

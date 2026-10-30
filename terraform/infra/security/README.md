@@ -12,9 +12,29 @@ release concurrency zero and the observed completion target/permission on versio
 
 Limited mode omits only uninstalled keyed reservations (WP5/status ECR, PROD
 state bucket and local declaration receipts), preserving all existing addresses.
-The 29 unconditional PROD singletons remain an explicit **NO-GO**: excluding
-them would change declared addresses and requires a separate owner decision.
-No state migration, adoption, apply or fresh PLAN-ONLY is authorized by this code.
+The 29 PROD declarations absent from the installed serial-66 state now use
+`count = var.dev_cicd_installation_only ? 0 : 1`. Limited DEV mode omits them;
+full mode retains their security attributes and dependencies at the future
+addresses `module.protected_resources.<type>.prod_<name>[0]`. Existing DEV and
+neutral addresses do not change. No `moved` blocks, imports or state migration
+are required for that installed state. A different state containing old PROD
+singleton addresses must stop for a separate migration review before using this
+source. Excluded PROD output candidates are explicitly unavailable with null
+values; their indexed references are evaluated only in full mode.
+No adoption, apply or fresh PLAN-ONLY is authorized by this code. Rev5 remains
+unchanged and the additional WP6 preservation decision is still pending.
+
+Every future indexed address has the prefix `module.protected_resources.` and
+the suffix `[0]`. The complete set is:
+
+| Resource types | Names (each type/name pair is one address) |
+| --- | --- |
+| `aws_iam_role`, `aws_iam_role_policy` | `prod_sql`, `prod_flow`, `prod_nat`, `prod_nat_recovery`, `prod_cleanup`, `prod_blue_task`, `prod_blue_exec`, `prod_green_task`, `prod_green_exec` |
+| `aws_iam_role_policy_attachment` | `prod_sql`, `prod_blue_exec`, `prod_green_exec` |
+| `aws_iam_instance_profile` | `prod_sql_profile`, `prod_nat_profile` |
+| `aws_kms_key`, `aws_kms_alias` | `prod_kms` |
+| `aws_secretsmanager_secret` | `prod_sa`, `prod_db_user`, `prod_connection` |
+| `aws_ecr_repository` | `prod_repository` |
 
 WP3C adds [internal release wiring](../../docs/e1-internal-release.md) within this
 root. Canonical installation/runtime records remain empty; no live resources or
