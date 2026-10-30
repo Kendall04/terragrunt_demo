@@ -124,6 +124,7 @@ def check_terraform(terraform, environment):
     tf=json.loads((ROOT/'terraform/infra/security/modules/controller_compute/main.tf.json').read_text())
     local={k:v for k,v in tf['locals'].items() if k in (
         'nodes','wp4d_contract','wp4d_candidates','wp4d_historical_installations','wp4d_historical_ready',
+        'wp4d_historical_nat_installations','wp4d_historical_nat_ready','wp4d_nat_candidate_config','wp4d_nat_preservation_identities',
         'wp4d_ready','wp4d_active','wp4d_gateways','wp4d_projects','wp4d_project_names','wp4d_config')}
     local['evidence_bucket']=f'demo-release-artifacts-{ACCOUNT}'
     # Closed, explicitly synthetic installation fingerprints; production pins
@@ -137,7 +138,7 @@ def check_terraform(terraform, environment):
             values={'authority':doc,'account_id':ACCOUNT,'region':REGION,'wp4d_installations':installs,
                 'wp4d_runtime_approvals':images,'wp4d_environment_bindings':b,'dev_delivery_binding':binding,
                 'dev_delivery_contract':contract,'dev_nat_inhibited':nat,'dev_delivery_inhibited':delivery,
-                'dev_delivery_preservation_approval_sha256':approval,'dev_cicd_installation_only':limited}
+                'dev_delivery_preservation_approval_sha256':approval,'dev_nat_preservation_approval_sha256':None,'dev_cicd_installation_only':limited}
             configuration={'variable':{k:{'type':'any','default':v} for k,v in values.items()},
                 'locals':{**local,'input_valid':conditions,'preservation_valid':precondition}}
             path.write_text(json.dumps(configuration),encoding='utf-8')

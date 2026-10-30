@@ -36,6 +36,19 @@ HISTORICAL_DELIVERY = {
     },
 }
 
+# Only the three observed, inhibited DEV NAT installations. These pins are
+# independent of the current NAT catalog and cannot authorize activation or
+# bind version 4 to a different network. Version 4 remains historical evidence.
+HISTORICAL_NAT = {'nat-recovery/nat-dev/assign_eip': {'address': 'module.controller_compute.aws_lambda_function.wp4d["nat-recovery/nat-dev/assign_eip"]',
+                                     'installation_sha256': '354533715941878868b94d46c914c556cb8d122973cde52f0bd1a35e1c112e2a',
+                                     'package_sha256': '6b632c6d790265746c49d82162e04799b19f022d7b6cf6378181bb07645d7846'},
+ 'nat-recovery/nat-dev/change_rt': {'address': 'module.controller_compute.aws_lambda_function.wp4d["nat-recovery/nat-dev/change_rt"]',
+                                    'installation_sha256': 'd96ddc7af5cc8bdd06e808f9b37c1207fdbb6fa596f92f137a3b0a6d80bbbb53',
+                                    'package_sha256': '96cadfcba3f7cb5ecd6e85ea9199177cba31883d79661cbf14a967c32054e023'},
+ 'nat-recovery/nat-dev/disable_sdc': {'address': 'module.controller_compute.aws_lambda_function.wp4d["nat-recovery/nat-dev/disable_sdc"]',
+                                      'installation_sha256': '1f499d2a9b3f3d304a5cecad08bedb3edae9896d7766e0e0e227e6dd6feae3dc',
+                                      'package_sha256': '4ff585f270df1e20cd914e536f5220583f27f257b38cd22b2877fa38668e2099'}}
+
 # Names for the eight WP2C nodes are read from that canonical reservation. The
 # remaining names are the two WP2B reserved classes expanded by environment;
 # NAT's three handlers deliberately get three independent execution identities.
@@ -732,10 +745,15 @@ def extend(tf):
             "validation": {
                 "condition": ex('var.dev_delivery_preservation_approval_sha256 == null ? true : can(regex("^[0-9a-f]{64}$",var.dev_delivery_preservation_approval_sha256)) && var.dev_delivery_inhibited && var.dev_delivery_contract == "V1"'),
                 "error_message": "Historical DEV preservation requires a separately approved manifest digest, V1 and DEV delivery inhibition."}},
+        "dev_nat_preservation_approval_sha256": {
+            "type":"string", "default":None, "nullable":True, "validation":{
+                "condition":ex('var.dev_nat_preservation_approval_sha256==null ? true : can(regex("^[0-9a-f]{64}$",var.dev_nat_preservation_approval_sha256)) && var.dev_nat_inhibited'),
+                "error_message":"Historical NAT preservation requires a new complete manifest approval and DEV NAT inhibition; it never authorizes activation."}},
     })
     local = tf["locals"]
     local["wp4d_contract"] = ex("var.authority.wp4d")
     local["wp4d_historical_installations"] = HISTORICAL_DELIVERY
+    local["wp4d_historical_nat_installations"] = HISTORICAL_NAT
     local["wp4d_candidates"] = ex('{ for key, v in local.wp4d_contract.selected : key => merge(v, { install = try(var.wp4d_installations[key], null), runtime = try(var.wp4d_runtime_approvals[key], null), resources = try(jsondecode(contains(["request-gateway/deploy-dev","normal-delivery/deploy-dev","cleanup-recovery/cleanup-dev"],key) && var.dev_delivery_binding != null ? jsonencode(var.dev_delivery_binding) : jsonencode(var.wp4d_environment_bindings[v.environment])), null) }) }')
     checks = [
         "v.install.binding == key", "v.install.sha256 == v.package_sha256",
@@ -828,9 +846,20 @@ def extend(tf):
         'v.install.source_commit == "' + HISTORICAL_SOURCE + '"',
         'sha256(jsonencode({account=var.account_id,region=var.region,address=local.wp4d_historical_installations[key].address,name=v.name,engine=v.engine,bundle={binding=v.install.binding,bucket=v.install.bucket,key=v.install.key,version_id=v.install.version_id,sha256=v.install.sha256},runtime_image=v.runtime.uri,resources=v.resources,evidence_bucket=local.evidence_bucket})) == local.wp4d_historical_installations[key].installation_sha256']
     local["wp4d_historical_ready"] = ex('{for key,v in local.wp4d_candidates:key=>merge(v,{package_sha256=local.wp4d_historical_installations[key].package_sha256}) if try(' + ' && '.join(historical_checks) + ',false)}')
-    local["wp4d_ready"] = ex('{ for key, v in local.wp4d_candidates : key => try(local.wp4d_historical_ready[key],v) if '
+    local['wp4d_nat_candidate_config'] = ex('{for key,v in local.wp4d_candidates:key=>{binding=key,account=var.account_id,region=var.region,environment=v.environment,bundle={binding=key,bucket=v.install.bucket,key=v.install.key,version_id=v.install.version_id,sha256=v.install.sha256},runtime_image=v.runtime.uri,project=v.name,evidence_bucket="e1-wp4-${v.environment}-${var.account_id}-${var.region}",dev_evidence_bucket="e1-wp4-dev-${var.account_id}-${var.region}",admin_bucket="e1-evidence-${var.account_id}-${var.region}",repository=v.resources.repository,resources={},nat_slots=v.resources.nat_slots} if startswith(key,"nat-recovery/nat-dev/") && v.install!=null && v.runtime!=null && v.resources!=null}')
+    local['wp4d_nat_preservation_identities'] = ex('{for key,v in local.wp4d_candidates:key=>{account=var.account_id,region=var.region,address=local.wp4d_historical_nat_installations[key].address,name=v.name,engine=v.engine,role="arn:aws:iam::${var.account_id}:role/${v.name}-exec",published_version="4",configuration=local.wp4d_nat_candidate_config[key]} if contains(keys(local.wp4d_historical_nat_installations),key) && v.install!=null && v.runtime!=null && v.resources!=null}')
+    historical_nat_checks = [c.replace('v.package_sha256','local.wp4d_historical_nat_installations[key].package_sha256')
+        for c in nat_checks if c not in (
+            'v.install.installation == "VERIFIED"','v.install.version_origin == "CONDITIONAL_WRITE_RETURN"',
+            'v.install.publisher == "SECURITY_ADMIN_EXTERNAL_BOOTSTRAP"','v.runtime.approval == "ADMIN_VERIFIED"')]
+    historical_nat_checks += ['can(regex("^[0-9a-f]{64}$",var.dev_nat_preservation_approval_sha256))',
+        'var.dev_nat_inhibited','v.install.preservation == "OBSERVED_EXISTING"',
+        'v.runtime.preservation == "OBSERVED_EXISTING"','v.install.source_commit == "' + HISTORICAL_SOURCE + '"',
+        'sha256(jsonencode(local.wp4d_nat_preservation_identities[key])) == local.wp4d_historical_nat_installations[key].installation_sha256']
+    local['wp4d_historical_nat_ready'] = ex('{for key,v in local.wp4d_candidates:key=>merge(v,{package_sha256=local.wp4d_historical_nat_installations[key].package_sha256}) if try('+' && '.join(historical_nat_checks)+',false)}')
+    local["wp4d_ready"] = ex('{ for key, v in local.wp4d_candidates : key => try(local.wp4d_historical_ready[key],local.wp4d_historical_nat_ready[key],v) if '
         '(startswith(key,"nat-recovery/nat-dev/") && try(v.resources.schema == "E1_WP4D_PROTECTED_NAT_NETWORK_V1",false) ? '
-        + nat_ready + ' : ' + full_ready + ') || contains(keys(local.wp4d_historical_ready),key) }')
+        + nat_ready + ' : ' + full_ready + ') || contains(keys(local.wp4d_historical_ready),key) || contains(keys(local.wp4d_historical_nat_ready),key) }')
     local["wp4d_active"] = ex('{ for key, v in local.wp4d_ready : key => v if alltrue([for dependency in v.dependencies : contains(keys(local.wp4d_ready), dependency)]) }')
     local["wp4d_gateways"] = ex('{ for key, v in local.wp4d_active : key => v if v.engine == "LAMBDA" }')
     local["wp4d_projects"] = ex('{ for key, v in local.wp4d_active : key => v if v.engine == "CODEBUILD" }')
@@ -1017,7 +1046,11 @@ def extend(tf):
                       ("aws_lambda_function_event_invoke_config","wp4d_nat"),
                       ("aws_cloudwatch_metric_alarm","nat_async_delivery")):
         resources[kind][name].setdefault("depends_on", []).append("aws_cloudwatch_event_target.wp4d_nat")
-    local["wp4d_repositories"] = ex('{ for key, value in local.wp4d_contract.selected : "e1-wp4d-${replace(replace(key, "/", "-"), "_", "-")}" => { name = value.name, engine = value.engine } }')
+    # This closed six-binding set is evidenced by existing repository/policy
+    # addresses. It is independent of readiness: invalid admission must not
+    # remove an installed repository. Full installation mode is unchanged.
+    local['wp4d_installed_repository_bindings'] = sorted(set(HISTORICAL_DELIVERY) | set(HISTORICAL_NAT))
+    local["wp4d_repositories"] = ex('{ for key, value in local.wp4d_contract.selected : "e1-wp4d-${replace(replace(key, "/", "-"), "_", "-")}" => { name = value.name, engine = value.engine } if !var.dev_cicd_installation_only || contains(local.wp4d_installed_repository_bindings,key) }')
     resources["aws_ecr_repository"]["wp4d"] = {
         "for_each": ex("local.wp4d_repositories"), "name": ex("each.key"),
         "image_tag_mutability": "IMMUTABLE", "image_scanning_configuration": {"scan_on_push": True}}
@@ -1029,6 +1062,6 @@ def extend(tf):
         "bundle_readers": ex('{ for k,v in local.wp4d_active : k => "arn:aws:iam::${var.account_id}:role/${v.role}" }'),
         "external_invocations": [], "live": "UNVERIFIED_NOT_DEPLOYED"}}
     tf["output"]["wp4d"]["precondition"] = {
-        "condition": ex('var.dev_delivery_preservation_approval_sha256 == null ? true : alltrue([for key in keys(local.wp4d_historical_installations): contains(keys(local.wp4d_historical_ready),key) && contains(keys(local.wp4d_active),key)])'),
+        "condition": ex('(var.dev_delivery_preservation_approval_sha256 == null ? true : alltrue([for key in keys(local.wp4d_historical_installations): contains(keys(local.wp4d_historical_ready),key) && contains(keys(local.wp4d_active),key)])) && (var.dev_nat_preservation_approval_sha256==null ? true : alltrue([for key in keys(local.wp4d_historical_nat_installations): contains(keys(local.wp4d_historical_nat_ready),key) && contains(keys(local.wp4d_active),key)]))'),
         "error_message": "Approved historical preservation must retain all three exact installed bindings and dependencies; mismatches must not become deletions."}
     return tf

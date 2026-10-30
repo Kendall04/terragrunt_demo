@@ -245,3 +245,43 @@ negative cases reject foreign environments/roles/targets, missing conditions,
 unbound versions and incomplete resource membership. They establish no live IAM,
 AWS membership, image installation or operational readiness. Existing Linux E3
 and provider/live verification gaps remain open.
+
+## Preserving the installed administrative graph
+
+`wp3_preservation_approval_sha256` admits only three observed WP3 controllers
+and their three workers through source-owned installation fingerprints in
+`scripts/tests/security_root/internal.py`. These cover exact addresses, names,
+roles, immutable images, bundle versions, support/configuration and buildspecs.
+Normal installation still requires its original publication and runtime receipts.
+Preservation instead records `preservation=OBSERVED_EXISTING` and requires a new
+owner decision; it does not recreate `ADMIN_VERIFIED` or a conditional write.
+The output precondition rejects incomplete preservation of any of the six nodes.
+
+`dev_nat_preservation_approval_sha256` separately preserves only the three
+historical DEV NAT installations reproduced from `57c8c0b46f875d60b5144040309d5e3d2bf2c3c6`.
+Their closed fingerprints bind exact old configurations, images, bundle versions,
+roles and numeric LT version 2 network bindings. NAT must remain inhibited.
+Version 4 functions, qualifiers and their old network are historical; they are
+not a rollback for the new VPC. Desired NAT images/bundles/network and unknown
+future numeric versions belong in a separate proposed change, never the baseline.
+The existing normal NAT gate remains required for that future installation.
+
+Both digests default to null. Before supplying them (or the existing delivery
+preservation digest), verify the exact complete private manifest hash against
+the owner's explicit new approval and record the separate execution inputs.
+A hexadecimal value or test fixture is not approval. A mismatched/partial
+preservation decision fails its precondition rather than authorizing deletion.
+Historical V1 delivery configuration still omits `delivery_contract`.
+
+In `dev_cicd_installation_only=true`, WP4D repository and policy selectors use
+the closed six-binding installed set, independent of readiness. The ten other
+WP4D reservations are excluded; full mode retains all sixteen. No ECR policy,
+IAM permission, backend, PROD declaration or WP5 contract changes. Other existing
+source reservations outside the state are not installation approval: the future
+full administrative plan must classify them and reject unrelated creations.
+
+Focused provider-free checks exercise both modes, exact configuration bytes,
+missing nodes, foreign identities, altered artifacts/buildspecs, null/future LT
+versions and activation rejection. Private offline reconciliation compares all
+160 existing addresses and the 49 previously excluded addresses. None of these
+checks proves AWS permissions or authorizes an administrative plan/apply.
