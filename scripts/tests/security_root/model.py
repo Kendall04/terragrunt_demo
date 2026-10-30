@@ -177,6 +177,22 @@ def expression(text):
     return "${" + text + "}"
 
 
+def security_provider_lock(root):
+    """Retain the historical AWS block; add its authenticated Windows package h1.
+
+    Terraform 1.13.4 providers lock (windows_amd64/linux_amd64) verifies the
+    HashiCorp signature. The same Windows h1 has a versioned provenance receipt
+    in operations/sql-backup/recovery/provider-origin-verification.json.
+    """
+    historical = retired.source(root, 'terraform/live/dev/shared/.terraform.lock.hcl').read_text().split(
+        'provider "registry.terraform.io/hashicorp/tls"', 1)[0].rstrip() + '\n'
+    linux = '    "h1:edXOJWE4ORX8Fm+dpVpICzMZJat4AX0VRCAy/xkcOc0=",\n'
+    windows = '    "h1:H3mU/7URhP0uCRGK8jeQRKxx2XFzEqLiOq/L2Bbiaxs=",\n'
+    require(historical.count(linux) == 1 and windows not in historical,
+            'historical security provider lock drift')
+    return historical.replace(linux, windows + linux)
+
+
 def wiring(doc):
     """Single fixed generator for target plumbing; IAM truth stays in authority.json."""
     root = {
@@ -318,11 +334,10 @@ def wiring(doc):
     child['resource']['aws_iam_role']['request']['for_each']=expression('{for key,v in var.authority.request_identities:key=>v if !var.dev_cicd_installation_only || contains(["release","deploy-dev"],key)}')
     child['resource']['aws_iam_role_policy']['inert']['for_each']=expression('{for key,v in var.authority.request_identities:key=>v if !contains(keys(local.wp6_active),key) && (!var.dev_cicd_installation_only || contains(["release","deploy-dev"],key))}')
     return {**targets, 'terraform/infra/security/modules/lifecycle_foundations/main.tf.json':foundations,
-            # Only AWS is required here. Reuse its reviewed block verbatim;
-            # no provider initialization/download or new checksum is implied.
+            # Only AWS is required here; preserve the historical block and add
+            # the authenticated Windows package checksum for readonly init/plan.
             'terraform/infra/security/.terraform.lock.hcl':
-                retired.source(ordinary.ROOT, 'terraform/live/dev/shared/.terraform.lock.hcl').read_text().split(
-                    'provider "registry.terraform.io/hashicorp/tls"', 1)[0].rstrip() + '\n',
+                security_provider_lock(ordinary.ROOT),
             ownership.MODULE: ownership.wiring(doc), "terraform/infra/security/main.tf.json": root,
             "terraform/infra/security/modules/request_identities/main.tf.json": child,
             bundles.MODULE: bundles.wiring(doc["control_bundles"]),

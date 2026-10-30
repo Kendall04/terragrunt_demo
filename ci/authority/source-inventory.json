@@ -6389,7 +6389,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/model.py": {
-      "sha256": "22191edc3b49e98a87acbbd36e88b9e7205e72870106496707d1493da2f2f200",
+      "sha256": "2e4b8fc6a81948dbf2845edccdf64683542a1a9c8e3a684b0028197caa591d47",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -6397,35 +6397,35 @@
         ],
         "role-input": [
           66,
-          199,
-          212
+          215,
+          228
         ],
         "launch-or-mutation": [
           24,
           52,
           100,
           139,
-          183,
-          185,
-          192,
-          194,
-          203,
-          252,
-          320,
-          323,
-          324,
-          325,
-          326,
-          327,
+          187,
+          188,
+          199,
+          201,
+          208,
+          210,
+          219,
+          268,
           336,
-          352,
-          380,
-          391,
-          416,
-          424,
-          425,
-          434,
-          436
+          339,
+          341,
+          342,
+          351,
+          367,
+          395,
+          406,
+          431,
+          439,
+          440,
+          449,
+          451
         ],
         "executable-dependency": [
           24,
@@ -6433,16 +6433,16 @@
           34,
           35,
           39,
-          337
+          352
         ],
         "security-control": [
-          206,
-          207,
-          210,
-          211,
-          212,
-          318,
-          319
+          222,
+          223,
+          226,
+          227,
+          228,
+          334,
+          335
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -7866,7 +7866,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/.terraform.lock.hcl": {
-      "sha256": "5f6ef854d6bf8c37eaf074f4bd7a5f2ecfff589bbe7204edb5b85e687f744bd6",
+      "sha256": "901a282544168f6b5d1567b13c91e9009129a2bc0cc92bf4c934e140efdae904",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -11359,21 +11359,26 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/test_origin_history.py": {
-      "sha256": "2a01f0937b7e0364414b85a3b151e17a085c642678bb0a47d797169d8e60f78d",
+      "sha256": "c48ceab7ddee629b5d118be667962ad9f4494cec07ba498f091e300708c027fd",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          38,
-          42,
-          43,
-          44,
-          50
+          41,
+          45,
+          46,
+          47,
+          49,
+          50,
+          56,
+          57,
+          63,
+          75
         ],
         "executable-dependency": [
-          50
+          63
         ],
         "security-control": [
-          74
+          94
         ]
       },
       "semantic_status": "UNVERIFIED"
