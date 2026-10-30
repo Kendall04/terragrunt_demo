@@ -493,7 +493,7 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/scripts/ci/static-findings.json": {
-      "sha256": "dd827c1465a21eb54b5fcebe5527eba58778971a390a2818b3ec4ed6138efcb1",
+      "sha256": "8c9bc17732507301f8216d89dcd453b250d70539d5852acc4f2bab2a67fac421",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [

@@ -488,7 +488,7 @@
         "file": "terraform/infra/security/modules/lifecycle_foundations/main.tf.json",
         "resource": "module.lifecycle_foundations",
         "message": "Bucket does not have logging enabled",
-        "source_sha256": "ff1b953ccfa155a65a38e1bb8b32638655546bb627dfdfee69b3153bdfbe9da4"
+        "source_sha256": "317ea76d8da866c7e9340e1cc9a98d4edf648c41650dbe3e799887dc90af2479"
       },
       {
         "rule": "AVD-AWS-0089",
@@ -496,7 +496,7 @@
         "file": "terraform/infra/security/modules/lifecycle_foundations/main.tf.json",
         "resource": "module.lifecycle_foundations",
         "message": "Bucket does not have logging enabled",
-        "source_sha256": "ff1b953ccfa155a65a38e1bb8b32638655546bb627dfdfee69b3153bdfbe9da4"
+        "source_sha256": "317ea76d8da866c7e9340e1cc9a98d4edf648c41650dbe3e799887dc90af2479"
       },
       {
         "rule": "AVD-AWS-0090",
