@@ -28,6 +28,16 @@
       "type": "any",
       "default": {}
     },
+    "dev_nat_inhibited": {
+      "type": "bool",
+      "default": true,
+      "nullable": false
+    },
+    "dev_delivery_inhibited": {
+      "type": "bool",
+      "default": true,
+      "nullable": false
+    },
     "wp4d_installations": {
       "type": "any",
       "default": {}
@@ -405,7 +415,7 @@
         "publish": true,
         "timeout": 600,
         "memory_size": 256,
-        "reserved_concurrent_executions": 1,
+        "reserved_concurrent_executions": "${(contains([\"nat-recovery/nat-dev/assign_eip\",\"nat-recovery/nat-dev/change_rt\",\"nat-recovery/nat-dev/disable_sdc\"],each.key) && var.dev_nat_inhibited) || (contains([\"request-gateway/deploy-dev\",\"cleanup-recovery/cleanup-dev\"],each.key) && var.dev_delivery_inhibited) ? 0 : 1}",
         "image_config": {
           "command": [
             "runtime.handler"
@@ -776,6 +786,7 @@
       "wp4d_nat": {
         "for_each": "${local.wp4d_nat_events}",
         "name": "${\"e1-wp4-${each.key}-nat-launch\"}",
+        "state": "${each.key == \"dev\" ? (var.dev_nat_inhibited ? \"DISABLED\" : \"ENABLED\") : null}",
         "event_pattern": "${jsonencode({ source = [\"aws.autoscaling\"], \"detail-type\" = [\"EC2 Instance Launch Successful\"], account = [var.account_id], region = [var.region], detail = { AutoScalingGroupName = [for slot in each.value.nat_slots : slot.asg] } })}"
       }
     },

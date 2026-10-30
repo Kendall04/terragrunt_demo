@@ -7,6 +7,15 @@ The combined portable-security/native-lifecycle tree retains the 44 E1 checks an
 portable security/authority cases. The separately run E16-only tests retired with
 their executor; independent backend/retirement checks moved to `native_ecs`.
 
+The local DEV security-owner inhibition increment adds six WP4D contract tests
+to that baseline (1059 regressions, with the same 24 WP7 methods). Its E13
+provider-free check evaluates the actual generated concurrency/rule/qualified
+version expressions for inhibited installation and independent NAT/delivery
+activation, including a synthetic version transition. Terraform schema validation
+uses 1.13.4/AWS 5.100.0 in a disposable backend-disabled root with network disabled.
+These checks do not prove effective AWS permissions, a security plan's six
+possible auxiliary replacements, live delivery, forwarding or rollback.
+
 The WP3C [internal release implementation](e1-internal-release.md) adds hermetic
 adapter/authority acceptance and provider-free selective-compute fixtures.
 These never constitute live AWS isolation or deployment evidence.

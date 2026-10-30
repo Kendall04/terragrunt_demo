@@ -661,6 +661,10 @@ def extend(tf):
     """Extend the one WP2 controller-compute module with reviewed WP4 nodes."""
     ex = lambda source: "${" + source + "}"
     tf["variable"].update({
+        # Installation is not activation. These two independent DEV decisions
+        # must not affect PROD or let NAT activation resume delivery/cleanup.
+        "dev_nat_inhibited": {"type": "bool", "default": True, "nullable": False},
+        "dev_delivery_inhibited": {"type": "bool", "default": True, "nullable": False},
         "wp4d_installations": {"type": "any", "default": {}},
         "wp4d_runtime_approvals": {"type": "any", "default": {}},
         "wp4d_environment_bindings": {"type": "any", "default": {}},
@@ -780,7 +784,10 @@ def extend(tf):
         "for_each": ex("local.wp4d_gateways"), "function_name": ex("each.value.name"),
         "role": ex('contains(keys(local.nodes), each.key) ? aws_iam_role.execution[each.key].arn : aws_iam_role.wp4d_reserved[each.key].arn'),
         "package_type": "Image", "image_uri": ex("each.value.runtime.uri"), "publish": True,
-        "timeout": 600, "memory_size": 256, "reserved_concurrent_executions": 1,
+        "timeout": 600, "memory_size": 256,
+        "reserved_concurrent_executions": ex(
+            '(contains(["nat-recovery/nat-dev/assign_eip","nat-recovery/nat-dev/change_rt","nat-recovery/nat-dev/disable_sdc"],each.key) && var.dev_nat_inhibited) || '
+            '(contains(["request-gateway/deploy-dev","cleanup-recovery/cleanup-dev"],each.key) && var.dev_delivery_inhibited) ? 0 : 1'),
         "image_config": {"command": ["runtime.handler"]},
         "environment": {"variables": {"E1_PROTECTED_CONFIGURATION": ex("local.wp4d_config[each.key]")}},
         "depends_on": ["aws_cloudwatch_log_group.wp4d", "aws_iam_role_policy.wp4d"]}
@@ -861,6 +868,8 @@ def extend(tf):
     local["wp4d_nat_events"] = ex('{ for env in ["dev", "prod"] : env => try(var.wp4d_environment_bindings[env], null) if alltrue([for action in ["assign_eip", "change_rt", "disable_sdc"] : contains(keys(local.wp4d_active), "nat-recovery/nat-${env}/${action}")]) }')
     resources["aws_cloudwatch_event_rule"]["wp4d_nat"] = {
         "for_each": ex("local.wp4d_nat_events"), "name": ex('"e1-wp4-${each.key}-nat-launch"'),
+        # Null leaves PROD's previously unspecified state unchanged.
+        "state": ex('each.key == "dev" ? (var.dev_nat_inhibited ? "DISABLED" : "ENABLED") : null'),
         "event_pattern": ex('jsonencode({ source = ["aws.autoscaling"], "detail-type" = ["EC2 Instance Launch Successful"], account = [var.account_id], region = [var.region], detail = { AutoScalingGroupName = [for slot in each.value.nat_slots : slot.asg] } })')}
     # Stable binding keys are known before target/function IDs exist. Import
     # must not require applying unrelated resources to learn those same keys.

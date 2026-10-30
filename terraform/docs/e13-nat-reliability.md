@@ -1,5 +1,60 @@
 # E13 NAT recovery reliability
 
+## Current DEV installation and version transition
+
+The security owner defaults `dev_nat_inhibited=true` and
+`dev_delivery_inhibited=true`. The first holds exactly the three DEV NAT
+handlers at reserved concurrency zero and the DEV NAT launch rule at `DISABLED`.
+The second independently holds the DEV deploy gateway and cleanup function at
+zero. Activating NAT must not resume gateway/cleanup. Both inputs pass from the
+original security root to its generated controller-compute child; no
+`ignore_changes`, alternative owner, backend or executor is introduced.
+PROD concurrency remains one and its previously unspecified rule state remains
+unspecified (`null`). WP5's `request-gateway/infra-dev` and
+`request-gateway/infra-high-risk-dev` are different controllers from the installed
+`request-gateway/deploy-dev`; their existing concurrency is unchanged.
+
+Keep the three `aws_lambda_permission.wp4d_nat` and three
+`aws_lambda_function_event_invoke_config.wp4d_nat` addresses and qualified-version
+references unchanged. AWS provider 5.100.0 treats a qualifier change as replacement
+of these auxiliaries, not replacement of the Lambda function. Review up to six
+such DEV replacements explicitly in the future full security plan; this source
+change authorizes none. No live state addresses have been inferred and no `moved`
+blocks or parallel retained-version resource collections are added.
+
+Published version 4, its packages and journals remain historical evidence. Its
+immutable configuration points to the retired network, so retaining its invoke
+grants is not a working rollback for the new VPC. During installation keep both
+inhibition inputs true. Do not enable the rule or allow execution until all three
+new numeric versions, exact bundle VersionIds, role bindings, rule permissions,
+async retry/destination settings and target versions have been read back.
+Before removing old auxiliaries, reconcile attributable accepted work and confirm
+no remaining approved target, alias or event source can invoke the old version;
+inhibition alone does not cancel queued work. If that cannot be established,
+reject the replacement plan and preserve the current inhibited installation.
+Never use a mutable alias or unqualified permission to bypass this check.
+
+For an interrupted installation, keep concurrency zero and delivery disabled,
+read the actual owner state/resources, and review a corrective plan with the
+captured last-reviewed inputs and exact bundle versions. Restoring configuration
+can publish another numeric version; do not claim Terraform rewinds to version 4.
+Do not activate old network bindings or replay the historical SDC UNKNOWN. Until
+a version bound to the new VPC has passed live tests, there is no demonstrated
+operational NAT rollback. After such qualification, rollback means restoring the
+last qualified configuration/bundle for that same network through a separately
+reviewed owner plan, followed by fresh readbacks and tests.
+
+The sequence is: inhibited security installation; separate global NAT PLAN-ONLY;
+plan/budget approval; separately authorized E13 activation verified **before**
+launch; apply the reviewed ASG plan; real EIP/route/SDC/forwarding and replacement
+tests. An activation plan must contain only the approved inhibition changes,
+with no bundle, launch binding, version, IAM or unrelated changes.
+`dev_delivery_inhibited` stays true during NAT activation. The retained SNS topic's
+`alias/aws/sns` key and absent subscriptions are a separate activation blocker:
+approve a compatible CMK/service publication policy and confirmed recipient,
+then demonstrate delivery. This increment changes no SNS/KMS configuration.
+Offline checks prove declarations, not AWS permissions, delivery or rollback.
+
 > **Closure status — 2026-10-16:** the early undeployed TARGET baseline below is historical.
 > The [installed automatic B retrial](#installed-dev-correction-and-automatic-b-retrial)
 > records the later live result separately from its failed predecessor. [Final

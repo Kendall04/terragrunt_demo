@@ -234,6 +234,9 @@ def wiring(doc):
     compute_module = compute.wiring()
     wp4d.extend(compute_module)
     wp5.extend(compute_module)
+    for name in ('dev_nat_inhibited', 'dev_delivery_inhibited'):
+        root['variable'][name] = dict(compute_module['variable'][name])
+        root['module']['controller_compute'][name] = expression('var.' + name)
     for key in ('installations','runtime_approvals','environment_bindings'):
         root['module']['controller_compute']['wp5_'+key]=expression('local.authority.wp5.'+key)
     compute_module["locals"]["evidence_bucket"] = expression('"' + doc["ownership_closure"]["resources"]["neutral/artifacts"]["name"] + '${var.account_id}"')

@@ -154,6 +154,15 @@ where the root declares it. No secret values, passwords or connection strings.
 | Apps | Real global `private_subnet_ids`, `alb_listener_arn`, `demo_sg_id`, `demo_blue_tg_arn`, `demo_green_tg_arn`, plus real platform outputs. Seed connection secret separately after actual SQL bootstrap. Skeletons remain at zero tasks; WP4 owns revisions/counts and listener forwarding. |
 | Edge | Real global `private_subnet_ids`, `alb_listener_arn`, `vpc_link_sg_id`; verify API/VPC Link IDs and service-created ENIs. |
 
+During the security-owner NAT installation, keep `dev_nat_inhibited=true` and
+`dev_delivery_inhibited=true` (safe defaults). The [E13 installation contract](e13-nat-reliability.md#current-dev-installation-and-version-transition)
+defines the six possible version-bound auxiliary replacements and inhibited
+failure/rollback handling. Review the full owner plan; no targeted or manual
+state workaround. After the separate NAT plan/budget approval, authorize and
+verify E13 activation (`dev_nat_inhibited=false`) before applying that ASG plan;
+keep gateway/cleanup inhibited. SNS/KMS notification readiness is a separate
+activation prerequisite, not part of this local declaration change.
+
 Obtain real outputs with native `terraform output -json`, keeping the result private;
 transfer only declared metadata into the next layer's reviewed tfvars. Do not use
 mocks for an AWS plan. No all-layer plan substitutes for these dependency barriers.
