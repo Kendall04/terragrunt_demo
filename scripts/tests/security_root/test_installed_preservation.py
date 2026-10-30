@@ -13,6 +13,7 @@ import unittest
 
 import internal
 import wp4d
+import wp6
 from terraform_console import decode
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -134,6 +135,14 @@ class InstalledPreservation(unittest.TestCase):
         t=json.loads((ROOT/'terraform/infra/security/modules/controller_compute/main.tf.json').read_text())
         self.assertIn('wp3_preservation_complete',t['output']['internal_release']['precondition']['condition'])
         self.assertIn('wp4d_historical_nat_ready',t['output']['wp4d']['precondition']['condition'])
+        request=json.loads((ROOT/'terraform/infra/security/modules/request_identities/main.tf.json').read_text())
+        self.assertEqual(set(wp6.PRESERVED_WP6),{'release','deploy-dev'})
+        self.assertEqual(set(wp6.PRESERVED_WP6_SHA256),set(wp6.PRESERVED_WP6))
+        self.assertIsNone(request['variable']['wp6_preservation_approval_sha256']['default'])
+        self.assertNotIn('wp6_preservation_fingerprints',request['variable'])
+        self.assertIn('wp6_preservation_complete',request['output']['wp6']['precondition']['condition'])
+        self.assertIn('ADMIN_VERIFIED_G1_G9',request['locals']['wp6_normal_active'])
+        self.assertNotIn('governance',json.dumps(wp6.PRESERVED_WP6))
 
     def test_normal_installation_receipts_remain_required(self):
         t=json.loads((ROOT/'terraform/infra/security/modules/controller_compute/main.tf.json').read_text())
@@ -146,6 +155,16 @@ class InstalledPreservation(unittest.TestCase):
         self.assertEqual(set(t['locals']['wp4d_installed_repository_bindings']),set(wp4d.HISTORICAL_DELIVERY)|set(wp4d.HISTORICAL_NAT))
         self.assertIn('!var.dev_cicd_installation_only',t['locals']['wp4d_repositories'])
         self.assertNotIn('var.repositories',t['locals']['wp4d_repositories'])
+        self.assertIn('!var.dev_cicd_installation_only',t['locals']['wp5_repositories'])
+        self.assertIn('e1-controller-status-status-neutral',t['locals']['runtime_repositories'])
+        self.assertEqual(t['resource']['terraform_data']['declaration']['for_each'],
+                         '${var.dev_cicd_installation_only ? {} : local.nodes}')
+        self.assertEqual(t['output']['foundation']['precondition'],
+                         t['resource']['terraform_data']['declaration']['lifecycle']['precondition'])
+        protected=json.loads((ROOT/'terraform/infra/security/modules/protected_resources/main.tf.json').read_text())
+        prod=[v for resources in protected['resource'].values() for name,v in resources.items() if name.startswith('prod_')]
+        self.assertEqual(len(prod),29)
+        self.assertTrue(all('count' not in v and 'for_each' not in v for v in prod))
 
 
 def check_terraform(terraform,environment):
@@ -211,4 +230,72 @@ def check_terraform(terraform,environment):
             assert not evaluate({field:'foreign'})['wp3_valid']
             assert not evaluate({field:'foreign'})['wp4d_valid']
         assert not evaluate(locals_override={'wp3_outer_buildspec':{'version':'foreign'}})['wp3_valid']
-    print('Installed graph: closed WP3/NAT identities, complete dependencies, negative mutations, inhibited NAT, ECR 6/16 PASS')
+    check_reconciliation(terraform,environment)
+    print('Installed graph: closed WP3/NAT/WP6 preservation, negative mutations, inhibition and limited selectors PASS')
+
+
+def check_reconciliation(terraform, environment):
+    """Evaluate the generated expressions; fixtures never approve real resources."""
+    authority=json.loads((ROOT/'terraform/infra/security/authority.json').read_text())
+    request=json.loads((ROOT/'terraform/infra/security/modules/request_identities/main.tf.json').read_text())
+    compute=json.loads((ROOT/'terraform/infra/security/modules/controller_compute/main.tf.json').read_text())
+    foundation=json.loads((ROOT/'terraform/infra/security/modules/lifecycle_foundations/main.tf.json').read_text())
+    account='123456789012';region='us-east-1';readbacks={};pins={}
+    for key,record in wp6.PRESERVED_WP6.items():
+        name='e1-gateway-'+key
+        readback=dict(function_name=name,qualified_arn=f'arn:aws:lambda:{region}:{account}:function:{name}:{record["gateway_version"]}',
+            role=f'arn:aws:iam::{account}:role/{name}-exec',image_uri=f'{account}.dkr.ecr.{region}.amazonaws.com/fixture@sha256:'+'a'*64,
+            configuration=encoded({'binding':'request-gateway/'+key,'fixture':True}))
+        identity=dict(identity=key,role_address='module.request_identities.aws_iam_role.request['+json.dumps(key)+']',
+            policy_address='module.request_identities.aws_iam_role_policy.wp6['+json.dumps(key)+']',role_name='e1-request-'+key,
+            role_arn=f'arn:aws:iam::{account}:role/e1-request-{key}',trust=wp6.trust(key,record,account),
+            policy=wp6.policy(key,record,account,region),gateway=readback)
+        pins[key]=fingerprint(identity);readbacks[key]=readback
+    values=dict(authority=authority,account_id=account,region=region,endpoints={
+        'request-gateway/'+k:v['qualified_arn'] for k,v in readbacks.items()},dev_cicd_installation_only=True,
+        wp6_preservation_approval_sha256='c'*64,wp6_preservation_required=True,wp6_preservation_readbacks=readbacks,
+        latest_version='27',preserved={k:{} for k in internal.PRESERVED_WP3})
+    local=copy.deepcopy(request['locals']);local['wp6_preservation_fingerprints']=pins
+    for key in ('runtime_repository_reservations','runtime_repositories','wp5_repository_reservations','wp5_repositories','nodes'):
+        local[key]=compute['locals'][key]
+    local['wp3_preserved_ready']='${var.preserved}'
+    local['completion_qualifier']=compute['locals']['wp3_completion_qualifier'].replace(
+        'aws_lambda_function.wp3["qualification-finalizer/qualification"].version','var.latest_version')
+    local['foundation_selection']=foundation['resource']['aws_s3_bucket']['state']['for_each']
+    local['declaration_selection']=compute['resource']['terraform_data']['declaration']['for_each']
+    local['declaration_guard']=compute['output']['foundation']['precondition']['condition']
+    concurrency=compute['resource']['aws_lambda_function']['wp3']['reserved_concurrent_executions'][2:-1].replace('each.key','key')
+    local['concurrency']='${{for key in ["request-gateway/release","qualification-finalizer/qualification"]:key=>'+concurrency+'}}'
+    with tempfile.TemporaryDirectory(prefix='security-reconciliation-offline-') as directory:
+        path=Path(directory)/'main.tf.json'
+        def evaluate(changes=None):
+            current=copy.deepcopy(values);current.update(changes or {})
+            path.write_text(json.dumps({'variable':{k:{'type':'any','default':v} for k,v in current.items()},'locals':local}),encoding='utf-8')
+            query='jsonencode({active=keys(local.wp6_active),complete=local.wp6_preservation_complete,trusts=local.wp6_trusts,policies=local.wp6_policies,qualifier=local.completion_qualifier,concurrency=local.concurrency,repositories=keys(local.runtime_repositories),wp5=keys(local.wp5_repositories),states=local.foundation_selection,declarations=keys(local.declaration_selection),declaration_guard=local.declaration_guard})'
+            p=subprocess.run([terraform,'console','-no-color'],cwd=directory,input=query+'\n',capture_output=True,text=True,env=environment,timeout=30)
+            if p.returncode or 'Error:' in p.stderr:raise AssertionError(p.stderr)
+            return decode(p.stdout)
+        out=evaluate();assert out['active']==['deploy-dev','release'] and out['complete']
+        for key,record in wp6.PRESERVED_WP6.items():
+            assert out['trusts'][key]==wp6.trust(key,record,account)
+            assert out['policies'][key]==wp6.policy(key,record,account,region)
+        assert out['qualifier']=='1' and out['concurrency']=={'request-gateway/release':0,'qualification-finalizer/qualification':1}
+        assert len(out['repositories'])==6 and not out['wp5'] and out['states']==['dev'] and not out['declarations'] and out['declaration_guard']
+        for field in ('creation_supported','operational'):
+            changed=copy.deepcopy(authority);changed['controller_compute'][field]=True
+            assert not evaluate({'authority':changed})['declaration_guard']
+        for digest in (None,'not-an-approval'):
+            out=evaluate({'wp6_preservation_approval_sha256':digest});assert not out['complete'] and not out['active']
+        for missing in readbacks:
+            changed=copy.deepcopy(readbacks);del changed[missing]
+            assert not evaluate({'wp6_preservation_readbacks':changed})['complete']
+        for field in ('function_name','qualified_arn','role','image_uri','configuration'):
+            changed=copy.deepcopy(readbacks);changed['release'][field]='foreign'
+            assert not evaluate({'wp6_preservation_readbacks':changed})['complete']
+        for field in ('account_id','region'):
+            assert not evaluate({field:'foreign'})['complete']
+        out=evaluate({'dev_cicd_installation_only':False,'wp6_preservation_approval_sha256':None,
+                      'wp6_preservation_required':False,'preserved':{}})
+        assert out['complete'] and not out['active'] and out['qualifier']=='27'
+        assert all(v==1 for v in out['concurrency'].values())
+        assert len(out['repositories'])==7 and len(out['wp5'])==8 and out['states']==['dev','prod'] and len(out['declarations'])==18

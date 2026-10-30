@@ -1,5 +1,21 @@
 # E1 WP2A — protected security root foundation
 
+The refreshed serial-66 reconciliation exposed installed WP6 request identities
+whose historical approval records are unavailable. Their two closed preservation
+fingerprints retain the observed trust, request-only policies and qualified
+gateway readbacks. `wp6_preservation_approval_sha256` defaults to null and requires
+a separate new owner decision on a complete document; it is not covered by rev5.
+Missing or partial preservation blocks the historical limited installation.
+The normal G1-G9 activation gate is unchanged. Historical WP3 preservation keeps
+release concurrency zero and the observed completion target/permission on version
+1; the finalizer function already has version 2, which is not a new publication.
+
+Limited mode omits only uninstalled keyed reservations (WP5/status ECR, PROD
+state bucket and local declaration receipts), preserving all existing addresses.
+The 29 unconditional PROD singletons remain an explicit **NO-GO**: excluding
+them would change declared addresses and requires a separate owner decision.
+No state migration, adoption, apply or fresh PLAN-ONLY is authorized by this code.
+
 WP3C adds [internal release wiring](../../docs/e1-internal-release.md) within this
 root. Canonical installation/runtime records remain empty; no live resources or
 external request authority are claimed.

@@ -168,6 +168,15 @@
         "condition": "${contains([\"V1\",\"SQL_RESTORE_NO_MIGRATIONS_V2\"],var.dev_delivery_contract)}",
         "error_message": "Only protected V1 or DEV SQL recovery V2 is supported."
       }
+    },
+    "wp6_preservation_approval_sha256": {
+      "type": "string",
+      "default": null,
+      "nullable": true,
+      "validation": {
+        "condition": "${var.wp6_preservation_approval_sha256==null ? true : can(regex(\"^[0-9a-f]{64}$\",var.wp6_preservation_approval_sha256))}",
+        "error_message": "Separate new owner approval of the complete preservation document is required; a hex value alone is not approval."
+      }
     }
   },
   "provider": {
@@ -179,7 +188,19 @@
     }
   },
   "locals": {
-    "authority": "${jsondecode(templatefile(\"${path.module}/authority.json\", { security_admin_principal_arn = var.security_admin_principal_arn }))}"
+    "authority": "${jsondecode(templatefile(\"${path.module}/authority.json\", { security_admin_principal_arn = var.security_admin_principal_arn }))}",
+    "wp6_preservation_records": {
+      "release": {
+        "workflow_commit": "f0ba8ad1d6528d362693c8de932f935c8084529d",
+        "gateway_version": "2",
+        "plan_binding": null
+      },
+      "deploy-dev": {
+        "workflow_commit": "f0ba8ad1d6528d362693c8de932f935c8084529d",
+        "gateway_version": "3",
+        "plan_binding": null
+      }
+    }
   },
   "module": {
     "request_identities": {
@@ -188,6 +209,9 @@
       "account_id": "${var.aws_account_id}",
       "region": "${var.aws_region}",
       "endpoints": "${{for key,v in data.aws_lambda_function.request_gateway:\"request-gateway/${key}\"=>v.qualified_arn}}",
+      "wp6_preservation_approval_sha256": "${var.wp6_preservation_approval_sha256}",
+      "wp6_preservation_required": "${var.dev_cicd_installation_only && var.wp3_preservation_approval_sha256!=null}",
+      "wp6_preservation_readbacks": "${{for key,v in data.aws_lambda_function.request_gateway:key=>{function_name=v.function_name,qualified_arn=v.qualified_arn,role=v.role,image_uri=v.image_uri,configuration=v.environment[0].variables.E1_PROTECTED_CONFIGURATION}}}",
       "dev_cicd_installation_only": "${var.dev_cicd_installation_only}"
     },
     "control_bundle_storage": {
@@ -233,7 +257,8 @@
       "region": "${var.aws_region}",
       "admin_arn": "${var.security_admin_principal_arn}",
       "nat_launch_inputs": "${merge(local.authority.wp5.nat_launch_inputs,var.dev_nat_launch_inputs)}",
-      "dev_operator_arn": "${var.dev_operator_arn}"
+      "dev_operator_arn": "${var.dev_operator_arn}",
+      "dev_cicd_installation_only": "${var.dev_cicd_installation_only}"
     }
   },
   "output": {
@@ -279,7 +304,7 @@
   "data": {
     "aws_lambda_function": {
       "request_gateway": {
-        "for_each": "${{for key,v in local.authority.wp6.approvals:key=>v if !startswith(key,\"plan-\")}}",
+        "for_each": "${merge({for key,v in local.authority.wp6.approvals:key=>v if !startswith(key,\"plan-\")},jsondecode(var.wp6_preservation_approval_sha256==null ? \"{}\" : jsonencode(local.wp6_preservation_records)))}",
         "function_name": "${\"e1-gateway-${each.key}\"}",
         "qualifier": "${each.value.gateway_version}"
       }

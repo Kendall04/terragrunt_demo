@@ -21,6 +21,18 @@
     "endpoints": {
       "type": "map(string)"
     },
+    "wp6_preservation_approval_sha256": {
+      "type": "string",
+      "default": null
+    },
+    "wp6_preservation_required": {
+      "type": "bool",
+      "default": false
+    },
+    "wp6_preservation_readbacks": {
+      "type": "any",
+      "default": {}
+    },
     "dev_cicd_installation_only": {
       "type": "bool",
       "default": false
@@ -65,14 +77,46 @@
       "value": "${{ for key, role in aws_iam_role.request : key => role.arn }}"
     },
     "wp6": {
-      "value": "${{active=keys(local.wp6_active),reserved=keys(var.authority.request_identities),live=\"UNVERIFIED\"}}"
+      "value": "${{active=keys(local.wp6_active),preserved=keys(local.wp6_preserved),reserved=keys(var.authority.request_identities),live=\"UNVERIFIED\"}}",
+      "precondition": {
+        "condition": "${local.wp6_preservation_complete}",
+        "error_message": "Approve observed WP6 preservation separately: both exact readbacks are required; partial preservation or overlap with normal activation is rejected."
+      }
     }
   },
   "locals": {
     "wp6_records": "${var.authority.wp6.approvals}",
     "wp6_selected": "${var.authority.wp6.selected}",
     "wp6_admitted": {},
-    "wp6_active": "${{for key,v in local.wp6_records:key=>v if try(contains(keys(local.wp6_selected),key) && v==local.wp6_admitted[key] && v.identity==key && v.environment==local.wp6_selected[key].environment && v.account==var.account_id && v.region==var.region && v.active==true && v.governance==\"ADMIN_VERIFIED_G1_G9\" && can(regex(\"^[0-9a-f]{40}$\",v.workflow_commit)) && v.workflow_commit!=\"0000000000000000000000000000000000000000\" && v.source_sha256==var.authority.wp6.source_sha256 && length(keys(v))==11 && (startswith(key,\"plan-\") ? (v.gateway_version==null && v.endpoint_readback==\"ADMIN_VERIFIED_PLAN_READ_ONLY\" && v.plan_binding.source_commit==v.workflow_commit && v.plan_binding.readback==\"ADMIN_VERIFIED_NONSECRET_STATE_AND_EXACT_BINDINGS\") : (v.plan_binding==null && can(regex(\"^[1-9][0-9]*$\",v.gateway_version)) && v.endpoint_readback==try(var.endpoints[\"request-gateway/${key}\"],null) && v.endpoint_readback==\"arn:aws:lambda:${var.region}:${var.account_id}:function:${local.wp6_selected[key].gateway}:${v.gateway_version}\")),false)}}",
+    "wp6_normal_active": "${{for key,v in local.wp6_records:key=>v if try(contains(keys(local.wp6_selected),key) && v==local.wp6_admitted[key] && v.identity==key && v.environment==local.wp6_selected[key].environment && v.account==var.account_id && v.region==var.region && v.active==true && v.governance==\"ADMIN_VERIFIED_G1_G9\" && can(regex(\"^[0-9a-f]{40}$\",v.workflow_commit)) && v.workflow_commit!=\"0000000000000000000000000000000000000000\" && v.source_sha256==var.authority.wp6.source_sha256 && length(keys(v))==11 && (startswith(key,\"plan-\") ? (v.gateway_version==null && v.endpoint_readback==\"ADMIN_VERIFIED_PLAN_READ_ONLY\" && v.plan_binding.source_commit==v.workflow_commit && v.plan_binding.readback==\"ADMIN_VERIFIED_NONSECRET_STATE_AND_EXACT_BINDINGS\") : (v.plan_binding==null && can(regex(\"^[1-9][0-9]*$\",v.gateway_version)) && v.endpoint_readback==try(var.endpoints[\"request-gateway/${key}\"],null) && v.endpoint_readback==\"arn:aws:lambda:${var.region}:${var.account_id}:function:${local.wp6_selected[key].gateway}:${v.gateway_version}\")),false)}}",
+    "wp6_preservation_records": {
+      "release": {
+        "workflow_commit": "f0ba8ad1d6528d362693c8de932f935c8084529d",
+        "gateway_version": "2",
+        "plan_binding": null
+      },
+      "deploy-dev": {
+        "workflow_commit": "f0ba8ad1d6528d362693c8de932f935c8084529d",
+        "gateway_version": "3",
+        "plan_binding": null
+      }
+    },
+    "wp6_preservation_fingerprints": {
+      "release": "c29297b10233a1b63a672cb71399709bc9adc6ee89287554bc95607add7137a4",
+      "deploy-dev": "fc2bbc86193e79b16b0137af9408f9ae88445bdd9e418f5e4111071d2c1436ce"
+    },
+    "wp6_preservation_trust_templates": {
+      "release": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Federated\":\"arn:aws:iam::WP6_ACCOUNT:oidc-provider/token.actions.githubusercontent.com\"},\"Action\":\"sts:AssumeRoleWithWebIdentity\",\"Condition\":{\"StringEquals\":{\"token.actions.githubusercontent.com:aud\":\"sts.amazonaws.com\",\"token.actions.githubusercontent.com:sub\":\"repo:Kendall04/terragrunt_demo:environment:e1-release:job_workflow_ref:Kendall04/terragrunt_demo/.github/workflows/e1-release.yml@f0ba8ad1d6528d362693c8de932f935c8084529d\"}}}]}",
+      "deploy-dev": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Federated\":\"arn:aws:iam::WP6_ACCOUNT:oidc-provider/token.actions.githubusercontent.com\"},\"Action\":\"sts:AssumeRoleWithWebIdentity\",\"Condition\":{\"StringEquals\":{\"token.actions.githubusercontent.com:aud\":\"sts.amazonaws.com\",\"token.actions.githubusercontent.com:sub\":\"repo:Kendall04/terragrunt_demo:environment:e1-dev-deploy:job_workflow_ref:Kendall04/terragrunt_demo/.github/workflows/e1-dev-deploy.yml@f0ba8ad1d6528d362693c8de932f935c8084529d\"}}}]}"
+    },
+    "wp6_preservation_policy_templates": {
+      "release": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"lambda:InvokeFunction\"],\"Resource\":[\"arn:aws:lambda:WP6_REGION:WP6_ACCOUNT:function:e1-gateway-release:2\"],\"Condition\":{\"StringEquals\":{\"aws:RequestedRegion\":\"WP6_REGION\"}}},{\"Effect\":\"Allow\",\"Action\":[\"s3:GetObject\"],\"Resource\":[\"arn:aws:s3:::demo-release-artifacts-WP6_ACCOUNT/qualifications/demo-api/operations/*/public.json\"]}]}",
+      "deploy-dev": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"lambda:InvokeFunction\"],\"Resource\":[\"arn:aws:lambda:WP6_REGION:WP6_ACCOUNT:function:e1-gateway-deploy-dev:3\"],\"Condition\":{\"StringEquals\":{\"aws:RequestedRegion\":\"WP6_REGION\"}}},{\"Effect\":\"Allow\",\"Action\":[\"s3:GetObject\"],\"Resource\":[\"arn:aws:s3:::e1-wp4-dev-WP6_ACCOUNT-WP6_REGION/delivery/dev/*/public.json\"]}]}"
+    },
+    "wp6_preservation_identities": "${{for key,v in local.wp6_preservation_records:key=>{identity=key,role_address=\"module.request_identities.aws_iam_role.request[\\\"${key}\\\"]\",policy_address=\"module.request_identities.aws_iam_role_policy.wp6[\\\"${key}\\\"]\",role_name=var.authority.request_identities[key].name,role_arn=\"arn:aws:iam::${var.account_id}:role/${var.authority.request_identities[key].name}\",trust=jsondecode(replace(local.wp6_preservation_trust_templates[key],\"WP6_ACCOUNT\",var.account_id)),policy=jsondecode(replace(replace(local.wp6_preservation_policy_templates[key],\"WP6_ACCOUNT\",var.account_id),\"WP6_REGION\",var.region)),gateway=try(var.wp6_preservation_readbacks[key],null)}}}",
+    "wp6_preserved": "${{for key,v in local.wp6_preservation_records:key=>v if try(var.dev_cicd_installation_only && can(regex(\"^[0-9a-f]{64}$\",var.wp6_preservation_approval_sha256)) && sha256(jsonencode(local.wp6_preservation_identities[key]))==local.wp6_preservation_fingerprints[key],false)}}",
+    "wp6_preservation_complete": "${var.wp6_preservation_approval_sha256==null ? !var.wp6_preservation_required : var.dev_cicd_installation_only && length(local.wp6_preserved)==2 && length(local.wp6_normal_active)==0}",
+    "wp6_active": "${merge(local.wp6_normal_active,local.wp6_preserved)}",
     "wp6_trust_templates": {
       "plan-dev": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Federated\":\"arn:aws:iam::WP6_ACCOUNT:oidc-provider/token.actions.githubusercontent.com\"},\"Action\":\"sts:AssumeRoleWithWebIdentity\",\"Condition\":{\"StringEquals\":{\"token.actions.githubusercontent.com:aud\":\"sts.amazonaws.com\",\"token.actions.githubusercontent.com:sub\":\"repo:Kendall04/terragrunt_demo:environment:e1-plan-dev:job_workflow_ref:Kendall04/terragrunt_demo/.github/workflows/e1-plan-dev.yml@WP6_COMMIT\"}}}]}",
       "plan-prod": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Federated\":\"arn:aws:iam::WP6_ACCOUNT:oidc-provider/token.actions.githubusercontent.com\"},\"Action\":\"sts:AssumeRoleWithWebIdentity\",\"Condition\":{\"StringEquals\":{\"token.actions.githubusercontent.com:aud\":\"sts.amazonaws.com\",\"token.actions.githubusercontent.com:sub\":\"repo:Kendall04/terragrunt_demo:environment:e1-plan-prod:job_workflow_ref:Kendall04/terragrunt_demo/.github/workflows/e1-plan-prod.yml@WP6_COMMIT\"}}}]}",
