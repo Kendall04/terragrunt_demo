@@ -154,7 +154,7 @@ def main():
             if path.is_file():
                 hashes[path.relative_to(ROOT).as_posix()] = hashlib.sha256(path.read_bytes()).hexdigest()
     regression = sum(records[k].get('executed', 0) for k in SUITES if k != 'final_acceptance')
-    # 1050 previous + 3 portable-security + 6 DEV inhibition + 7 preservation.
+    # 1050 previous + 3 portable-security + 6 DEV inhibition + 7 delivery + 8 installed-graph preservation.
     # Existing assertions and UNKNOWN/failure gates remain binding; count is no pass.
     preservation_methods = {
         'test_allowlist_is_exact_and_separate_from_current_catalog',
@@ -168,8 +168,21 @@ def main():
     required_ids = {'test_historical_delivery.HistoricalDelivery.' + name for name in preservation_methods}
     if not required_ids <= set(records['wp4d'].get('test_ids', [])):
         errors.append('Historical preservation coverage is incomplete')
-    if regression != 1066:
-        errors.append(f'Accepted regression count changed: {regression} != 1066')
+    installed_methods = {
+        'test_wp3_allowlist_covers_exact_controllers_and_workers',
+        'test_no_historical_approval_is_fabricated',
+        'test_wp3_fingerprint_covers_config_role_address_and_buildspec',
+        'test_nat_allowlist_is_dev_only_and_catalog_is_separate',
+        'test_preservation_inputs_default_inert_and_require_new_approval',
+        'test_partial_preservation_has_blocking_preconditions',
+        'test_normal_installation_receipts_remain_required',
+        'test_limited_ecr_selection_is_closed_not_caller_controlled',
+    }
+    required_installed = {'test_installed_preservation.InstalledPreservation.' + name for name in installed_methods}
+    if not required_installed <= set(records['security_root'].get('test_ids', [])):
+        errors.append('Installed graph preservation coverage is incomplete')
+    if regression != 1074:
+        errors.append(f'Accepted regression count changed: {regression} != 1074')
     static_good = all(records[n]['status'] == 'PASS' for n, _ in CHECKS)
     criteria = {key: {'status': 'PASS' if static_good and not errors and all(records[n]['status'] == 'PASS' for n in names) else 'FAIL',
                       'evidence_suites': list(names)} for key, names in CRITERIA.items()}

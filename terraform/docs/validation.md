@@ -24,6 +24,16 @@ configuration bytes. The current package catalog, WP3/WP5, NAT/PROD admission,
 backends and IAM templates remain unchanged. Neither fixture approval digests
 nor local acceptance constitute administrative approval or AWS plan evidence.
 
+Installed WP3/NAT graph preservation adds eight security-root regression methods:
+1074 core regressions, with the same 44 E1 checks and 24 WP7 methods. The WP4D
+static entrypoint also evaluates the actual closed WP3/NAT predicates, complete
+dependency preconditions and ECR 6/16 selectors using synthetic fingerprints in
+both modes. Existing test methods remain required. Terraform 1.13.4/AWS 5.100.0
+schema validation uses cached tools in a disposable backend-disabled root, without
+init or network. Private readbacks and offline membership/configuration comparison
+remain separate evidence; a future refreshed AWS plan and new owner approval are
+still required. No image/publication qualification is repeated by these tests.
+
 The WP3C [internal release implementation](e1-internal-release.md) adds hermetic
 adapter/authority acceptance and provider-free selective-compute fixtures.
 These never constitute live AWS isolation or deployment evidence.

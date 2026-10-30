@@ -59,6 +59,24 @@
         "error_message": "Historical DEV preservation requires a separately approved manifest digest, V1 and DEV delivery inhibition."
       }
     },
+    "dev_nat_preservation_approval_sha256": {
+      "type": "string",
+      "default": null,
+      "nullable": true,
+      "validation": {
+        "condition": "${var.dev_nat_preservation_approval_sha256==null ? true : can(regex(\"^[0-9a-f]{64}$\",var.dev_nat_preservation_approval_sha256)) && var.dev_nat_inhibited}",
+        "error_message": "Historical NAT preservation requires a new complete manifest approval and DEV NAT inhibition; it never authorizes activation."
+      }
+    },
+    "wp3_preservation_approval_sha256": {
+      "type": "string",
+      "default": null,
+      "nullable": true,
+      "validation": {
+        "condition": "${var.wp3_preservation_approval_sha256 == null ? true : can(regex(\"^[0-9a-f]{64}$\",var.wp3_preservation_approval_sha256))}",
+        "error_message": "WP3 preservation requires a new, separately approved complete manifest digest; never a fabricated historical receipt."
+      }
+    },
     "dev_operator_arn": {
       "type": "string",
       "default": null,
@@ -194,6 +212,8 @@
       "dev_nat_inhibited": "${var.dev_nat_inhibited}",
       "dev_delivery_inhibited": "${var.dev_delivery_inhibited}",
       "dev_delivery_preservation_approval_sha256": "${var.dev_delivery_preservation_approval_sha256}",
+      "dev_nat_preservation_approval_sha256": "${var.dev_nat_preservation_approval_sha256}",
+      "wp3_preservation_approval_sha256": "${var.wp3_preservation_approval_sha256}",
       "wp5_installations": "${local.authority.wp5.installations}",
       "wp5_runtime_approvals": "${local.authority.wp5.runtime_approvals}",
       "wp5_environment_bindings": "${local.authority.wp5.environment_bindings}",

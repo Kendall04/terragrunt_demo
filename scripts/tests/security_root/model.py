@@ -234,7 +234,8 @@ def wiring(doc):
     compute_module = compute.wiring()
     wp4d.extend(compute_module)
     wp5.extend(compute_module)
-    for name in ('dev_nat_inhibited', 'dev_delivery_inhibited', 'dev_delivery_preservation_approval_sha256'):
+    for name in ('dev_nat_inhibited', 'dev_delivery_inhibited', 'dev_delivery_preservation_approval_sha256',
+                 'dev_nat_preservation_approval_sha256', 'wp3_preservation_approval_sha256'):
         root['variable'][name] = dict(compute_module['variable'][name])
         root['module']['controller_compute'][name] = expression('var.' + name)
     for key in ('installations','runtime_approvals','environment_bindings'):

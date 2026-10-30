@@ -55,7 +55,7 @@ def main():
           "aws_lambda_function":{"wp4d":{key:{"function_name":v["name"],"version":"7",
           "qualified_arn":f"arn:aws:lambda:{REGION}:{ACCOUNT}:function:{v['name']}:7"} for key,v in doc["wp4d"]["selected"].items()}}}
     local={key:expression(value) for key,value in tf["locals"].items() if key in (
-        "wp4d_historical_installations","wp4d_historical_ready","wp4d_contract","wp4d_candidates","wp4d_ready","wp4d_active","wp4d_gateways","wp4d_nat_events","wp4d_nat_targets","nat_failure_queues")}
+        "wp4d_historical_installations","wp4d_historical_ready","wp4d_historical_nat_installations","wp4d_historical_nat_ready","wp4d_nat_candidate_config","wp4d_nat_preservation_identities","wp4d_contract","wp4d_candidates","wp4d_ready","wp4d_active","wp4d_gateways","wp4d_nat_events","wp4d_nat_targets","nat_failure_queues")}
     local["evidence_bucket"]=tf["locals"]["evidence_bucket"]
     resource=tf["resource"]
     local["targets"]=project(resource["aws_cloudwatch_event_target"]["wp4d_nat"])
@@ -81,7 +81,7 @@ def main():
                ("both-explicit-activations",installs,images,bindings,False,False,"9")]
         for name,i,r,b,nat_inhibited,delivery_inhibited,version in cases:
             values={"authority":doc,"account_id":ACCOUNT,"region":REGION,"admin_arn":f"arn:aws:iam::{ACCOUNT}:role/SeparateAdmin",
-                    "wp4d_installations":i,"wp4d_runtime_approvals":r,"wp4d_environment_bindings":b,"dev_delivery_binding":None,"dev_delivery_preservation_approval_sha256":None,"dev_delivery_contract":"V1",**fake}
+                    "wp4d_installations":i,"wp4d_runtime_approvals":r,"wp4d_environment_bindings":b,"dev_delivery_binding":None,"dev_delivery_preservation_approval_sha256":None,"dev_nat_preservation_approval_sha256":None,"dev_delivery_contract":"V1",**fake}
             # Inert resources must also stay inert in the synthetic provider map.
             local_case=copy.deepcopy(local)
             if name=="undeployed":
