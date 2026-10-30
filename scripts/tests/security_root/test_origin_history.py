@@ -5,8 +5,11 @@ from pathlib import Path
 import shutil
 import tempfile
 import unittest
+from unittest.mock import patch
 
 import history
+import model
+import retired
 import wp5
 from discovery import Discovery
 
@@ -42,6 +45,16 @@ class OriginAndHistoricalTests(unittest.TestCase):
             self.assertEqual(generated[f'terraform/modules/target/dev/{layer}/.terraform.lock.hcl'],selected)
         self.assertNotEqual(generated['terraform/modules/target/dev/shared/.terraform.lock.hcl'],selected)
         self.assertNotIn(receipt['packageH1'],generated['terraform/modules/target/prod/global/.terraform.lock.hcl'])
+        security=model.security_provider_lock(ROOT)
+        historical=retired.source(ROOT,'terraform/live/dev/shared/.terraform.lock.hcl').read_text().split(
+            'provider "registry.terraform.io/hashicorp/tls"',1)[0].rstrip()+'\n'
+        added='    "'+receipt['packageH1']+'",\n'
+        self.assertEqual(security.count(added),1)
+        self.assertEqual(security.replace(added,''),historical)
+        self.assertIn('version     = "5.100.0"',security)
+        self.assertIn('constraints = "~> 5.50"',security)
+        self.assertEqual((ROOT/'terraform/infra/security/.terraform.lock.hcl').read_text(),security)
+        self.assertEqual(model.wiring(model.load_authority(ROOT))['terraform/infra/security/.terraform.lock.hcl'],security)
 
     def test_revalidated_bootstrap_still_rejects_future_payload_drift(self):
         from test_wp2a import FoundationTests
@@ -58,6 +71,13 @@ class OriginAndHistoricalTests(unittest.TestCase):
         self.assertEqual(wp5.dev_runtime_lock(root),wp5.dev_runtime_lock(ROOT))
         path.write_text(path.read_text().replace('H3mU/7UR','X3mU/7UR'))
         with self.assertRaisesRegex(ValueError,'provider lock drift'):wp5.dev_runtime_lock(root)
+        historical=root/'historical.lock.hcl'
+        original=retired.source(ROOT,'terraform/live/dev/shared/.terraform.lock.hcl').read_text()
+        for altered in (original.replace('edXOJWE4','XdXOJWE4'),original.replace('  hashes = [','  hashes = [\n    "h1:H3mU/7URhP0uCRGK8jeQRKxx2XFzEqLiOq/L2Bbiaxs=",')):
+            historical.write_text(altered)
+            with patch.object(model.retired,'source',return_value=historical):
+                with self.assertRaisesRegex(ValueError,'historical security provider lock drift'):
+                    model.security_provider_lock(ROOT)
 
     def test_only_exact_postbaseline_snapshots_leave_historical_view(self):
         root=self.fixture()
