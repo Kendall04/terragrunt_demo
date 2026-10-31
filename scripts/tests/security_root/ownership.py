@@ -173,6 +173,10 @@ def wiring(doc):
     tags = {"E1Owner": OWNER, "E1Stage": STAGE}
     resources = {}
     def put(kind, name, body):
+        # Only the 29 uninstalled PROD declarations gain future indexed addresses.
+        # DEV and neutral state addresses and their security attributes stay fixed.
+        if name.startswith("prod_"):
+            body["count"] = ex("var.dev_cicd_installation_only ? 0 : 1")
         resources.setdefault(kind, {})[name] = body
     def stmt(actions, targets):
         return {"Effect": "Allow", "Action": actions, "Resource": targets}
@@ -185,7 +189,8 @@ def wiring(doc):
     def ref(key, attr="arn"):
         kind = {"role": "aws_iam_role", "profile": "aws_iam_instance_profile", "key": "aws_kms_key",
                 "secret": "aws_secretsmanager_secret", "repository": "aws_ecr_repository", "bucket": "aws_s3_bucket", "oidc": "aws_iam_openid_connect_provider"}[c["resources"][key]["kind"]]
-        return ex(kind + "." + ident(key) + "." + attr)
+        index = "[0]" if c["resources"][key]["scope"] == "prod" else ""
+        return ex(kind + "." + ident(key) + index + "." + attr)
     records = {}
     for key, item in c["resources"].items():
         name, env, kind = item["name"], item["scope"], item["kind"]
@@ -238,11 +243,15 @@ def wiring(doc):
         records[key] = {"schema": c["record_schema"], "owner": OWNER, "scope": env, "class": kind, "logical_id": key,
             "declaration": item["declaration"], "authority_digest": authority_digest(c), "available": True,
             "value": ref(key), "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"}
+        if env == "prod":
+            records[key]["available"] = ex("!var.dev_cicd_installation_only")
+            records[key]["value"] = ex("var.dev_cicd_installation_only ? null : " + ref(key)[2:-1])
     for key, item in c["recovery"].items():
         records["recovery/" + key] = {"schema": c["record_schema"], "owner": OWNER, "scope": item["scope"], "class": "recovery",
             "logical_id": "recovery/" + key, "declaration": "reservation/recovery/" + key,
             "authority_digest": authority_digest(c), "available": False, "value": None, "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"}
     return {"terraform": {"required_providers": {"aws": {"source": "hashicorp/aws", "version": "~> 5.50"}}},
-        "variable": {"account_id": {"type": "string"}, "region": {"type": "string"}},
+        "variable": {"account_id": {"type": "string"}, "region": {"type": "string"},
+                     "dev_cicd_installation_only": {"type": "bool", "default": False}},
         "resource": resources, "output": {"protected_output_candidates": {"value": records},
         "protected_dev_output_candidates": {"value": {key:record for key,record in records.items() if record["scope"] == "dev"}}}}

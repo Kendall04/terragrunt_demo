@@ -298,8 +298,16 @@ def wiring(doc):
     # unchanged. A DEV trial must not materialize inert WP5/PROD reservations
     # merely because a shared Terraform collection is referenced by a Lambda.
     root['variable']['dev_cicd_installation_only']={'type':'bool','default':False}
+    root['module']['protected_resources']['dev_cicd_installation_only']=expression('var.dev_cicd_installation_only')
     root['module']['controller_compute']['dev_cicd_installation_only']=expression('var.dev_cicd_installation_only')
     compute_module['variable']['dev_cicd_installation_only']={'type':'bool','default':False}
+    # These four local declaration receipts have no instances in the installed
+    # state. Keep their original addresses in full mode; omit only reservations.
+    compute_module['resource']['terraform_data']['declaration']['for_each']=expression('var.dev_cicd_installation_only ? {} : local.nodes')
+    compute_module['output']['foundation']['precondition']=dict(
+        compute_module['resource']['terraform_data']['declaration']['lifecycle']['precondition'])
+    compute_module['locals']['wp5_repository_reservations']=compute_module['locals']['wp5_repositories']
+    compute_module['locals']['wp5_repositories']=expression('{for key,v in local.wp5_repository_reservations:key=>v if !var.dev_cicd_installation_only}')
     compute_module['locals']['nodes']=expression('{ for key, n in var.authority.controller_compute.nodes : key => merge(n, { bundle = var.authority.control_bundles.consumer_references[n.bundle_binding] }) if !var.dev_cicd_installation_only || contains(["request-gateway/release","build/release","request-gateway/deploy-dev","normal-delivery/deploy-dev"],key) }')
     compute_module['locals']['wp4d_buckets']=expression('{for env in ["dev","prod"]:env=>"e1-wp4-${env}-${var.account_id}-${var.region}" if !var.dev_cicd_installation_only || env=="dev"}')
 
@@ -327,6 +335,9 @@ def wiring(doc):
     root['module']['controller_compute']['dev_delivery_contract']=expression('var.dev_delivery_contract')
 
     foundations=wp5.foundations()
+    foundations['variable']['dev_cicd_installation_only']={'type':'bool','default':False}
+    root['module']['lifecycle_foundations']['dev_cicd_installation_only']=expression('var.dev_cicd_installation_only')
+    foundations['resource']['aws_s3_bucket']['state']['for_each']=expression('toset(var.dev_cicd_installation_only ? ["dev"] : ["dev","prod"])')
     wp6.extend(root,child,compute_module,foundations,doc)
     # The same limited DEV installation must not create any other request role.
     root['module']['request_identities']['dev_cicd_installation_only']=expression('var.dev_cicd_installation_only')

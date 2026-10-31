@@ -34,6 +34,12 @@ init or network. Private readbacks and offline membership/configuration comparis
 remain separate evidence; a future refreshed AWS plan and new owner approval are
 still required. No image/publication qualification is repeated by these tests.
 
+Limited PROD selection adds two security-root regression methods (1076 total).
+They freeze the reviewed DEV/neutral declarations and the complete PROD security
+attributes, allowing only the authorized future PROD indexing. Provider-free
+Terraform console checks exercise both modes and unavailable PROD outputs;
+they do not prove an AWS plan, permissions or absence of unmanaged KMS keys.
+
 The WP3C [internal release implementation](e1-internal-release.md) adds hermetic
 adapter/authority acceptance and provider-free selective-compute fixtures.
 These never constitute live AWS isolation or deployment evidence.

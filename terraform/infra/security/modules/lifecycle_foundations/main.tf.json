@@ -29,6 +29,10 @@
         "condition": "${var.dev_operator_arn == null ? true : (startswith(var.dev_operator_arn,\"arn:aws:iam::${var.account_id}:role/\") && can(regex(\"^arn:aws:iam::[0-9]{12}:role/[A-Za-z0-9+=,.@_-]+$\",var.dev_operator_arn)))}",
         "error_message": "Existing explicitly approved DEV operator role required."
       }
+    },
+    "dev_cicd_installation_only": {
+      "type": "bool",
+      "default": false
     }
   },
   "locals": {
@@ -38,7 +42,7 @@
   "resource": {
     "aws_s3_bucket": {
       "state": {
-        "for_each": "${toset([\"dev\",\"prod\"])}",
+        "for_each": "${toset(var.dev_cicd_installation_only ? [\"dev\"] : [\"dev\",\"prod\"])}",
         "bucket": "${\"e1-lifecycle-${each.key}-${var.account_id}-${var.region}\"}",
         "force_destroy": false
       }

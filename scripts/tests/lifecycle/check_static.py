@@ -42,6 +42,7 @@ def main():
         path=Path(directory)/'main.tf.json'
         for name,install,image,binding in cases:
             variables={k:{'type':'any','default':v} for k,v in dict(authority=DOC,account_id=ACCOUNT,region=REGION,
+                dev_cicd_installation_only=False,
                 wp5_installations=install,wp5_runtime_approvals=image,wp5_environment_bindings=binding).items()}
             path.write_text(json.dumps(dict(variable=variables,locals=locals_)),encoding='utf-8')
             result=subprocess.run([terraform,'console','-no-color'],input=expression+'\n',capture_output=True,text=True,cwd=directory,env=env,timeout=30)

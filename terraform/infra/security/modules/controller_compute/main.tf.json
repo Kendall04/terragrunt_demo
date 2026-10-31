@@ -196,7 +196,8 @@
       "status/status-neutral": "{\"Version\": \"2012-10-17\", \"Statement\": [{\"Effect\": \"Allow\", \"Action\": [\"s3:GetObject\", \"s3:GetObjectVersion\"], \"Resource\": [\"arn:aws:s3:::${local.evidence_bucket}/operations/demo-api/*\"]}, {\"Effect\": \"Allow\", \"Action\": [\"s3:GetObject\", \"s3:GetObjectVersion\"], \"Resource\": [\"arn:aws:s3:::${local.evidence_bucket}/attempts/demo-api/*\"]}, {\"Effect\": \"Allow\", \"Action\": [\"s3:ListBucket\"], \"Resource\": [\"arn:aws:s3:::${local.evidence_bucket}\"], \"Condition\": {\"StringLike\": {\"s3:prefix\": [\"operations/demo-api/*\", \"attempts/demo-api/*\"]}, \"NumericEquals\": {\"s3:max-keys\": \"1\"}}}, {\"Effect\": \"Allow\", \"Action\": [\"s3:GetObjectVersion\"], \"Resource\": [\"arn:aws:s3:::e1-control-bundles-${var.account_id}-${var.region}/__BUNDLE_KEY__\"], \"Condition\": {\"StringEquals\": {\"s3:VersionId\": \"__VERSION__\"}}}, {\"Effect\": \"Allow\", \"Action\": [\"logs:CreateLogStream\", \"logs:PutLogEvents\"], \"Resource\": [\"arn:aws:logs:${var.region}:${var.account_id}:log-group:/aws/lambda/e1-status-neutral:log-stream:*\"]}]}"
     },
     "completion": "${contains(keys(local.wp3_active), \"build/release\") && contains(keys(local.wp3_active), \"qualification-finalizer/qualification\") ? { release = true } : {}}",
-    "runtime_repositories": {
+    "wp3_completion_qualifier": "${contains(keys(local.wp3_preserved_ready),\"build/release\") && contains(keys(local.wp3_preserved_ready),\"qualification-finalizer/qualification\") ? \"1\" : aws_lambda_function.wp3[\"qualification-finalizer/qualification\"].version}",
+    "runtime_repository_reservations": {
       "e1-controller-request-gateway-release": {
         "name": "e1-gateway-release",
         "engine": "LAMBDA"
@@ -226,6 +227,7 @@
         "engine": "CODEBUILD"
       }
     },
+    "runtime_repositories": "${{for key,v in local.runtime_repository_reservations:key=>v if !var.dev_cicd_installation_only || key!=\"e1-controller-status-status-neutral\"}}",
     "wp4d_contract": "${var.authority.wp4d}",
     "wp4d_historical_installations": {
       "request-gateway/deploy-dev": {
@@ -335,7 +337,8 @@
     "wp5_config": "${{for key,v in local.wp5_active:key=>jsonencode({binding=key,account=var.account_id,region=var.region,package={binding=key,bucket=v.install.bucket,key=v.install.key,sha256=v.package_sha256,version_id=v.install.version_id,source_commit=v.install.source_commit}})}}",
     "wp5_policies": "${{for key,v in local.wp5_active:key=>jsondecode(jsonencode({Version=\"2012-10-17\",Statement=[for s in jsondecode(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(local.wp5_policy_templates[key],\"WP5_ACCOUNT\",var.account_id),\"WP5_REGION\",var.region),\"WP5_PACKAGE\",v.package_sha256),\"\\\"WP5_VERSION\\\"\",jsonencode(v.install.version_id)),\"[\\\"WP5_aws_vpc\\\"]\",jsonencode(v.binding.resources.aws_vpc)),\"[\\\"WP5_aws_vpc:*\\\"]\",jsonencode([for arn in v.binding.resources.aws_vpc:\"${arn}:*\"])),\"[\\\"WP5_aws_subnet\\\"]\",jsonencode(v.binding.resources.aws_subnet)),\"[\\\"WP5_aws_subnet:*\\\"]\",jsonencode([for arn in v.binding.resources.aws_subnet:\"${arn}:*\"])),\"[\\\"WP5_aws_security_group\\\"]\",jsonencode(v.binding.resources.aws_security_group)),\"[\\\"WP5_aws_security_group:*\\\"]\",jsonencode([for arn in v.binding.resources.aws_security_group:\"${arn}:*\"])),\"[\\\"WP5_aws_security_group_rule\\\"]\",jsonencode(v.binding.resources.aws_security_group_rule)),\"[\\\"WP5_aws_security_group_rule:*\\\"]\",jsonencode([for arn in v.binding.resources.aws_security_group_rule:\"${arn}:*\"])),\"[\\\"WP5_aws_internet_gateway\\\"]\",jsonencode(v.binding.resources.aws_internet_gateway)),\"[\\\"WP5_aws_internet_gateway:*\\\"]\",jsonencode([for arn in v.binding.resources.aws_internet_gateway:\"${arn}:*\"])),\"[\\\"WP5_aws_route_table\\\"]\",jsonencode(v.binding.resources.aws_route_table)),\"[\\\"WP5_aws_route_table:*\\\"]\",jsonencode([for arn in v.binding.resources.aws_route_table:\"${arn}:*\"])),\"[\\\"WP5_aws_route\\\"]\",jsonencode(v.binding.resources.aws_route)),\"[\\\"WP5_aws_route:*\\\"]\",jsonencode([for arn in v.binding.resources.aws_route:\"${arn}:*\"])),\"[\\\"WP5_aws_route_table_association\\\"]\",jsonencode(v.binding.resources.aws_route_table_association)),\"[\\\"WP5_aws_route_table_association:*\\\"]\",jsonencode([for arn in v.binding.resources.aws_route_table_association:\"${arn}:*\"])),\"[\\\"WP5_aws_eip\\\"]\",jsonencode(v.binding.resources.aws_eip)),\"[\\\"WP5_aws_eip:*\\\"]\",jsonencode([for arn in v.binding.resources.aws_eip:\"${arn}:*\"])),\"[\\\"WP5_aws_flow_log\\\"]\",jsonencode(v.binding.resources.aws_flow_log)),\"[\\\"WP5_aws_flow_log:*\\\"]\",jsonencode([for arn in v.binding.resources.aws_flow_log:\"${arn}:*\"])),\"[\\\"WP5_aws_lb\\\"]\",jsonencode(v.binding.resources.aws_lb)),\"[\\\"WP5_aws_lb:*\\\"]\",jsonencode([for arn in v.binding.resources.aws_lb:\"${arn}:*\"])),\"[\\\"WP5_aws_lb_target_group\\\"]\",jsonencode(v.binding.resources.aws_lb_target_group)),\"[\\\"WP5_aws_lb_target_group:*\\\"]\",jsonencode([for arn in v.binding.resources.aws_lb_target_group:\"${arn}:*\"])),\"[\\\"WP5_aws_lb_listener\\\"]\",jsonencode(v.binding.resources.aws_lb_listener)),\"[\\\"WP5_aws_lb_listener:*\\\"]\",jsonencode([for arn in v.binding.resources.aws_lb_listener:\"${arn}:*\"])),\"[\\\"WP5_aws_lb_listener_rule\\\"]\",jsonencode(v.binding.resources.aws_lb_listener_rule)),\"[\\\"WP5_aws_lb_listener_rule:*\\\"]\",jsonencode([for arn in v.binding.resources.aws_lb_listener_rule:\"${arn}:*\"])),\"[\\\"WP5_aws_autoscaling_group\\\"]\",jsonencode(v.binding.resources.aws_autoscaling_group)),\"[\\\"WP5_aws_autoscaling_group:*\\\"]\",jsonencode([for arn in v.binding.resources.aws_autoscaling_group:\"${arn}:*\"])),\"[\\\"WP5_aws_ecs_cluster\\\"]\",jsonencode(v.binding.resources.aws_ecs_cluster)),\"[\\\"WP5_aws_ecs_cluster:*\\\"]\",jsonencode([for arn in v.binding.resources.aws_ecs_cluster:\"${arn}:*\"])),\"[\\\"WP5_aws_ecs_service\\\"]\",jsonencode(v.binding.resources.aws_ecs_service)),\"[\\\"WP5_aws_ecs_service:*\\\"]\",jsonencode([for arn in v.binding.resources.aws_ecs_service:\"${arn}:*\"])),\"[\\\"WP5_aws_ecs_task_definition\\\"]\",jsonencode(v.binding.resources.aws_ecs_task_definition)),\"[\\\"WP5_aws_ecs_task_definition:*\\\"]\",jsonencode([for arn in v.binding.resources.aws_ecs_task_definition:\"${arn}:*\"])),\"[\\\"WP5_aws_instance\\\"]\",jsonencode(v.binding.resources.aws_instance)),\"[\\\"WP5_aws_instance:*\\\"]\",jsonencode([for arn in v.binding.resources.aws_instance:\"${arn}:*\"])),\"[\\\"WP5_aws_cloudwatch_metric_alarm\\\"]\",jsonencode(v.binding.resources.aws_cloudwatch_metric_alarm)),\"[\\\"WP5_aws_cloudwatch_metric_alarm:*\\\"]\",jsonencode([for arn in v.binding.resources.aws_cloudwatch_metric_alarm:\"${arn}:*\"])),\"[\\\"WP5_aws_cloudwatch_log_group\\\"]\",jsonencode(v.binding.resources.aws_cloudwatch_log_group)),\"[\\\"WP5_aws_cloudwatch_log_group:*\\\"]\",jsonencode([for arn in v.binding.resources.aws_cloudwatch_log_group:\"${arn}:*\"])),\"[\\\"WP5_aws_sns_topic\\\"]\",jsonencode(v.binding.resources.aws_sns_topic)),\"[\\\"WP5_aws_sns_topic:*\\\"]\",jsonencode([for arn in v.binding.resources.aws_sns_topic:\"${arn}:*\"])),\"[\\\"WP5_aws_sns_topic_subscription\\\"]\",jsonencode(v.binding.resources.aws_sns_topic_subscription)),\"[\\\"WP5_aws_sns_topic_subscription:*\\\"]\",jsonencode([for arn in v.binding.resources.aws_sns_topic_subscription:\"${arn}:*\"])),\"[\\\"WP5_aws_apigatewayv2_api\\\"]\",jsonencode(v.binding.resources.aws_apigatewayv2_api)),\"[\\\"WP5_aws_apigatewayv2_api:*\\\"]\",jsonencode([for arn in v.binding.resources.aws_apigatewayv2_api:\"${arn}:*\"])),\"[\\\"WP5_aws_apigatewayv2_vpc_link\\\"]\",jsonencode(v.binding.resources.aws_apigatewayv2_vpc_link)),\"[\\\"WP5_aws_apigatewayv2_vpc_link:*\\\"]\",jsonencode([for arn in v.binding.resources.aws_apigatewayv2_vpc_link:\"${arn}:*\"])),\"[\\\"WP5_aws_apigatewayv2_integration\\\"]\",jsonencode(v.binding.resources.aws_apigatewayv2_integration)),\"[\\\"WP5_aws_apigatewayv2_integration:*\\\"]\",jsonencode([for arn in v.binding.resources.aws_apigatewayv2_integration:\"${arn}:*\"])),\"[\\\"WP5_aws_apigatewayv2_route\\\"]\",jsonencode(v.binding.resources.aws_apigatewayv2_route)),\"[\\\"WP5_aws_apigatewayv2_route:*\\\"]\",jsonencode([for arn in v.binding.resources.aws_apigatewayv2_route:\"${arn}:*\"])),\"[\\\"WP5_aws_apigatewayv2_stage\\\"]\",jsonencode(v.binding.resources.aws_apigatewayv2_stage)),\"[\\\"WP5_aws_apigatewayv2_stage:*\\\"]\",jsonencode([for arn in v.binding.resources.aws_apigatewayv2_stage:\"${arn}:*\"])),\"\\\"WP5_SQL_IMAGE\\\"\",jsonencode(try(v.binding.sql_launch.image,\"UNAVAILABLE\"))),\"\\\"WP5_SQL_SUBNET\\\"\",jsonencode(try(v.binding.sql_launch.subnet,\"UNAVAILABLE\"))),\"\\\"WP5_SQL_SG\\\"\",jsonencode(try(v.binding.sql_launch.security_group,\"UNAVAILABLE\"))),\"\\\"WP5_SQL_TYPE\\\"\",jsonencode(try(v.binding.sql_launch.instance_type,\"UNAVAILABLE\")))).Statement:merge(s,{Resource=sort(s.Resource)}) if length(s.Resource)>0]}))}}",
     "wp5_chunks": "${{for pair in flatten([for key,v in local.wp5_projects:[for index in range(min(8,length(local.wp5_policies[key].Statement))):{key=\"${key}/${index}\",role=v.role,name=\"wp5-${split(\"/\",key)[1]}-${index}\",policy=jsonencode({Version=\"2012-10-17\",Statement=[for position in range(index*ceil(length(local.wp5_policies[key].Statement)/8),min((index+1)*ceil(length(local.wp5_policies[key].Statement)/8),length(local.wp5_policies[key].Statement))):local.wp5_policies[key].Statement[position]]})}]]):pair.key=>pair}}",
-    "wp5_repositories": {
+    "wp5_repositories": "${{for key,v in local.wp5_repository_reservations:key=>v if !var.dev_cicd_installation_only}}",
+    "wp5_repository_reservations": {
       "request-gateway/infra-dev": {
         "name": "e1-gateway-infra-dev",
         "engine": "LAMBDA"
@@ -373,7 +376,7 @@
   "resource": {
     "terraform_data": {
       "declaration": {
-        "for_each": "${local.nodes}",
+        "for_each": "${var.dev_cicd_installation_only ? {} : local.nodes}",
         "input": "${each.value}",
         "lifecycle": {
           "precondition": {
@@ -490,7 +493,7 @@
         "publish": true,
         "timeout": 60,
         "memory_size": 256,
-        "reserved_concurrent_executions": 1,
+        "reserved_concurrent_executions": "${each.key==\"request-gateway/release\" && contains(keys(local.wp3_preserved_ready),each.key) ? 0 : 1}",
         "image_config": {
           "command": [
             "runtime.handler"
@@ -895,7 +898,7 @@
         "for_each": "${local.completion}",
         "rule": "${aws_cloudwatch_event_rule.completion[each.key].name}",
         "target_id": "qualification",
-        "arn": "${aws_lambda_function.wp3[\"qualification-finalizer/qualification\"].qualified_arn}"
+        "arn": "${format(\"%s:%s\",aws_lambda_function.wp3[\"qualification-finalizer/qualification\"].arn,local.wp3_completion_qualifier)}"
       },
       "wp4d_nat": {
         "for_each": "${local.wp4d_nat_targets}",
@@ -931,7 +934,7 @@
         "statement_id": "ExactOuterCompletion",
         "action": "lambda:InvokeFunction",
         "function_name": "${aws_lambda_function.wp3[\"qualification-finalizer/qualification\"].function_name}",
-        "qualifier": "${aws_lambda_function.wp3[\"qualification-finalizer/qualification\"].version}",
+        "qualifier": "${local.wp3_completion_qualifier}",
         "principal": "events.amazonaws.com",
         "source_account": "${var.account_id}",
         "source_arn": "${aws_cloudwatch_event_rule.completion[each.key].arn}"
@@ -1159,6 +1162,10 @@
         "declarations": "${local.nodes}",
         "gateway_instances": "${keys(local.gateways)}",
         "project_instances": "${keys(local.projects)}"
+      },
+      "precondition": {
+        "condition": "${!var.authority.controller_compute.creation_supported && !var.authority.controller_compute.operational}",
+        "error_message": "WP2C cannot create or activate Lambda/CodeBuild instances; later reviewed installation required."
       }
     },
     "internal_release": {

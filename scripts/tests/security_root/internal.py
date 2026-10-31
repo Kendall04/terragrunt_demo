@@ -206,7 +206,8 @@ def extend(tf):
         'name':ex('each.value.name'),'retention_in_days':14}
     r['aws_lambda_function']['wp3']={'for_each':ex('local.wp3_lambdas'),'function_name':ex('each.value.name'),
         'role':ex('local.wp3_role_arns[each.key]'),'package_type':'Image','image_uri':ex('each.value.runtime.uri'),
-        'publish':True,'timeout':60,'memory_size':256,'reserved_concurrent_executions':1,
+        'publish':True,'timeout':60,'memory_size':256,
+        'reserved_concurrent_executions':ex('each.key=="request-gateway/release" && contains(keys(local.wp3_preserved_ready),each.key) ? 0 : 1'),
         'image_config':{'command':['runtime.handler']},
         'environment':{'variables':{'E1_PROTECTED_CONFIGURATION':ex('local.wp3_config[each.key]')}},
         'depends_on':['aws_cloudwatch_log_group.wp3','aws_iam_role_policy.wp3']}
@@ -259,15 +260,19 @@ def extend(tf):
         'evidence':{'bucket':ex('local.evidence_bucket'),'policy':json.dumps({'Version':'2012-10-17','Statement':statements})}}
     # No caller can invoke the finalizer; only the exact outer-completion rule.
     local['completion']=ex('contains(keys(local.wp3_active), "build/release") && contains(keys(local.wp3_active), "qualification-finalizer/qualification") ? { release = true } : {}')
+    # The state and refreshed plan both bind this rule/permission to published
+    # finalizer version 1, while the function's latest published version is 2.
+    # Preserve that real binding only for the exact closed historical pair.
+    local['wp3_completion_qualifier']=ex('contains(keys(local.wp3_preserved_ready),"build/release") && contains(keys(local.wp3_preserved_ready),"qualification-finalizer/qualification") ? "1" : aws_lambda_function.wp3["qualification-finalizer/qualification"].version')
     r['aws_cloudwatch_event_rule']={'completion':{'for_each':ex('local.completion'),'name':'e1-release-completion',
         'event_pattern':json.dumps({'source':['aws.codebuild'],'detail-type':['CodeBuild Build State Change'],
             'account':[account],'region':[region],'detail':{'project-name':['e1-controller-release'],'build-status':['SUCCEEDED','FAILED','STOPPED']}})}}
     r['aws_cloudwatch_event_target']={'finalizer':{'for_each':ex('local.completion'),
         'rule':ex('aws_cloudwatch_event_rule.completion[each.key].name'),'target_id':'qualification',
-        'arn':ex('aws_lambda_function.wp3["qualification-finalizer/qualification"].qualified_arn')}}
+        'arn':ex('format("%s:%s",aws_lambda_function.wp3["qualification-finalizer/qualification"].arn,local.wp3_completion_qualifier)')}}
     r['aws_lambda_permission']={'completion':{'for_each':ex('local.completion'),'statement_id':'ExactOuterCompletion',
         'action':'lambda:InvokeFunction','function_name':ex('aws_lambda_function.wp3["qualification-finalizer/qualification"].function_name'),
-        'qualifier':ex('aws_lambda_function.wp3["qualification-finalizer/qualification"].version'),
+        'qualifier':ex('local.wp3_completion_qualifier'),
         'principal':'events.amazonaws.com','source_account':ex('var.account_id'),
         'source_arn':ex('aws_cloudwatch_event_rule.completion[each.key].arn')}}
     # CodeBuild pulls probe D using service credentials. The compromised worker
@@ -287,7 +292,10 @@ def extend(tf):
     runtime_names={('e1-controller-build' if k=='build/release' else 'e1-controller-'+k.replace('/','-')):
                    {'name':n,'engine':engine} for k,(n,engine) in CONTROLLERS.items()}
     runtime_names.update({'e1-payload-'+k:{'name':n,'engine':'CODEBUILD'} for k,n in WORKERS.items()})
-    local['runtime_repositories']=runtime_names
+    local['runtime_repository_reservations']=runtime_names
+    # Keep all existing keys. Only the uninstalled status reservation is omitted
+    # in the limited mode; full installation retains the original seven entries.
+    local['runtime_repositories']=ex('{for key,v in local.runtime_repository_reservations:key=>v if !var.dev_cicd_installation_only || key!="e1-controller-status-status-neutral"}')
     r['aws_ecr_repository']={'runtime':{'for_each':ex('local.runtime_repositories'),'name':ex('each.key'),
         'image_tag_mutability':'IMMUTABLE','image_scanning_configuration':{'scan_on_push':True}}}
     r['aws_ecr_repository_policy']['runtime']={'for_each':ex('local.runtime_repositories'),

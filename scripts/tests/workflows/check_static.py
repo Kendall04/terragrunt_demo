@@ -60,7 +60,11 @@ def main():
             # Use the actual generator, including Python source admission; then
             # attempt unadmitted caller/module substitutions against its locals.
             generated=model.wiring(admitted)[target]
-            variables={k:{'type':'any','default':v} for k,v in dict(authority=mutant or admitted,account_id=ACCOUNT,region=REGION,endpoints=observed).items()}
+            # Normal activation uses the generated module's inactive preservation
+            # defaults. The separate closed-preservation fixture tests new inputs.
+            defaults={k:v['default'] for k,v in generated['variable'].items() if 'default' in v}
+            variables={k:{'type':'any','default':v} for k,v in dict(defaults,
+                authority=mutant or admitted,account_id=ACCOUNT,region=REGION,endpoints=observed).items()}
             path=Path(directory)/'main.tf.json';path.write_text(json.dumps(dict(variable=variables,locals=generated['locals'])))
             result=subprocess.run([terraform,'console','-no-color'],input=expression+'\n',capture_output=True,text=True,cwd=directory,env=env,timeout=30)
             if result.returncode:raise AssertionError(name+': '+result.stderr)
