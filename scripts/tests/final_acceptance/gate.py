@@ -210,7 +210,20 @@ def main():
     required_dev_neutral = {'test_wp2d.ClosureTests.' + name for name in dev_neutral_methods}
     if not required_dev_neutral <= set(records['ownership_publication'].get('test_ids', [])):
         errors.append('DEV neutral publication coverage is incomplete')
-    expected_regression = 1076 + len(required_shared_alerts) + len(required_dev_neutral)
+    admin_publication_methods = {
+        'test_wrong_identity_stops_before_storage',
+        'test_prior_version_and_delete_marker_rejected',
+        'test_output_failure_scope_and_candidate_drift_rejected',
+        'test_preflight_is_read_only_and_publication_disabled',
+        'test_single_conditional_put_and_exact_version',
+        'test_ambiguous_write_only_reconciles_and_never_retries',
+        'test_failed_read_wrong_version_or_bytes_never_success',
+        'test_bucket_runtime_exposure_and_wrong_backend_rejected',
+    }
+    required_admin_publication = {'test_admin_publication.AdminPublicationTests.' + name for name in admin_publication_methods}
+    if not required_admin_publication <= set(records['security_root'].get('test_ids', [])):
+        errors.append('Administrative publication adapter coverage is incomplete')
+    expected_regression = 1076 + len(required_shared_alerts) + len(required_dev_neutral) + len(required_admin_publication)
     if regression != expected_regression:
         errors.append(f'Accepted regression count changed: {regression} != {expected_regression}')
     static_good = all(records[n]['status'] == 'PASS' for n, _ in CHECKS)

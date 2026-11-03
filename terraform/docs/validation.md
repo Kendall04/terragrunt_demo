@@ -51,6 +51,13 @@ promotion namespace and pinned provenance, and the sole `dev/shared` selection.
 Synthetic ports prove contract behavior; real publication and source promotion
 still require their own administrator authorization and receipts.
 
+The fixed DEV+neutral administrative adapter adds eight named failure/identity/
+storage regressions (1100 total). Its fake transports test a single conditional
+PUT and exact-version verification, including ambiguous dispatch without retry.
+They do not prove effective AWS write permission or issue a publication. The
+read-only operational preflight evaluates the existing bucket and the named
+Terraform output; IAM simulation remains policy evidence, not a successful PUT.
+
 The WP3C [internal release implementation](e1-internal-release.md) adds hermetic
 adapter/authority acceptance and provider-free selective-compute fixtures.
 These never constitute live AWS isolation or deployment evidence.

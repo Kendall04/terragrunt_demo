@@ -190,6 +190,25 @@ approve the complete receipt, create it once, read it back exactly, and separate
 promote that exact body into source before planning. A candidate file or ARN in
 tfvars cannot replace this boundary. Neither publication nor promotion is implied
 by implementation of the contract; missing records still fail closed.
+The bounded adapter is `scripts/publish_dev_neutral.py`. Run
+`python -I -B scripts/publish_dev_neutral.py preflight --candidate <private-candidate> --terraform-dir <initialized-security-cache>`
+first. It uses only `terraform output -json protected_output_candidates` on the
+original initialized security backend, never a raw state download or bootstrap.
+The fixed bucket is `terragrunt-demo-security-341936017254-us-east-1`; no bucket,
+key, profile or identity override is accepted. Keep the candidate parent private
+with verified restrictive ACLs. Preflight creates no local evidence files or AWS
+objects. Following separate owner approval, the future command is the same with
+`publish` and `--confirm "PUBLISH DEV NEUTRAL <approved-candidate-sha256>"`.
+This confirmation is an execution guard, not evidence of owner approval.
+The adapter requires an empty complete version/delete-marker history, then one
+`PutObject` with `If-None-Match: *`, an authentic returned VersionId and exact-byte
+version readback. It never writes the backend key, overwrites or deletes objects,
+changes bucket controls, or promotes source. Keep administrative writers frozen:
+S3's conditional PUT only tests the current object, so history is checked again
+after writing. Any conflict or ambiguity stops; only readbacks follow an uncertain
+PUT. Reconcile a failed attempt before any separately authorized future attempt.
+`verify --version-id <actual-returned-version>` performs only exact-version reads
+and bucket/identity checks. No latest fallback or invented VersionId is allowed.
 Set `alerts_topic_arn=arn:aws:sns:us-east-1:341936017254:demo-dev-shared-alerts`
 where the root declares it. No secret values, passwords or connection strings.
 

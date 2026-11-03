@@ -4941,13 +4941,13 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/final_acceptance/gate.py": {
-      "sha256": "ed4d5e8d1f8a676450a760b41185c680578947988c4b39208c22d0247e4c94d9",
+      "sha256": "bd993dc146c4f133f245689c0891015f10bb7cbc96211d5fee17352921aeaed6",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           69,
           152,
-          229
+          242
         ],
         "executable-dependency": [
           3,
@@ -13139,6 +13139,84 @@
           28,
           88,
           95
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/publish_dev_neutral.py": {
+      "sha256": "a2509344aefa3044c3ee2688492b1c4bda0bf1975a92954513d34b332b7bb1ed",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          26,
+          27,
+          37,
+          40,
+          44,
+          47,
+          50,
+          52,
+          53,
+          62,
+          63,
+          83,
+          103,
+          104,
+          105,
+          106,
+          133,
+          207,
+          214,
+          215,
+          216
+        ],
+        "executable-dependency": [
+          4
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/tests/security_root/test_admin_publication.py": {
+      "sha256": "f5669e69bbde56b5e8dfd3acf2e6ba47b0e35852dbfdffdd68ceca0cd970ef1b",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          89,
+          92,
+          96,
+          99,
+          104,
+          105,
+          108,
+          109,
+          110,
+          120,
+          139,
+          147,
+          153,
+          159,
+          164,
+          170,
+          171,
+          172,
+          176,
+          179,
+          183,
+          186,
+          190,
+          191,
+          193,
+          194,
+          195,
+          197,
+          200,
+          202,
+          203
+        ],
+        "executable-dependency": [
+          201,
+          202,
+          203
         ]
       },
       "semantic_status": "UNVERIFIED"
