@@ -184,8 +184,23 @@ def main():
     required_installed = {'test_installed_preservation.InstalledPreservation.' + name for name in installed_methods}
     if not required_installed <= set(records['security_root'].get('test_ids', [])):
         errors.append('Installed graph preservation coverage is incomplete')
-    if regression != 1076:
-        errors.append(f'Accepted regression count changed: {regression} != 1076')
+    shared_alert_methods = {
+        'test_generated_sources_match',
+        'test_topic_and_subscription_keep_their_addresses',
+        'test_exact_fourteen_alarm_names',
+        'test_publisher_grant_is_not_generic',
+        'test_key_has_retention_rotation_and_exact_administrator',
+        'test_policy_keeps_original_statements_and_rejects_duplicate_owned_sid',
+        'test_prod_does_not_gain_dev_key_or_policy',
+        'test_new_resource_surface_is_bounded',
+        'test_shared_lock_reuses_authenticated_aws_pin_without_upgrade',
+    }
+    required_shared_alerts = {'test_shared_alerts.SharedAlertsTests.' + name for name in shared_alert_methods}
+    if not required_shared_alerts <= set(records['security_root'].get('test_ids', [])):
+        errors.append('Shared notification security coverage is incomplete')
+    expected_regression = 1076 + len(required_shared_alerts)
+    if regression != expected_regression:
+        errors.append(f'Accepted regression count changed: {regression} != {expected_regression}')
     static_good = all(records[n]['status'] == 'PASS' for n, _ in CHECKS)
     criteria = {key: {'status': 'PASS' if static_good and not errors and all(records[n]['status'] == 'PASS' for n in names) else 'FAIL',
                       'evidence_suites': list(names)} for key, names in CRITERIA.items()}

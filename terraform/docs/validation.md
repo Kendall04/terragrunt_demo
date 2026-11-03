@@ -40,6 +40,10 @@ attributes, allowing only the authorized future PROD indexing. Provider-free
 Terraform console checks exercise both modes and unavailable PROD outputs;
 they do not prove an AWS plan, permissions or absence of unmanaged KMS keys.
 
+DEV shared notification security adds nine named regressions (1085 total).
+E1 requires every new method as well as the previous preservation coverage and
+the exact total; provider/schema and source tests do not certify SNS delivery.
+
 The WP3C [internal release implementation](e1-internal-release.md) adds hermetic
 adapter/authority acceptance and provider-free selective-compute fixtures.
 These never constitute live AWS isolation or deployment evidence.
