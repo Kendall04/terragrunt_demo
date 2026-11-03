@@ -23,7 +23,7 @@
   },
   "locals": {
     "authority": "${jsondecode(file(\"${path.module}/../../../../infra/security/authority.json\"))}",
-    "publication": "${try(local.authority.ownership_closure.publications[\"${var.account_id}/${var.region}\"], null)}",
+    "publication": "${try(local.authority.ownership_closure.publications[\"${var.account_id}/${var.region}/dev-neutral/v1\"], local.authority.ownership_closure.publications[\"${var.account_id}/${var.region}\"], null)}",
     "expected": "${try({ for k in [\"dev/kms\", \"dev/repository\", \"neutral/repository\", \"neutral/artifacts\", \"neutral/oidc\"] : k => local.publication.records[k].value if local.publication.records[k].available }, {})}"
   },
   "resource": {

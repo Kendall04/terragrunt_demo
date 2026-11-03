@@ -198,7 +198,19 @@ def main():
     required_shared_alerts = {'test_shared_alerts.SharedAlertsTests.' + name for name in shared_alert_methods}
     if not required_shared_alerts <= set(records['security_root'].get('test_ids', [])):
         errors.append('Shared notification security coverage is incomplete')
-    expected_regression = 1076 + len(required_shared_alerts)
+    dev_neutral_methods = {
+        'test_dev_neutral_exact_scope_and_shared_consumer',
+        'test_dev_neutral_missing_invented_and_unavailable_rejected',
+        'test_dev_neutral_prod_and_unknown_records_rejected',
+        'test_dev_neutral_authenticated_channel_and_exact_readback',
+        'test_dev_neutral_preserves_historical_receipt_and_create_only',
+        'test_dev_neutral_promotion_namespace_and_pinned_provenance',
+        'test_dev_neutral_only_shared_wiring_changes',
+    }
+    required_dev_neutral = {'test_wp2d.ClosureTests.' + name for name in dev_neutral_methods}
+    if not required_dev_neutral <= set(records['ownership_publication'].get('test_ids', [])):
+        errors.append('DEV neutral publication coverage is incomplete')
+    expected_regression = 1076 + len(required_shared_alerts) + len(required_dev_neutral)
     if regression != expected_regression:
         errors.append(f'Accepted regression count changed: {regression} != {expected_regression}')
     static_good = all(records[n]['status'] == 'PASS' for n, _ in CHECKS)

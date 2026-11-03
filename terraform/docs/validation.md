@@ -44,6 +44,13 @@ DEV shared notification security adds nine named regressions (1085 total).
 E1 requires every new method as well as the previous preservation coverage and
 the exact total; provider/schema and source tests do not certify SNS delivery.
 
+The DEV + neutral publication extension adds seven named ownership-publication
+regressions (1092 total). They cover the exact closed record set, partial/invented
+and PROD rejection, authenticated channel/readback, immutable historical receipts,
+promotion namespace and pinned provenance, and the sole `dev/shared` selection.
+Synthetic ports prove contract behavior; real publication and source promotion
+still require their own administrator authorization and receipts.
+
 The WP3C [internal release implementation](e1-internal-release.md) adds hermetic
 adapter/authority acceptance and provider-free selective-compute fixtures.
 These never constitute live AWS isolation or deployment evidence.

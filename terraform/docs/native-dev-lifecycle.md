@@ -179,6 +179,17 @@ Supply `account_id`, `region` and the exact `protected_inputs` from available
 administrator-promoted records in `terraform/infra/security/authority.json`, using
 `ownership_closure.consumers['dev/<layer>']` and the account/region publication.
 Missing/unavailable records stop; Terraform's protected-input precondition stays.
+For `dev/shared`, the separately approved `E1_DEV_NEUTRAL_OUTPUT_PUBLICATION_V1`
+adds exactly `neutral/repository`, `neutral/artifacts` and `neutral/oidc` to all DEV
+records. Its create-only location is
+`outputs/<account>/<region>/<authority_digest>/dev-neutral/v1`; its promoted
+registry entry is `<account>/<region>/dev-neutral/v1`. Only `dev/shared` selects
+that entry. The historical DEV publication and other consumer selections remain
+unchanged. An authenticated administrator must verify the state-owned identities,
+approve the complete receipt, create it once, read it back exactly, and separately
+promote that exact body into source before planning. A candidate file or ARN in
+tfvars cannot replace this boundary. Neither publication nor promotion is implied
+by implementation of the contract; missing records still fail closed.
 Set `alerts_topic_arn=arn:aws:sns:us-east-1:341936017254:demo-dev-shared-alerts`
 where the root declares it. No secret values, passwords or connection strings.
 
