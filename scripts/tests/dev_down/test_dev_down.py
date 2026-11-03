@@ -234,7 +234,12 @@ class CLI(unittest.TestCase):
         result,selected,binary,document,context=self.invoke()
         checked=down.check_current_review(result['destroy_review'],selected,context['state'],binary,document,NOW)
         self.assertTrue(checked['local_consistency']);self.assertFalse(result['execution_authorized'])
-        self.assertEqual(len(result['declaration_inventory']),217)
+        self.assertEqual(len(result['declaration_inventory']),219)
+        alerts = [row for row in result['declaration_inventory']
+                  if row['owner'] == 'shared' and row['type'] in ('aws_kms_key', 'aws_sns_topic_policy')]
+        self.assertEqual({row['type'] for row in alerts}, {'aws_kms_key', 'aws_sns_topic_policy'})
+        self.assertEqual(len(alerts), 2)
+        self.assertTrue(all(row['treatment'] == 'RETAIN' for row in alerts))
 
     def test_real_cli_drafts_two_confirmations_without_publishing_approval(self):
         p,v,_,_,_=reviewed();acks=down.acknowledgements(down.scope(v,p))
