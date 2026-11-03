@@ -375,6 +375,12 @@ class ClosureTests(unittest.TestCase):
             self.assertIn("iam_role_arn         = var.protected_flow_role", vpc)
             for path, text in generated.items():
                 if path.startswith(f"terraform/modules/target/{env}/") and isinstance(text, str):
+                    if path == 'terraform/modules/target/dev/shared/ordinary-main.tf':
+                        # Owner-authorized native administrative notification
+                        # key only; protected workload keys remain neutral-owned.
+                        import ordinary
+                        self.assertEqual(text.count('resource "aws_kms_key" "alerts"'), 1)
+                        text = ordinary.select(text, lambda h: not h.startswith('resource "aws_kms_key" "alerts"'))
                     for prefix in ('resource "aws_iam_', 'resource "aws_kms_', 'resource "aws_ecr_', 'resource "aws_s3_', 'resource "aws_secretsmanager_', 'resource "aws_lambda_', 'resource "aws_launch_template"'):
                         self.assertNotIn(prefix, text)
 

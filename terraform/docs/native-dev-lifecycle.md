@@ -144,6 +144,9 @@ plan may be required. Do not infer functional health from state reconciliation.
 `e1/lifecycle/dev/shared/terraform.tfstate`. Use the separately held
 `cnp-cert-admin` identity; the runtime operator's backend Deny excludes this key.
 This is a separately authorized notification operation, not a multi-layer apply.
+Only this dedicated notification key is native shared-owned; protected workload
+keys remain security-owned. Legacy wrapper reachability does not certify the
+native administrator's KMS permissions or authorize WP5 to mutate this key.
 
 The dedicated symmetric notification CMK has rotation, a 30-day deletion window
 and `prevent_destroy`. It does not replace the protected workload key. CloudWatch

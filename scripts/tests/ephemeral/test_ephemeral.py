@@ -42,6 +42,17 @@ class Ephemeral(unittest.TestCase):
         self.assertTrue(value['declaration_inventory'])
         self.assertIn('WP5_INSTALLATION_MISSING',value['gates'])
 
+    def test_shared_alerts_key_and_policy_remain_retained(self):
+        rows = [r for r in lab.declarations()
+                if r['owner'] == 'shared' and r['type'] in ('aws_kms_key', 'aws_sns_topic_policy')]
+        self.assertEqual({r['type'] for r in rows}, {'aws_kms_key', 'aws_sns_topic_policy'})
+        for row in rows:
+            self.assertEqual(row['treatment'], 'RETAIN')
+            self.assertEqual(row['origin'], 'DECLARATION_NOT_EXPANDED')
+        policy = next(r for r in rows if r['type'] == 'aws_sns_topic_policy')
+        self.assertIn('no independent standing charge', policy['cost_dimension'])
+        self.assertNotIn('shared', lab.DOWN)
+
     def test_prod_shared_and_mismatched_context_rejected(self):
         for env in ('prod','shared','neutral','DEV'):
             with self.assertRaises(ValueError):self.report(environment=env)

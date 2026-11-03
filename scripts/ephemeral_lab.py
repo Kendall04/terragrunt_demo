@@ -51,6 +51,7 @@ COST = {
     'aws_security_group': 'associated resources', 'aws_security_group_rule': 'associated resources',
     'aws_subnet': 'associated ENIs/compute/transfer', 'aws_vpc': 'associated network resources',
     'aws_sns_topic': 'notifications/requests', 'aws_sns_topic_subscription': 'notifications',
+    'aws_sns_topic_policy': 'associated topic notifications/requests; no independent standing charge',
     'aws_cloudwatch_event_rule': 'events/targets/associated compute',
     'aws_cloudwatch_event_target': 'events/associated compute',
     'aws_codebuild_project': 'build minutes/logs/artifacts',

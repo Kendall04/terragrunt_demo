@@ -3126,32 +3126,33 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/ephemeral_lab.py": {
-      "sha256": "9c0ab6433b61d42b967878350c7dc3d8e6048b0419e315c173bb6d9ba15cbbbb",
+      "sha256": "ce2e0ceaafaa70cd7a0f0c49dafea45cd664be4036dff5089aadaff93967907e",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          66,
-          100,
-          102,
-          220,
-          241
+          67,
+          101,
+          103,
+          221,
+          242
         ],
         "executable-dependency": [
-          112,
-          119,
-          141,
-          235
+          113,
+          120,
+          142,
+          236
         ],
         "security-control": [
-          58,
+          54,
           59,
-          61,
-          66,
-          69,
-          212,
-          218,
-          230,
-          237
+          60,
+          62,
+          67,
+          70,
+          213,
+          219,
+          231,
+          238
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -4780,25 +4781,28 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/ephemeral/test_ephemeral.py": {
-      "sha256": "c38f7cbdd18343e1b83d6914810561225f93c8b4ddad097a86aabaeb46d7a48f",
+      "sha256": "f063a8028031e8f95c8756776a3fc58f72ca43d03fb104a2e556e7ab75e99141",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          57,
-          90,
-          98,
-          192
+          68,
+          101,
+          109,
+          203
         ],
         "executable-dependency": [
-          90,
-          96
+          101,
+          107
         ],
         "security-control": [
-          82,
-          88,
-          95,
-          158,
-          160
+          47,
+          48,
+          52,
+          93,
+          99,
+          106,
+          169,
+          171
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -5921,14 +5925,14 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/ownership_publication/test_wp2d.py": {
-      "sha256": "4e33e8f79ec949204e056e0d3c1818e1cb3688948b320aa5bd23f41484b55abb",
+      "sha256": "4c5d5f0781c641c30a3dafa767ad8bf78caf0950c7b8ca3f4686567c7c4742f4",
       "declarations": [],
       "signals": {
         "role-input": [
           117,
           375,
-          385,
-          386
+          391,
+          392
         ],
         "launch-or-mutation": [
           71,
@@ -5951,10 +5955,11 @@
           365,
           374,
           377,
-          384,
-          387,
-          401,
-          408
+          378,
+          390,
+          393,
+          407,
+          414
         ],
         "executable-dependency": [
           216,
@@ -5964,8 +5969,8 @@
           370,
           371,
           373,
-          401,
-          541
+          407,
+          547
         ],
         "security-control": [
           116,
@@ -5976,7 +5981,9 @@
           223,
           308,
           321,
-          378
+          382,
+          383,
+          384
         ]
       },
       "semantic_status": "UNVERIFIED"

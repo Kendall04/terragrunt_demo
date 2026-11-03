@@ -159,7 +159,17 @@ class SourceBindingRegressions(unittest.TestCase):
         for typ in ("aws_kms_key", "aws_lambda_permission"):
             found = [r for r in records if r["declaration"] and r["declaration"]["type"] == typ]
             self.assertTrue(found)
-            self.assertTrue(all(r["admission"] == "UNSUPPORTED_APPLICABLE" for r in found))
+            native_alerts = [r for r in found if
+                r["source"] == "terraform/modules/target/dev/shared/ordinary-main.tf"
+                and r["declaration"]["type"] == "aws_kms_key"
+                and r["declaration"]["name"] == "alerts"]
+            if typ == 'aws_kms_key':
+                self.assertEqual(len(native_alerts), 1)
+                # This wrapper-reachability witness does not invoke the native
+                # administrative root. It still must never certify KMS policy.
+                self.assertEqual(native_alerts[0]['admission'], 'UNSUPPORTED_NOT_APPLICABLE')
+            self.assertTrue(all(r["admission"] == "UNSUPPORTED_APPLICABLE"
+                                for r in found if r not in native_alerts))
 
     def test_terraform_json_rejected_after_inventory_refresh(self):
         root = self.fixture()
