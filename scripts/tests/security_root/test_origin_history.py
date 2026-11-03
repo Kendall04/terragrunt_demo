@@ -43,7 +43,7 @@ class OriginAndHistoricalTests(unittest.TestCase):
         generated=wp5.configuration({})
         for layer in ('global','data','platform','apps','edge'):
             self.assertEqual(generated[f'terraform/modules/target/dev/{layer}/.terraform.lock.hcl'],selected)
-        self.assertNotEqual(generated['terraform/modules/target/dev/shared/.terraform.lock.hcl'],selected)
+        self.assertEqual(generated['terraform/modules/target/dev/shared/.terraform.lock.hcl'],selected)
         self.assertNotIn(receipt['packageH1'],generated['terraform/modules/target/prod/global/.terraform.lock.hcl'])
         security=model.security_provider_lock(ROOT)
         historical=retired.source(ROOT,'terraform/live/dev/shared/.terraform.lock.hcl').read_text().split(
@@ -51,6 +51,7 @@ class OriginAndHistoricalTests(unittest.TestCase):
         added='    "'+receipt['packageH1']+'",\n'
         self.assertEqual(security.count(added),1)
         self.assertEqual(security.replace(added,''),historical)
+        self.assertEqual(generated['terraform/modules/target/dev/shared/.terraform.lock.hcl'].replace(added,''),historical)
         self.assertIn('version     = "5.100.0"',security)
         self.assertIn('constraints = "~> 5.50"',security)
         self.assertEqual((ROOT/'terraform/infra/security/.terraform.lock.hcl').read_text(),security)

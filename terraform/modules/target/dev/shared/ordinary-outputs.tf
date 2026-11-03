@@ -4,6 +4,6 @@ output "alerts_topic_arn" {
 }
 
 output "alerts_email_configured" {
-  value       = var.alert_email != null
+  value       = nonsensitive(var.alert_email != null)
   description = "Configured is not confirmed delivery; pending SNS confirmation cannot receive email"
 }

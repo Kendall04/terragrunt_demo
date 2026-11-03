@@ -136,6 +136,40 @@ plan may be required. Do not infer functional health from state reconciliation.
 
 ## Inputs and staged UP
 
+### DEV shared notification prerequisite
+
+`terraform/modules/target/dev/shared` remains the native owner of
+`demo-dev-shared-alerts`, outside the five runtime roots. Its existing backend is
+`e1-lifecycle-dev-341936017254-us-east-1`, key
+`e1/lifecycle/dev/shared/terraform.tfstate`. Use the separately held
+`cnp-cert-admin` identity; the runtime operator's backend Deny excludes this key.
+This is a separately authorized notification operation, not a multi-layer apply.
+
+The dedicated symmetric notification CMK has rotation, a 30-day deletion window
+and `prevent_destroy`. It does not replace the protected workload key. CloudWatch
+gets only GenerateDataKey*/Decrypt for the exact fourteen E13/NAT/ALB alarm ARNs,
+with SourceAccount and SourceArn conditions documented by
+[AWS](https://docs.aws.amazon.com/sns/latest/dg/sns-key-management.html).
+No unverified encryption-context/ViaService condition is imposed on the publisher.
+Supply the exact privately read original SNS policy as
+`alerts_topic_policy_base`; the resource preserves its statements and appends
+only the bounded CloudWatch Publish permission. Do not supply an empty/default
+replacement or discard Deny statements. The administrator must review any policy
+changes since the captured input before applying.
+
+Keep the optional, sensitive `alert_email` only in the ACL-protected external
+tfvars and plan. Configured/PENDING is not confirmed delivery. After a separately
+approved saved-plan apply, the owner confirms the subscription. Separately
+authorize a synthetic ALARM transition on the exact existing E13 alarm whose
+only action is this topic. Record its prior state/actions and test-labelled
+reason; verify alarm history, SNS publication/delivery metrics, KMS CloudTrail
+events when available, and actual email receipt. Allow normal metric evaluation
+to restore the alarm, verify it, and explicitly authorize any necessary manual
+restoration. Do not forge metrics or count a direct SNS Publish as publisher proof.
+Preserve all records privately. No E13 activation or ASG launch is implied.
+
+### Runtime layer inputs
+
 Keep one reviewed external tfvars file per layer, including during DOWN. Do not
 place values in Git or command-line arguments. No root/backend/provider override.
 Supply `account_id`, `region` and the exact `protected_inputs` from available

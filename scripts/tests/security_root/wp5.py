@@ -84,7 +84,9 @@ def configuration(doc):
             if env == 'dev' and layer in ('global','data','platform','apps','edge'):
                 selected = dev_runtime_lock(ROOT)
             elif env == 'dev' and layer == 'shared':
-                selected = lock.split('provider "registry.terraform.io/hashicorp/tls"',1)[0].rstrip()+'\n'
+                # Same AWS 5.100.0 historical checksums plus the authenticated
+                # Windows h1 already pinned for native DEV roots. No upgrade.
+                selected = dev_runtime_lock(ROOT)
             else:
                 selected = lock
             result[f'terraform/modules/target/{env}/{layer}/.terraform.lock.hcl'] = selected

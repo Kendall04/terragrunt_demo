@@ -3091,6 +3091,7 @@
         "required_inputs": {
           "shared": [
             "account_id",
+            "alerts_topic_policy_base",
             "protected_inputs",
             "region"
           ],
@@ -3139,7 +3140,7 @@
             "vpc_link_sg_id"
           ]
         },
-        "package_sha256": "d2a10b738c7c833d0d897e914c1637dc53baf39de94aabe756f60999fbbd3d17"
+        "package_sha256": "0b0d74d4714b5fa672cdc42d8bb98468de64a1b890fc2f2088fc94ef018e39ed"
       },
       "environment-lifecycle/infra-dev": {
         "name": "e1-controller-infra-dev",
@@ -3149,6 +3150,7 @@
         "required_inputs": {
           "shared": [
             "account_id",
+            "alerts_topic_policy_base",
             "protected_inputs",
             "region"
           ],
@@ -3197,7 +3199,7 @@
             "vpc_link_sg_id"
           ]
         },
-        "package_sha256": "b4026c9c9b61aafa79fde80433b033e4c5e73ced4f9f75baa8f303b7f2b2b1d8"
+        "package_sha256": "6e8326960e783563e4ce136eb7ef58c648a520a171a7fec07dcfdca689546322"
       },
       "request-gateway/infra-prod": {
         "name": "e1-gateway-infra-prod",
@@ -3325,6 +3327,7 @@
         "required_inputs": {
           "shared": [
             "account_id",
+            "alerts_topic_policy_base",
             "protected_inputs",
             "region"
           ],
@@ -3373,7 +3376,7 @@
             "vpc_link_sg_id"
           ]
         },
-        "package_sha256": "3da2ee562f7870caad6caa6e4ec1c3fe0d4e0a3a00f33b3f16922481f6ad03d7"
+        "package_sha256": "a7431a7e783859107efd765d5faa021e104348d9f721c9886cdab07c76cab30f"
       },
       "environment-lifecycle/infra-high-risk-dev": {
         "name": "e1-controller-infra-high-risk-dev",
@@ -3383,6 +3386,7 @@
         "required_inputs": {
           "shared": [
             "account_id",
+            "alerts_topic_policy_base",
             "protected_inputs",
             "region"
           ],
@@ -3431,7 +3435,7 @@
             "vpc_link_sg_id"
           ]
         },
-        "package_sha256": "ec269fa1b915bb64c06483a3361c59909a6ec39df01da930e0e625a788015581"
+        "package_sha256": "fba169fcce0fe04a0fb556f2eb2dd5eb0522978b2be9f12269aceb0d46069795"
       },
       "request-gateway/infra-high-risk-prod": {
         "name": "e1-gateway-infra-high-risk-prod",

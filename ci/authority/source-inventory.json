@@ -6450,36 +6450,65 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/ordinary.py": {
-      "sha256": "97d53830ebb76258f60c53fa35d30eec0090f02db1563c301e69d1754dc5e09d",
-      "declarations": [],
+      "sha256": "78ebde86728238c4a7bb29bb5aa3fea39180931524996c0866a87cc1054f4923",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_kms_key",
+          "name": "alerts",
+          "line": 29
+        },
+        {
+          "kind": "resource",
+          "type": "aws_sns_topic_policy",
+          "name": "alerts",
+          "line": 71
+        }
+      ],
       "signals": {
         "role-input": [
-          44,
-          70,
-          88,
-          124
+          129,
+          155,
+          173,
+          228
         ],
         "launch-or-mutation": [
           12,
-          25,
+          24,
           26,
-          37,
-          117,
-          124
+          44,
+          61,
+          62,
+          82,
+          83,
+          110,
+          111,
+          122,
+          189,
+          221,
+          228
         ],
         "executable-dependency": [
-          51,
-          54,
-          66,
-          114,
-          124
+          52,
+          59,
+          80,
+          136,
+          139,
+          151,
+          218,
+          228
         ],
         "security-control": [
-          43,
-          44,
-          56,
-          57,
-          61
+          30,
+          38,
+          72,
+          74,
+          128,
+          129,
+          141,
+          142,
+          146,
+          190
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -6877,14 +6906,14 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/wp5.py": {
-      "sha256": "7ce16304d35f9c571d3eaebe9b71da5e3f90187ea48da1c1e3a76e3ece928ec9",
+      "sha256": "2ecf8025d9aeaada3e4306e33535f69a0c558ff569760cedf78ff0c3e01d26a4",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
-          388
+          390
         ],
         "role-input": [
-          457
+          459
         ],
         "launch-or-mutation": [
           67,
@@ -6894,32 +6923,31 @@
           78,
           79,
           82,
-          87,
-          90,
-          96,
-          107,
-          133,
-          168,
-          177,
-          182,
-          187,
-          188,
-          280,
-          292,
+          92,
+          98,
+          109,
+          135,
+          170,
+          179,
+          184,
+          189,
+          190,
+          282,
           294,
-          307,
-          351,
-          360,
-          364,
+          296,
+          309,
+          353,
+          362,
           366,
-          388,
-          405,
-          412,
+          368,
+          390,
+          407,
           414,
-          431,
-          440,
+          416,
+          433,
           442,
-          452
+          444,
+          454
         ],
         "executable-dependency": [
           22,
@@ -6932,32 +6960,32 @@
           29,
           30,
           31,
-          188,
-          394,
-          405,
-          418,
-          423,
-          439,
-          452,
-          456,
-          465
+          190,
+          396,
+          407,
+          420,
+          425,
+          441,
+          454,
+          458,
+          467
         ],
         "security-control": [
-          389,
-          390,
+          391,
           392,
-          396,
-          397,
+          394,
+          398,
           399,
-          402,
-          403,
+          401,
           404,
-          411,
-          416,
-          420,
+          405,
+          406,
+          413,
+          418,
           422,
-          429,
-          451
+          424,
+          431,
+          453
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -7884,7 +7912,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/authority.json": {
-      "sha256": "e6cf3636d92afb9b9723add042bee13d0ec5283baf2a532b2c26aa74b37b77a8",
+      "sha256": "862619d38605232ebb8aca982ee1006ef276b0f47d4c6eeb418ad183d7179fea",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -7985,18 +8013,18 @@
           2832,
           2878,
           2884,
-          3566,
-          3573,
-          3583,
-          3593,
-          3603,
-          3613,
-          3623,
-          3633,
-          3643,
-          3653,
-          3663,
-          3673
+          3570,
+          3577,
+          3587,
+          3597,
+          3607,
+          3617,
+          3627,
+          3637,
+          3647,
+          3657,
+          3667,
+          3677
         ],
         "executable-dependency": [
           398,
@@ -8026,13 +8054,13 @@
           2860,
           2877,
           2883,
-          3682,
-          3683,
-          3684,
           3686,
           3687,
           3688,
-          3689
+          3690,
+          3691,
+          3692,
+          3693
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -10033,7 +10061,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/modules/target/dev/shared/.terraform.lock.hcl": {
-      "sha256": "5f6ef854d6bf8c37eaf074f4bd7a5f2ecfff589bbe7204edb5b85e687f744bd6",
+      "sha256": "901a282544168f6b5d1567b13c91e9009129a2bc0cc92bf4c934e140efdae904",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -10067,7 +10095,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/modules/target/dev/shared/ordinary-main.tf": {
-      "sha256": "ab4203318a9528c7799952e178aa1bc84c1cc9b43283cc2fbf98e7464af3228b",
+      "sha256": "8226ea6198cd4866dbed2b44fc96db7e760c7d8656dae5c44a2c1c59ac1df235",
       "declarations": [
         {
           "kind": "resource",
@@ -10080,23 +10108,53 @@
           "type": "aws_sns_topic_subscription",
           "name": "alerts_email",
           "line": 6
+        },
+        {
+          "kind": "resource",
+          "type": "aws_kms_key",
+          "name": "alerts",
+          "line": 20
+        },
+        {
+          "kind": "resource",
+          "type": "aws_sns_topic_policy",
+          "name": "alerts",
+          "line": 62
         }
       ],
       "signals": {
         "launch-or-mutation": [
-          3
+          15,
+          17,
+          35,
+          52,
+          53,
+          73,
+          74
+        ],
+        "executable-dependency": [
+          43,
+          50,
+          71
+        ],
+        "security-control": [
+          3,
+          21,
+          29,
+          63,
+          65
         ]
       },
       "semantic_status": "UNVERIFIED"
     },
     "terraform/modules/target/dev/shared/ordinary-outputs.tf": {
-      "sha256": "5189e4fd4b1413d628eb0ce6365bb1654f4ca0c459b92c7e97f51cb9caadc9c4",
+      "sha256": "f39d8d130a6a16aa236bf91f13c8c266f36dc0fc31d494a1b8f8bcad95a7d14c",
       "declarations": [],
       "signals": {},
       "semantic_status": "UNVERIFIED"
     },
     "terraform/modules/target/dev/shared/ordinary-variables.tf": {
-      "sha256": "122abba54925f1dfdca2e57dcbe7510c6a1095aa38f265b6af79eaa1f16818ac",
+      "sha256": "790e8eaa3749c8df3a32e11f0b007048e7651a96017c763212bd05d74f4a2826",
       "declarations": [],
       "signals": {},
       "semantic_status": "UNVERIFIED"
@@ -11375,7 +11433,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/test_origin_history.py": {
-      "sha256": "c48ceab7ddee629b5d118be667962ad9f4494cec07ba498f091e300708c027fd",
+      "sha256": "56a92e17cd1729901d05ec790af52a855ca82cebc8b79af67139d050e919b0fb",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -11385,16 +11443,17 @@
           47,
           49,
           50,
-          56,
+          54,
           57,
-          63,
-          75
+          58,
+          64,
+          76
         ],
         "executable-dependency": [
-          63
+          64
         ],
         "security-control": [
-          94
+          95
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -13037,6 +13096,36 @@
         ]
       },
       "semantic_status": "CURRENT_FACT"
+    },
+    "scripts/tests/security_root/test_shared_alerts.py": {
+      "sha256": "40393f06457345690fdb9d08cf937b30d24a3e6592a235d20279df9397280bc3",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          14,
+          16,
+          20,
+          29,
+          32,
+          55,
+          61,
+          62,
+          71,
+          81,
+          86,
+          87,
+          99
+        ],
+        "executable-dependency": [
+          80
+        ],
+        "security-control": [
+          28,
+          88,
+          95
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",
