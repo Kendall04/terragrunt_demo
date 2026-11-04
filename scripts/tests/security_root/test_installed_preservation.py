@@ -171,6 +171,11 @@ class InstalledPreservation(unittest.TestCase):
         p=json.loads((ROOT/'terraform/infra/security/modules/protected_resources/main.tf.json').read_text())
         common={kind:{n:v for n,v in rows.items() if not n.startswith('prod_')} for kind,rows in p['resource'].items()}
         common={k:v for k,v in common.items() if v}
+        # The separately approved, default-off migrator metadata is additive.
+        # Freeze its exact declaration; retain the historical checksum below.
+        migrator=common['aws_secretsmanager_secret'].pop('dev_sql_migrator')
+        self.assertEqual(hashlib.sha256(json.dumps(migrator,sort_keys=True,separators=(',',':')).encode()).hexdigest(),
+                         '8a136abca4346ff1b3a6d56a6abb11b312f9a804298e52e2fd37d4160ef489ce')
         # Frozen from the reviewed c26e6c5 source, not regenerated expectations.
         original={'resource':common,'output':p['output']['protected_dev_output_candidates']}
         self.assertEqual(hashlib.sha256(json.dumps(original,sort_keys=True,separators=(',',':')).encode()).hexdigest(),
@@ -351,13 +356,15 @@ def check_protected_selection(terraform, environment):
                     value={k:'fixture-'+name+'-'+k for k in ('arn','id','name','key_id')}
                     references[kind][name]=([] if limited else [value]) if name.startswith('prod_') else value
             variables={k:{'type':'any','default':v} for k,v in dict(account_id='123456789012',region='us-east-1',
-                dev_cicd_installation_only=limited,references=references).items()}
+                dev_cicd_installation_only=limited,dev_sql_migrator_metadata=False,
+                references=references).items()}
             (Path(directory)/'main.tf.json').write_text(json.dumps(dict(variable=variables,locals=local)),encoding='utf-8')
             query='jsonencode({counts=local.counts,resources=local.resources,candidates=local.candidates,dev_candidates=local.dev_candidates})\n'
             p=subprocess.run([terraform,'console','-no-color'],cwd=directory,input=query,
                              capture_output=True,text=True,env=environment,timeout=30)
             if p.returncode or 'Error:' in p.stderr:raise AssertionError(p.stderr)
             out=decode(p.stdout)
+            assert out['counts']['aws_secretsmanager_secret.dev_sql_migrator']==0
             prod={k:v for k,v in out['counts'].items() if '.prod_' in k}
             assert len(prod)==29 and all(v==(0 if limited else 1) for v in prod.values())
             assert all((v is None)==limited for k,v in out['resources'].items() if '.prod_' in k)

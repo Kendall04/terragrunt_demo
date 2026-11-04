@@ -202,6 +202,16 @@ class Retention(unittest.TestCase):
         def checksum(value):
             return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
         configuration = json.loads((ROOT / ownership.MODULE).read_text())
+        # Admit only the exact additive, default-off DEV metadata declaration.
+        # The original configuration checksum remains unchanged.
+        migrator=configuration['resource']['aws_secretsmanager_secret'].pop('dev_sql_migrator')
+        self.assertEqual(checksum(migrator),
+                         '8a136abca4346ff1b3a6d56a6abb11b312f9a804298e52e2fd37d4160ef489ce')
+        self.assertEqual(configuration['variable'].pop('dev_sql_migrator_metadata'),
+                         {'type':'bool','default':False,'nullable':False})
+        self.assertEqual(configuration['output'].pop('dev_sql_migrator_secret_arn'), {
+            'value':'${var.dev_sql_migrator_metadata ? aws_secretsmanager_secret.dev_sql_migrator[0].arn : null}',
+            'description':'Metadata ARN only; not an installed secret value or SQL runtime approval.'})
         full = configuration['output']['protected_output_candidates']['value']
         self.assertEqual(configuration['output'].pop('protected_dev_output_candidates')['value'],
                          {key:record for key,record in full.items() if record['scope']=='dev'})

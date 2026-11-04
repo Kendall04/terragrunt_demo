@@ -116,7 +116,12 @@ class ClosureTests(unittest.TestCase):
         self.assertEqual(len(tf["resource"]["aws_iam_role"]), 18)
         self.assertEqual(len(tf["resource"]["aws_iam_instance_profile"]), 4)
         self.assertEqual(len(tf["resource"]["aws_kms_key"]), 2)
-        self.assertEqual(len(tf["resource"]["aws_secretsmanager_secret"]), 6)
+        secrets = tf["resource"]["aws_secretsmanager_secret"]
+        self.assertEqual(set(secrets), {
+            'dev_sa', 'dev_db_user', 'dev_connection',
+            'prod_sa', 'prod_db_user', 'prod_connection', 'dev_sql_migrator'})
+        self.assertEqual(secrets['dev_sql_migrator']['count'],
+                         '${var.dev_sql_migrator_metadata ? 1 : 0}')
         self.assertEqual(len(tf["resource"]["aws_ecr_repository"]), 3)
         self.assertEqual(len(tf["resource"]["aws_iam_openid_connect_provider"]), 1)
 

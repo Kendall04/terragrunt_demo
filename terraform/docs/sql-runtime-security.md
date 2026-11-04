@@ -205,6 +205,39 @@ and name/chain/expiry validation remain. No Windows trust, SQL certificate insta
 rollout occurred. The separately authorized WSL image build is now qualified below.
 Internal ALB/task TLS remains separate and unproved by this preparation.
 
+## Proposed confidential SQL certificate transfer
+
+The existing `sql.demo.internal` certificate and private key are reused; no PKI is
+created. The checked-in SQL bootstrap does not yet distribute/install that key.
+This procedure is a proposal requiring explicit installation approval, not an
+existing transport receipt or permission to upload private material.
+
+If no already-admitted confidential channel is available, the bounded option is
+one temporary security-owned Secrets Manager container for TLS transport, encrypted
+by the existing DEV workload CMK. Its metadata, value write and exact SQL-role
+GetSecretValue grant require separate review; the migrator metadata option does
+not create it or grant that access. The administrator transfers the existing
+material in memory through the authenticated SDK, without request-body tracing.
+Only its authentic ARN/VersionId may appear in public installation commands.
+Private material must never enter Terraform, user_data, SSM command text, Git,
+images or logs. SSM may carry only reviewed public installation commands.
+
+On the SQL host, the admitted installer retrieves that exact version in memory,
+verifies key/certificate correspondence and the recorded certificate fingerprint,
+and writes directly to an SQL-readable 0700 directory with mssql-owned 0600 files.
+Configure `network.tlscert`, `network.tlskey` and `network.forceencryption=1`; validate
+the chain/name/expiry and perform a real strict SQL handshake before admitting
+traffic. Clients retain Encrypt=True, TrustServerCertificate=False and the existing
+public trust. Migration and runtime credentials remain separate; HTTP startup does
+not perform migrations. These SQL settings follow
+[Microsoft's Linux TLS procedure](https://learn.microsoft.com/en-us/sql/linux/sql-server-linux-encrypted-connections?view=sql-server-ver16).
+
+Retain the temporary transport only through the approved installation/readback
+window. Subsequent removal of its exact read grant and scheduled secret deletion
+with a reviewed recovery window need explicit approval; no automatic deletion or
+retention of an unprotected plaintext copy is implied. The independent existing
+private-key custody and host certificate lifecycle remain preserved.
+
 ## Linux image qualification - 2026-10-27
 
 The owner explicitly superseded the VM-only preference and authorized laptop WSL.
