@@ -184,8 +184,48 @@ def main():
     required_installed = {'test_installed_preservation.InstalledPreservation.' + name for name in installed_methods}
     if not required_installed <= set(records['security_root'].get('test_ids', [])):
         errors.append('Installed graph preservation coverage is incomplete')
-    if regression != 1076:
-        errors.append(f'Accepted regression count changed: {regression} != 1076')
+    shared_alert_methods = {
+        'test_generated_sources_match',
+        'test_topic_and_subscription_keep_their_addresses',
+        'test_exact_fourteen_alarm_names',
+        'test_publisher_grant_is_not_generic',
+        'test_key_has_retention_rotation_and_exact_administrator',
+        'test_policy_keeps_original_statements_and_rejects_duplicate_owned_sid',
+        'test_prod_does_not_gain_dev_key_or_policy',
+        'test_new_resource_surface_is_bounded',
+        'test_shared_lock_reuses_authenticated_aws_pin_without_upgrade',
+    }
+    required_shared_alerts = {'test_shared_alerts.SharedAlertsTests.' + name for name in shared_alert_methods}
+    if not required_shared_alerts <= set(records['security_root'].get('test_ids', [])):
+        errors.append('Shared notification security coverage is incomplete')
+    dev_neutral_methods = {
+        'test_dev_neutral_exact_scope_and_shared_consumer',
+        'test_dev_neutral_missing_invented_and_unavailable_rejected',
+        'test_dev_neutral_prod_and_unknown_records_rejected',
+        'test_dev_neutral_authenticated_channel_and_exact_readback',
+        'test_dev_neutral_preserves_historical_receipt_and_create_only',
+        'test_dev_neutral_promotion_namespace_and_pinned_provenance',
+        'test_dev_neutral_only_shared_wiring_changes',
+    }
+    required_dev_neutral = {'test_wp2d.ClosureTests.' + name for name in dev_neutral_methods}
+    if not required_dev_neutral <= set(records['ownership_publication'].get('test_ids', [])):
+        errors.append('DEV neutral publication coverage is incomplete')
+    admin_publication_methods = {
+        'test_wrong_identity_stops_before_storage',
+        'test_prior_version_and_delete_marker_rejected',
+        'test_output_failure_scope_and_candidate_drift_rejected',
+        'test_preflight_is_read_only_and_publication_disabled',
+        'test_single_conditional_put_and_exact_version',
+        'test_ambiguous_write_only_reconciles_and_never_retries',
+        'test_failed_read_wrong_version_or_bytes_never_success',
+        'test_bucket_runtime_exposure_and_wrong_backend_rejected',
+    }
+    required_admin_publication = {'test_admin_publication.AdminPublicationTests.' + name for name in admin_publication_methods}
+    if not required_admin_publication <= set(records['security_root'].get('test_ids', [])):
+        errors.append('Administrative publication adapter coverage is incomplete')
+    expected_regression = 1076 + len(required_shared_alerts) + len(required_dev_neutral) + len(required_admin_publication)
+    if regression != expected_regression:
+        errors.append(f'Accepted regression count changed: {regression} != {expected_regression}')
     static_good = all(records[n]['status'] == 'PASS' for n, _ in CHECKS)
     criteria = {key: {'status': 'PASS' if static_good and not errors and all(records[n]['status'] == 'PASS' for n in names) else 'FAIL',
                       'evidence_suites': list(names)} for key, names in CRITERIA.items()}

@@ -12,6 +12,91 @@ ROOT = Path(__file__).resolve().parents[3]
 BLOCK = re.compile(r'(?m)^(resource|data|module|variable|output|locals|terraform)\b[^\n]*')
 
 
+def dev_alerts_security():
+    """Dedicated notification key, separate from protected workload keys.
+
+    Use CloudWatch's documented SourceAccount/SourceArn publisher conditions;
+    no unproven encryption-context or ViaService condition on its forwarded call.
+    """
+    return '''
+
+locals {
+  alerts_topic_arn   = "arn:aws:sns:${var.region}:${var.account_id}:${local.name}-alerts"
+  alerts_alarm_names = ["e1-nat-recovery-nat-dev-assign_eip-destination-failed", "e1-nat-recovery-nat-dev-change_rt-destination-failed", "e1-nat-recovery-nat-dev-disable_sdc-destination-failed", "e1-wp4-dev-nat-dlq-delivery-failed", "e1-wp4-dev-delivery-nat-failures", "e1-wp4-dev-execution-nat-failures", "demo-dev-nat-a-capacity-gap", "demo-dev-nat-a-inservice-low", "demo-dev-nat-b-capacity-gap", "demo-dev-nat-b-inservice-low", "demo-dev-tg-blue-5xx", "demo-dev-tg-blue-latency", "demo-dev-tg-green-5xx", "demo-dev-tg-green-latency"]
+  alerts_alarm_arns  = [for name in local.alerts_alarm_names : "arn:aws:cloudwatch:${var.region}:${var.account_id}:alarm:${name}"]
+  alerts_policy_base = jsondecode(var.alerts_topic_policy_base)
+}
+
+resource "aws_kms_key" "alerts" {
+  description              = "Dedicated DEV shared CloudWatch notification encryption"
+  key_usage                = "ENCRYPT_DECRYPT"
+  customer_master_key_spec = "SYMMETRIC_DEFAULT"
+  multi_region             = false
+  enable_key_rotation      = true
+  deletion_window_in_days  = 30
+  tags                     = merge(local.tags, { Name = "${local.name}-alerts", Role = "alerts" })
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "ExactAdministrativeKeyManagement"
+        Effect    = "Allow"
+        Principal = { AWS = "arn:aws:iam::${var.account_id}:user/cnp-cert-admin" }
+        Action = [
+          "kms:DescribeKey", "kms:GetKeyPolicy", "kms:PutKeyPolicy",
+          "kms:GetKeyRotationStatus", "kms:EnableKeyRotation", "kms:DisableKeyRotation",
+          "kms:ListResourceTags", "kms:TagResource", "kms:UntagResource",
+          "kms:UpdateKeyDescription", "kms:EnableKey", "kms:DisableKey",
+          "kms:ScheduleKeyDeletion", "kms:CancelKeyDeletion"
+        ]
+        Resource = "*"
+      },
+      {
+        Sid       = "ExactCloudWatchAlarmPublisherUse"
+        Effect    = "Allow"
+        Principal = { Service = "cloudwatch.amazonaws.com" }
+        Action    = ["kms:GenerateDataKey*", "kms:Decrypt"]
+        Resource  = "*"
+        Condition = {
+          StringEquals = { "aws:SourceAccount" = var.account_id }
+          ArnEquals    = { "aws:SourceArn" = local.alerts_alarm_arns }
+        }
+      }
+    ]
+  })
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "aws_sns_topic_policy" "alerts" {
+  arn = aws_sns_topic.alerts.arn
+  policy = jsonencode(merge(local.alerts_policy_base, {
+    Statement = concat(local.alerts_policy_base.Statement, [{
+      Sid       = "AllowExactEcsDevCloudWatchAlarms"
+      Effect    = "Allow"
+      Principal = { Service = "cloudwatch.amazonaws.com" }
+      Action    = "sns:Publish"
+      Resource  = local.alerts_topic_arn
+      Condition = {
+        StringEquals = { "aws:SourceAccount" = var.account_id }
+        ArnEquals    = { "aws:SourceArn" = local.alerts_alarm_arns }
+      }
+    }])
+  }))
+  lifecycle {
+    precondition {
+      condition = alltrue([
+        for statement in local.alerts_policy_base.Statement :
+        try(statement.Sid, "") != "AllowExactEcsDevCloudWatchAlarms"
+      ])
+      error_message = "Supply the reviewed original topic policy; do not duplicate the owned CloudWatch statement."
+    }
+  }
+}
+'''
+
+
 def select(text, allowed):
     starts = list(BLOCK.finditer(text))
     return "\n".join(text[m.start():starts[i + 1].start() if i + 1 < len(starts) else len(text)].rstrip()
@@ -101,11 +186,30 @@ def wiring(doc):
                     if rel == "main.tf":
                         text = text.replace('resource "aws_sns_topic_subscription" "alerts_email" {',
                             'resource "aws_sns_topic_subscription" "alerts_email" {\n  count     = var.alert_email == null ? 0 : 1')
+                        text = text.replace('kms_master_key_id = "alias/aws/sns"',
+                                            'kms_master_key_id = aws_kms_key.alerts.arn')
+                        text += dev_alerts_security()
                     elif rel == "variables.tf":
-                        text = text.replace('  type        = string', '  type        = string\n  default     = null')
+                        text = text.replace('  type        = string', '  type        = string\n  sensitive   = true\n  default     = null')
                         text = text.replace('Email to receive CloudWatch alarms', 'Optional confirmed recipient; null leaves email notifications inactive')
+                        text += '''
+variable "alerts_topic_policy_base" {
+  type        = string
+  nullable    = false
+  description = "Exact original SNS policy read and reviewed privately; preserve all permissions and Deny statements."
+  validation {
+    condition = can(jsondecode(var.alerts_topic_policy_base).Statement) && try(
+      contains(["2008-10-17", "2012-10-17"], jsondecode(var.alerts_topic_policy_base).Version) &&
+      length(jsondecode(var.alerts_topic_policy_base).Statement) > 0, false
+    )
+    error_message = "An explicit valid original SNS policy is required; no empty or permissive default."
+  }
+}
+'''
                     elif rel == "outputs.tf":
-                        text += '\noutput "alerts_email_configured" {\n  value       = var.alert_email != null\n  description = "Configured is not confirmed delivery; pending SNS confirmation cannot receive email"\n}\n'
+                        # Only the configured/not-configured boolean is public;
+                        # the sensitive recipient itself is never an output.
+                        text += '\noutput "alerts_email_configured" {\n  value       = nonsensitive(var.alert_email != null)\n  description = "Configured is not confirmed delivery; pending SNS confirmation cannot receive email"\n}\n'
                 if "/" not in rel:
                     text = text.replace("var.env", '"' + env + '"').replace("var.project", '"demo"').replace("var.aws_region", "var.region")
                     # Simplify interpolated literal values for HCL readability.

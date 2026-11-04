@@ -2692,6 +2692,291 @@
         },
         "region": "us-east-1",
         "schema": "E1_DEV_OUTPUT_PUBLICATION_V1"
+      },
+      "341936017254/us-east-1/dev-neutral/v1": {
+        "schema": "E1_DEV_NEUTRAL_OUTPUT_PUBLICATION_V1",
+        "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+        "account": "341936017254",
+        "region": "us-east-1",
+        "records": {
+          "dev/blue-exec": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "role",
+            "declaration": "module.protected_resources/dev/blue-exec",
+            "logical_id": "dev/blue-exec",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": "arn:aws:iam::341936017254:role/demo-dev-app-api-blue-exec-role"
+          },
+          "dev/blue-task": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "role",
+            "declaration": "module.protected_resources/dev/blue-task",
+            "logical_id": "dev/blue-task",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": "arn:aws:iam::341936017254:role/demo-dev-app-api-blue-task-role"
+          },
+          "dev/cleanup": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "role",
+            "declaration": "module.protected_resources/dev/cleanup",
+            "logical_id": "dev/cleanup",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": "arn:aws:iam::341936017254:role/demo-dev-scale-down-old-color-role"
+          },
+          "dev/connection": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "secret",
+            "declaration": "module.protected_resources/dev/connection",
+            "logical_id": "dev/connection",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": "arn:aws:secretsmanager:us-east-1:341936017254:secret:demo/dev/app/db-connection-string-72ytze"
+          },
+          "dev/db-user": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "secret",
+            "declaration": "module.protected_resources/dev/db-user",
+            "logical_id": "dev/db-user",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": "arn:aws:secretsmanager:us-east-1:341936017254:secret:demo/dev/db/sql-app-password-2Shh56"
+          },
+          "dev/flow": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "role",
+            "declaration": "module.protected_resources/dev/flow",
+            "logical_id": "dev/flow",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": "arn:aws:iam::341936017254:role/demo-dev-vpc-flow-logs-role"
+          },
+          "dev/green-exec": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "role",
+            "declaration": "module.protected_resources/dev/green-exec",
+            "logical_id": "dev/green-exec",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": "arn:aws:iam::341936017254:role/demo-dev-app-api-green-exec-role"
+          },
+          "dev/green-task": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "role",
+            "declaration": "module.protected_resources/dev/green-task",
+            "logical_id": "dev/green-task",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": "arn:aws:iam::341936017254:role/demo-dev-app-api-green-task-role"
+          },
+          "dev/kms": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "key",
+            "declaration": "module.protected_resources/dev/kms",
+            "logical_id": "dev/kms",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": "arn:aws:kms:us-east-1:341936017254:key/50d3fe36-8128-4d09-ac13-8f5536a230a7"
+          },
+          "dev/nat": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "role",
+            "declaration": "module.protected_resources/dev/nat",
+            "logical_id": "dev/nat",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": "arn:aws:iam::341936017254:role/demo-dev-nat-role"
+          },
+          "dev/nat-profile": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "profile",
+            "declaration": "module.protected_resources/dev/nat-profile",
+            "logical_id": "dev/nat-profile",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": "arn:aws:iam::341936017254:instance-profile/demo-dev-nat-instance-profile"
+          },
+          "dev/nat-recovery": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "role",
+            "declaration": "module.protected_resources/dev/nat-recovery",
+            "logical_id": "dev/nat-recovery",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": "arn:aws:iam::341936017254:role/demo-dev-lambda-nat-role"
+          },
+          "dev/repository": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "repository",
+            "declaration": "module.protected_resources/dev/repository",
+            "logical_id": "dev/repository",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": "arn:aws:ecr:us-east-1:341936017254:repository/demo-dev-shared-demo-ms"
+          },
+          "dev/sa": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "secret",
+            "declaration": "module.protected_resources/dev/sa",
+            "logical_id": "dev/sa",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": "arn:aws:secretsmanager:us-east-1:341936017254:secret:demo/dev/db/sql-sa-password-30fCjc"
+          },
+          "dev/sql": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "role",
+            "declaration": "module.protected_resources/dev/sql",
+            "logical_id": "dev/sql",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": "arn:aws:iam::341936017254:role/demo-dev-data-sql-ec2-role"
+          },
+          "dev/sql-profile": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "profile",
+            "declaration": "module.protected_resources/dev/sql-profile",
+            "logical_id": "dev/sql-profile",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": "arn:aws:iam::341936017254:instance-profile/demo-dev-data-sql-ec2-profile"
+          },
+          "neutral/artifacts": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "bucket",
+            "declaration": "module.protected_resources/neutral/artifacts",
+            "logical_id": "neutral/artifacts",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "neutral",
+            "value": "arn:aws:s3:::demo-release-artifacts-341936017254"
+          },
+          "neutral/oidc": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "oidc",
+            "declaration": "module.protected_resources/neutral/oidc",
+            "logical_id": "neutral/oidc",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "neutral",
+            "value": "arn:aws:iam::341936017254:oidc-provider/token.actions.githubusercontent.com"
+          },
+          "neutral/repository": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": true,
+            "class": "repository",
+            "declaration": "module.protected_resources/neutral/repository",
+            "logical_id": "neutral/repository",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "neutral",
+            "value": "arn:aws:ecr:us-east-1:341936017254:repository/demo-shared-demo-ms"
+          },
+          "recovery/dev/cleanup": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": false,
+            "class": "recovery",
+            "declaration": "reservation/recovery/dev/cleanup",
+            "logical_id": "recovery/dev/cleanup",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": null
+          },
+          "recovery/dev/nat-events": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": false,
+            "class": "recovery",
+            "declaration": "reservation/recovery/dev/nat-events",
+            "logical_id": "recovery/dev/nat-events",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": null
+          },
+          "recovery/dev/nat-functions": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": false,
+            "class": "recovery",
+            "declaration": "reservation/recovery/dev/nat-functions",
+            "logical_id": "recovery/dev/nat-functions",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": null
+          },
+          "recovery/dev/nat-launch": {
+            "authority_digest": "536d77d02f053d5cc422d69f8d68be99c37c489befb5b99b2b5675db59097c1c",
+            "available": false,
+            "class": "recovery",
+            "declaration": "reservation/recovery/dev/nat-launch",
+            "logical_id": "recovery/dev/nat-launch",
+            "owner": "SECURITY_ROOT_OWNED",
+            "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED",
+            "schema": "E1_PROTECTED_OUTPUT_V1",
+            "scope": "dev",
+            "value": null
+          }
+        },
+        "publisher": "SECURITY_ADMIN_EXTERNAL_BOOTSTRAP"
       }
     },
     "recovery_source_identities": {
@@ -3091,6 +3376,7 @@
         "required_inputs": {
           "shared": [
             "account_id",
+            "alerts_topic_policy_base",
             "protected_inputs",
             "region"
           ],
@@ -3139,7 +3425,7 @@
             "vpc_link_sg_id"
           ]
         },
-        "package_sha256": "d2a10b738c7c833d0d897e914c1637dc53baf39de94aabe756f60999fbbd3d17"
+        "package_sha256": "c0d3957be1ff27be6e04b9265effddb9619df7170858ea35137cc91251c1bfea"
       },
       "environment-lifecycle/infra-dev": {
         "name": "e1-controller-infra-dev",
@@ -3149,6 +3435,7 @@
         "required_inputs": {
           "shared": [
             "account_id",
+            "alerts_topic_policy_base",
             "protected_inputs",
             "region"
           ],
@@ -3197,7 +3484,7 @@
             "vpc_link_sg_id"
           ]
         },
-        "package_sha256": "b4026c9c9b61aafa79fde80433b033e4c5e73ced4f9f75baa8f303b7f2b2b1d8"
+        "package_sha256": "05bc5664ad74d410827462cca6109fa3b54be467c3b42b3dac2277453437788d"
       },
       "request-gateway/infra-prod": {
         "name": "e1-gateway-infra-prod",
@@ -3325,6 +3612,7 @@
         "required_inputs": {
           "shared": [
             "account_id",
+            "alerts_topic_policy_base",
             "protected_inputs",
             "region"
           ],
@@ -3373,7 +3661,7 @@
             "vpc_link_sg_id"
           ]
         },
-        "package_sha256": "3da2ee562f7870caad6caa6e4ec1c3fe0d4e0a3a00f33b3f16922481f6ad03d7"
+        "package_sha256": "2647669c910351d668eaf2739ce6e44174d9d02277374d3edca13bac1ad29dce"
       },
       "environment-lifecycle/infra-high-risk-dev": {
         "name": "e1-controller-infra-high-risk-dev",
@@ -3383,6 +3671,7 @@
         "required_inputs": {
           "shared": [
             "account_id",
+            "alerts_topic_policy_base",
             "protected_inputs",
             "region"
           ],
@@ -3431,7 +3720,7 @@
             "vpc_link_sg_id"
           ]
         },
-        "package_sha256": "ec269fa1b915bb64c06483a3361c59909a6ec39df01da930e0e625a788015581"
+        "package_sha256": "946d74c575fc51a81ae47423f478fc5b874dee690130329162f19b9a018cc7ec"
       },
       "request-gateway/infra-high-risk-prod": {
         "name": "e1-gateway-infra-high-risk-prod",

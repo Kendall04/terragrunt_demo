@@ -136,12 +136,79 @@ plan may be required. Do not infer functional health from state reconciliation.
 
 ## Inputs and staged UP
 
+### DEV shared notification prerequisite
+
+`terraform/modules/target/dev/shared` remains the native owner of
+`demo-dev-shared-alerts`, outside the five runtime roots. Its existing backend is
+`e1-lifecycle-dev-341936017254-us-east-1`, key
+`e1/lifecycle/dev/shared/terraform.tfstate`. Use the separately held
+`cnp-cert-admin` identity; the runtime operator's backend Deny excludes this key.
+This is a separately authorized notification operation, not a multi-layer apply.
+Only this dedicated notification key is native shared-owned; protected workload
+keys remain security-owned. Legacy wrapper reachability does not certify the
+native administrator's KMS permissions or authorize WP5 to mutate this key.
+
+The dedicated symmetric notification CMK has rotation, a 30-day deletion window
+and `prevent_destroy`. It does not replace the protected workload key. CloudWatch
+gets only GenerateDataKey*/Decrypt for the exact fourteen E13/NAT/ALB alarm ARNs,
+with SourceAccount and SourceArn conditions documented by
+[AWS](https://docs.aws.amazon.com/sns/latest/dg/sns-key-management.html).
+No unverified encryption-context/ViaService condition is imposed on the publisher.
+Supply the exact privately read original SNS policy as
+`alerts_topic_policy_base`; the resource preserves its statements and appends
+only the bounded CloudWatch Publish permission. Do not supply an empty/default
+replacement or discard Deny statements. The administrator must review any policy
+changes since the captured input before applying.
+
+Keep the optional, sensitive `alert_email` only in the ACL-protected external
+tfvars and plan. Configured/PENDING is not confirmed delivery. After a separately
+approved saved-plan apply, the owner confirms the subscription. Separately
+authorize a synthetic ALARM transition on the exact existing E13 alarm whose
+only action is this topic. Record its prior state/actions and test-labelled
+reason; verify alarm history, SNS publication/delivery metrics, KMS CloudTrail
+events when available, and actual email receipt. Allow normal metric evaluation
+to restore the alarm, verify it, and explicitly authorize any necessary manual
+restoration. Do not forge metrics or count a direct SNS Publish as publisher proof.
+Preserve all records privately. No E13 activation or ASG launch is implied.
+
+### Runtime layer inputs
+
 Keep one reviewed external tfvars file per layer, including during DOWN. Do not
 place values in Git or command-line arguments. No root/backend/provider override.
 Supply `account_id`, `region` and the exact `protected_inputs` from available
 administrator-promoted records in `terraform/infra/security/authority.json`, using
 `ownership_closure.consumers['dev/<layer>']` and the account/region publication.
 Missing/unavailable records stop; Terraform's protected-input precondition stays.
+For `dev/shared`, the separately approved `E1_DEV_NEUTRAL_OUTPUT_PUBLICATION_V1`
+adds exactly `neutral/repository`, `neutral/artifacts` and `neutral/oidc` to all DEV
+records. Its create-only location is
+`outputs/<account>/<region>/<authority_digest>/dev-neutral/v1`; its promoted
+registry entry is `<account>/<region>/dev-neutral/v1`. Only `dev/shared` selects
+that entry. The historical DEV publication and other consumer selections remain
+unchanged. An authenticated administrator must verify the state-owned identities,
+approve the complete receipt, create it once, read it back exactly, and separately
+promote that exact body into source before planning. A candidate file or ARN in
+tfvars cannot replace this boundary. Neither publication nor promotion is implied
+by implementation of the contract; missing records still fail closed.
+The bounded adapter is `scripts/publish_dev_neutral.py`. Run
+`python -I -B scripts/publish_dev_neutral.py preflight --candidate <private-candidate> --terraform-dir <initialized-security-cache>`
+first. It uses only `terraform output -json protected_output_candidates` on the
+original initialized security backend, never a raw state download or bootstrap.
+The fixed bucket is `terragrunt-demo-security-341936017254-us-east-1`; no bucket,
+key, profile or identity override is accepted. Keep the candidate parent private
+with verified restrictive ACLs. Preflight creates no local evidence files or AWS
+objects. Following separate owner approval, the future command is the same with
+`publish` and `--confirm "PUBLISH DEV NEUTRAL <approved-candidate-sha256>"`.
+This confirmation is an execution guard, not evidence of owner approval.
+The adapter requires an empty complete version/delete-marker history, then one
+`PutObject` with `If-None-Match: *`, an authentic returned VersionId and exact-byte
+version readback. It never writes the backend key, overwrites or deletes objects,
+changes bucket controls, or promotes source. Keep administrative writers frozen:
+S3's conditional PUT only tests the current object, so history is checked again
+after writing. Any conflict or ambiguity stops; only readbacks follow an uncertain
+PUT. Reconcile a failed attempt before any separately authorized future attempt.
+`verify --version-id <actual-returned-version>` performs only exact-version reads
+and bucket/identity checks. No latest fallback or invented VersionId is allowed.
 Set `alerts_topic_arn=arn:aws:sns:us-east-1:341936017254:demo-dev-shared-alerts`
 where the root declares it. No secret values, passwords or connection strings.
 

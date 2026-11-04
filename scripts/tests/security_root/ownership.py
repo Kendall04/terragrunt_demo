@@ -136,8 +136,13 @@ def validate_publications(doc):
     import publication
     c = validate(doc)
     for context, pub in c["publications"].items():
-        require(isinstance(context, str) and context.count("/") == 1, "publication context")
-        account, region = context.split("/")
+        require(isinstance(context, str), "publication context")
+        parts = context.split("/")
+        extended = len(parts) == 4 and parts[2:] == ["dev-neutral", "v1"]
+        require(len(parts) == 2 or extended, "publication context")
+        account, region = parts[:2]
+        require(isinstance(pub, dict), "publication fields")
+        require((pub.get("schema") == publication.DEV_NEUTRAL_SCHEMA) == extended, "publication scope namespace")
         publication.validate_publication(doc, pub, account, region)
 
 
@@ -150,12 +155,15 @@ def consumer_wiring(doc):
     """
     result = {}
     for consumer, bindings in doc["ownership_closure"]["consumers"].items():
+        historical = 'local.authority.ownership_closure.publications["${var.account_id}/${var.region}"]'
+        selected = ('try(local.authority.ownership_closure.publications["${var.account_id}/${var.region}/dev-neutral/v1"], '
+                    + historical + ', null)') if consumer == "dev/shared" else 'try(' + historical + ', null)'
         result["terraform/modules/target/" + consumer + "/main.tf.json"] = {
             "provider": {"aws": {"region": ex("var.region"), "allowed_account_ids": [ex("var.account_id")]}},
             "variable": {"account_id": {"type": "string", "nullable": False}, "region": {"type": "string", "nullable": False},
                          "protected_inputs": {"type": "map(string)", "nullable": False}},
             "locals": {"authority": ex('jsondecode(file("${path.module}/../../../../infra/security/authority.json"))'),
-                "publication": ex('try(local.authority.ownership_closure.publications["${var.account_id}/${var.region}"], null)'),
+                "publication": ex(selected),
                 "expected": ex('try({ for k in ' + json.dumps(bindings) + ' : k => local.publication.records[k].value if local.publication.records[k].available }, {})')},
             "resource": {"terraform_data": {"protected_input": {"input": ex("var.protected_inputs"), "lifecycle": {"precondition": {
                 "condition": ex("local.publication != null && length(local.expected) == " + str(len(bindings)) + " && var.protected_inputs == tomap(local.expected)"),

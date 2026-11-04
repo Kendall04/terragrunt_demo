@@ -13,6 +13,19 @@ import bundles
 import ownership
 from contracts import load_json
 
+DEV_NEUTRAL_SCHEMA = "E1_DEV_NEUTRAL_OUTPUT_PUBLICATION_V1"
+DEV_NEUTRAL_SUFFIX = "/dev-neutral/v1"
+NEUTRAL_KEYS = frozenset({"neutral/repository", "neutral/artifacts", "neutral/oidc"})
+
+
+def registry_key(account, region, dev_neutral=False):
+    return account + "/" + region + (DEV_NEUTRAL_SUFFIX if dev_neutral else "")
+
+
+def publication_schema(dev_only=False, dev_neutral=False):
+    require(type(dev_only) is bool and type(dev_neutral) is bool and not (dev_only and dev_neutral), "explicit publication scope")
+    return DEV_NEUTRAL_SCHEMA if dev_neutral else "E1_DEV_OUTPUT_PUBLICATION_V1" if dev_only else "E1_OUTPUT_PUBLICATION_V1"
+
 
 def decode_record(raw):
     require(isinstance(raw, bytes) and len(raw) <= 1048576, "record bytes/size")
@@ -65,12 +78,15 @@ def context(account, region):
     require(isinstance(region, str) and re.fullmatch(r"[a-z]{2}(?:-[a-z]+)+-[0-9]+", region), "region")
 
 
-def validate_records(doc, records, account, region, dev_only=False):
+def validate_records(doc, records, account, region, dev_only=False, dev_neutral=False):
     c = ownership.validate(doc)
     context(account, region)
     require(isinstance(records, dict), "record map; duplicate keys must be rejected by JSON loader")
-    require(type(dev_only) is bool, "explicit publication scope")
-    expected = {key for key,item in c["resources"].items() if not dev_only or item["scope"] == "dev"} | {"recovery/" + k for k,item in c["recovery"].items() if not dev_only or item["scope"] == "dev"}
+    publication_schema(dev_only, dev_neutral)
+    limited = dev_only or dev_neutral
+    expected = {key for key,item in c["resources"].items() if not limited or item["scope"] == "dev"} | {"recovery/" + k for k,item in c["recovery"].items() if not limited or item["scope"] == "dev"}
+    if dev_neutral:
+        expected |= NEUTRAL_KEYS
     require(set(records) == expected, "missing/unknown output records")
     for key, record in records.items():
         require(isinstance(record, dict) and set(record) == {"schema", "owner", "scope", "class", "logical_id", "declaration", "authority_digest", "available", "value", "publication"}, "closed record fields")
@@ -102,16 +118,22 @@ def validate_records(doc, records, account, region, dev_only=False):
     return copy.deepcopy(records)
 
 
-def output_key(doc, account, region, dev_only=False):
-    return "outputs/" + account + "/" + region + "/" + ownership.authority_digest(ownership.validate(doc)) + ("/dev" if dev_only else "")
+def output_key(doc, account, region, dev_only=False, dev_neutral=False):
+    publication_schema(dev_only, dev_neutral)
+    return "outputs/" + account + "/" + region + "/" + ownership.authority_digest(ownership.validate(doc)) + (DEV_NEUTRAL_SUFFIX if dev_neutral else "/dev" if dev_only else "")
 
 
-def publish_outputs(doc, account, region, admin, dev_only=False):
+def publish_outputs(doc, account, region, admin, dev_only=False, dev_neutral=False):
     require(isinstance(admin, AdminChannel), "external admin channel required")
-    records = validate_records(doc, admin.read_output(), account, region, dev_only)
-    result = {"schema": "E1_DEV_OUTPUT_PUBLICATION_V1" if dev_only else "E1_OUTPUT_PUBLICATION_V1", "authority_digest": ownership.authority_digest(doc["ownership_closure"]),
+    records = validate_records(doc, admin.read_output(), account, region, dev_only, dev_neutral)
+    result = {"schema": publication_schema(dev_only, dev_neutral), "authority_digest": ownership.authority_digest(doc["ownership_closure"]),
         "account": account, "region": region, "records": records, "publisher": "SECURITY_ADMIN_EXTERNAL_BOOTSTRAP"}
-    admin.create_publication(output_key(doc, account, region, dev_only), result)
+    key = output_key(doc, account, region, dev_only, dev_neutral)
+    admin.create_publication(key, result)
+    if dev_neutral:
+        readback = admin.read_publication(key)
+        validate_publication(doc, readback, account, region)
+        require(readback == result, "exact new publication readback")
     return copy.deepcopy(result)
 
 
@@ -124,10 +146,14 @@ def consume(doc, account, region, consumer, protected_reader):
     """
     c = ownership.validate(doc)
     require(consumer in c["consumers"], "consumer binding")
-    selected = c["publications"].get(account + "/" + region, {})
-    pub = protected_reader.read_publication(output_key(doc, account, region, selected.get("schema") == "E1_DEV_OUTPUT_PUBLICATION_V1"))
+    selected = c["publications"].get(registry_key(account, region), {})
+    if consumer == "dev/shared":
+        selected = c["publications"].get(registry_key(account, region, True), selected)
+    pub = protected_reader.read_publication(output_key(doc, account, region, selected.get("schema") == "E1_DEV_OUTPUT_PUBLICATION_V1", selected.get("schema") == DEV_NEUTRAL_SCHEMA))
     records = validate_publication(doc, pub, account, region)
-    require(pub["schema"] != "E1_DEV_OUTPUT_PUBLICATION_V1" or consumer.startswith("dev/"), "DEV-only publication cannot authorize PROD")
+    require(pub["schema"] not in ("E1_DEV_OUTPUT_PUBLICATION_V1", DEV_NEUTRAL_SCHEMA) or consumer.startswith("dev/"), "DEV-only publication cannot authorize PROD")
+    if pub["schema"] == DEV_NEUTRAL_SCHEMA:
+        require(consumer == "dev/shared" and pub == selected, "pinned DEV shared publication")
     require(set(c["consumers"][consumer]) <= set(records), "publication lacks required shared/neutral references")
     return {key: records[key]["value"] for key in c["consumers"][consumer]}
 
@@ -135,24 +161,25 @@ def consume(doc, account, region, consumer, protected_reader):
 def validate_publication(doc, pub, account, region):
     c = ownership.validate(doc)
     require(isinstance(pub, dict) and set(pub) == {"schema", "authority_digest", "account", "region", "records", "publisher"}, "publication fields")
-    require(pub["schema"] in ("E1_OUTPUT_PUBLICATION_V1", "E1_DEV_OUTPUT_PUBLICATION_V1") and pub["authority_digest"] == ownership.authority_digest(c)
+    require(pub["schema"] in ("E1_OUTPUT_PUBLICATION_V1", "E1_DEV_OUTPUT_PUBLICATION_V1", DEV_NEUTRAL_SCHEMA) and pub["authority_digest"] == ownership.authority_digest(c)
             and pub["account"] == account and pub["region"] == region
             and pub["publisher"] == "SECURITY_ADMIN_EXTERNAL_BOOTSTRAP", "publication provenance")
-    records = validate_records(doc, pub["records"], account, region, pub["schema"] == "E1_DEV_OUTPUT_PUBLICATION_V1")
+    records = validate_records(doc, pub["records"], account, region, pub["schema"] == "E1_DEV_OUTPUT_PUBLICATION_V1", pub["schema"] == DEV_NEUTRAL_SCHEMA)
     return records
 
 
-def promote_outputs(doc, account, region, admin, dev_only=False):
+def promote_outputs(doc, account, region, admin, dev_only=False, dev_neutral=False):
     """Return an admin change candidate, never write the repo or enable compute.
 
     Separately reviewed administrator source promotion pins the publication for
     Terraform consumers. Ordinary callers cannot provide the publication body.
     """
     require(isinstance(admin, AdminChannel), "external admin channel required")
-    pub = admin.read_publication(output_key(doc, account, region, dev_only))
+    pub = admin.read_publication(output_key(doc, account, region, dev_only, dev_neutral))
     validate_publication(doc, pub, account, region)
+    require(pub["schema"] == publication_schema(dev_only, dev_neutral), "selected promotion scope")
     result = copy.deepcopy(doc)
-    result["ownership_closure"]["publications"][account + "/" + region] = copy.deepcopy(pub)
+    result["ownership_closure"]["publications"][registry_key(account, region, dev_neutral)] = copy.deepcopy(pub)
     ownership.validate_publications(result)
     return result
 

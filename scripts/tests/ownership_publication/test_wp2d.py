@@ -189,6 +189,100 @@ class ClosureTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             pub.publish_outputs(self.doc, ACCOUNT, REGION, "ordinary-lifecycle")
 
+    def limited_records(self, neutral=False):
+        return {k: v for k, v in output_fixture(self.doc).items()
+                if v['scope'] == 'dev' or neutral and k in pub.NEUTRAL_KEYS}
+
+    def test_dev_neutral_exact_scope_and_shared_consumer(self):
+        admin = Admin(self.limited_records(neutral=True))
+        published = pub.publish_outputs(self.doc, ACCOUNT, REGION, admin, dev_neutral=True)
+        self.assertEqual(set(published['records']), set(self.limited_records()) | pub.NEUTRAL_KEYS)
+        promoted = pub.promote_outputs(self.doc, ACCOUNT, REGION, admin, dev_neutral=True)
+        values = pub.consume(promoted, ACCOUNT, REGION, 'dev/shared', admin)
+        self.assertEqual(set(values), set(self.doc['ownership_closure']['consumers']['dev/shared']))
+        self.assertEqual(own.authority_digest(promoted['ownership_closure']), own.authority_digest(self.doc['ownership_closure']))
+        self.assertEqual({**promoted['ownership_closure'], 'publications': {}}, own.catalog())
+
+    def test_dev_neutral_missing_invented_and_unavailable_rejected(self):
+        for key in pub.NEUTRAL_KEYS:
+            for field, value in (('value', 'arn:aws:s3:::invented'), ('available', False), ('owner', 'CALLER'), ('authority_digest', 'a' * 64)):
+                records = self.limited_records(neutral=True)
+                records[key][field] = value
+                with self.assertRaises(ValueError):
+                    pub.publish_outputs(self.doc, ACCOUNT, REGION, Admin(records), dev_neutral=True)
+            records = self.limited_records(neutral=True)
+            del records[key]
+            with self.assertRaises(ValueError):
+                pub.publish_outputs(self.doc, ACCOUNT, REGION, Admin(records), dev_neutral=True)
+
+    def test_dev_neutral_prod_and_unknown_records_rejected(self):
+        for key in ('prod/kms', 'neutral/invented'):
+            records = self.limited_records(neutral=True)
+            records[key] = output_fixture(self.doc)['prod/kms']
+            with self.assertRaises(ValueError):
+                pub.publish_outputs(self.doc, ACCOUNT, REGION, Admin(records), dev_neutral=True)
+        with self.assertRaises(ValueError):
+            pub.output_key(self.doc, ACCOUNT, REGION, dev_only=True, dev_neutral=True)
+
+    def test_dev_neutral_authenticated_channel_and_exact_readback(self):
+        with self.assertRaises(ValueError):
+            pub.publish_outputs(self.doc, ACCOUNT, REGION, object(), dev_neutral=True)
+        admin = Admin(self.limited_records(neutral=True))
+        original = admin.read_publication
+        def altered(key):
+            value = original(key)
+            value['publisher'] = 'UNAUTHENTICATED'
+            return value
+        admin.read_publication = altered
+        with self.assertRaises(ValueError):
+            pub.publish_outputs(self.doc, ACCOUNT, REGION, admin, dev_neutral=True)
+        with self.assertRaises(ValueError):
+            pub.validate_publication(self.doc, altered(pub.output_key(self.doc, ACCOUNT, REGION, dev_neutral=True)), ACCOUNT, REGION)
+
+    def test_dev_neutral_preserves_historical_receipt_and_create_only(self):
+        admin = Admin(self.limited_records())
+        old = pub.publish_outputs(self.doc, ACCOUNT, REGION, admin, dev_only=True)
+        promoted_old = pub.promote_outputs(self.doc, ACCOUNT, REGION, admin, dev_only=True)
+        historical = pub.consume(promoted_old, ACCOUNT, REGION, 'dev/global', admin)
+        admin.records = self.limited_records(neutral=True)
+        pub.publish_outputs(promoted_old, ACCOUNT, REGION, admin, dev_neutral=True)
+        new = pub.promote_outputs(promoted_old, ACCOUNT, REGION, admin, dev_neutral=True)
+        self.assertEqual(new['ownership_closure']['publications'][ACCOUNT + '/' + REGION], old)
+        self.assertEqual(historical, pub.consume(new, ACCOUNT, REGION, 'dev/global', admin))
+        self.assertNotEqual(pub.output_key(self.doc, ACCOUNT, REGION, True), pub.output_key(self.doc, ACCOUNT, REGION, dev_neutral=True))
+        with self.assertRaises(FileExistsError):
+            pub.publish_outputs(new, ACCOUNT, REGION, admin, dev_neutral=True)
+
+    def test_dev_neutral_promotion_namespace_and_pinned_provenance(self):
+        admin = Admin(self.limited_records(neutral=True))
+        new = pub.publish_outputs(self.doc, ACCOUNT, REGION, admin, dev_neutral=True)
+        promoted = pub.promote_outputs(self.doc, ACCOUNT, REGION, admin, dev_neutral=True)
+        key = pub.registry_key(ACCOUNT, REGION, True)
+        bad = copy.deepcopy(promoted)
+        bad['ownership_closure']['publications'][ACCOUNT + '/' + REGION] = bad['ownership_closure']['publications'].pop(key)
+        with self.assertRaises(ValueError):
+            own.validate_publications(bad)
+        # A syntactically valid alternate key UUID cannot replace the pinned record.
+        admin.publications[pub.output_key(self.doc, ACCOUNT, REGION, dev_neutral=True)]['records']['dev/kms']['value'] = f'arn:aws:kms:{REGION}:{ACCOUNT}:key/11111111-1111-1111-1111-111111111111'
+        with self.assertRaises(ValueError):
+            pub.consume(promoted, ACCOUNT, REGION, 'dev/shared', admin)
+        admin.publications[pub.output_key(self.doc, ACCOUNT, REGION)] = new
+        with self.assertRaises(ValueError):
+            pub.consume(promoted, ACCOUNT, REGION, 'prod/shared', admin)
+
+    def test_dev_neutral_only_shared_wiring_changes(self):
+        generated = own.consumer_wiring(self.doc)
+        for path, config in generated.items():
+            selection = config['locals']['publication']
+            self.assertEqual('/dev-neutral/v1' in selection, path == 'terraform/modules/target/dev/shared/main.tf.json')
+            self.assertIn('var.protected_inputs == tomap(local.expected)', config['resource']['terraform_data']['protected_input']['lifecycle']['precondition']['condition'])
+        import wp5
+        admin = Admin(self.limited_records(neutral=True))
+        pub.publish_outputs(self.doc, ACCOUNT, REGION, admin, dev_neutral=True)
+        promoted = pub.promote_outputs(self.doc, ACCOUNT, REGION, admin, dev_neutral=True)
+        package = json.loads(wp5.package_files(ROOT, promoted, 'environment-lifecycle/infra-prod')['terraform/infra/security/authority.json'])
+        self.assertNotIn(pub.registry_key(ACCOUNT, REGION, True), package['ownership_closure']['publications'])
+
     def test_10_recovery_records_unavailable(self):
         records = output_fixture(self.doc)
         for key in list(records):
@@ -339,7 +433,14 @@ class ClosureTests(unittest.TestCase):
         c = self.doc["ownership_closure"]
         own.validate_publications(self.doc)
         for context,value in c['publications'].items():
-            account,region=context.split('/')
+            parts=context.split('/')
+            self.assertIn(len(parts),(2,4))
+            account,region=parts[:2]
+            if len(parts)==4:
+                self.assertEqual(parts[2:],['dev-neutral','v1'])
+                self.assertEqual(value['schema'],'E1_DEV_NEUTRAL_OUTPUT_PUBLICATION_V1')
+            else:
+                self.assertNotEqual(value['schema'],'E1_DEV_NEUTRAL_OUTPUT_PUBLICATION_V1')
             pub.validate_publication(self.doc,value,account,region)
             self.assertEqual(value['publisher'],'SECURITY_ADMIN_EXTERNAL_BOOTSTRAP')
         for group in ('wp4d','wp5'):
@@ -375,6 +476,12 @@ class ClosureTests(unittest.TestCase):
             self.assertIn("iam_role_arn         = var.protected_flow_role", vpc)
             for path, text in generated.items():
                 if path.startswith(f"terraform/modules/target/{env}/") and isinstance(text, str):
+                    if path == 'terraform/modules/target/dev/shared/ordinary-main.tf':
+                        # Owner-authorized native administrative notification
+                        # key only; protected workload keys remain neutral-owned.
+                        import ordinary
+                        self.assertEqual(text.count('resource "aws_kms_key" "alerts"'), 1)
+                        text = ordinary.select(text, lambda h: not h.startswith('resource "aws_kms_key" "alerts"'))
                     for prefix in ('resource "aws_iam_', 'resource "aws_kms_', 'resource "aws_ecr_', 'resource "aws_s3_', 'resource "aws_secretsmanager_', 'resource "aws_lambda_', 'resource "aws_launch_template"'):
                         self.assertNotIn(prefix, text)
 

@@ -28,7 +28,7 @@ LAYERS = ('shared', 'secrets', 'global', 'data', 'platform', 'apps', 'edge')
 AWS_ONLY_DEV = ('shared', 'global', 'data', 'platform', 'apps', 'edge')
 
 
-RUNTIME_WINDOWS_LAYERS = ('global','data','platform','apps','edge')
+REVIEWED_WINDOWS_LAYERS = ('shared','global','data','platform','apps','edge')
 WINDOWS_H1 = 'h1:H3mU/7URhP0uCRGK8jeQRKxx2XFzEqLiOq/L2Bbiaxs='
 ORIGIN_RECEIPT = 'operations/sql-backup/recovery/provider-origin-verification.json'
 ORIGIN_RECEIPT_SHA256 = 'c1f2da389f1954de8cb2e9b06a9c456055bba7653b89a14f3383aecf164ad3e4'
@@ -45,7 +45,7 @@ def reviewed_windows_origin(raw):
 
 
 def aws_lock_identity(dev, prod, layer, origin):
-    if layer in RUNTIME_WINDOWS_LAYERS:
+    if layer in REVIEWED_WINDOWS_LAYERS:
         value=reviewed_windows_origin(origin)
         line='    "'+value+'",\n'
         if dev.count(line)!=1 or value in prod:
@@ -225,9 +225,22 @@ class ReproducibilityTests(unittest.TestCase):
         dev,prod=self.aws_blocks();origin=(ROOT/ORIGIN_RECEIPT).read_bytes()
         for raw in (b'{}',origin+b' ',origin.replace(b'OFFICIAL_SIGNED_ZIP_AND_H1_VERIFIED',b'CACHE_MATCH_ONLY')):
             with self.assertRaisesRegex(ValueError,'receipt drift'):aws_lock_identity(dev,prod,'global',raw)
-        with self.assertRaises(ValueError):aws_lock_identity(dev,prod,'shared',origin)
+        with self.assertRaises(ValueError):aws_lock_identity(dev,prod,'secrets',origin)
         with self.assertRaises(ValueError):aws_lock_identity(prod,prod,'global',origin)
         with self.assertRaises(ValueError):aws_lock_identity(dev,dev,'global',origin)
+
+    def test_shared_platform_delta_is_exact_and_requires_the_same_official_origin(self):
+        blocks=[]
+        for env in ('dev','prod'):
+            text=(ROOT/f'terraform/modules/target/{env}/shared/.terraform.lock.hcl').read_text()
+            blocks.append(dict(re.findall(r'provider "registry.terraform.io/hashicorp/(\w+)" \{([^}]+)\}',text))['aws'])
+        dev,prod=blocks;origin=(ROOT/ORIGIN_RECEIPT).read_bytes()
+        aws_lock_identity(dev,prod,'shared',origin)
+        for mutated in (dev.replace('5.100.0','5.100.1'),dev.replace('~> 5.50','~> 6.0'),
+                        dev.replace('zh:054b8d','zh:154b8d'),dev+'    "h1:'+('A'*43)+'=",\n'):
+            with self.assertRaises(ValueError):aws_lock_identity(mutated,prod,'shared',origin)
+        with self.assertRaisesRegex(ValueError,'receipt drift'):
+            aws_lock_identity(dev,prod,'shared',origin+b' ')
 
     def test_separate_sentinel_lock_never_admits_a_provider_upgrade_or_extra_hash(self):
         raw=(ROOT/SENTINEL_LOCK).read_bytes()

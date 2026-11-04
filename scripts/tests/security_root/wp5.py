@@ -84,7 +84,9 @@ def configuration(doc):
             if env == 'dev' and layer in ('global','data','platform','apps','edge'):
                 selected = dev_runtime_lock(ROOT)
             elif env == 'dev' and layer == 'shared':
-                selected = lock.split('provider "registry.terraform.io/hashicorp/tls"',1)[0].rstrip()+'\n'
+                # Same AWS 5.100.0 historical checksums plus the authenticated
+                # Windows h1 already pinned for native DEV roots. No upgrade.
+                selected = dev_runtime_lock(ROOT)
             else:
                 selected = lock
             result[f'terraform/modules/target/{env}/{layer}/.terraform.lock.hcl'] = selected
@@ -183,7 +185,7 @@ def package_files(root, doc, binding):
     # Only protected publication data is needed by the immutable consumers;
     # exclude package digests/install maps, avoiding self-referential identities.
     closure = {**doc['ownership_closure'], 'publications': {key:value for key,value in doc['ownership_closure']['publications'].items()
-        if env == 'dev' or value['schema'] != 'E1_DEV_OUTPUT_PUBLICATION_V1'}}
+        if env == 'dev' or value['schema'] not in ('E1_DEV_OUTPUT_PUBLICATION_V1', 'E1_DEV_NEUTRAL_OUTPUT_PUBLICATION_V1')}}
     files['terraform/infra/security/authority.json'] = canonical({'ownership_closure':closure})
     for name in SOURCES+('terraform/infra/data/user_data.sh',):
         files[name]=(Path(root)/name).read_bytes().replace(b'\r\n',b'\n')
