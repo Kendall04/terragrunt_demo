@@ -234,7 +234,11 @@ class CLI(unittest.TestCase):
         result,selected,binary,document,context=self.invoke()
         checked=down.check_current_review(result['destroy_review'],selected,context['state'],binary,document,NOW)
         self.assertTrue(checked['local_consistency']);self.assertFalse(result['execution_authorized'])
-        self.assertEqual(len(result['declaration_inventory']),219)
+        self.assertEqual(len(result['declaration_inventory']),220)
+        migrator=[row for row in result['declaration_inventory']
+                  if row['key'].endswith('#aws_secretsmanager_secret.dev_sql_migrator')]
+        self.assertEqual(len(migrator),1)
+        self.assertEqual(migrator[0]['treatment'],'RETAIN')
         alerts = [row for row in result['declaration_inventory']
                   if row['owner'] == 'shared' and row['type'] in ('aws_kms_key', 'aws_sns_topic_policy')]
         self.assertEqual({row['type'] for row in alerts}, {'aws_kms_key', 'aws_sns_topic_policy'})
