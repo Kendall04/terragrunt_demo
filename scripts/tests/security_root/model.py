@@ -245,6 +245,11 @@ def wiring(doc):
         "value": expression("module.controller_compute.foundation"),
         "description": "TARGET compute declarations only; zero Lambda/CodeBuild instances, no invocation authorization."}
     root["module"]["protected_resources"] = {"source": "./modules/protected_resources", "account_id": expression("var.aws_account_id"), "region": expression("var.aws_region")}
+    root['variable']['dev_sql_migrator_metadata'] = {'type': 'bool', 'default': False, 'nullable': False}
+    root['module']['protected_resources']['dev_sql_migrator_metadata'] = expression('var.dev_sql_migrator_metadata')
+    root['output']['dev_sql_migrator_secret_arn'] = {
+        'value': expression('module.protected_resources.dev_sql_migrator_secret_arn'),
+        'description': 'Metadata ARN only. Secret value and exact SQL-host read access need separate administrative approval.'}
     root["output"]["protected_output_candidates"] = {"value": expression("module.protected_resources.protected_output_candidates")}
     root["output"]["protected_dev_output_candidates"] = {"value": expression("module.protected_resources.protected_dev_output_candidates")}
     compute_module = compute.wiring()

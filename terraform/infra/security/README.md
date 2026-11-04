@@ -1,5 +1,24 @@
 # E1 WP2A — protected security root foundation
 
+## Opt-in DEV SQL migrator metadata
+
+`dev_sql_migrator_metadata=false` preserves the installed graph. A separately
+authorized administrator may plan `true` to add only
+`module.protected_resources.aws_secretsmanager_secret.dev_sql_migrator[0]`, named
+`demo/dev/db/sql-migrator-password`, in account 341936017254/us-east-1. It reuses
+the existing DEV workload CMK, has a 30-day recovery window and `prevent_destroy`.
+The additional output is its metadata ARN, not a value, publication or approval.
+Historical protected publications, their catalog/digest and consumers are unchanged.
+
+Terraform never generates a password or creates a secret version. After separate
+metadata apply approval, the administrator writes one cryptographically generated
+value through the confidential SDK channel, with no value in arguments, files,
+tracing or evidence. Only the authentic returned ARN can enter a proposed exact
+SQL-role read grant and the strict `sql_database_security` input. Existing IAM,
+Part6 and KMS policies are not changed by this metadata option. TLS installation
+and value/host permissions remain independent gates described in
+[SQL runtime security](../../docs/sql-runtime-security.md#proposed-confidential-sql-certificate-transfer).
+
 The refreshed serial-66 reconciliation exposed installed WP6 request identities
 whose historical approval records are unavailable. Their two closed preservation
 fingerprints retain the observed trust, request-only policies and qualified

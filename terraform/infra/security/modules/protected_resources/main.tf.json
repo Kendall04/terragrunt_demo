@@ -17,6 +17,11 @@
     "dev_cicd_installation_only": {
       "type": "bool",
       "default": false
+    },
+    "dev_sql_migrator_metadata": {
+      "type": "bool",
+      "default": false,
+      "nullable": false
     }
   },
   "resource": {
@@ -438,6 +443,26 @@
           "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE"
         },
         "count": "${var.dev_cicd_installation_only ? 0 : 1}"
+      },
+      "dev_sql_migrator": {
+        "count": "${var.dev_sql_migrator_metadata ? 1 : 0}",
+        "name": "demo/dev/db/sql-migrator-password",
+        "description": "DEV SQL migrator credential metadata; value managed outside Terraform",
+        "kms_key_id": "${aws_kms_key.dev_kms.arn}",
+        "recovery_window_in_days": 30,
+        "tags": {
+          "E1Owner": "SECURITY_ROOT_OWNED",
+          "E1Stage": "E1_WP2D_PROTECTED_OWNERSHIP_PUBLICATION_CLOSURE",
+          "Project": "demo",
+          "Environment": "dev"
+        },
+        "lifecycle": {
+          "prevent_destroy": true,
+          "precondition": {
+            "condition": "${var.account_id == \"341936017254\" && var.region == \"us-east-1\"}",
+            "error_message": "SQL migrator metadata is restricted to the reviewed DEV account and region."
+          }
+        }
       }
     },
     "aws_ecr_repository": {
@@ -1312,6 +1337,10 @@
           "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"
         }
       }
+    },
+    "dev_sql_migrator_secret_arn": {
+      "value": "${var.dev_sql_migrator_metadata ? aws_secretsmanager_secret.dev_sql_migrator[0].arn : null}",
+      "description": "Metadata ARN only; not an installed secret value or SQL runtime approval."
     }
   }
 }

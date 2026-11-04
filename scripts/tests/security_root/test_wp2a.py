@@ -64,6 +64,27 @@ class FoundationTests(unittest.TestCase):
         candidate=child['locals']['wp4d_candidates']
         self.assertIn('"request-gateway/deploy-dev","normal-delivery/deploy-dev","cleanup-recovery/cleanup-dev"',candidate)
         self.assertIn('var.wp4d_environment_bindings[v.environment]',candidate)
+        with self.subTest('SQL migrator metadata is opt-in, DEV-only and value-free'):
+            protected = generated['terraform/infra/security/modules/protected_resources/main.tf.json']
+            self.assertEqual(root['variable']['dev_sql_migrator_metadata'],
+                             {'type': 'bool', 'default': False, 'nullable': False})
+            self.assertEqual(root['module']['protected_resources']['dev_sql_migrator_metadata'],
+                             '${var.dev_sql_migrator_metadata}')
+            self.assertEqual(protected['variable']['dev_sql_migrator_metadata'],
+                             root['variable']['dev_sql_migrator_metadata'])
+            secret = protected['resource']['aws_secretsmanager_secret']['dev_sql_migrator']
+            self.assertEqual(secret['count'], '${var.dev_sql_migrator_metadata ? 1 : 0}')
+            self.assertEqual(secret['name'], 'demo/dev/db/sql-migrator-password')
+            self.assertEqual(secret['kms_key_id'], '${aws_kms_key.dev_kms.arn}')
+            self.assertEqual(secret['recovery_window_in_days'], 30)
+            self.assertTrue(secret['lifecycle']['prevent_destroy'])
+            self.assertEqual(secret['lifecycle']['precondition']['condition'],
+                             '${var.account_id == "341936017254" && var.region == "us-east-1"}')
+            self.assertNotIn('secret_string', secret)
+            self.assertNotIn('secret_binary', secret)
+            self.assertNotIn('aws_secretsmanager_secret_version', protected['resource'])
+            records = protected['output']['protected_output_candidates']['value']
+            self.assertNotIn('dev/sql-migrator', records)
         doc = validate_repository(ROOT)
         self.assertEqual(set(doc["request_identities"]), REQUESTS)
         self.assertEqual(len(doc["request_identities"]), 11)

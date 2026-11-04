@@ -258,8 +258,25 @@ def wiring(doc):
         records["recovery/" + key] = {"schema": c["record_schema"], "owner": OWNER, "scope": item["scope"], "class": "recovery",
             "logical_id": "recovery/" + key, "declaration": "reservation/recovery/" + key,
             "authority_digest": authority_digest(c), "available": False, "value": None, "publication": "ADMIN_OUTPUT_CANDIDATE_NOT_AUTHENTICATED"}
+    # Separate opt-in metadata, not a change to the historical publication or its
+    # closed catalog. The authenticated security owner alone creates this DEV
+    # container; values and SQL-host read grants require separate operations.
+    migrator_scope = 'var.account_id == "341936017254" && var.region == "us-east-1"'
+    put("aws_secretsmanager_secret", "dev_sql_migrator", {
+        "count": ex("var.dev_sql_migrator_metadata ? 1 : 0"),
+        "name": "demo/dev/db/sql-migrator-password",
+        "description": "DEV SQL migrator credential metadata; value managed outside Terraform",
+        "kms_key_id": ref("dev/kms"), "recovery_window_in_days": 30,
+        "tags": {**tags, "Project": "demo", "Environment": "dev"},
+        "lifecycle": {"prevent_destroy": True, "precondition": {
+            "condition": ex(migrator_scope),
+            "error_message": "SQL migrator metadata is restricted to the reviewed DEV account and region."}}})
     return {"terraform": {"required_providers": {"aws": {"source": "hashicorp/aws", "version": "~> 5.50"}}},
         "variable": {"account_id": {"type": "string"}, "region": {"type": "string"},
-                     "dev_cicd_installation_only": {"type": "bool", "default": False}},
+                     "dev_cicd_installation_only": {"type": "bool", "default": False},
+                     "dev_sql_migrator_metadata": {"type": "bool", "default": False, "nullable": False}},
         "resource": resources, "output": {"protected_output_candidates": {"value": records},
-        "protected_dev_output_candidates": {"value": {key:record for key,record in records.items() if record["scope"] == "dev"}}}}
+        "protected_dev_output_candidates": {"value": {key:record for key,record in records.items() if record["scope"] == "dev"}},
+        "dev_sql_migrator_secret_arn": {
+            "value": ex("var.dev_sql_migrator_metadata ? aws_secretsmanager_secret.dev_sql_migrator[0].arn : null"),
+            "description": "Metadata ARN only; not an installed secret value or SQL runtime approval."}}}
