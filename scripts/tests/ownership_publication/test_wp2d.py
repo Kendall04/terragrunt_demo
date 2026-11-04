@@ -433,7 +433,14 @@ class ClosureTests(unittest.TestCase):
         c = self.doc["ownership_closure"]
         own.validate_publications(self.doc)
         for context,value in c['publications'].items():
-            account,region=context.split('/')
+            parts=context.split('/')
+            self.assertIn(len(parts),(2,4))
+            account,region=parts[:2]
+            if len(parts)==4:
+                self.assertEqual(parts[2:],['dev-neutral','v1'])
+                self.assertEqual(value['schema'],'E1_DEV_NEUTRAL_OUTPUT_PUBLICATION_V1')
+            else:
+                self.assertNotEqual(value['schema'],'E1_DEV_NEUTRAL_OUTPUT_PUBLICATION_V1')
             pub.validate_publication(self.doc,value,account,region)
             self.assertEqual(value['publisher'],'SECURITY_ADMIN_EXTERNAL_BOOTSTRAP')
         for group in ('wp4d','wp5'):

@@ -5927,14 +5927,14 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/ownership_publication/test_wp2d.py": {
-      "sha256": "9b330a39e9c80cda67f0e0b3a0ae8d3f630800222409502b6f6d1473c78b7391",
+      "sha256": "10316d0f7b8e43116afae338e3cfb538fecd51fdb2bf411da59e24b9bc7461eb",
       "declarations": [],
       "signals": {
         "role-input": [
           117,
-          469,
-          485,
-          486
+          476,
+          492,
+          493
         ],
         "launch-or-mutation": [
           71,
@@ -5958,26 +5958,26 @@
           401,
           421,
           425,
-          453,
-          459,
-          468,
-          471,
-          472,
-          484,
-          487,
-          501,
-          508
+          460,
+          466,
+          475,
+          478,
+          479,
+          491,
+          494,
+          508,
+          515
         ],
         "executable-dependency": [
           310,
-          458,
-          459,
-          462,
-          464,
           465,
-          467,
-          501,
-          641
+          466,
+          469,
+          471,
+          472,
+          474,
+          508,
+          648
         ],
         "security-control": [
           116,
@@ -5988,9 +5988,9 @@
           317,
           402,
           415,
-          476,
-          477,
-          478
+          483,
+          484,
+          485
         ]
       },
       "semantic_status": "UNVERIFIED"
