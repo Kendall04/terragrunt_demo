@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "upstreamCommit": "b3d0b3b595a9257bb6d4d849c899bf4e8dbc2828",
+  "file": "src/Sentinel.Operations/WorkRunner.cs",
+  "baseSha256": "700a8db0a3d9f0705ac0c8354f69af9a891a039db0f47fc9e68e8144a7ae8205",
+  "purpose": "Yield before another job and release only reserved checkpoint I/O; preserve journal identity and failures",
+  "replacements": [
+    {
+      "before": "OperationalProfile profile,Func<DateTimeOffset> clock) {",
+      "after": "OperationalProfile profile,Func<DateTimeOffset> clock,OperationalBudget? ioBudget=null) {"
+    },
+    {
+      "before": "if(attempted>=profile.MaxJobs||timer.Elapsed",
+      "after": "if(ioBudget is not null&&!ioBudget.CanStartWork(40)||attempted>=profile.MaxJobs||timer.Elapsed"
+    },
+    {
+      "before": "        finally {",
+      "after": "        finally {\n            ioBudget?.BeginCheckpoint();"
+    }
+  ]
+}

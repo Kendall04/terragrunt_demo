@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "upstreamCommit": "b3d0b3b595a9257bb6d4d849c899bf4e8dbc2828",
+  "file": "src/Sentinel.Persistence.DynamoDb/DynamoStore.cs",
+  "baseSha256": "21c5686bf940c05d64c96ea42abf301cf7481700c71819dddbd3e56e1e91859b",
+  "purpose": "Batch unchanged transaction size preflight; preserve byte bounds, conditions and idempotency token",
+  "replacements": [
+    {
+      "before": "        var sizes = actions.Select(a => {\n            var old = Get(ItemKey(a)[\"SK\"].S);",
+      "after": "        var previous = GetTransaction(actions.Select(a => ItemKey(a)[\"SK\"].S).ToArray());\n        if (previous.Count != actions.Count) throw new InvalidDataException(\"Incomplete transaction size preflight.\");\n        var sizes = actions.Select((a, i) => {\n            var old = previous[i];"
+    }
+  ]
+}
