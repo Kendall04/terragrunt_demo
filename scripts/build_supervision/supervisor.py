@@ -32,6 +32,9 @@ TERMINAL_PREFIX = {'source': (0, None), 'dotnet_restore': (0, 0),
     'result_publish': (5, None)}
 STAGES = tuple(TERMINAL_PREFIX)
 CONTEXT_KEYS = {'operation_id', 'project', 'build_id', 'source_commit', 'account', 'region', 'repository'}
+SOURCE_FILES = ('.gitignore', 'global.json')
+SQL_PROJECTS = ('operations/sql-backup/SqlBackup', 'operations/sql-backup/SqlBackup.Tests')
+SOURCE_DIRECTORIES = ('operations', 'operations/sql-backup', *SQL_PROJECTS)
 
 
 class Rejected(ValueError):
@@ -51,13 +54,18 @@ def source_path(relative):
     """Portable, unambiguous relative names; no links, ADS or platform aliases."""
     intact(type(relative) is str and len(relative) <= 1024)
     parts = relative.split('/')
-    intact(parts[0] == 'demo-api')
+    intact(relative in SOURCE_FILES or relative in SOURCE_DIRECTORIES or parts[0] == 'demo-api'
+           or any(relative.startswith(p + '/') and len(parts) == 4 and
+                  (parts[-1] == 'packages.lock.json' or parts[-1].endswith(('.cs', '.csproj')))
+                  for p in SQL_PROJECTS))
     for part in parts:
         intact(bool(part) and part not in ('.', '..') and not part.endswith(('.', ' ')))
         intact(not any(ord(c) < 32 or c in '\\:<>"|?*' for c in part))
         intact(part.split('.')[0].upper() not in
                {'CON', 'PRN', 'AUX', 'NUL', *(f'COM{i}' for i in range(1, 10)),
                 *(f'LPT{i}' for i in range(1, 10))})
+        intact(part.casefold() not in {'bin', 'obj', '.git', 'secrets', '.aws'})
+    intact(not parts[-1].casefold().endswith(('.key', '.pfx', '.p12', '.env')))
     return parts
 
 
@@ -79,6 +87,9 @@ def source_node(root, relative):
                getattr(info, 'st_file_attributes', 0) & 0x400)
         if index < len(parts) - 1:
             intact(stat.S_ISDIR(info.st_mode))
+    intact(relative not in SOURCE_FILES or stat.S_ISREG(info.st_mode))
+    intact(relative not in SOURCE_DIRECTORIES or stat.S_ISDIR(info.st_mode))
+    intact(not any(relative.startswith(p + '/') for p in SQL_PROJECTS) or stat.S_ISREG(info.st_mode))
     if stat.S_ISDIR(info.st_mode):
         return (relative, 'directory', 0, b'')
     intact(stat.S_ISREG(info.st_mode) and info.st_nlink == 1)
@@ -92,7 +103,7 @@ def source_node(root, relative):
     return (relative, 'file', 0o755 if info.st_mode & stat.S_IXUSR else 0o644, raw)
 
 
-def source_tree(root):
+def source_tree(root, image=False):
     """Capture the committed export, not an execution tree with bin/obj output."""
     nodes = []
     names = set()
@@ -110,18 +121,38 @@ def source_tree(root):
         if node[1] == 'directory':
             for child in sorted((Path(root) / relative).iterdir(), key=lambda p: p.name):
                 visit(relative + '/' + child.name)
+    intact(type(image) is bool)
+    allowed = {'demo-api'} if image else {'demo-api', *SOURCE_FILES, 'operations'}
+    present = {p.name for p in Path(root).iterdir()}
+    intact(present <= allowed)
     visit('demo-api')
+    if not image:
+        for name in SOURCE_FILES:
+            if name in present: visit(name)
+        if 'operations' in present: visit('operations')
     paths = {n[0] for n in nodes if n[1] == 'file'}
     intact({'demo-api/Dockerfile', 'demo-api/.dockerignore',
             'demo-api/terragrunt-demo.sln',
             'demo-api/terragrunt-demo/terragrunt-demo.csproj'} <= paths)
+    if not image:
+        solution = next(raw for p, kind, mode, raw in nodes if p == 'demo-api/terragrunt-demo.sln')
+        if b'operations\\sql-backup\\' in solution or b'operations/sql-backup/' in solution:
+            intact(set(SOURCE_FILES) <= paths)
+            intact(all(p + '/' + name in paths for p in SQL_PROJECTS
+                       for name in (p.rsplit('/', 1)[-1] + '.csproj', 'packages.lock.json')))
     return tuple(nodes)
+
+
+def image_source(nodes):
+    """The Docker worker receives exactly the historical demo-api projection."""
+    return tuple(n for n in nodes if n[0] == 'demo-api' or n[0].startswith('demo-api/'))
 
 
 def source_seal(repository, commit, nodes):
     # Only portable metadata/digests enter the seal. Retained immutable bytes are
     # private supervisor data and never serialized into evidence or diagnostics.
-    description = {'repository': repository, 'commit': commit, 'root': 'demo-api',
+    description = {'repository': repository, 'commit': commit,
+        'root': 'demo-api' if image_source(nodes) == nodes else 'WP3_DOTNET_SOURCE_CLOSURE_V1',
         'nodes': [{'path': p, 'type': kind, 'mode': mode,
                    'sha256': contract.checksum(raw) if kind == 'file' else None}
                   for p, kind, mode, raw in nodes]}
@@ -179,7 +210,7 @@ class Control(ABC):
 class Payload(ABC):
     """Trusted isolation adapter, not a payload object.
 
-    acquire exports only committed demo-api content for the exact repository and
+    acquire exports only the closed committed .NET source for the exact repository and
     commit at the requested path (no Git metadata or existing build outputs).
     The core captures/seals bytes, derives a separate execution workspace, checks
     it after every stage, and materializes/verifies a fresh image context itself.
@@ -351,6 +382,7 @@ class Supervisor:
         stage = 'source'
         try:
             workspace = (directory / 'acquired').as_posix()
+            acquired_workspace = workspace
             Path(workspace).mkdir()
             acquired = self.payload.acquire(op['repository'], op['source_commit'], workspace)
             closed(acquired, {'repository', 'commit', 'workspace'})
@@ -371,12 +403,17 @@ class Supervisor:
                 require(checks[stage] == 'PASS')
             stage = 'image_context'
             image_context = (directory / 'image').as_posix()
-            materialize_source(snapshot, image_context)
-            intact(source_seal(op['repository'], source, source_tree(image_context)) == seal)
+            image_snapshot = image_source(snapshot)
+            image_seal = source_seal(op['repository'], source, image_snapshot)
+            materialize_source(image_snapshot, image_context)
+            intact(source_seal(op['repository'], source, source_tree(image_context, image=True)) == image_seal)
             stage = 'image_build'
             checks[stage] = 'UNKNOWN'
             built = self.payload.image_build(image_context, image_context + '/demo-api', image_context + '/demo-api/Dockerfile', environment(stage))
-            intact(source_seal(op['repository'], source, source_tree(image_context)) == seal)
+            intact(source_seal(op['repository'], source, source_tree(image_context, image=True)) == image_seal)
+            # Recheck the full closure, not just the smaller Docker projection.
+            verify_execution(snapshot, workspace)
+            intact(source_seal(op['repository'], source, source_tree(acquired_workspace)) == seal)
             closed(built, {'outcome', 'handle'})
             checks[stage] = observed(built['outcome'], stage)
             require(checks[stage] == 'PASS')

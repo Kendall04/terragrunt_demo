@@ -262,6 +262,15 @@ def check_terraform(terraform,environment):
         activated=evaluate({**transition,'wp3_dev_release_enabled':True})
         assert activated['dev_release_allowed'] and activated['release_concurrency']==1
         assert activated['completion_qualifier']=='1'
+        # A newly published build bundle uses a genuine normal installation,
+        # while the independently preserved finalizer still targets version 1.
+        published=copy.deepcopy(values['installations'])
+        published['build/release'].pop('preservation')
+        published['build/release'].update(installation='VERIFIED',version_origin='CONDITIONAL_WRITE_RETURN',
+            publisher='SECURITY_ADMIN_EXTERNAL_BOOTSTRAP',configuration='f'*64)
+        fresh=evaluate({**transition,'installations':published})
+        assert fresh['dev_recipe_ready'] and fresh['wp3_valid']
+        assert fresh['completion_qualifier']=='1' and fresh['release_concurrency']==0
         assert not evaluate({'wp3_dev_release_enabled':True})['dev_release_allowed']
         assert not evaluate({**transition,'dev_cicd_installation_only':False})['dev_recipe_ready']
         assert not evaluate({**transition,'wp3_preservation_approval_sha256':None})['dev_recipe_ready']
@@ -327,12 +336,15 @@ def check_reconciliation(terraform, environment):
     values=dict(authority=authority,account_id=account,region=region,wp3_dev_release_enabled=False,endpoints={
         'request-gateway/'+k:v['qualified_arn'] for k,v in readbacks.items()},dev_cicd_installation_only=True,
         wp6_preservation_approval_sha256='c'*64,wp6_preservation_required=True,wp6_preservation_readbacks=readbacks,
-        latest_version='27',preserved={k:{} for k in internal.PRESERVED_WP3})
+        latest_version='27',preserved={k:{} for k in internal.PRESERVED_WP3},wp3_dev_sql_lab_release=None)
     local=copy.deepcopy(request['locals']);local['wp6_preservation_fingerprints']=pins
     for key in ('runtime_repository_reservations','runtime_repositories','wp5_repository_reservations','wp5_repositories','nodes'):
         local[key]=compute['locals'][key]
     local['wp3_preserved_ready']='${var.preserved}'
     local['wp3_dev_upgrade_ready']={}
+    # This reduced WP6 fixture has no DEV recipe. The complete WP3 fixture
+    # above separately evaluates genuine normal admission of the new build.
+    local['wp3_dev_recipe_ready']=False
     local['completion_qualifier']=compute['locals']['wp3_completion_qualifier'].replace(
         'aws_lambda_function.wp3["qualification-finalizer/qualification"].version','var.latest_version')
     local['foundation_selection']=foundation['resource']['aws_s3_bucket']['state']['for_each']

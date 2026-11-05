@@ -159,14 +159,22 @@ class Source:
         tree = self.fetch('git/trees/' + obj['tree']['sha'] + '?recursive=1')
         require(tree['sha'] == obj['tree']['sha'] and tree.get('truncated') is False)
         total = 0
+        names = set()
         for entry in sorted(tree['tree'], key=lambda x: x['path']):
             name = entry['path']
-            if not name.startswith('demo-api/'):
+            if not (name == 'demo-api' or name.startswith('demo-api/') or
+                    name in supervisor.SOURCE_FILES or name in supervisor.SOURCE_DIRECTORIES or
+                    any(name.startswith(p + '/') for p in supervisor.SQL_PROJECTS)):
                 continue
             supervisor.source_path(name)
+            require(name.casefold() not in names)
+            names.add(name.casefold())
             require(entry['type'] in ('blob', 'tree'))
             if entry['type'] == 'tree':
+                require(entry['mode'] == '040000' and name not in supervisor.SOURCE_FILES
+                        and not any(name.startswith(p + '/') for p in supervisor.SQL_PROJECTS))
                 continue
+            require(name not in supervisor.SOURCE_DIRECTORIES and name != 'demo-api')
             require(entry['mode'] in ('100644', '100755'))
             raw = self.fetch_blob(commit, name)
             require(type(raw) is bytes and len(raw) <= 16 * 1024 * 1024)
@@ -212,7 +220,7 @@ class Payload(supervisor.Payload):
             require(not recipe.is_symlink() and not certificate.is_symlink())
             require(digest(recipe.read_bytes().replace(b'\r\n',b'\n')) == SQL_RECIPE_SHA256)
             require(digest(ssl.PEM_cert_to_DER_cert(certificate.read_text())) == SQL_CERTIFICATE)
-        source = self.exchange.source(supervisor.source_tree(image_context), 'image')
+        source = self.exchange.source(supervisor.source_tree(image_context, image=True), 'image')
         run = self.workers.run('image', {'SOURCE_URL': source, 'OUTPUT_URL': self.exchange.output()})
         outcome = self.workers.stage(run, 'image', 'image_build')
         require(run[1]['builds'][0]['buildStatus'] == 'SUCCEEDED')

@@ -234,7 +234,16 @@ def main():
     required_dev_recipes = {'test_adapters.Adapters.' + name for name in dev_recipe_methods}
     if not required_dev_recipes <= set(records['internal_release'].get('test_ids', [])):
         errors.append('DEV SQL-Lab recipe coverage is incomplete')
-    expected_regression = 1076 + len(required_shared_alerts) + len(required_dev_neutral) + len(required_admin_publication) + len(required_dev_recipes)
+    required_source_closure = {'test_source_closure.SourceClosure.' + name for name in (
+        'test_closed_source_codec_and_image_projection',
+        'test_closed_source_git_blobs_and_closed_paths',
+        'test_closed_source_rejects_extra_paths_types_and_aliases',
+        'test_closed_source_requires_root_and_project_dependencies',
+        'test_closed_source_rejects_existing_link_and_file',
+        'test_closed_source_full_seal_detects_backup_mutation')}
+    if not required_source_closure <= set(records['internal_release'].get('test_ids', [])):
+        errors.append('Closed .NET source export coverage is incomplete')
+    expected_regression = 1076 + len(required_shared_alerts) + len(required_dev_neutral) + len(required_admin_publication) + len(required_dev_recipes) + len(required_source_closure)
     if regression != expected_regression:
         errors.append(f'Accepted regression count changed: {regression} != {expected_regression}')
     static_good = all(records[n]['status'] == 'PASS' for n, _ in CHECKS)

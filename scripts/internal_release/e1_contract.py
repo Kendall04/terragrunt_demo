@@ -3,7 +3,7 @@ import hashlib
 import json
 import re
 
-CORE_BUILD = 'ef9ce1edd5331ea6dccebfa4ea9783c40650fd6b075e87c2ce0f3c6553701ec4'
+CORE_BUILD = '8f0712c72fe148bab19a5a091044abe13f3b1c6fa07db3efd70b22e3356c35f7'
 CORE_FINALIZER = '0e34a5cd928e91694083a46aba1291b1526b7c1c47faaed4fe51a4ea60eb8fae'
 CONTROLLERS = {
     'request-gateway/release': ('e1-gateway-release', 'LAMBDA'),

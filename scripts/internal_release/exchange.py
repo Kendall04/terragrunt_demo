@@ -8,6 +8,12 @@ import json
 from e1_contract import canonical, closed, digest, operation_id, require, version
 
 
+def source_bytes(nodes):
+    """Unchanged node wire format, also accepted by the installed image helper."""
+    return canonical([[p, kind, mode, base64.b64encode(content).decode()]
+                      for p, kind, mode, content in nodes])
+
+
 class Exchange:
     def __init__(self, s3, bucket, attempt):
         self.s3, self.bucket = s3, bucket
@@ -15,8 +21,7 @@ class Exchange:
 
     def source(self, nodes, worker):
         require(worker in ('dotnet', 'image'))
-        raw = canonical([[p, kind, mode, base64.b64encode(content).decode()]
-                         for p, kind, mode, content in nodes])
+        raw = source_bytes(nodes)
         key = self.prefix + worker + '/source-' + digest(raw) + '.json'
         receipt = self.s3.put_object(Bucket=self.bucket, Key=key, Body=raw,
             IfNoneMatch='*', ChecksumSHA256=base64.b64encode(bytes.fromhex(digest(raw))).decode())

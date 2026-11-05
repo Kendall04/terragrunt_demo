@@ -315,7 +315,7 @@ def extend(tf):
     # The state and refreshed plan both bind this rule/permission to published
     # finalizer version 1, while the function's latest published version is 2.
     # Preserve that real binding only for the exact closed historical pair.
-    local['wp3_completion_qualifier']=ex('(contains(keys(local.wp3_preserved_ready),"build/release") || contains(keys(local.wp3_dev_upgrade_ready),"build/release")) && contains(keys(local.wp3_preserved_ready),"qualification-finalizer/qualification") ? "1" : aws_lambda_function.wp3["qualification-finalizer/qualification"].version')
+    local['wp3_completion_qualifier']=ex('(contains(keys(local.wp3_preserved_ready),"build/release") || contains(keys(local.wp3_dev_upgrade_ready),"build/release") || (var.wp3_dev_sql_lab_release!=null && local.wp3_dev_recipe_ready)) && contains(keys(local.wp3_preserved_ready),"qualification-finalizer/qualification") ? "1" : aws_lambda_function.wp3["qualification-finalizer/qualification"].version')
     r['aws_cloudwatch_event_rule']={'completion':{'for_each':ex('local.completion'),'name':'e1-release-completion',
         'event_pattern':json.dumps({'source':['aws.codebuild'],'detail-type':['CodeBuild Build State Change'],
             'account':[account],'region':[region],'detail':{'project-name':['e1-controller-release'],'build-status':['SUCCEEDED','FAILED','STOPPED']}})}}

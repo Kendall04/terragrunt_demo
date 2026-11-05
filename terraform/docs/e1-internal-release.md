@@ -104,6 +104,14 @@ to separate fixed phases. Application stdout alone never establishes success.
 
 ### Optional exact-source DEV SQL-Lab recipe
 
+The .NET source export includes `demo-api`, the versioned root `.gitignore` and
+`global.json`, and only direct C# source, project and `packages.lock.json` files
+from `operations/sql-backup/SqlBackup` and `SqlBackup.Tests`. Git blob checks and
+the complete source seal cover these dependencies. The image export remains
+the separate `demo-api` projection with its existing node wire format. Both
+exports reject links, traversal, case aliases and generated output. The full
+closure is checked again before publishing; test output is never adopted.
+
 The administrative `wp3_dev_sql_lab_release` input defaults to null. Only limited
 DEV mode may admit its closed `E1_WP3_DEV_SQL_LAB_V1` record: exact account,
 region, source commit, recipe identifier and fixed public certificate/recipe
