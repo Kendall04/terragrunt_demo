@@ -102,6 +102,18 @@ public class DatabaseSecurityPolicyTests
         => RuntimeDatabasePermissions.Validate(Enumerable.Repeat<int?>(0,24).Concat(new int?[]{1,1}).ToArray());
 
     [Theory]
+    [InlineData("CONTROL SERVER")]
+    [InlineData("IMPERSONATE ANY LOGIN")]
+    [InlineData("ALTER ANY LOGIN")]
+    [InlineData("ALTER ANY SERVER ROLE")]
+    public void Server_permission_checks_use_null_securable_and_class(string permission)
+    {
+        // SQL Server returns NULL for the unsupported class 'SERVER'.
+        Assert.Contains($"HAS_PERMS_BY_NAME(NULL, NULL, '{permission}')", RuntimeDatabasePermissions.InspectionSql);
+        Assert.DoesNotContain("HAS_PERMS_BY_NAME(NULL, 'SERVER'", RuntimeDatabasePermissions.InspectionSql);
+    }
+
+    [Theory]
     [InlineData(0)] [InlineData(1)] [InlineData(2)] [InlineData(3)] [InlineData(4)]
     [InlineData(5)] [InlineData(6)] [InlineData(7)] [InlineData(8)] [InlineData(9)]
     [InlineData(10)] [InlineData(11)] [InlineData(12)] [InlineData(13)] [InlineData(14)]

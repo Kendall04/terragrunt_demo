@@ -11,17 +11,20 @@
   "KeyAlgorithm": "RSA",
   "KeySizeBits": 2048,
   "SignatureAlgorithm": "sha256RSA",
-  "NotBeforeUtc": "2026-10-27T03:21:58.0000000+00:00",
-  "NotAfterUtc": "2026-11-26T03:21:58.0000000+00:00",
+  "NotBeforeUtc": "2026-11-04T20:09:56.0000000+00:00",
+  "NotAfterUtc": "2026-12-04T20:09:56.0000000+00:00",
   "ValidityDays": 30,
-  "CertificateDerSha256": "6a45fbcadf8a0a44ffed3f9b78de396b872af430c856b3cb041a29c2ece87738",
-  "CertificatePemSha256": "2c783c5da0047e887d78f91a25a78d9df87ed7d40f6c54c8f5880505f657847d",
+  "CertificateDerSha256": "206095fa0ba9e17a84c80eff5021db93d05e2dc377e982a64d517696ed21a1e7",
+  "CertificatePemSha256": "b55f38626408c7f4f1af047987fc05ada39be39029f3c1c5350cf1b38671aa71",
   "ExpectedSqlClientSettings": {
     "Encrypt": "True",
     "TrustServerCertificate": false,
     "HostNameInCertificate": "sql.demo.internal"
   },
   "TrustInstalledInWindows": false,
-  "UploadedToAws": false,
-  "SqlHandshakeProven": false
+  "UploadedToAws": true,
+  "SqlHandshakeProven": false,
+  "HandshakeEvidenceScope": "This public certificate/client-image artifact does not assert an image-to-SQL handshake. Separate owner-approved SQL host sqlcmd receipt is native PASS.",
+  "SqlHostHandshakeProven": true,
+  "SqlHostHandshakeReceiptSha256": "4f16b17b48f1810e9b22778ef81ff59f7a70f52726e38ae4256fe6587a802dae"
 }

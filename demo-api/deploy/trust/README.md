@@ -1,10 +1,17 @@
-# Opt-in SQL laboratory trust - qualified locally on Linux, not deployed
+# Opt-in SQL laboratory trust
 
 One self-signed **server leaf**, CA=false, RSA2048/SHA256, SAN `sql.demo.internal`.
-Public DER SHA256: `6a45fbcadf8a0a44ffed3f9b78de396b872af430c856b3cb041a29c2ece87738`.
-Valid `2026-10-27T03:21:58.0000000+00:00` through `2026-11-26T03:21:58.0000000+00:00` (30 days).
+Public DER SHA256: `206095fa0ba9e17a84c80eff5021db93d05e2dc377e982a64d517696ed21a1e7`.
+Valid `2026-11-04T20:09:56Z` through `2026-12-04T20:09:56Z` (30 days).
 The private key is outside this repository/build context under a private local ACL.
 Only the public `.crt` and non-secret metadata are checked in. No CA/PKI was created.
+
+The owner approved this replacement demo leaf on 2026-11-04. Its private key
+remains outside Git/build contexts. Separate private receipts prove installation
+and a strict SQL-host handshake; they do not prove image-to-SQL readiness or
+authorize a protected deployment. The qualification narrative and
+`native-linux-image.json` below describe the previous 2026-10-27 leaf/image,
+not a receipt for the replacement image.
 
 ## Explicit build recipe
 
