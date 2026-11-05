@@ -223,7 +223,18 @@ def main():
     required_admin_publication = {'test_admin_publication.AdminPublicationTests.' + name for name in admin_publication_methods}
     if not required_admin_publication <= set(records['security_root'].get('test_ids', [])):
         errors.append('Administrative publication adapter coverage is incomplete')
-    expected_regression = 1076 + len(required_shared_alerts) + len(required_dev_neutral) + len(required_admin_publication)
+    dev_recipe_methods = {
+        'test_dev_recipe_is_admin_exact_source_and_standard_is_unchanged',
+        'test_dev_recipe_rejects_prod_paths_and_unbound_authority',
+        'test_dev_worker_selector_is_closed_and_never_a_buildspec_override',
+        'test_dev_worker_requires_real_buildspec_and_effective_selector',
+        'test_dev_payload_rejects_recipe_and_certificate_substitution',
+        'test_dev_selector_cannot_enter_gateway_request',
+    }
+    required_dev_recipes = {'test_adapters.Adapters.' + name for name in dev_recipe_methods}
+    if not required_dev_recipes <= set(records['internal_release'].get('test_ids', [])):
+        errors.append('DEV SQL-Lab recipe coverage is incomplete')
+    expected_regression = 1076 + len(required_shared_alerts) + len(required_dev_neutral) + len(required_admin_publication) + len(required_dev_recipes)
     if regression != expected_regression:
         errors.append(f'Accepted regression count changed: {regression} != {expected_regression}')
     static_good = all(records[n]['status'] == 'PASS' for n, _ in CHECKS)

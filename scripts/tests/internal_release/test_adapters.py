@@ -24,6 +24,7 @@ UUID = '22222222-2222-2222-2222-222222222222'
 ACCOUNT = '111122223333'
 REGION = 'us-east-1'
 REGISTRY = ACCOUNT+'.dkr.ecr.'+REGION+'.amazonaws.com'
+DEV_SDK_IMAGE = REGISTRY+'/e1-payload-dotnet@sha256:'+'d'*64
 
 
 class ClientError(Exception):
@@ -131,6 +132,132 @@ class CodeBuild:
 
 
 class Adapters(unittest.TestCase):
+    @staticmethod
+    def dev_authorization():
+        return dict(schema='E1_WP3_DEV_SQL_LAB_V1',environment='dev',account=ACCOUNT,region=REGION,
+            source_commit='a'*40,recipe=c.DEV_SQL_LAB_RECIPE,
+            certificate_der_sha256=c.SQL_CERTIFICATE,recipe_sha256=c.SQL_RECIPE_SHA256,
+            previous_build_runtime={'uri':REGISTRY+'/e1-controller-build@sha256:'+'d'*64,'support_sha256':'e'*64},
+            dotnet_runtime={'uri':DEV_SDK_IMAGE,'support_sha256':'e'*64,'sdk':c.DEV_DOTNET_SDK,'approval':'ADMIN_VERIFIED'})
+
+    def test_dev_recipe_is_admin_exact_source_and_standard_is_unchanged(self):
+        auth=self.dev_authorization()
+        self.assertEqual(c.select_recipe(None,'a'*40,ACCOUNT,REGION),c.STANDARD_RECIPE)
+        self.assertEqual(c.select_recipe(auth,'a'*40,ACCOUNT,REGION),c.DEV_SQL_LAB_RECIPE)
+        self.assertEqual(c.select_recipe(auth,'b'*40,ACCOUNT,REGION),c.STANDARD_RECIPE)
+        # Frozen from f47f063's original buildspecs, not regenerated expectations.
+        expected={'dotnet':'6f0943ed3ae4d10fca5ccd363d7bea614a2626a5ea77601c22c32027361799fc',
+            'image':'3aa4a7ee3c910bc4e9fff142099db10a7fbeb14afb1f4445103c513c48778053',
+            'probe':'de2b1e7133b498b2ec546f7523a2021a27ff7c7f4dc063826c0890bde19f9d5c'}
+        for kind,pin in expected.items():self.assertEqual(c.digest(c.canonical(c.worker_buildspec(kind))),pin)
+
+    def test_dev_recipe_rejects_prod_paths_and_unbound_authority(self):
+        for field,values in {'environment':['prod','neutral'], 'source_commit':['main','a'*39,1111111111111111111111111111111111111111],
+            'recipe':['../Dockerfile','/tmp/Dockerfile','demo-api/Dockerfile','DEV_SQL_LAB_V1;evil'],
+            'certificate_der_sha256':['0'*64], 'recipe_sha256':['0'*64],
+            'account':['999999999999'], 'region':['us-west-2'], 'schema':['invented']}.items():
+            for value in values:
+                with self.subTest(field=field,value=value),self.assertRaises(c.Rejected):
+                    c.select_recipe(dict(self.dev_authorization(),**{field:value}),'a'*40,ACCOUNT,REGION)
+        for key in ('dockerfile','buildspecOverride','environmentVariablesOverride','source'):
+            with self.subTest(extra=key),self.assertRaises(c.Rejected):
+                c.select_recipe(dict(self.dev_authorization(),**{key:'evil'}),'a'*40,ACCOUNT,REGION)
+        for field,value in [('sdk','8.0.425'),('approval','PENDING'),('uri',DEV_SDK_IMAGE.split('@')[0]+':latest')]:
+            bad=self.dev_authorization();bad['dotnet_runtime'][field]=value
+            with self.assertRaises(c.Rejected):c.select_recipe(bad,'a'*40,ACCOUNT,REGION)
+
+    def test_dev_worker_selector_is_closed_and_never_a_buildspec_override(self):
+        worker=workers.Workers(CodeBuild(),ACCOUNT,REGION,'demo-shared-demo-ms',OP,recipe=c.DEV_SQL_LAB_RECIPE,dotnet_image=DEV_SDK_IMAGE)
+        request=worker.request('image',{'SOURCE_URL':'https://source.invalid','OUTPUT_URL':'https://output.invalid'})
+        self.assertEqual(set(request),{'projectName','idempotencyToken','environmentVariablesOverride'})
+        self.assertIn({'name':'E1_BUILD_RECIPE','value':c.DEV_SQL_LAB_RECIPE,'type':'PLAINTEXT'},request['environmentVariablesOverride'])
+        standard=workers.Workers(CodeBuild(),ACCOUNT,REGION,'demo-shared-demo-ms',OP,selectable=True)
+        original=standard.request('image',{'SOURCE_URL':'https://x','OUTPUT_URL':'https://y'})
+        self.assertIn({'name':'E1_BUILD_RECIPE','value':c.STANDARD_RECIPE,'type':'PLAINTEXT'},original['environmentVariablesOverride'])
+        self.assertNotIn('imageOverride',standard.request('dotnet',{'SOURCE_URL':'https://x'}))
+        dotnet=worker.request('dotnet',{'SOURCE_URL':'https://x'})
+        self.assertEqual(set(dotnet),{'projectName','idempotencyToken','environmentVariablesOverride','imageOverride','imagePullCredentialsTypeOverride'})
+        self.assertEqual(dotnet['imageOverride'],DEV_SDK_IMAGE)
+        self.assertEqual(dotnet['imagePullCredentialsTypeOverride'],'CODEBUILD')
+        with self.assertRaises(c.Rejected):workers.Workers(CodeBuild(),ACCOUNT,REGION,'demo-shared-demo-ms',OP,dotnet_image=DEV_SDK_IMAGE)
+        with self.assertRaises(c.Rejected):workers.Workers(CodeBuild(),ACCOUNT,REGION,'demo-shared-demo-ms',OP,recipe=c.DEV_SQL_LAB_RECIPE,dotnet_image=DEV_SDK_IMAGE.split('@')[0]+':latest')
+        for key in ('BUILD_RECIPE','dockerfile','buildspecOverride'):
+            with self.assertRaises(c.Rejected):worker.request('image',dict(SOURCE_URL='https://x',OUTPUT_URL='https://y',**{key:'evil'}))
+        spec=c.worker_buildspec('image',selectable=True)
+        command=spec['phases']['build']['commands'][0]
+        self.assertIn('STANDARD_V1)',command);self.assertIn('DEV_SQL_LAB_V1)',command);self.assertIn('*) exit 1',command)
+        self.assertNotIn('$E1_DOCKERFILE',command)
+        self.assertEqual(set(spec['phases']),set(c.worker_buildspec('image')['phases']))
+        for kind in ('dotnet','probe'):
+            with self.assertRaises(c.Rejected):c.worker_buildspec(kind,selectable=True)
+
+    def test_dev_worker_requires_real_buildspec_and_effective_selector(self):
+        class Metadata(CodeBuild):
+            def batch_get_builds(self,ids):
+                response=super().batch_get_builds(ids);build=response['builds'][0]
+                if ids[0].startswith(c.WORKERS['dotnet']+':'):
+                    build['environment']={'image':DEV_SDK_IMAGE,'privilegedMode':False}
+                    build['serviceRole']='arn:aws:iam::'+ACCOUNT+':role/'+c.WORKER_ROLE
+                    if self.mutation=='sdk':build['environment']['image']=DEV_SDK_IMAGE.split('@')[0]+'@sha256:'+'f'*64
+                    if self.mutation=='privileged':build['environment']['privilegedMode']=True
+                    if self.mutation=='role':build['serviceRole']='arn:aws:iam::'+ACCOUNT+':role/controller'
+                    return response
+                build['source']={'buildspec':json.dumps(c.worker_buildspec('image',selectable=True))}
+                build['environment']={'environmentVariables':[{'name':'E1_BUILD_RECIPE','value':c.DEV_SQL_LAB_RECIPE,'type':'PLAINTEXT'}]}
+                if self.mutation=='old':build['source']['buildspec']=json.dumps(c.worker_buildspec('image'))
+                if self.mutation=='selector':build['environment']['environmentVariables'][0]['value']=c.STANDARD_RECIPE
+                return response
+        for mutation in ('old','selector',None):
+            cb=Metadata();cb.mutation=mutation
+            worker=workers.Workers(cb,ACCOUNT,REGION,'demo-shared-demo-ms',OP,recipe=c.DEV_SQL_LAB_RECIPE,dotnet_image=DEV_SDK_IMAGE)
+            with self.subTest(mutation=mutation):
+                if mutation:
+                    with self.assertRaises(c.Rejected):worker.run('image',{'SOURCE_URL':'https://x','OUTPUT_URL':'https://y'})
+                else:self.assertEqual(worker.run('image',{'SOURCE_URL':'https://x','OUTPUT_URL':'https://y'})[0],c.WORKERS['image']+':'+UUID)
+        for mutation in ('sdk','privileged','role',None):
+            cb=Metadata();cb.mutation=mutation
+            worker=workers.Workers(cb,ACCOUNT,REGION,'demo-shared-demo-ms',OP,recipe=c.DEV_SQL_LAB_RECIPE,dotnet_image=DEV_SDK_IMAGE)
+            if mutation:
+                with self.assertRaises(c.Rejected):worker.run('dotnet',{'SOURCE_URL':'https://x'})
+            else:self.assertEqual(worker.run('dotnet',{'SOURCE_URL':'https://x'})[0],c.WORKERS['dotnet']+':'+UUID)
+        cb=Metadata();cb.mutation=None
+        with self.assertRaises(c.Rejected):
+            workers.Workers(cb,ACCOUNT,REGION,'demo-shared-demo-ms',OP,selectable=True).run(
+                'image',{'SOURCE_URL':'https://x','OUTPUT_URL':'https://y'})
+
+    def test_dev_payload_rejects_recipe_and_certificate_substitution(self):
+        root=Path(__file__).resolve().parents[3]
+        class NoDispatch:
+            recipe=c.DEV_SQL_LAB_RECIPE
+        class StopAfterValidation:
+            def source(self,*args):raise LookupError('validated before source capability')
+        with tempfile.TemporaryDirectory() as tmp:
+            context=Path(tmp)/'demo-api'
+            for rel in ('Dockerfile','.dockerignore','terragrunt-demo.sln','terragrunt-demo/terragrunt-demo.csproj',
+                        'deploy/sql-lab/Dockerfile','deploy/trust/sql.demo.internal.crt'):
+                dest=context/rel;dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes((root/'demo-api'/rel).read_bytes())
+            payload=a.Payload(None,NoDispatch(),StopAfterValidation())
+            with self.assertRaises(LookupError):payload.image_build(tmp,tmp+'/demo-api',tmp+'/demo-api/Dockerfile',{})
+            for rel in ('deploy/sql-lab/Dockerfile','deploy/trust/sql.demo.internal.crt'):
+                path=context/rel;raw=path.read_bytes()
+                if rel.endswith('.crt'):
+                    lines=raw.splitlines();lines[1]=b'A'+lines[1][1:];changed=b'\n'.join(lines)+b'\n'
+                else:changed=raw.replace(b'sql.demo.internal',b'bad.demo.internal')
+                self.assertNotEqual(changed,raw);path.write_bytes(changed)
+                with self.subTest(path=rel),self.assertRaises((c.Rejected,ValueError)):
+                    payload.image_build(tmp,tmp+'/demo-api',tmp+'/demo-api/Dockerfile',{})
+                path.write_bytes(raw)
+
+    def test_dev_selector_cannot_enter_gateway_request(self):
+        cb=CodeBuild();gateway=services.Gateway(cb,a.Store(S3(),'protected','operations/demo-api/'),ACCOUNT,REGION,lambda _:True)
+        for key in ('recipe','dev_sql_lab_release','environment','dockerfile','buildspecOverride'):
+            with self.subTest(key=key),self.assertRaises(c.Rejected):gateway.release(dict(source_commit='a'*40,**{key:'dev'}))
+        self.assertEqual(cb.calls,[])
+        for binding in ('request-gateway/release','qualification-finalizer/qualification','status/status-neutral'):
+            with patch.dict(runtime.os.environ,{'E1_PROTECTED_CONFIGURATION':json.dumps(
+                    {'binding':binding,'dev_sql_lab_release':self.dev_authorization()})}),self.assertRaises(c.Rejected):
+                runtime.config()
+
     def test_phase_mapping_positive(self):
         for stage,phase in c.PHASES.items():
             kind='dotnet' if stage.startswith('dotnet') else 'image' if stage=='image_build' else 'probe'
@@ -366,8 +493,18 @@ class Adapters(unittest.TestCase):
         s3=S3();ops=a.Store(s3,'protected','operations/demo-api/');records=a.Records(a.Store(s3,'protected','attempts/demo-api/'))
         self.assertEqual(services.status({'operation_id':OP},ops,records),{'operation_id':OP,'state':'UNKNOWN'})
 
-    def test_full_split_trace_qualifies_through_unchanged_core(self, failures=None, terminals=None):
-        s3=S3();cb=CodeBuild(s3);ops=a.Store(s3,'protected','operations/demo-api/')
+    def test_full_split_trace_qualifies_through_unchanged_core(self, failures=None, terminals=None, dev=False):
+        class DevMetadata(CodeBuild):
+            def batch_get_builds(self,ids):
+                result=super().batch_get_builds(ids)
+                if ids[0].startswith(c.WORKERS['image']+':'):
+                    result['builds'][0].update(source={'buildspec':json.dumps(c.worker_buildspec('image',selectable=True))},
+                        environment={'environmentVariables':[{'name':'E1_BUILD_RECIPE','value':c.DEV_SQL_LAB_RECIPE,'type':'PLAINTEXT'}]})
+                if ids[0].startswith(c.WORKERS['dotnet']+':'):
+                    result['builds'][0]['environment']={'image':DEV_SDK_IMAGE,'privilegedMode':False}
+                    result['builds'][0]['serviceRole']='arn:aws:iam::'+ACCOUNT+':role/'+c.WORKER_ROLE
+                return result
+        s3=S3();cb=(DevMetadata if dev else CodeBuild)(s3);ops=a.Store(s3,'protected','operations/demo-api/')
         cb.failed=failures or {}
         cb.terminals=terminals or {}
         with patch('services.uuid.uuid4',return_value=OP):
@@ -385,7 +522,9 @@ class Adapters(unittest.TestCase):
                     if not path.is_file() or set(path.parts)&{'bin','obj','.git'}:continue
                     target=Path(workspace)/path.relative_to(root);target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(path.read_bytes())
                 return dict(repository=repository,commit=commit,workspace=workspace)
-        payload=a.Payload(Source(),workers.Workers(cb,ACCOUNT,REGION,'demo-shared-demo-ms',OP),exchange.Exchange(s3,'quarantine',OP))
+        payload=a.Payload(Source(),workers.Workers(cb,ACCOUNT,REGION,'demo-shared-demo-ms',OP,
+            recipe=c.DEV_SQL_LAB_RECIPE if dev else c.STANDARD_RECIPE,
+            dotnet_image=DEV_SDK_IMAGE if dev else None),exchange.Exchange(s3,'quarantine',OP))
         records=a.Records(a.Store(s3,'demo-release-artifacts-'+ACCOUNT,'attempts/demo-api/'))
         manifests=a.Manifests(s3,'demo-release-artifacts-'+ACCOUNT)
         image=a.Images(ECR(),payload,REGISTRY,'demo-shared-demo-ms')
@@ -415,6 +554,7 @@ class Adapters(unittest.TestCase):
         sources=[kw for method,kw in s3.calls if method=='put' and '/source-' in kw['Key']]
         self.assertEqual(len(sources),2);self.assertEqual(sources[0]['Body'],sources[1]['Body'])
         self.assertNotEqual(sources[0]['Key'],sources[1]['Key'])
+        if not dev:self.test_full_split_trace_qualifies_through_unchanged_core(dev=True)
 
     def test_failed_worker_cannot_publish_or_qualify(self):
         for project,phase in ((c.WORKERS['dotnet'],'PRE_BUILD'),(c.WORKERS['dotnet'],'BUILD'),

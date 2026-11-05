@@ -36,7 +36,7 @@ SUPPORT_FILES.update({
 })
 
 # Explicit WP3C runtime support pins; no executable glob admission.
-SUPPORT_FILES.update({'scripts/internal_release/e1_contract.py': '9928b0bab7808a666de767a6d2e17614c4a540249deb7f333c7ab751a4aa39e4', 'scripts/internal_release/exchange.py': '3abebea613fefa8f07a4325a1d49bd8a5332c5c9cd82ac1ac0164a9f3e697651', 'scripts/internal_release/publisher.py': 'c36be673645092b6f003a4678c755089625a82838fa9566683c831f8ecacb64d', 'scripts/internal_release/workers.py': 'e4cfc230649374aa0aafd6bffe9deb8bff1ca7e6aeeae746d9144fab4bd1bcb7', 'scripts/internal_release/adapters.py': '12964c6ab3590ac94f7ce3f414a920b3fea67b4274399a93790c1667a26dc313', 'scripts/internal_release/services.py': 'f5ed39fc14a8aa6814e619f16b48629fac065e39094985447e60ff7ca30fc2ca', 'scripts/internal_release/runtime.py': 'fbd0d478f8c956dbe03ac9d48463110977ac9b8cccf4705b551ee31a4de7b0e2', 'scripts/internal_release/worker.py': '05f027ff30df883fffa2231367e03348dd4cf91a8233b8996554d9ff74cf6d2b'})
+SUPPORT_FILES.update({'scripts/internal_release/e1_contract.py': '8992f080dbf350ed265607fefbedae5c0d3c12b0d5ec11134076680d515d810f', 'scripts/internal_release/exchange.py': '3abebea613fefa8f07a4325a1d49bd8a5332c5c9cd82ac1ac0164a9f3e697651', 'scripts/internal_release/publisher.py': 'c36be673645092b6f003a4678c755089625a82838fa9566683c831f8ecacb64d', 'scripts/internal_release/workers.py': 'dd7914cb541957eb85bb3a8842684548d11a1adc1ad1e030d265f97c1b7915e0', 'scripts/internal_release/adapters.py': 'a63726551d9295fa253c90ec758fd70adc73ec26129e7aac0b36d1ebae03f39d', 'scripts/internal_release/services.py': 'f5ed39fc14a8aa6814e619f16b48629fac065e39094985447e60ff7ca30fc2ca', 'scripts/internal_release/runtime.py': '7d6777fa76ec0aa8b1a115b3bb620f430b723a8691f10b96e852934528cfa6e8', 'scripts/internal_release/worker.py': '05f027ff30df883fffa2231367e03348dd4cf91a8233b8996554d9ff74cf6d2b'})
 
 # Existing WP2 disposable fixtures must copy the new package inputs. The fixed
 # package digests in authority.json still detect any changed source bytes.
@@ -338,6 +338,10 @@ def wiring(doc):
     root['module']['controller_compute']['dev_delivery_binding']=expression('var.dev_delivery_binding')
     root['variable']['dev_delivery_contract']={"type":"string","default":"V1","nullable":False,"validation":{"condition":expression('contains(["V1","SQL_RESTORE_NO_MIGRATIONS_V2"],var.dev_delivery_contract)'),"error_message":"Only protected V1 or DEV SQL recovery V2 is supported."}}
     root['module']['controller_compute']['dev_delivery_contract']=expression('var.dev_delivery_contract')
+    root['variable']['wp3_dev_sql_lab_release']={'type':'any','default':None,'nullable':True}
+    root['module']['controller_compute']['wp3_dev_sql_lab_release']=expression('var.wp3_dev_sql_lab_release')
+    root['variable']['wp3_dev_release_enabled']={'type':'bool','default':False,'nullable':False}
+    root['module']['controller_compute']['wp3_dev_release_enabled']=expression('var.wp3_dev_release_enabled')
 
     foundations=wp5.foundations()
     foundations['variable']['dev_cicd_installation_only']={'type':'bool','default':False}

@@ -10,7 +10,9 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / 'scripts/internal_release'))
-from e1_contract import CONTROLLERS, WORKERS, WORKER_ROLE, worker_buildspec, canonical, digest
+from e1_contract import (CONTROLLERS, WORKERS, WORKER_ROLE, worker_buildspec, canonical,
+                         digest, DEV_RECIPE_FIELDS, DEV_SQL_LAB_RECIPE,
+                         SQL_CERTIFICATE, SQL_RECIPE_SHA256, DEV_DOTNET_SDK)
 
 SUPPORT = tuple('scripts/internal_release/' + name + '.py' for name in
                 ('e1_contract','exchange','publisher','workers','adapters','services','runtime','worker'))
@@ -46,6 +48,9 @@ def contract(root, catalog):
                        'privileged':k=='image','source':'NO_SOURCE','buildspec':worker_buildspec(k)}
                    for k,name in WORKERS.items()},
         'support_sha256':support_identity(root), 'installations':{}, 'runtime_approvals':{},
+        'dev_sql_lab':{'schema':'E1_WP3_DEV_SQL_LAB_V1','recipe':DEV_SQL_LAB_RECIPE,
+            'certificate_der_sha256':SQL_CERTIFICATE,'recipe_sha256':SQL_RECIPE_SHA256,
+            'dotnet_sdk':DEV_DOTNET_SDK,'image_buildspec':worker_buildspec('image', selectable=True)},
         'live':'UNVERIFIED_NOT_DEPLOYED','external_invocation':[],
         'controller_skeleton_identities':18,'subordinate_worker_identities':1,
         'reserved_lambda_bindings':['qualification-finalizer/qualification','status/status-neutral']}
@@ -117,13 +122,37 @@ def extend(tf):
     ex=lambda s:'${'+s+'}'
     tf['variable'].update({'account_id':{'type':'string'},'region':{'type':'string'},
         'admin_arn':{'type':'string'},'installations':{'type':'any','default':{}},
-        'runtime_approvals':{'type':'any','default':{}}})
+        'runtime_approvals':{'type':'any','default':{}},
+        'wp3_dev_release_enabled':{'type':'bool','default':False,'nullable':False}})
     tf['variable']['wp3_preservation_approval_sha256'] = {
         'type':'string','default':None,'nullable':True,'validation':{
             'condition':ex('var.wp3_preservation_approval_sha256 == null ? true : can(regex("^[0-9a-f]{64}$",var.wp3_preservation_approval_sha256))'),
             'error_message':'WP3 preservation requires a new, separately approved complete manifest digest; never a fabricated historical receipt.'}}
     local=tf['locals']
     local['wp3_contract']=ex('var.authority.internal_release')
+    tf['variable']['wp3_dev_sql_lab_release'] = {'type':'any','default':None,'nullable':True,
+        'validation':{'condition':ex('var.wp3_dev_sql_lab_release==null ? true : try('
+            'toset(keys(var.wp3_dev_sql_lab_release))==toset('+json.dumps(DEV_RECIPE_FIELDS)+') && '
+            'var.wp3_dev_sql_lab_release.schema=="E1_WP3_DEV_SQL_LAB_V1" && '
+            'var.wp3_dev_sql_lab_release.environment=="dev" && '
+            'var.wp3_dev_sql_lab_release.account==var.account_id && '
+            'var.wp3_dev_sql_lab_release.region==var.region && '
+            'var.wp3_dev_sql_lab_release.source_commit==tostring(var.wp3_dev_sql_lab_release.source_commit) && '
+            'can(regex("^[0-9a-f]{40}$",var.wp3_dev_sql_lab_release.source_commit)) && '
+            'var.wp3_dev_sql_lab_release.recipe=="'+DEV_SQL_LAB_RECIPE+'" && '
+            'var.wp3_dev_sql_lab_release.certificate_der_sha256=="'+SQL_CERTIFICATE+'" && '
+            'var.wp3_dev_sql_lab_release.recipe_sha256=="'+SQL_RECIPE_SHA256+'" && '
+            'toset(keys(var.wp3_dev_sql_lab_release.previous_build_runtime))==toset(["uri","support_sha256"]) && '
+            'var.wp3_dev_sql_lab_release.previous_build_runtime.support_sha256==tostring(var.wp3_dev_sql_lab_release.previous_build_runtime.support_sha256) && '
+            'can(regex("^[0-9a-f]{64}$",var.wp3_dev_sql_lab_release.previous_build_runtime.support_sha256)) && '
+            'can(regex("^${var.account_id}[.]dkr[.]ecr[.]${var.region}[.]amazonaws[.]com/e1-controller-build@sha256:[0-9a-f]{64}$",var.wp3_dev_sql_lab_release.previous_build_runtime.uri)) && '
+            'toset(keys(var.wp3_dev_sql_lab_release.dotnet_runtime))==toset(["uri","support_sha256","sdk","approval"]) && '
+            'var.wp3_dev_sql_lab_release.dotnet_runtime.sdk=="'+DEV_DOTNET_SDK+'" && '
+            'var.wp3_dev_sql_lab_release.dotnet_runtime.approval=="ADMIN_VERIFIED" && '
+            'can(regex("^[0-9a-f]{64}$",var.wp3_dev_sql_lab_release.dotnet_runtime.support_sha256)) && '
+            'can(regex("^${var.account_id}[.]dkr[.]ecr[.]${var.region}[.]amazonaws[.]com/e1-payload-dotnet@sha256:[0-9a-f]{64}$",var.wp3_dev_sql_lab_release.dotnet_runtime.uri)),false)'),
+        'error_message':'Only the closed exact-source DEV SQL-Lab administrative contract is admitted; no gateway paths or overrides.'}}
+    local['worker_candidates']=ex('{for key,v in local.wp3_contract.workers:key=>merge(v,{buildspec=var.wp3_dev_sql_lab_release!=null && key=="image" ? local.wp3_contract.dev_sql_lab.image_buildspec : v.buildspec})}')
     local['wp3_candidates']=ex('{ for key, v in local.wp3_contract.selected : key => merge(v, { install = try(var.installations[key], null), runtime = try(var.runtime_approvals[key], null) }) }')
     conditions=[
         'v.install.class == split("/", key)[0]', 'v.install.consumer == split("/", key)[1]',
@@ -143,23 +172,44 @@ def extend(tf):
     local['wp3_normal_ready']=ex('{ for key, v in local.wp3_candidates : key => v if try('+ ' && '.join(conditions)+', false) }')
     # The trusted controller cannot start until all three exact worker runtimes
     # and fixed technical-role bindings have been approved by security admin.
-    local['worker_normal_ready']=ex('{ for key, v in local.wp3_contract.workers : key => merge(v, { runtime = var.runtime_approvals["payload/${key}"] }) if try(var.runtime_approvals["payload/${key}"].owner == "SECURITY_ROOT_OWNED" && var.runtime_approvals["payload/${key}"].approval == "ADMIN_VERIFIED" && var.runtime_approvals["payload/${key}"].binding == "payload/${key}" && var.runtime_approvals["payload/${key}"].role == v.role && var.runtime_approvals["payload/${key}"].support_sha256 == local.wp3_contract.support_sha256 && can(regex("^${var.account_id}[.]dkr[.]ecr[.]${var.region}[.]amazonaws[.]com/e1-payload-${key}@sha256:[0-9a-f]{64}$", var.runtime_approvals["payload/${key}"].uri)), false) }')
+    local['worker_normal_ready']=ex('{ for key, v in local.worker_candidates : key => merge(v, { runtime = var.runtime_approvals["payload/${key}"] }) if try(var.runtime_approvals["payload/${key}"].owner == "SECURITY_ROOT_OWNED" && var.runtime_approvals["payload/${key}"].approval == "ADMIN_VERIFIED" && var.runtime_approvals["payload/${key}"].binding == "payload/${key}" && var.runtime_approvals["payload/${key}"].role == v.role && var.runtime_approvals["payload/${key}"].support_sha256 == local.wp3_contract.support_sha256 && can(regex("^${var.account_id}[.]dkr[.]ecr[.]${var.region}[.]amazonaws[.]com/e1-payload-${key}@sha256:[0-9a-f]{64}$", var.runtime_approvals["payload/${key}"].uri)), false) }')
     local['wp3_preservation_fingerprints'] = PRESERVED_WP3
     local['wp3_outer_buildspec'] = {'version':'0.2','phases':{'build':{'on-failure':'ABORT','commands':['python3 /opt/e1/scripts/internal_release/runtime.py']}}}
-    local['wp3_candidate_config'] = ex('{for key,v in local.wp3_candidates:key=>{binding=key,account=var.account_id,region=var.region,bundle={class=v.install.class,consumer=v.install.consumer,bucket=v.install.bucket,key=v.install.key,version_id=v.install.version_id,sha256=v.install.sha256},runtime_image=v.runtime.uri,support_sha256=local.wp3_contract.support_sha256,evidence_bucket=local.evidence_bucket,exchange_bucket=local.exchange_bucket} if v.install!=null && v.runtime!=null}')
+    local['wp3_candidate_config'] = ex('{for key,v in local.wp3_candidates:key=>{binding=key,account=var.account_id,region=var.region,bundle={class=v.install.class,consumer=v.install.consumer,bucket=v.install.bucket,key=v.install.key,version_id=v.install.version_id,sha256=v.install.sha256},runtime_image=v.runtime.uri,support_sha256=v.runtime.support_sha256,evidence_bucket=local.evidence_bucket,exchange_bucket=local.exchange_bucket} if v.install!=null && v.runtime!=null}')
     local['wp3_preservation_identities'] = ex('{for key,v in local.wp3_candidates:key=>{binding=key,address="module.controller_compute.${v.engine=="LAMBDA" ? "aws_lambda_function" : "aws_codebuild_project"}.wp3[\\"${key}\\"]",name=v.name,engine=v.engine,role="arn:aws:iam::${var.account_id}:role/${v.name}-exec",configuration=local.wp3_candidate_config[key],buildspec=key=="build/release" ? jsonencode(local.wp3_outer_buildspec) : null} if v.install!=null && v.runtime!=null}')
-    local['worker_preservation_identities'] = ex('{for key,v in local.wp3_contract.workers:key=>{binding="payload/${key}",address="module.controller_compute.aws_codebuild_project.payload[\\"${key}\\"]",name=v.name,engine="CODEBUILD",role="arn:aws:iam::${var.account_id}:role/${v.role}",configuration={binding="payload/${key}",account=var.account_id,region=var.region,runtime_image=var.runtime_approvals["payload/${key}"].uri,support_sha256=local.wp3_contract.support_sha256,source=v.source,privileged=v.privileged},buildspec=jsonencode(v.buildspec)} if contains(keys(var.runtime_approvals),"payload/${key}")}')
+    local['worker_preservation_identities'] = ex('{for key,v in local.worker_candidates:key=>{binding="payload/${key}",address="module.controller_compute.aws_codebuild_project.payload[\\"${key}\\"]",name=v.name,engine="CODEBUILD",role="arn:aws:iam::${var.account_id}:role/${v.role}",configuration={binding="payload/${key}",account=var.account_id,region=var.region,runtime_image=var.runtime_approvals["payload/${key}"].uri,support_sha256=var.runtime_approvals["payload/${key}"].support_sha256,source=v.source,privileged=v.privileged},buildspec=jsonencode(v.buildspec)} if contains(keys(var.runtime_approvals),"payload/${key}")}')
     preserved_conditions = [c for c in conditions if c not in (
         'v.install.installation == "VERIFIED"', 'v.install.version_origin == "CONDITIONAL_WRITE_RETURN"',
-        'v.install.publisher == "SECURITY_ADMIN_EXTERNAL_BOOTSTRAP"', 'v.runtime.approval == "ADMIN_VERIFIED"')]
+        'v.install.publisher == "SECURITY_ADMIN_EXTERNAL_BOOTSTRAP"', 'v.runtime.approval == "ADMIN_VERIFIED"',
+        'v.install.sha256 == v.bundle_digest', 'v.install.key == "bundles/sha256/${v.bundle_digest}.json"',
+        'v.install.configuration == local.wp3_contract.support_sha256',
+        'v.runtime.support_sha256 == local.wp3_contract.support_sha256')]
+    # A newer source catalog is not evidence about the installed bytes. These
+    # records still require the unchanged six closed authentic identity hashes.
+    preserved_conditions += ['v.install.key=="bundles/sha256/${v.install.sha256}.json"',
+        'v.install.configuration==v.runtime.support_sha256']
     preserved_conditions += ['can(regex("^[0-9a-f]{64}$",var.wp3_preservation_approval_sha256))',
         'v.install.preservation == "OBSERVED_EXISTING"', 'v.runtime.preservation == "OBSERVED_EXISTING"',
         'sha256(jsonencode(local.wp3_preservation_identities[key])) == local.wp3_preservation_fingerprints[key]']
     local['wp3_preserved_ready'] = ex('{for key,v in local.wp3_candidates:key=>v if try(' + ' && '.join(preserved_conditions) + ',false)}')
-    local['worker_preserved_ready'] = ex('{for key,v in local.wp3_contract.workers:key=>merge(v,{runtime=var.runtime_approvals["payload/${key}"]}) if try(can(regex("^[0-9a-f]{64}$",var.wp3_preservation_approval_sha256)) && var.runtime_approvals["payload/${key}"].preservation=="OBSERVED_EXISTING" && var.runtime_approvals["payload/${key}"].owner=="SECURITY_ROOT_OWNED" && var.runtime_approvals["payload/${key}"].binding=="payload/${key}" && var.runtime_approvals["payload/${key}"].role==v.role && var.runtime_approvals["payload/${key}"].support_sha256==local.wp3_contract.support_sha256 && sha256(jsonencode(local.worker_preservation_identities[key]))==local.wp3_preservation_fingerprints["payload/${key}"],false)}')
-    local['wp3_ready'] = ex('merge(local.wp3_normal_ready,local.wp3_preserved_ready)')
+    # Upgrade only the exact observed build/release bundle. Reconstruct its old
+    # identity with authentic prior runtime data; do not relabel an observed S3
+    # version as a recovered CONDITIONAL_WRITE_RETURN publication receipt.
+    local['wp3_dev_previous_build_identity']=ex('var.wp3_dev_sql_lab_release==null ? null : try(merge(local.wp3_preservation_identities["build/release"],{configuration=merge(local.wp3_candidate_config["build/release"],{runtime_image=var.wp3_dev_sql_lab_release.previous_build_runtime.uri,support_sha256=var.wp3_dev_sql_lab_release.previous_build_runtime.support_sha256})}),null)')
+    upgrade_conditions = [c for c in conditions if c not in (
+        'v.install.installation == "VERIFIED"', 'v.install.version_origin == "CONDITIONAL_WRITE_RETURN"',
+        'v.install.publisher == "SECURITY_ADMIN_EXTERNAL_BOOTSTRAP"',
+        'v.install.configuration == local.wp3_contract.support_sha256')]
+    upgrade_conditions += ['key=="build/release"','var.dev_cicd_installation_only',
+        'var.wp3_dev_sql_lab_release!=null','v.install.preservation=="OBSERVED_EXISTING"',
+        'v.install.configuration==var.wp3_dev_sql_lab_release.previous_build_runtime.support_sha256',
+        'v.runtime.uri!=var.wp3_dev_sql_lab_release.previous_build_runtime.uri',
+        'sha256(jsonencode(local.wp3_dev_previous_build_identity))==local.wp3_preservation_fingerprints["build/release"]']
+    local['wp3_dev_upgrade_ready']=ex('{for key,v in local.wp3_candidates:key=>v if try('+' && '.join(upgrade_conditions)+',false)}')
+    local['worker_preserved_ready'] = ex('{for key,v in local.worker_candidates:key=>merge(v,{runtime=var.runtime_approvals["payload/${key}"]}) if try(can(regex("^[0-9a-f]{64}$",var.wp3_preservation_approval_sha256)) && var.runtime_approvals["payload/${key}"].preservation=="OBSERVED_EXISTING" && var.runtime_approvals["payload/${key}"].owner=="SECURITY_ROOT_OWNED" && var.runtime_approvals["payload/${key}"].binding=="payload/${key}" && var.runtime_approvals["payload/${key}"].role==v.role && sha256(jsonencode(local.worker_preservation_identities[key]))==local.wp3_preservation_fingerprints["payload/${key}"],false)}')
+    local['wp3_ready'] = ex('merge(local.wp3_normal_ready,local.wp3_preserved_ready,local.wp3_dev_upgrade_ready)')
     local['worker_ready'] = ex('merge(local.worker_normal_ready,local.worker_preserved_ready)')
-    local['wp3_preservation_complete'] = ex('var.wp3_preservation_approval_sha256==null ? true : length(local.wp3_preserved_ready)==3 && length(local.worker_preserved_ready)==3 && alltrue([for key in keys(local.wp3_preserved_ready):contains(keys(local.wp3_active),key)])')
+    local['wp3_preservation_complete'] = ex('var.wp3_preservation_approval_sha256==null ? true : length(local.wp3_active)==3 && length(local.worker_ready)==3 && alltrue([for key in ["request-gateway/release","build/release","qualification-finalizer/qualification"]:contains(keys(local.wp3_active),key)])')
     local['wp3_active']=ex('{ for key, v in local.wp3_ready : key => v if key != "build/release" || length(local.worker_ready) == 3 }')
     local['payloads']=ex('contains(keys(local.wp3_active), "build/release") ? local.worker_ready : {}')
     local['wp3_lambdas']=ex('{ for key, v in local.wp3_active : key => v if v.engine == "LAMBDA" }')
@@ -169,7 +219,9 @@ def extend(tf):
     local['exchange_bucket']=ex('"e1-quarantine-${var.account_id}-${var.region}"')
     local['wp3_extra_roles']=ex('{ for key, v in local.wp3_lambdas : key => v if !contains(keys(local.nodes), key) }')
     local['wp3_role_arns']=ex('merge({ for key, v in aws_iam_role.execution : key => v.arn }, { for key, v in aws_iam_role.wp3_reserved : key => v.arn })')
-    local['wp3_config']=ex('{ for key, v in local.wp3_active : key => jsonencode({ binding = key, account = var.account_id, region = var.region, bundle = { class = v.install.class, consumer = v.install.consumer, bucket = v.install.bucket, key = v.install.key, version_id = v.install.version_id, sha256 = v.install.sha256 }, runtime_image = v.runtime.uri, support_sha256 = local.wp3_contract.support_sha256, evidence_bucket = local.evidence_bucket, exchange_bucket = local.exchange_bucket }) }')
+    local['wp3_config']=ex('{for key,v in local.wp3_active:key=>jsonencode(merge(local.wp3_candidate_config[key],key=="build/release" && var.wp3_dev_sql_lab_release!=null ? {dev_sql_lab_release=var.wp3_dev_sql_lab_release} : {}))}')
+    local['wp3_dev_recipe_ready']=ex('var.wp3_dev_sql_lab_release==null ? true : try(var.dev_cicd_installation_only && contains(keys(merge(local.wp3_normal_ready,local.wp3_dev_upgrade_ready)),"build/release") && contains(keys(local.worker_normal_ready),"image") && var.wp3_dev_sql_lab_release.dotnet_runtime.support_sha256==local.wp3_contract.support_sha256 && var.wp3_dev_sql_lab_release.dotnet_runtime.uri!=var.runtime_approvals["payload/dotnet"].uri && length(local.wp3_active)==3 && length(local.payloads)==3 && alltrue([for key in ["request-gateway/release","build/release","qualification-finalizer/qualification"]:contains(keys(local.wp3_active),key)]),false)')
+    local['wp3_dev_release_allowed']=ex('!var.wp3_dev_release_enabled || (var.dev_cicd_installation_only && var.wp3_dev_sql_lab_release!=null && local.wp3_dev_recipe_ready)')
     r=tf['resource']
     trust=lambda service, source: {'Version':'2012-10-17','Statement':[dict(Effect='Allow',Action='sts:AssumeRole',Principal={'Service':service},**({'Condition':{'StringEquals':{'aws:SourceAccount':ex('var.account_id')},'ArnEquals':{'aws:SourceArn':source}}} if source else {}))]}
     local['wp3_trust']=ex('jsondecode('+json.dumps(json.dumps(trust('lambda.amazonaws.com',None)))+')')
@@ -207,7 +259,7 @@ def extend(tf):
     r['aws_lambda_function']['wp3']={'for_each':ex('local.wp3_lambdas'),'function_name':ex('each.value.name'),
         'role':ex('local.wp3_role_arns[each.key]'),'package_type':'Image','image_uri':ex('each.value.runtime.uri'),
         'publish':True,'timeout':60,'memory_size':256,
-        'reserved_concurrent_executions':ex('each.key=="request-gateway/release" && contains(keys(local.wp3_preserved_ready),each.key) ? 0 : 1'),
+        'reserved_concurrent_executions':ex('each.key=="request-gateway/release" && contains(keys(local.wp3_preserved_ready),each.key) ? (var.wp3_dev_release_enabled ? 1 : 0) : 1'),
         'image_config':{'command':['runtime.handler']},
         'environment':{'variables':{'E1_PROTECTED_CONFIGURATION':ex('local.wp3_config[each.key]')}},
         'depends_on':['aws_cloudwatch_log_group.wp3','aws_iam_role_policy.wp3']}
@@ -263,7 +315,7 @@ def extend(tf):
     # The state and refreshed plan both bind this rule/permission to published
     # finalizer version 1, while the function's latest published version is 2.
     # Preserve that real binding only for the exact closed historical pair.
-    local['wp3_completion_qualifier']=ex('contains(keys(local.wp3_preserved_ready),"build/release") && contains(keys(local.wp3_preserved_ready),"qualification-finalizer/qualification") ? "1" : aws_lambda_function.wp3["qualification-finalizer/qualification"].version')
+    local['wp3_completion_qualifier']=ex('(contains(keys(local.wp3_preserved_ready),"build/release") || contains(keys(local.wp3_dev_upgrade_ready),"build/release")) && contains(keys(local.wp3_preserved_ready),"qualification-finalizer/qualification") ? "1" : aws_lambda_function.wp3["qualification-finalizer/qualification"].version')
     r['aws_cloudwatch_event_rule']={'completion':{'for_each':ex('local.completion'),'name':'e1-release-completion',
         'event_pattern':json.dumps({'source':['aws.codebuild'],'detail-type':['CodeBuild Build State Change'],
             'account':[account],'region':[region],'detail':{'project-name':['e1-controller-release'],'build-status':['SUCCEEDED','FAILED','STOPPED']}})}}
@@ -304,6 +356,6 @@ def extend(tf):
     tf['output']['internal_release']={'value':{'controllers':ex('keys(local.wp3_active)'),
         'workers':ex('keys(local.payloads)'),'external_invocations':[],
         'bundle_readers':ex('{ for k,v in local.wp3_active : k => local.wp3_role_arns[k] }'),'live':'UNVERIFIED_NOT_DEPLOYED'},
-        'precondition':{'condition':ex('local.wp3_preservation_complete'),
+        'precondition':{'condition':ex('local.wp3_preservation_complete && local.wp3_dev_recipe_ready && local.wp3_dev_release_allowed'),
             'error_message':'New WP3 preservation approval must retain all three closed controllers and all three workers; partial or mismatched preservation is rejected.'}}
     return tf

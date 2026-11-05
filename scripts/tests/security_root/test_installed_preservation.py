@@ -204,6 +204,8 @@ def check_terraform(terraform,environment):
         exchange_bucket='e1-quarantine-'+values['account_id']+'-us-east-1',nodes={},
         payloads=module['locals']['payloads'],wp3_preservation_fingerprints=pins,
         wp4d_historical_nat_installations=natpins)
+    local['wp3_completion_qualifier']=module['locals']['wp3_completion_qualifier'].replace(
+        'aws_lambda_function.wp3["qualification-finalizer/qualification"].version','"2"')
     with tempfile.TemporaryDirectory(prefix='installed-preservation-offline-') as directory:
         path=Path(directory)/'main.tf.json'
         def evaluate(changes=None,locals_override=None):
@@ -211,8 +213,9 @@ def check_terraform(terraform,environment):
             current.update(copy.deepcopy(values));current.update(changes or {})
             path.write_text(json.dumps({'variable':{k:{'type':'any','default':v} for k,v in current.items()},
                 'locals':{**local,**(locals_override or {}),'nat_valid':module['variable']['dev_nat_preservation_approval_sha256']['validation']['condition'],
+                'dev_record_valid':module['variable']['wp3_dev_sql_lab_release']['validation']['condition'],
                 'wp4d_valid':module['output']['wp4d']['precondition']['condition']}}),encoding='utf-8')
-            query='jsonencode({wp3=keys(local.wp3_active),workers=keys(local.payloads),wp3_valid=local.wp3_preservation_complete,nat=keys(local.wp4d_historical_nat_ready),nat_valid=local.nat_valid,wp4d_valid=local.wp4d_valid,config=local.wp4d_config,repositories=keys(local.wp4d_repositories)})'
+            query='jsonencode({wp3=keys(local.wp3_active),workers=keys(local.payloads),wp3_valid=local.wp3_preservation_complete,dev_recipe_ready=local.wp3_dev_recipe_ready && local.dev_record_valid,dotnet_default=try(local.payloads["dotnet"].runtime.uri,null),dev_release_allowed=local.wp3_dev_release_allowed,release_concurrency='+module['resource']['aws_lambda_function']['wp3']['reserved_concurrent_executions'][2:-1].replace('each.key','"request-gateway/release"')+',completion_qualifier=local.wp3_completion_qualifier,nat=keys(local.wp4d_historical_nat_ready),nat_valid=local.nat_valid,wp4d_valid=local.wp4d_valid,config=local.wp4d_config,repositories=keys(local.wp4d_repositories)})'
             run=subprocess.run([terraform,'console','-no-color'],cwd=directory,input=query+'\n',
                 capture_output=True,text=True,env=environment,timeout=30)
             if run.returncode or 'Error:' in run.stderr:raise AssertionError(run.stderr)
@@ -221,8 +224,53 @@ def check_terraform(terraform,environment):
             out=evaluate({'dev_cicd_installation_only':limited})
             assert out['wp3_valid'] and out['nat_valid'] and out['wp4d_valid'], out
             assert len(out['wp3'])==3 and out['workers']==['dotnet','image','probe'] and out['nat']==sorted(natpins)
+            assert out['release_concurrency']==0 and out['dev_release_allowed']
+            assert out['completion_qualifier']=='1'
             assert len(out['repositories'])==(6 if limited else 16)
             for key,config in natconfigs.items():assert json.loads(out['config'][key])==config
+        # Current catalog evolution cannot rewrite the six observed identities.
+        changed=copy.deepcopy(values['authority'])
+        changed['internal_release']['support_sha256']='f'*64
+        for record in changed['internal_release']['selected'].values():record['bundle_digest']='e'*64
+        old=evaluate({'authority':changed})
+        assert old['wp3_valid'] and len(old['wp3'])==3 and len(old['workers'])==3
+        # The historical image-worker fingerprint is NOT accepted for a changed
+        # selectable buildspec, even with an owner preservation marker.
+        dev_auth=dict(schema='E1_WP3_DEV_SQL_LAB_V1',environment='dev',account=values['account_id'],
+            region=values['region'],source_commit='a'*40,recipe='DEV_SQL_LAB_V1',
+            certificate_der_sha256=internal.SQL_CERTIFICATE,recipe_sha256=internal.SQL_RECIPE_SHA256,
+            previous_build_runtime={k:values['runtime_approvals']['build/release'][k] for k in ('uri','support_sha256')},
+            dotnet_runtime={'uri':values['runtime_approvals']['payload/dotnet']['uri'].split('@')[0]+'@sha256:'+'c'*64,
+                'support_sha256':'f'*64,'sdk':internal.DEV_DOTNET_SDK,'approval':'ADMIN_VERIFIED'})
+        for limited in (True,False):
+            result=evaluate({'wp3_dev_sql_lab_release':dev_auth,'dev_cicd_installation_only':limited})
+            assert not result['wp3_valid']
+        approved=copy.deepcopy(values['runtime_approvals'])
+        for key in ('build/release','payload/image'):
+            approved[key].pop('preservation')
+            approved[key].update(approval='ADMIN_VERIFIED',support_sha256='f'*64)
+        approved['build/release']['uri']=approved['build/release']['uri'].split('@')[0]+'@sha256:'+'c'*64
+        next_authority=copy.deepcopy(values['authority'])
+        next_authority['internal_release']['support_sha256']='f'*64
+        transition=dict(authority=next_authority,runtime_approvals=approved,wp3_dev_sql_lab_release=dev_auth,dev_cicd_installation_only=True)
+        admitted=evaluate(transition)
+        assert admitted['wp3_valid'] and admitted['dev_recipe_ready']
+        assert len(admitted['wp3'])==3 and len(admitted['workers'])==3
+        assert admitted['dotnet_default']==values['runtime_approvals']['payload/dotnet']['uri']
+        assert admitted['release_concurrency']==0
+        assert admitted['completion_qualifier']=='1'
+        activated=evaluate({**transition,'wp3_dev_release_enabled':True})
+        assert activated['dev_release_allowed'] and activated['release_concurrency']==1
+        assert activated['completion_qualifier']=='1'
+        assert not evaluate({'wp3_dev_release_enabled':True})['dev_release_allowed']
+        assert not evaluate({**transition,'dev_cicd_installation_only':False})['dev_recipe_ready']
+        assert not evaluate({**transition,'wp3_preservation_approval_sha256':None})['dev_recipe_ready']
+        for missing in approved:
+            partial=copy.deepcopy(approved);del partial[missing]
+            assert not evaluate({**transition,'runtime_approvals':partial})['dev_recipe_ready']
+        for field in ('uri','support_sha256'):
+            bad=copy.deepcopy(dev_auth);bad['previous_build_runtime'][field]='foreign'
+            assert not evaluate({**transition,'wp3_dev_sql_lab_release':bad})['dev_recipe_ready']
         assert not evaluate({'wp3_preservation_approval_sha256':None})['wp3']
         assert not evaluate({'dev_nat_preservation_approval_sha256':None})['nat']
         assert not evaluate({'dev_nat_inhibited':False})['nat_valid']
@@ -276,7 +324,7 @@ def check_reconciliation(terraform, environment):
             role_arn=f'arn:aws:iam::{account}:role/e1-request-{key}',trust=wp6.trust(key,record,account),
             policy=wp6.policy(key,record,account,region),gateway=readback)
         pins[key]=fingerprint(identity);readbacks[key]=readback
-    values=dict(authority=authority,account_id=account,region=region,endpoints={
+    values=dict(authority=authority,account_id=account,region=region,wp3_dev_release_enabled=False,endpoints={
         'request-gateway/'+k:v['qualified_arn'] for k,v in readbacks.items()},dev_cicd_installation_only=True,
         wp6_preservation_approval_sha256='c'*64,wp6_preservation_required=True,wp6_preservation_readbacks=readbacks,
         latest_version='27',preserved={k:{} for k in internal.PRESERVED_WP3})
@@ -284,6 +332,7 @@ def check_reconciliation(terraform, environment):
     for key in ('runtime_repository_reservations','runtime_repositories','wp5_repository_reservations','wp5_repositories','nodes'):
         local[key]=compute['locals'][key]
     local['wp3_preserved_ready']='${var.preserved}'
+    local['wp3_dev_upgrade_ready']={}
     local['completion_qualifier']=compute['locals']['wp3_completion_qualifier'].replace(
         'aws_lambda_function.wp3["qualification-finalizer/qualification"].version','var.latest_version')
     local['foundation_selection']=foundation['resource']['aws_s3_bucket']['state']['for_each']

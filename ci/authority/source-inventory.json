@@ -3728,40 +3728,42 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/internal_release/adapters.py": {
-      "sha256": "12964c6ab3590ac94f7ce3f414a920b3fea67b4274399a93790c1667a26dc313",
+      "sha256": "a63726551d9295fa253c90ec758fd70adc73ec26129e7aac0b36d1ebae03f39d",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          123,
-          138,
-          152
+          125,
+          140,
+          154
         ],
         "executable-dependency": [
-          194,
-          200,
-          204
+          196,
+          202,
+          208,
+          215
         ]
       },
       "semantic_status": "UNVERIFIED"
     },
     "scripts/internal_release/e1_contract.py": {
-      "sha256": "9928b0bab7808a666de767a6d2e17614c4a540249deb7f333c7ab751a4aa39e4",
+      "sha256": "8992f080dbf350ed265607fefbedae5c0d3c12b0d5ec11134076680d515d810f",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          76,
-          77,
-          78,
-          88,
-          89
+          109,
+          110,
+          111,
+          121,
+          122
         ],
         "executable-dependency": [
-          68,
-          75,
-          80,
-          85,
-          90,
-          115
+          100,
+          108,
+          113,
+          118,
+          124,
+          130,
+          155
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -3783,20 +3785,21 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/internal_release/runtime.py": {
-      "sha256": "fbd0d478f8c956dbe03ac9d48463110977ac9b8cccf4705b551ee31a4de7b0e2",
+      "sha256": "7d6777fa76ec0aa8b1a115b3bb620f430b723a8691f10b96e852934528cfa6e8",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          72,
-          76,
-          77,
-          92,
-          131
+          82,
+          86,
+          87,
+          102,
+          144
         ],
         "executable-dependency": [
-          65,
-          66,
-          126
+          73,
+          74,
+          136,
+          141
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -3823,12 +3826,17 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/internal_release/workers.py": {
-      "sha256": "e4cfc230649374aa0aafd6bffe9deb8bff1ca7e6aeeae746d9144fab4bd1bcb7",
+      "sha256": "dd7914cb541957eb85bb3a8842684548d11a1adc1ad1e030d265f97c1b7915e0",
       "declarations": [],
       "signals": {
+        "launch-or-mutation": [
+          64
+        ],
         "executable-dependency": [
-          13,
-          30
+          10,
+          19,
+          25,
+          48
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -4941,13 +4949,13 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/final_acceptance/gate.py": {
-      "sha256": "bd993dc146c4f133f245689c0891015f10bb7cbc96211d5fee17352921aeaed6",
+      "sha256": "9b2718253758a64ffc43a8318f6a6c3fc41b4b006553c1bd54147f29e1c2a59c",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           69,
           152,
-          242
+          253
         ],
         "executable-dependency": [
           3,
@@ -5212,28 +5220,42 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/internal_release/test_adapters.py": {
-      "sha256": "3c93643700cd058e725318db23fba81485c064e0d10b2e2213e5fe36765bb4aa",
+      "sha256": "223363715c45dc0e472d2562d7ec3fb5ddecda98c2118824feaf6b075a16e1a3",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          253,
-          265,
-          287,
-          292,
-          312,
-          332,
-          338,
-          362
+          200,
+          203,
+          236,
+          380,
+          392,
+          414,
+          419,
+          439,
+          459,
+          465,
+          489,
+          505
         ],
         "executable-dependency": [
+          170,
+          182,
+          183,
           187,
-          190,
-          192,
-          199,
-          253,
-          346,
-          377,
-          391
+          188,
+          189,
+          212,
+          219,
+          314,
+          317,
+          319,
+          326,
+          380,
+          473,
+          501,
+          514,
+          527,
+          530
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -5316,11 +5338,11 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/internal_release/test_mutations.py": {
-      "sha256": "d12bc6ed073eed19dbc7f8ad8443b04ca9bf08e0c4481651082d944d6df8b2eb",
+      "sha256": "d57f3c99e2c5b9a3b379898ac9b3b7c69078acae10086582a68254d9af150f45",
       "declarations": [],
       "signals": {
         "executable-dependency": [
-          40
+          42
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -6326,86 +6348,86 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/internal.py": {
-      "sha256": "aa74342aa18ce955da475bb42c98e3879c7785079c04f23d1b6b012f27e517cd",
+      "sha256": "4674f503a81e49d8ecbf981ebbe598ad31c680c5bae1a6e2d72b38668e31d0db",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
-          174
+          226
         ],
         "role-input": [
-          171,
-          198,
-          208,
-          222,
-          306
+          221,
+          250,
+          260,
+          274,
+          358
         ],
         "launch-or-mutation": [
-          71,
-          72,
-          74,
-          89,
-          102,
-          105,
-          108,
+          76,
+          77,
+          79,
+          94,
+          107,
           110,
-          150,
-          151,
-          174,
-          178,
-          188,
-          205,
-          219,
-          240,
-          243,
-          245,
-          246,
-          248,
-          249,
-          250,
-          257,
-          258,
-          268,
-          282,
-          285,
-          290,
-          303
-        ],
-        "executable-dependency": [
-          15,
-          30,
-          70,
-          148,
-          149,
-          151,
-          172,
-          211
-        ],
-        "security-control": [
-          171,
+          113,
+          115,
           179,
           180,
-          183,
-          184,
-          185,
-          186,
-          187,
-          197,
-          199,
-          200,
-          202,
-          203,
-          213,
-          225,
-          259,
-          273,
-          291,
-          301
+          226,
+          230,
+          240,
+          257,
+          271,
+          292,
+          295,
+          297,
+          298,
+          300,
+          301,
+          302,
+          309,
+          310,
+          320,
+          334,
+          337,
+          342,
+          355
+        ],
+        "executable-dependency": [
+          17,
+          32,
+          75,
+          177,
+          178,
+          180,
+          198,
+          263
+        ],
+        "security-control": [
+          221,
+          231,
+          232,
+          235,
+          236,
+          237,
+          238,
+          239,
+          249,
+          251,
+          252,
+          254,
+          255,
+          265,
+          277,
+          311,
+          325,
+          343,
+          353
         ]
       },
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/model.py": {
-      "sha256": "a48e4d37abe79dc43001973390dbec01a74612ec11b906c6597577e1ccf6b72f",
+      "sha256": "8fb0bf354d403536f947b8c699039e535d794066d0f56806468f6c77908cef29",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -6431,19 +6453,19 @@
           273,
           311,
           313,
-          352,
-          355,
-          357,
-          358,
-          367,
-          383,
-          411,
-          422,
-          447,
-          455,
-          456,
-          465,
-          467
+          356,
+          359,
+          361,
+          362,
+          371,
+          387,
+          415,
+          426,
+          451,
+          459,
+          460,
+          469,
+          471
         ],
         "executable-dependency": [
           24,
@@ -6451,7 +6473,7 @@
           34,
           35,
           39,
-          368
+          372
         ],
         "security-control": [
           222,
@@ -6459,8 +6481,8 @@
           226,
           227,
           228,
-          350,
-          351
+          354,
+          355
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -7930,7 +7952,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/authority.json": {
-      "sha256": "f09dcb59a9342bec9abe7518c332c604277876f7e30bcea3a09f89d308a60716",
+      "sha256": "9ffa51db4a610bee203589c84e036f8d0d3ab356953138932d0f329c2bfcdeee",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -8050,18 +8072,18 @@
           3117,
           3163,
           3169,
-          3855,
-          3862,
-          3872,
-          3882,
-          3892,
-          3902,
-          3912,
-          3922,
-          3932,
-          3942,
-          3952,
-          3962
+          3883,
+          3890,
+          3900,
+          3910,
+          3920,
+          3930,
+          3940,
+          3950,
+          3960,
+          3970,
+          3980,
+          3990
         ],
         "executable-dependency": [
           398,
@@ -8091,13 +8113,17 @@
           3145,
           3162,
           3168,
-          3971,
-          3972,
-          3973,
-          3975,
-          3976,
-          3977,
-          3978
+          3190,
+          3191,
+          3199,
+          3201,
+          3999,
+          4000,
+          4001,
+          4003,
+          4004,
+          4005,
+          4006
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -8109,11 +8135,11 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/main.tf.json": {
-      "sha256": "8ecc2ca4a3b7305239cffca00ae914d97424eb8360a42f413d75d678cb92e1f2",
+      "sha256": "c39930d62faafae3e29b34015337a3b60cd74cd9caf9ac2f44b7ef1b6dceace4",
       "declarations": [],
       "signals": {
         "role-input": [
-          277
+          289
         ],
         "launch-or-mutation": [
           2,
@@ -8121,7 +8147,7 @@
           12,
           13,
           39,
-          188
+          198
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -8146,156 +8172,156 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/modules/controller_compute/main.tf.json": {
-      "sha256": "56ee5781683496113d5894cf1874fb22cded3824b433340381b0568737ee3403",
+      "sha256": "8c382ed76ed9c6a89229a70151744e43c1db07fa524bdf06d5cad9de6279bae9",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
-          165,
-          177,
-          393,
-          414,
-          419
+          184,
+          196,
+          412,
+          433,
+          438
         ],
         "role-input": [
-          158,
-          490,
-          607,
-          1176
+          175,
+          509,
+          626,
+          1195
         ],
         "launch-or-mutation": [
           2,
           4,
           5,
-          144,
-          145,
-          183,
-          186,
-          193,
-          194,
-          195,
-          196,
-          267,
-          269,
-          270,
-          271,
-          287,
+          159,
+          160,
+          202,
+          205,
+          212,
+          213,
+          214,
+          215,
+          286,
           288,
           289,
           290,
-          291,
-          292,
-          293,
-          294,
-          295,
-          296,
-          297,
-          298,
-          299,
-          300,
-          301,
-          302,
           306,
           307,
           308,
-          323,
-          328,
-          329,
-          330,
-          331,
-          332,
-          333,
-          334,
-          335,
-          377,
-          393,
-          414,
-          419,
-          443,
-          453,
-          465,
-          634,
-          670,
-          710,
-          766,
-          772,
-          777,
-          871,
-          875,
-          880,
-          887,
-          893,
-          917,
-          950,
-          972,
-          977,
-          982,
-          987,
-          1073,
+          309,
+          310,
+          311,
+          312,
+          313,
+          314,
+          315,
+          316,
+          317,
+          318,
+          319,
+          320,
+          321,
+          325,
+          326,
+          327,
+          342,
+          347,
+          348,
+          349,
+          350,
+          351,
+          352,
+          353,
+          354,
+          396,
+          412,
+          433,
+          438,
+          462,
+          472,
+          484,
+          653,
+          689,
+          729,
+          785,
+          791,
+          796,
+          890,
+          894,
+          899,
+          906,
+          912,
+          936,
+          969,
+          991,
+          996,
+          1001,
+          1006,
           1092,
-          1110,
-          1131,
-          1187,
-          1199
+          1111,
+          1129,
+          1150,
+          1206,
+          1218
         ],
         "executable-dependency": [
-          137,
-          138,
-          143,
-          145,
-          159,
-          267,
-          268,
-          270,
-          271,
-          304,
-          338,
-          465,
-          498,
-          523,
-          548,
-          611,
-          687,
-          728,
-          880,
-          893,
-          1073
+          152,
+          153,
+          158,
+          160,
+          162,
+          286,
+          287,
+          289,
+          290,
+          323,
+          357,
+          484,
+          517,
+          542,
+          567,
+          630,
+          706,
+          747,
+          899,
+          912,
+          1092
         ],
         "security-control": [
-          158,
-          339,
-          389,
-          393,
-          409,
-          414,
-          419,
-          422,
-          426,
-          435,
-          436,
-          440,
-          450,
-          451,
-          472,
-          509,
-          515,
+          175,
+          358,
+          408,
+          412,
+          428,
+          433,
+          438,
+          441,
+          445,
+          454,
+          455,
+          459,
+          469,
+          470,
+          491,
+          528,
           534,
-          540,
-          558,
+          553,
           559,
-          568,
-          647,
-          683,
-          718,
-          724,
-          759,
-          868,
-          927,
-          931,
-          969,
-          1069,
-          1135,
-          1148,
-          1152
+          577,
+          578,
+          587,
+          666,
+          702,
+          737,
+          743,
+          778,
+          887,
+          946,
+          950,
+          988,
+          1088,
+          1154,
+          1167,
+          1171
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -13077,12 +13103,12 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/test_installed_preservation.py": {
-      "sha256": "26bc4644d38fa25ad7b80290c92ba60f119181226023175809beccdd31716cd0",
+      "sha256": "7fe79be7d34aff660eb00e9b06f93b10bc94ccd52f0c6d61c827938beb1b1673",
       "declarations": [],
       "signals": {
         "role-input": [
           198,
-          276
+          324
         ],
         "launch-or-mutation": [
           18,
@@ -13103,22 +13129,22 @@
           185,
           194,
           196,
-          216,
-          257,
-          258,
-          262,
-          264,
-          265,
-          266,
-          267,
-          271,
-          272,
-          276,
-          290,
-          300,
-          329,
-          331,
-          363
+          219,
+          305,
+          306,
+          310,
+          312,
+          313,
+          314,
+          315,
+          319,
+          320,
+          324,
+          339,
+          349,
+          378,
+          380,
+          412
         ],
         "executable-dependency": [
           45,
@@ -13128,9 +13154,9 @@
           90
         ],
         "security-control": [
-          274,
-          275,
-          277
+          322,
+          323,
+          325
         ]
       },
       "semantic_status": "CURRENT_FACT"

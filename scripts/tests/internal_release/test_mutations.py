@@ -17,7 +17,9 @@ import test_adapters as behavior
 CASES=[
     (e1_contract,'observe',"status = found[0].get('phaseStatus')","status = 'SUCCEEDED'",'test_phase_failure_cannot_be_stdout_pass'),
     (e1_contract,'observe',"if b.get('buildStatus') == 'SUCCEEDED':","if True:",'test_terminal_worker_status_cannot_pass_mapped_phase'),
-    (workers,'Workers',"request['imagePullCredentialsTypeOverride'] = 'CODEBUILD'","request['imagePullCredentialsTypeOverride'] = 'CODEBUILD'\n            request['serviceRoleOverride'] = 'controller'",'test_closed_worker_request_and_exact_probe'),
+    (workers,'Workers',"request['imageOverride'] = image_uri(image, self.account, self.region, self.repository)","request['imageOverride'] = image_uri(image, self.account, self.region, self.repository)\n            request['serviceRoleOverride'] = 'controller'",'test_closed_worker_request_and_exact_probe'),
+    (workers,'Workers',"request['imageOverride'] = self.dotnet_image","request['imageOverride'] = self.dotnet_image\n                request['serviceRoleOverride'] = 'controller'",'test_dev_worker_selector_is_closed_and_never_a_buildspec_override'),
+    (workers,'Workers',"image_uri(dotnet_image, account, region, 'e1-payload-dotnet')","require(True)",'test_dev_worker_selector_is_closed_and_never_a_buildspec_override'),
     (exchange,'Exchange',"'IfNoneMatch': '*'}, ExpiresIn=900, HttpMethod='PUT')","}, ExpiresIn=900, HttpMethod='PUT')",'test_capabilities_and_conditional_output'),
     (exchange,'Exchange',"value = self.s3.get_object(Bucket=self.bucket, Key=key, VersionId=exact)","value = self.s3.get_object(Bucket=self.bucket, Key=key)",'test_capabilities_and_conditional_output'),
     (publisher,'publish','require(identity == expected)','require(True)','test_publisher_rejects_false_digest_and_confirms_exact_retry'),
