@@ -11951,7 +11951,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/portable/prepare_runtime_source.py": {
-      "sha256": "fd243b7be29c5d6562efb3e287d1c105c94235b3004eaae440c6a8bcecf1b883",
+      "sha256": "c431117b09b34ba1b726bd94daa36f2d087ff5eac27d88cc224eaff7c877f969",
       "declarations": [],
       "signals": {},
       "semantic_status": "UNVERIFIED"
