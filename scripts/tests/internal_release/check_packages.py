@@ -74,11 +74,11 @@ def main():
             changed=root/'scripts/internal_release/services.py'
             changed.write_bytes(changed.read_bytes()+b'\n# disposable source identity mutant\n')
             assert bundles.digest(bundles.artifact(root,catalog,kind))!=results[kind]
-    assert results['build']=='ef9ce1edd5331ea6dccebfa4ea9783c40650fd6b075e87c2ce0f3c6553701ec4'
+    assert results['build']=='8f0712c72fe148bab19a5a091044abe13f3b1c6fa07db3efd70b22e3356c35f7'
     assert results['qualification-finalizer']=='0e34a5cd928e91694083a46aba1291b1526b7c1c47faaed4fe51a4ea60eb8fae'
     baseline=json.loads(subprocess.check_output(['git','show','fcd492da928e2bb9b2fc715a39f1733a7289e13d:terraform/infra/security/authority.json'],cwd=ROOT))
     for kind,identity in results.items():
-        if kind not in ('request-gateway','status'):assert identity==baseline['control_bundles']['classes'][kind]['sha256']
+        if kind not in ('build','request-gateway','status'):assert identity==baseline['control_bundles']['classes'][kind]['sha256']
     print(json.dumps(results,indent=2))
 
 

@@ -518,7 +518,10 @@ class Adapters(unittest.TestCase):
             def acquire(self,repository,commit,workspace):
                 root=Path(__file__).resolve().parents[3]
                 # Actual committed input set; exclude generated application output.
-                for path in (root/'demo-api').rglob('*'):
+                paths = [*(root/'demo-api').rglob('*'), root/'.gitignore', root/'global.json',
+                         *(root/'operations/sql-backup/SqlBackup').glob('*'),
+                         *(root/'operations/sql-backup/SqlBackup.Tests').glob('*')]
+                for path in paths:
                     if not path.is_file() or set(path.parts)&{'bin','obj','.git'}:continue
                     target=Path(workspace)/path.relative_to(root);target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(path.read_bytes())
                 return dict(repository=repository,commit=commit,workspace=workspace)
@@ -552,7 +555,11 @@ class Adapters(unittest.TestCase):
         self.assertEqual([x['projectName'] for x in cb.calls],[c.CONTROLLERS['build/release'][0],*c.WORKERS.values()])
         # Independent exact source transfers; no dotnet workspace adoption.
         sources=[kw for method,kw in s3.calls if method=='put' and '/source-' in kw['Key']]
-        self.assertEqual(len(sources),2);self.assertEqual(sources[0]['Body'],sources[1]['Body'])
+        self.assertEqual(len(sources),2)
+        full=json.loads(sources[0]['Body']); image=json.loads(sources[1]['Body'])
+        self.assertEqual(image,[n for n in full if n[0]=='demo-api' or n[0].startswith('demo-api/')])
+        self.assertTrue({'.gitignore','global.json','operations/sql-backup/SqlBackup/SqlBackup.csproj',
+                         'operations/sql-backup/SqlBackup.Tests/SqlBackup.Tests.csproj'} <= {n[0] for n in full})
         self.assertNotEqual(sources[0]['Key'],sources[1]['Key'])
         if not dev:self.test_full_split_trace_qualifies_through_unchanged_core(dev=True)
 

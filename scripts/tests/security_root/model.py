@@ -31,12 +31,12 @@ SUPPORT_FILES.update({
     "ci/schemas/e1-qualification.schema.json": "79ba84dfa4bd8ca5ce4955bc4a97a888cc79a28a06c8eee43063319508a8d8d0",
     "ci/schemas/release-manifest.schema.json": "d2ea7d5d27e257bc68b242c1f15518384445e41fd8ce82fac122934f2a0d5ebf",
     "scripts/build_supervision/entrypoint.py": "eab168fddef33d9591f5d6da3d3ada819cf0c2a28cbe4f75c3584bcc0ef1e3e5",
-    "scripts/build_supervision/supervisor.py": "d32304df12204160c20c0ad43c489121ee683756f7f694d1038d6c4811327c53",
+    "scripts/build_supervision/supervisor.py": "7db623777616a0fa2215329e272dd924223c577c8d3939aeb915db2e2245a88b",
     "scripts/qualification/finalizer.py": "229fa9a394169538f9158b4f1d3e8d5d4e15a0c21819ed90ac33a85eba4c7098"
 })
 
 # Explicit WP3C runtime support pins; no executable glob admission.
-SUPPORT_FILES.update({'scripts/internal_release/e1_contract.py': '8992f080dbf350ed265607fefbedae5c0d3c12b0d5ec11134076680d515d810f', 'scripts/internal_release/exchange.py': '3abebea613fefa8f07a4325a1d49bd8a5332c5c9cd82ac1ac0164a9f3e697651', 'scripts/internal_release/publisher.py': 'c36be673645092b6f003a4678c755089625a82838fa9566683c831f8ecacb64d', 'scripts/internal_release/workers.py': 'dd7914cb541957eb85bb3a8842684548d11a1adc1ad1e030d265f97c1b7915e0', 'scripts/internal_release/adapters.py': 'a63726551d9295fa253c90ec758fd70adc73ec26129e7aac0b36d1ebae03f39d', 'scripts/internal_release/services.py': 'f5ed39fc14a8aa6814e619f16b48629fac065e39094985447e60ff7ca30fc2ca', 'scripts/internal_release/runtime.py': '7d6777fa76ec0aa8b1a115b3bb620f430b723a8691f10b96e852934528cfa6e8', 'scripts/internal_release/worker.py': '05f027ff30df883fffa2231367e03348dd4cf91a8233b8996554d9ff74cf6d2b'})
+SUPPORT_FILES.update({'scripts/internal_release/e1_contract.py': 'e062ce67d4cd487680d5e19e92fdee12b5b55ba15e0c73088ea7cdcb113c48d8', 'scripts/internal_release/exchange.py': '73bc723bf782e9606782ec825157622e42cc7c286eb13ac1a01bdf39c3adda4d', 'scripts/internal_release/publisher.py': 'c36be673645092b6f003a4678c755089625a82838fa9566683c831f8ecacb64d', 'scripts/internal_release/workers.py': 'dd7914cb541957eb85bb3a8842684548d11a1adc1ad1e030d265f97c1b7915e0', 'scripts/internal_release/adapters.py': '03d723c40fdd5afb99a25e44a302bcb9357e6acfd3bc18c464107ba0c51d15fc', 'scripts/internal_release/services.py': 'f5ed39fc14a8aa6814e619f16b48629fac065e39094985447e60ff7ca30fc2ca', 'scripts/internal_release/runtime.py': '7d6777fa76ec0aa8b1a115b3bb620f430b723a8691f10b96e852934528cfa6e8', 'scripts/internal_release/worker.py': 'c5f2bf370675cb84ae45a6458bbcda10a7dcd7accbf3cffd2c6d3e3d04a32d11'})
 
 # Existing WP2 disposable fixtures must copy the new package inputs. The fixed
 # package digests in authority.json still detect any changed source bytes.
