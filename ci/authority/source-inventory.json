@@ -12154,7 +12154,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "demo-api/deploy/sql-lab/Dockerfile": {
-      "sha256": "44adf409a3c54fb0d3bd3375266fa6b3fa1c05b7c087baf3d5bd535b4320ebda",
+      "sha256": "8045c87604e515389f41413534a30a51b0edcc49f32d905b49e1021f28fd2c91",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -12169,23 +12169,23 @@
       "semantic_status": "UNVERIFIED"
     },
     "demo-api/deploy/trust/sql.demo.internal.crt": {
-      "sha256": "2c783c5da0047e887d78f91a25a78d9df87ed7d40f6c54c8f5880505f657847d",
+      "sha256": "b55f38626408c7f4f1af047987fc05ada39be39029f3c1c5350cf1b38671aa71",
       "declarations": [],
       "signals": {},
       "semantic_status": "UNVERIFIED"
     },
     "demo-api/deploy/trust/sql.demo.internal.json": {
-      "sha256": "9d35537e26c718a1166e589d08db473e61e983259bfc4c56c46c150230088cc2",
+      "sha256": "2a798c753286de316eef0a0e1d44db0458ee1b2ebff36bc4d9d9b428a9a20836",
       "declarations": [],
       "signals": {},
       "semantic_status": "UNVERIFIED"
     },
     "demo-api/deploy/trust/README.md": {
-      "sha256": "94616853b663b6ab50755c4f38134cf6fe39b3232621cce679a902e4d1dcafe9",
+      "sha256": "75913c25f3bd1210aa8ff4d90086d0e719456fd9bfbff6e0073d74909bbf8d76",
       "declarations": [],
       "signals": {
         "executable-dependency": [
-          27
+          34
         ]
       },
       "semantic_status": "UNVERIFIED"

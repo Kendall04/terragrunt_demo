@@ -188,6 +188,12 @@ The final API regression is169/169 PASS on unchanged final C# source.
 
 ## Certificate recommendation from actual repository facts
 
+The runtime permission query uses `HAS_PERMS_BY_NAME(NULL, NULL, permission)`
+for server permissions. SQL Server requires a NULL securable and class at this
+scope; the class literal `SERVER` returns NULL. The admission predicate still
+rejects NULL, administrative roles/permissions, and missing SELECT/INSERT.
+This correction changes only inspection, never SQL grants or migrations.
+
 The SQL endpoint currently comes from `aws_instance.db.private_ip`, and the bootstrap
 discovers that IP by the demo-<env>-data-sql-instance Name tag. A tag is not DNS or a
 certificate SAN. No SQL Route53 name, managed public chain, ACM certificate reference

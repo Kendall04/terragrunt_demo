@@ -11,7 +11,7 @@ ENV ASPNETCORE_URLS=http://+:8080
 # Explicit lab-only trust. No private material or packages are installed here.
 USER root
 COPY --chown=0:0 --chmod=0644 deploy/trust/sql.demo.internal.crt /usr/local/share/ca-certificates/ecs-sql-lab.crt
-RUN test "$(openssl x509 -in /usr/local/share/ca-certificates/ecs-sql-lab.crt -outform DER | sha256sum | cut -d' ' -f1)" = "6a45fbcadf8a0a44ffed3f9b78de396b872af430c856b3cb041a29c2ece87738" \
+RUN test "$(openssl x509 -in /usr/local/share/ca-certificates/ecs-sql-lab.crt -outform DER | sha256sum | cut -d' ' -f1)" = "206095fa0ba9e17a84c80eff5021db93d05e2dc377e982a64d517696ed21a1e7" \
     && openssl verify -CAfile /usr/local/share/ca-certificates/ecs-sql-lab.crt -purpose sslserver -verify_hostname sql.demo.internal /usr/local/share/ca-certificates/ecs-sql-lab.crt \
     && update-ca-certificates
 USER $APP_UID
