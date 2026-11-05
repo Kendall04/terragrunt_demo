@@ -1,5 +1,18 @@
 # SQL backup/restore increment
 
+## Strict TLS credential bootstrap (2026-11-05)
+
+`ec2_credentials.py` accepts the existing review's `Runtime.DatabaseSecurity`
+metadata with exactly `{"Profile":"validated-v2","CertificateHostName":"sql.demo.internal"}`.
+This opt-in uses sqlcmd `-N -F sql.demo.internal`, never `-C`, and creates both
+private backup/verifier connections with `Encrypt=True;TrustServerCertificate=False`.
+The trusted public certificate must already be installed on the SQL host. Invalid
+profiles/names fail before any secret read; there is no fallback. The existing
+root-only credential storage, SQL privilege separation and replay refusal remain.
+The legacy loopback exception is retained for historical isolated fixtures only.
+Local qualification: 29 Linux credential/review checks passed; this code change
+alone does not establish installation, scheduling or remote-backup acceptance.
+
 > Infrastructure now uses [native DEV operations](../../terraform/docs/native-dev-lifecycle.md). E16 checkpoints below are historical; SQL backup/recovery/artifact/secret contracts remain unchanged.
 
 Current status - 2026-10-21: native/S3-KMS component qualification and real

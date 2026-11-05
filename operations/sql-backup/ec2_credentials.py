@@ -65,6 +65,14 @@ def sql_endpoint(approval):
     require(re.fullmatch('i-[0-9a-f]{17}',approval['Runtime'].get('InstanceId','')) is not None,'EXACT_PRIVATE_HOST_REQUIRED')
     return value
 
+def certificate_hostname(approval):
+    """The opt-in strict profile never falls back to the historical lab exception."""
+    security=approval['Runtime'].get('DatabaseSecurity')
+    if security is None: return None
+    require(security=={'Profile':'validated-v2','CertificateHostName':'sql.demo.internal'},
+            'STRICT_SQL_TLS_PROFILE_REQUIRED')
+    return security['CertificateHostName']
+
 class HostPort:
     def identity(self):
         opener=urllib.request.build_opener(urllib.request.ProxyHandler({}))
@@ -86,9 +94,10 @@ class HostPort:
         run=subprocess.run(['aws','--region','us-east-1','--output','json',*args],env=self.environment(),text=True,capture_output=True,timeout=60)
         require(run.returncode==0 and len(run.stdout)<=65536,'INSTANCE_ROLE_READ_FAILED')
         return json.loads(run.stdout)
-    def sql(self,password,batch,endpoint='127.0.0.1'):
+    def sql(self,password,batch,endpoint='127.0.0.1',certificate_hostname=None):
         env=self.environment(); env['SQLCMDPASSWORD']=password
-        run=subprocess.run(['/opt/mssql-tools18/bin/sqlcmd','-S',endpoint,'-C','-U','sa','-b','-l','10','-t','60'],input=batch,env=env,text=True,capture_output=True,timeout=75)
+        tls=['-N','-F',certificate_hostname] if certificate_hostname is not None else ['-C']
+        run=subprocess.run(['/opt/mssql-tools18/bin/sqlcmd','-S',endpoint,*tls,'-U','sa','-b','-l','10','-t','60'],input=batch,env=env,text=True,capture_output=True,timeout=75)
         # Do not return sqlcmd diagnostics: SQL input may contain passwords.
         require(run.returncode==0,'SQL_BOOTSTRAP_FAILED_OR_UNKNOWN')
 
@@ -99,6 +108,7 @@ def operate(approval_path,config_path,root,apply=False,confirmation=None,port=No
     require(approval['Schema']=='SQL_BACKUP_EC2_REVIEW_V1' and approval['Account']==ACCOUNT and approval['Region']=='us-east-1','REVIEW_ACCOUNT_REQUIRED')
     require(approval['Runtime']['ExpectedRole']==f'arn:aws:iam::{ACCOUNT}:role/{ROLE}' and approval['Runtime']['ExistingSaSecret']==SA,'REVIEW_ROLE_AND_SECRET_REQUIRED')
     endpoint=sql_endpoint(approval)
+    hostname=certificate_hostname(approval)
     recovery=approval['Runtime'].get('RecoveryTrial')
     if recovery is not None:
         require(isinstance(recovery,str) and re.fullmatch('r[0-9]{8}[a-z0-9]{1,8}',recovery)
@@ -112,7 +122,8 @@ def operate(approval_path,config_path,root,apply=False,confirmation=None,port=No
     dropin=root/'etc/systemd/system/sql-backup.service.d'
     result={'Status':'CREDENTIAL_PLAN','ApprovalSha256':approval_sha,'SqlLogins':list(LOGINS),'NewSecretsManagerSecrets':0,
             'CredentialDirectory':str(directory),'CredentialMode':'root:root 0600; directory 0700; encrypted EBS',
-            'SecretValuesPrinted':False,'SystemctlActions':[],'SqlEndpoint':endpoint}
+            'SecretValuesPrinted':False,'SystemctlActions':[],'SqlEndpoint':endpoint,
+            'SqlTlsProfile':'validated-v2' if hostname else 'historical-local-exception'}
     if not apply: return result
     require(confirmation==approval_sha,'EXACT_SECRET_BOOTSTRAP_CONFIRMATION_REQUIRED')
     require(os.geteuid()==0,'ROOT_REQUIRED')
@@ -148,11 +159,13 @@ def operate(approval_path,config_path,root,apply=False,confirmation=None,port=No
     private_write(receipt,json.dumps(proof).encode())
     # A failure intentionally preserves the receipt and refuses blind retry.
     batch=sql_batch(config['Database'],backup_password,verify_password)
-    if endpoint=='127.0.0.1': port.sql(sa,batch)
+    if hostname is not None: port.sql(sa,batch,endpoint=endpoint,certificate_hostname=hostname)
+    elif endpoint=='127.0.0.1': port.sql(sa,batch)
     else: port.sql(sa,batch,endpoint=endpoint)
     for name,user,password in [('backup-connection',LOGINS[0],backup_password),('verify-connection',LOGINS[1],verify_password)]:
         database=config['Database'] if name=='backup-connection' else 'master'
-        connection=f'Server={endpoint},1433;Database={database};User ID={user};Password={password};Encrypt=True;TrustServerCertificate=True;Connect Timeout=10'
+        tls=f'TrustServerCertificate=False;HostNameInCertificate={hostname}' if hostname else 'TrustServerCertificate=True'
+        connection=f'Server={endpoint},1433;Database={database};User ID={user};Password={password};Encrypt=True;{tls};Connect Timeout=10'
         private_write(directory/name,connection.encode())
     dropin.mkdir(mode=0o755,exist_ok=True)
     unit='[Service]\nLoadCredential=\nLoadCredential=backup-connection:/etc/terragrunt-demo/sql-backup/credentials/backup-connection\nLoadCredential=verify-connection:/etc/terragrunt-demo/sql-backup/credentials/verify-connection\n'
