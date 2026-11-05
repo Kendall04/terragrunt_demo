@@ -34,6 +34,10 @@ variables {
 run "closed_input_output" {
   command = plan
   assert {
+    condition     = jsondecode(aws_sns_topic_policy.notices.policy).Id != "" && length(distinct([for s in jsondecode(aws_sns_topic_policy.notices.policy).Statement : s.Sid])) == 2 && !contains(jsondecode(aws_sns_topic_policy.notices.policy).Statement[0].Action, "sns:*")
+    error_message = "SNS requires unique statement IDs and supported topic actions; preserve the TLS Deny."
+  }
+  assert {
     condition     = !module.runtime.ecs_ingestion_enabled && alltrue([for s in module.runtime.ecs_schedule_states : s == "DISABLED"])
     error_message = "No runtime activation by install."
   }

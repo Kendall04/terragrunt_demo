@@ -55,7 +55,8 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "archive" {
     }
   }
   rule {
-    bucket_key_enabled = false
+    blocked_encryption_types = ["SSE-C"]
+    bucket_key_enabled       = false
     apply_server_side_encryption_by_default {
       sse_algorithm     = "aws:kms"
       kms_master_key_id = var.security.archive_kms_key_arn
@@ -120,6 +121,8 @@ resource "aws_s3_bucket_public_access_block" "access_logs" {
 resource "aws_s3_bucket_server_side_encryption_configuration" "access_logs" {
   bucket = aws_s3_bucket.access_logs.id
   rule {
+    blocked_encryption_types = ["SSE-C"]
+    bucket_key_enabled       = false
     apply_server_side_encryption_by_default { sse_algorithm = "AES256" }
   }
 }

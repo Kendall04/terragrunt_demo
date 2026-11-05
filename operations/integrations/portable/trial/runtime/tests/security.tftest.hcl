@@ -27,7 +27,11 @@ variables {
 run "encryption_logging_retention_and_default_fence" {
   command = plan
   assert {
-    condition     = output.ecs_security_controls.archive_algorithm == "aws:kms" && output.ecs_security_controls.pitr_days == 1 && output.ecs_security_controls.table_encrypted && output.ecs_security_controls.deletion_protected && !one(aws_s3_bucket_server_side_encryption_configuration.archive.rule).bucket_key_enabled
+    condition     = aws_lambda_function.runtime["worker"].environment[0].variables.SENTINEL_ARCHIVE_KMS_KEY == var.security.archive_kms_key_arn
+    error_message = "The real archive adapter must receive the exact approved CMK; AES256 would be rejected."
+  }
+  assert {
+    condition     = output.ecs_security_controls.archive_algorithm == "aws:kms" && output.ecs_security_controls.pitr_days == 1 && output.ecs_security_controls.table_encrypted && output.ecs_security_controls.deletion_protected && !one(aws_s3_bucket_server_side_encryption_configuration.archive.rule).bucket_key_enabled && contains(one(aws_s3_bucket_server_side_encryption_configuration.archive.rule).blocked_encryption_types, "SSE-C") && contains(one(aws_s3_bucket_server_side_encryption_configuration.access_logs.rule).blocked_encryption_types, "SSE-C")
     error_message = "Explicit key, object-context KMS, SSE, one-day PITR and default deletion fence required."
   }
   assert {

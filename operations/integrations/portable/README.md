@@ -1,5 +1,17 @@
 # Portable Sentinel integration
 
+## DEV installation corrections — 2026-11-05
+
+The live installation exposed two SNS validation requirements: explicit supported
+topic-policy actions and unique policy/statement IDs. The TLS deny and the
+CloudWatch grant retain their original scope. Both buckets explicitly retain
+`blocked_encryption_types = ["SSE-C"]`; a refreshed plan must not remove the
+AWS-created protection. The consumer passes the existing approved archive CMK
+to `S3ArchiveAdapter` through `SENTINEL_ARCHIVE_KMS_KEY`; no additional key or
+permission is implied. The bounded trial uses four jobs and at most 256 requests
+per invocation, including bootstrap/journal I/O (64 was exhausted in AWS).
+These corrections do not certify unattended monitoring or a remote SQL backup.
+
 ## Current security and retirement contract
 
 The reviewed root now requires two **distinct external customer-managed KMS key
