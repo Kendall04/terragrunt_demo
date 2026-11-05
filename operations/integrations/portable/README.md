@@ -13,6 +13,33 @@ invocation. Changing it invalidates the existing journal profile; do not change
 that binding or edit persisted records to conceal a budget failure.
 These corrections do not certify unattended monitoring or a remote SQL backup.
 
+### Bounded checkpoint correction
+
+The 2026-11-05 worker trace exhausted 64 requests inside a recovery check, then
+could not read the journal to checkpoint. Transaction-size preflight performed
+one GetItem per write action. The consumer extension batches those same reads
+with TransactGetItems; item/transaction byte bounds, conditional writes and
+idempotency tokens remain unchanged. Transactional reads can use more read
+capacity per item even though they need fewer API requests.
+
+The worker reserves eight of the existing 64 calls for its final journal CAS
+(three attempts plus an uncertain-write readback). Discovery pages contain at
+most four pointers. A new job starts only with 40 work calls remaining: the
+reproduced recovery check uses 33, plus directory/authority reads and margin.
+This admission threshold is not a guarantee for arbitrary external providers;
+the hard work limit still yields with durable pending work and the checkpoint
+reserve remains available. The configured four-job maximum, request/query limits,
+profile hash, receipts, fences, retry limits and historical failures do not change.
+Deadline/cancellation and persistent storage failure can still prevent a write;
+such an outcome must not be reported as a confirmed checkpoint.
+
+The actual persisted DEV snapshot reproduces the original failure offline and
+completes the same check and checkpoint in 49 requests with the correction.
+The focused runtime suite checks bounded yield, uncertain CAS readback, unchanged
+profile/failures and the original hard cap. Offline effect transports are doubles,
+not evidence of archive or email delivery. Historical permanent failures still
+cause STALLED; this fix does not clear or replay them.
+
 ## Current security and retirement contract
 
 The reviewed root now requires two **distinct external customer-managed KMS key

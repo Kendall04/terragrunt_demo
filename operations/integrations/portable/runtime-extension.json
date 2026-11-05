@@ -3,7 +3,7 @@
   "upstreamCommit": "b3d0b3b595a9257bb6d4d849c899bf4e8dbc2828",
   "file": "src/Sentinel.Portable.Lambda/Function.cs",
   "baseSha256": "02eba4830ab8e971febacf98d7522c6cb72b940eccffd8eb8d0d264ccbcf090f",
-  "purpose": "Optional consumer SNS formatter and explicit archive CMK binding; default upstream source remains pinned",
+  "purpose": "Consumer SNS/archive binding and bounded worker checkpoint integration; installed profile and identities unchanged",
   "replacements": [
     {
       "before": "public sealed class Function {",
@@ -16,6 +16,14 @@
     {
       "before": "new S3ArchiveAdapter(s3,new(Required(\"SENTINEL_ARCHIVE\"),c.Project,c.Environment,c.Consumer))",
       "after": "new S3ArchiveAdapter(s3,new(Required(\"SENTINEL_ARCHIVE\"),c.Project,c.Environment,c.Consumer,KmsKeyId:Required(\"SENTINEL_ARCHIVE_KMS_KEY\")))"
+    },
+    {
+      "before": "using var ddb=new OperationalBudgetClient(client,budget,cancellation.Token);\n        var options=Options(c);",
+      "after": "budget.ReserveCheckpoint(8); // Three CAS attempts plus uncertain-write readback remain within 64.\n        using var ddb=new OperationalBudgetClient(client,budget,cancellation.Token);\n        var options=Options(c) with {PageSize=profile.MaxJobs};"
+    },
+    {
+      "before": "new DynamoOperationalDirectory(store,profile.MaxCandidates),execution.Execute,profile,()=>DateTimeOffset.UtcNow)",
+      "after": "new DynamoOperationalDirectory(store,options.PageSize),execution.Execute,profile,()=>DateTimeOffset.UtcNow,budget)"
     }
   ]
 }
