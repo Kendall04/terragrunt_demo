@@ -134,6 +134,9 @@ only the admitted DEV source uses an independently approved .NET 10 SDK image
 override from the same exact runtime repository. The controller checks that AWS
 reports that image and an unprivileged environment. Other commits never receive
 the override. Other historical bindings stay unchanged.
+The bounded build-controller upgrade retains completion delivery to the observed
+finalizer version 1; the unmodified function's newer managed version is not an
+authorization to redirect its target or permission.
 The source implementation does not update installed runtimes/buildspecs. Genuine
 runtime image approvals, artifact readbacks and a separate security-root plan
 are required before installation; source merge is not activation or publication.

@@ -204,6 +204,8 @@ def check_terraform(terraform,environment):
         exchange_bucket='e1-quarantine-'+values['account_id']+'-us-east-1',nodes={},
         payloads=module['locals']['payloads'],wp3_preservation_fingerprints=pins,
         wp4d_historical_nat_installations=natpins)
+    local['wp3_completion_qualifier']=module['locals']['wp3_completion_qualifier'].replace(
+        'aws_lambda_function.wp3["qualification-finalizer/qualification"].version','"2"')
     with tempfile.TemporaryDirectory(prefix='installed-preservation-offline-') as directory:
         path=Path(directory)/'main.tf.json'
         def evaluate(changes=None,locals_override=None):
@@ -213,7 +215,7 @@ def check_terraform(terraform,environment):
                 'locals':{**local,**(locals_override or {}),'nat_valid':module['variable']['dev_nat_preservation_approval_sha256']['validation']['condition'],
                 'dev_record_valid':module['variable']['wp3_dev_sql_lab_release']['validation']['condition'],
                 'wp4d_valid':module['output']['wp4d']['precondition']['condition']}}),encoding='utf-8')
-            query='jsonencode({wp3=keys(local.wp3_active),workers=keys(local.payloads),wp3_valid=local.wp3_preservation_complete,dev_recipe_ready=local.wp3_dev_recipe_ready && local.dev_record_valid,dotnet_default=try(local.payloads["dotnet"].runtime.uri,null),dev_release_allowed=local.wp3_dev_release_allowed,release_concurrency='+module['resource']['aws_lambda_function']['wp3']['reserved_concurrent_executions'][2:-1].replace('each.key','"request-gateway/release"')+',nat=keys(local.wp4d_historical_nat_ready),nat_valid=local.nat_valid,wp4d_valid=local.wp4d_valid,config=local.wp4d_config,repositories=keys(local.wp4d_repositories)})'
+            query='jsonencode({wp3=keys(local.wp3_active),workers=keys(local.payloads),wp3_valid=local.wp3_preservation_complete,dev_recipe_ready=local.wp3_dev_recipe_ready && local.dev_record_valid,dotnet_default=try(local.payloads["dotnet"].runtime.uri,null),dev_release_allowed=local.wp3_dev_release_allowed,release_concurrency='+module['resource']['aws_lambda_function']['wp3']['reserved_concurrent_executions'][2:-1].replace('each.key','"request-gateway/release"')+',completion_qualifier=local.wp3_completion_qualifier,nat=keys(local.wp4d_historical_nat_ready),nat_valid=local.nat_valid,wp4d_valid=local.wp4d_valid,config=local.wp4d_config,repositories=keys(local.wp4d_repositories)})'
             run=subprocess.run([terraform,'console','-no-color'],cwd=directory,input=query+'\n',
                 capture_output=True,text=True,env=environment,timeout=30)
             if run.returncode or 'Error:' in run.stderr:raise AssertionError(run.stderr)
@@ -223,6 +225,7 @@ def check_terraform(terraform,environment):
             assert out['wp3_valid'] and out['nat_valid'] and out['wp4d_valid'], out
             assert len(out['wp3'])==3 and out['workers']==['dotnet','image','probe'] and out['nat']==sorted(natpins)
             assert out['release_concurrency']==0 and out['dev_release_allowed']
+            assert out['completion_qualifier']=='1'
             assert len(out['repositories'])==(6 if limited else 16)
             for key,config in natconfigs.items():assert json.loads(out['config'][key])==config
         # Current catalog evolution cannot rewrite the six observed identities.
@@ -255,8 +258,10 @@ def check_terraform(terraform,environment):
         assert len(admitted['wp3'])==3 and len(admitted['workers'])==3
         assert admitted['dotnet_default']==values['runtime_approvals']['payload/dotnet']['uri']
         assert admitted['release_concurrency']==0
+        assert admitted['completion_qualifier']=='1'
         activated=evaluate({**transition,'wp3_dev_release_enabled':True})
         assert activated['dev_release_allowed'] and activated['release_concurrency']==1
+        assert activated['completion_qualifier']=='1'
         assert not evaluate({'wp3_dev_release_enabled':True})['dev_release_allowed']
         assert not evaluate({**transition,'dev_cicd_installation_only':False})['dev_recipe_ready']
         assert not evaluate({**transition,'wp3_preservation_approval_sha256':None})['dev_recipe_ready']
@@ -327,6 +332,7 @@ def check_reconciliation(terraform, environment):
     for key in ('runtime_repository_reservations','runtime_repositories','wp5_repository_reservations','wp5_repositories','nodes'):
         local[key]=compute['locals'][key]
     local['wp3_preserved_ready']='${var.preserved}'
+    local['wp3_dev_upgrade_ready']={}
     local['completion_qualifier']=compute['locals']['wp3_completion_qualifier'].replace(
         'aws_lambda_function.wp3["qualification-finalizer/qualification"].version','var.latest_version')
     local['foundation_selection']=foundation['resource']['aws_s3_bucket']['state']['for_each']
