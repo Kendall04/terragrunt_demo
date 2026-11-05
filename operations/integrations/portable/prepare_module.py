@@ -18,6 +18,9 @@ old='  name               = "${local.name}-${each.key}"\n  assume_role_policy';a
 s=s.replace(old,'  name               = "${local.name}-${each.key}"\n  permissions_boundary = aws_iam_policy.ecs_boundary[each.key].arn\n  tags = { Project = local.config.project, Deployment = local.name, ManagedBy = "Terraform", Component = "sentinel-portable" }\n  assume_role_policy')
 s+='\nresource "aws_iam_policy" "ecs_boundary" {\n  for_each = local.roles\n  name = "${local.name}-${each.key}-boundary"\n  policy = local.ecs_runtime_policies[each.key]\n lifecycle {\n precondition {\n condition = each.key != "worker" || (data.aws_kms_key.notices.key_manager == "CUSTOMER" && data.aws_kms_key.notices.enabled && data.aws_kms_key.notices.key_spec == "SYMMETRIC_DEFAULT" && data.aws_kms_key.notices.key_usage == "ENCRYPT_DECRYPT" && data.aws_kms_key.notices.aws_account_id == local.config.account && data.aws_kms_key.notices.arn == var.security.notice_kms_key_arn)\n error_message = "DescribeKey must prove the exact enabled same-account customer symmetric notice key."\n }\n }\n}\n'
 s=s.replace('Sentinel.Portable.Lambda::Sentinel.Portable.Lambda.Function::${local.handlers[each.key]}','Ecs.Backup.Portable.Host::Ecs.Backup.Portable.Host.Function::${local.handlers[each.key]}')
+archive_env = "SENTINEL_ARCHIVE = aws_s3_bucket.archive.id, SENTINEL_QUEUE_ARN"
+assert s.count(archive_env) == 1
+s=s.replace(archive_env, "SENTINEL_ARCHIVE = aws_s3_bucket.archive.id, SENTINEL_ARCHIVE_KMS_KEY = var.security.archive_kms_key_arn, SENTINEL_QUEUE_ARN", 1)
 s=s.replace('locals {\n  config','variable "alarm_notices_enabled" {\n  type = bool\n  default = false\n}\nlocals {\n  config',1)
 assert s.count('actions_enabled     = var.enabled')==3
 s=s.replace('actions_enabled     = var.enabled','actions_enabled     = var.enabled && var.alarm_notices_enabled')

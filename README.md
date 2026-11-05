@@ -1,6 +1,6 @@
 # terragrunt_demo — AWS infrastructure and delivery, proven end to end
 
-**Latest owner handoff (2026-10-27):** [source status, native evidence and remaining gates](docs/HANDOFF-20261027.md). Publishing this source does not deploy V2 or activate CD.
+**Latest DEV execution (2026-11-05):** [.NET 10 API, SQL/KMS, NAT recovery and remaining limits](docs/DEV-V2-20261105.md). The API has passed live POST/GET and readiness checks in AWS. CD remains disabled. The [October handoff](docs/HANDOFF-20261027.md) is historical.
 
 A personal AWS/DevOps portfolio project: provision the **original full DEV
 architecture**, deploy a .NET application, qualify and deliver immutable images,
@@ -11,13 +11,13 @@ Terraform/Terragrunt, GitHub Actions and AWS OIDC support one supervised operato
 checks, protected CI/CD, distinct-image rollback and per-slot NAT recovery were
 verified in AWS. Final DOWN completed. A fresh read-only audit confirmed five
 empty DEV states, no locks and no surviving DEV runtime compute or networking.
-The API is **offline**. Retained security, artifacts and storage can still incur
+The V1 API was **offline at that closure**. Retained security, artifacts and storage can still incur
 charges; see [closure inventory and operations](terraform/docs/portfolio-operations.md).
 This repository is a demonstrated DEV system, not a production availability claim.
 
-V2 continues locally. The owner-authorized .NET 10 LTS migration uses SDK
+V2 is now deployed in DEV. The owner-authorized .NET 10 LTS migration uses SDK
 10.0.402 and runtime 10.0.13, with [local qualification](terraform/docs/validation.md#net-10-lts-local-migration---2026-10-16).
-The dated AWS trials above used V1; .NET 10 API has not been deployed to AWS.
+The dated October trials above used V1; the November record documents the separate .NET 10 AWS deployment.
 The [V2 backup/restore increment](operations/sql-backup/README.md) has native
 Express and real S3/KMS component evidence. The .NET 10 backup CLI also passed
 one manual and two actual hourly EC2-role jobs on October 21; its temporary

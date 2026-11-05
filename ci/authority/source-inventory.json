@@ -6439,7 +6439,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/model.py": {
-      "sha256": "02b5eba37dc0caf261bad6ce5005e47db6a19ef8b3d12b62a18d0bf4f83e6487",
+      "sha256": "791f0bc08e1e3fe97d9812c18e6b09b8d112d7910a719990a8f78fb03451377f",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -11908,19 +11908,19 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/portable/prepare_module.py": {
-      "sha256": "f6d24421768c2e08d1e35991e3762a222ee9b8cb7641c72687cf4e3828e82029",
+      "sha256": "a44f7f011eab8976c24a7d8fd02f7810c2f11554b01ddccd63e6ed8ff1c78fbd",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           4,
-          51,
-          52,
-          58
+          54,
+          55,
+          61
         ],
         "executable-dependency": [
-          31,
           34,
-          51
+          37,
+          54
         ],
         "security-control": [
           13,
@@ -11928,7 +11928,7 @@
           17,
           18,
           19,
-          39
+          42
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -11963,7 +11963,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/portable/trial/main.tf": {
-      "sha256": "f6111ddd8c4afd02be846c45fcaf2e9945794c87212abb4323db121197e46704",
+      "sha256": "b478d82171fd1f45838216a60ca4f29c61e4b95da3fdf306252a26c5f6a6b3d2",
       "declarations": [
         {
           "kind": "data",
@@ -12019,7 +12019,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/portable/trial/tests/portable.tftest.hcl": {
-      "sha256": "b410f4c2e67273586be8075f6fc7b92079462fa0f23d4dd76a438d3e65931c50",
+      "sha256": "e44b6558556adc3d2c4b40d2d8029b9ed3dfb9032aa59c85a36febe6e8c3af4a",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -12035,24 +12035,25 @@
           19,
           27,
           28,
-          61,
-          77,
-          79,
-          91
+          65,
+          81,
+          83,
+          95
         ],
         "executable-dependency": [
           35,
-          66,
-          74,
-          88,
-          96
+          70,
+          78,
+          92,
+          100
         ],
         "security-control": [
           5,
           6,
           14,
           18,
-          90
+          37,
+          94
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -12295,7 +12296,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/portable/trial/runtime/main.tf": {
-      "sha256": "4ba7b617aad158c118baabe919642f8398a7fd01e8b185cff19ebcbf06b279cb",
+      "sha256": "459c8250238865dba5186e18cf0900ddbb18a03ffda0d49dc782c9789957014d",
       "declarations": [
         {
           "kind": "data",
@@ -12642,7 +12643,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/portable/templates/security.tf.tftpl": {
-      "sha256": "c29f49a8f4b8a5395c349745762b55e0950e29074f848ec28e22094fe0e659cd",
+      "sha256": "90a283dd96e5e33ec03f52ff30159d63b1db78dccb3f1d75010d1ac2f3d7707c",
       "declarations": [
         {
           "kind": "data",
@@ -12666,105 +12667,105 @@
           "kind": "resource",
           "type": "aws_s3_bucket_policy",
           "name": "archive",
-          "line": 65
+          "line": 66
         },
         {
           "kind": "resource",
           "type": "aws_s3_bucket",
           "name": "access_logs",
-          "line": 97
+          "line": 98
         },
         {
           "kind": "resource",
           "type": "aws_s3_bucket_ownership_controls",
           "name": "access_logs",
-          "line": 109
+          "line": 110
         },
         {
           "kind": "resource",
           "type": "aws_s3_bucket_public_access_block",
           "name": "access_logs",
-          "line": 113
+          "line": 114
         },
         {
           "kind": "resource",
           "type": "aws_s3_bucket_server_side_encryption_configuration",
           "name": "access_logs",
-          "line": 120
+          "line": 121
         },
         {
           "kind": "resource",
           "type": "aws_s3_bucket_lifecycle_configuration",
           "name": "access_logs",
-          "line": 126
+          "line": 129
         },
         {
           "kind": "resource",
           "type": "aws_s3_bucket_policy",
           "name": "access_logs",
-          "line": 136
+          "line": 139
         },
         {
           "kind": "resource",
           "type": "aws_s3_bucket_logging",
           "name": "archive",
-          "line": 143
+          "line": 146
         }
       ],
       "signals": {
         "launch-or-mutation": [
           13,
           37,
-          60,
-          69,
-          70,
-          71,
-          72,
-          82,
-          83,
-          84,
-          85,
-          91,
-          92,
-          93,
-          139,
-          140,
-          161,
-          167,
-          168,
-          169
-        ],
-        "executable-dependency": [
-          1,
-          69,
+          61,
           70,
           71,
           72,
           73,
-          80,
-          89,
-          139,
-          140,
-          167,
-          168,
-          169
+          83,
+          84,
+          85,
+          86,
+          92,
+          93,
+          94,
+          142,
+          143,
+          164,
+          170,
+          171,
+          172
+        ],
+        "executable-dependency": [
+          1,
+          70,
+          71,
+          72,
+          73,
+          74,
+          81,
+          90,
+          142,
+          143,
+          170,
+          171,
+          172
         ],
         "security-control": [
           46,
           47,
           53,
-          66,
-          68,
-          117,
-          136,
-          138,
-          148
+          67,
+          69,
+          118,
+          139,
+          141,
+          151
         ]
       },
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/portable/trial/runtime/security.tf": {
-      "sha256": "c29f49a8f4b8a5395c349745762b55e0950e29074f848ec28e22094fe0e659cd",
+      "sha256": "90a283dd96e5e33ec03f52ff30159d63b1db78dccb3f1d75010d1ac2f3d7707c",
       "declarations": [
         {
           "kind": "data",
@@ -12788,105 +12789,105 @@
           "kind": "resource",
           "type": "aws_s3_bucket_policy",
           "name": "archive",
-          "line": 65
+          "line": 66
         },
         {
           "kind": "resource",
           "type": "aws_s3_bucket",
           "name": "access_logs",
-          "line": 97
+          "line": 98
         },
         {
           "kind": "resource",
           "type": "aws_s3_bucket_ownership_controls",
           "name": "access_logs",
-          "line": 109
+          "line": 110
         },
         {
           "kind": "resource",
           "type": "aws_s3_bucket_public_access_block",
           "name": "access_logs",
-          "line": 113
+          "line": 114
         },
         {
           "kind": "resource",
           "type": "aws_s3_bucket_server_side_encryption_configuration",
           "name": "access_logs",
-          "line": 120
+          "line": 121
         },
         {
           "kind": "resource",
           "type": "aws_s3_bucket_lifecycle_configuration",
           "name": "access_logs",
-          "line": 126
+          "line": 129
         },
         {
           "kind": "resource",
           "type": "aws_s3_bucket_policy",
           "name": "access_logs",
-          "line": 136
+          "line": 139
         },
         {
           "kind": "resource",
           "type": "aws_s3_bucket_logging",
           "name": "archive",
-          "line": 143
+          "line": 146
         }
       ],
       "signals": {
         "launch-or-mutation": [
           13,
           37,
-          60,
-          69,
-          70,
-          71,
-          72,
-          82,
-          83,
-          84,
-          85,
-          91,
-          92,
-          93,
-          139,
-          140,
-          161,
-          167,
-          168,
-          169
-        ],
-        "executable-dependency": [
-          1,
-          69,
+          61,
           70,
           71,
           72,
           73,
-          80,
-          89,
-          139,
-          140,
-          167,
-          168,
-          169
+          83,
+          84,
+          85,
+          86,
+          92,
+          93,
+          94,
+          142,
+          143,
+          164,
+          170,
+          171,
+          172
+        ],
+        "executable-dependency": [
+          1,
+          70,
+          71,
+          72,
+          73,
+          74,
+          81,
+          90,
+          142,
+          143,
+          170,
+          171,
+          172
         ],
         "security-control": [
           46,
           47,
           53,
-          66,
-          68,
-          117,
-          136,
-          138,
-          148
+          67,
+          69,
+          118,
+          139,
+          141,
+          151
         ]
       },
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/portable/trial/runtime/tests/security.tftest.hcl": {
-      "sha256": "8733652c4b66c0f5335f9ff043ed46224fb1a30a33ca26c113d72cc14866c43a",
+      "sha256": "3bf2a312ec7fc9fdc8bbc2981edc95588eff80bd9c0df7f42638b387c44d4627",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -12899,72 +12900,72 @@
           14,
           20,
           21,
-          30,
-          46,
+          34,
           50,
           54,
-          71,
-          73,
-          84,
-          90,
-          96,
-          102,
-          108,
-          114,
-          120,
-          126,
-          132,
-          139,
-          147,
-          155,
-          163,
-          172,
-          182,
-          191,
-          200,
-          209,
-          218
+          58,
+          75,
+          77,
+          88,
+          94,
+          100,
+          106,
+          112,
+          118,
+          124,
+          130,
+          136,
+          143,
+          151,
+          159,
+          167,
+          176,
+          186,
+          195,
+          204,
+          213,
+          222
         ],
         "executable-dependency": [
           28,
-          46,
-          54,
-          60,
-          68,
-          83,
-          89,
-          95,
-          101,
-          107,
-          113,
-          119,
-          125,
-          131,
-          137,
-          145,
-          153,
-          161,
-          170,
-          179,
-          188,
-          197,
-          206,
-          215
+          50,
+          58,
+          64,
+          72,
+          87,
+          93,
+          99,
+          105,
+          111,
+          117,
+          123,
+          129,
+          135,
+          141,
+          149,
+          157,
+          165,
+          174,
+          183,
+          192,
+          201,
+          210,
+          219
         ],
         "security-control": [
           6,
           13,
-          38,
           42,
-          50,
-          181,
-          190,
-          199,
-          202,
-          208,
-          211,
-          217,
-          220
+          46,
+          54,
+          185,
+          194,
+          203,
+          206,
+          212,
+          215,
+          221,
+          224
         ]
       },
       "semantic_status": "UNVERIFIED"

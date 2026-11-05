@@ -3,7 +3,7 @@
   "upstreamCommit": "b3d0b3b595a9257bb6d4d849c899bf4e8dbc2828",
   "file": "src/Sentinel.Portable.Lambda/Function.cs",
   "baseSha256": "02eba4830ab8e971febacf98d7522c6cb72b940eccffd8eb8d0d264ccbcf090f",
-  "purpose": "Optional consumer SNS formatter injection; default construction keeps upstream behavior",
+  "purpose": "Optional consumer SNS formatter and explicit archive CMK binding; default upstream source remains pinned",
   "replacements": [
     {
       "before": "public sealed class Function {",
@@ -12,6 +12,10 @@
     {
       "before": "new Notifications(c,sns,http,Environment.GetEnvironmentVariable,Before)",
       "after": "new Notifications(c,sns,http,Environment.GetEnvironmentVariable,Before,snsFormat)"
+    },
+    {
+      "before": "new S3ArchiveAdapter(s3,new(Required(\"SENTINEL_ARCHIVE\"),c.Project,c.Environment,c.Consumer))",
+      "after": "new S3ArchiveAdapter(s3,new(Required(\"SENTINEL_ARCHIVE\"),c.Project,c.Environment,c.Consumer,KmsKeyId:Required(\"SENTINEL_ARCHIVE_KMS_KEY\")))"
     }
   ]
 }

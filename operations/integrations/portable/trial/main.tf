@@ -49,9 +49,9 @@ resource "aws_sns_topic" "notices" {
 }
 resource "aws_sns_topic_policy" "notices" {
   arn = aws_sns_topic.notices.arn
-  policy = jsonencode({ Version = "2012-10-17", Statement = [
-    { Effect = "Deny", Principal = "*", Action = "sns:*", Resource = aws_sns_topic.notices.arn, Condition = { Bool = { "aws:SecureTransport" = "false" } } },
-    { Effect = "Allow", Principal = { Service = "cloudwatch.amazonaws.com" }, Action = "sns:Publish", Resource = aws_sns_topic.notices.arn, Condition = { StringEquals = { "aws:SourceAccount" = local.config.account }, ArnLike = { "aws:SourceArn" = "arn:aws:cloudwatch:${local.config.region}:${local.config.account}:alarm:${local.config.deployment}-*" } } }
+  policy = jsonencode({ Version = "2012-10-17", Id = "${local.config.deployment}-notices-policy", Statement = [
+    { Sid = "DenyInsecureTransport", Effect = "Deny", Principal = "*", Action = ["sns:AddPermission", "sns:DeleteTopic", "sns:GetDataProtectionPolicy", "sns:GetTopicAttributes", "sns:ListSubscriptionsByTopic", "sns:ListTagsForResource", "sns:Publish", "sns:PutDataProtectionPolicy", "sns:RemovePermission", "sns:SetTopicAttributes", "sns:Subscribe"], Resource = aws_sns_topic.notices.arn, Condition = { Bool = { "aws:SecureTransport" = "false" } } },
+    { Sid = "OwnCloudWatchAlarmsOnly", Effect = "Allow", Principal = { Service = "cloudwatch.amazonaws.com" }, Action = "sns:Publish", Resource = aws_sns_topic.notices.arn, Condition = { StringEquals = { "aws:SourceAccount" = local.config.account }, ArnLike = { "aws:SourceArn" = "arn:aws:cloudwatch:${local.config.region}:${local.config.account}:alarm:${local.config.deployment}-*" } } }
   ] })
 }
 resource "aws_sns_topic_subscription" "owner" {

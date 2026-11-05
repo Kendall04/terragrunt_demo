@@ -180,7 +180,7 @@ resource "aws_lambda_function" "runtime" {
   memory_size                    = 512
   reserved_concurrent_executions = each.key == "ingestion" ? 2 : 1
   publish                        = true
-  environment { variables = { SENTINEL_TABLE = aws_dynamodb_table.state.name, SENTINEL_ARCHIVE = aws_s3_bucket.archive.id, SENTINEL_QUEUE_ARN = aws_sqs_queue.reports.arn } }
+  environment { variables = { SENTINEL_TABLE = aws_dynamodb_table.state.name, SENTINEL_ARCHIVE = aws_s3_bucket.archive.id, SENTINEL_ARCHIVE_KMS_KEY = var.security.archive_kms_key_arn, SENTINEL_QUEUE_ARN = aws_sqs_queue.reports.arn } }
   depends_on = [aws_iam_role_policy.runtime]
 }
 resource "aws_lambda_alias" "live" {
