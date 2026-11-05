@@ -11,12 +11,14 @@ import sys
 import urllib.request
 import urllib.error
 import urllib.parse
+import ssl
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.extend([str(ROOT / 'scripts/build_supervision'), str(ROOT / 'scripts/qualification')])
 import supervisor
 import finalizer
-from e1_contract import build_id, canonical, digest, operation_id, require, version
+from e1_contract import (build_id, canonical, digest, operation_id, require, version,
+                         DEV_SQL_LAB_RECIPE, SQL_CERTIFICATE, SQL_RECIPE_SHA256)
 from exchange import Exchange
 from workers import Workers
 import publisher
@@ -201,6 +203,15 @@ class Payload(supervisor.Payload):
         return self.workers.stage(self.probes, 'probe', stage)
     def image_build(self, image_context, context, dockerfile, env):
         require(context == image_context + '/demo-api' and dockerfile == context + '/Dockerfile')
+        if self.workers.recipe == DEV_SQL_LAB_RECIPE:
+            # The unchanged supervisor seals the exact approved Git source. No
+            # file is substituted and no gateway path reaches the worker command.
+            root = Path(context)
+            recipe = root/'deploy/sql-lab/Dockerfile'
+            certificate = root/'deploy/trust/sql.demo.internal.crt'
+            require(not recipe.is_symlink() and not certificate.is_symlink())
+            require(digest(recipe.read_bytes().replace(b'\r\n',b'\n')) == SQL_RECIPE_SHA256)
+            require(digest(ssl.PEM_cert_to_DER_cert(certificate.read_text())) == SQL_CERTIFICATE)
         source = self.exchange.source(supervisor.source_tree(image_context), 'image')
         run = self.workers.run('image', {'SOURCE_URL': source, 'OUTPUT_URL': self.exchange.output()})
         outcome = self.workers.stage(run, 'image', 'image_build')

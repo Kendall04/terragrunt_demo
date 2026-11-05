@@ -19,6 +19,13 @@ PHASES = {'dotnet_restore': 'PRE_BUILD', 'dotnet_build': 'BUILD',
 ORDER = ('SUBMITTED', 'QUEUED', 'PROVISIONING', 'DOWNLOAD_SOURCE', 'INSTALL',
          'PRE_BUILD', 'BUILD', 'POST_BUILD', 'UPLOAD_ARTIFACTS', 'FINALIZING', 'COMPLETED')
 UUID = r'[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}'
+STANDARD_RECIPE = 'STANDARD_V1'
+DEV_SQL_LAB_RECIPE = 'DEV_SQL_LAB_V1'
+SQL_CERTIFICATE = '206095fa0ba9e17a84c80eff5021db93d05e2dc377e982a64d517696ed21a1e7'
+SQL_RECIPE_SHA256 = '8045c87604e515389f41413534a30a51b0edcc49f32d905b49e1021f28fd2c91'
+DEV_DOTNET_SDK = '10.0.402'
+DEV_RECIPE_FIELDS = ('schema', 'environment', 'account', 'region', 'source_commit',
+                     'recipe', 'certificate_der_sha256', 'recipe_sha256', 'previous_build_runtime', 'dotnet_runtime')
 
 
 class Rejected(ValueError):
@@ -64,13 +71,39 @@ def image_uri(value, account, region, repository):
     return value
 
 
-def worker_buildspec(kind):
+def select_recipe(authorization, commit, account, region):
+    """Administrator configuration, never gateway parameters or source hints."""
+    if authorization is None:
+        return STANDARD_RECIPE
+    closed(authorization, DEV_RECIPE_FIELDS)
+    previous = authorization['previous_build_runtime']
+    closed(previous, ('uri','support_sha256'))
+    image_uri(previous['uri'], account, region, 'e1-controller-build')
+    require(type(previous['support_sha256']) is str and re.fullmatch('[0-9a-f]{64}',previous['support_sha256']))
+    dotnet = authorization['dotnet_runtime']
+    closed(dotnet, ('uri','support_sha256','sdk','approval'))
+    image_uri(dotnet['uri'], account, region, 'e1-payload-dotnet')
+    require(dotnet['sdk'] == DEV_DOTNET_SDK and dotnet['approval'] == 'ADMIN_VERIFIED'
+            and type(dotnet['support_sha256']) is str and re.fullmatch('[0-9a-f]{64}',dotnet['support_sha256']))
+    require(authorization['schema'] == 'E1_WP3_DEV_SQL_LAB_V1'
+            and authorization['environment'] == 'dev'
+            and authorization['account'] == account and authorization['region'] == region
+            and type(authorization['source_commit']) is str
+            and re.fullmatch('[0-9a-f]{40}', authorization['source_commit'])
+            and authorization['recipe'] == DEV_SQL_LAB_RECIPE
+            and authorization['certificate_der_sha256'] == SQL_CERTIFICATE
+            and authorization['recipe_sha256'] == SQL_RECIPE_SHA256)
+    return DEV_SQL_LAB_RECIPE if commit == authorization['source_commit'] else STANDARD_RECIPE
+
+
+def worker_buildspec(kind, selectable=False):
     """Fixed phases; commands never loaded from application source.
 
     Worker support binaries are in the admin-approved immutable worker runtime.
     The probe uses the exact application digest as its environment, so only sh
     and the application's dotnet executable are required there.
     """
+    require(type(selectable) is bool and (not selectable or kind == 'image'))
     if kind == 'dotnet':
         phases = {'install': ['python3 /opt/e1/scripts/internal_release/worker.py source'],
                   'pre_build': ['dotnet restore ./demo-api/terragrunt-demo.sln'],
@@ -87,6 +120,13 @@ def worker_buildspec(kind):
         require(kind == 'probe')
         phases = {'pre_build': ["out=$(dotnet /app/terragrunt-demo.dll readiness-probe --check-capability) && test \"$out\" = readiness-probe-capability=available"],
                   'build': ['rc=0; READINESS_PROBE_TIMEOUT_SECONDS=1 READINESS_PROBE_REQUEST_TIMEOUT_SECONDS=1 READINESS_PROBE_INTERVAL_SECONDS=1 dotnet /app/terragrunt-demo.dll readiness-probe || rc=$?; test "$rc" -eq 1']}
+    if selectable:
+        # Fixed commands; no interpolation of a caller-supplied path or command.
+        standard = phases['build'][0]
+        lab = standard.replace('-f demo-api/Dockerfile ', '-f demo-api/deploy/sql-lab/Dockerfile ')
+        phases['build'][0] = ('case "$E1_BUILD_RECIPE" in '
+            '""|STANDARD_V1) ' + standard + ' ;; DEV_SQL_LAB_V1) ' + lab +
+            ' ;; *) exit 1 ;; esac')
     return {'version': '0.2', 'phases': {k: {'on-failure': 'ABORT', 'commands': v} for k, v in phases.items()}}
 
 

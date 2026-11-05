@@ -431,7 +431,7 @@
           "promote-prod": "prod",
           "release": "neutral"
         },
-        "sha256": "c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
+        "sha256": "461496bd599d7e49097fe30fa1a375a043269405f7ea08db7a2e4501d0d04aed",
         "engine": "LAMBDA"
       },
       "build": {
@@ -463,7 +463,7 @@
           "status-dev": "dev",
           "status-prod": "prod"
         },
-        "sha256": "e2df102912bf4c302c8a7e1cb3951b97c1219a1c7e26234b05dfe4eb02890684",
+        "sha256": "5d8fdb2b0cfed8900ca03a34d83c5046d4337ca85b91662f13a457ee911bead2",
         "engine": "LAMBDA"
       },
       "environment-lifecycle": {
@@ -528,10 +528,10 @@
       "request-gateway/deploy-dev": {
         "class": "request-gateway",
         "consumer": "deploy-dev",
-        "bundle_id": "sha256:c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
-        "sha256": "c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
+        "bundle_id": "sha256:461496bd599d7e49097fe30fa1a375a043269405f7ea08db7a2e4501d0d04aed",
+        "sha256": "461496bd599d7e49097fe30fa1a375a043269405f7ea08db7a2e4501d0d04aed",
         "storage": "control-bundles",
-        "key": "bundles/sha256/c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b.json",
+        "key": "bundles/sha256/461496bd599d7e49097fe30fa1a375a043269405f7ea08db7a2e4501d0d04aed.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -539,10 +539,10 @@
       "request-gateway/emergency-dev": {
         "class": "request-gateway",
         "consumer": "emergency-dev",
-        "bundle_id": "sha256:c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
-        "sha256": "c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
+        "bundle_id": "sha256:461496bd599d7e49097fe30fa1a375a043269405f7ea08db7a2e4501d0d04aed",
+        "sha256": "461496bd599d7e49097fe30fa1a375a043269405f7ea08db7a2e4501d0d04aed",
         "storage": "control-bundles",
-        "key": "bundles/sha256/c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b.json",
+        "key": "bundles/sha256/461496bd599d7e49097fe30fa1a375a043269405f7ea08db7a2e4501d0d04aed.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -550,10 +550,10 @@
       "request-gateway/emergency-prod": {
         "class": "request-gateway",
         "consumer": "emergency-prod",
-        "bundle_id": "sha256:c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
-        "sha256": "c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
+        "bundle_id": "sha256:461496bd599d7e49097fe30fa1a375a043269405f7ea08db7a2e4501d0d04aed",
+        "sha256": "461496bd599d7e49097fe30fa1a375a043269405f7ea08db7a2e4501d0d04aed",
         "storage": "control-bundles",
-        "key": "bundles/sha256/c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b.json",
+        "key": "bundles/sha256/461496bd599d7e49097fe30fa1a375a043269405f7ea08db7a2e4501d0d04aed.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -561,10 +561,10 @@
       "request-gateway/infra-dev": {
         "class": "request-gateway",
         "consumer": "infra-dev",
-        "bundle_id": "sha256:c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
-        "sha256": "c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
+        "bundle_id": "sha256:461496bd599d7e49097fe30fa1a375a043269405f7ea08db7a2e4501d0d04aed",
+        "sha256": "461496bd599d7e49097fe30fa1a375a043269405f7ea08db7a2e4501d0d04aed",
         "storage": "control-bundles",
-        "key": "bundles/sha256/c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b.json",
+        "key": "bundles/sha256/461496bd599d7e49097fe30fa1a375a043269405f7ea08db7a2e4501d0d04aed.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -572,10 +572,10 @@
       "request-gateway/infra-high-risk-dev": {
         "class": "request-gateway",
         "consumer": "infra-high-risk-dev",
-        "bundle_id": "sha256:c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
-        "sha256": "c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
+        "bundle_id": "sha256:461496bd599d7e49097fe30fa1a375a043269405f7ea08db7a2e4501d0d04aed",
+        "sha256": "461496bd599d7e49097fe30fa1a375a043269405f7ea08db7a2e4501d0d04aed",
         "storage": "control-bundles",
-        "key": "bundles/sha256/c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b.json",
+        "key": "bundles/sha256/461496bd599d7e49097fe30fa1a375a043269405f7ea08db7a2e4501d0d04aed.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -583,10 +583,10 @@
       "request-gateway/infra-high-risk-prod": {
         "class": "request-gateway",
         "consumer": "infra-high-risk-prod",
-        "bundle_id": "sha256:c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
-        "sha256": "c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
+        "bundle_id": "sha256:461496bd599d7e49097fe30fa1a375a043269405f7ea08db7a2e4501d0d04aed",
+        "sha256": "461496bd599d7e49097fe30fa1a375a043269405f7ea08db7a2e4501d0d04aed",
         "storage": "control-bundles",
-        "key": "bundles/sha256/c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b.json",
+        "key": "bundles/sha256/461496bd599d7e49097fe30fa1a375a043269405f7ea08db7a2e4501d0d04aed.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -594,10 +594,10 @@
       "request-gateway/infra-prod": {
         "class": "request-gateway",
         "consumer": "infra-prod",
-        "bundle_id": "sha256:c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
-        "sha256": "c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
+        "bundle_id": "sha256:461496bd599d7e49097fe30fa1a375a043269405f7ea08db7a2e4501d0d04aed",
+        "sha256": "461496bd599d7e49097fe30fa1a375a043269405f7ea08db7a2e4501d0d04aed",
         "storage": "control-bundles",
-        "key": "bundles/sha256/c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b.json",
+        "key": "bundles/sha256/461496bd599d7e49097fe30fa1a375a043269405f7ea08db7a2e4501d0d04aed.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -605,10 +605,10 @@
       "request-gateway/promote-prod": {
         "class": "request-gateway",
         "consumer": "promote-prod",
-        "bundle_id": "sha256:c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
-        "sha256": "c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
+        "bundle_id": "sha256:461496bd599d7e49097fe30fa1a375a043269405f7ea08db7a2e4501d0d04aed",
+        "sha256": "461496bd599d7e49097fe30fa1a375a043269405f7ea08db7a2e4501d0d04aed",
         "storage": "control-bundles",
-        "key": "bundles/sha256/c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b.json",
+        "key": "bundles/sha256/461496bd599d7e49097fe30fa1a375a043269405f7ea08db7a2e4501d0d04aed.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -616,10 +616,10 @@
       "request-gateway/release": {
         "class": "request-gateway",
         "consumer": "release",
-        "bundle_id": "sha256:c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
-        "sha256": "c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b",
+        "bundle_id": "sha256:461496bd599d7e49097fe30fa1a375a043269405f7ea08db7a2e4501d0d04aed",
+        "sha256": "461496bd599d7e49097fe30fa1a375a043269405f7ea08db7a2e4501d0d04aed",
         "storage": "control-bundles",
-        "key": "bundles/sha256/c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b.json",
+        "key": "bundles/sha256/461496bd599d7e49097fe30fa1a375a043269405f7ea08db7a2e4501d0d04aed.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -649,10 +649,10 @@
       "status/status-neutral": {
         "class": "status",
         "consumer": "status-neutral",
-        "bundle_id": "sha256:e2df102912bf4c302c8a7e1cb3951b97c1219a1c7e26234b05dfe4eb02890684",
-        "sha256": "e2df102912bf4c302c8a7e1cb3951b97c1219a1c7e26234b05dfe4eb02890684",
+        "bundle_id": "sha256:5d8fdb2b0cfed8900ca03a34d83c5046d4337ca85b91662f13a457ee911bead2",
+        "sha256": "5d8fdb2b0cfed8900ca03a34d83c5046d4337ca85b91662f13a457ee911bead2",
         "storage": "control-bundles",
-        "key": "bundles/sha256/e2df102912bf4c302c8a7e1cb3951b97c1219a1c7e26234b05dfe4eb02890684.json",
+        "key": "bundles/sha256/5d8fdb2b0cfed8900ca03a34d83c5046d4337ca85b91662f13a457ee911bead2.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -660,10 +660,10 @@
       "status/status-dev": {
         "class": "status",
         "consumer": "status-dev",
-        "bundle_id": "sha256:e2df102912bf4c302c8a7e1cb3951b97c1219a1c7e26234b05dfe4eb02890684",
-        "sha256": "e2df102912bf4c302c8a7e1cb3951b97c1219a1c7e26234b05dfe4eb02890684",
+        "bundle_id": "sha256:5d8fdb2b0cfed8900ca03a34d83c5046d4337ca85b91662f13a457ee911bead2",
+        "sha256": "5d8fdb2b0cfed8900ca03a34d83c5046d4337ca85b91662f13a457ee911bead2",
         "storage": "control-bundles",
-        "key": "bundles/sha256/e2df102912bf4c302c8a7e1cb3951b97c1219a1c7e26234b05dfe4eb02890684.json",
+        "key": "bundles/sha256/5d8fdb2b0cfed8900ca03a34d83c5046d4337ca85b91662f13a457ee911bead2.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -671,10 +671,10 @@
       "status/status-prod": {
         "class": "status",
         "consumer": "status-prod",
-        "bundle_id": "sha256:e2df102912bf4c302c8a7e1cb3951b97c1219a1c7e26234b05dfe4eb02890684",
-        "sha256": "e2df102912bf4c302c8a7e1cb3951b97c1219a1c7e26234b05dfe4eb02890684",
+        "bundle_id": "sha256:5d8fdb2b0cfed8900ca03a34d83c5046d4337ca85b91662f13a457ee911bead2",
+        "sha256": "5d8fdb2b0cfed8900ca03a34d83c5046d4337ca85b91662f13a457ee911bead2",
         "storage": "control-bundles",
-        "key": "bundles/sha256/e2df102912bf4c302c8a7e1cb3951b97c1219a1c7e26234b05dfe4eb02890684.json",
+        "key": "bundles/sha256/5d8fdb2b0cfed8900ca03a34d83c5046d4337ca85b91662f13a457ee911bead2.json",
         "version_id": null,
         "installation": "UNVERIFIED",
         "operational": false
@@ -3065,7 +3065,7 @@
       "request-gateway/release": {
         "name": "e1-gateway-release",
         "engine": "LAMBDA",
-        "bundle_digest": "c9c9eb51a941f84e37e128a8176d46741a248c6c4b49959058188398456a4b7b"
+        "bundle_digest": "461496bd599d7e49097fe30fa1a375a043269405f7ea08db7a2e4501d0d04aed"
       },
       "build/release": {
         "name": "e1-controller-release",
@@ -3080,7 +3080,7 @@
       "status/status-neutral": {
         "name": "e1-status-neutral",
         "engine": "LAMBDA",
-        "bundle_digest": "e2df102912bf4c302c8a7e1cb3951b97c1219a1c7e26234b05dfe4eb02890684"
+        "bundle_digest": "5d8fdb2b0cfed8900ca03a34d83c5046d4337ca85b91662f13a457ee911bead2"
       }
     },
     "workers": {
@@ -3173,9 +3173,37 @@
         }
       }
     },
-    "support_sha256": "2083e148541eceb18d82d481377c80267e0cf13921c321817acca72353f358e0",
+    "support_sha256": "7b8376e3fb47f38ee6ae3dd696cb08aec0c27aa35c75a46a0edc33466f5c85a2",
     "installations": {},
     "runtime_approvals": {},
+    "dev_sql_lab": {
+      "schema": "E1_WP3_DEV_SQL_LAB_V1",
+      "recipe": "DEV_SQL_LAB_V1",
+      "certificate_der_sha256": "206095fa0ba9e17a84c80eff5021db93d05e2dc377e982a64d517696ed21a1e7",
+      "recipe_sha256": "8045c87604e515389f41413534a30a51b0edcc49f32d905b49e1021f28fd2c91",
+      "dotnet_sdk": "10.0.402",
+      "image_buildspec": {
+        "version": "0.2",
+        "phases": {
+          "install": {
+            "on-failure": "ABORT",
+            "commands": [
+              "python3 /opt/e1/scripts/internal_release/worker.py source",
+              "mkdir -p /etc/docker; printf '%s' '{\"features\":{\"containerd-snapshotter\":true}}' > /etc/docker/daemon.json",
+              "nohup dockerd --host=unix:///var/run/docker.sock >/tmp/e1-dockerd.log 2>&1 &",
+              "i=0; until docker info >/dev/null 2>&1; do i=$((i+1)); test \"$i\" -lt 30 || exit 1; sleep 1; done"
+            ]
+          },
+          "build": {
+            "on-failure": "ABORT",
+            "commands": [
+              "case \"$E1_BUILD_RECIPE\" in \"\"|STANDARD_V1) docker buildx build --provenance=false --sbom=false --platform linux/amd64 --output type=oci,dest=/tmp/e1-image.tar -f demo-api/Dockerfile demo-api ;; DEV_SQL_LAB_V1) docker buildx build --provenance=false --sbom=false --platform linux/amd64 --output type=oci,dest=/tmp/e1-image.tar -f demo-api/deploy/sql-lab/Dockerfile demo-api ;; *) exit 1 ;; esac",
+              "python3 /opt/e1/scripts/internal_release/worker.py output"
+            ]
+          }
+        }
+      }
+    },
     "live": "UNVERIFIED_NOT_DEPLOYED",
     "external_invocation": [],
     "controller_skeleton_identities": 18,
@@ -3195,7 +3223,7 @@
         "engine": "LAMBDA",
         "environment": "dev",
         "reservation": "request-gateway/deploy-dev",
-        "package_sha256": "e411857643985b525273c203ee00cf657a11421b71157ee3b70b8ed1e9775351",
+        "package_sha256": "fb17d71ad307aab4b3140a4d573cb33b8cac685072ee0bbfb69c6c3ef641c943",
         "dependencies": [
           "normal-delivery/deploy-dev",
           "cleanup-recovery/cleanup-dev"
@@ -3207,7 +3235,7 @@
         "engine": "LAMBDA",
         "environment": "prod",
         "reservation": "request-gateway/promote-prod",
-        "package_sha256": "8b8e257111d4a1eb11faf658412b805752da6340cd5862d357f8b813cd5185a0",
+        "package_sha256": "b50aea2dca3b288ae001ef4e100c596c346aa0a410aabe36171b3eb37037727b",
         "dependencies": [
           "normal-delivery/promote-prod",
           "cleanup-recovery/cleanup-prod"
@@ -3219,7 +3247,7 @@
         "engine": "LAMBDA",
         "environment": "dev",
         "reservation": "request-gateway/emergency-dev",
-        "package_sha256": "da57a0730f9c5be78d718cdad65ad63c871438dd6373f2ff34676ca41df74e0c",
+        "package_sha256": "6a3bf9c3c3ca9a5874eef4025bd97d9529c90610b9e5fa3ec17e9217a88f1514",
         "dependencies": [
           "emergency-recovery/emergency-dev",
           "cleanup-recovery/cleanup-dev"
@@ -3231,7 +3259,7 @@
         "engine": "LAMBDA",
         "environment": "prod",
         "reservation": "request-gateway/emergency-prod",
-        "package_sha256": "2248ae9fbb8f1e7296a5154f42d53fb547c896dcebdebe24b543da7b31f0d8c0",
+        "package_sha256": "342cc0170219c7431a82b7d15e956d7e4e8f5a63a3a81e9686d5c96996bef532",
         "dependencies": [
           "emergency-recovery/emergency-prod",
           "cleanup-recovery/cleanup-prod"
@@ -3425,7 +3453,7 @@
             "vpc_link_sg_id"
           ]
         },
-        "package_sha256": "c0d3957be1ff27be6e04b9265effddb9619df7170858ea35137cc91251c1bfea"
+        "package_sha256": "e7c50a7422789ba5a28a512e256dbef548e81cb2acded23767716d326e75893b"
       },
       "environment-lifecycle/infra-dev": {
         "name": "e1-controller-infra-dev",
@@ -3543,7 +3571,7 @@
             "vpc_link_sg_id"
           ]
         },
-        "package_sha256": "1e2db8cb3f6a9d9f7569eb050919e678f986d46e01a5e0fb3e91b8d1138c5add"
+        "package_sha256": "91c8ebf873d0333d6b736cfed4e2b716c71dc98eb2dc9132d194791d4f87d0ac"
       },
       "environment-lifecycle/infra-prod": {
         "name": "e1-controller-infra-prod",
@@ -3661,7 +3689,7 @@
             "vpc_link_sg_id"
           ]
         },
-        "package_sha256": "2647669c910351d668eaf2739ce6e44174d9d02277374d3edca13bac1ad29dce"
+        "package_sha256": "48b0acdb83b305a2d5036bfb1baf6cb03ae07bf17fe4d64f19984b2d9e8dac34"
       },
       "environment-lifecycle/infra-high-risk-dev": {
         "name": "e1-controller-infra-high-risk-dev",
@@ -3779,7 +3807,7 @@
             "vpc_link_sg_id"
           ]
         },
-        "package_sha256": "d01548ad0610147a3cc6a459d2044f6063f89dd7cdd7e79082e80ce1d1526ce5"
+        "package_sha256": "ff680a0dc405881e7fc42a02938e07cb7397efb617f6337b6d8fb462695eb5ca"
       },
       "environment-lifecycle/infra-high-risk-prod": {
         "name": "e1-controller-infra-high-risk-prod",

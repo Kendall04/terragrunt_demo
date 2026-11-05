@@ -13,7 +13,8 @@ from pathlib import Path
 import sys
 import tempfile
 import time
-from e1_contract import CONTROLLERS, CORE_BUILD, CORE_FINALIZER, canonical, closed, digest, require, version
+from e1_contract import (CONTROLLERS, CORE_BUILD, CORE_FINALIZER, canonical, closed,
+                         digest, require, version, select_recipe, DEV_SQL_LAB_RECIPE)
 
 _installation = None
 
@@ -54,7 +55,14 @@ def load_bundle(s3, reference, root):
 
 def config():
     value = json.loads(os.environ['E1_PROTECTED_CONFIGURATION'])
-    closed(value, ('binding','account','region','bundle','runtime_image','support_sha256','evidence_bucket','exchange_bucket'))
+    fields = ('binding','account','region','bundle','runtime_image','support_sha256','evidence_bucket','exchange_bucket')
+    if 'dev_sql_lab_release' in value:
+        require(value['binding'] == 'build/release')
+        fields += ('dev_sql_lab_release',)
+        authorization = value['dev_sql_lab_release']
+        require(type(authorization) is dict)
+        select_recipe(authorization, authorization.get('source_commit'), value['account'], value['region'])
+    closed(value, fields)
     require(value['binding'] in CONTROLLERS)
     reference = value['bundle']
     require(reference['class'] + '/' + reference['consumer'] == value['binding'])
@@ -65,6 +73,8 @@ def config():
     files = ('e1_contract.py','exchange.py','publisher.py','workers.py','adapters.py','services.py','runtime.py','worker.py')
     source = canonical({name: digest((Path(__file__).parent / name).read_bytes().replace(b'\r\n', b'\n')) for name in files})
     require(digest(source) == value['support_sha256'])
+    if 'dev_sql_lab_release' in value:
+        require(value['dev_sql_lab_release']['dotnet_runtime']['support_sha256'] == value['support_sha256'])
     return value
 
 
@@ -125,7 +135,10 @@ def invoke(event):
             created_at=datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
             controller_image={'owner':'SECURITY_ROOT_OWNED','binding':'build/release',
                               'uri':c['runtime_image'],'approval':'ADMIN_VERIFIED'})
-        workers = Workers(codebuild,c['account'],c['region'],'demo-shared-demo-ms',op['operation_id'])
+        recipe = select_recipe(c.get('dev_sql_lab_release'), op['source_commit'], c['account'], c['region'])
+        workers = Workers(codebuild,c['account'],c['region'],'demo-shared-demo-ms',op['operation_id'],
+            recipe=recipe,selectable=c.get('dev_sql_lab_release') is not None,
+            dotnet_image=c['dev_sql_lab_release']['dotnet_runtime']['uri'] if recipe == DEV_SQL_LAB_RECIPE else None)
         payload = Payload(Source(),workers,Exchange(s3,c['exchange_bucket'],op['operation_id']))
         registry = c['account'] + '.dkr.ecr.' + c['region'] + '.amazonaws.com'
         images = Images(boto3.client('ecr',region_name=c['region']),payload,registry,'demo-shared-demo-ms')

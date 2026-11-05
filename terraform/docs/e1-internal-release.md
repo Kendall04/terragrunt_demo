@@ -92,13 +92,55 @@ The worker cannot forge protected evidence or acquire publication authority.
 The unchanged WP3B local seal protects controller-held inputs; it is not remote
 filesystem attestation of a compromised worker.
 
-The probe runs D as its exact CodeBuild environment image. The only image
-override is the validated neutral repository SHA-256 URI. CodeBuild service
+The probe runs D as its exact CodeBuild environment image. The default image
+override is the validated neutral repository SHA-256 URI for the probe. The
+closed DEV SQL-Lab contract additionally permits an exact admin-approved dotnet
+runtime digest for that DEV source only. CodeBuild service
 image-pull credentials and an exact probe-project/account ECR policy avoid ECR
 credentials in the compromised worker role. Capability and no-server checks map
 to separate fixed phases. Application stdout alone never establishes success.
 
 ## Protected state and event ordering
+
+### Optional exact-source DEV SQL-Lab recipe
+
+The administrative `wp3_dev_sql_lab_release` input defaults to null. Only limited
+DEV mode may admit its closed `E1_WP3_DEV_SQL_LAB_V1` record: exact account,
+region, source commit, recipe identifier and fixed public certificate/recipe
+hashes. The gateway still accepts only `source_commit`; its authentic source
+approval remains mandatory. Other commits retain the original standard recipe.
+PROD/neutral scope, paths, arbitrary environment parameters and buildspec
+overrides are rejected. No source-controlled selector file supplies authority.
+
+The optional shared image-worker buildspec dispatches only the two fixed
+commands. The controller supplies its closed selector; CodeBuild's terminal
+build metadata must confirm both the installed selectable buildspec and the
+effective selector before OCI publication. The sealed source's SQL-Lab recipe
+and public certificate are checked independently before dispatch. Worker IAM,
+privilege isolation, OCI parsing, digest readback, phases and finalizer are unchanged.
+
+Historical configurations keep their six unchanged closed identity fingerprints,
+including their actual support hash and buildspec, separately from the new source
+catalog. A partial/mismatched graph is still rejected. The DEV option requires
+normal new administrative admission for the outer controller and image worker;
+it cannot activate by reusing their historical preservation fingerprints.
+For the unchanged installed build bundle, a bounded upgrade reconstructs and
+checks the authentic previous build/runtime identity against its original closed
+fingerprint, requires exact-version bundle readback and a separately approved new
+controller image. It never invents a historical conditional-write receipt. The
+image worker requires a new normal runtime approval for its selectable buildspec.
+The dotnet project's default .NET 8 image and original buildspec stay intact:
+only the admitted DEV source uses an independently approved .NET 10 SDK image
+override from the same exact runtime repository. The controller checks that AWS
+reports that image and an unprivileged environment. Other commits never receive
+the override. Other historical bindings stay unchanged.
+The source implementation does not update installed runtimes/buildspecs. Genuine
+runtime image approvals, artifact readbacks and a separate security-root plan
+are required before installation; source merge is not activation or publication.
+The existing preserved release gateway remains at concurrency zero.
+`wp3_dev_release_enabled` is a separate default-false administrative input; true
+requires the complete admitted DEV recipe graph and independent operational
+approval. It changes only that gateway's concurrency, never CD or delivery.
 
 The internal release gateway accepts only an approved full source commit. An
 admin-owned source-approval record authorizes that repository/commit. It writes

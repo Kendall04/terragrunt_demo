@@ -62,6 +62,12 @@ The WP3C [internal release implementation](e1-internal-release.md) adds hermetic
 adapter/authority acceptance and provider-free selective-compute fixtures.
 These never constitute live AWS isolation or deployment evidence.
 
+Six closed DEV SQL-Lab selector regressions increase the core total to 1106.
+They retain frozen standard worker buildspecs, reject PROD/arbitrary selectors,
+require authoritative CodeBuild metadata, and check source recipe/public trust
+before publication. Local tests do not install the new controller or worker
+contract, authorize a source approval, publish ECR content or deploy ECS.
+
 ## CURRENT CONTRACT — toolchain and coverage
 
 CI selects Terraform 1.13.4, Terragrunt 0.93.3 and exact .NET SDK 10.0.402.
