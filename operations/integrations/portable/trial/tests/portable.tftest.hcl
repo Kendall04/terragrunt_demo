@@ -4,6 +4,7 @@ mock_provider "aws" {
   mock_data "aws_region" { defaults = { region = "us-east-1" } }
   mock_data "aws_kms_key" { defaults = { arn = "arn:aws:kms:us-east-1:341936017254:key/44444444-4444-4444-8444-444444444444", enabled = true, key_manager = "CUSTOMER", key_spec = "SYMMETRIC_DEFAULT", key_usage = "ENCRYPT_DECRYPT", aws_account_id = "341936017254" } }
   mock_resource "aws_iam_policy" { defaults = { arn = "arn:aws:iam::341936017254:policy/mock-boundary" } }
+  mock_resource "aws_lambda_alias" { defaults = { arn = "arn:aws:lambda:us-east-1:341936017254:function:mock-worker:live" } }
   mock_resource "aws_dynamodb_table" { defaults = { arn = "arn:aws:dynamodb:us-east-1:341936017254:table/mock-state" } }
   mock_resource "aws_s3_bucket" { defaults = { arn = "arn:aws:s3:::mock-archive", id = "mock-archive" } }
   mock_resource "aws_sqs_queue" { defaults = { arn = "arn:aws:sqs:us-east-1:341936017254:mock-queue", id = "https://sqs.us-east-1.amazonaws.com/341936017254/mock-queue" } }
@@ -73,6 +74,19 @@ run "activation_is_separate" {
     condition     = module.runtime.ecs_ingestion_enabled && module.runtime.ecs_schedule_states["worker"] == "ENABLED" && alltrue([for v in module.runtime.ecs_alarm_actions_enabled : !v]) && output.security_controls.deletion_protected
     error_message = "Activation is a separate explicit input."
   }
+}
+run "bounded_second_worker_admission" {
+  command = plan
+  variables { worker_admissions_per_tick = 2 }
+  assert {
+    condition     = module.runtime.ecs_worker_admission_contract.admissions == 2 && module.runtime.ecs_worker_admission_contract.concurrency == 1 && module.runtime.ecs_worker_admission_contract.second_target_is_same_worker
+    error_message = "The second admission must reuse the serialized worker, exact input, rule and zero transport retries."
+  }
+}
+run "reject_excess_admissions" {
+  command = plan
+  variables { worker_admissions_per_tick = 3 }
+  expect_failures = [var.worker_admissions_per_tick]
 }
 run "explicit_owned_retirement" {
   command = plan

@@ -51,6 +51,13 @@ def inspect(s3, config, now):
     candidates = [x for x in listing.get('Contents', []) if x['Key'].endswith('/manifest.json')]
     require(candidates, 'BACKUP_MISSING')
     latest = max(candidates, key=lambda x: (x['LastModified'], x['Key']))
+    return inspect_manifest(s3, config, now, latest['Key'])
+
+
+def inspect_manifest(s3, config, now, manifest_key):
+    """Read one immutable pair; used by observation and retention admission."""
+    prefix = config['prefix'].rstrip('/') + '/runs/'
+    latest = {'Key': manifest_key}
     match = re.fullmatch(re.escape(prefix) + r'([a-f0-9]{32})/manifest.json', latest['Key'])
     require(match is not None, 'MANIFEST_SCOPE')
     head = s3.head_object(Bucket=config['bucket'], Key=latest['Key'])
@@ -127,6 +134,9 @@ def handler(event, context):
     require(event.get('source') in ('aws.events', 'dev.backup-observer.validation'), 'INVOCATION_SOURCE')
     require(isinstance(event.get('id'), str) and 0 < len(event['id']) <= 128, 'INVOCATION_ID')
     clients = Config(retries={'total_max_attempts': 1}, connect_timeout=5, read_timeout=30)
+    if event.get('resources') == ['arn:aws:events:us-east-1:341936017254:rule/ecs-portable-r20261026p1-nat-observer']:
+        import nat_observer
+        return nat_observer.handler(event, context, lambda name: boto3.client(name, config=clients), config['nat'])
     try:
         observation = inspect(boto3.client('s3', config=clients), config, now)
     except Unverified as error:
@@ -136,5 +146,16 @@ def handler(event, context):
         observation = {'code': 'STORAGE_CHECK_UNAVAILABLE'}
     result = boto3.client('events', config=clients).put_events(Entries=reports(config, observation, now, event['id']))
     require(result['FailedEntryCount'] == 0, 'OBSERVATION_DELIVERY_UNCONFIRMED')
+    if config.get('retentionEnabled'):
+        import backup_retention
+        s3 = boto3.client('s3', config=clients)
+        try:
+            reviewed = backup_retention.plan(s3, config, now)
+            retention = backup_retention.apply_plan(s3, config, reviewed)
+        except Unverified as error:
+            if str(error) != 'TWO_RECOVERABLE_PAIRS_REQUIRED':
+                raise
+            retention = {'status': 'WAITING_FOR_TWO_PAIRS', 'deletedObjects': 0}
+        print(json.dumps({'retention': retention}))
     print(json.dumps({'observation': observation, 'eventIds': [x['EventId'] for x in result['Entries']]}))
     return {'code': observation['code'], 'eventIds': [x['EventId'] for x in result['Entries']]}

@@ -59,14 +59,23 @@ resource "aws_sns_topic_subscription" "owner" {
   protocol  = "email"
   endpoint  = var.notice_email
 }
+variable "worker_admissions_per_tick" {
+  type    = number
+  default = 1
+  validation {
+    condition     = contains([1, 2], var.worker_admissions_per_tick)
+    error_message = "Only one or two serialized admissions per minute are supported."
+  }
+}
 module "runtime" {
-  source                = "./runtime"
-  config_path           = var.config_path
-  lambda_zip            = var.lambda_zip
-  enabled               = var.enabled
-  security              = var.security
-  retirement            = var.retirement
-  alarm_notices_enabled = var.alarm_notices_enabled
+  source                     = "./runtime"
+  worker_admissions_per_tick = var.worker_admissions_per_tick
+  config_path                = var.config_path
+  lambda_zip                 = var.lambda_zip
+  enabled                    = var.enabled
+  security                   = var.security
+  retirement                 = var.retirement
+  alarm_notices_enabled      = var.alarm_notices_enabled
 }
 output "security_controls" { value = merge(module.runtime.ecs_security_controls, { notice_key_arn = aws_sns_topic.notices.kms_master_key_id }) }
 output "external_key_policy_requirements" { value = module.runtime.ecs_kms_key_policy_requirements }

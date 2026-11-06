@@ -19,8 +19,8 @@ variable "security" {
     error_message = "The dedicated ECS logging bucket must use this deployment's exact snt-logs name."
   }
   validation {
-    condition     = try(endswith(var.security.starts_at, "Z") && endswith(var.security.expires_at, "Z") && timecmp(var.security.starts_at, var.security.expires_at) < 0 && timecmp(var.security.expires_at, timeadd(var.security.starts_at, "48h")) <= 0, false)
-    error_message = "Explicit ordered UTC grant window of at most 48 hours required for the bounded lab; timestamps do not authorize cost or extend the owner's closure."
+    condition     = try(endswith(var.security.starts_at, "Z") && endswith(var.security.expires_at, "Z") && timecmp(var.security.starts_at, var.security.expires_at) < 0 && timecmp(var.security.expires_at, timeadd(var.security.starts_at, "72h")) <= 0, false)
+    error_message = "Explicit ordered UTC grant window of at most 72 hours required for the bounded lab; timestamps do not authorize cost or extend the owner's closure."
   }
 }
 

@@ -15,10 +15,14 @@ import tempfile
 # Exclude only their authenticated bytes from this disposable historical view;
 # CURRENT discovery/inventory still includes them, as do unknown new JSON roots.
 NON_BASELINE_REVIEW_INPUTS = {
+    # This reviewed probe was added after the retired fixture; it remains in
+    # current discovery and the exact supplemental source inventory.
+    'operations/integrations/portable/trial/nat-observer.tf':
+        'aaa53fe035cf7ecad31766ed30f2d6081c0cf96d44116fc8a745e1b3b30fb780',
     # Current discovery still sees the observer and its unresolved role expansion.
     # It cannot retroactively change the retired pre-E1 fixture.
     'operations/integrations/portable/trial/storage-observer.tf':
-        '28ae7054383582fb31ef0f941755f6f6c4822e4fe765912409ed4f5a72c8c6bb',
+        '4b93f2fe36f9ec50c9d7047dc84eae8f7f33004c2f3f9fa445570f236da9aa90',
     'operations/integrations/ssm-diagnostic/review/bootstrap/main.tf.json':
         'edebf25f7532707ab79c99eb36a8c54d679ff2d42244c018ba14ea4b5cde3cd8',
     'operations/integrations/ssm-diagnostic/review/runtime/main.tf.json':

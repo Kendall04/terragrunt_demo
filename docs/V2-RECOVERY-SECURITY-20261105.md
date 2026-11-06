@@ -4,6 +4,13 @@ This is the current implementation/evidence record. It supplements the successfu
 [DEV deployment](DEV-V2-20261105.md); historical recovery fixtures are not evidence
 of a new cold recovery. Starting main: `a913a822492b633784eda15758d1feaf43a7c051`.
 
+**Later operation, November 6:** [the Sentinel incident and retention record](SENTINEL-CHAOS-20261106.md)
+documents the installed policy for the new backup prefix, preserved historical
+versions, and the independently approved USD 20/window through November 9 at
+04:00 UTC (closure reserve 02:30). Retention proposals and November 7 permission
+dates in the chronological record below are historical. The measured SQL recovery
+results remain unchanged; no further SQL recovery was performed for that work.
+
 ## Live inventory, 22:39 UTC
 
 AWS account `341936017254`, `us-east-1`, authenticated administrator

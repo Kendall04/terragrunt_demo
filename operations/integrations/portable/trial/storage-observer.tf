@@ -1,4 +1,12 @@
 # Optional external backup verifier. Reuses this owner's bus and monitor identities.
+variable "backup_retention_enabled" {
+  type    = bool
+  default = false
+  validation {
+    condition     = !var.backup_retention_enabled || try(var.backup_observer.prefix == "terragrunt-demo/dev/sql-backups/v2-20261106", false)
+    error_message = "Retention may enroll only the new approved DEV prefix."
+  }
+}
 variable "backup_observer" {
   type = object({
     zip_path = string, zip_sha256 = string, bucket = string, prefix = string,
@@ -22,13 +30,16 @@ locals {
   backup_observers = var.backup_observer == null ? {} : { sql = var.backup_observer }
   observer_name    = "${local.config.deployment}-backup-observer"
   observer_policies = { for name, c in local.backup_observers : name => jsonencode({
-    Version = "2012-10-17", Statement = [
+    Version = "2012-10-17", Statement = concat([
       { Effect = "Allow", Action = "s3:ListBucket", Resource = "arn:aws:s3:::${c.bucket}", Condition = { StringEquals = { "s3:prefix" = "${c.prefix}/runs/" }, NumericLessThanEquals = { "s3:max-keys" = "1000" }, DateLessThan = { "aws:CurrentTime" = c.expires_at } } },
       { Effect = "Allow", Action = ["s3:GetObject", "s3:GetObjectVersion"], Resource = "arn:aws:s3:::${c.bucket}/${c.prefix}/runs/*", Condition = { DateLessThan = { "aws:CurrentTime" = c.expires_at } } },
       { Effect = "Allow", Action = "kms:Decrypt", Resource = c.backup_key_arn, Condition = { StringEquals = { "kms:ViaService" = "s3.${local.config.region}.amazonaws.com", "kms:CallerAccount" = local.config.account }, StringLike = { "kms:EncryptionContext:aws:s3:arn" = "arn:aws:s3:::${c.bucket}/${c.prefix}/runs/*" }, DateLessThan = { "aws:CurrentTime" = c.expires_at } } },
       { Effect = "Allow", Action = "events:PutEvents", Resource = module.runtime.event_bus_arn, Condition = { StringEquals = { "events:source" = "sentinel.report.sql-observer", "events:detail-type" = "Sentinel Observation v1" }, DateLessThan = { "aws:CurrentTime" = c.expires_at } } },
       { Effect = "Allow", Action = ["logs:CreateLogStream", "logs:PutLogEvents"], Resource = "arn:aws:logs:${local.config.region}:${local.config.account}:log-group:/aws/lambda/${local.observer_name}:*" }
-    ]
+      ], local.nat_observer_statements, var.backup_retention_enabled ? [
+      { Effect = "Allow", Action = ["s3:ListBucketVersions"], Resource = "arn:aws:s3:::${c.bucket}", Condition = { StringEquals = { "s3:prefix" = "${c.prefix}/runs/" }, NumericLessThanEquals = { "s3:max-keys" = "1000" }, DateLessThan = { "aws:CurrentTime" = c.expires_at } } },
+      { Effect = "Allow", Action = ["s3:GetObjectVersionTagging", "s3:PutObjectVersionTagging"], Resource = "arn:aws:s3:::${c.bucket}/${c.prefix}/runs/*", Condition = { DateLessThan = { "aws:CurrentTime" = c.expires_at } } }
+    ] : [])
   }) }
 }
 resource "aws_iam_policy" "backup_observer_boundary" {
@@ -70,13 +81,14 @@ resource "aws_lambda_function" "backup_observer" {
       bucket       = each.value.bucket, prefix = each.value.prefix, database = each.value.database,
       backupKeyArn = each.value.backup_key_arn, textKeyArn = each.value.text_key_arn,
       maxBytes     = 536870912, expiresAt = each.value.expires_at, bus = local.config.deployment,
-      monitors     = [for m in local.config.monitors : { id = m.id, kind = m.kind, resource = m.resource, generation = m.generation }]
+      monitors     = [for m in local.config.monitors : { id = m.id, kind = m.kind, resource = m.resource, generation = m.generation } if m.sources == ["sql-observer"]]
+      nat          = local.nat_observer_config, retentionEnabled = var.backup_retention_enabled
     }) }
   }
   depends_on = [aws_cloudwatch_log_group.backup_observer, aws_iam_role_policy.backup_observer]
   lifecycle {
     precondition {
-      condition     = length(local.config.monitors) == 2 && alltrue([for m in local.config.monitors : length(m.sources) == 1 && m.sources[0] == "sql-observer" && contains(["sql-backup", "report"], m.kind)])
+      condition     = length([for m in local.config.monitors : m if m.sources == ["sql-observer"] && contains(["sql-backup", "report"], m.kind)]) == 2 && length(local.config.monitors) == (var.nat_observer == null ? 2 : 3)
       error_message = "Preserve the two existing SQL monitor identities; no new journal identities."
     }
   }
