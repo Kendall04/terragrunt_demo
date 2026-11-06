@@ -1,5 +1,10 @@
 # ECS · diagramas Archify
 
+**ECS V2 actual:** consulte [el atlas técnico del 6-nov-2026](V2-INDEX.md).
+Incluye siete vistas nuevas, auditoría de fuentes, inventario AWS fechado y
+lectura móvil. Los cinco originales descritos aquí siguen siendo históricos:
+sus bytes, pins y procedencia no cambiaron.
+
 Cinco HTML generados por **Archify 3.1.0**, no dibujos propios atribuidos a Archify:
 
 1. [Aplicación V1 histórica](v1-platform.html): API Gateway, VPC Link, ALB, Fargate, SQL/KMS.

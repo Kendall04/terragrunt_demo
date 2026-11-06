@@ -1,5 +1,10 @@
 # Architecture and current contracts
 
+> **V2 diagram audit — 2026-11-06:** the [dated architecture atlas](../../docs/interactive/V2-INDEX.md)
+> reconciles source at `5d35edef` with a read-only AWS inventory. It separates current
+> V2 deployment, demonstrated recovery, inhibited delivery and historical diagrams.
+> The October closure/default narratives below are not the November AWS inventory.
+
 > **Current DEV operations (2026-10-28):** use the [native Terraform lifecycle](native-dev-lifecycle.md). E16 execution/session requirements below are historical; independent security and delivery contracts remain.
 
 > **Closure status — 2026-10-16:** the complete original DEV topology below was deployed and

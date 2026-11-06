@@ -1,0 +1,1751 @@
+{
+  "schemaVersion": 1,
+  "revision": "5d35edef4f2ee1c0463df483d22745d13cae47cd",
+  "meaning": "Node citations are evidence locators. Relationship records preserve reviewed source/target and citations; the interpretation is in V2-AUDIT.md, not established by hashing alone.",
+  "fragments": {
+    ".github/workflows/ci.yml:1-28": {
+      "path": ".github/workflows/ci.yml",
+      "line": 1,
+      "endLine": 28,
+      "commitFileSha256": "40aed2f3cc55de3b508571e6376047027a4cdece6e8b4b569628f5a0f5b1bd4f",
+      "fragmentLfSha256": "ac67c6961c3bbdfd2af6fca108b2fe3c73af601b5f640e975912117f6be780ab",
+      "text": "{\n  \"name\": \"CI - Orchestrator\",\n  \"on\": {\n    \"pull_request\": {\n      \"branches\": [\n        \"develop\",\n        \"main\"\n      ],\n      \"types\": [\n        \"opened\",\n        \"synchronize\",\n        \"reopened\",\n        \"edited\",\n        \"ready_for_review\"\n      ]\n    },\n    \"push\": {}\n  },\n  \"permissions\": {\n    \"contents\": \"read\"\n  },\n  \"concurrency\": {\n    \"group\": \"ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}\",\n    \"cancel-in-progress\": true\n  },\n  \"jobs\": {\n    \"detect-changes\": {\n      \"name\": \"Detect CI Scope\",\n"
+    },
+    "terraform/docs/native-dev-lifecycle.md:1-28": {
+      "path": "terraform/docs/native-dev-lifecycle.md",
+      "line": 1,
+      "endLine": 28,
+      "commitFileSha256": "316429874c0bf20fbb811e4bac3961e38bfbf0092e53a795e5db5a64bee9e004",
+      "fragmentLfSha256": "6cf7461d8340001f64e692042e4b412f46f5941cf05545880a456c5e300eb4a6",
+      "text": "# Native DEV lifecycle\n\nOwner decision, 28 October 2026: use native Terraform for the five original DEV\nroots. E16 sessions, approvals, shutdown receipts and Python execution are retired.\nThis guide is an operating procedure, not execution authorization. Every plan,\napply, controller change and destructive operation needs its own explicit scope.\n\n## Owners and prerequisites\n\n`terraform/modules/target/dev/{global,data,platform,apps,edge}` are checked-in,\nself-contained **Terraform roots**, including local modules and provider locks.\nThere are no active Terragrunt wrappers for those five roots. Do not generate a\nparallel topology, copy the project or run the retired `terraform/infra` roots.\n`terraform/live/security` and `terraform/live/sentinel-backup` have their own\nTerragrunt owners; the portable Sentinel trial has separate Terraform ownership.\nNone belongs to ordinary runtime destroy.\n\nUse Terraform **1.13.4**, locked AWS **5.100.0**, PowerShell **7.4+** and AWS CLI v2.\nTerragrunt **0.93.3** is needed only for its actual owners. Do not upgrade locks.\nRe-use the checkout and native provider cache, initialize only the next root,\nand check disk space before downloads. Do not create another repository/session\ncopy or edit provider files. Source/input/plan changes invalidate the review.\n\nUse source profile `cnp-cert-dev` to assume only\n`arn:aws:iam::341936017254:role/TerragruntDemoDevOperator`, in `us-east-1`.\nThe existing same-profile AWS configuration can do this without Python: set\n`role_arn` to that role, `source_profile=cnp-cert-dev`, `duration_seconds=3600`,\na new identifiable `role_session_name` and the existing approved CA bundle.\n"
+    },
+    "docs/V2-RECOVERY-SECURITY-20261105.md:159-186": {
+      "path": "docs/V2-RECOVERY-SECURITY-20261105.md",
+      "line": 159,
+      "endLine": 186,
+      "commitFileSha256": "a2377034e59873c4bb7f0343bb17617bbda8b9d8deb760996d5e6aab4d2cec3a",
+      "fragmentLfSha256": "6516a8ff302a0a2e0a4288d21941616e9a20985484318d58590c9af5c8678fbe",
+      "text": "for APT, PCRE2, zlib, CA certificates and liblzma. The final image is:\n\n`341936017254.dkr.ecr.us-east-1.amazonaws.com/demo-dev-shared-demo-ms@sha256:5c4a1108170482089ca832e9ce3102d5f49e3b320675189d7773ddc52deef219`\n\nECR basic scan: **COMPLETE, zero findings**, at this dated scan. ECS blue revision\n13 completed deployment with zero failed tasks; green remains at zero. The image\nruns as UID 1654 and preserves the exact public SQL certificate/trust. Live\n`/health` and `/ready` returned 200; a new synthetic POST/GET round trip at\n00:01 UTC passed SQL and KMS and preserved prior rows. No SQL privilege or schema\nchange was made for this image update.\n\nNuGet's vulnerability audit of all four solution projects, including transitive\ndependencies, returned no known vulnerable packages using the official feed.\nThis does not prove absence of undisclosed vulnerabilities. The actual trust\nboundaries, IAM composition, scanner limitations and residual risks are detailed\nin [the security review](V2-TRUST-AND-THREATS.md).\n\n## Costs and operational boundary\n\nFresh AWS price quotes: t3a.small Linux $0.0188/hour; t3.micro $0.0104/hour.\nCost Explorer's account-wide, estimated daily values are not attributable spend\nfor this execution and are delayed. New producer installation is modelled at\nat most $0.15 for package/storage/requests within the current window, excluding\nalready-running resources. A fresh recovery trial needs a separately reviewed\nincremental estimate and explicit permission to interrupt the active database.\n\nThe existing reserve begins **2026-11-07 02:30 UTC**, with closure by **04:00 UTC**.\nThis work does not extend either time. Retained disks/backups continue to cost\n"
+    },
+    "terraform/modules/target/dev/apps/modules/ecs_service/service.tf:13-38": {
+      "path": "terraform/modules/target/dev/apps/modules/ecs_service/service.tf",
+      "line": 13,
+      "endLine": 38,
+      "commitFileSha256": "d2f062a4ef41ba2437b52f6274856e9a82104e8410b9724b1d9de0e76e1b5262",
+      "fragmentLfSha256": "485380fce60dc6fa823596026ff0748404e9c7bd04e141fab0cf78100b5bf1c0",
+      "text": "  deployment_minimum_healthy_percent = 100\n  deployment_maximum_percent         = 200\n\n  network_configuration {\n    subnets          = var.subnet_ids\n    security_groups  = var.security_group_ids\n    assign_public_ip = var.assign_public_ip\n  }\n\n  dynamic \"load_balancer\" {\n    for_each = var.load_balancers\n    content {\n      target_group_arn = load_balancer.value.target_group_arn\n      container_name   = load_balancer.value.container_name\n      container_port   = load_balancer.value.container_port\n    }\n  }\n\n  tags = var.tags\n\n  lifecycle {\n    ignore_changes = [\n      desired_count,\n      task_definition,\n    ]\n  }\n"
+    },
+    "docs/V2-TRUST-AND-THREATS.md:49-69": {
+      "path": "docs/V2-TRUST-AND-THREATS.md",
+      "line": 49,
+      "endLine": 69,
+      "commitFileSha256": "51053a06466a69af2aac68fc92bee07f2e34f0568cd8cf072d90a4d559d0379d",
+      "fragmentLfSha256": "5dc4021206c3f8f6b94aee62c6eda3cb581c9074c872a02d463d8799dce8b208",
+      "text": "## Identities and authority\n\n| Identity / boundary | Effective purpose | Important limit or residual risk |\n| --- | --- | --- |\n| `cnp-cert-admin` | Explicit administrative operations and sensitive configuration | Powerful human credential; single-operator trust, no separation-of-duties claim |\n| `TerragruntDemoDevOperator` | Native DEV Terraform owners and approved temporary deltas | Authorization is the composition of installed Parts, boundary, resource policies and explicit Deny; a small additional policy alone is not the effective policy |\n| ECS blue execution role | Image pull, logs, versioned runtime connection secret | This role is not the application task role; the secret is injected at task start |\n| ECS blue task role | Application CMK operations | Compromise of the application can decrypt its authorized ciphertext; encryption does not replace application authorization |\n| `demo-dev-data-sql-ec2-role` | Bootstrap secrets, SSM, backup package and own backup prefix | Host compromise can obtain bootstrap credentials; no claim that SQL runtime privileges constrain a compromised host administrator |\n| SQL `recovery_app` | SELECT/INSERT on `DemoTexts`, SELECT on EF migration metadata | No UPDATE/DELETE/DDL, db_owner or ddladmin; login is enabled only after verified handoff |\n| SQL `recovery_migrator` | Explicit reviewed migrations | Disabled after handoff; absent from HTTP startup and Fargate secret injection |\n| Backup / verifier SQL identities | Backup plus isolated verification database | Separate from application runtime; private credential files are root-only, not Terraform values |\n| External backup observer role | List one prefix, read exact versions, decrypt through S3, publish two observation types | No SQL secret, S3 delete/write, journal mutation or remediation privilege; time bounded |\n| Sentinel ingest / worker / watchdog / cleanup roles | Existing bounded journal workflow, archive and notices | Boundaries, scoped resources and expiry retained; historical permanent failures remain visible |\n| NAT recovery Lambdas | Existing E13 EIP, route and SDC repair | Published version 6 and membership checks retained; no SQL recovery authority |\n| GitHub OIDC request identities | Closed protected requests when their installed contract is active | Disabled CD and historic workflow pins do not prove current automatic deployment readiness |\n\nThe SQL role's new backup grant uses only the new experiment prefix and exact\npackage object. Writes require `If-None-Match: *`, SSE-KMS and the correct CMK.\nKMS use is restricted by caller account, regional S3 service and object encryption\ncontext. Existing bucket statements, CMK statements and backup versions remain.\n"
+    },
+    ".github/workflows/cd.yml:1-28": {
+      "path": ".github/workflows/cd.yml",
+      "line": 1,
+      "endLine": 28,
+      "commitFileSha256": "69abf4848f4b2aa5f5d94b5b7fb23fc843fc87a835d1fa66234f6ff54c758d25",
+      "fragmentLfSha256": "05a78dee7abccfe2598fab7e6c9b92684ca1bdb2dd3341efdb7d117322f634c2",
+      "text": "{\n  \"name\": \"CD Orchestrator\",\n  \"on\": {\n    \"push\": {\n      \"branches\": [\n        \"develop\",\n        \"main\"\n      ],\n      \"paths\": [\n        \"terraform/**\",\n        \"demo-api/**\",\n        \"scripts/**\",\n        \".github/**\",\n        \"ci/**\"\n      ]\n    }\n  },\n  \"permissions\": {\n    \"contents\": \"read\"\n  },\n  \"concurrency\": {\n    \"group\": \"e1-CD-Orchestrator-${{ github.ref }}\",\n    \"cancel-in-progress\": false\n  },\n  \"jobs\": {\n    \"scope\": {\n      \"uses\": \"./.github/workflows/cd-scope.yml\",\n      \"permissions\": {\n"
+    },
+    "docs/V2-TRUST-AND-THREATS.md:89-106": {
+      "path": "docs/V2-TRUST-AND-THREATS.md",
+      "line": 89,
+      "endLine": 106,
+      "commitFileSha256": "51053a06466a69af2aac68fc92bee07f2e34f0568cd8cf072d90a4d559d0379d",
+      "fragmentLfSha256": "252cbd9c7d0db2bf9f5bd11eefdd84689bfaba5ccca5827ae5cb613308da04a3",
+      "text": "workflow identity to the historical installation. Changing only the branch text\nwould not create matching AWS trust or source approval. The practical DEV path\ntherefore remains one supervised native operator. Its E2 readback plus disabled\ngateways reduce conflicts, but are not an atomic lease against another human\nadministrator. A multi-operator deployment requires the existing lease mechanism\nto be used, not another parallel deployment controller.\n\n## Findings and disposition\n\n| Risk | Evidence / disposition |\n| --- | --- |\n| Vulnerable deployed image | ECR reported 12 HIGH, 4 MEDIUM, 2 LOW and 3 UNDEFINED entries. Exact Ubuntu fixes were added to the DEV SQL-Lab recipe; the final digest has a completed ECR basic scan with zero findings. This is a dated scan, not proof against all future vulnerabilities. |\n| Missing operational backups | Fixed: strict-TLS producer, persistent hourly timer, create-only S3/KMS backup and external exact-version verifier installed. Cold recovery remains a separate proof. |\n| SQL root disk deleted during replacement | Fixed in DEV with explicit `recovery_preserve_root_volume`; real readback confirms `DeleteOnTermination=false`. Retained disks have continuing cost and require explicit deletion approval. |\n| Public unauthenticated API | Real DEV limitation: all four routes have `AuthorizationType=NONE`; no stage throttle override. Anyone reaching the endpoint can use its allowed demo read/write path and incur KMS/API load. Do not expose real data or present this as production authorization. |\n| Incomplete object-access audit | Real gap: no permanent CloudTrail trail/event data store was found; the five installed security buckets have no server-access logging. CloudTrail event history alone does not prove S3 data-event coverage. Sentinel's own archive is a separate evidence path. |\n| Encryption warning versus CMK control | Security buckets actually use AES256 SSE-S3 and versioning. Missing-encryption/versioning findings arise from unresolved generated JSON relationships. Lack of a customer-managed key is a real difference in control/audit, retained as laboratory debt. Backups, secrets, application data and Sentinel archive use documented customer-managed keys. The SQL root disks use the AWS-managed `alias/aws/ebs` key; this is encrypted storage, not customer-managed key control. |\n| Scanner coverage limits | The 24 TFLint warnings and 46 tfsec findings reproduce with exact identity, multiplicity and source hashes. Supplemental dynamic Terraform can evade semantic scanner evaluation; absence of a finding does not establish policy correctness. IAM scopes were reviewed separately. |\n"
+    },
+    "terraform/modules/target/dev/global/modules/alb/alb.tf:18-33": {
+      "path": "terraform/modules/target/dev/global/modules/alb/alb.tf",
+      "line": 18,
+      "endLine": 33,
+      "commitFileSha256": "5839265d66ded9bf4c1469d955c6ed7ea421ccb0771c86e44ff3e1745626ac43",
+      "fragmentLfSha256": "3ec0a8f6d7b550e5f4e04bb5db60824667cffaa26c295ca6f4db4b4a167d7682",
+      "text": "resource \"aws_lb_listener\" \"demo_http_listener\" {\n  load_balancer_arn = aws_lb.demo_internal_alb.arn\n  port              = var.demo_port\n  protocol          = \"HTTP\"\n\n  default_action {\n    type             = \"forward\"\n    target_group_arn = aws_lb_target_group.blue.arn\n  }\n\n  lifecycle {\n    ignore_changes = [\n      default_action\n    ]\n  }\n}\n"
+    },
+    "docs/SENTINEL-CHAOS-20261106.md:131-185": {
+      "path": "docs/SENTINEL-CHAOS-20261106.md",
+      "line": 131,
+      "endLine": 185,
+      "commitFileSha256": "45c73a73202270282f2c2ba73d62d9d71d97a400cd0bca193fabc04de47297e3",
+      "fragmentLfSha256": "cc7aa5e022fd7bb80cf0050915bae19dc64b7219efdc1d9398619c3f90d6acf8",
+      "text": "| Authentic event, November 6 UTC | Time | Meaning |\n| --- | --- | --- |\n| One TerminateInstances dispatch | 17:01:02.357 | Target `i-0f9b28ceebd2ed3ef`; authenticated response confirmed shutting-down |\n| Scheduled HTTPS failure | 17:01:55.069 + 6.008s | `HttpsTotalDeadline`; response returned within Lambda's 10-second limit |\n| Incident persisted | 17:02:01.473 | Revision 783, epoch 3, RESOLVED → RECOVERING |\n| ASG replacement launch completed | 17:02:46 | `i-05f144bae3b8671f0`, LT A:4; this alone did not prove egress |\n| First successful guardian HTTPS confirmed | 17:03:31.549 | Same EIP `98.85.209.220`; observed recovery bound **2m29.191s** after dispatch |\n| First scheduled healthy probe | 17:03:54.915 + 1.486s | Control plane and HTTPS both Pass |\n| Incident resolved | 17:03:56.771 | Revision 785, **2m54.414s** after dispatch |\n| Guardian finished normally | 17:04:03.917 | Two successful probes/new Healthy member; **zero fallback writes** |\n| Resolution SNS effect confirmed | 17:04:30.597 | One attempt; **33.826s** after durable resolution |\n| Gmail INBOX reception | 17:04:30, second precision | Full body and correlated IDs read through the connected Gmail tool |\n\nThe scheduled failure was independently accompanied by a terminated member,\nblackhole route and unassociated EIP. It persisted after approximately **59.115s**\nfrom termination dispatch. The actual physical outage onset is bounded by samples;\nit is not assumed to be identical to the EC2 API call. Post-recovery readback\nverified ENI `eni-0d1127364cc1eabcc`, EIP association, active private A default route,\nSDC=false and ASG desired=1/Healthy/InService. All three E13 :6 invocations appear\nin their logs; their configured versions remain unchanged. B, SQL and `/ready`\nremained healthy. There was no manual recovery or fourth fault.\n\nOne intermediate scheduled observation at **17:02:53.758** was **Unknown**:\nthe guardian's diagnostic invocation overlapped the one-concurrency probe,\nproducing `TooManyRequestsException`. Its control-plane failure evidence remained\nvisible. This is a real test-harness interference, preserved in the journal,\nnot a second proven HTTPS failure or a Lambda timeout. The preceding scheduled\nprobe proved failure and the following scheduled probe proved recovery.\nFuture read-only observation should consume scheduled results instead of racing\nthe same constrained probe. No concurrency/budget increase or extra disruption\nwas used to hide this limitation.\n\nThis short incident resolved before an escalation was generated. It produced\none recovery notice, not a fall-detection email. The persistent SQL-backup incident\nalready demonstrates escalation and resolution. The NAT result proves genuine\nfailure detection, persistence, automatic recovery and recovery notification;\nit does **not** prove delivery of a NAT escalation before recovery.\n\nCorrelation retained in private evidence:\n\n- Incident: `616d5db03503ac6914dc759d0637c6c3e815576fccc58f4db380c7297712009d`.\n- Detection audit: `b9622c7358701de8445edcfcafe55e4319f9065d2f735584fa0ef23bc5219c54`;\n  SSE-KMS VersionId `0ZfEAEfEzD3HcPii9W3KXFkkdaciWPgX`, confirmed 17:03:27.033.\n- Resolution audit: `481d4f6831c84b83d716300978ea567d9b412f78cc66a03cdb597fb7bcbe483c`;\n  SSE-KMS VersionId `ZPTeeG7AHwMQ_igBPb1.W3x2YtG6CRsW`, confirmed 17:04:31.113.\n- Delivery: `c938923c47d3bade3c2a64b7eb8290b969ee691eac486e30b16082560beb87a5`;\n  SNS message `5198ee4a-2270-5c9b-83ac-8d2228ae739c`.\n\nUnlike the four historical inbox confirmations supplied externally by the owner,\nthis fifth domain message was verified directly in connected Gmail in this\nsession. Its subject names `nat-a-egress` and its heading says “Salida privada\nNAT A”; the laboratory label remains. The metadata matched the complete body,\nINBOX label and durable resolution. Personal addresses and unsubscribe links\nwere omitted from evidence exported to the repository. SNS totals at 17:07 were\n**11 published, 11 delivered, zero failed**; these include historical CloudWatch\n"
+    },
+    "operations/integrations/portable/trial/nat-observer.tf:74-90": {
+      "path": "operations/integrations/portable/trial/nat-observer.tf",
+      "line": 74,
+      "endLine": 90,
+      "commitFileSha256": "aaa53fe035cf7ecad31766ed30f2d6081c0cf96d44116fc8a745e1b3b30fb780",
+      "fragmentLfSha256": "6a91602a8c9466e472f6ee3b1ee33ca246409feb727191bfe4c7a65e5a041fb1",
+      "text": "resource \"aws_lambda_function\" \"nat_probe\" {\n  for_each                       = local.nat_probes\n  function_name                  = local.probe_name\n  role                           = aws_iam_role.nat_probe[each.key].arn\n  runtime                        = \"python3.13\"\n  handler                        = \"nat_probe.handler\"\n  filename                       = each.value.zip_path\n  source_code_hash               = filebase64sha256(each.value.zip_path)\n  timeout                        = 10\n  memory_size                    = 128\n  reserved_concurrent_executions = 1\n  environment { variables = { EXPIRES_AT = var.security.expires_at } }\n  vpc_config {\n    subnet_ids         = [\"subnet-0cc3c5f388072d13d\"]\n    security_group_ids = [aws_security_group.nat_probe[each.key].id]\n  }\n  depends_on = [aws_iam_role_policy.nat_probe, aws_cloudwatch_log_group.nat_probe]\n"
+    },
+    "terraform/modules/target/dev/global/modules/vpc/route_tables.tf:32-49": {
+      "path": "terraform/modules/target/dev/global/modules/vpc/route_tables.tf",
+      "line": 32,
+      "endLine": 49,
+      "commitFileSha256": "0236f299aa538736af886fa3d4c07c6b0cdb0b445f8ada85036f72fee4195b78",
+      "fragmentLfSha256": "8f05be410d4022e7d268540e3a582e42c5c6d2b3e41abffb710725fba58f2e66",
+      "text": "  vpc_id = aws_vpc.this.id\n  tags   = merge(var.tags, { Name = \"${var.name}-rt-private-a\" })\n}\n\nresource \"aws_route_table_association\" \"private0_assoc\" {\n  subnet_id      = aws_subnet.private0.id\n  route_table_id = aws_route_table.private0.id\n}\n\nresource \"aws_route_table\" \"private1\" {\n  vpc_id = aws_vpc.this.id\n  tags   = merge(var.tags, { Name = \"${var.name}-rt-private-b\" })\n}\n\nresource \"aws_route_table_association\" \"private1_assoc\" {\n  subnet_id      = aws_subnet.private1.id\n  route_table_id = aws_route_table.private1.id\n}\n"
+    },
+    "scripts/recovery/nat.py:65-95": {
+      "path": "scripts/recovery/nat.py",
+      "line": 65,
+      "endLine": 95,
+      "commitFileSha256": "b0aa7fb01dd1c470925126514bc82fc2139f244368434c57eda8f1488c3efb27",
+      "fragmentLfSha256": "d78cad5dbf87dea0df10853701f6f1c270824f9cd58b874036f969d6b6fe94fd",
+      "text": "        for key in MEMBERSHIP: a.exact(o[key], m[key], 'observed.' + key)\n        a.require(o['lifecycle'] == 'InService' and o['health'] == 'Healthy')\n        a.exact(o['eni_instance'], m['instance'], 'ENI attachment')\n        a.exact(o['route_vpc'], m['vpc'], 'route VPC')\n        a.exact(o['eip_environment'], self.environment, 'EIP ownership')\n        return copy.deepcopy(dict(membership=m, route_exists=value['route_exists'],\n            state={k: o[k] for k in ('association_eni', 'default_route_eni', 'source_dest_check')}))\n\n    def prepare(self):\n        return self.context()\n\n    def validate(self, value):\n        a.keys(value, ('membership', 'route_exists', 'state'))\n        a.keys(value['membership'], MEMBERSHIP)\n        a.exact(value['membership']['environment'], self.environment, 'retained environment')\n        a.require(type(value['route_exists']) is bool)\n\n    def actions(self, value):\n        m = value['membership']\n        if self.action == 'assign_eip':\n            request = dict(AllocationId=m['eip'], NetworkInterfaceId=m['eni'], AllowReassociation=True)\n        elif self.action == 'change_rt':\n            request = dict(RouteTableId=m['route_table'], DestinationCidrBlock='0.0.0.0/0',\n                           NetworkInterfaceId=m['eni'], action='replace_route' if value['route_exists'] else 'create_route')\n        else:\n            request = dict(InstanceId=m['instance'], SourceDestCheck=dict(Value=False))\n        return {self.action: request}\n\n    def guard(self, op, stage, effects):\n        a.exact(self.context(), op['domain'], 'fresh NAT membership')\n\n"
+    },
+    "terraform/modules/target/dev/global/wp5-nat.tf.json:1-28": {
+      "path": "terraform/modules/target/dev/global/wp5-nat.tf.json",
+      "line": 1,
+      "endLine": 28,
+      "commitFileSha256": "9a4ec0fea0b78691c8682d01cf928cb6b5e199abd3724cf767676d448da90390",
+      "fragmentLfSha256": "c08b09cb754130b96e55bb4445743f542c1dda00aa640bfa95425dc9a4962ab4",
+      "text": "{\n  \"variable\": {\n    \"protected_nat_launch\": {\n      \"type\": \"map(object({ id = string, version = number, subnet = string, recovery = string }))\",\n      \"default\": {},\n      \"validation\": {\n        \"condition\": \"${length(var.protected_nat_launch) == 0 || sort(keys(var.protected_nat_launch)) == sort([\\\"a\\\", \\\"b\\\"])}\",\n        \"error_message\": \"Only the exact two protected NAT slots are admitted.\"\n      }\n    }\n  },\n  \"resource\": {\n    \"aws_eip\": {\n      \"wp5_nat\": {\n        \"for_each\": \"${toset([\\\"a\\\", \\\"b\\\"])}\",\n        \"domain\": \"vpc\",\n        \"tags\": {\n          \"Project\": \"demo\",\n          \"Environment\": \"dev\",\n          \"Name\": \"${\\\"demo-dev-nat-eip-${each.key}\\\"}\"\n        }\n      }\n    },\n    \"aws_autoscaling_group\": {\n      \"wp5_nat\": {\n        \"for_each\": \"${var.protected_nat_launch}\",\n        \"name\": \"${\\\"demo-dev-asg-nat-${each.key}\\\"}\",\n        \"min_size\": 1,\n"
+    },
+    "docs/V2-RECOVERY-SECURITY-20261105.md:282-324": {
+      "path": "docs/V2-RECOVERY-SECURITY-20261105.md",
+      "line": 282,
+      "endLine": 324,
+      "commitFileSha256": "a2377034e59873c4bb7f0343bb17617bbda8b9d8deb760996d5e6aab4d2cec3a",
+      "fragmentLfSha256": "40e895303114fe33b984c5673ddf94b61ab29116918eb9053c777b428521fffb",
+      "text": "was taken after fencing. This does not establish zero RPO for abrupt outage or\nprove a transaction-log/PITR chain.\n\n### SAME-AZ B → B: second trial\n\nThe independently reviewed plan\n`d4ba413b6ade860b67ad1b13288694909c4cfcbfd3ddf3ec7cb71cebab39fdcf`\ncontains one SQL replacement and three alarm dimension updates, no drift, identical\ndesired configuration and retained root disk. RTO starts at **02:06:19.052177**.\nIts final backup preserves four rows with SHA256\n`e6412e581f0a1df6a0b1707970d1a1c04d8cce6dce7acf6ff565949127e845ae`.\nThe destination is `i-010e3bf5edd05d11a`, `10.0.101.160`, AZ B. Its predecessor is\nterminated and disk `vol-0235be4922f977c92` is retained. Data state is serial 17,\nversion `l4ryszZHZjcEeoQh1q9RHzEdkEtNitGm`, without a lock.\n\n**Functional PASS at 02:31:01.635056: 1,482.582879 seconds (24 minutes 42.6\nseconds)** from initial drain through API health/readiness and POST/GET/KMS.\nThis corrected trial completed its sole apply, installation, restore and handoff\nwithout corrective replay or manual file/SQL repair. CHECKDB, four original rows,\nciphertext hash and two migrations matched; a new application write made five rows.\nThe image, task roles, listener and SQL grants remained unchanged. Blue revision\n15 points to `10.0.101.160`, with a new versioned connection secret; green stays zero.\n\nBefore reactivating ECS, one supervised reboot changed boot ID from\n`c5cd1230-9752-40d4-b56f-59cc33385d67` to\n`2da5afce-75f5-4907-bc51-a6bcd9345a66`. SQL/TLS and data identity passed afterwards;\nthe timer remained enabled/active with `Persistent=yes`. A real post-reboot service\nrun finished at 02:28:47 with `REMOTE_VERIFIED_CLEANUP_VERIFIED`, backup SHA256\n`5fbb6c6baea0993e3b7031f406a767d9df6eb6e562a9b420f38b7de7af43582e`,\nversion `8zPBT_1wtX97VNbouWoDbLhEu7CINs0w`. This is actual reboot persistence plus\nfunctional backup execution, separate from the earlier automatic hourly runs.\n\nThe verified backup available before this second interruption began at\n01:59:52.6855848: age 6 minutes 26.4 seconds at RTO start. The later final fenced\nbackup again preserved all rows. Neither trial simulates loss of every region-wide\ndependency or proves an automatic recovery decision.\n\nThe corrected Linux recovery/portable suites pass **297 tests in 23 suites with\nzero skips**. A direct Windows CRLF mount initially failed shell parsing; the LF\nGit export passed. This fixture issue is separate from AWS results.\n\n### Post-recovery observation and resource closure\n\n"
+    },
+    "terraform/modules/target/dev/global/modules/vpc/route_tables.tf:1-28": {
+      "path": "terraform/modules/target/dev/global/modules/vpc/route_tables.tf",
+      "line": 1,
+      "endLine": 28,
+      "commitFileSha256": "0236f299aa538736af886fa3d4c07c6b0cdb0b445f8ada85036f72fee4195b78",
+      "fragmentLfSha256": "209c6c36f2e244d44923ab0a5ef361d4a8b6bb6036d1f11b2352b713312b6fe0",
+      "text": "\nresource \"aws_internet_gateway\" \"igw\" {\n  vpc_id = aws_vpc.this.id\n  tags   = merge(var.tags, { Name = \"${var.name}-igw\" })\n}\n\n\nresource \"aws_route_table\" \"public\" {\n  vpc_id = aws_vpc.this.id\n  tags   = merge(var.tags, { Name = \"${var.name}-rt-public\" })\n}\n\nresource \"aws_route\" \"public_default_igw\" {\n  route_table_id         = aws_route_table.public.id\n  destination_cidr_block = \"0.0.0.0/0\"\n  gateway_id             = aws_internet_gateway.igw.id\n}\n\n\nresource \"aws_route_table_association\" \"public0_assoc\" {\n  subnet_id      = aws_subnet.public0.id\n  route_table_id = aws_route_table.public.id\n}\n\nresource \"aws_route_table_association\" \"public1_assoc\" {\n  subnet_id      = aws_subnet.public1.id\n  route_table_id = aws_route_table.public.id\n}\n"
+    },
+    "operations/integrations/portable/nat_probe.py:19-67": {
+      "path": "operations/integrations/portable/nat_probe.py",
+      "line": 19,
+      "endLine": 67,
+      "commitFileSha256": "4e329c8f25af4ccf0bda91945c8fe636cf75ba9025c4d21a7ee4abc6fdef1ca4",
+      "fragmentLfSha256": "b029acd18ca5134eeaaee280c21c2728d9746780b167ba485d395cd440b82c5c",
+      "text": "def https_request():\n    # The child has no caller-selected URL, arguments, credentials or AWS client.\n    try:\n        with urllib.request.build_opener(NoRedirect()).open('https://checkip.amazonaws.com/', timeout=4) as response:\n            if response.status != 200:\n                raise ValueError('HTTP_STATUS')\n            public = str(ipaddress.IPv4Address(response.read(65).decode('ascii').strip()))\n        return {'status': 'HTTPS_SUCCESS', 'egressIp': public}\n    except Exception as error:\n        return {'status': 'HTTPS_FAILED', 'errorType': type(error).__name__}\n\n\ndef bounded_request():\n    # A Python signal can be delayed inside a native resolver. Bound the entire\n    # fixed child instead, including DNS, address attempts, TLS and body reads.\n    # Popen startup itself is OS-dependent; a Lambda executor failure is Unknown.\n    with subprocess.Popen([sys.executable, '-I', '-S', os.path.abspath(__file__), '--fixed-https'],\n                          stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,\n                          env={}, close_fds=True) as child:\n        try:\n            raw, _ = child.communicate(timeout=TOTAL_DEADLINE_SECONDS)\n        except subprocess.TimeoutExpired:\n            child.kill()\n            child.communicate(timeout=1)\n            return {'status': 'HTTPS_FAILED', 'errorType': 'HttpsTotalDeadline'}\n        if child.returncode != 0 or len(raw) > 512:\n            raise RuntimeError('PROBE_CHILD_UNAVAILABLE')\n        result = json.loads(raw)\n        if result.get('status') not in ('HTTPS_SUCCESS', 'HTTPS_FAILED'):\n            raise RuntimeError('PROBE_CHILD_RESPONSE')\n        return result\n\n\ndef handler(event, context):\n    now = dt.datetime.now(dt.timezone.utc)\n    if now >= dt.datetime.fromisoformat(os.environ['EXPIRES_AT'].replace('Z', '+00:00')):\n        raise ValueError('PROBE_WINDOW_EXPIRED')\n    if set(event) != {'operation', 'observationId'} or event['operation'] != 'https-egress-a' or not isinstance(event['observationId'], str) or len(event['observationId']) > 128:\n        raise ValueError('CLOSED_PROBE_REQUEST')\n    start = time.monotonic()\n    # Leave time for child termination, response encoding and the runtime.\n    if context.get_remaining_time_in_millis() < 8000:\n        raise RuntimeError('PROBE_EXECUTOR_DEADLINE_UNAVAILABLE')\n    result = bounded_request()\n    return {**result, 'at': now.isoformat(), 'durationMs': round((time.monotonic() - start) * 1000),\n            'observationId': event['observationId'], 'requestId': context.aws_request_id, 'httpsRequests': 1}\n\n\nif __name__ == '__main__':\n"
+    },
+    "scripts/tests/security_root/wp4d.py:980-1007": {
+      "path": "scripts/tests/security_root/wp4d.py",
+      "line": 980,
+      "endLine": 1007,
+      "commitFileSha256": "08277c08a806b34f496323beeb37d24e4557218eaee5a6caaf6d64e6047ad20a",
+      "fragmentLfSha256": "51d036daca0dc14ce7cabdabbcbfeeaebcbca0837a150778fc19c0670fec7892",
+      "text": "        \"event_pattern\": ex('jsonencode({ source = [\"aws.autoscaling\"], \"detail-type\" = [\"EC2 Instance Launch Successful\"], account = [var.account_id], region = [var.region], detail = { AutoScalingGroupName = [for slot in each.value.nat_slots : slot.asg] } })')}\n    # Stable binding keys are known before target/function IDs exist. Import\n    # must not require applying unrelated resources to learn those same keys.\n    local[\"wp4d_nat_targets\"] = ex('{ for k,v in local.wp4d_gateways : k => v if startswith(k, \"nat-recovery/\") && contains(keys(local.wp4d_nat_events), v.environment) }')\n    resources[\"aws_cloudwatch_event_target\"][\"wp4d_nat\"] = {\n        \"for_each\": ex('local.wp4d_nat_targets'),\n        \"rule\": ex(\"aws_cloudwatch_event_rule.wp4d_nat[each.value.environment].name\"),\n        \"target_id\": ex('replace(each.key, \"/\", \"-\")'),\n        \"arn\": ex(\"aws_lambda_function.wp4d[each.key].qualified_arn\"),\n        \"input_transformer\": {\n            \"input_paths\": {\"id\": \"$.id\", \"account\": \"$.account\", \"region\": \"$.region\", \"time\": \"$.time\",\n                            \"asg\": \"$.detail.AutoScalingGroupName\", \"instance\": \"$.detail.EC2InstanceId\"},\n            \"input_template\": '{\"id\":<id>,\"account\":<account>,\"region\":<region>,\"time\":<time>,\"source\":\"aws.autoscaling\",\"detail-type\":\"EC2 Instance Launch Successful\",\"detail\":{\"AutoScalingGroupName\":<asg>,\"EC2InstanceId\":<instance>}}'}}\n    # E13: EventBridge acceptance and Lambda execution are separate failures.\n    resources[\"aws_cloudwatch_event_target\"][\"wp4d_nat\"].update({\n        \"retry_policy\": {\"maximum_event_age_in_seconds\": 900, \"maximum_retry_attempts\": 3},\n        \"dead_letter_config\": {\"arn\": ex('aws_sqs_queue.nat_delivery_failed[each.value.environment].arn')},\n        \"depends_on\": [\"aws_sqs_queue_policy.nat_failures\"]})\n    resources[\"aws_lambda_function_event_invoke_config\"] = {\"wp4d_nat\": {\n        \"for_each\": ex('local.wp4d_nat_targets'),\n        \"function_name\": ex('aws_lambda_function.wp4d[each.key].function_name'),\n        \"qualifier\": ex('aws_lambda_function.wp4d[each.key].version'),\n        \"maximum_event_age_in_seconds\": 900, \"maximum_retry_attempts\": 1,\n        \"destination_config\": {\"on_failure\": {\"destination\": ex('aws_sqs_queue.nat_execution_failed[local.wp4d_active[each.key].environment].arn')}}}}\n    resources[\"aws_sqs_queue\"] = {\"nat_\" + kind + \"_failed\": {\n        \"for_each\": ex('local.wp4d_nat_events'),\n        \"name\": ex('\"e1-wp4-${each.key}-nat-' + kind + '-failed\"'),\n        \"message_retention_seconds\": 1209600, \"sqs_managed_sse_enabled\": True,\n"
+    },
+    "scripts/wp4d/nat_resolver.py:59-90": {
+      "path": "scripts/wp4d/nat_resolver.py",
+      "line": 59,
+      "endLine": 90,
+      "commitFileSha256": "04c419bedf5627c5e8832dbb439f9e70340fea04d9f1fad72c25de224f1d692e",
+      "fragmentLfSha256": "813574cd5acd27c22b3425108d068c35a790fa2cb75e510833c4644728d3155b",
+      "text": "                and instance[\"ImageId\"] == slot[\"spec\"][\"ami\"]\n                and instance[\"InstanceType\"] == slot[\"spec\"][\"instance_type\"]\n                and instance[\"IamInstanceProfile\"][\"Arn\"] == slot[\"spec\"][\"instance_profile\"]\n                and instance[\"MetadataOptions\"][\"HttpTokens\"] == slot[\"spec\"][\"http_tokens\"])\n        profile_arn = slot[\"spec\"][\"instance_profile\"]\n        profile = iam.get_instance_profile(\n            InstanceProfileName=profile_arn.rsplit(\"/\", 1)[-1])[\"InstanceProfile\"]\n        require(profile[\"Arn\"] == profile_arn and len(profile[\"Roles\"]) == 1\n                and profile[\"Roles\"][0][\"Arn\"] == slot[\"spec\"][\"role\"])\n        observed_tags = tags(instance.get(\"Tags\", []))\n        require(all(observed_tags.get(k) == v for k, v in slot[\"spec\"][\"tags\"].items()))\n        security_groups = sorted(x[\"GroupId\"] for x in instance.get(\"SecurityGroups\", []))\n        require(security_groups == sorted(slot[\"spec\"][\"security_groups\"]))\n        eni_ref = one(instance.get(\"NetworkInterfaces\", []))\n        eni_id = eni_ref[\"NetworkInterfaceId\"]\n        eni = one(ec2.describe_network_interfaces(NetworkInterfaceIds=[eni_id]).get(\"NetworkInterfaces\", []))\n        require(eni[\"NetworkInterfaceId\"] == eni_id and eni[\"VpcId\"] == slot[\"vpc\"]\n                and eni[\"SubnetId\"] == slot[\"subnet\"]\n                and eni[\"AvailabilityZone\"] == slot[\"az\"]\n                and eni[\"Attachment\"][\"InstanceId\"] == instance_id\n                and eni[\"Attachment\"].get(\"DeleteOnTermination\") is slot[\"spec\"][\"delete_on_termination\"]\n                and eni_ref[\"NetworkInterfaceId\"] == eni_id)\n        lt_info = one(ec2.describe_launch_template_versions(\n            LaunchTemplateId=slot[\"spec\"][\"launch_template\"],\n            Versions=[str(slot[\"spec\"][\"launch_template_version\"])]).get(\"LaunchTemplateVersions\", []))\n        require(lt_info[\"VersionNumber\"] == slot[\"spec\"][\"launch_template_version\"])\n        data = lt_info[\"LaunchTemplateData\"]\n        user_data = base64.b64decode(data[\"UserData\"], validate=True)\n        require(hashlib.sha256(user_data).hexdigest() == slot[\"spec\"][\"user_data_sha256\"]\n                and data[\"ImageId\"] == slot[\"spec\"][\"ami\"]\n                and data[\"InstanceType\"] == slot[\"spec\"][\"instance_type\"]\n                and data[\"IamInstanceProfile\"][\"Name\"] == slot[\"spec\"][\"instance_profile\"].rsplit(\"/\", 1)[-1]\n"
+    },
+    "docs/V2-TRUST-AND-THREATS.md:39-68": {
+      "path": "docs/V2-TRUST-AND-THREATS.md",
+      "line": 39,
+      "endLine": 68,
+      "commitFileSha256": "51053a06466a69af2aac68fc92bee07f2e34f0568cd8cf072d90a4d559d0379d",
+      "fragmentLfSha256": "4d5e944a6d131889097f3b251222f4f7173cf98094c35b088a9a3fe1db54ee75",
+      "text": "\nClient TLS terminates at API Gateway. The VPC Link/ALB/application hops use HTTP\ninside the SG-restricted VPC; they are **not** end-to-end encrypted. SQL uses\n`Encrypt=True;TrustServerCertificate=False;HostNameInCertificate=sql.demo.internal`.\nIts public certificate is pinned in the DEV image. The demo self-signed leaf is\nan explicit trust anchor, not an enterprise CA or automatic certificate rotation.\nPrivate key material is held in the approved encrypted transport secret and on\nthe SQL host with restrictive ownership/mode; it is excluded from Git, images,\nuser data, Terraform inputs/state and command text.\n\n## Identities and authority\n\n| Identity / boundary | Effective purpose | Important limit or residual risk |\n| --- | --- | --- |\n| `cnp-cert-admin` | Explicit administrative operations and sensitive configuration | Powerful human credential; single-operator trust, no separation-of-duties claim |\n| `TerragruntDemoDevOperator` | Native DEV Terraform owners and approved temporary deltas | Authorization is the composition of installed Parts, boundary, resource policies and explicit Deny; a small additional policy alone is not the effective policy |\n| ECS blue execution role | Image pull, logs, versioned runtime connection secret | This role is not the application task role; the secret is injected at task start |\n| ECS blue task role | Application CMK operations | Compromise of the application can decrypt its authorized ciphertext; encryption does not replace application authorization |\n| `demo-dev-data-sql-ec2-role` | Bootstrap secrets, SSM, backup package and own backup prefix | Host compromise can obtain bootstrap credentials; no claim that SQL runtime privileges constrain a compromised host administrator |\n| SQL `recovery_app` | SELECT/INSERT on `DemoTexts`, SELECT on EF migration metadata | No UPDATE/DELETE/DDL, db_owner or ddladmin; login is enabled only after verified handoff |\n| SQL `recovery_migrator` | Explicit reviewed migrations | Disabled after handoff; absent from HTTP startup and Fargate secret injection |\n| Backup / verifier SQL identities | Backup plus isolated verification database | Separate from application runtime; private credential files are root-only, not Terraform values |\n| External backup observer role | List one prefix, read exact versions, decrypt through S3, publish two observation types | No SQL secret, S3 delete/write, journal mutation or remediation privilege; time bounded |\n| Sentinel ingest / worker / watchdog / cleanup roles | Existing bounded journal workflow, archive and notices | Boundaries, scoped resources and expiry retained; historical permanent failures remain visible |\n| NAT recovery Lambdas | Existing E13 EIP, route and SDC repair | Published version 6 and membership checks retained; no SQL recovery authority |\n| GitHub OIDC request identities | Closed protected requests when their installed contract is active | Disabled CD and historic workflow pins do not prove current automatic deployment readiness |\n\nThe SQL role's new backup grant uses only the new experiment prefix and exact\npackage object. Writes require `If-None-Match: *`, SSE-KMS and the correct CMK.\nKMS use is restricted by caller account, regional S3 service and object encryption\n"
+    },
+    "terraform/modules/target/dev/edge/modules/apigateway/apigw_http.tf:25-63": {
+      "path": "terraform/modules/target/dev/edge/modules/apigateway/apigw_http.tf",
+      "line": 25,
+      "endLine": 63,
+      "commitFileSha256": "d4d8455a726948d7fb289a40016ba18c1ca01a7075bea3d938ef5879796c81da",
+      "fragmentLfSha256": "0917d7e528eb624f1a398799f44ed11bf55812781cf6c90e17106bf42f03b8fe",
+      "text": "\nresource \"aws_apigatewayv2_integration\" \"alb_integration\" {\n  api_id                 = aws_apigatewayv2_api.http.id\n  integration_type       = \"HTTP_PROXY\"\n  integration_method     = \"ANY\"\n  payload_format_version = \"1.0\"\n  timeout_milliseconds   = 30000\n\n  connection_type = \"VPC_LINK\"\n  connection_id   = var.vpc_link_id\n\n  integration_uri = var.alb_listener_arn\n}\n\nresource \"aws_apigatewayv2_stage\" \"default\" {\n  api_id      = aws_apigatewayv2_api.http.id\n  name        = \"$default\"\n  auto_deploy = true\n  tags        = var.tags\n\n  access_log_settings {\n    destination_arn = aws_cloudwatch_log_group.api_gw_access.arn\n    format = jsonencode({\n      requestId   = \"$context.requestId\"\n      httpMethod  = \"$context.httpMethod\"\n      path        = \"$context.path\"\n      status      = \"$context.status\"\n      ip          = \"$context.identity.sourceIp\"\n      userAgent   = \"$context.identity.userAgent\"\n      requestTime = \"$context.requestTime\"\n      integration = \"$context.integrationErrorMessage\"\n    })\n  }\n}\n\nresource \"aws_cloudwatch_log_group\" \"api_gw_access\" {\n  name              = \"/aws/apigw/${var.name}-http-access\"\n  retention_in_days = 30\n  tags              = var.tags\n"
+    },
+    "demo-api/terragrunt-demo/Services/IEncryptionService.cs:30-51": {
+      "path": "demo-api/terragrunt-demo/Services/IEncryptionService.cs",
+      "line": 30,
+      "endLine": 51,
+      "commitFileSha256": "1feae266154f97bba436cb75ab543831c99857a0514bf7747669fd10d45adb18",
+      "fragmentLfSha256": "43b9b93fb1bbd786e4c0e71c7cf88c553d9ac82f6bbfa84eddd5d19916427f42",
+      "text": "\n        public async Task<string> EncryptAsync(string plainText, CancellationToken ct = default)\n        {\n            if (Encoding.UTF8.GetByteCount(plainText) > MaxPlaintextBytes)\n                throw new PlaintextTooLargeException(MaxPlaintextBytes);\n\n            var response = await _kms.EncryptAsync(new EncryptRequest\n            {\n                KeyId = _keyId,\n                Plaintext = new MemoryStream(Encoding.UTF8.GetBytes(plainText))\n            }, ct);\n\n            return Convert.ToBase64String(response.CiphertextBlob.ToArray());\n        }\n\n        public async Task<string> DecryptAsync(string cipherText, CancellationToken ct = default)\n        {\n            var response = await _kms.DecryptAsync(new DecryptRequest\n            {\n                CiphertextBlob = new MemoryStream(Convert.FromBase64String(cipherText))\n            }, ct);\n\n"
+    },
+    "terraform/modules/target/dev/apps/modules/ecs_service/taskdef.tf:1-17": {
+      "path": "terraform/modules/target/dev/apps/modules/ecs_service/taskdef.tf",
+      "line": 1,
+      "endLine": 17,
+      "commitFileSha256": "6a32e787f439db8a68419b23240415f708e465b5d8dae5f991a4828a0cf7f0a7",
+      "fragmentLfSha256": "6a32e787f439db8a68419b23240415f708e465b5d8dae5f991a4828a0cf7f0a7",
+      "text": "resource \"aws_ecs_task_definition\" \"this\" {\n  family                   = coalesce(var.family, var.name)\n  network_mode             = \"awsvpc\"\n  requires_compatibilities = [\"FARGATE\"]\n\n  cpu    = var.task_cpu\n  memory = var.task_memory\n\n  container_definitions = local.container_definitions\n\n  runtime_platform {\n    cpu_architecture        = \"X86_64\"\n    operating_system_family = \"LINUX\"\n  }\n\n  tags = var.tags\n}\n"
+    },
+    "docs/V2-TRUST-AND-THREATS.md:49-63": {
+      "path": "docs/V2-TRUST-AND-THREATS.md",
+      "line": 49,
+      "endLine": 63,
+      "commitFileSha256": "51053a06466a69af2aac68fc92bee07f2e34f0568cd8cf072d90a4d559d0379d",
+      "fragmentLfSha256": "a8397ceaef882df39c84b7d1d1e5f4bb7c4f31a4a7d469bb87995621596da8f0",
+      "text": "## Identities and authority\n\n| Identity / boundary | Effective purpose | Important limit or residual risk |\n| --- | --- | --- |\n| `cnp-cert-admin` | Explicit administrative operations and sensitive configuration | Powerful human credential; single-operator trust, no separation-of-duties claim |\n| `TerragruntDemoDevOperator` | Native DEV Terraform owners and approved temporary deltas | Authorization is the composition of installed Parts, boundary, resource policies and explicit Deny; a small additional policy alone is not the effective policy |\n| ECS blue execution role | Image pull, logs, versioned runtime connection secret | This role is not the application task role; the secret is injected at task start |\n| ECS blue task role | Application CMK operations | Compromise of the application can decrypt its authorized ciphertext; encryption does not replace application authorization |\n| `demo-dev-data-sql-ec2-role` | Bootstrap secrets, SSM, backup package and own backup prefix | Host compromise can obtain bootstrap credentials; no claim that SQL runtime privileges constrain a compromised host administrator |\n| SQL `recovery_app` | SELECT/INSERT on `DemoTexts`, SELECT on EF migration metadata | No UPDATE/DELETE/DDL, db_owner or ddladmin; login is enabled only after verified handoff |\n| SQL `recovery_migrator` | Explicit reviewed migrations | Disabled after handoff; absent from HTTP startup and Fargate secret injection |\n| Backup / verifier SQL identities | Backup plus isolated verification database | Separate from application runtime; private credential files are root-only, not Terraform values |\n| External backup observer role | List one prefix, read exact versions, decrypt through S3, publish two observation types | No SQL secret, S3 delete/write, journal mutation or remediation privilege; time bounded |\n| Sentinel ingest / worker / watchdog / cleanup roles | Existing bounded journal workflow, archive and notices | Boundaries, scoped resources and expiry retained; historical permanent failures remain visible |\n| NAT recovery Lambdas | Existing E13 EIP, route and SDC repair | Published version 6 and membership checks retained; no SQL recovery authority |\n"
+    },
+    "terraform/modules/target/dev/edge/modules/vpc_link/vpc_link.tf:1-6": {
+      "path": "terraform/modules/target/dev/edge/modules/vpc_link/vpc_link.tf",
+      "line": 1,
+      "endLine": 6,
+      "commitFileSha256": "bdd6975246e05cfb07b0736035fee03ce8b64f760c6c1a2755c998b7bf471e20",
+      "fragmentLfSha256": "e88ed385fbf264af62518dcd925facffcf24c44344ed8cfc54b4105353e5fb7c",
+      "text": "resource \"aws_apigatewayv2_vpc_link\" \"this\" {\n  name = \"${var.name}-vpc-link\"\n\n  security_group_ids = var.security_group_ids\n\n  subnet_ids = var.private_subnet_ids\n"
+    },
+    "terraform/modules/target/dev/global/modules/alb/alb.tf:1-28": {
+      "path": "terraform/modules/target/dev/global/modules/alb/alb.tf",
+      "line": 1,
+      "endLine": 28,
+      "commitFileSha256": "5839265d66ded9bf4c1469d955c6ed7ea421ccb0771c86e44ff3e1745626ac43",
+      "fragmentLfSha256": "0267bcfc58a08d6b1caf5e4c9ce56abb822d788c4a7a537a9fbbd0d7d82daa24",
+      "text": "\nresource \"aws_lb\" \"demo_internal_alb\" {\n  name               = \"${var.name}-internal-alb\"\n  load_balancer_type = \"application\"\n  internal           = true\n\n  subnets         = var.subnet_ids\n  security_groups = [var.sg_id]\n\n  drop_invalid_header_fields = true\n\n  enable_deletion_protection = false\n\n  tags = merge(var.tags, { Name = \"${var.name}-internal-alb\" })\n}\n\n\nresource \"aws_lb_listener\" \"demo_http_listener\" {\n  load_balancer_arn = aws_lb.demo_internal_alb.arn\n  port              = var.demo_port\n  protocol          = \"HTTP\"\n\n  default_action {\n    type             = \"forward\"\n    target_group_arn = aws_lb_target_group.blue.arn\n  }\n\n  lifecycle {\n"
+    },
+    "docs/V2-RECOVERY-SECURITY-20261105.md:293-320": {
+      "path": "docs/V2-RECOVERY-SECURITY-20261105.md",
+      "line": 293,
+      "endLine": 320,
+      "commitFileSha256": "a2377034e59873c4bb7f0343bb17617bbda8b9d8deb760996d5e6aab4d2cec3a",
+      "fragmentLfSha256": "27368a54fd66901d9fe0fd3931b8af8fda642d4196192e18cd8bc881bf3fe76e",
+      "text": "The destination is `i-010e3bf5edd05d11a`, `10.0.101.160`, AZ B. Its predecessor is\nterminated and disk `vol-0235be4922f977c92` is retained. Data state is serial 17,\nversion `l4ryszZHZjcEeoQh1q9RHzEdkEtNitGm`, without a lock.\n\n**Functional PASS at 02:31:01.635056: 1,482.582879 seconds (24 minutes 42.6\nseconds)** from initial drain through API health/readiness and POST/GET/KMS.\nThis corrected trial completed its sole apply, installation, restore and handoff\nwithout corrective replay or manual file/SQL repair. CHECKDB, four original rows,\nciphertext hash and two migrations matched; a new application write made five rows.\nThe image, task roles, listener and SQL grants remained unchanged. Blue revision\n15 points to `10.0.101.160`, with a new versioned connection secret; green stays zero.\n\nBefore reactivating ECS, one supervised reboot changed boot ID from\n`c5cd1230-9752-40d4-b56f-59cc33385d67` to\n`2da5afce-75f5-4907-bc51-a6bcd9345a66`. SQL/TLS and data identity passed afterwards;\nthe timer remained enabled/active with `Persistent=yes`. A real post-reboot service\nrun finished at 02:28:47 with `REMOTE_VERIFIED_CLEANUP_VERIFIED`, backup SHA256\n`5fbb6c6baea0993e3b7031f406a767d9df6eb6e562a9b420f38b7de7af43582e`,\nversion `8zPBT_1wtX97VNbouWoDbLhEu7CINs0w`. This is actual reboot persistence plus\nfunctional backup execution, separate from the earlier automatic hourly runs.\n\nThe verified backup available before this second interruption began at\n01:59:52.6855848: age 6 minutes 26.4 seconds at RTO start. The later final fenced\nbackup again preserved all rows. Neither trial simulates loss of every region-wide\ndependency or proves an automatic recovery decision.\n\nThe corrected Linux recovery/portable suites pass **297 tests in 23 suites with\nzero skips**. A direct Windows CRLF mount initially failed shell parsing; the LF\n"
+    },
+    "operations/integrations/portable/storage_observer.py:35-102": {
+      "path": "operations/integrations/portable/storage_observer.py",
+      "line": 35,
+      "endLine": 102,
+      "commitFileSha256": "2002ead488ecaee1ba005724df65fb44d7fe672792a9534e21ae342d9a945d88",
+      "fragmentLfSha256": "2fa7beb7c4178a71cb03d3c2864ce3319d0f272f6d32d6eafc5901c49673192f",
+      "text": "def encrypted(response, config, version=None):\n    require(response.get('ServerSideEncryption') == 'aws:kms' and\n            response.get('SSEKMSKeyId') == config['backupKeyArn'], 'WRONG_ENCRYPTION')\n    require(response.get('VersionId') not in (None, '', 'null'), 'UNVERSIONED_OBJECT')\n    require(version is None or response['VersionId'] == version, 'VERSION_MISMATCH')\n\n\ndef inspect(s3, config, now):\n    \"\"\"Verify newest committed manifest and its full exact-version backup, with bounds.\n\n    A newer invalid commit is an error, never a reason to fall back to an old success.\n    This proves storage integrity plus the producer's native-checksum receipt, not CHECKDB.\n    \"\"\"\n    prefix = config['prefix'].rstrip('/') + '/runs/'\n    listing = s3.list_objects_v2(Bucket=config['bucket'], Prefix=prefix, MaxKeys=1000)\n    require(not listing.get('IsTruncated'), 'LIST_BOUND_EXCEEDED')\n    candidates = [x for x in listing.get('Contents', []) if x['Key'].endswith('/manifest.json')]\n    require(candidates, 'BACKUP_MISSING')\n    latest = max(candidates, key=lambda x: (x['LastModified'], x['Key']))\n    return inspect_manifest(s3, config, now, latest['Key'])\n\n\ndef inspect_manifest(s3, config, now, manifest_key):\n    \"\"\"Read one immutable pair; used by observation and retention admission.\"\"\"\n    prefix = config['prefix'].rstrip('/') + '/runs/'\n    latest = {'Key': manifest_key}\n    match = re.fullmatch(re.escape(prefix) + r'([a-f0-9]{32})/manifest.json', latest['Key'])\n    require(match is not None, 'MANIFEST_SCOPE')\n    head = s3.head_object(Bucket=config['bucket'], Key=latest['Key'])\n    encrypted(head, config)\n    require(0 < head['ContentLength'] <= 65536, 'MANIFEST_TOO_LARGE')\n    response = s3.get_object(Bucket=config['bucket'], Key=latest['Key'], VersionId=head['VersionId'])\n    encrypted(response, config, head['VersionId'])\n    try:\n        raw = response['Body'].read(65537)\n    finally:\n        response['Body'].close()\n    m = unique_json(raw)\n    expected = set('SchemaVersion Id Database StartedUtc CompletedUtc SqlVersion RecoveryModel Length Sha256 NativeChecksumVerified TextKeyArn BackupKey BackupVersion'.split())\n    require(set(m) == expected and type(m['SchemaVersion']) is int and m['SchemaVersion'] == 1,\n            'MANIFEST_SCHEMA')\n    require(m['Id'] == match[1] and m['Database'] == config['database'], 'DATABASE_OR_RUN_MISMATCH')\n    require(m['BackupKey'] == prefix + m['Id'] + '/database.bak', 'BACKUP_SCOPE')\n    require(m['TextKeyArn'] == config['textKeyArn'] and m['NativeChecksumVerified'] is True and\n            m['SqlVersion'].startswith('16.'), 'PRODUCER_RECEIPT_UNVERIFIED')\n    require(type(m['Length']) is int and 0 < m['Length'] <= config['maxBytes'] <= 536870912,\n            'BACKUP_SIZE_BOUND')\n    require(re.fullmatch('[a-f0-9]{64}', m['Sha256']) is not None and\n            isinstance(m['BackupVersion'], str) and m['BackupVersion'] not in ('', 'null'),\n            'BACKUP_IDENTITY')\n    started, completed = utc(m['StartedUtc']), utc(m['CompletedUtc'])\n    require(dt.datetime(1970, 1, 1, tzinfo=dt.timezone.utc) <= started <= completed <= now + dt.timedelta(minutes=5),\n            'BACKUP_TIME')\n    backup = s3.get_object(Bucket=config['bucket'], Key=m['BackupKey'], VersionId=m['BackupVersion'])\n    try:\n        encrypted(backup, config, m['BackupVersion'])\n        require(backup['ContentLength'] == m['Length'], 'BACKUP_LENGTH')\n        digest, count = hashlib.sha256(), 0\n        while chunk := backup['Body'].read(1048576):\n            count += len(chunk)\n            require(count <= m['Length'], 'BACKUP_LENGTH')\n            digest.update(chunk)\n        require(count == m['Length'] and digest.hexdigest() == m['Sha256'], 'BACKUP_HASH')\n    finally:\n        backup['Body'].close()\n    return {'code': 'EXACT_S3_VERSION_SHA256_VERIFIED', 'dataAt': started.isoformat(),\n            'runId': m['Id'], 'manifestKey': latest['Key'], 'manifestVersion': head['VersionId'],\n            'backupVersion': m['BackupVersion'], 'sha256': m['Sha256'], 'bytes': m['Length']}\n"
+    },
+    "operations/integrations/portable/trial/storage-observer.tf:68-124": {
+      "path": "operations/integrations/portable/trial/storage-observer.tf",
+      "line": 68,
+      "endLine": 124,
+      "commitFileSha256": "4b93f2fe36f9ec50c9d7047dc84eae8f7f33004c2f3f9fa445570f236da9aa90",
+      "fragmentLfSha256": "efa7f91c21a6644c36aa6bd1abd403634c577f52c3909fdac429f0aa67787cfb",
+      "text": "resource \"aws_lambda_function\" \"backup_observer\" {\n  for_each                       = local.backup_observers\n  function_name                  = local.observer_name\n  role                           = aws_iam_role.backup_observer[each.key].arn\n  runtime                        = \"python3.13\"\n  handler                        = \"storage_observer.handler\"\n  filename                       = each.value.zip_path\n  source_code_hash               = filebase64sha256(each.value.zip_path)\n  timeout                        = 120\n  memory_size                    = 256\n  reserved_concurrent_executions = 1\n  environment {\n    variables = { BACKUP_OBSERVER_CONFIG = jsonencode({\n      bucket       = each.value.bucket, prefix = each.value.prefix, database = each.value.database,\n      backupKeyArn = each.value.backup_key_arn, textKeyArn = each.value.text_key_arn,\n      maxBytes     = 536870912, expiresAt = each.value.expires_at, bus = local.config.deployment,\n      monitors     = [for m in local.config.monitors : { id = m.id, kind = m.kind, resource = m.resource, generation = m.generation } if m.sources == [\"sql-observer\"]]\n      nat          = local.nat_observer_config, retentionEnabled = var.backup_retention_enabled\n    }) }\n  }\n  depends_on = [aws_cloudwatch_log_group.backup_observer, aws_iam_role_policy.backup_observer]\n  lifecycle {\n    precondition {\n      condition     = length([for m in local.config.monitors : m if m.sources == [\"sql-observer\"] && contains([\"sql-backup\", \"report\"], m.kind)]) == 2 && length(local.config.monitors) == (var.nat_observer == null ? 2 : 3)\n      error_message = \"Preserve the two existing SQL monitor identities; no new journal identities.\"\n    }\n  }\n}\nresource \"aws_lambda_function_event_invoke_config\" \"backup_observer\" {\n  for_each                     = local.backup_observers\n  function_name                = aws_lambda_function.backup_observer[each.key].function_name\n  maximum_retry_attempts       = 0\n  maximum_event_age_in_seconds = 60\n}\nresource \"aws_cloudwatch_event_rule\" \"backup_observer\" {\n  for_each            = local.backup_observers\n  name                = local.observer_name\n  schedule_expression = \"rate(15 minutes)\"\n  state               = var.enabled ? \"ENABLED\" : \"DISABLED\"\n}\nresource \"aws_cloudwatch_event_target\" \"backup_observer\" {\n  for_each = local.backup_observers\n  rule     = aws_cloudwatch_event_rule.backup_observer[each.key].name\n  arn      = aws_lambda_function.backup_observer[each.key].arn\n  retry_policy {\n    maximum_event_age_in_seconds = 60\n    maximum_retry_attempts       = 0\n  }\n}\nresource \"aws_lambda_permission\" \"backup_observer\" {\n  for_each       = local.backup_observers\n  statement_id   = \"OwnBackupObservationSchedule\"\n  action         = \"lambda:InvokeFunction\"\n  function_name  = aws_lambda_function.backup_observer[each.key].function_name\n  principal      = \"events.amazonaws.com\"\n  source_account = local.config.account\n  source_arn     = aws_cloudwatch_event_rule.backup_observer[each.key].arn\n"
+    },
+    "operations/integrations/Ecs.Backup.Portable.Host/Function.cs:30-64": {
+      "path": "operations/integrations/Ecs.Backup.Portable.Host/Function.cs",
+      "line": 30,
+      "endLine": 64,
+      "commitFileSha256": "b9345736a8ef0655b671c4ce2d4b2da6732999735a22073ed7234433d655ef56",
+      "fragmentLfSha256": "a5954764e2ca57ddb4252055b60e12591f8859ed577cbd3019e4d71a94dd009b",
+      "text": "  if(config.Account!=\"341936017254\" || config.Region!=\"us-east-1\" || sql.Length!=2 || sql.Count(m=>m.Kind==\"sql-backup\" && m.Selector==\"full\" && m.RequiredAssurance==Assurance.Artifact)!=1 || sql.Count(m=>m.Kind==\"report\" && m.RequiredAssurance==Assurance.Reported)!=1 || sql.Any(m=>m.Model!=MonitorModel.Freshness) || nat.Length>1 || nat.Any(m=>m.Id!=\"nat-a-egress\" || m.Kind!=\"report\" || m.Resource!=\"nat/dev/a\" || m.Generation!=\"lt4-e13v6\" || m.RequiredAssurance!=Assurance.Reported || !m.Sources.SequenceEqual(new[]{\"nat-observer\"})) || config.MaxJobs!=4 || config.MaxRequests!=64 || config.WebhookEnvironment is not null)throw new InvalidOperationException(\"Closed DEV backup/NAT observation profile required.\");\n  return config;\n }\n static (Installation Config,DynamoOptions Options,ArchiveOptions Archive) Bind(TickEvent request,ILambdaContext context,string component) {\n  var c=ValidateBundle(AppContext.BaseDirectory);var arn=context.InvokedFunctionArn.Split(':');\n  if(request.Deployment!=c.Deployment || arn.Length<7 || arn[3]!=c.Region || arn[4]!=c.Account || arn[6]!=c.Deployment+\"-\"+component)throw new ArgumentException(\"Invocation outside own component.\");\n  string Env(string key)=>Environment.GetEnvironmentVariable(key)??throw new ArgumentException(\"Missing runtime binding.\");\n  return(c,new(Env(\"SENTINEL_TABLE\"),c.Project,c.Environment,c.Consumer,PageSize:64),new(Env(\"SENTINEL_ARCHIVE\"),c.Project,c.Environment,c.Consumer,KmsKeyId:Env(\"SENTINEL_ARCHIVE_KMS_KEY\")));\n }\n public TickSummary Tick(TickEvent request,ILambdaContext context) {\n  if(request.Mode!=\"compensate-approved-four-archives\")return inner.Tick(request,context);\n  var b=Bind(request,context,\"worker\");\n  using var ddb=new AmazonDynamoDBClient(new AmazonDynamoDBConfig{RegionEndpoint=RegionEndpoint.USEast1,MaxErrorRetry=0,Timeout=TimeSpan.FromSeconds(5)});\n  using var s3=new AmazonS3Client(new AmazonS3Config{RegionEndpoint=RegionEndpoint.USEast1,MaxErrorRetry=0,Timeout=TimeSpan.FromSeconds(5)});\n  var compensation=new ArchiveCompensation(ddb,s3,b.Options,b.Archive);var receipts=compensation.Execute(DateTimeOffset.UtcNow);\n  context.Logger.LogLine(DomainJson.Serialize(new{type=\"SentinelArchiveCompensation\",receipts,compensation.Requests,originalRecordsChanged=0,notificationsSent=0}));\n  return new(\"ArchiveCompensationVerified\",receipts.Count,receipts.Count,0,receipts.Count,0);\n }\n public Task<SQSBatchResponse> Ingest(SQSEvent request,ILambdaContext context)=>inner.Ingest(request,context);\n public HealthAssessment Watchdog(TickEvent request,ILambdaContext context) {\n  if(request.Mode!=\"watchdog\")throw new ArgumentException(\"Invalid watchdog trigger.\");\n  var b=Bind(request,context,\"watchdog\");var c=b.Config;\n  using var ddb=new AmazonDynamoDBClient(new AmazonDynamoDBConfig{RegionEndpoint=RegionEndpoint.USEast1,MaxErrorRetry=0,Timeout=TimeSpan.FromSeconds(5)});\n  using var s3=new AmazonS3Client(new AmazonS3Config{RegionEndpoint=RegionEndpoint.USEast1,MaxErrorRetry=0,Timeout=TimeSpan.FromSeconds(5)});\n  var scope=new OperationalScope(c.Project,c.Environment,c.Consumer,\"worker\",\"portable\");\n  var raw=new DynamoOperationalStore(ddb,b.Options).Read(scope);var now=DateTimeOffset.UtcNow;\n  var compensation=new ArchiveCompensation(ddb,s3,b.Options,b.Archive);\n  var verified=b.Options.Namespace==\"NS#b752b39384784041f4d8fe445ceb7002180c236cfa595219f87701424ae032b2\"?compensation.VerifiedCount(now):0;\n  var result=HealthEvaluator.Evaluate(scope,ArchiveCompensation.CurrentHealthView(raw,verified),c.Operations,now);\n  context.Logger.LogLine(HealthMetric(result));\n  context.Logger.LogLine(DomainJson.Serialize(new{type=\"SentinelHealth\",deployment=c.Deployment,healthy=result.State is HealthState.HEALTHY_ACTIVE or HealthState.HEALTHY_IDLE?1:0,result,backlog=raw?.Backlog,historicalPermanentFailures=raw?.UnresolvedFailures,verifiedArchiveCompensations=verified,activePermanentFailures=raw is null?(int?)null:raw.UnresolvedFailures-verified,requests=compensation.Requests+1}));\n  return result;\n }\n public static string HealthMetric(HealthAssessment result)=>\"SentinelHealthMetric \"+(result.State is HealthState.HEALTHY_ACTIVE or HealthState.HEALTHY_IDLE?\"1\":\"0\");\n public int Cleanup(TickEvent request,ILambdaContext context)=>inner.Cleanup(request,context);\n"
+    },
+    "operations/integrations/portable/trial/runtime/security.tf:49-96": {
+      "path": "operations/integrations/portable/trial/runtime/security.tf",
+      "line": 49,
+      "endLine": 96,
+      "commitFileSha256": "d5ca5fa5d8a370d82936af31c7d8508df8e0ff65e42d12302a5dffd382edaf52",
+      "fragmentLfSha256": "b2bacc67e8d86473c7a111e446baa4800966125e3d3bba83a210364c0386f28a",
+      "text": "resource \"aws_s3_bucket_server_side_encryption_configuration\" \"archive\" {\n  bucket = aws_s3_bucket.archive.id\n  lifecycle {\n    precondition {\n      condition     = data.aws_kms_key.archive.key_manager == \"CUSTOMER\" && data.aws_kms_key.archive.enabled && data.aws_kms_key.archive.key_spec == \"SYMMETRIC_DEFAULT\" && data.aws_kms_key.archive.key_usage == \"ENCRYPT_DECRYPT\" && data.aws_kms_key.archive.aws_account_id == local.config.account && data.aws_kms_key.archive.arn == var.security.archive_kms_key_arn\n      error_message = \"DescribeKey must prove the exact enabled same-account customer symmetric archive key.\"\n    }\n  }\n  rule {\n    blocked_encryption_types = [\"SSE-C\"]\n    bucket_key_enabled       = false\n    apply_server_side_encryption_by_default {\n      sse_algorithm     = \"aws:kms\"\n      kms_master_key_id = var.security.archive_kms_key_arn\n    }\n  }\n}\n\nresource \"aws_s3_bucket_policy\" \"archive\" {\n  bucket = aws_s3_bucket.archive.id\n  policy = jsonencode({ Version = \"2012-10-17\", Statement = [\n    { Effect = \"Deny\", Principal = \"*\", Action = \"s3:*\", Resource = [aws_s3_bucket.archive.arn, \"${aws_s3_bucket.archive.arn}/*\"], Condition = { Bool = { \"aws:SecureTransport\" = \"false\" } } },\n    { Sid = \"RejectExplicitNonKmsEncryption\", Effect = \"Deny\", Principal = \"*\", Action = \"s3:PutObject\", Resource = \"${aws_s3_bucket.archive.arn}/*\", Condition = { StringNotEquals = { \"s3:x-amz-server-side-encryption\" = \"aws:kms\" }, Null = { \"s3:x-amz-server-side-encryption\" = \"false\" } } },\n    { Sid = \"RejectForeignExplicitKmsKey\", Effect = \"Deny\", Principal = \"*\", Action = \"s3:PutObject\", Resource = \"${aws_s3_bucket.archive.arn}/*\", Condition = { StringNotEquals = { \"s3:x-amz-server-side-encryption-aws-kms-key-id\" = var.security.archive_kms_key_arn }, Null = { \"s3:x-amz-server-side-encryption-aws-kms-key-id\" = \"false\" } } },\n    { Sid = \"RequireKeyForExplicitKms\", Effect = \"Deny\", Principal = \"*\", Action = \"s3:PutObject\", Resource = \"${aws_s3_bucket.archive.arn}/*\", Condition = { StringEquals = { \"s3:x-amz-server-side-encryption\" = \"aws:kms\" }, Null = { \"s3:x-amz-server-side-encryption-aws-kms-key-id\" = \"true\" } } },\n    { Sid = \"RejectCustomerProvidedEncryption\", Effect = \"Deny\", Principal = \"*\", Action = \"s3:PutObject\", Resource = \"${aws_s3_bucket.archive.arn}/*\", Condition = { Null = { \"s3:x-amz-server-side-encryption-customer-algorithm\" = \"false\" } } }\n  ] })\n}\n\nlocals {\n  access_log_prefix = \"sentinel/${local.name}/\"\n  archive_kms_statement = {\n    Sid = \"OwnArchiveKmsThroughS3\", Effect = \"Allow\", Action = [\"kms:GenerateDataKey\", \"kms:Decrypt\"], Resource = var.security.archive_kms_key_arn\n    Condition = {\n      StringEquals          = { \"aws:RequestedRegion\" = local.config.region, \"kms:CallerAccount\" = local.config.account, \"kms:ViaService\" = \"s3.${local.config.region}.amazonaws.com\" }\n      StringLike            = { \"kms:EncryptionContext:aws:s3:arn\" = \"${aws_s3_bucket.archive.arn}/${local.archive_prefix}\" }\n      DateGreaterThanEquals = { \"aws:CurrentTime\" = var.security.starts_at }\n      DateLessThan          = { \"aws:CurrentTime\" = var.security.expires_at }\n    }\n  }\n  notice_kms_statement = {\n    Sid = \"OwnNoticeKmsThroughSns\", Effect = \"Allow\", Action = [\"kms:GenerateDataKey\", \"kms:Decrypt\"], Resource = var.security.notice_kms_key_arn\n    Condition = {\n      StringEquals          = { \"aws:RequestedRegion\" = local.config.region, \"kms:CallerAccount\" = local.config.account, \"kms:ViaService\" = \"sns.${local.config.region}.amazonaws.com\", \"kms:EncryptionContext:aws:sns:topicArn\" = local.config.topicArn }\n      DateGreaterThanEquals = { \"aws:CurrentTime\" = var.security.starts_at }\n      DateLessThan          = { \"aws:CurrentTime\" = var.security.expires_at }\n    }\n  }\n"
+    },
+    "docs/SENTINEL-CHAOS-20261106.md:142-169": {
+      "path": "docs/SENTINEL-CHAOS-20261106.md",
+      "line": 142,
+      "endLine": 169,
+      "commitFileSha256": "45c73a73202270282f2c2ba73d62d9d71d97a400cd0bca193fabc04de47297e3",
+      "fragmentLfSha256": "9d615e6b392b335f6856c904cab90a61d9a3224f7ba2e01ccd18e166a504417e",
+      "text": "| Gmail INBOX reception | 17:04:30, second precision | Full body and correlated IDs read through the connected Gmail tool |\n\nThe scheduled failure was independently accompanied by a terminated member,\nblackhole route and unassociated EIP. It persisted after approximately **59.115s**\nfrom termination dispatch. The actual physical outage onset is bounded by samples;\nit is not assumed to be identical to the EC2 API call. Post-recovery readback\nverified ENI `eni-0d1127364cc1eabcc`, EIP association, active private A default route,\nSDC=false and ASG desired=1/Healthy/InService. All three E13 :6 invocations appear\nin their logs; their configured versions remain unchanged. B, SQL and `/ready`\nremained healthy. There was no manual recovery or fourth fault.\n\nOne intermediate scheduled observation at **17:02:53.758** was **Unknown**:\nthe guardian's diagnostic invocation overlapped the one-concurrency probe,\nproducing `TooManyRequestsException`. Its control-plane failure evidence remained\nvisible. This is a real test-harness interference, preserved in the journal,\nnot a second proven HTTPS failure or a Lambda timeout. The preceding scheduled\nprobe proved failure and the following scheduled probe proved recovery.\nFuture read-only observation should consume scheduled results instead of racing\nthe same constrained probe. No concurrency/budget increase or extra disruption\nwas used to hide this limitation.\n\nThis short incident resolved before an escalation was generated. It produced\none recovery notice, not a fall-detection email. The persistent SQL-backup incident\nalready demonstrates escalation and resolution. The NAT result proves genuine\nfailure detection, persistence, automatic recovery and recovery notification;\nit does **not** prove delivery of a NAT escalation before recovery.\n\nCorrelation retained in private evidence:\n"
+    },
+    "operations/integrations/portable/nat_observer.py:40-99": {
+      "path": "operations/integrations/portable/nat_observer.py",
+      "line": 40,
+      "endLine": 99,
+      "commitFileSha256": "5c0a70a17cab50dcf5e5d54fd20e38b3afea9170aab2b9732977ffc850bbc0a3",
+      "fragmentLfSha256": "b69bc155406efe8090054c4903813dbf9a1f69d999573e81291a8598e87dd76c",
+      "text": "def connectivity(clients, c, now, invocation):\n    payload = json.dumps({'operation': 'https-egress-a', 'observationId': invocation}).encode()\n    result = clients('lambda').invoke(FunctionName=c['probeArn'], InvocationType='RequestResponse', Payload=payload)\n    try:\n        require(not result.get('FunctionError'), 'PROBE_EXECUTOR_FAILED')\n        raw = result['Payload'].read(4097)\n    finally:\n        if result.get('Payload') is not None:\n            result['Payload'].close()\n    require(len(raw) <= 4096, 'PROBE_RESPONSE_BOUND')\n    probe = json.loads(raw)\n    require(probe['observationId'] == invocation and abs((utc(probe['at'])-now).total_seconds()) <= 30 and probe['httpsRequests'] == 1, 'PROBE_CORRELATION')\n    require(probe.get('status') in ('HTTPS_SUCCESS', 'HTTPS_FAILED'), 'PROBE_STATUS')\n    failed = probe['status'] != 'HTTPS_SUCCESS' or probe.get('egressIp') != c['expectedEip']\n    return {'verdict': 'Fail' if failed else 'Pass',\n            'failures': ['PRIVATE_HTTPS_EGRESS_FAILED'] if failed else [], 'evidence': {'probe': probe}}\n\n\ndef observe(clients, c, now, invocation):\n    require(now < utc(c['expiresAt']), 'NAT_OBSERVER_WINDOW_EXPIRED')\n    checks = {}\n    for name, call in [('controlPlane', lambda: control_plane(clients, c)),\n                       ('connectivity', lambda: connectivity(clients, c, now, invocation))]:\n        try:\n            checks[name] = call()\n        except Exception as error:\n            checks[name] = {'verdict': 'Unknown', 'failures': [name.upper() + '_UNAVAILABLE'],\n                            'errorType': type(error).__name__, 'evidence': {}}\n    control, network = checks['controlPlane'], checks['connectivity']\n    # A failed real request is evidence even if an AWS read failed. A missing\n    # probe result is never proof of lost connectivity, including a replacement.\n    verdict = ('Fail' if network['verdict'] == 'Fail' else\n               'Unknown' if 'Unknown' in (control['verdict'], network['verdict']) else\n               control['verdict'])\n    return {'verdict': verdict, 'checks': checks,\n            'failures': control['failures'] + network['failures'],\n            'evidence': {**control['evidence'], **network['evidence']}}\n\n\ndef handler(event, context, clients, c):\n    now = dt.datetime.now(dt.timezone.utc)\n    invocation = event['id']\n    try:\n        result = observe(clients, c, now, invocation)\n    except Exception as error:\n        # An unavailable observer is unknown health, never proof of NAT failure.\n        result = {'verdict': 'Unknown', 'failures': ['OBSERVER_UNAVAILABLE'], 'errorType': type(error).__name__}\n    identity = hashlib.sha256(json.dumps([invocation, result], sort_keys=True).encode()).hexdigest()\n    report = {'schemaVersion': 1, 'monitor': 'nat-a-egress', 'producer': 'nat-observer', 'id': identity,\n              'resource': 'nat/dev/a', 'generation': 'lt4-e13v6', 'observedAt': now.isoformat(), 'dataAt': now.isoformat(),\n              'verdict': result['verdict'], 'assurance': 'Reported', 'runId': invocation,\n              'detail': 'AWS control=' + result.get('checks', {}).get('controlPlane', {}).get('verdict', 'Unknown') +\n                        '; private HTTPS=' + result.get('checks', {}).get('connectivity', {}).get('verdict', 'Unknown') +\n                        '; ' + (','.join(result['failures']) or 'EIP_ROUTE_SDC_HTTPS_VERIFIED')}\n    response = clients('events').put_events(Entries=[{'EventBusName': c['bus'], 'Source': 'sentinel.report.nat-observer',\n        'DetailType': 'Sentinel Observation v1', 'Detail': json.dumps(report, separators=(',', ':'))}])\n    require(response['FailedEntryCount'] == 0, 'NAT_OBSERVATION_DELIVERY_UNCONFIRMED')\n    receipt = {'observationId': invocation, 'at': now.isoformat(), 'result': result, 'eventId': response['Entries'][0]['EventId'], 'reportId': identity}\n    print(json.dumps(receipt))\n    return receipt\n"
+    },
+    "operations/integrations/portable/trial/runtime/main.tf:110-137": {
+      "path": "operations/integrations/portable/trial/runtime/main.tf",
+      "line": 110,
+      "endLine": 137,
+      "commitFileSha256": "91b504ea56d5d24497b81c84b6689bfb2a4d388cb91bbf59a3c8f24bc8cc2d02",
+      "fragmentLfSha256": "0f108b4f53cc40f7824c9a6397e257f4844264d1fbe20659cea2eb5e11a1cc1a",
+      "text": "resource \"aws_cloudwatch_event_bus\" \"reports\" { name = local.name }\nresource \"aws_cloudwatch_event_rule\" \"reports\" {\n  name           = \"${local.name}-reports\"\n  event_bus_name = aws_cloudwatch_event_bus.reports.name\n  state          = var.enabled ? \"ENABLED\" : \"DISABLED\"\n  event_pattern  = jsonencode({ source = [for p in local.producers : \"sentinel.report.${p}\"], \"detail-type\" = [\"Sentinel Observation v1\"], account = [local.config.account], region = [local.config.region] })\n  count          = length(local.producers) > 0 ? 1 : 0\n}\nresource \"aws_cloudwatch_event_target\" \"reports\" {\n  count          = length(local.producers) > 0 ? 1 : 0\n  rule           = aws_cloudwatch_event_rule.reports[0].name\n  event_bus_name = aws_cloudwatch_event_bus.reports.name\n  arn            = aws_sqs_queue.reports.arn\n  dead_letter_config { arn = aws_sqs_queue.dead[\"operations\"].arn }\n  retry_policy {\n    maximum_event_age_in_seconds = 3600\n    maximum_retry_attempts       = 3\n  }\n}\nresource \"aws_sqs_queue_policy\" \"reports\" {\n  count     = length(local.producers) > 0 ? 1 : 0\n  queue_url = aws_sqs_queue.reports.id\n  policy    = jsonencode({ Version = \"2012-10-17\", Statement = length(local.producers) > 0 ? [{ Effect = \"Allow\", Principal = { Service = \"events.amazonaws.com\" }, Action = \"sqs:SendMessage\", Resource = aws_sqs_queue.reports.arn, Condition = { ArnEquals = { \"aws:SourceArn\" = aws_cloudwatch_event_rule.reports[0].arn } } }] : [] })\n}\nresource \"aws_iam_role\" \"runtime\" {\n  for_each             = local.roles\n  name                 = \"${local.name}-${each.key}\"\n  permissions_boundary = aws_iam_policy.ecs_boundary[each.key].arn\n"
+    },
+    "operations/integrations/portable/trial/runtime/main.tf:192-219": {
+      "path": "operations/integrations/portable/trial/runtime/main.tf",
+      "line": 192,
+      "endLine": 219,
+      "commitFileSha256": "91b504ea56d5d24497b81c84b6689bfb2a4d388cb91bbf59a3c8f24bc8cc2d02",
+      "fragmentLfSha256": "6cc11ef98168929162abd00f0fefcd9b5480fb2ae1a69cb33a55ebecec1c428f",
+      "text": "resource \"aws_lambda_event_source_mapping\" \"reports\" {\n  event_source_arn        = aws_sqs_queue.reports.arn\n  function_name           = aws_lambda_alias.live[\"ingestion\"].arn\n  batch_size              = 5\n  function_response_types = [\"ReportBatchItemFailures\"]\n  enabled                 = var.enabled\n}\nresource \"aws_cloudwatch_event_rule\" \"tick\" {\n  for_each            = local.schedules\n  name                = \"${local.name}-${each.key}\"\n  schedule_expression = each.value\n  state               = var.enabled ? \"ENABLED\" : \"DISABLED\"\n}\nresource \"aws_cloudwatch_event_target\" \"tick\" {\n  for_each = local.schedules\n  rule     = aws_cloudwatch_event_rule.tick[each.key].name\n  arn      = aws_lambda_alias.live[each.key].arn\n  input    = jsonencode({ Deployment = local.name, Mode = local.modes[each.key] })\n  retry_policy {\n    maximum_event_age_in_seconds = 60\n    maximum_retry_attempts       = 0\n  }\n  dead_letter_config { arn = aws_sqs_queue.dead[\"operations\"].arn }\n}\n# Two serialized asynchronous admissions consume the existing 128/hour profile.\n# Each invocation keeps 64 requests/four jobs; concurrency remains one. The same\n# fenced journal, exact input and existing rule permission prevent effect races.\nvariable \"worker_admissions_per_tick\" {\n"
+    },
+    "operations/integrations/portable/trial/runtime/main.tf:38-65": {
+      "path": "operations/integrations/portable/trial/runtime/main.tf",
+      "line": 38,
+      "endLine": 65,
+      "commitFileSha256": "91b504ea56d5d24497b81c84b6689bfb2a4d388cb91bbf59a3c8f24bc8cc2d02",
+      "fragmentLfSha256": "be601ed2fa8dff78975d4505ecdc27e9be9311608c2aa986c5236ba4b94aaac6",
+      "text": "resource \"aws_dynamodb_table\" \"state\" {\n  name                        = \"${local.name}-state\"\n  billing_mode                = \"PAY_PER_REQUEST\"\n  hash_key                    = \"PK\"\n  range_key                   = \"SK\"\n  deletion_protection_enabled = var.retirement == null\n  dynamic \"attribute\" {\n    for_each = toset([\"PK\", \"SK\", \"DuePK\", \"DueSK\", \"ActivePK\", \"ActiveSK\", \"CleanPK\", \"CleanSK\"])\n    content {\n      name = attribute.value\n      type = \"S\"\n    }\n  }\n  dynamic \"global_secondary_index\" {\n    for_each = { Due = \"Due\", Active = \"Active\", Cleanup = \"Clean\" }\n    content {\n      name            = global_secondary_index.key\n      hash_key        = \"${global_secondary_index.value}PK\"\n      range_key       = \"${global_secondary_index.value}SK\"\n      projection_type = \"ALL\"\n    }\n  }\n  point_in_time_recovery {\n    enabled                 = true\n    recovery_period_in_days = 1\n  }\n  server_side_encryption { enabled = true }\n  lifecycle {\n"
+    },
+    "operations/integrations/Ecs.Backup.Portable.Host/CurrentBacklog.cs:1-55": {
+      "path": "operations/integrations/Ecs.Backup.Portable.Host/CurrentBacklog.cs",
+      "line": 1,
+      "endLine": 55,
+      "commitFileSha256": "ceb987cf85b4bf0d777eed66d711ba087b2b99619dd7383129879172eb6825c8",
+      "fragmentLfSha256": "ceb987cf85b4bf0d777eed66d711ba087b2b99619dd7383129879172eb6825c8",
+      "text": "using Amazon.DynamoDBv2;\nusing Amazon.DynamoDBv2.Model;\nusing Sentinel.Application;\nusing Sentinel.Core;\nusing Sentinel.Operations;\nusing Sentinel.Persistence.DynamoDb;\n\nnamespace Ecs.Backup.Portable.Host;\n\n// Read current authoritative W#/O# rows instead of treating the worker's slow,\n// multi-invocation sweep as current telemetry. No journal writes or GSI claims.\n// Worker uses one consistent query + one transaction of at most 32 Get actions.\n// Both requests consume its existing 64-request budget, before the checkpoint.\npublic sealed class CurrentBacklog(IAmazonDynamoDB ddb,DynamoOptions options) {\n public int Requests {get;private set;}\n public BacklogObservation Read(DateTimeOffset now) {\n  Requests++;\n  var page=ddb.QueryAsync(new QueryRequest{TableName=options.Table,ConsistentRead=true,Limit=32,\n   KeyConditionExpression=\"PK = :pk AND begins_with(SK,:w)\",\n   ExpressionAttributeValues=new(){[\":pk\"]=PhysicalLayout.S(options.Namespace),[\":w\"]=PhysicalLayout.S(\"W#\")}}).GetAwaiter().GetResult();\n  if(page.Items.Count>32)throw new InvalidDataException(\"Backlog query exceeded bound.\");\n  List<OutboxEntry> entries=[];var layout=new PhysicalLayout(options);\n  List<string> ids=[];\n  foreach(var row in page.Items) {\n   if(row[\"PK\"].S!=options.Namespace||!row[\"SK\"].S.StartsWith(\"W#\",StringComparison.Ordinal))throw new InvalidDataException(\"Foreign backlog pointer.\");\n   ids.Add(PhysicalLayout.Payload<string>(row));\n  }\n  if(ids.Count>0) {\n   if(ids.Distinct(StringComparer.Ordinal).Count()!=ids.Count)throw new InvalidDataException(\"Duplicate work pointer.\");\n   Requests++;\n   var found=ddb.TransactGetItemsAsync(new TransactGetItemsRequest{TransactItems=ids.Select(id=>new TransactGetItem{Get=new Get{TableName=options.Table,Key=layout.Key(PhysicalLayout.Effect(id))}}).ToList()}).GetAwaiter().GetResult();\n   if(found.Responses.Count!=ids.Count)throw new InvalidDataException(\"Incomplete authoritative backlog read.\");\n   for(int i=0;i<ids.Count;i++)if(found.Responses[i].Item is {Count:>0} item){var entry=PhysicalLayout.Payload<OutboxEntry>(item);if(entry.Id!=ids[i])throw new InvalidDataException(\"Backlog identity mismatch.\");entries.Add(entry);}\n  }\n  return Observe(entries,now,page.LastEvaluatedKey is not {Count:>0});\n }\n public static BacklogObservation Observe(IEnumerable<OutboxEntry> entries,DateTimeOffset now,bool complete) {\n  var result=BacklogObservation.Empty(now,complete);\n  foreach(var e in entries) {\n   if(e.Status==OutboxStatus.PermanentFailure){result=result with{Failed=result.Failed+1};continue;}\n   var due=e.Status is OutboxStatus.Pending or OutboxStatus.Uncertain or OutboxStatus.RetryableFailure\n    ?e.DueAt<=now:e.Status==OutboxStatus.Claimed&&e.LeaseUntil<=now;\n   if(!due)continue;\n   var at=e.Status==OutboxStatus.Claimed?e.LeaseUntil!.Value:e.DueAt;\n   DateTimeOffset? Min(DateTimeOffset? old)=>old is null||at<old?at:old;\n   var check=e.Intent?.Kind is EffectKind.ScheduleRecoveryCheck or EffectKind.RequestFunctionalProbe;\n   var archive=e.Kind==WorkKind.ArchiveDecision;\n   result=result with{Checks=result.Checks+(check?1:0),Archives=result.Archives+(archive?1:0),Effects=result.Effects+(!check&&!archive?1:0),\n    OldestDueAt=Min(result.OldestDueAt),OldestCheckAt=check?Min(result.OldestCheckAt):result.OldestCheckAt,\n    OldestArchiveAt=archive?Min(result.OldestArchiveAt):result.OldestArchiveAt,\n    OldestEffectAt=!check&&!archive?Min(result.OldestEffectAt):result.OldestEffectAt};\n  }\n  return result;\n }\n}\n"
+    },
+    "operations/integrations/Ecs.Backup.Portable.Host/Function.cs:49-64": {
+      "path": "operations/integrations/Ecs.Backup.Portable.Host/Function.cs",
+      "line": 49,
+      "endLine": 64,
+      "commitFileSha256": "b9345736a8ef0655b671c4ce2d4b2da6732999735a22073ed7234433d655ef56",
+      "fragmentLfSha256": "61a244da5011feff396b1f693a43089d11b5078962416d118b66b865298197a1",
+      "text": " public HealthAssessment Watchdog(TickEvent request,ILambdaContext context) {\n  if(request.Mode!=\"watchdog\")throw new ArgumentException(\"Invalid watchdog trigger.\");\n  var b=Bind(request,context,\"watchdog\");var c=b.Config;\n  using var ddb=new AmazonDynamoDBClient(new AmazonDynamoDBConfig{RegionEndpoint=RegionEndpoint.USEast1,MaxErrorRetry=0,Timeout=TimeSpan.FromSeconds(5)});\n  using var s3=new AmazonS3Client(new AmazonS3Config{RegionEndpoint=RegionEndpoint.USEast1,MaxErrorRetry=0,Timeout=TimeSpan.FromSeconds(5)});\n  var scope=new OperationalScope(c.Project,c.Environment,c.Consumer,\"worker\",\"portable\");\n  var raw=new DynamoOperationalStore(ddb,b.Options).Read(scope);var now=DateTimeOffset.UtcNow;\n  var compensation=new ArchiveCompensation(ddb,s3,b.Options,b.Archive);\n  var verified=b.Options.Namespace==\"NS#b752b39384784041f4d8fe445ceb7002180c236cfa595219f87701424ae032b2\"?compensation.VerifiedCount(now):0;\n  var result=HealthEvaluator.Evaluate(scope,ArchiveCompensation.CurrentHealthView(raw,verified),c.Operations,now);\n  context.Logger.LogLine(HealthMetric(result));\n  context.Logger.LogLine(DomainJson.Serialize(new{type=\"SentinelHealth\",deployment=c.Deployment,healthy=result.State is HealthState.HEALTHY_ACTIVE or HealthState.HEALTHY_IDLE?1:0,result,backlog=raw?.Backlog,historicalPermanentFailures=raw?.UnresolvedFailures,verifiedArchiveCompensations=verified,activePermanentFailures=raw is null?(int?)null:raw.UnresolvedFailures-verified,requests=compensation.Requests+1}));\n  return result;\n }\n public static string HealthMetric(HealthAssessment result)=>\"SentinelHealthMetric \"+(result.State is HealthState.HEALTHY_ACTIVE or HealthState.HEALTHY_IDLE?\"1\":\"0\");\n public int Cleanup(TickEvent request,ILambdaContext context)=>inner.Cleanup(request,context);\n"
+    },
+    "operations/integrations/portable/trial/runtime/main.tf:97-124": {
+      "path": "operations/integrations/portable/trial/runtime/main.tf",
+      "line": 97,
+      "endLine": 124,
+      "commitFileSha256": "91b504ea56d5d24497b81c84b6689bfb2a4d388cb91bbf59a3c8f24bc8cc2d02",
+      "fragmentLfSha256": "5db9255eb49d19ee99d5597d2de68fd3fd426603a5cd41af27d1aa61bb6ca370",
+      "text": "resource \"aws_sqs_queue\" \"dead\" {\n  for_each                  = toset([\"reports\", \"operations\"])\n  name                      = \"${local.name}-${each.key}-dlq\"\n  message_retention_seconds = 1209600\n  sqs_managed_sse_enabled   = true\n}\nresource \"aws_sqs_queue\" \"reports\" {\n  name                       = \"${local.name}-reports\"\n  visibility_timeout_seconds = 360\n  message_retention_seconds  = 1209600\n  sqs_managed_sse_enabled    = true\n  redrive_policy             = jsonencode({ deadLetterTargetArn = aws_sqs_queue.dead[\"reports\"].arn, maxReceiveCount = 5 })\n}\nresource \"aws_cloudwatch_event_bus\" \"reports\" { name = local.name }\nresource \"aws_cloudwatch_event_rule\" \"reports\" {\n  name           = \"${local.name}-reports\"\n  event_bus_name = aws_cloudwatch_event_bus.reports.name\n  state          = var.enabled ? \"ENABLED\" : \"DISABLED\"\n  event_pattern  = jsonencode({ source = [for p in local.producers : \"sentinel.report.${p}\"], \"detail-type\" = [\"Sentinel Observation v1\"], account = [local.config.account], region = [local.config.region] })\n  count          = length(local.producers) > 0 ? 1 : 0\n}\nresource \"aws_cloudwatch_event_target\" \"reports\" {\n  count          = length(local.producers) > 0 ? 1 : 0\n  rule           = aws_cloudwatch_event_rule.reports[0].name\n  event_bus_name = aws_cloudwatch_event_bus.reports.name\n  arn            = aws_sqs_queue.reports.arn\n  dead_letter_config { arn = aws_sqs_queue.dead[\"operations\"].arn }\n  retry_policy {\n"
+    },
+    "operations/integrations/Ecs.Backup.Portable.Notice/ReadableNotice.cs:1-28": {
+      "path": "operations/integrations/Ecs.Backup.Portable.Notice/ReadableNotice.cs",
+      "line": 1,
+      "endLine": 28,
+      "commitFileSha256": "83f7576f76e017ddad5a1c8f705ecdff8bb109718d29e6918d5c366513315a33",
+      "fragmentLfSha256": "55610d9d29fc3097b1c3147c1d0693d655a8ee73771f65d52c904038229c5fa1",
+      "text": "using Sentinel.Core;\nusing Sentinel.Portable;\nusing Sentinel.Portable.Aws;\nnamespace Ecs.Backup.Portable;\npublic static class ReadableNotice {\n public static (string Subject,string Message) Render(IncidentNotice notice,Installation config,bool syntheticTrial) {\n  var monitor=config.Monitors.SingleOrDefault(m=>m.Id==notice.Monitor);\n  if(notice.SchemaVersion!=2 || notice.Deployment!=config.Deployment || notice.Consumer!=config.Consumer || monitor is null ||\n   notice.Resource!=monitor.Resource || notice.Generation!=monitor.Generation || notice.RequiredAssurance!=monitor.RequiredAssurance ||\n   notice.Revision<1 || notice.Epoch<1 || notice.EvaluatedAt.Offset!=TimeSpan.Zero ||\n   notice.ConfirmedServiceImpact!=(notice.Condition==NoticeCondition.ConfirmedImpact) ||\n   notice.Event is not (\"EscalateIncident\" or \"ResolveIncident\") ||\n   (notice.Event==\"ResolveIncident\")!=(notice.Condition==NoticeCondition.ExpectationSatisfied))\n    throw new ArgumentException(\"Notice scope/condition/version mismatch; no formatting or delivery.\");\n  string Safe(string? value,int max=512){value??=\"(sin dato)\";if(value.Length>max || value.Any(c=>char.IsControl(c)))throw new ArgumentException(\"Unsafe notice field.\");return value;}\n  var state=notice.Condition switch {\n   NoticeCondition.HealthUnverifiable=>\"SALUD NO VERIFICABLE\",\n   NoticeCondition.ObservedFailure=>\"FALLO OBSERVADO\",\n   NoticeCondition.ExpectationUnmet=>\"EXPECTATIVA INCUMPLIDA\",\n   NoticeCondition.ConfirmedImpact=>\"IMPACTO CONFIRMADO\",\n   NoticeCondition.ExpectationSatisfied=>\"RECUPERACIÓN VERIFICADA PARA ESTA EXPECTATIVA\",\n   _=>throw new ArgumentException(\"Unknown notice condition.\")};\n  var mark=syntheticTrial?\"PRUEBA SINTÉTICA | \":\"\";\n  var service=monitor.Id==\"nat-a-egress\"?\"Salida privada NAT A\":monitor.Kind==\"sql-backup\"?\"Backups SQL\":\"Observación de \"+Safe(monitor.Id);\n  var message=$\"{mark}ECS · {service}\\n\\nEstado: {state}\\nMonitor: {Safe(notice.Monitor)}\\nRecurso: {Safe(notice.Resource)}\\nMotivo: {Safe(notice.Summary)}\\nGarantía exigida: {notice.RequiredAssurance}\\nEvaluación UTC: {notice.EvaluatedAt:O}\\nRevisión: {notice.Revision}\\n\";\n  foreach(var reason in notice.Reasons.Take(8))message+=$\"- {Safe(reason)}\\n\";\n  message+=$\"\\nAlcance: {Safe(notice.Deployment)} / {Safe(notice.Consumer)}\\nResponsable: {Safe(notice.Owner)}\\n\";\n  message+=\"No implica una restauración SQL ni salud de la aplicación salvo evidencia explícita del contrato.\\nAceptar el aviso en SNS no acredita recepción en inbox. SNS puede duplicar o reordenar avisos.\\n\";\n"
+    },
+    "operations/integrations/portable/trial/runtime/main.tf:283-310": {
+      "path": "operations/integrations/portable/trial/runtime/main.tf",
+      "line": 283,
+      "endLine": 310,
+      "commitFileSha256": "91b504ea56d5d24497b81c84b6689bfb2a4d388cb91bbf59a3c8f24bc8cc2d02",
+      "fragmentLfSha256": "4bb9c12f5ca44ecd80d935b30940b89b3173aebb5f9967ce4d0b1784f39ac531",
+      "text": "resource \"aws_cloudwatch_metric_alarm\" \"health\" {\n  alarm_name          = \"${local.name}-health\"\n  namespace           = \"Sentinel/${local.name}\"\n  metric_name         = \"Health\"\n  statistic           = \"Minimum\"\n  period              = 60\n  evaluation_periods  = 3\n  comparison_operator = \"LessThanThreshold\"\n  threshold           = 1\n  treat_missing_data  = \"breaching\"\n  actions_enabled     = var.enabled && var.alarm_notices_enabled\n  alarm_actions       = local.actions\n  ok_actions          = local.actions\n}\nresource \"aws_cloudwatch_metric_alarm\" \"dead\" {\n  for_each            = aws_sqs_queue.dead\n  alarm_name          = \"${local.name}-${each.key}-dead\"\n  namespace           = \"AWS/SQS\"\n  metric_name         = \"ApproximateNumberOfMessagesVisible\"\n  dimensions          = { QueueName = each.value.name }\n  statistic           = \"Maximum\"\n  period              = 60\n  evaluation_periods  = 1\n  comparison_operator = \"GreaterThanThreshold\"\n  threshold           = 0\n  treat_missing_data  = \"notBreaching\"\n  actions_enabled     = var.enabled && var.alarm_notices_enabled\n  alarm_actions       = local.actions\n"
+    },
+    "operations/integrations/Ecs.Backup.Portable.Host/Function.cs:64-64": {
+      "path": "operations/integrations/Ecs.Backup.Portable.Host/Function.cs",
+      "line": 64,
+      "endLine": 64,
+      "commitFileSha256": "b9345736a8ef0655b671c4ce2d4b2da6732999735a22073ed7234433d655ef56",
+      "fragmentLfSha256": "e06d51b851d1915f0d37f5ab0754cbd6946bc74dea40cf791644f5cfd7e22d9c",
+      "text": " public int Cleanup(TickEvent request,ILambdaContext context)=>inner.Cleanup(request,context);\n"
+    },
+    "operations/integrations/portable/trial/runtime/main.tf:198-216": {
+      "path": "operations/integrations/portable/trial/runtime/main.tf",
+      "line": 198,
+      "endLine": 216,
+      "commitFileSha256": "91b504ea56d5d24497b81c84b6689bfb2a4d388cb91bbf59a3c8f24bc8cc2d02",
+      "fragmentLfSha256": "453b48a750f1cdc6f58599b2bff7b058be632ae90e35a2c3d4d797f5e6202acf",
+      "text": "}\nresource \"aws_cloudwatch_event_rule\" \"tick\" {\n  for_each            = local.schedules\n  name                = \"${local.name}-${each.key}\"\n  schedule_expression = each.value\n  state               = var.enabled ? \"ENABLED\" : \"DISABLED\"\n}\nresource \"aws_cloudwatch_event_target\" \"tick\" {\n  for_each = local.schedules\n  rule     = aws_cloudwatch_event_rule.tick[each.key].name\n  arn      = aws_lambda_alias.live[each.key].arn\n  input    = jsonencode({ Deployment = local.name, Mode = local.modes[each.key] })\n  retry_policy {\n    maximum_event_age_in_seconds = 60\n    maximum_retry_attempts       = 0\n  }\n  dead_letter_config { arn = aws_sqs_queue.dead[\"operations\"].arn }\n}\n# Two serialized asynchronous admissions consume the existing 128/hour profile.\n"
+    },
+    "operations/sql-backup/sql-backup.timer.in:1-8": {
+      "path": "operations/sql-backup/sql-backup.timer.in",
+      "line": 1,
+      "endLine": 8,
+      "commitFileSha256": "832097e3e5a746d19bb8a8d4399d32609dedc3bdbcca95eba3ed15492514c49a",
+      "fragmentLfSha256": "832097e3e5a746d19bb8a8d4399d32609dedc3bdbcca95eba3ed15492514c49a",
+      "text": "[Unit]\nDescription=Hourly SQL backup while the owner enables the SQL host\n[Timer]\nOnCalendar=hourly\nPersistent=true\nUnit=sql-backup.service\n[Install]\nWantedBy=timers.target\n"
+    },
+    "operations/sql-backup/recovery/NATIVE-RECOVERY.md:48-52": {
+      "path": "operations/sql-backup/recovery/NATIVE-RECOVERY.md",
+      "line": 48,
+      "endLine": 52,
+      "commitFileSha256": "a1d7e1259eccf5d82d058742ad8637969fecd108bfe4285e7c0b5362b285bdce",
+      "fragmentLfSha256": "6baefd00012d81cf6b5e4022664fece66fb5996683897cdd74d0253547f76739",
+      "text": "2. Run `fence` once on the source. It checks data and migrations, stops the backup\n   timer, disables runtime/migrator logins, sets `demodb` READ_ONLY with NO_WAIT,\n   verifies no sessions, and produces a new remote-verified backup. An old success\n   file cannot satisfy this step. Capture its exact manifest/backup VersionIds.\n3. Apply only the reviewed **full Data plan**, using the same owner/backend and\n"
+    },
+    "operations/integrations/portable/backup_retention.py:1-21": {
+      "path": "operations/integrations/portable/backup_retention.py",
+      "line": 1,
+      "endLine": 21,
+      "commitFileSha256": "55ef37abde10c69a0e4775fa22983e6ad631f28e92472ecae812f6649914ee96",
+      "fragmentLfSha256": "943cfd1ebd9ea2f412a58c2645524d7990be93ea65a208a7f906a8d44a890d49",
+      "text": "\"\"\"Bounded native Lifecycle admission for NEW DEV backup pairs only.\n\nThis module never deletes objects. S3 expires only explicitly admitted versions.\nThe two newest verified pairs and any uncommitted/ambiguous input fail closed.\nRestore must stage and verify its selected input outside this lifecycle prefix\nbefore it starts; tag removal alone is not proof that a restore input survives.\n\"\"\"\nimport copy\nimport datetime as dt\nimport hashlib\nimport json\nimport re\n\nfrom storage_observer import inspect_manifest, require\n\nBUCKET = 'terragrunt-demo-sql-backup-341936017254-fa48a32dc9'\nPREFIX = 'terragrunt-demo/dev/sql-backups/v2-20261106/'\nTAG = {'Key': 'ecs-retention', 'Value': 'verified-superseded-v1'}\nHOLD_PREFIX = 'terragrunt-demo/dev/sql-backup-restore-holds/v2-20261106/'\nKEEP = 2\nMAX_PAIRS = 8\n"
+    },
+    "operations/integrations/portable/backup_retention.py:60-65": {
+      "path": "operations/integrations/portable/backup_retention.py",
+      "line": 60,
+      "endLine": 65,
+      "commitFileSha256": "55ef37abde10c69a0e4775fa22983e6ad631f28e92472ecae812f6649914ee96",
+      "fragmentLfSha256": "beb9c2bf393a74e79e67f4ef261c3e67325bfdfc805319538bd6e86482967181",
+      "text": "def plan(s3, config, now):\n    \"\"\"Full verification precedes eligibility; no writes or tag removals here.\n\n    Restore admission requires a verified independent pin before relying on a\n    Lifecycle-eligible pair; a stale absence check is not a restore lease.\n    \"\"\"\n"
+    },
+    "operations/sql-backup/recovery/NATIVE-RECOVERY.md:42-69": {
+      "path": "operations/sql-backup/recovery/NATIVE-RECOVERY.md",
+      "line": 42,
+      "endLine": 69,
+      "commitFileSha256": "a1d7e1259eccf5d82d058742ad8637969fecd108bfe4285e7c0b5362b285bdce",
+      "fragmentLfSha256": "ece24e66db2ce8abbd4f3d99466665a9d55bdb3f340644980eee48ff5ee1f6df",
+      "text": "1. Start the RTO clock before draining writers. Acquire the existing operation\n   exclusion, record the blue/green desired counts and scale them to zero through\n   native delivery. Verify zero running/pending counts **and actual STOPPED task\n   status**, including tasks whose desired status is already STOPPED. ALB draining\n   can leave a DEACTIVATING task with a SQL session after service counts reach zero.\n   The dispatcher checks both task lists; SQL independently checks other writers.\n2. Run `fence` once on the source. It checks data and migrations, stops the backup\n   timer, disables runtime/migrator logins, sets `demodb` READ_ONLY with NO_WAIT,\n   verifies no sessions, and produces a new remote-verified backup. An old success\n   file cannot satisfy this step. Capture its exact manifest/backup VersionIds.\n3. Apply only the reviewed **full Data plan**, using the same owner/backend and\n   normal locking. CROSS-AZ selects the other real private subnet; SAME-AZ uses\n   an explicitly reviewed compute replacement plan. Preserve encrypted disks.\n   Seal and recheck the full transitive configuration, not only files in Data:\n   `authority.json`, referenced user data/helpers, provider lock and private inputs\n   must match the plan. A changed file read by Terraform can invalidate a saved\n   plan during apply even when the native root files are unchanged.\n   No target, import, manual state surgery or automatic corrective apply.\n4. Positively verify the exact source EC2 ID is **terminated**, and its original\n   encrypted disk is available/detached. Stopped, unreachable, timed-out or an\n   inaccessible SSM agent is not accepted as this procedure's final fence.\n5. Wait for fresh EC2 bootstrap and SSM Online. Deliver only the existing public\n   installer and metadata through SSM. Run `install_native_tls.py` with the exact\n   existing TLS transport Secret ARN/VersionId, then `probe_native_tls.py`.\n   Renew only the previously reviewed exact-secret read grant if required. Do\n   not put the private key in commands, user data, Terraform, artifacts or logs.\n6. Run `install_native_backup.py --instance-id <new-id> --private-ip <new-ip>\n   --config <private-config-path>` on the new host. It authenticates the instance\n"
+    },
+    "operations/sql-backup/recovery/NATIVE-RECOVERY.md:60-87": {
+      "path": "operations/sql-backup/recovery/NATIVE-RECOVERY.md",
+      "line": 60,
+      "endLine": 87,
+      "commitFileSha256": "a1d7e1259eccf5d82d058742ad8637969fecd108bfe4285e7c0b5362b285bdce",
+      "fragmentLfSha256": "fc34fdaaff240551a26a7a0ba7624114449f5a4eb82b57dbd2b004518ea396b8",
+      "text": "4. Positively verify the exact source EC2 ID is **terminated**, and its original\n   encrypted disk is available/detached. Stopped, unreachable, timed-out or an\n   inaccessible SSM agent is not accepted as this procedure's final fence.\n5. Wait for fresh EC2 bootstrap and SSM Online. Deliver only the existing public\n   installer and metadata through SSM. Run `install_native_tls.py` with the exact\n   existing TLS transport Secret ARN/VersionId, then `probe_native_tls.py`.\n   Renew only the previously reviewed exact-secret read grant if required. Do\n   not put the private key in commands, user data, Terraform, artifacts or logs.\n6. Run `install_native_backup.py --instance-id <new-id> --private-ip <new-ip>\n   --config <private-config-path>` on the new host. It authenticates the instance\n   role, downloads the already-published exact package version, checks the entire\n   archive and manifest before executing helpers, and prepares strict backup\n   credentials. It neither starts a timer nor enables the application runtime.\n7. Run `restore` once with the authentic fence receipt and backup. The dispatcher\n   re-reads the original SSM result and current EC2/volume APIs. The host restores\n   into a new database, runs the existing CHECKDB verification, compares row count,\n   ciphertext hash and both migrations, preserves the empty bootstrap database,\n   remaps approved users and keeps runtime disabled. The portable CLI runs as\n   the actual `mssql` UID/GID with no supplementary groups and private mode 0700/0600\n   paths; root-owned download files are not made world-readable. The public package\n   installer uses umask 022 only for public parent directories and restores 077\n   before credential bootstrap. A final READ_ONLY backup is made READ_WRITE only\n   on the positively fenced, restored copy before its rename. The successful native\n   restore receipt is persisted before promotion so a rename failure never demands\n   a blind second RESTORE. No database DROP or WITH\n   REPLACE is used. Any uncertain step stops before activation.\n8. Run `activate_native_runtime.py <private-request> <sql-principals.sh>\n   <helper-LF-SHA256>` on the new host after the restore receipt passes. This invokes\n"
+    },
+    "operations/sql-backup/recovery/NATIVE-RECOVERY.md:52-79": {
+      "path": "operations/sql-backup/recovery/NATIVE-RECOVERY.md",
+      "line": 52,
+      "endLine": 79,
+      "commitFileSha256": "a1d7e1259eccf5d82d058742ad8637969fecd108bfe4285e7c0b5362b285bdce",
+      "fragmentLfSha256": "2f8bd5f8cc814aaf8fc17dce71eddad3868273f30f28c6b0374118b5f956021a",
+      "text": "3. Apply only the reviewed **full Data plan**, using the same owner/backend and\n   normal locking. CROSS-AZ selects the other real private subnet; SAME-AZ uses\n   an explicitly reviewed compute replacement plan. Preserve encrypted disks.\n   Seal and recheck the full transitive configuration, not only files in Data:\n   `authority.json`, referenced user data/helpers, provider lock and private inputs\n   must match the plan. A changed file read by Terraform can invalidate a saved\n   plan during apply even when the native root files are unchanged.\n   No target, import, manual state surgery or automatic corrective apply.\n4. Positively verify the exact source EC2 ID is **terminated**, and its original\n   encrypted disk is available/detached. Stopped, unreachable, timed-out or an\n   inaccessible SSM agent is not accepted as this procedure's final fence.\n5. Wait for fresh EC2 bootstrap and SSM Online. Deliver only the existing public\n   installer and metadata through SSM. Run `install_native_tls.py` with the exact\n   existing TLS transport Secret ARN/VersionId, then `probe_native_tls.py`.\n   Renew only the previously reviewed exact-secret read grant if required. Do\n   not put the private key in commands, user data, Terraform, artifacts or logs.\n6. Run `install_native_backup.py --instance-id <new-id> --private-ip <new-ip>\n   --config <private-config-path>` on the new host. It authenticates the instance\n   role, downloads the already-published exact package version, checks the entire\n   archive and manifest before executing helpers, and prepares strict backup\n   credentials. It neither starts a timer nor enables the application runtime.\n7. Run `restore` once with the authentic fence receipt and backup. The dispatcher\n   re-reads the original SSM result and current EC2/volume APIs. The host restores\n   into a new database, runs the existing CHECKDB verification, compares row count,\n   ciphertext hash and both migrations, preserves the empty bootstrap database,\n   remaps approved users and keeps runtime disabled. The portable CLI runs as\n   the actual `mssql` UID/GID with no supplementary groups and private mode 0700/0600\n   paths; root-owned download files are not made world-readable. The public package\n"
+    },
+    "operations/sql-backup/recovery/NATIVE-RECOVERY.md:73-100": {
+      "path": "operations/sql-backup/recovery/NATIVE-RECOVERY.md",
+      "line": 73,
+      "endLine": 100,
+      "commitFileSha256": "a1d7e1259eccf5d82d058742ad8637969fecd108bfe4285e7c0b5362b285bdce",
+      "fragmentLfSha256": "a50118802be205ef7eaf621230cc8962eb38dae30c18f287da7642e41dce07c3",
+      "text": "7. Run `restore` once with the authentic fence receipt and backup. The dispatcher\n   re-reads the original SSM result and current EC2/volume APIs. The host restores\n   into a new database, runs the existing CHECKDB verification, compares row count,\n   ciphertext hash and both migrations, preserves the empty bootstrap database,\n   remaps approved users and keeps runtime disabled. The portable CLI runs as\n   the actual `mssql` UID/GID with no supplementary groups and private mode 0700/0600\n   paths; root-owned download files are not made world-readable. The public package\n   installer uses umask 022 only for public parent directories and restores 077\n   before credential bootstrap. A final READ_ONLY backup is made READ_WRITE only\n   on the positively fenced, restored copy before its rename. The successful native\n   restore receipt is persisted before promotion so a rename failure never demands\n   a blind second RESTORE. No database DROP or WITH\n   REPLACE is used. Any uncertain step stops before activation.\n8. Run `activate_native_runtime.py <private-request> <sql-principals.sh>\n   <helper-LF-SHA256>` on the new host after the restore receipt passes. This invokes\n   the existing `sql_principals_activate_runtime` handoff using its strict-TLS\n   client, verifies runtime SELECT/INSERT plus EF-metadata SELECT and\n   absence of administrative/DDL grants. Write one new connection-secret version\n   via the authenticated in-memory SDK path, retaining the old version. Register\n   the native task revision with the current qualified image and exact secret\n   version; restore the recorded desired count only after all gates pass.\n9. Verify `/health`, `/ready`, pre-recovery records, a new POST/GET/decrypt round\n   trip, actual task placement and SQL destination. End the RTO clock only here.\n   Re-enable the existing hourly timer on the new host; verify a real backup and\n   external observation. Record the new Data state and zero persistent locks.\n\nThe fresh host installation reuses the exact package\n`7658cb3ac4b226d1ee069a24e6e862d3435c8862bad40bee8444eeefeb52fa40`,\n"
+    },
+    "operations/sql-backup/recovery/NATIVE-RECOVERY.md:86-113": {
+      "path": "operations/sql-backup/recovery/NATIVE-RECOVERY.md",
+      "line": 86,
+      "endLine": 113,
+      "commitFileSha256": "a1d7e1259eccf5d82d058742ad8637969fecd108bfe4285e7c0b5362b285bdce",
+      "fragmentLfSha256": "4419f5ded4d762251a592dc0e239dbcc24bf74e347d512c30caf28f7fd0afd34",
+      "text": "8. Run `activate_native_runtime.py <private-request> <sql-principals.sh>\n   <helper-LF-SHA256>` on the new host after the restore receipt passes. This invokes\n   the existing `sql_principals_activate_runtime` handoff using its strict-TLS\n   client, verifies runtime SELECT/INSERT plus EF-metadata SELECT and\n   absence of administrative/DDL grants. Write one new connection-secret version\n   via the authenticated in-memory SDK path, retaining the old version. Register\n   the native task revision with the current qualified image and exact secret\n   version; restore the recorded desired count only after all gates pass.\n9. Verify `/health`, `/ready`, pre-recovery records, a new POST/GET/decrypt round\n   trip, actual task placement and SQL destination. End the RTO clock only here.\n   Re-enable the existing hourly timer on the new host; verify a real backup and\n   external observation. Record the new Data state and zero persistent locks.\n\nThe fresh host installation reuses the exact package\n`7658cb3ac4b226d1ee069a24e6e862d3435c8862bad40bee8444eeefeb52fa40`,\nS3 version `BkdqGclnbSplQTmo66qIF40pFWsruFrR`, and the original approved public\ncertificate fingerprint. No package rebuild, new PKI or permanent recovery host\nis needed. Expired permissions must be addressed before interruption, not during\nan improvised restore.\n\n## Measurements and failure boundary\n\nRecord each UTC transition: drain, positive SQL fence, final backup, source EC2\ntermination, new launch, SSM ready, TLS, restore/CHECKDB, handoff, ECS ready and\nfunctional round trip. Report the sum as observed RTO. Report both the last\nscheduled backup's age at the simulated failure and any final planned-cutover\nbackup optimization; the latter is not proof of zero disaster RPO.\n\n"
+    },
+    "docs/V2-RECOVERY-SECURITY-20261105.md:297-324": {
+      "path": "docs/V2-RECOVERY-SECURITY-20261105.md",
+      "line": 297,
+      "endLine": 324,
+      "commitFileSha256": "a2377034e59873c4bb7f0343bb17617bbda8b9d8deb760996d5e6aab4d2cec3a",
+      "fragmentLfSha256": "90a5f083beeac9cbffc890a696eb9dacbbbbf3a4e55cc6a54426d6300cc50ba7",
+      "text": "**Functional PASS at 02:31:01.635056: 1,482.582879 seconds (24 minutes 42.6\nseconds)** from initial drain through API health/readiness and POST/GET/KMS.\nThis corrected trial completed its sole apply, installation, restore and handoff\nwithout corrective replay or manual file/SQL repair. CHECKDB, four original rows,\nciphertext hash and two migrations matched; a new application write made five rows.\nThe image, task roles, listener and SQL grants remained unchanged. Blue revision\n15 points to `10.0.101.160`, with a new versioned connection secret; green stays zero.\n\nBefore reactivating ECS, one supervised reboot changed boot ID from\n`c5cd1230-9752-40d4-b56f-59cc33385d67` to\n`2da5afce-75f5-4907-bc51-a6bcd9345a66`. SQL/TLS and data identity passed afterwards;\nthe timer remained enabled/active with `Persistent=yes`. A real post-reboot service\nrun finished at 02:28:47 with `REMOTE_VERIFIED_CLEANUP_VERIFIED`, backup SHA256\n`5fbb6c6baea0993e3b7031f406a767d9df6eb6e562a9b420f38b7de7af43582e`,\nversion `8zPBT_1wtX97VNbouWoDbLhEu7CINs0w`. This is actual reboot persistence plus\nfunctional backup execution, separate from the earlier automatic hourly runs.\n\nThe verified backup available before this second interruption began at\n01:59:52.6855848: age 6 minutes 26.4 seconds at RTO start. The later final fenced\nbackup again preserved all rows. Neither trial simulates loss of every region-wide\ndependency or proves an automatic recovery decision.\n\nThe corrected Linux recovery/portable suites pass **297 tests in 23 suites with\nzero skips**. A direct Windows CRLF mount initially failed shell parsing; the LF\nGit export passed. This fixture issue is separate from AWS results.\n\n### Post-recovery observation and resource closure\n\n"
+    },
+    "demo-api/terragrunt-demo/Data/RuntimeDatabasePermissions.cs:1-54": {
+      "path": "demo-api/terragrunt-demo/Data/RuntimeDatabasePermissions.cs",
+      "line": 1,
+      "endLine": 54,
+      "commitFileSha256": "4f1a7213490ce1acd05edef4971d7eb724cfc678319f065cb5b682d1d6733e98",
+      "fragmentLfSha256": "4f1a7213490ce1acd05edef4971d7eb724cfc678319f065cb5b682d1d6733e98",
+      "text": "using Microsoft.Data.SqlClient;\n\nnamespace terragrunt_demo.Data;\n\npublic static class RuntimeDatabasePermissions\n{\n    // Read-only effective checks, not GRANT/REVOKE or proof of every possible permission.\n    public const string InspectionSql = \"\"\"\n        SELECT IS_SRVROLEMEMBER('sysadmin'),\n          IS_SRVROLEMEMBER('securityadmin'), IS_SRVROLEMEMBER('serveradmin'),\n          IS_SRVROLEMEMBER('setupadmin'), IS_SRVROLEMEMBER('processadmin'),\n          IS_SRVROLEMEMBER('diskadmin'), IS_SRVROLEMEMBER('dbcreator'),\n          IS_SRVROLEMEMBER('bulkadmin'),\n          HAS_PERMS_BY_NAME(NULL, NULL, 'CONTROL SERVER'),\n          HAS_PERMS_BY_NAME(NULL, NULL, 'IMPERSONATE ANY LOGIN'),\n          HAS_PERMS_BY_NAME(NULL, NULL, 'ALTER ANY LOGIN'),\n          HAS_PERMS_BY_NAME(NULL, NULL, 'ALTER ANY SERVER ROLE'),\n          IS_MEMBER('db_owner'),\n          IS_MEMBER('db_ddladmin'), IS_MEMBER('db_securityadmin'),\n          CASE WHEN USER_NAME() IN ('dbo','guest','sys') THEN 1 ELSE 0 END,\n          HAS_PERMS_BY_NAME(DB_NAME(), 'DATABASE', 'CONTROL'),\n          HAS_PERMS_BY_NAME(DB_NAME(), 'DATABASE', 'CREATE TABLE'),\n          HAS_PERMS_BY_NAME(DB_NAME(), 'DATABASE', 'ALTER ANY USER'),\n          HAS_PERMS_BY_NAME(DB_NAME(), 'DATABASE', 'ALTER ANY ROLE'),\n          HAS_PERMS_BY_NAME('dbo.DemoTexts', 'OBJECT', 'CONTROL'),\n          HAS_PERMS_BY_NAME('dbo.DemoTexts', 'OBJECT', 'ALTER'),\n          HAS_PERMS_BY_NAME('dbo.DemoTexts', 'OBJECT', 'UPDATE'),\n          HAS_PERMS_BY_NAME('dbo.DemoTexts', 'OBJECT', 'DELETE'),\n          HAS_PERMS_BY_NAME('dbo.DemoTexts', 'OBJECT', 'SELECT'),\n          HAS_PERMS_BY_NAME('dbo.DemoTexts', 'OBJECT', 'INSERT');\n        \"\"\";\n\n    public static void Validate(IReadOnlyList<int?> values)\n    {\n        if (values.Count != 26 || values.Take(24).Any(value => value != 0) ||\n            values.Skip(24).Any(value => value != 1))\n            throw new InvalidOperationException(\"DATABASE_RUNTIME_PERMISSIONS_NOT_ADMITTED\");\n    }\n\n    public static async Task CheckAsync(string connection, CancellationToken cancellationToken = default)\n    {\n        using var sql = new SqlConnection(connection);\n        await sql.OpenAsync(cancellationToken);\n        using var command = sql.CreateCommand();\n        command.CommandText = InspectionSql;\n        command.CommandTimeout = 15;\n        using var rows = await command.ExecuteReaderAsync(cancellationToken);\n        if (!await rows.ReadAsync(cancellationToken)) Validate(Array.Empty<int?>());\n        var values = Enumerable.Range(0, rows.FieldCount)\n            .Select(i => rows.IsDBNull(i) ? (int?)null : rows.GetInt32(i)).ToArray();\n        Validate(values);\n        if (await rows.ReadAsync(cancellationToken)) Validate(Array.Empty<int?>());\n    }\n}\n"
+    },
+    "operations/integrations/portable/trial/nat-observer.tf:74-115": {
+      "path": "operations/integrations/portable/trial/nat-observer.tf",
+      "line": 74,
+      "endLine": 115,
+      "commitFileSha256": "aaa53fe035cf7ecad31766ed30f2d6081c0cf96d44116fc8a745e1b3b30fb780",
+      "fragmentLfSha256": "d0c1293fd8ac5f420d36d28456ae904d7d49905634c9b64933649d7023bf13c1",
+      "text": "resource \"aws_lambda_function\" \"nat_probe\" {\n  for_each                       = local.nat_probes\n  function_name                  = local.probe_name\n  role                           = aws_iam_role.nat_probe[each.key].arn\n  runtime                        = \"python3.13\"\n  handler                        = \"nat_probe.handler\"\n  filename                       = each.value.zip_path\n  source_code_hash               = filebase64sha256(each.value.zip_path)\n  timeout                        = 10\n  memory_size                    = 128\n  reserved_concurrent_executions = 1\n  environment { variables = { EXPIRES_AT = var.security.expires_at } }\n  vpc_config {\n    subnet_ids         = [\"subnet-0cc3c5f388072d13d\"]\n    security_group_ids = [aws_security_group.nat_probe[each.key].id]\n  }\n  depends_on = [aws_iam_role_policy.nat_probe, aws_cloudwatch_log_group.nat_probe]\n}\nresource \"aws_cloudwatch_event_rule\" \"nat_observer\" {\n  for_each            = local.nat_probes\n  name                = \"${local.config.deployment}-nat-observer\"\n  schedule_expression = \"rate(1 minute)\"\n  state               = var.enabled ? \"ENABLED\" : \"DISABLED\"\n}\nresource \"aws_cloudwatch_event_target\" \"nat_observer\" {\n  for_each = local.nat_probes\n  rule     = aws_cloudwatch_event_rule.nat_observer[each.key].name\n  arn      = aws_lambda_function.backup_observer[\"sql\"].arn\n  retry_policy {\n    maximum_event_age_in_seconds = 60\n    maximum_retry_attempts       = 0\n  }\n}\nresource \"aws_lambda_permission\" \"nat_observer\" {\n  for_each       = local.nat_probes\n  statement_id   = \"OwnNatObservationSchedule\"\n  action         = \"lambda:InvokeFunction\"\n  function_name  = aws_lambda_function.backup_observer[\"sql\"].function_name\n  principal      = \"events.amazonaws.com\"\n  source_account = local.config.account\n  source_arn     = aws_cloudwatch_event_rule.nat_observer[each.key].arn\n}\n"
+    }
+  },
+  "implementationFiles": {
+    ".github/workflows/ci.yml": "40aed2f3cc55de3b508571e6376047027a4cdece6e8b4b569628f5a0f5b1bd4f",
+    "terraform/modules/target/dev/apps/modules/ecs_service/service.tf": "d2f062a4ef41ba2437b52f6274856e9a82104e8410b9724b1d9de0e76e1b5262",
+    ".github/workflows/cd.yml": "69abf4848f4b2aa5f5d94b5b7fb23fc843fc87a835d1fa66234f6ff54c758d25",
+    "terraform/modules/target/dev/global/modules/alb/alb.tf": "5839265d66ded9bf4c1469d955c6ed7ea421ccb0771c86e44ff3e1745626ac43",
+    "operations/integrations/portable/trial/nat-observer.tf": "aaa53fe035cf7ecad31766ed30f2d6081c0cf96d44116fc8a745e1b3b30fb780",
+    "terraform/modules/target/dev/global/modules/vpc/route_tables.tf": "0236f299aa538736af886fa3d4c07c6b0cdb0b445f8ada85036f72fee4195b78",
+    "scripts/recovery/nat.py": "b0aa7fb01dd1c470925126514bc82fc2139f244368434c57eda8f1488c3efb27",
+    "terraform/modules/target/dev/global/wp5-nat.tf.json": "9a4ec0fea0b78691c8682d01cf928cb6b5e199abd3724cf767676d448da90390",
+    "operations/integrations/portable/nat_probe.py": "4e329c8f25af4ccf0bda91945c8fe636cf75ba9025c4d21a7ee4abc6fdef1ca4",
+    "scripts/tests/security_root/wp4d.py": "08277c08a806b34f496323beeb37d24e4557218eaee5a6caaf6d64e6047ad20a",
+    "scripts/wp4d/nat_resolver.py": "04c419bedf5627c5e8832dbb439f9e70340fea04d9f1fad72c25de224f1d692e",
+    "terraform/modules/target/dev/edge/modules/apigateway/apigw_http.tf": "d4d8455a726948d7fb289a40016ba18c1ca01a7075bea3d938ef5879796c81da",
+    "demo-api/terragrunt-demo/Services/IEncryptionService.cs": "0ee50d6d169ce89185246b4df2f5328cb3dfef827899443de6523587c54fe4b3",
+    "terraform/modules/target/dev/apps/modules/ecs_service/taskdef.tf": "6a32e787f439db8a68419b23240415f708e465b5d8dae5f991a4828a0cf7f0a7",
+    "terraform/modules/target/dev/edge/modules/vpc_link/vpc_link.tf": "bdd6975246e05cfb07b0736035fee03ce8b64f760c6c1a2755c998b7bf471e20",
+    "operations/integrations/portable/storage_observer.py": "2002ead488ecaee1ba005724df65fb44d7fe672792a9534e21ae342d9a945d88",
+    "operations/integrations/portable/trial/storage-observer.tf": "4b93f2fe36f9ec50c9d7047dc84eae8f7f33004c2f3f9fa445570f236da9aa90",
+    "operations/integrations/Ecs.Backup.Portable.Host/Function.cs": "b9345736a8ef0655b671c4ce2d4b2da6732999735a22073ed7234433d655ef56",
+    "operations/integrations/portable/trial/runtime/security.tf": "d5ca5fa5d8a370d82936af31c7d8508df8e0ff65e42d12302a5dffd382edaf52",
+    "operations/integrations/portable/nat_observer.py": "5c0a70a17cab50dcf5e5d54fd20e38b3afea9170aab2b9732977ffc850bbc0a3",
+    "operations/integrations/portable/trial/runtime/main.tf": "91b504ea56d5d24497b81c84b6689bfb2a4d388cb91bbf59a3c8f24bc8cc2d02",
+    "operations/integrations/Ecs.Backup.Portable.Host/CurrentBacklog.cs": "ceb987cf85b4bf0d777eed66d711ba087b2b99619dd7383129879172eb6825c8",
+    "operations/integrations/Ecs.Backup.Portable.Notice/ReadableNotice.cs": "83f7576f76e017ddad5a1c8f705ecdff8bb109718d29e6918d5c366513315a33",
+    "operations/sql-backup/sql-backup.timer.in": "832097e3e5a746d19bb8a8d4399d32609dedc3bdbcca95eba3ed15492514c49a",
+    "operations/integrations/portable/backup_retention.py": "55ef37abde10c69a0e4775fa22983e6ad631f28e92472ecae812f6649914ee96",
+    "demo-api/terragrunt-demo/Data/RuntimeDatabasePermissions.cs": "4f1a7213490ce1acd05edef4971d7eb724cfc678319f065cb5b682d1d6733e98"
+  },
+  "diagrams": {
+    "v2-delivery": {
+      "nodes": {
+        "git": {
+          "label": "GitHub · source + CI",
+          "status": "IMPLEMENTADO",
+          "references": [
+            ".github/workflows/ci.yml:1-28"
+          ]
+        },
+        "operator": {
+          "label": "Operador nativo DEV",
+          "status": "DEMOSTRADO",
+          "references": [
+            "terraform/docs/native-dev-lifecycle.md:1-28"
+          ]
+        },
+        "ecr": {
+          "label": "ECR · digest inmutable",
+          "status": "DEMOSTRADO",
+          "references": [
+            "docs/V2-RECOVERY-SECURITY-20261105.md:159-186"
+          ]
+        },
+        "tf": {
+          "label": "Terraform nativo",
+          "status": "IMPLEMENTADO",
+          "references": [
+            "terraform/docs/native-dev-lifecycle.md:1-28"
+          ]
+        },
+        "ecs": {
+          "label": "ECS task revision / count",
+          "status": "DESPLEGADO",
+          "references": [
+            "terraform/modules/target/dev/apps/modules/ecs_service/service.tf:13-38"
+          ]
+        },
+        "security": {
+          "label": "Security root + TG",
+          "status": "DESPLEGADO",
+          "references": [
+            "docs/V2-TRUST-AND-THREATS.md:49-69"
+          ]
+        },
+        "oidc": {
+          "label": "GitHub OIDC",
+          "status": "IMPLEMENTADO",
+          "references": [
+            ".github/workflows/cd.yml:1-28"
+          ]
+        },
+        "wp": {
+          "label": "WP3 / WP4 gateways",
+          "status": "INACTIVO V2",
+          "references": [
+            "docs/V2-TRUST-AND-THREATS.md:89-106"
+          ]
+        },
+        "alb": {
+          "label": "ALB forwarding",
+          "status": "DESPLEGADO",
+          "references": [
+            "terraform/modules/target/dev/global/modules/alb/alb.tf:18-33"
+          ]
+        }
+      },
+      "relations": [
+        {
+          "id": "git-operator",
+          "from": "git",
+          "to": "operator",
+          "label": "Commit revisado",
+          "references": [
+            ".github/workflows/ci.yml:1-28",
+            "terraform/docs/native-dev-lifecycle.md:1-28"
+          ]
+        },
+        {
+          "id": "operator-ecr",
+          "from": "operator",
+          "to": "ecr",
+          "label": "Build / publicar",
+          "references": [
+            "docs/V2-RECOVERY-SECURITY-20261105.md:159-186",
+            "terraform/docs/native-dev-lifecycle.md:1-28"
+          ]
+        },
+        {
+          "id": "operator-tf",
+          "from": "operator",
+          "to": "tf",
+          "label": "Plan / apply",
+          "references": [
+            "terraform/docs/native-dev-lifecycle.md:1-28"
+          ]
+        },
+        {
+          "id": "tf-ecs",
+          "from": "tf",
+          "to": "ecs",
+          "label": "Solo skeleton",
+          "references": [
+            "terraform/docs/native-dev-lifecycle.md:1-28",
+            "terraform/modules/target/dev/apps/modules/ecs_service/service.tf:13-38"
+          ]
+        },
+        {
+          "id": "ecr-ecs",
+          "from": "ecr",
+          "to": "ecs",
+          "label": "Pull por digest",
+          "references": [
+            "docs/V2-RECOVERY-SECURITY-20261105.md:159-186",
+            "terraform/modules/target/dev/apps/modules/ecs_service/service.tf:13-38"
+          ]
+        },
+        {
+          "id": "operator-ecs",
+          "from": "operator",
+          "to": "ecs",
+          "label": "Deploy nativo",
+          "references": [
+            "terraform/docs/native-dev-lifecycle.md:1-28",
+            "terraform/modules/target/dev/apps/modules/ecs_service/service.tf:13-38"
+          ]
+        },
+        {
+          "id": "operator-security",
+          "from": "operator",
+          "to": "security",
+          "label": "Admin explícito",
+          "references": [
+            "docs/V2-TRUST-AND-THREATS.md:49-69",
+            "terraform/docs/native-dev-lifecycle.md:1-28"
+          ]
+        },
+        {
+          "id": "git-oidc",
+          "from": "git",
+          "to": "oidc",
+          "label": "Contrato OIDC",
+          "references": [
+            ".github/workflows/cd.yml:1-28",
+            ".github/workflows/ci.yml:1-28"
+          ]
+        },
+        {
+          "id": "oidc-wp",
+          "from": "oidc",
+          "to": "wp",
+          "label": "Inhibido",
+          "references": [
+            ".github/workflows/cd.yml:1-28",
+            "docs/V2-TRUST-AND-THREATS.md:89-106"
+          ]
+        },
+        {
+          "id": "operator-alb",
+          "from": "operator",
+          "to": "alb",
+          "label": "Forwarding nativo",
+          "references": [
+            "terraform/docs/native-dev-lifecycle.md:1-28",
+            "terraform/modules/target/dev/global/modules/alb/alb.tf:18-33"
+          ]
+        }
+      ]
+    },
+    "v2-nat-incident": {
+      "nodes": {
+        "terminate": {
+          "label": "Interrupción autorizada",
+          "status": "DEMOSTRADO",
+          "references": [
+            "docs/SENTINEL-CHAOS-20261106.md:131-185"
+          ]
+        },
+        "failed": {
+          "label": "HTTPS falló",
+          "status": "DEMOSTRADO",
+          "references": [
+            "docs/SENTINEL-CHAOS-20261106.md:131-185"
+          ]
+        },
+        "persist": {
+          "label": "Incidente persistido",
+          "status": "DEMOSTRADO",
+          "references": [
+            "docs/SENTINEL-CHAOS-20261106.md:131-185"
+          ]
+        },
+        "asg": {
+          "label": "Nueva EC2 lanzada",
+          "status": "DEMOSTRADO",
+          "references": [
+            "docs/SENTINEL-CHAOS-20261106.md:131-185"
+          ]
+        },
+        "unknown": {
+          "label": "Unknown por throttling",
+          "status": "DEMOSTRADO",
+          "references": [
+            "docs/SENTINEL-CHAOS-20261106.md:131-185"
+          ]
+        },
+        "https": {
+          "label": "HTTPS recuperado",
+          "status": "DEMOSTRADO",
+          "references": [
+            "docs/SENTINEL-CHAOS-20261106.md:131-185"
+          ]
+        },
+        "scheduled": {
+          "label": "Probe programado PASS",
+          "status": "DEMOSTRADO",
+          "references": [
+            "docs/SENTINEL-CHAOS-20261106.md:131-185"
+          ]
+        },
+        "resolve": {
+          "label": "Incidente resuelto",
+          "status": "DEMOSTRADO",
+          "references": [
+            "docs/SENTINEL-CHAOS-20261106.md:131-185"
+          ]
+        },
+        "mail": {
+          "label": "Correo en INBOX",
+          "status": "DEMOSTRADO",
+          "references": [
+            "docs/SENTINEL-CHAOS-20261106.md:131-185"
+          ]
+        },
+        "sns": {
+          "label": "Efecto SNS confirmado",
+          "status": "DEMOSTRADO",
+          "references": [
+            "docs/SENTINEL-CHAOS-20261106.md:131-185"
+          ]
+        }
+      },
+      "relations": []
+    },
+    "v2-network": {
+      "nodes": {
+        "privatea": {
+          "label": "Privada A · 10.0.100.0/24",
+          "status": "DESPLEGADO",
+          "references": [
+            "operations/integrations/portable/trial/nat-observer.tf:74-90"
+          ]
+        },
+        "routea": {
+          "label": "Ruta privada A",
+          "status": "DESPLEGADO",
+          "references": [
+            "terraform/modules/target/dev/global/modules/vpc/route_tables.tf:32-49",
+            "scripts/recovery/nat.py:65-95"
+          ]
+        },
+        "nata": {
+          "label": "NAT A · pública A",
+          "status": "DESPLEGADO",
+          "references": [
+            "terraform/modules/target/dev/global/wp5-nat.tf.json:1-28"
+          ]
+        },
+        "privateb": {
+          "label": "Privada B · 10.0.101.0/24",
+          "status": "DESPLEGADO",
+          "references": [
+            "docs/V2-RECOVERY-SECURITY-20261105.md:282-324"
+          ]
+        },
+        "routeb": {
+          "label": "Ruta privada B",
+          "status": "DESPLEGADO",
+          "references": [
+            "terraform/modules/target/dev/global/modules/vpc/route_tables.tf:32-49",
+            "scripts/recovery/nat.py:65-95"
+          ]
+        },
+        "natb": {
+          "label": "NAT B · pública B",
+          "status": "DESPLEGADO",
+          "references": [
+            "terraform/modules/target/dev/global/wp5-nat.tf.json:1-28"
+          ]
+        },
+        "igw": {
+          "label": "Internet Gateway",
+          "status": "DESPLEGADO",
+          "references": [
+            "terraform/modules/target/dev/global/modules/vpc/route_tables.tf:1-28"
+          ]
+        },
+        "endpoints": {
+          "label": "HTTPS público",
+          "status": "DESPLEGADO",
+          "references": [
+            "operations/integrations/portable/nat_probe.py:19-67"
+          ]
+        },
+        "e13": {
+          "label": "ASG + E13 :6",
+          "status": "DESPLEGADO",
+          "references": [
+            "scripts/tests/security_root/wp4d.py:980-1007",
+            "scripts/wp4d/nat_resolver.py:59-90"
+          ]
+        }
+      },
+      "relations": [
+        {
+          "id": "privatea-routea",
+          "from": "privatea",
+          "to": "routea",
+          "label": "Egreso A",
+          "references": [
+            "operations/integrations/portable/trial/nat-observer.tf:74-90",
+            "scripts/recovery/nat.py:65-95",
+            "terraform/modules/target/dev/global/modules/vpc/route_tables.tf:32-49"
+          ]
+        },
+        {
+          "id": "routea-nata",
+          "from": "routea",
+          "to": "nata",
+          "label": "ENI activa",
+          "references": [
+            "scripts/recovery/nat.py:65-95",
+            "terraform/modules/target/dev/global/modules/vpc/route_tables.tf:32-49",
+            "terraform/modules/target/dev/global/wp5-nat.tf.json:1-28"
+          ]
+        },
+        {
+          "id": "privateb-routeb",
+          "from": "privateb",
+          "to": "routeb",
+          "label": "Egreso B",
+          "references": [
+            "docs/V2-RECOVERY-SECURITY-20261105.md:282-324",
+            "scripts/recovery/nat.py:65-95",
+            "terraform/modules/target/dev/global/modules/vpc/route_tables.tf:32-49"
+          ]
+        },
+        {
+          "id": "routeb-natb",
+          "from": "routeb",
+          "to": "natb",
+          "label": "ENI activa",
+          "references": [
+            "scripts/recovery/nat.py:65-95",
+            "terraform/modules/target/dev/global/modules/vpc/route_tables.tf:32-49",
+            "terraform/modules/target/dev/global/wp5-nat.tf.json:1-28"
+          ]
+        },
+        {
+          "id": "nata-igw",
+          "from": "nata",
+          "to": "igw",
+          "label": "EIP A",
+          "references": [
+            "terraform/modules/target/dev/global/modules/vpc/route_tables.tf:1-28",
+            "terraform/modules/target/dev/global/wp5-nat.tf.json:1-28"
+          ]
+        },
+        {
+          "id": "natb-igw",
+          "from": "natb",
+          "to": "igw",
+          "label": "EIP B",
+          "references": [
+            "terraform/modules/target/dev/global/modules/vpc/route_tables.tf:1-28",
+            "terraform/modules/target/dev/global/wp5-nat.tf.json:1-28"
+          ]
+        },
+        {
+          "id": "igw-endpoints",
+          "from": "igw",
+          "to": "endpoints",
+          "label": "HTTPS",
+          "references": [
+            "operations/integrations/portable/nat_probe.py:19-67",
+            "terraform/modules/target/dev/global/modules/vpc/route_tables.tf:1-28"
+          ]
+        },
+        {
+          "id": "e13-nata",
+          "from": "e13",
+          "to": "nata",
+          "label": "Repara A",
+          "references": [
+            "scripts/tests/security_root/wp4d.py:980-1007",
+            "scripts/wp4d/nat_resolver.py:59-90",
+            "terraform/modules/target/dev/global/wp5-nat.tf.json:1-28"
+          ]
+        },
+        {
+          "id": "e13-natb",
+          "from": "e13",
+          "to": "natb",
+          "label": "Repara B",
+          "references": [
+            "scripts/tests/security_root/wp4d.py:980-1007",
+            "scripts/wp4d/nat_resolver.py:59-90",
+            "terraform/modules/target/dev/global/wp5-nat.tf.json:1-28"
+          ]
+        }
+      ]
+    },
+    "v2-platform": {
+      "nodes": {
+        "client": {
+          "label": "Cliente público",
+          "status": "LÍMITE DEV",
+          "references": [
+            "docs/V2-TRUST-AND-THREATS.md:39-68"
+          ]
+        },
+        "gateway": {
+          "label": "HTTP API Gateway",
+          "status": "DESPLEGADO",
+          "references": [
+            "terraform/modules/target/dev/edge/modules/apigateway/apigw_http.tf:25-63"
+          ]
+        },
+        "kms": {
+          "label": "KMS de aplicación",
+          "status": "DESPLEGADO",
+          "references": [
+            "demo-api/terragrunt-demo/Services/IEncryptionService.cs:30-51"
+          ]
+        },
+        "secrets": {
+          "label": "Secrets Manager",
+          "status": "DESPLEGADO",
+          "references": [
+            "terraform/modules/target/dev/apps/modules/ecs_service/taskdef.tf:1-17",
+            "docs/V2-TRUST-AND-THREATS.md:49-63"
+          ]
+        },
+        "link": {
+          "label": "VPC Link",
+          "status": "DESPLEGADO",
+          "references": [
+            "terraform/modules/target/dev/edge/modules/vpc_link/vpc_link.tf:1-6"
+          ]
+        },
+        "alb": {
+          "label": "ALB interno",
+          "status": "DESPLEGADO",
+          "references": [
+            "terraform/modules/target/dev/global/modules/alb/alb.tf:1-28"
+          ]
+        },
+        "app": {
+          "label": "API .NET 10",
+          "status": "DESPLEGADO",
+          "references": [
+            "terraform/modules/target/dev/apps/modules/ecs_service/service.tf:13-38"
+          ]
+        },
+        "sql": {
+          "label": "SQL Express 2022",
+          "status": "DESPLEGADO",
+          "references": [
+            "docs/V2-RECOVERY-SECURITY-20261105.md:293-320"
+          ]
+        },
+        "backup": {
+          "label": "Backups en S3",
+          "status": "DESPLEGADO",
+          "references": [
+            "operations/integrations/portable/storage_observer.py:35-102"
+          ]
+        },
+        "observer": {
+          "label": "Observador externo",
+          "status": "DESPLEGADO",
+          "references": [
+            "operations/integrations/portable/trial/storage-observer.tf:68-124"
+          ]
+        },
+        "sentinel": {
+          "label": "Reliability Sentinel",
+          "status": "DESPLEGADO",
+          "references": [
+            "operations/integrations/Ecs.Backup.Portable.Host/Function.cs:30-64"
+          ]
+        },
+        "archive": {
+          "label": "Archivo de evidencia",
+          "status": "DESPLEGADO",
+          "references": [
+            "operations/integrations/portable/trial/runtime/security.tf:49-96"
+          ]
+        },
+        "email": {
+          "label": "SNS → correo",
+          "status": "DEMOSTRADO",
+          "references": [
+            "docs/SENTINEL-CHAOS-20261106.md:142-169"
+          ]
+        }
+      },
+      "relations": [
+        {
+          "id": "client-gateway",
+          "from": "client",
+          "to": "gateway",
+          "label": "HTTPS",
+          "references": [
+            "docs/V2-TRUST-AND-THREATS.md:39-68",
+            "terraform/modules/target/dev/edge/modules/apigateway/apigw_http.tf:25-63"
+          ]
+        },
+        {
+          "id": "gateway-link",
+          "from": "gateway",
+          "to": "link",
+          "label": "HTTP privado",
+          "references": [
+            "terraform/modules/target/dev/edge/modules/apigateway/apigw_http.tf:25-63",
+            "terraform/modules/target/dev/edge/modules/vpc_link/vpc_link.tf:1-6"
+          ]
+        },
+        {
+          "id": "link-alb",
+          "from": "link",
+          "to": "alb",
+          "label": "HTTP :8080",
+          "references": [
+            "terraform/modules/target/dev/edge/modules/vpc_link/vpc_link.tf:1-6",
+            "terraform/modules/target/dev/global/modules/alb/alb.tf:1-28"
+          ]
+        },
+        {
+          "id": "alb-app",
+          "from": "alb",
+          "to": "app",
+          "label": "HTTP :8080",
+          "references": [
+            "terraform/modules/target/dev/apps/modules/ecs_service/service.tf:13-38",
+            "terraform/modules/target/dev/global/modules/alb/alb.tf:1-28"
+          ]
+        },
+        {
+          "id": "app-kms",
+          "from": "app",
+          "to": "kms",
+          "label": "Task role",
+          "references": [
+            "demo-api/terragrunt-demo/Services/IEncryptionService.cs:30-51",
+            "terraform/modules/target/dev/apps/modules/ecs_service/service.tf:13-38"
+          ]
+        },
+        {
+          "id": "secrets-app",
+          "from": "secrets",
+          "to": "app",
+          "label": "Execution role",
+          "references": [
+            "docs/V2-TRUST-AND-THREATS.md:49-63",
+            "terraform/modules/target/dev/apps/modules/ecs_service/service.tf:13-38",
+            "terraform/modules/target/dev/apps/modules/ecs_service/taskdef.tf:1-17"
+          ]
+        },
+        {
+          "id": "app-sql",
+          "from": "app",
+          "to": "sql",
+          "label": "TLS :1433",
+          "references": [
+            "docs/V2-RECOVERY-SECURITY-20261105.md:293-320",
+            "terraform/modules/target/dev/apps/modules/ecs_service/service.tf:13-38"
+          ]
+        },
+        {
+          "id": "sql-backup",
+          "from": "sql",
+          "to": "backup",
+          "label": "Backup horario",
+          "references": [
+            "docs/V2-RECOVERY-SECURITY-20261105.md:293-320",
+            "operations/integrations/portable/storage_observer.py:35-102"
+          ]
+        },
+        {
+          "id": "observer-backup",
+          "from": "observer",
+          "to": "backup",
+          "label": "GET exacto",
+          "references": [
+            "operations/integrations/portable/storage_observer.py:35-102",
+            "operations/integrations/portable/trial/storage-observer.tf:68-124"
+          ]
+        },
+        {
+          "id": "observer-sentinel",
+          "from": "observer",
+          "to": "sentinel",
+          "label": "Evento",
+          "references": [
+            "operations/integrations/Ecs.Backup.Portable.Host/Function.cs:30-64",
+            "operations/integrations/portable/trial/storage-observer.tf:68-124"
+          ]
+        },
+        {
+          "id": "sentinel-archive",
+          "from": "sentinel",
+          "to": "archive",
+          "label": "Archivo",
+          "references": [
+            "operations/integrations/Ecs.Backup.Portable.Host/Function.cs:30-64",
+            "operations/integrations/portable/trial/runtime/security.tf:49-96"
+          ]
+        },
+        {
+          "id": "sentinel-email",
+          "from": "sentinel",
+          "to": "email",
+          "label": "Aviso",
+          "references": [
+            "docs/SENTINEL-CHAOS-20261106.md:142-169",
+            "operations/integrations/Ecs.Backup.Portable.Host/Function.cs:30-64"
+          ]
+        }
+      ]
+    },
+    "v2-sentinel": {
+      "nodes": {
+        "backup": {
+          "label": "Backup S3 verificado",
+          "status": "DESPLEGADO",
+          "references": [
+            "operations/integrations/portable/storage_observer.py:35-102"
+          ]
+        },
+        "observer": {
+          "label": "Lambda regional",
+          "status": "DESPLEGADO",
+          "references": [
+            "operations/integrations/portable/trial/storage-observer.tf:68-124",
+            "operations/integrations/portable/nat_observer.py:40-99"
+          ]
+        },
+        "probe": {
+          "label": "Sonda privada A",
+          "status": "DESPLEGADO",
+          "references": [
+            "operations/integrations/portable/nat_probe.py:19-67"
+          ]
+        },
+        "bus": {
+          "label": "EventBridge bus",
+          "status": "DESPLEGADO",
+          "references": [
+            "operations/integrations/portable/trial/runtime/main.tf:110-137"
+          ]
+        },
+        "queue": {
+          "label": "SQS reports",
+          "status": "DESPLEGADO",
+          "references": [
+            "operations/integrations/portable/trial/runtime/main.tf:192-219"
+          ]
+        },
+        "ingest": {
+          "label": "Lambda Ingest",
+          "status": "DESPLEGADO",
+          "references": [
+            "operations/integrations/Ecs.Backup.Portable.Host/Function.cs:30-64"
+          ]
+        },
+        "ddb": {
+          "label": "DynamoDB",
+          "status": "DESPLEGADO",
+          "references": [
+            "operations/integrations/portable/trial/runtime/main.tf:38-65"
+          ]
+        },
+        "worker": {
+          "label": "Lambda Worker",
+          "status": "DESPLEGADO",
+          "references": [
+            "operations/integrations/Ecs.Backup.Portable.Host/Function.cs:30-64",
+            "operations/integrations/Ecs.Backup.Portable.Host/CurrentBacklog.cs:1-55"
+          ]
+        },
+        "archive": {
+          "label": "S3 de evidencias",
+          "status": "DESPLEGADO",
+          "references": [
+            "operations/integrations/portable/trial/runtime/security.tf:49-96"
+          ]
+        },
+        "watchdog": {
+          "label": "Lambda Watchdog",
+          "status": "DESPLEGADO",
+          "references": [
+            "operations/integrations/Ecs.Backup.Portable.Host/Function.cs:49-64",
+            "operations/integrations/Ecs.Backup.Portable.Host/CurrentBacklog.cs:1-55"
+          ]
+        },
+        "dlq": {
+          "label": "DLQ reports / ops",
+          "status": "DESPLEGADO",
+          "references": [
+            "operations/integrations/portable/trial/runtime/main.tf:97-124"
+          ]
+        },
+        "sns": {
+          "label": "SNS de Sentinel",
+          "status": "DESPLEGADO",
+          "references": [
+            "operations/integrations/Ecs.Backup.Portable.Notice/ReadableNotice.cs:1-28"
+          ]
+        },
+        "alarms": {
+          "label": "CloudWatch alarms",
+          "status": "DESPLEGADO",
+          "references": [
+            "operations/integrations/portable/trial/runtime/main.tf:283-310"
+          ]
+        },
+        "inbox": {
+          "label": "Inbox confirmado",
+          "status": "DEMOSTRADO",
+          "references": [
+            "docs/SENTINEL-CHAOS-20261106.md:142-169"
+          ]
+        },
+        "cleanup": {
+          "label": "Lambda Cleanup",
+          "status": "DESPLEGADO",
+          "references": [
+            "operations/integrations/Ecs.Backup.Portable.Host/Function.cs:64-64",
+            "operations/integrations/portable/trial/runtime/main.tf:198-216"
+          ]
+        }
+      },
+      "relations": [
+        {
+          "id": "observer-backup",
+          "from": "observer",
+          "to": "backup",
+          "label": "GET exacto",
+          "references": [
+            "operations/integrations/portable/nat_observer.py:40-99",
+            "operations/integrations/portable/storage_observer.py:35-102",
+            "operations/integrations/portable/trial/storage-observer.tf:68-124"
+          ]
+        },
+        {
+          "id": "observer-probe",
+          "from": "observer",
+          "to": "probe",
+          "label": "Invoca HTTPS",
+          "references": [
+            "operations/integrations/portable/nat_observer.py:40-99",
+            "operations/integrations/portable/nat_probe.py:19-67",
+            "operations/integrations/portable/trial/storage-observer.tf:68-124"
+          ]
+        },
+        {
+          "id": "observer-bus",
+          "from": "observer",
+          "to": "bus",
+          "label": "PutEvents",
+          "references": [
+            "operations/integrations/portable/nat_observer.py:40-99",
+            "operations/integrations/portable/trial/runtime/main.tf:110-137",
+            "operations/integrations/portable/trial/storage-observer.tf:68-124"
+          ]
+        },
+        {
+          "id": "bus-queue",
+          "from": "bus",
+          "to": "queue",
+          "label": "Entrega",
+          "references": [
+            "operations/integrations/portable/trial/runtime/main.tf:110-137",
+            "operations/integrations/portable/trial/runtime/main.tf:192-219"
+          ]
+        },
+        {
+          "id": "queue-ingest",
+          "from": "queue",
+          "to": "ingest",
+          "label": "Mapping SQS",
+          "references": [
+            "operations/integrations/Ecs.Backup.Portable.Host/Function.cs:30-64",
+            "operations/integrations/portable/trial/runtime/main.tf:192-219"
+          ]
+        },
+        {
+          "id": "ingest-ddb",
+          "from": "ingest",
+          "to": "ddb",
+          "label": "Observación",
+          "references": [
+            "operations/integrations/Ecs.Backup.Portable.Host/Function.cs:30-64",
+            "operations/integrations/portable/trial/runtime/main.tf:38-65"
+          ]
+        },
+        {
+          "id": "worker-ddb",
+          "from": "worker",
+          "to": "ddb",
+          "label": "Evalúa + CAS",
+          "references": [
+            "operations/integrations/Ecs.Backup.Portable.Host/CurrentBacklog.cs:1-55",
+            "operations/integrations/Ecs.Backup.Portable.Host/Function.cs:30-64",
+            "operations/integrations/portable/trial/runtime/main.tf:38-65"
+          ]
+        },
+        {
+          "id": "worker-archive",
+          "from": "worker",
+          "to": "archive",
+          "label": "Bytes + ACK",
+          "references": [
+            "operations/integrations/Ecs.Backup.Portable.Host/CurrentBacklog.cs:1-55",
+            "operations/integrations/Ecs.Backup.Portable.Host/Function.cs:30-64",
+            "operations/integrations/portable/trial/runtime/security.tf:49-96"
+          ]
+        },
+        {
+          "id": "worker-sns",
+          "from": "worker",
+          "to": "sns",
+          "label": "Efecto",
+          "references": [
+            "operations/integrations/Ecs.Backup.Portable.Host/CurrentBacklog.cs:1-55",
+            "operations/integrations/Ecs.Backup.Portable.Host/Function.cs:30-64",
+            "operations/integrations/Ecs.Backup.Portable.Notice/ReadableNotice.cs:1-28"
+          ]
+        },
+        {
+          "id": "watchdog-ddb",
+          "from": "watchdog",
+          "to": "ddb",
+          "label": "Lee progreso",
+          "references": [
+            "operations/integrations/Ecs.Backup.Portable.Host/CurrentBacklog.cs:1-55",
+            "operations/integrations/Ecs.Backup.Portable.Host/Function.cs:49-64",
+            "operations/integrations/portable/trial/runtime/main.tf:38-65"
+          ]
+        },
+        {
+          "id": "watchdog-alarms",
+          "from": "watchdog",
+          "to": "alarms",
+          "label": "Métrica",
+          "references": [
+            "operations/integrations/Ecs.Backup.Portable.Host/CurrentBacklog.cs:1-55",
+            "operations/integrations/Ecs.Backup.Portable.Host/Function.cs:49-64",
+            "operations/integrations/portable/trial/runtime/main.tf:283-310"
+          ]
+        },
+        {
+          "id": "alarms-sns",
+          "from": "alarms",
+          "to": "sns",
+          "label": "Alarma",
+          "references": [
+            "operations/integrations/Ecs.Backup.Portable.Notice/ReadableNotice.cs:1-28",
+            "operations/integrations/portable/trial/runtime/main.tf:283-310"
+          ]
+        },
+        {
+          "id": "sns-inbox",
+          "from": "sns",
+          "to": "inbox",
+          "label": "Email",
+          "references": [
+            "docs/SENTINEL-CHAOS-20261106.md:142-169",
+            "operations/integrations/Ecs.Backup.Portable.Notice/ReadableNotice.cs:1-28"
+          ]
+        },
+        {
+          "id": "queue-dlq",
+          "from": "queue",
+          "to": "dlq",
+          "label": "Redrive",
+          "references": [
+            "operations/integrations/portable/trial/runtime/main.tf:192-219",
+            "operations/integrations/portable/trial/runtime/main.tf:97-124"
+          ]
+        },
+        {
+          "id": "cleanup-ddb",
+          "from": "cleanup",
+          "to": "ddb",
+          "label": "Retención",
+          "references": [
+            "operations/integrations/Ecs.Backup.Portable.Host/Function.cs:64-64",
+            "operations/integrations/portable/trial/runtime/main.tf:198-216",
+            "operations/integrations/portable/trial/runtime/main.tf:38-65"
+          ]
+        }
+      ]
+    },
+    "v2-sql-recovery": {
+      "nodes": {
+        "writer": {
+          "label": "SQL origen único",
+          "status": "DEMOSTRADO",
+          "references": [
+            "operations/sql-backup/sql-backup.timer.in:1-8",
+            "operations/sql-backup/recovery/NATIVE-RECOVERY.md:48-52"
+          ]
+        },
+        "store": {
+          "label": "S3 backup + manifiesto",
+          "status": "DESPLEGADO",
+          "references": [
+            "operations/integrations/portable/storage_observer.py:35-102"
+          ]
+        },
+        "hold": {
+          "label": "Proteger entrada de restore",
+          "status": "NO VALIDADO",
+          "references": [
+            "operations/integrations/portable/backup_retention.py:1-21",
+            "operations/integrations/portable/backup_retention.py:60-65"
+          ]
+        },
+        "drain": {
+          "label": "Drenar ECS + aislar",
+          "status": "DEMOSTRADO",
+          "references": [
+            "operations/sql-backup/recovery/NATIVE-RECOVERY.md:42-69"
+          ]
+        },
+        "fence": {
+          "label": "Origen terminado",
+          "status": "DEMOSTRADO",
+          "references": [
+            "operations/sql-backup/recovery/NATIVE-RECOVERY.md:60-87"
+          ]
+        },
+        "new": {
+          "label": "Nueva EC2 en A o B",
+          "status": "DEMOSTRADO",
+          "references": [
+            "operations/sql-backup/recovery/NATIVE-RECOVERY.md:52-79"
+          ]
+        },
+        "restore": {
+          "label": "Restaurar copia nueva",
+          "status": "DEMOSTRADO",
+          "references": [
+            "operations/sql-backup/recovery/NATIVE-RECOVERY.md:73-100"
+          ]
+        },
+        "handoff": {
+          "label": "Handoff validado",
+          "status": "DEMOSTRADO",
+          "references": [
+            "operations/sql-backup/recovery/NATIVE-RECOVERY.md:86-113"
+          ]
+        },
+        "app": {
+          "label": "ECS → nuevo SQL",
+          "status": "DEMOSTRADO",
+          "references": [
+            "operations/sql-backup/recovery/NATIVE-RECOVERY.md:86-113"
+          ]
+        },
+        "proof": {
+          "label": "API real + timer",
+          "status": "DEMOSTRADO",
+          "references": [
+            "docs/V2-RECOVERY-SECURITY-20261105.md:297-324"
+          ]
+        }
+      },
+      "relations": [
+        {
+          "id": "writer-store",
+          "from": "writer",
+          "to": "store",
+          "label": "Horario",
+          "references": [
+            "operations/integrations/portable/storage_observer.py:35-102",
+            "operations/sql-backup/recovery/NATIVE-RECOVERY.md:48-52",
+            "operations/sql-backup/sql-backup.timer.in:1-8"
+          ]
+        },
+        {
+          "id": "store-hold",
+          "from": "store",
+          "to": "hold",
+          "label": "Antes de restore",
+          "references": [
+            "operations/integrations/portable/backup_retention.py:1-21",
+            "operations/integrations/portable/backup_retention.py:60-65",
+            "operations/integrations/portable/storage_observer.py:35-102"
+          ]
+        },
+        {
+          "id": "writer-drain",
+          "from": "writer",
+          "to": "drain",
+          "label": "Inicio RTO",
+          "references": [
+            "operations/sql-backup/recovery/NATIVE-RECOVERY.md:42-69",
+            "operations/sql-backup/recovery/NATIVE-RECOVERY.md:48-52",
+            "operations/sql-backup/sql-backup.timer.in:1-8"
+          ]
+        },
+        {
+          "id": "drain-fence",
+          "from": "drain",
+          "to": "fence",
+          "label": "Fence positivo",
+          "references": [
+            "operations/sql-backup/recovery/NATIVE-RECOVERY.md:42-69",
+            "operations/sql-backup/recovery/NATIVE-RECOVERY.md:60-87"
+          ]
+        },
+        {
+          "id": "drain-store",
+          "from": "drain",
+          "to": "store",
+          "label": "Backup final verificado",
+          "references": [
+            "operations/integrations/portable/storage_observer.py:35-102",
+            "operations/sql-backup/recovery/NATIVE-RECOVERY.md:42-69"
+          ]
+        },
+        {
+          "id": "fence-new",
+          "from": "fence",
+          "to": "new",
+          "label": "Plan revisado",
+          "references": [
+            "operations/sql-backup/recovery/NATIVE-RECOVERY.md:52-79",
+            "operations/sql-backup/recovery/NATIVE-RECOVERY.md:60-87"
+          ]
+        },
+        {
+          "id": "new-restore",
+          "from": "new",
+          "to": "restore",
+          "label": "SSM + paquete",
+          "references": [
+            "operations/sql-backup/recovery/NATIVE-RECOVERY.md:52-79",
+            "operations/sql-backup/recovery/NATIVE-RECOVERY.md:73-100"
+          ]
+        },
+        {
+          "id": "hold-restore",
+          "from": "hold",
+          "to": "restore",
+          "label": "Versión fijada",
+          "references": [
+            "operations/integrations/portable/backup_retention.py:1-21",
+            "operations/integrations/portable/backup_retention.py:60-65",
+            "operations/sql-backup/recovery/NATIVE-RECOVERY.md:73-100"
+          ]
+        },
+        {
+          "id": "restore-handoff",
+          "from": "restore",
+          "to": "handoff",
+          "label": "Solo si PASS",
+          "references": [
+            "operations/sql-backup/recovery/NATIVE-RECOVERY.md:73-100",
+            "operations/sql-backup/recovery/NATIVE-RECOVERY.md:86-113"
+          ]
+        },
+        {
+          "id": "handoff-app",
+          "from": "handoff",
+          "to": "app",
+          "label": "Activar",
+          "references": [
+            "operations/sql-backup/recovery/NATIVE-RECOVERY.md:86-113"
+          ]
+        },
+        {
+          "id": "app-proof",
+          "from": "app",
+          "to": "proof",
+          "label": "Validar",
+          "references": [
+            "docs/V2-RECOVERY-SECURITY-20261105.md:297-324",
+            "operations/sql-backup/recovery/NATIVE-RECOVERY.md:86-113"
+          ]
+        }
+      ]
+    },
+    "v2-trust": {
+      "nodes": {
+        "public": {
+          "label": "Cliente no autenticado",
+          "status": "LÍMITE",
+          "references": [
+            "docs/V2-TRUST-AND-THREATS.md:39-68"
+          ]
+        },
+        "network": {
+          "label": "API / Link / ALB",
+          "status": "DESPLEGADO",
+          "references": [
+            "terraform/modules/target/dev/edge/modules/apigateway/apigw_http.tf:25-63"
+          ]
+        },
+        "task": {
+          "label": "Aplicación · task role",
+          "status": "DESPLEGADO",
+          "references": [
+            "terraform/modules/target/dev/apps/modules/ecs_service/taskdef.tf:1-17"
+          ]
+        },
+        "exec": {
+          "label": "ECS execution role",
+          "status": "DESPLEGADO",
+          "references": [
+            "terraform/modules/target/dev/apps/modules/ecs_service/taskdef.tf:1-17"
+          ]
+        },
+        "secret": {
+          "label": "Secrets Manager",
+          "status": "DESPLEGADO",
+          "references": [
+            "docs/V2-TRUST-AND-THREATS.md:39-68"
+          ]
+        },
+        "kms": {
+          "label": "KMS texto",
+          "status": "DESPLEGADO",
+          "references": [
+            "demo-api/terragrunt-demo/Services/IEncryptionService.cs:30-51"
+          ]
+        },
+        "sql": {
+          "label": "Login recovery_app",
+          "status": "DESPLEGADO",
+          "references": [
+            "demo-api/terragrunt-demo/Data/RuntimeDatabasePermissions.cs:1-54"
+          ]
+        },
+        "host": {
+          "label": "Host SQL · instance role",
+          "status": "DESPLEGADO",
+          "references": [
+            "docs/V2-TRUST-AND-THREATS.md:39-68"
+          ]
+        },
+        "admin": {
+          "label": "Administrador humano",
+          "status": "DESPLEGADO",
+          "references": [
+            "docs/V2-TRUST-AND-THREATS.md:39-68"
+          ]
+        },
+        "observer": {
+          "label": "Roles observer / probe",
+          "status": "DESPLEGADO",
+          "references": [
+            "operations/integrations/portable/trial/nat-observer.tf:74-115"
+          ]
+        },
+        "sentinel": {
+          "label": "Roles Sentinel",
+          "status": "DESPLEGADO",
+          "references": [
+            "operations/integrations/portable/trial/runtime/security.tf:49-96"
+          ]
+        },
+        "keys": {
+          "label": "CMK archivo / SNS",
+          "status": "DESPLEGADO",
+          "references": [
+            "operations/integrations/portable/trial/runtime/security.tf:49-96"
+          ]
+        }
+      },
+      "relations": [
+        {
+          "id": "public-network",
+          "from": "public",
+          "to": "network",
+          "label": "HTTPS",
+          "references": [
+            "docs/V2-TRUST-AND-THREATS.md:39-68",
+            "terraform/modules/target/dev/edge/modules/apigateway/apigw_http.tf:25-63"
+          ]
+        },
+        {
+          "id": "network-task",
+          "from": "network",
+          "to": "task",
+          "label": "HTTP :8080",
+          "references": [
+            "terraform/modules/target/dev/apps/modules/ecs_service/taskdef.tf:1-17",
+            "terraform/modules/target/dev/edge/modules/apigateway/apigw_http.tf:25-63"
+          ]
+        },
+        {
+          "id": "exec-secret",
+          "from": "exec",
+          "to": "secret",
+          "label": "GetSecretValue",
+          "references": [
+            "docs/V2-TRUST-AND-THREATS.md:39-68",
+            "terraform/modules/target/dev/apps/modules/ecs_service/taskdef.tf:1-17"
+          ]
+        },
+        {
+          "id": "exec-task",
+          "from": "exec",
+          "to": "task",
+          "label": "Inyección inicial",
+          "references": [
+            "terraform/modules/target/dev/apps/modules/ecs_service/taskdef.tf:1-17"
+          ]
+        },
+        {
+          "id": "task-kms",
+          "from": "task",
+          "to": "kms",
+          "label": "AWS SDK",
+          "references": [
+            "demo-api/terragrunt-demo/Services/IEncryptionService.cs:30-51",
+            "terraform/modules/target/dev/apps/modules/ecs_service/taskdef.tf:1-17"
+          ]
+        },
+        {
+          "id": "task-sql",
+          "from": "task",
+          "to": "sql",
+          "label": "SQL TLS",
+          "references": [
+            "demo-api/terragrunt-demo/Data/RuntimeDatabasePermissions.cs:1-54",
+            "terraform/modules/target/dev/apps/modules/ecs_service/taskdef.tf:1-17"
+          ]
+        },
+        {
+          "id": "admin-host",
+          "from": "admin",
+          "to": "host",
+          "label": "SSM",
+          "references": [
+            "docs/V2-TRUST-AND-THREATS.md:39-68"
+          ]
+        },
+        {
+          "id": "host-sql",
+          "from": "host",
+          "to": "sql",
+          "label": "SO / bootstrap",
+          "references": [
+            "demo-api/terragrunt-demo/Data/RuntimeDatabasePermissions.cs:1-54",
+            "docs/V2-TRUST-AND-THREATS.md:39-68"
+          ]
+        },
+        {
+          "id": "observer-sentinel",
+          "from": "observer",
+          "to": "sentinel",
+          "label": "Observación",
+          "references": [
+            "operations/integrations/portable/trial/nat-observer.tf:74-115",
+            "operations/integrations/portable/trial/runtime/security.tf:49-96"
+          ]
+        },
+        {
+          "id": "sentinel-keys",
+          "from": "sentinel",
+          "to": "keys",
+          "label": "Archivo / aviso",
+          "references": [
+            "operations/integrations/portable/trial/runtime/security.tf:49-96"
+          ]
+        }
+      ]
+    }
+  }
+}

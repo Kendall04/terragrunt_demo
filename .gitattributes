@@ -1,6 +1,13 @@
 docs/interactive/*.html text eol=lf whitespace=-blank-at-eol
 docs/interactive/*.txt text eol=lf
 docs/interactive/source/*.json text eol=lf
+docs/interactive/readable/*.html text eol=lf whitespace=-blank-at-eol
+docs/interactive/GENERATION-V2.json text eol=lf
+docs/interactive/TRACEABILITY-V2.json text eol=lf
+docs/interactive/evidence/*.json text eol=lf
+docs/interactive/evidence/screenshots/*.json text eol=lf
+scripts/diagrams/*.mjs text eol=lf
+scripts/diagrams/*.py text eol=lf
 portfolio/archify-pins.json text eol=lf
 operations/integrations/trial-review/part4-amendment/** text eol=lf
 
