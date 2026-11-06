@@ -15,7 +15,7 @@ variable "nat_observer" {
 }
 locals {
   nat_probes        = var.nat_observer == null ? {} : { a = var.nat_observer }
-  probe_name        = "${local.config.deployment}-nat-probe-a"
+  probe_name        = "${local.config.deployment}-egress-probe-a"
   probe_arn         = "arn:aws:lambda:${local.config.region}:${local.config.account}:function:${local.probe_name}"
   probe_eni_actions = ["ec2:CreateNetworkInterface", "ec2:DescribeNetworkInterfaces", "ec2:DescribeSubnets", "ec2:DeleteNetworkInterface", "ec2:AssignPrivateIpAddresses", "ec2:UnassignPrivateIpAddresses"]
   probe_policy = jsonencode({ Version = "2012-10-17", Statement = [
