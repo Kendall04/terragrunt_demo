@@ -99,7 +99,11 @@ class Ephemeral(unittest.TestCase):
         value=self.report('down-preview',confirm_dev=True,sql_policy='PRESERVE')
         self.assertIn('E5_APPROVED_BACKUP_RESTORE_NOT_IMPLEMENTED',value['gates'])
         source=(ROOT/'terraform/modules/target/dev/data/ordinary-main.tf').read_text()
-        self.assertIn('delete_on_termination = true',source)
+        self.assertIn('delete_on_termination = !var.recovery_preserve_root_volume',source)
+        variables=(ROOT/'terraform/modules/target/dev/data/ordinary-variables.tf').read_text()
+        self.assertIn('variable "recovery_preserve_root_volume"',variables)
+        # Native disk retention is not implementation or approval of E5 recovery.
+        self.assertIn('E5_APPROVED_BACKUP_RESTORE_NOT_IMPLEMENTED',value['gates'])
 
     def test_down_execute_never_bypasses_wp5_even_with_confirmations(self):
         with self.assertRaises(ValueError):

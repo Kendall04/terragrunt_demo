@@ -88,24 +88,34 @@ public class LabSqlCertificateTests
     private static string TrustFragment(string fingerprint)
     {
         const string path="/usr/local/share/ca-certificates/ecs-sql-lab.crt";
-        return "# Explicit lab-only trust. No private material or packages are installed here.\n"+
-          "USER root\n"+
+        return "# Explicit lab-only public trust; no private certificate material.\n"+
           $"COPY --chown=0:0 --chmod=0644 deploy/trust/sql.demo.internal.crt {path}\n"+
           $"RUN test \"$(openssl x509 -in {path} -outform DER | sha256sum | cut -d' ' -f1)\" = \"{fingerprint}\" \\\n"+
           $"    && openssl verify -CAfile {path} -purpose sslserver -verify_hostname sql.demo.internal {path} \\\n"+
           "    && update-ca-certificates\n";
     }
 
+    private static string SecurityFragment() =>
+        "# Vendor security fixes for the pinned Noble base (USN-8974-1, USN-8996-1,\n"+
+        "# USN-8954-1, USN-8944-1, USN-8945-1). Exact versions fail closed if unavailable.\n"+
+        "USER root\n"+
+        "RUN apt-get update \\\n"+
+        "    && apt-get install --no-install-recommends -y \\\n"+
+        "       apt=2.8.4ubuntu0.1 libapt-pkg6.0t64=2.8.4ubuntu0.1 \\\n"+
+        "       libpcre2-8-0=10.42-4ubuntu2.2 zlib1g=1:1.3.dfsg-3.1ubuntu2.3 \\\n"+
+        "       ca-certificates=20260816ubuntu0.24.04.2 liblzma5=5.6.1+really5.4.5-1ubuntu0.4 \\\n"+
+        "    && rm -rf /var/lib/apt/lists/*\n";
+
     private static void ValidateLabRecipe(string actual)
     {
         using var json=Metadata();var sha=json.RootElement.GetProperty("CertificateDerSha256").GetString()!;
         var normal=File.ReadAllText(Path.Combine(Root,"Dockerfile")).Replace("\r\n","\n");
         var index=normal.IndexOf("USER $APP_UID",StringComparison.Ordinal);
-        var expected="# Opt-in laboratory variant. Select -f deploy/sql-lab/Dockerfile explicitly; default Dockerfile is unchanged.\n"+normal.Insert(index,TrustFragment(sha));
+        var expected="# Opt-in laboratory variant. Select -f deploy/sql-lab/Dockerfile explicitly; default Dockerfile is unchanged.\n"+normal.Insert(index,SecurityFragment()+TrustFragment(sha));
         Assert.Equal(expected,actual.Replace("\r\n","\n"));
     }
 
-    [Fact] public void Lab_recipe_only_adds_reviewed_public_trust_to_exact_normal_recipe()
+    [Fact] public void Lab_recipe_only_adds_reviewed_security_fixes_and_public_trust_to_exact_normal_recipe()
         => ValidateLabRecipe(File.ReadAllText(Path.Combine(Root,"deploy","sql-lab","Dockerfile")));
 
     [Theory]
@@ -113,6 +123,8 @@ public class LabSqlCertificateTests
     [InlineData("&& update-ca-certificates","&& true")]
     [InlineData("USER $APP_UID","USER root")]
     [InlineData("COPY --chown=0:0 --chmod=0644 deploy/trust/sql.demo.internal.crt","COPY private.key")]
+    [InlineData("apt=2.8.4ubuntu0.1", "apt")]
+    [InlineData("liblzma5=5.6.1+really5.4.5-1ubuntu0.4", "liblzma5=5.6.1+really5.4.5-1ubuntu0.2")]
     public void Lab_recipe_rejects_name_trust_user_and_private_material_changes(string before,string after)
     {
         var source=File.ReadAllText(Path.Combine(Root,"deploy","sql-lab","Dockerfile"));

@@ -8,8 +8,16 @@ WORKDIR /app
 
 EXPOSE 8080
 ENV ASPNETCORE_URLS=http://+:8080
-# Explicit lab-only trust. No private material or packages are installed here.
+# Vendor security fixes for the pinned Noble base (USN-8974-1, USN-8996-1,
+# USN-8954-1, USN-8944-1, USN-8945-1). Exact versions fail closed if unavailable.
 USER root
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y \
+       apt=2.8.4ubuntu0.1 libapt-pkg6.0t64=2.8.4ubuntu0.1 \
+       libpcre2-8-0=10.42-4ubuntu2.2 zlib1g=1:1.3.dfsg-3.1ubuntu2.3 \
+       ca-certificates=20260816ubuntu0.24.04.2 liblzma5=5.6.1+really5.4.5-1ubuntu0.4 \
+    && rm -rf /var/lib/apt/lists/*
+# Explicit lab-only public trust; no private certificate material.
 COPY --chown=0:0 --chmod=0644 deploy/trust/sql.demo.internal.crt /usr/local/share/ca-certificates/ecs-sql-lab.crt
 RUN test "$(openssl x509 -in /usr/local/share/ca-certificates/ecs-sql-lab.crt -outform DER | sha256sum | cut -d' ' -f1)" = "206095fa0ba9e17a84c80eff5021db93d05e2dc377e982a64d517696ed21a1e7" \
     && openssl verify -CAfile /usr/local/share/ca-certificates/ecs-sql-lab.crt -purpose sslserver -verify_hostname sql.demo.internal /usr/local/share/ca-certificates/ecs-sql-lab.crt \

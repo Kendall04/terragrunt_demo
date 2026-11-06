@@ -38,11 +38,12 @@
       "operations/integrations/portable/trial/runtime/outputs.tf": "f37244f35283c605a052fc9592d7c5e86e558e9d3a43a03665d7658d070e5f65",
       "operations/integrations/portable/trial/.terraform.lock.hcl": "439f2de16c7252c3b011a85b116f5facd53151ce754138704b15c38ea0257d69",
       "operations/integrations/portable/trial/versions.tf": "6339a32b1016abf2f998076c311c04ed8967db3eade2e49194b2fa635b398299",
-      "operations/integrations/portable/trial/runtime/security.tf": "90a283dd96e5e33ec03f52ff30159d63b1db78dccb3f1d75010d1ac2f3d7707c",
-      "operations/integrations/portable/trial/runtime/tests/security.tftest.hcl": "3bf2a312ec7fc9fdc8bbc2981edc95588eff80bd9c0df7f42638b387c44d4627",
-      "operations/integrations/portable/templates/security.tf.tftpl": "90a283dd96e5e33ec03f52ff30159d63b1db78dccb3f1d75010d1ac2f3d7707c",
+      "operations/integrations/portable/trial/runtime/security.tf": "d9670d7211a54c8154b70e08b9b293fe0848a9cea2a707b8ed0fea4ce348d034",
+      "operations/integrations/portable/trial/runtime/tests/security.tftest.hcl": "c96975eace24b944974084308be9d6fed1a61018e5665535cf2242c6388d0286",
+      "operations/integrations/portable/templates/security.tf.tftpl": "d9670d7211a54c8154b70e08b9b293fe0848a9cea2a707b8ed0fea4ce348d034",
       "operations/integrations/portable/trial/main.tf": "b478d82171fd1f45838216a60ca4f29c61e4b95da3fdf306252a26c5f6a6b3d2",
-      "operations/integrations/portable/trial/tests/portable.tftest.hcl": "e44b6558556adc3d2c4b40d2d8029b9ed3dfb9032aa59c85a36febe6e8c3af4a"
+      "operations/integrations/portable/trial/tests/portable.tftest.hcl": "e44b6558556adc3d2c4b40d2d8029b9ed3dfb9032aa59c85a36febe6e8c3af4a",
+      "operations/integrations/portable/trial/storage-observer.tf": "28ae7054383582fb31ef0f941755f6f6c4822e4fe765912409ed4f5a72c8c6bb"
     },
     "defaultEnabled": false,
     "deploymentAuthorized": false,

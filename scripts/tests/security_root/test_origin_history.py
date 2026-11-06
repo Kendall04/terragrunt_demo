@@ -106,9 +106,10 @@ class OriginAndHistoricalTests(unittest.TestCase):
             with history.source_root(root):self.fail('Drift admitted')
 
     def test_historical_exclusions_are_not_a_directory_or_current_catalog_rule(self):
-        self.assertEqual(len(history.NON_BASELINE_REVIEW_INPUTS),2)
+        self.assertEqual(len(history.NON_BASELINE_REVIEW_INPUTS),3)
         for name,digest in history.NON_BASELINE_REVIEW_INPUTS.items():
-            self.assertTrue(name.endswith('/main.tf.json'))
+            self.assertTrue(name.endswith('/main.tf.json') or
+                            name == 'operations/integrations/portable/trial/storage-observer.tf')
             self.assertEqual(hashlib.sha256((ROOT/name).read_bytes().replace(b'\r\n',b'\n')).hexdigest(),digest)
         root=self.fixture();unrelated=root/'new-root/main.tf.json';unrelated.parent.mkdir();unrelated.write_text('{}')
         self.assertIn('new-root/main.tf.json',set(history.historical_inputs(root)))

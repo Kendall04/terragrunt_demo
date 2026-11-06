@@ -1,8 +1,31 @@
 # SQL backup/restore increment
 
+## Current DEV installation — 2026-11-05
+
+The existing SQL host now has the strict-TLS producer installed, a persistent
+hourly systemd timer, and a verified remote backup in S3/KMS. A separate Lambda
+checks exact object versions and full SHA256 bytes and reports to the existing
+Sentinel bus; it does not require another EC2 or SQL credentials.
+See the [current evidence and limits](../../docs/V2-RECOVERY-SECURITY-20261105.md).
+The October runbooks below describe historical, separately retired trials.
+Cold replacement and service recovery are not proved by installation alone.
+
+## Strict TLS credential bootstrap (2026-11-05)
+
+`ec2_credentials.py` accepts the existing review's `Runtime.DatabaseSecurity`
+metadata with exactly `{"Profile":"validated-v2","CertificateHostName":"sql.demo.internal"}`.
+This opt-in uses sqlcmd `-N -F sql.demo.internal`, never `-C`, and creates both
+private backup/verifier connections with `Encrypt=True;TrustServerCertificate=False`.
+The trusted public certificate must already be installed on the SQL host. Invalid
+profiles/names fail before any secret read; there is no fallback. The existing
+root-only credential storage, SQL privilege separation and replay refusal remain.
+The legacy loopback exception is retained for historical isolated fixtures only.
+Local qualification: 29 Linux credential/review checks passed; this code change
+alone does not establish installation, scheduling or remote-backup acceptance.
+
 > Infrastructure now uses [native DEV operations](../../terraform/docs/native-dev-lifecycle.md). E16 checkpoints below are historical; SQL backup/recovery/artifact/secret contracts remain unchanged.
 
-Current status - 2026-10-21: native/S3-KMS component qualification and real
+Historical status - 2026-10-21: native/S3-KMS component qualification and real
 EC2-role manual plus two hourly backups passed. The temporary service/runtime
 was retired; residual network closure and permission removal completed that
 evening. See [dated evidence](../../terraform/docs/e16-ec2-backup-trial-20261021.md).

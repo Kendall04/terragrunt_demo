@@ -155,6 +155,40 @@ class Credential(unittest.TestCase):
         self.private_approval()
         result=self.call();self.assertEqual(result['SqlEndpoint'],'10.77.1.8')
         self.assertEqual(self.host.calls,[])
+    def strict_approval(self,security=None):
+        approval=json.loads((self.out/'approval.json').read_text())
+        approval['Runtime']['DatabaseSecurity']=security or {'Profile':'validated-v2','CertificateHostName':'sql.demo.internal'}
+        (self.out/'approval.json').write_text(json.dumps(approval))
+        self.confirm=hashlib.sha256((self.out/'approval.json').read_bytes()).hexdigest()
+    def test_strict_profile_plan_never_reads_secrets(self):
+        self.strict_approval()
+        self.assertEqual('validated-v2',self.call()['SqlTlsProfile'])
+        self.assertEqual([],self.host.calls)
+    def test_invalid_strict_profile_refuses_before_secret_read(self):
+        for security in ({'Profile':'legacy-v1','CertificateHostName':'sql.demo.internal'},
+                         {'Profile':'validated-v2','CertificateHostName':'wrong.internal'},
+                         {'Profile':'validated-v2','CertificateHostName':'sql.demo.internal','TrustServerCertificate':True}):
+            self.strict_approval(security)
+            with self.assertRaisesRegex(ValueError,'STRICT_SQL_TLS'):self.call()
+        self.assertEqual([],self.host.calls)
+    @unittest.skipUnless(os.geteuid()==0,'root only inside isolated fixture')
+    def test_strict_bootstrap_and_both_credentials_validate_chain_and_name(self):
+        from unittest.mock import Mock
+        self.strict_approval();self.host.sql=Mock()
+        self.call(True,self.confirm)
+        self.assertEqual({'endpoint':'127.0.0.1','certificate_hostname':'sql.demo.internal'},self.host.sql.call_args.kwargs)
+        base=self.system/'etc/terragrunt-demo/sql-backup/credentials'
+        for name in ('backup-connection','verify-connection'):
+            value=(base/name).read_text()
+            self.assertIn('Encrypt=True;TrustServerCertificate=False;HostNameInCertificate=sql.demo.internal;',value)
+            self.assertNotIn('TrustServerCertificate=True',value)
+    def test_native_sqlcmd_strict_mode_has_no_trust_bypass(self):
+        from unittest.mock import patch,Mock
+        with patch.object(credentials.subprocess,'run',return_value=Mock(returncode=0)) as run:
+            credentials.HostPort().sql('synthetic-secret','SELECT 1',certificate_hostname='sql.demo.internal')
+        argv=run.call_args.args[0]
+        self.assertIn('-N',argv);self.assertIn('-F',argv);self.assertNotIn('-C',argv)
+        self.assertNotIn('synthetic-secret',argv)
     def test_wildcard_public_and_noncanonical_endpoints_refuse_before_secret_access(self):
         for bad in ('0.0.0.0','::','8.8.8.8','169.254.169.254','10.077.1.8','10.77.1.8;bad'):
             self.private_approval(bad)

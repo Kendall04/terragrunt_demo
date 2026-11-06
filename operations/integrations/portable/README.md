@@ -48,7 +48,8 @@ ENCRYPT_DECRYPT use and CUSTOMER ownership are checked, including DescribeKey
 metadata in a future native plan. Archive SSE-KMS uses object encryption context
 (bucket keys OFF); SNS uses its separate key. Worker inline policy and boundary
 mirror only GenerateDataKey/Decrypt for the exact keys, service/context and explicit
-UTC window (maximum eight hours). `external_key_policy_requirements` exports
+UTC window (maximum 48 hours for the bounded laboratory; the owner's closure
+and cost approval still govern the actual expiry). `external_key_policy_requirements` exports
 review-only statements for each enclosing key, never installs/replaces a key policy.
 Existing administration/Denies and the external key owner's approval remain required.
 

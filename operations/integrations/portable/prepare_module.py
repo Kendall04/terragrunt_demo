@@ -46,6 +46,7 @@ if a.trial_root:
  assert a.package_manifest and a.config and a.zip
  child=M/'runtime';child.mkdir();(child/'main.tf').write_text(s,encoding='utf-8',newline='\n');(child/'outputs.tf').write_bytes((B/'trial/runtime/outputs.tf').read_bytes());(M/'security.tf').rename(child/'security.tf')
  (M/'main.tf').write_bytes((B/'trial/main.tf').read_bytes());(M/'tests').mkdir()
+ (M/'storage-observer.tf').write_bytes((B/'trial/storage-observer.tf').read_bytes())
  template=(B/'trial/tests/portable.tftest.hcl').read_text()
  for marker,value in [('@CONFIG@',a.config),('@ZIP@',a.zip),('@RECEIPT@',a.package_manifest),('@BADZIP@',M/'main.tf')]:template=template.replace(marker,value.resolve().as_posix())
  (M/'tests/portable.tftest.hcl').write_text(template,encoding='utf-8',newline='\n')
