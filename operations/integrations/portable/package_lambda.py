@@ -2,9 +2,15 @@
 import argparse,hashlib,json,subprocess,zipfile
 from pathlib import Path
 p=argparse.ArgumentParser();p.add_argument('--published',type=Path,required=True);p.add_argument('--config',type=Path,required=True);p.add_argument('--output',type=Path,required=True);a=p.parse_args();R=Path(__file__).resolve().parents[3]
-commit=subprocess.check_output(['git','-C',str(R),'rev-parse','HEAD'],text=True).strip();assert not subprocess.check_output(['git','-C',str(R),'status','--porcelain']).strip(),'Commit reviewed sources before packaging'
+commit=subprocess.check_output(['git','-C',str(R),'rev-parse','HEAD'],text=True).strip()
+status=subprocess.check_output(['git','-C',str(R),'status','--porcelain'],text=True).splitlines()
+# Terragrunt's operational lock belongs to a different owner. Keep it in place;
+# it is not an input to this package. Every source/other untracked file must be clean.
+assert not [s for s in status if s!='?? terraform/live/security/.terraform.lock.hcl'],'Commit reviewed sources before packaging'
 assert not a.output.exists();P=a.published;assert (P/'Ecs.Backup.Portable.Host.dll').is_file();assert not (P/'ecs-package-manifest.json').exists(),'Use a fresh publish directory; preserve previous artifacts'
-raw=a.config.read_bytes();config=json.loads(raw);assert config['account']=='341936017254' and config['region']=='us-east-1' and len(config['monitors'])==2
+raw=a.config.read_bytes();config=json.loads(raw);assert config['account']=='341936017254' and config['region']=='us-east-1' and len(config['monitors']) in (2,3)
+assert [m['id'] for m in config['monitors'] if m['sources']==['sql-observer']]==['sql-backup','sql-telemetry']
+assert all(m['id']=='nat-a-egress' and m['sources']==['nat-observer'] and m['resource']=='nat/dev/a' and m['generation']=='lt4-e13v6' for m in config['monitors'] if m['sources']!=['sql-observer'])
 sha=lambda b:hashlib.sha256(b).hexdigest();(P/'sentinel.json').write_bytes(raw)
 (P/'ecs-portable.json').write_text(json.dumps({'schemaVersion':1,'upstreamCommit':'b3d0b3b595a9257bb6d4d849c899bf4e8dbc2828','syntheticTrial':True,'configSha256':sha(raw)},indent=2)+'\n',encoding='utf-8')
 files={}

@@ -37,6 +37,7 @@ try {
  }
 } finally {File.Delete(Path.Combine(bundleRoot,"sentinel.json"));File.Delete(Path.Combine(bundleRoot,"ecs-portable.json"));Directory.Delete(bundleRoot);}
 CheckpointChecks.Run(c.Operations,Check);
+ArchiveCompensationChecks.Run(c,Check);
 Console.WriteLine(DomainJson.Serialize(new{Status="PASS",Tests=cases.Count,Cases=cases,OriginalNotificationSourceExecuted=true,Sns="OFFICIAL_PINNED_UPSTREAM_SDK_TRANSPORT_DOUBLE",UpstreamPinnedSdk4_0_100_16Qualified=true,AwsCalls=0,EmailSent=false}));
 sealed class NoHttp:HttpMessageHandler {protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage r,CancellationToken c)=>throw new InvalidOperationException("HTTP forbidden.");}
 sealed class RejectNetwork:Amazon.Runtime.HttpClientFactory {public override HttpClient CreateHttpClient(Amazon.Runtime.IClientConfig c)=>throw new InvalidOperationException("Network forbidden.");}

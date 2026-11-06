@@ -1,0 +1,23 @@
+{
+  "upstreamCommit": "b3d0b3b595a9257bb6d4d849c899bf4e8dbc2828",
+  "file": "src/Sentinel.Portable.Lambda/Function.cs",
+  "baseSha256": "be5ceacb4029ae81c8fd481ced14742fdeaa002281e8db0d18e6858ce8305c79",
+  "replacements": [
+    {
+      "before": "MonitorBootstrap.Ensure(monitor,store,processor,catalog,DateTimeOffset.UtcNow)",
+      "after": "MonitorBootstrap.Ensure(monitor,store,processor,c.CatalogFor(monitor.Key),DateTimeOffset.UtcNow)"
+    },
+    {
+      "before": "        var execution=new OperationalExecution(store,processor,catalog,new Dictionary<string,IEvidenceProvider>{{\"portable\",new MonitorEvidenceProvider(c,checks)}},\n            new CatalogEffectRouter(store,catalog,effects),profile,()=>DateTimeOffset.UtcNow);",
+      "after": "        var executions=c.Monitors.ToDictionary(m=>StorageKeys.Aggregate(m.Key),m=>new OperationalExecution(store,processor,c.CatalogFor(m.Key),new Dictionary<string,IEvidenceProvider>{{\"portable\",new MonitorEvidenceProvider(c,checks)}},\n            new CatalogEffectRouter(store,c.CatalogFor(m.Key),effects),profile,()=>DateTimeOffset.UtcNow));\n        DispatchResult Execute(OutboxEntry entry,string worker,CancellationToken token) => executions.TryGetValue(entry.AggregateKey,out var execution)\n            ? execution.Execute(entry,worker,token) : throw new InvalidOperationException(\"Work outside admitted catalog groups.\");"
+    },
+    {
+      "before": "execution.Execute,profile,()=>DateTimeOffset.UtcNow,budget)",
+      "after": "Execute,profile,()=>DateTimeOffset.UtcNow,budget)"
+    },
+    {
+      "before": "key=>catalog.Resolve(key).Policy,contexts:catalog.Context)",
+      "after": "key=>c.CatalogFor(key).Resolve(key).Policy,keyedContexts:(key,now)=>c.CatalogFor(key).Context(now))"
+    }
+  ]
+}

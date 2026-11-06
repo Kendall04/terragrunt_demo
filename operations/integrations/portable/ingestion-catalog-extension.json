@@ -1,0 +1,23 @@
+{
+  "upstreamCommit": "b3d0b3b595a9257bb6d4d849c899bf4e8dbc2828",
+  "file": "src/Sentinel.Ingestion/IngestionProcessor.cs",
+  "baseSha256": "0b0c728c2b8bd0b25aec7b7f147120be7dd6ecfecf96bbb770b5343bb3992166",
+  "replacements": [
+    {
+      "before": "    private readonly Func<DateTimeOffset, EvaluationContext> contexts;",
+      "after": "    private readonly Func<DateTimeOffset, EvaluationContext> contexts;\n    private readonly Func<CorrelationKey, DateTimeOffset, EvaluationContext>? keyedContexts;"
+    },
+    {
+      "before": "IIngestionObserver? observer = null, Func<DateTimeOffset, EvaluationContext>? contexts = null)",
+      "after": "IIngestionObserver? observer = null, Func<DateTimeOffset, EvaluationContext>? contexts = null, Func<CorrelationKey, DateTimeOffset, EvaluationContext>? keyedContexts = null)"
+    },
+    {
+      "before": "        this.contexts = contexts ?? (now => new(now, \"ingestion-catalog-v1\", [], []));",
+      "after": "        this.contexts = contexts ?? (now => new(now, \"ingestion-catalog-v1\", [], []));\n        this.keyedContexts = keyedContexts;"
+    },
+    {
+      "before": "var context = contexts(now);",
+      "after": "var context = keyedContexts?.Invoke(signal.Key, now) ?? contexts(now);"
+    }
+  ]
+}
