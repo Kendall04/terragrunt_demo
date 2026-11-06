@@ -110,6 +110,27 @@ to be used, not another parallel deployment controller.
 | Sentinel historical failures | Four permanent failures remain unchanged. New observations advance checkpoints and archive once, but these results do not erase historical `STALLED` evidence or certify permanent unattended monitoring. |
 | Container boundary | Image runs as UID 1654 with no SQL migrator secret; the current task does not enforce read-only root filesystem or an explicit capability-drop list. Application compromise remains within the task role/network boundary, not a proof of sandbox immunity. |
 
+### Installed control-plane images: unresolved findings
+
+Readback on 6 November matched twelve installed Lambda/CodeBuild consumers to
+their exact ECR digests. Their existing completed scans are dated 15 October
+(controllers/workers) and 30 October UTC (NAT), not fresh scans:
+
+| Installed image family | Existing findings per image | Disposition |
+| --- | --- | --- |
+| Image worker `e1-payload-image` | 15 CRITICAL, 56 HIGH, 35 MEDIUM, 4 LOW | Requalify and patch before another WP3 build; the native API image's clean scan does not cover this worker. |
+| Three NAT handlers | 19 HIGH, 24 MEDIUM, 9 LOW, 1 UNDEFINED | Active residual risk; patch their pinned base and qualify the three handlers before a longer-lived deployment. No NAT mutation in this recovery increment. |
+| Six controller/gateway/delivery images | 12 HIGH, 20 MEDIUM, 5 LOW, 1 UNDEFINED | Installed historical images remain separate from newly published candidates. No claim that a newer candidate fixed the installed runtime. |
+| .NET and probe workers | 8 HIGH, 2 MEDIUM, 2 LOW | Existing scans identify debt in the installed images; qualify replacements before use. |
+
+Counts are scanner entries, not distinct CVEs or proof of reachable exploitation.
+For example, NAT entries include Amazon Linux OpenSSL, curl, PCRE2, libcap and RPM;
+the image worker includes Alpine curl/OpenSSL critical entries. Full findings,
+package versions, scan dates and immutable image mappings are preserved privately
+in `INSTALLED-CONTROL-IMAGE-FINDINGS.private.json`. No scanner was suppressed or
+unassessed entry relabelled as a false positive. This means **the platform-wide
+image-security review is not closed**, despite the application image fix.
+
 The [complete 70-entry classification](V2-STATIC-FINDINGS-20261105.json) preserves
 every scanner identity, source snippet hash and repeated occurrence. It does not
 replace or relax the original exact-match baseline.
