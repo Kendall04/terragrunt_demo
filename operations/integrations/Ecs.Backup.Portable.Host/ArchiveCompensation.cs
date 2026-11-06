@@ -58,6 +58,21 @@ public sealed class ArchiveCompensation(IAmazonDynamoDB ddb, IAmazonS3 s3, Dynam
         }
         return count;
     }
+    public static GetObjectResponse CreateOnlyAndRead(IAmazonS3 client,string bucket,string key,byte[] bytes,string kms,Action count) {
+        // A missing-key GET is 403 without ListBucket. Do not reinterpret that
+        // denial as absence or expand IAM: conditional PUT is the atomic guard.
+        count(); using var input=new MemoryStream(bytes);
+        try {
+            client.PutObjectAsync(new PutObjectRequest{BucketName=bucket,Key=key,InputStream=input,
+                IfNoneMatch="*",ChecksumSHA256=Convert.ToBase64String(SHA256.HashData(bytes)),ContentType="application/json",
+                ServerSideEncryptionMethod=ServerSideEncryptionMethod.AWSKMS,ServerSideEncryptionKeyManagementServiceKeyId=kms}).GetAwaiter().GetResult();
+        }
+        catch(AmazonS3Exception e) when(e.StatusCode==System.Net.HttpStatusCode.PreconditionFailed) {
+            // Existing bytes must still pass the caller's full verification.
+        }
+        // Every other failure, including an ambiguous write, stops without retry.
+        count();return client.GetObjectAsync(new GetObjectRequest{BucketName=bucket,Key=key}).GetAwaiter().GetResult();
+    }
     public IReadOnlyList<ArchiveCompensationReceipt> Execute(DateTimeOffset now) {
         if(options.Namespace!="NS#b752b39384784041f4d8fe445ceb7002180c236cfa595219f87701424ae032b2" || now>=DateTimeOffset.Parse("2026-11-09T04:00:00Z"))
             throw new InvalidOperationException("Outside approved compensation scope/window.");
@@ -70,17 +85,7 @@ public sealed class ArchiveCompensation(IAmazonDynamoDB ddb, IAmazonS3 s3, Dynam
                 if(!ValidReceipt(r,pin,options.Namespace,key,digest,archiveOptions.KmsKeyId!,now))throw new InvalidDataException("Existing receipt mismatch.");
                 receipts.Add(r); continue;
             }
-            // Read first. Never retry an ambiguous write; an operator can reconcile later.
-            GetObjectResponse? found=null;
-            try { Count(); found=s3.GetObjectAsync(new GetObjectRequest{BucketName=archiveOptions.Bucket,Key=key}).GetAwaiter().GetResult(); }
-            catch(AmazonS3Exception e) when(e.StatusCode==System.Net.HttpStatusCode.NotFound) { }
-            if(found is null) {
-                Count(); using var input=new MemoryStream(bytes);
-                s3.PutObjectAsync(new PutObjectRequest{BucketName=archiveOptions.Bucket,Key=key,InputStream=input,
-                    IfNoneMatch="*",ChecksumSHA256=Convert.ToBase64String(SHA256.HashData(bytes)),ContentType="application/json",
-                    ServerSideEncryptionMethod=ServerSideEncryptionMethod.AWSKMS,ServerSideEncryptionKeyManagementServiceKeyId=archiveOptions.KmsKeyId}).GetAwaiter().GetResult();
-                Count(); found=s3.GetObjectAsync(new GetObjectRequest{BucketName=archiveOptions.Bucket,Key=key}).GetAwaiter().GetResult();
-            }
+            var found=CreateOnlyAndRead(s3,archiveOptions.Bucket,key,bytes,archiveOptions.KmsKeyId!,Count);
             using(found) {
                 using var output=new MemoryStream(); byte[] buffer=new byte[8192]; int n;
                 while((n=found.ResponseStream.Read(buffer))>0) { if(output.Length+n>bytes.Length)throw new InvalidDataException("Archive size mismatch."); output.Write(buffer,0,n); }

@@ -164,9 +164,9 @@
       "purpose": "Owner-approved maintained managed security controls/negative mock evidence; no execution authority and no CURRENT exclusion."
     },
     "operations/integrations/portable/trial/runtime/security.tf": {
-      "sha256_lf": "d9670d7211a54c8154b70e08b9b293fe0848a9cea2a707b8ed0fea4ce348d034",
+      "sha256_lf": "d5ca5fa5d8a370d82936af31c7d8508df8e0ff65e42d12302a5dffd382edaf52",
       "introduced_by": "local portable security increment after b0f7d0dcd990ff42cd476e2777ce90120bb31282",
-      "last_changed_by": "V2_SQL_RECOVERY_SECURITY_REVIEW_20261105",
+      "last_changed_by": "c348fc1d9294668b13c35e565c79f9d0b8f7280b",
       "owner": "ECS_PORTABLE_LOCAL_INTEGRATION",
       "classification": "LOCAL_INTEGRATION_SOURCE",
       "purpose": "Exact owned portable security/retirement source; upstream pin preserved. Local qualification only, no native plan or execution authority."
@@ -180,12 +180,20 @@
       "purpose": "Exact owned portable security/retirement source; upstream pin preserved. Local qualification only, no native plan or execution authority."
     },
     "operations/integrations/portable/trial/storage-observer.tf": {
-      "sha256_lf": "28ae7054383582fb31ef0f941755f6f6c4822e4fe765912409ed4f5a72c8c6bb",
+      "sha256_lf": "4b93f2fe36f9ec50c9d7047dc84eae8f7f33004c2f3f9fa445570f236da9aa90",
       "introduced_by": "V2_SQL_RECOVERY_20261105_SOURCE_REVIEW",
-      "last_changed_by": "V2_SQL_RECOVERY_SECURITY_REVIEW_20261105",
+      "last_changed_by": "c348fc1d9294668b13c35e565c79f9d0b8f7280b",
       "owner": "EXISTING_PORTABLE_SENTINEL_ROOT",
       "classification": "LOCAL_INTEGRATION_SOURCE",
       "purpose": "Optional read-only exact-version S3 backup observer for the existing Sentinel bus; bounded IAM, no SQL credentials or journal mutation. Source coverage is not execution authority."
+    },
+    "operations/integrations/portable/trial/nat-observer.tf": {
+      "sha256_lf": "aaa53fe035cf7ecad31766ed30f2d6081c0cf96d44116fc8a745e1b3b30fb780",
+      "introduced_by": "c348fc1d9294668b13c35e565c79f9d0b8f7280b",
+      "last_changed_by": "5746e47c3e85cf8b44903805b2001a2b0e200ab2",
+      "owner": "SEPARATE_SENTINEL_ADMIN_ROOT",
+      "classification": "LOCAL_INTEGRATION_SOURCE",
+      "purpose": "Closed private A HTTPS probe and existing observer integration; source coverage only, no execution authority."
     }
   }
 }

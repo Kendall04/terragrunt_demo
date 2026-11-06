@@ -6288,7 +6288,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/run_recovery_ci.py": {
-      "sha256": "8ad10443c2742bac1e2e0719898f111615b16c0de9edea8b5a0b96f41373b090",
+      "sha256": "8904746a330431c45e70104a532523dfa584820ee07dd293e85d3e1c822fd0c6",
       "declarations": [],
       "signals": {
         "executable-dependency": [
@@ -6298,7 +6298,8 @@
           22,
           23,
           24,
-          26
+          26,
+          27
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -6441,7 +6442,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/model.py": {
-      "sha256": "46a5d0cbd63f6f14164c72ce9ffa68b0c2c0fc00fadf869b196f1cf0cfef2805",
+      "sha256": "f3092d32616cf0e76ed2f8d0404b53be2b6ecf555d0e1938d0f1ab18f67db9f0",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -6700,7 +6701,7 @@
       "semantic_status": "CURRENT_FACT"
     },
     "scripts/tests/security_root/test_supplemental_iac.py": {
-      "sha256": "fe3d4b5f4b80e8ffd9fc343a3ba11d71ed9fdf01830f9a72b2da3ac2a5dc6acb",
+      "sha256": "836b02db12019a6a91b33446039d21aa9fd98f8951b9f1a10b5fb57cfb46a21e",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -11912,19 +11913,19 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/portable/prepare_module.py": {
-      "sha256": "532424fc2ea8cd37bbb3a04cd29b378b08598182ad832ac395b2a2b46f131b73",
+      "sha256": "85400f1353284c9212cad2e965cbe1abe7ba1cf5179fac5885d1cc931c2edfd0",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           4,
-          55,
           56,
-          62
+          57,
+          63
         ],
         "executable-dependency": [
           34,
           37,
-          55
+          56
         ],
         "security-control": [
           13,
@@ -11955,15 +11956,19 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/portable/prepare_runtime_source.py": {
-      "sha256": "c431117b09b34ba1b726bd94daa36f2d087ff5eac27d88cc224eaff7c877f969",
+      "sha256": "926a3480aca7822e3111ecc0eb5519dfb5f7b5888920e96c82cb83b67e86a906",
       "declarations": [],
       "signals": {},
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/portable/package_lambda.py": {
-      "sha256": "55c7372ebcfb76513b3ba305817c7d4315452a190bb52dcc890c8dc0e825bfde",
+      "sha256": "9c76944da9d405620caa8be94f4f27f234a59d98518360f690a8b49c72e46574",
       "declarations": [],
-      "signals": {},
+      "signals": {
+        "launch-or-mutation": [
+          9
+        ]
+      },
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/portable/trial/main.tf": {
@@ -12647,7 +12652,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/portable/templates/security.tf.tftpl": {
-      "sha256": "d9670d7211a54c8154b70e08b9b293fe0848a9cea2a707b8ed0fea4ce348d034",
+      "sha256": "d5ca5fa5d8a370d82936af31c7d8508df8e0ff65e42d12302a5dffd382edaf52",
       "declarations": [
         {
           "kind": "data",
@@ -12769,7 +12774,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/portable/trial/runtime/security.tf": {
-      "sha256": "d9670d7211a54c8154b70e08b9b293fe0848a9cea2a707b8ed0fea4ce348d034",
+      "sha256": "d5ca5fa5d8a370d82936af31c7d8508df8e0ff65e42d12302a5dffd382edaf52",
       "declarations": [
         {
           "kind": "data",
@@ -13310,15 +13315,18 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/portable/storage_observer.py": {
-      "sha256": "0261d60d356c930065fcafa6906aed20d69bf1ab5d4c9cfb24afa62c9bda7afa",
+      "sha256": "2002ead488ecaee1ba005724df65fb44d7fe672792a9534e21ae342d9a945d88",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           36,
-          122,
-          127,
-          131,
-          137
+          129,
+          134,
+          137,
+          139,
+          141,
+          147,
+          151
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -13335,100 +13343,105 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/portable/trial/storage-observer.tf": {
-      "sha256": "28ae7054383582fb31ef0f941755f6f6c4822e4fe765912409ed4f5a72c8c6bb",
+      "sha256": "4b93f2fe36f9ec50c9d7047dc84eae8f7f33004c2f3f9fa445570f236da9aa90",
       "declarations": [
         {
           "kind": "resource",
           "type": "aws_iam_policy",
           "name": "backup_observer_boundary",
-          "line": 34
+          "line": 45
         },
         {
           "kind": "resource",
           "type": "aws_iam_role",
           "name": "backup_observer",
-          "line": 39
+          "line": 50
         },
         {
           "kind": "resource",
           "type": "aws_iam_role_policy",
           "name": "backup_observer",
-          "line": 46
+          "line": 57
         },
         {
           "kind": "resource",
           "type": "aws_cloudwatch_log_group",
           "name": "backup_observer",
-          "line": 52
+          "line": 63
         },
         {
           "kind": "resource",
           "type": "aws_lambda_function",
           "name": "backup_observer",
-          "line": 57
+          "line": 68
         },
         {
           "kind": "resource",
           "type": "aws_lambda_function_event_invoke_config",
           "name": "backup_observer",
-          "line": 84
+          "line": 96
         },
         {
           "kind": "resource",
           "type": "aws_cloudwatch_event_rule",
           "name": "backup_observer",
-          "line": 90
+          "line": 102
         },
         {
           "kind": "resource",
           "type": "aws_cloudwatch_event_target",
           "name": "backup_observer",
-          "line": 96
+          "line": 108
         },
         {
           "kind": "resource",
           "type": "aws_lambda_permission",
           "name": "backup_observer",
-          "line": 105
+          "line": 117
         }
       ],
       "signals": {
         "credential-acquisition": [
-          43
-        ],
-        "launch-or-mutation": [
-          10,
-          11,
-          14,
-          26,
-          27,
-          28,
-          29,
-          30,
           54
         ],
+        "launch-or-mutation": [
+          6,
+          18,
+          19,
+          22,
+          34,
+          35,
+          36,
+          37,
+          38,
+          40,
+          41,
+          65
+        ],
         "executable-dependency": [
-          26,
-          27,
-          28,
-          29,
-          30,
-          63,
-          73
+          34,
+          35,
+          36,
+          37,
+          38,
+          40,
+          41,
+          74,
+          84
         ],
         "security-control": [
-          34,
-          37,
-          39,
-          42,
-          43,
-          46,
+          45,
           48,
           50,
-          60,
-          76,
-          105,
-          114
+          53,
+          54,
+          57,
+          59,
+          61,
+          71,
+          88,
+          117,
+          126
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -13595,6 +13608,171 @@
         ]
       },
       "semantic_status": "UNVERIFIED"
+    },
+    "operations/integrations/portable/backup_restore_pin.py": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "70f88dcacdd98ed33f7e6ff76c1e6c6d03535691088dd4e6b2413b91ff59cfa2",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          41,
+          65,
+          74
+        ]
+      }
+    },
+    "operations/integrations/portable/backup_retention.py": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "93df1588acca8c11daeb22aa8b73b16a2de9812cc603bfbafc010bbb27f5a45a",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          16,
+          17,
+          19
+        ]
+      }
+    },
+    "operations/integrations/portable/nat_observer.py": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "668b019a1e6c75a26185136d31731bb3e164ccfe0955c1ecb999672c2e49d002",
+      "declarations": [],
+      "signals": {}
+    },
+    "operations/integrations/portable/nat_probe.py": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "3ea8da27a069c7280c332513eeb160c94b89aa2ac8333e5b4a96533c1032ba6d",
+      "declarations": [],
+      "signals": {}
+    },
+    "operations/integrations/portable/test_backup_restore_pin.py": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "1b07599ae642949241de8aaf4eaaca46e47b031567e77b048e873b2849036c99",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          11
+        ],
+        "executable-dependency": [
+          20,
+          30,
+          35
+        ]
+      }
+    },
+    "operations/integrations/portable/test_backup_retention.py": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "a0cf2e75b45b0d10318e04df046ef6c163d2305f47f0548844c0cce33c3bb469",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          24,
+          55
+        ]
+      }
+    },
+    "operations/integrations/portable/test_nat_observer.py": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "e4a4e50398ce23884812f724fcfdcb3fb0244f9c424d66e451155c879052605b",
+      "declarations": [],
+      "signals": {}
+    },
+    "operations/integrations/portable/trial/nat-observer.tf": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "aaa53fe035cf7ecad31766ed30f2d6081c0cf96d44116fc8a745e1b3b30fb780",
+      "declarations": [
+        {
+          "kind": "resource",
+          "type": "aws_security_group",
+          "name": "nat_probe",
+          "line": 38
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_policy",
+          "name": "nat_probe_boundary",
+          "line": 52
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role",
+          "name": "nat_probe",
+          "line": 57
+        },
+        {
+          "kind": "resource",
+          "type": "aws_iam_role_policy",
+          "name": "nat_probe",
+          "line": 63
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_log_group",
+          "name": "nat_probe",
+          "line": 69
+        },
+        {
+          "kind": "resource",
+          "type": "aws_lambda_function",
+          "name": "nat_probe",
+          "line": 74
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_event_rule",
+          "name": "nat_observer",
+          "line": 92
+        },
+        {
+          "kind": "resource",
+          "type": "aws_cloudwatch_event_target",
+          "name": "nat_observer",
+          "line": 98
+        },
+        {
+          "kind": "resource",
+          "type": "aws_lambda_permission",
+          "name": "nat_observer",
+          "line": 107
+        }
+      ],
+      "signals": {
+        "credential-acquisition": [
+          61
+        ],
+        "launch-or-mutation": [
+          19,
+          22,
+          24,
+          27,
+          28,
+          29,
+          71
+        ],
+        "executable-dependency": [
+          22,
+          23,
+          24,
+          27,
+          28,
+          29,
+          80
+        ],
+        "security-control": [
+          21,
+          52,
+          55,
+          57,
+          60,
+          61,
+          63,
+          65,
+          67,
+          77,
+          90,
+          107
+        ]
+      }
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",

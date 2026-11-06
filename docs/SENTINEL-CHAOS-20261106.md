@@ -30,10 +30,12 @@ SQL availability. Recovery notices require the existing resolution semantics.
 
 Four permanent ArchiveDecision failures refer to original November 5 audits.
 Their exact effect/audit byte hashes are pinned by `ArchiveCompensation`.
-The explicit compensation mode reads these records, creates only absent archive
-objects, verifies full bytes, SSE-KMS and real VersionIds, then appends separate
+The explicit compensation mode reads these records, conditionally creates archive
+objects with `If-None-Match: *`, verifies full bytes, SSE-KMS and real VersionIds, then appends separate
 `AC#` receipts. Any ambiguous write stops. It never changes O#/T#/A#/OP# records,
-resets attempts, queues old effects or sends SNS messages.
+resets attempts, queues old effects or sends SNS messages. A 412 leads only to
+readback of existing bytes; any other write failure stops. This avoids requiring
+ListBucket merely to distinguish a missing object's 403 response from absence.
 
 The watchdog checks original hashes and append-only receipts. It reports raw
 historical failures and verified compensations separately. Only verified archive
