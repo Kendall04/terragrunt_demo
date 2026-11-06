@@ -17,7 +17,7 @@ public sealed class Function {
  private readonly Sentinel.Portable.Lambda.Function inner;
  public Function() {
   var config=ValidateBundle(AppContext.BaseDirectory);
-  inner=new(n=>ReadableNotice.Render(n,config,true)); // This trial bundle is explicitly synthetic; no caller override.
+  inner=new(n=>ReadableNotice.Render(n,config,true),(client,options,now)=>new CurrentBacklog(client,options).Read(now)); // Closed callbacks; no caller override.
  }
  public static Installation ValidateBundle(string root) {
   var raw=File.ReadAllBytes(Path.Combine(root,"sentinel.json"));
@@ -55,11 +55,9 @@ public sealed class Function {
   var raw=new DynamoOperationalStore(ddb,b.Options).Read(scope);var now=DateTimeOffset.UtcNow;
   var compensation=new ArchiveCompensation(ddb,s3,b.Options,b.Archive);
   var verified=b.Options.Namespace=="NS#b752b39384784041f4d8fe445ceb7002180c236cfa595219f87701424ae032b2"?compensation.VerifiedCount(now):0;
-  var backlog=new CurrentBacklog(ddb,b.Options);var view=ArchiveCompensation.CurrentHealthView(raw,verified);
-  if(view is not null)view=view with{Backlog=backlog.Read(now)};
-  var result=HealthEvaluator.Evaluate(scope,view,c.Operations,now);
+  var result=HealthEvaluator.Evaluate(scope,ArchiveCompensation.CurrentHealthView(raw,verified),c.Operations,now);
   context.Logger.LogLine(HealthMetric(result));
-  context.Logger.LogLine(DomainJson.Serialize(new{type="SentinelHealth",deployment=c.Deployment,healthy=result.State is HealthState.HEALTHY_ACTIVE or HealthState.HEALTHY_IDLE?1:0,result,backlog=view?.Backlog,historicalPermanentFailures=raw?.UnresolvedFailures,verifiedArchiveCompensations=verified,activePermanentFailures=raw is null?(int?)null:raw.UnresolvedFailures-verified,requests=compensation.Requests+1+backlog.Requests}));
+  context.Logger.LogLine(DomainJson.Serialize(new{type="SentinelHealth",deployment=c.Deployment,healthy=result.State is HealthState.HEALTHY_ACTIVE or HealthState.HEALTHY_IDLE?1:0,result,backlog=raw?.Backlog,historicalPermanentFailures=raw?.UnresolvedFailures,verifiedArchiveCompensations=verified,activePermanentFailures=raw is null?(int?)null:raw.UnresolvedFailures-verified,requests=compensation.Requests+1}));
   return result;
  }
  public static string HealthMetric(HealthAssessment result)=>"SentinelHealthMetric "+(result.State is HealthState.HEALTHY_ACTIVE or HealthState.HEALTHY_IDLE?"1":"0");

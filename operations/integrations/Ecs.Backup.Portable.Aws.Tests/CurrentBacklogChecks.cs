@@ -35,9 +35,9 @@ internal static class CurrentBacklogChecks {
    if(r.ConsistentRead!=true||r.Limit!=32||r.ExpressionAttributeValues[":w"].S!="W#")throw new Exception("Unbounded or eventually consistent read");Queries++;
    return Task.FromResult(new QueryResponse{Items=[layout.Item("W#pointer",row.Id)],LastEvaluatedKey=HasMore?layout.Key("W#pointer"):new()});
   }
-  public override Task<GetItemResponse> GetItemAsync(GetItemRequest r,CancellationToken t=default) {
-   if(r.ConsistentRead!=true||r.Key["SK"].S!=PhysicalLayout.Effect(row.Id))throw new Exception("Wrong authoritative row");Reads++;
-   return Task.FromResult(new GetItemResponse{Item=layout.Item(PhysicalLayout.Effect(row.Id),row)});
+  public override Task<TransactGetItemsResponse> TransactGetItemsAsync(TransactGetItemsRequest r,CancellationToken t=default) {
+   if(r.TransactItems.Count!=1||r.TransactItems[0].Get.Key["SK"].S!=PhysicalLayout.Effect(row.Id))throw new Exception("Wrong authoritative row");Reads++;
+   return Task.FromResult(new TransactGetItemsResponse{Responses=[new ItemResponse{Item=layout.Item(PhysicalLayout.Effect(row.Id),row)}]});
   }
  }
 }

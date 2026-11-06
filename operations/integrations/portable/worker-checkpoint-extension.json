@@ -7,11 +7,15 @@
   "replacements": [
     {
       "before": "OperationalProfile profile,Func<DateTimeOffset> clock) {",
-      "after": "OperationalProfile profile,Func<DateTimeOffset> clock,OperationalBudget? ioBudget=null) {"
+      "after": "OperationalProfile profile,Func<DateTimeOffset> clock,OperationalBudget? ioBudget=null,Func<DateTimeOffset,BacklogObservation>? observeBacklog=null) {"
     },
     {
       "before": "if(attempted>=profile.MaxJobs||timer.Elapsed",
       "after": "if(ioBudget is not null&&!ioBudget.CanStartWork(1)||attempted>=profile.MaxJobs||timer.Elapsed"
+    },
+    {
+      "before": "            // Persist discovered identities before execution: terminal work may leave W#.",
+      "after": "            // A bounded current read shares the worker I/O budget; no new watchdog permissions.\n            if(observeBacklog is not null)snapshot=observeBacklog(clock());\n            // Persist discovered identities before execution: terminal work may leave W#."
     },
     {
       "before": "                if(!journal.Owns(journal.Read(scope)!,lease,clock()))",

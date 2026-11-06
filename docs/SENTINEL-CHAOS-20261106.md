@@ -102,10 +102,11 @@ four dispositions in its in-memory health view. A fifth failure remains visible.
 Continuous observation exposed two additional issues: a four-entry work page
 could take several invocations, making its completed sweep stale; and the JSON
 health value was not extracted by the installed metric filter from Lambda's
-text-prefixed log events. The watchdog now reads at most 32 authoritative work
-pointers and their current effects (at most 46 total requests including history).
-A continuation means incomplete visibility, never healthy. This read does not
-rewrite the worker journal. The metric uses an explicit bounded numeric log line;
+text-prefixed log events. The worker now queries at most 32 authoritative work
+pointers and reads their current effects in one transaction, inside its unchanged
+request budget, then checkpoints that observation normally. A continuation means
+incomplete visibility, never healthy. The watchdog retains only its existing
+GetItem permission. The metric uses an explicit bounded numeric log line;
 the detailed structured health event is retained. Missing metrics still breach.
 
 Worker dispatch admission distinguishes a source-evaluation job from a smaller

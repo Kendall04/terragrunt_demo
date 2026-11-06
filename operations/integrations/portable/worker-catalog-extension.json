@@ -4,6 +4,10 @@
   "baseSha256": "be5ceacb4029ae81c8fd481ced14742fdeaa002281e8db0d18e6858ce8305c79",
   "replacements": [
     {
+      "before": "    public Function(Func<IncidentNotice,(string Subject,string Message)> snsFormat) { this.snsFormat=snsFormat??throw new ArgumentNullException(nameof(snsFormat)); }",
+      "after": "    private readonly Func<IAmazonDynamoDB,DynamoOptions,DateTimeOffset,BacklogObservation>? observeBacklog;\n    public Function(Func<IncidentNotice,(string Subject,string Message)> snsFormat,Func<IAmazonDynamoDB,DynamoOptions,DateTimeOffset,BacklogObservation>? observeBacklog=null) { this.snsFormat=snsFormat??throw new ArgumentNullException(nameof(snsFormat));this.observeBacklog=observeBacklog; }"
+    },
+    {
       "before": "MonitorBootstrap.Ensure(monitor,store,processor,catalog,DateTimeOffset.UtcNow)",
       "after": "MonitorBootstrap.Ensure(monitor,store,processor,c.CatalogFor(monitor.Key),DateTimeOffset.UtcNow)"
     },
@@ -13,7 +17,7 @@
     },
     {
       "before": "execution.Execute,profile,()=>DateTimeOffset.UtcNow,budget)",
-      "after": "Execute,profile,()=>DateTimeOffset.UtcNow,budget)"
+      "after": "Execute,profile,()=>DateTimeOffset.UtcNow,budget,observeBacklog is null?null:at=>observeBacklog(ddb,options,at))"
     },
     {
       "before": "key=>catalog.Resolve(key).Policy,contexts:catalog.Context)",

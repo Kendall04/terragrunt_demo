@@ -9,7 +9,8 @@ namespace Ecs.Backup.Portable.Host;
 
 // Read current authoritative W#/O# rows instead of treating the worker's slow,
 // multi-invocation sweep as current telemetry. No journal writes or GSI claims.
-// One query + at most 32 reads; with the 13 historical/OP reads, <=46 requests.
+// Worker uses one consistent query + one transaction of at most 32 Get actions.
+// Both requests consume its existing 64-request budget, before the checkpoint.
 public sealed class CurrentBacklog(IAmazonDynamoDB ddb,DynamoOptions options) {
  public int Requests {get;private set;}
  public BacklogObservation Read(DateTimeOffset now) {
@@ -19,11 +20,17 @@ public sealed class CurrentBacklog(IAmazonDynamoDB ddb,DynamoOptions options) {
    ExpressionAttributeValues=new(){[":pk"]=PhysicalLayout.S(options.Namespace),[":w"]=PhysicalLayout.S("W#")}}).GetAwaiter().GetResult();
   if(page.Items.Count>32)throw new InvalidDataException("Backlog query exceeded bound.");
   List<OutboxEntry> entries=[];var layout=new PhysicalLayout(options);
+  List<string> ids=[];
   foreach(var row in page.Items) {
    if(row["PK"].S!=options.Namespace||!row["SK"].S.StartsWith("W#",StringComparison.Ordinal))throw new InvalidDataException("Foreign backlog pointer.");
-   var id=PhysicalLayout.Payload<string>(row);Requests++;
-   var found=ddb.GetItemAsync(new GetItemRequest{TableName=options.Table,Key=layout.Key(PhysicalLayout.Effect(id)),ConsistentRead=true}).GetAwaiter().GetResult();
-   if(found.Item is {Count:>0}){var entry=PhysicalLayout.Payload<OutboxEntry>(found.Item);if(entry.Id!=id)throw new InvalidDataException("Backlog identity mismatch.");entries.Add(entry);}
+   ids.Add(PhysicalLayout.Payload<string>(row));
+  }
+  if(ids.Count>0) {
+   if(ids.Distinct(StringComparer.Ordinal).Count()!=ids.Count)throw new InvalidDataException("Duplicate work pointer.");
+   Requests++;
+   var found=ddb.TransactGetItemsAsync(new TransactGetItemsRequest{TransactItems=ids.Select(id=>new TransactGetItem{Get=new Get{TableName=options.Table,Key=layout.Key(PhysicalLayout.Effect(id))}}).ToList()}).GetAwaiter().GetResult();
+   if(found.Responses.Count!=ids.Count)throw new InvalidDataException("Incomplete authoritative backlog read.");
+   for(int i=0;i<ids.Count;i++)if(found.Responses[i].Item is {Count:>0} item){var entry=PhysicalLayout.Payload<OutboxEntry>(item);if(entry.Id!=ids[i])throw new InvalidDataException("Backlog identity mismatch.");entries.Add(entry);}
   }
   return Observe(entries,now,page.LastEvaluatedKey is not {Count:>0});
  }
