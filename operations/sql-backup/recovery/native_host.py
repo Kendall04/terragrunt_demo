@@ -125,6 +125,10 @@ def fence(sql, request):
     require(run(['systemctl', 'show', 'sql-backup.service', '--property=ActiveState', '--value']).strip() in ('inactive', 'failed'),
             'BACKUP_IN_PROGRESS')
     run(['systemctl', 'stop', 'sql-backup.timer'])
+    # The timer may have fired between the first read and StopUnit. Stopping a
+    # timer does not stop a service it already launched; recheck before SQL DDL.
+    require(run(['systemctl', 'show', 'sql-backup.service', '--property=ActiveState', '--value']).strip() in ('inactive', 'failed'),
+            'BACKUP_IN_PROGRESS')
     sql.query("ALTER LOGIN [recovery_app] DISABLE; ALTER LOGIN [recovery_migrator] DISABLE; "
               "ALTER DATABASE [demodb] SET READ_ONLY WITH NO_WAIT; SELECT 1 AS fenced FOR JSON PATH,WITHOUT_ARRAY_WRAPPER;")
     after = sql.query(SNAPSHOT)

@@ -194,7 +194,7 @@ argument error (`sqlcmd -y 8192`, maximum 8000) was found before SQL execution a
 corrected to 8000; the corrected real readback passed. No source fence or compute
 replacement has been executed in this session.
 
-The Linux recovery/portable suite passed **288 tests in 23 suites, zero skips**
+The Linux recovery/portable suite passed **289 tests in 23 suites, zero skips**
 using the existing local CI image, with no network/credentials. The isolated
 Sentinel Terraform mock suite passed **23 tests**. These counts do not certify a
 cold AWS recovery. Full E1/remote CI results are recorded with the eventual PR.
@@ -203,7 +203,19 @@ The bounded Sentinel renewal plan is
 `a0361292511ddd7de0fcff378bbc2c3bb458dca9219969edc0d2abad270e0ab4`:
 five in-place updates, zero drift, only existing grant dates and observer expiry.
 Three existing external KMS statements need the same expiry change. It is
-**not applied**: automatic approval review requires explicit owner confirmation.
-The proposed end remains 7 November 04:00 UTC, not an extension of the lab.
-Additional model: USD 0.20, cumulative USD 4.84/5 if authorized; before renewal,
-the model is USD 4.64/5. These are estimates, not billed totals or an AWS cap.
+**applied after explicit owner confirmation**. Readbacks matched all five
+planned updates and the three exact KMS date changes. State advanced from 22 to
+23, with 78 managed resources and no persistent lock. The end remains 7 November
+04:00 UTC, not an extension of the lab. Additional model: USD 0.20, cumulative
+USD 4.84/5. These are estimates, not billed totals or an AWS cap.
+
+The scheduled observer verified the automatic midnight backup using its actual
+S3 VersionId and SHA256. At 00:33 UTC the worker checkpoint was revision 228,
+with no retained lease or consecutive failure; the four permanent historical
+failures remained preserved. No inbox receipt is claimed for this new observation.
+
+Recovery fencing rejects active or transitioning backup services, including
+systemd's `activating` state for a running oneshot. It rechecks after stopping
+the timer to close a timer-fire race before any SQL write fence. A refusal at
+that point leaves the timer stopped for explicit operational reconciliation;
+it does not stop a backup already in flight or mutate SQL.

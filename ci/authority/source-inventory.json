@@ -13464,7 +13464,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/recovery/native_host.py": {
-      "sha256": "62f566351a59bfa4ac3944f0b3264a9865378e80ed44ebc90c95c2479af057e0",
+      "sha256": "42f0b7d4c6d60bfed2d49c4c3f3710e842706a94061e8d5fb86b4c4d929b3419",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -13473,9 +13473,9 @@
           57,
           59,
           78,
-          158,
-          164,
-          165
+          162,
+          168,
+          169
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -13518,7 +13518,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/recovery/test_native_host.py": {
-      "sha256": "d8c7b777ef7885e77beb3e0d9fe47cc8eee3a3fe9dfd5d9f1d6eb50a44d99e5a",
+      "sha256": "f338abc7cd2c77b76e6b0bd344db0ada5144e71dc1114ef68624b08748f2e5d0",
       "declarations": [],
       "signals": {},
       "semantic_status": "UNVERIFIED"

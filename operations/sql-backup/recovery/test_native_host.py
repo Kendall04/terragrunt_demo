@@ -88,6 +88,11 @@ class NativeRecoveryTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, 'BACKUP_IN_PROGRESS'):
                     host.fence(ReadOnly(), r)
                 child.assert_called_once_with(['systemctl', 'show', 'sql-backup.service', '--property=ActiveState', '--value'])
+        with patch.object(host, 'run', side_effect=['inactive', '', 'activating']) as child:
+            with self.assertRaisesRegex(ValueError, 'BACKUP_IN_PROGRESS'):
+                host.fence(ReadOnly(), r)
+            self.assertEqual(child.call_count, 3)
+            self.assertEqual(child.call_args_list[1].args[0], ['systemctl', 'stop', 'sql-backup.timer'])
 
     def test_dotnet_seven_digit_timestamp(self):
         self.assertEqual(host.timestamp('2026-11-05T23:01:57.6781198+00:00').microsecond, 678119)
