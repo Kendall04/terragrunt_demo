@@ -113,3 +113,13 @@ Worker dispatch admission distinguishes a source-evaluation job from a smaller
 archive/effect dispatch. The hard 64-request/four-job profile and eight-request
 checkpoint reserve remain unchanged. Independent smaller work can progress in the
 same invocation; uncertain results still use the original lease/idempotency rules.
+
+Live continuous reports exposed redundant queued timer checks: their due slot had
+already been evaluated by a newer durable monitor decision. Only a noncritical,
+cancellable `ScheduleRecoveryCheck` in the same continuous monitor/epoch/policy
+can now be superseded. The existing transactional cancellation still conditions
+on the exact head revision and records the disposition. Equality/future slots,
+notifications, archive work and non-monitor recovery are excluded. No old journal
+rows are rewritten manually. Dispatch admission measures this shorter path within
+the same 64-request/four-job bound; per-work request deltas are logged without
+payloads. This is a code correction, not approval to discard pending notices.

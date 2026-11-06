@@ -11514,7 +11514,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/test_origin_history.py": {
-      "sha256": "4addbb83d346d8c5534ed1812a8686ae31ca1b3011b007bfab89094900973e85",
+      "sha256": "22a11d37c4a4050144c4dcd6335f8dbc2f3570bd39281b8f3469bafa11af26be",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -11956,7 +11956,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/portable/prepare_runtime_source.py": {
-      "sha256": "926a3480aca7822e3111ecc0eb5519dfb5f7b5888920e96c82cb83b67e86a906",
+      "sha256": "878539f780892e43ab1aee8055c77b16562998675f8992f15f3944178578eff9",
       "declarations": [],
       "signals": {},
       "semantic_status": "UNVERIFIED"

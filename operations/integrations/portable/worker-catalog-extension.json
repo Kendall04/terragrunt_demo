@@ -13,11 +13,11 @@
     },
     {
       "before": "        var execution=new OperationalExecution(store,processor,catalog,new Dictionary<string,IEvidenceProvider>{{\"portable\",new MonitorEvidenceProvider(c,checks)}},\n            new CatalogEffectRouter(store,catalog,effects),profile,()=>DateTimeOffset.UtcNow);",
-      "after": "        var executions=c.Monitors.ToDictionary(m=>StorageKeys.Aggregate(m.Key),m=>new OperationalExecution(store,processor,c.CatalogFor(m.Key),new Dictionary<string,IEvidenceProvider>{{\"portable\",new MonitorEvidenceProvider(c,checks)}},\n            new CatalogEffectRouter(store,c.CatalogFor(m.Key),effects),profile,()=>DateTimeOffset.UtcNow));\n        DispatchResult Execute(OutboxEntry entry,string worker,CancellationToken token) => executions.TryGetValue(entry.AggregateKey,out var execution)\n            ? execution.Execute(entry,worker,token) : throw new InvalidOperationException(\"Work outside admitted catalog groups.\");"
+      "after": "        var executions=c.Monitors.ToDictionary(m=>StorageKeys.Aggregate(m.Key),m=>new OperationalExecution(store,processor,c.CatalogFor(m.Key),new Dictionary<string,IEvidenceProvider>{{\"portable\",new MonitorEvidenceProvider(c,checks)}},\n            new CatalogEffectRouter(store,c.CatalogFor(m.Key),effects),profile,()=>DateTimeOffset.UtcNow));\n        DispatchResult Execute(OutboxEntry entry,string worker,CancellationToken token) {\n            if(!executions.TryGetValue(entry.AggregateKey,out var execution))throw new InvalidOperationException(\"Work outside admitted catalog groups.\");\n            var before=budget.Requests;var result=execution.Execute(entry,worker,token);\n            context.Logger.LogLine(DomainJson.Serialize(new{type=\"SentinelWorkIO\",workId=entry.Id,kind=entry.Kind,action=entry.Intent?.Kind,requests=budget.Requests-before,result.Completion}));\n            return result;\n        }"
     },
     {
       "before": "execution.Execute,profile,()=>DateTimeOffset.UtcNow,budget)",
-      "after": "Execute,profile,()=>DateTimeOffset.UtcNow,budget,observeBacklog is null?null:at=>observeBacklog(ddb,options,at))"
+      "after": "Execute,profile,()=>DateTimeOffset.UtcNow,budget,observeBacklog is null?null:at=>observeBacklog(ddb,options,at),entry=>entry.Intent?.Kind is EffectKind.ScheduleRecoveryCheck or EffectKind.RequestFunctionalProbe\n                ? (DynamoStore.SupersededMonitorCheck(entry,store.Read(entry.AggregateKey))?18:40) : 18)"
     },
     {
       "before": "key=>catalog.Resolve(key).Policy,contexts:catalog.Context)",

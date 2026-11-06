@@ -7,7 +7,7 @@
   "replacements": [
     {
       "before": "OperationalProfile profile,Func<DateTimeOffset> clock) {",
-      "after": "OperationalProfile profile,Func<DateTimeOffset> clock,OperationalBudget? ioBudget=null,Func<DateTimeOffset,BacklogObservation>? observeBacklog=null) {"
+      "after": "OperationalProfile profile,Func<DateTimeOffset> clock,OperationalBudget? ioBudget=null,Func<DateTimeOffset,BacklogObservation>? observeBacklog=null,Func<OutboxEntry,int>? workBound=null) {"
     },
     {
       "before": "if(attempted>=profile.MaxJobs||timer.Elapsed",
@@ -19,7 +19,7 @@
     },
     {
       "before": "                if(!journal.Owns(journal.Read(scope)!,lease,clock()))",
-      "after": "                // Checks evaluate sources and commit domain transactions; dispatch has a smaller bound.\n                // The hard 64 cap and reserved checkpoint apply even to conflicts or uncertain I/O.\n                if(ioBudget is not null&&!ioBudget.CanStartWork(isCheck?40:18)){outcome=\"BudgetYield\";continue;}\n                if(!journal.Owns(journal.Read(scope)!,lease,clock()))"
+      "after": "                // Checks evaluate sources and commit domain transactions; dispatch has a smaller bound.\n                // The hard 64 cap and reserved checkpoint apply even to conflicts or uncertain I/O.\n                var bound=workBound?.Invoke(entry)??(isCheck?40:18);\n                if(ioBudget is not null&&!ioBudget.CanStartWork(bound)){outcome=\"BudgetYield\";continue;}\n                if(!journal.Owns(journal.Read(scope)!,lease,clock()))"
     },
     {
       "before": "        finally {",

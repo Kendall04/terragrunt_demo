@@ -8,7 +8,7 @@ assert not a.output.exists();a.output.mkdir(parents=True);files={};changes={}
 for name in git('ls-tree','-r','--name-only',pin['commit']).decode().splitlines():
  if name=='Directory.Build.props' or name.startswith('src/') and (name.endswith(('.cs','.csproj')) or name.endswith('/packages.lock.json')):
   raw=git('show',pin['commit']+':'+name);dest=a.output/name;dest.parent.mkdir(parents=True,exist_ok=True);dest.write_bytes(raw);files[name]=hashlib.sha256(raw).hexdigest()
-for name in ['notice-extension.json','runtime-extension.json','attempt-extension.json','storage-budget-extension.json','checkpoint-budget-extension.json','worker-checkpoint-extension.json','monitor-catalog-extension.json','ingestion-catalog-extension.json','worker-catalog-extension.json']:
+for name in ['notice-extension.json','runtime-extension.json','attempt-extension.json','storage-budget-extension.json','monitor-supersession-extension.json','checkpoint-budget-extension.json','worker-checkpoint-extension.json','monitor-catalog-extension.json','ingestion-catalog-extension.json','worker-catalog-extension.json']:
  patch=json.loads((base/name).read_text());assert patch['upstreamCommit']==pin['commit'];dest=a.output/patch['file'];raw=dest.read_bytes();assert hashlib.sha256(raw).hexdigest()==patch['baseSha256'];text=raw.decode()
  for replacement in patch['replacements']:assert text.count(replacement['before'])==1;text=text.replace(replacement['before'],replacement['after'])
  dest.write_text(text,encoding='utf-8',newline='\n');changes[patch['file']]=hashlib.sha256(dest.read_bytes()).hexdigest()
