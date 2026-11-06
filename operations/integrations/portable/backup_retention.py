@@ -3,7 +3,7 @@
 This module never deletes objects. S3 expires only explicitly admitted versions.
 The two newest verified pairs and any uncommitted/ambiguous input fail closed.
 Restore must stage and verify its selected input outside this lifecycle prefix
-before it starts; removing a tag cannot cancel an already queued expiration.
+before it starts; tag removal alone is not proof that a restore input survives.
 """
 import copy
 import datetime as dt
