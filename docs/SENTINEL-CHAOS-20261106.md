@@ -104,6 +104,121 @@ charges. The approved USD 14.60/20 model and November 9 closure boundary remain.
 The small code deployment/readbacks fit the existing Lambda/logging allowance;
 they do not authorize new infrastructure, an extended window or another fault.
 
+### Installed correction and third, separately authorized trial
+
+The owner subsequently approved exactly proposal
+`320025463ed22d9089efaa5544a1318054639a335c34479a8cdf696aa7db49ce`:
+one final NAT A termination, 15-minute maximum, and an independent local guardian
+allowed to route private A through the existing B ENI after 12 minutes if needed.
+The guardian depended on this PC remaining online; normal ASG/E13 recovery did
+not. Neither ASG launch nor the recovery handlers were suspended or delayed.
+SQL and the blue task were verified in private B before the fault; `/ready` was
+200. The experiment was not an interruption of SQL or the application.
+
+Source `75d04c703f0ba78f81e8a19ee82019a38b9656be` passed PR #34 Push/PR checks
+before installation. Saved plan
+`c2e650913ffb50b3180b7849cbfcb19a3e8399386fbff36331412d6c530a69a1`
+applied ten in-place updates: four runtime packages and their four aliases,
+the existing observer and the existing private probe. No creates, deletes,
+replacements, IAM, monitor-policy or resource-identity changes occurred.
+All four live aliases now use version **11**; runtime ZIP SHA256 is
+`fe8dd47475ea09ff2093f6840925a99da168292d0f319919a1bc366fa8484ecb`.
+Sentinel state is **44**, 88 managed resources, five data sources, no locks,
+VersionId `dmTaUYbqJRUdJhiTi13La25QOURJaUMq`. Other roots were unchanged.
+The first scheduled healthy probes verified the installed child-process path
+before the disruption; no new IAM permission or probe concurrency was needed.
+
+| Authentic event, November 6 UTC | Time | Meaning |
+| --- | --- | --- |
+| One TerminateInstances dispatch | 17:01:02.357 | Target `i-0f9b28ceebd2ed3ef`; authenticated response confirmed shutting-down |
+| Scheduled HTTPS failure | 17:01:55.069 + 6.008s | `HttpsTotalDeadline`; response returned within Lambda's 10-second limit |
+| Incident persisted | 17:02:01.473 | Revision 783, epoch 3, RESOLVED → RECOVERING |
+| ASG replacement launch completed | 17:02:46 | `i-05f144bae3b8671f0`, LT A:4; this alone did not prove egress |
+| First successful guardian HTTPS confirmed | 17:03:31.549 | Same EIP `98.85.209.220`; observed recovery bound **2m29.191s** after dispatch |
+| First scheduled healthy probe | 17:03:54.915 + 1.486s | Control plane and HTTPS both Pass |
+| Incident resolved | 17:03:56.771 | Revision 785, **2m54.414s** after dispatch |
+| Guardian finished normally | 17:04:03.917 | Two successful probes/new Healthy member; **zero fallback writes** |
+| Resolution SNS effect confirmed | 17:04:30.597 | One attempt; **33.826s** after durable resolution |
+| Gmail INBOX reception | 17:04:30, second precision | Full body and correlated IDs read through the connected Gmail tool |
+
+The scheduled failure was independently accompanied by a terminated member,
+blackhole route and unassociated EIP. It persisted after approximately **59.115s**
+from termination dispatch. The actual physical outage onset is bounded by samples;
+it is not assumed to be identical to the EC2 API call. Post-recovery readback
+verified ENI `eni-0d1127364cc1eabcc`, EIP association, active private A default route,
+SDC=false and ASG desired=1/Healthy/InService. All three E13 :6 invocations appear
+in their logs; their configured versions remain unchanged. B, SQL and `/ready`
+remained healthy. There was no manual recovery or fourth fault.
+
+One intermediate scheduled observation at **17:02:53.758** was **Unknown**:
+the guardian's diagnostic invocation overlapped the one-concurrency probe,
+producing `TooManyRequestsException`. Its control-plane failure evidence remained
+visible. This is a real test-harness interference, preserved in the journal,
+not a second proven HTTPS failure or a Lambda timeout. The preceding scheduled
+probe proved failure and the following scheduled probe proved recovery.
+Future read-only observation should consume scheduled results instead of racing
+the same constrained probe. No concurrency/budget increase or extra disruption
+was used to hide this limitation.
+
+This short incident resolved before an escalation was generated. It produced
+one recovery notice, not a fall-detection email. The persistent SQL-backup incident
+already demonstrates escalation and resolution. The NAT result proves genuine
+failure detection, persistence, automatic recovery and recovery notification;
+it does **not** prove delivery of a NAT escalation before recovery.
+
+Correlation retained in private evidence:
+
+- Incident: `616d5db03503ac6914dc759d0637c6c3e815576fccc58f4db380c7297712009d`.
+- Detection audit: `b9622c7358701de8445edcfcafe55e4319f9065d2f735584fa0ef23bc5219c54`;
+  SSE-KMS VersionId `0ZfEAEfEzD3HcPii9W3KXFkkdaciWPgX`, confirmed 17:03:27.033.
+- Resolution audit: `481d4f6831c84b83d716300978ea567d9b412f78cc66a03cdb597fb7bcbe483c`;
+  SSE-KMS VersionId `ZPTeeG7AHwMQ_igBPb1.W3x2YtG6CRsW`, confirmed 17:04:31.113.
+- Delivery: `c938923c47d3bade3c2a64b7eb8290b969ee691eac486e30b16082560beb87a5`;
+  SNS message `5198ee4a-2270-5c9b-83ac-8d2228ae739c`.
+
+Unlike the four historical inbox confirmations supplied externally by the owner,
+this fifth domain message was verified directly in connected Gmail in this
+session. Its subject names `nat-a-egress` and its heading says “Salida privada
+NAT A”; the laboratory label remains. The metadata matched the complete body,
+INBOX label and durable resolution. Personal addresses and unsubscribe links
+were omitted from evidence exported to the repository. SNS totals at 17:07 were
+**11 published, 11 delivered, zero failed**; these include historical CloudWatch
+emails and must not be treated as eleven distinct domain incidents.
+
+### Continuous operation: measured interval and remaining observation
+
+The final pre-installation export extends the healthy interval to
+**09:52:05.519–16:49:05.453 UTC: 6h56m59.934s**, 418 healthy watchdog samples,
+836 worker ticks (440 Completed/396 BudgetYield), maximum **58/64** requests,
+zero reported failed jobs and no visibility gaps over 90 seconds. The installation
+and supervised third trial are separate interventions, not extra unattended hours.
+At 17:07 the consistent checkpoint was revision **5124**, owner null, consecutive
+failures zero, two recent due checks, no pending effects/archives and one buffered
+reference. All four historical failures and their four verified compensations
+remained intact; no new active permanent failure was reported.
+
+The external observer has 32 successful storage receipts for the eight distinct
+hourly backups from 09:00 through 16:00. Each verifies the exact S3 version, full
+SHA256 and SSE-KMS; none is a new restore/CHECKDB claim. Historical DLQ debt remains
+visible, with no purge, redrive or rewritten journal. Its alarm is not hidden by
+the current worker-health assessment.
+
+Automatic AWS logging continues after this session. Two read-only follow-ups on
+November 7 at **06:00 and 18:00 UTC** are configured to export actual intervals and
+separate gaps, failures and interventions. Desktop follow-ups require this PC and
+Codex to be running; AWS evidence collection does not. These follow-ups authorize
+no new fault, invocation, email, deployment, permission or window extension.
+**12–24 hours of uninterrupted healthy operation remain pending elapsed-time
+evidence**, not declared PASS in advance. Current functional NAT detection and
+recovery pass with the explicit transient-observation limitation above.
+
+The additional approved experiment allowance is at most USD 0.10: modeled total
+**USD 14.70/20**, leaving USD 5.30 modeled contingency. Cost Explorer's latest
+estimated account totals remain distinct from these allowances. The new NAT A
+replaces the old one; there is no extra permanent instance. Closure remains
+November 9, reserve 02:30 UTC and completion 04:00 UTC, with protected disks,
+backups and Sentinel evidence retained unless separately authorized otherwise.
+
 ## Implementation and evidence boundary
 
 This page records the installed implementation and its supervised AWS validation.
