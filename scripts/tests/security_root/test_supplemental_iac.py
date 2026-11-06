@@ -27,7 +27,7 @@ class SupplementalIacTests(unittest.TestCase):
         before=json.dumps(doc['wp6']['approvals'],sort_keys=True)
         generated=model.wiring(doc)
         supplemental=model.reviewed_supplemental_iac(ROOT)
-        self.assertEqual(len(supplemental),22)
+        self.assertEqual(len(supplemental),23)
         self.assertTrue({'terraform/infra/sentinel-backup/modules/pipeline/storage-security.tf','terraform/infra/sentinel-backup/modules/pipeline/tests/security.tftest.hcl', 'operations/integrations/portable/trial/runtime/security.tf', 'operations/integrations/portable/trial/runtime/tests/security.tftest.hcl'} <= supplemental)
         self.assertFalse(supplemental&set(generated))
         model.admit_configuration_paths(ROOT,generated)
@@ -59,6 +59,7 @@ class SupplementalIacTests(unittest.TestCase):
                      'terraform/infra/sentinel-backup/modules/pipeline/tests/security.tftest.hcl',
                      'operations/sql-backup/recovery/provider.lock.hcl',
                      'operations/integrations/portable/trial/main.tf',
+                     'operations/integrations/portable/trial/storage-observer.tf',
                      'operations/integrations/portable/aws-6.28.lock.hcl',
                      'operations/integrations/portable/trial/runtime/main.tf',
                      'operations/integrations/portable/trial/runtime/security.tf',
@@ -85,7 +86,7 @@ class SupplementalIacTests(unittest.TestCase):
         root=self.fixture()
         name='terraform/live/sentinel-backup/terragrunt.hcl'
         path=root/name;path.write_bytes(path.read_bytes().replace(b'\r\n',b'\n').replace(b'\n',b'\r\n'))
-        self.assertEqual(len(model.reviewed_supplemental_iac(root)),22)
+        self.assertEqual(len(model.reviewed_supplemental_iac(root)),23)
 
     def test_symlink_is_rejected_before_following_source_bytes(self):
         root=self.fixture();path=root/'terraform/infra/sentinel-backup/main.tf.json'

@@ -22,7 +22,7 @@ def dev_alerts_security():
 
 locals {
   alerts_topic_arn   = "arn:aws:sns:${var.region}:${var.account_id}:${local.name}-alerts"
-  alerts_alarm_names = ["e1-nat-recovery-nat-dev-assign_eip-destination-failed", "e1-nat-recovery-nat-dev-change_rt-destination-failed", "e1-nat-recovery-nat-dev-disable_sdc-destination-failed", "e1-wp4-dev-nat-dlq-delivery-failed", "e1-wp4-dev-delivery-nat-failures", "e1-wp4-dev-execution-nat-failures", "demo-dev-nat-a-capacity-gap", "demo-dev-nat-a-inservice-low", "demo-dev-nat-b-capacity-gap", "demo-dev-nat-b-inservice-low", "demo-dev-tg-blue-5xx", "demo-dev-tg-blue-latency", "demo-dev-tg-green-5xx", "demo-dev-tg-green-latency"]
+  alerts_alarm_names = ["e1-nat-recovery-nat-dev-assign_eip-destination-failed", "e1-nat-recovery-nat-dev-change_rt-destination-failed", "e1-nat-recovery-nat-dev-disable_sdc-destination-failed", "e1-wp4-dev-nat-dlq-delivery-failed", "e1-wp4-dev-delivery-nat-failures", "e1-wp4-dev-execution-nat-failures", "demo-dev-nat-a-capacity-gap", "demo-dev-nat-a-inservice-low", "demo-dev-nat-b-capacity-gap", "demo-dev-nat-b-inservice-low", "demo-dev-tg-blue-5xx", "demo-dev-tg-blue-latency", "demo-dev-tg-green-5xx", "demo-dev-tg-green-latency", "demo-dev-data-statuscheck-failed", "demo-dev-data-cpucredit-low", "demo-dev-data-cpu-high"]
   alerts_alarm_arns  = [for name in local.alerts_alarm_names : "arn:aws:cloudwatch:${var.region}:${var.account_id}:alarm:${name}"]
   alerts_policy_base = jsondecode(var.alerts_topic_policy_base)
 }
@@ -233,4 +233,19 @@ def current_runtime_projection(result):
             if result[name] != before:
                 raise ValueError("CURRENT_RUNTIME_BASE_SOURCE_DRIFT: " + name)
             result[name] = after
+    # An approved cold recovery may retire compute while retaining the source
+    # disk. Keep the historical default; this opt-in changes no state address.
+    name = "terraform/modules/target/dev/data/ordinary-main.tf"
+    before = "    delete_on_termination = true"
+    assert result[name].count(before) == 1, "SQL root disk projection drift"
+    result[name] = result[name].replace(before,
+        "    delete_on_termination = !var.recovery_preserve_root_volume")
+    result["terraform/modules/target/dev/data/ordinary-variables.tf"] += '''
+variable "recovery_preserve_root_volume" {
+  description = "Retain the encrypted source root disk when an explicitly approved cold recovery replaces SQL compute. Retained storage needs separate retirement."
+  type        = bool
+  default     = false
+  nullable    = false
+}
+'''
     return result

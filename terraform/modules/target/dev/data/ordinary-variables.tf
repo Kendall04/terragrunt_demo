@@ -115,3 +115,10 @@ variable "sql_database_security" {
     error_message = "Exact environment/account migration secret reference and distinct non-SA login required; no new access is installed."
   }
 }
+
+variable "recovery_preserve_root_volume" {
+  description = "Retain the encrypted source root disk when an explicitly approved cold recovery replaces SQL compute. Retained storage needs separate retirement."
+  type        = bool
+  default     = false
+  nullable    = false
+}

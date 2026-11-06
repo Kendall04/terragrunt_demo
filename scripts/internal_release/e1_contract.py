@@ -22,7 +22,7 @@ UUID = r'[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}'
 STANDARD_RECIPE = 'STANDARD_V1'
 DEV_SQL_LAB_RECIPE = 'DEV_SQL_LAB_V1'
 SQL_CERTIFICATE = '206095fa0ba9e17a84c80eff5021db93d05e2dc377e982a64d517696ed21a1e7'
-SQL_RECIPE_SHA256 = '8045c87604e515389f41413534a30a51b0edcc49f32d905b49e1021f28fd2c91'
+SQL_RECIPE_SHA256 = '7efd26f2be7a80fc26d54fc3e5be44e2dcd58b4fe28b739cbd8b6adfdae8c17e'
 DEV_DOTNET_SDK = '10.0.402'
 DEV_RECIPE_FIELDS = ('schema', 'environment', 'account', 'region', 'source_commit',
                      'recipe', 'certificate_der_sha256', 'recipe_sha256', 'previous_build_runtime', 'dotnet_runtime')

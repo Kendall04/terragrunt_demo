@@ -23,7 +23,7 @@ resource "aws_instance" "db" {
     volume_size           = var.volume_size_gb
     encrypted             = true
     kms_key_id            = null
-    delete_on_termination = true
+    delete_on_termination = !var.recovery_preserve_root_volume
     tags                  = merge(local.tags, { Role = "root-ebs" })
   }
 

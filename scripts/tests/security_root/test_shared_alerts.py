@@ -33,7 +33,7 @@ class SharedAlertsTests(unittest.TestCase):
         self.assertIn('nonsensitive(var.alert_email != null)', outputs)
         self.assertNotIn('value       = var.alert_email\n', outputs)
 
-    def test_exact_fourteen_alarm_names(self):
+    def test_original_fourteen_plus_three_installed_sql_alarm_names(self):
         text = self.main.split('alerts_alarm_names = ', 1)[1].split('\n', 1)[0]
         names = json.loads(text)
         expected = {
@@ -50,7 +50,9 @@ class SharedAlertsTests(unittest.TestCase):
             'demo-dev-tg-' + color + '-' + alarm
             for color in ('blue', 'green') for alarm in ('5xx', 'latency')
         }
-        self.assertEqual(len(names), 14)
+        expected |= {'demo-dev-data-statuscheck-failed', 'demo-dev-data-cpucredit-low',
+                     'demo-dev-data-cpu-high'}
+        self.assertEqual(len(names), 17)
         self.assertEqual(set(names), expected)
         self.assertIn('arn:aws:cloudwatch:${var.region}:${var.account_id}:alarm:${name}', self.main)
 

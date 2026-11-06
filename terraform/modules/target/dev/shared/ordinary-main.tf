@@ -13,7 +13,7 @@ resource "aws_sns_topic_subscription" "alerts_email" {
 
 locals {
   alerts_topic_arn   = "arn:aws:sns:${var.region}:${var.account_id}:${local.name}-alerts"
-  alerts_alarm_names = ["e1-nat-recovery-nat-dev-assign_eip-destination-failed", "e1-nat-recovery-nat-dev-change_rt-destination-failed", "e1-nat-recovery-nat-dev-disable_sdc-destination-failed", "e1-wp4-dev-nat-dlq-delivery-failed", "e1-wp4-dev-delivery-nat-failures", "e1-wp4-dev-execution-nat-failures", "demo-dev-nat-a-capacity-gap", "demo-dev-nat-a-inservice-low", "demo-dev-nat-b-capacity-gap", "demo-dev-nat-b-inservice-low", "demo-dev-tg-blue-5xx", "demo-dev-tg-blue-latency", "demo-dev-tg-green-5xx", "demo-dev-tg-green-latency"]
+  alerts_alarm_names = ["e1-nat-recovery-nat-dev-assign_eip-destination-failed", "e1-nat-recovery-nat-dev-change_rt-destination-failed", "e1-nat-recovery-nat-dev-disable_sdc-destination-failed", "e1-wp4-dev-nat-dlq-delivery-failed", "e1-wp4-dev-delivery-nat-failures", "e1-wp4-dev-execution-nat-failures", "demo-dev-nat-a-capacity-gap", "demo-dev-nat-a-inservice-low", "demo-dev-nat-b-capacity-gap", "demo-dev-nat-b-inservice-low", "demo-dev-tg-blue-5xx", "demo-dev-tg-blue-latency", "demo-dev-tg-green-5xx", "demo-dev-tg-green-latency", "demo-dev-data-statuscheck-failed", "demo-dev-data-cpucredit-low", "demo-dev-data-cpu-high"]
   alerts_alarm_arns  = [for name in local.alerts_alarm_names : "arn:aws:cloudwatch:${var.region}:${var.account_id}:alarm:${name}"]
   alerts_policy_base = jsondecode(var.alerts_topic_policy_base)
 }
