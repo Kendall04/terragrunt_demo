@@ -172,7 +172,7 @@
       "purpose": "Exact owned portable security/retirement source; upstream pin preserved. Local qualification only, no native plan or execution authority."
     },
     "operations/integrations/portable/trial/runtime/tests/security.tftest.hcl": {
-      "sha256_lf": "c47af6b7c7ef4d6d969dcbfa610fb1d1a2dafbb81f96a43ae32618b6357a052e",
+      "sha256_lf": "c96975eace24b944974084308be9d6fed1a61018e5665535cf2242c6388d0286",
       "introduced_by": "local portable security increment after b0f7d0dcd990ff42cd476e2777ce90120bb31282",
       "last_changed_by": "V2_SQL_RECOVERY_SECURITY_REVIEW_20261105",
       "owner": "ECS_PORTABLE_LOCAL_INTEGRATION",

@@ -73,6 +73,22 @@ class NativeRecoveryTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'RESTORED_DATA_MISMATCH'):
             host.check_data(result, r)
 
+    def test_running_oneshot_backup_blocks_fence_before_mutation(self):
+        r = request()
+        r['instanceId'] = r['sourceInstanceId']
+        observation = {'edition': 4, 'rows': 1, 'dataHash': '1' * 64,
+            'migrations': [{'MigrationId': x} for x in host.MIGRATIONS],
+            'otherSessions': 0, 'accessMode': 'READ_WRITE'}
+        class ReadOnly:
+            def query(self, sql):
+                assert sql == host.SNAPSHOT
+                return observation
+        for state in ('active', 'activating', 'deactivating', 'reloading', 'unknown'):
+            with self.subTest(state=state), patch.object(host, 'run', return_value=state) as child:
+                with self.assertRaisesRegex(ValueError, 'BACKUP_IN_PROGRESS'):
+                    host.fence(ReadOnly(), r)
+                child.assert_called_once_with(['systemctl', 'show', 'sql-backup.service', '--property=ActiveState', '--value'])
+
     def test_dotnet_seven_digit_timestamp(self):
         self.assertEqual(host.timestamp('2026-11-05T23:01:57.6781198+00:00').microsecond, 678119)
 

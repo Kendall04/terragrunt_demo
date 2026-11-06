@@ -6441,7 +6441,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/model.py": {
-      "sha256": "77d1628f3d2d0f6baf605ff11d219e1df57bc896c94425b32c660ecccd9d2bb4",
+      "sha256": "46a5d0cbd63f6f14164c72ce9ffa68b0c2c0fc00fadf869b196f1cf0cfef2805",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -13464,7 +13464,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/recovery/native_host.py": {
-      "sha256": "bf4e75307d500c8f58d19a2466f2d38b11f25dde20d8d4c16855fa1f414390f4",
+      "sha256": "62f566351a59bfa4ac3944f0b3264a9865378e80ed44ebc90c95c2479af057e0",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -13473,9 +13473,9 @@
           57,
           59,
           78,
-          156,
-          162,
-          163
+          158,
+          164,
+          165
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -13518,7 +13518,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/recovery/test_native_host.py": {
-      "sha256": "06893f7bb0df4b39281222fdd1c4a85bd2e15b36fa953b46ddaae213b0adeb98",
+      "sha256": "d8c7b777ef7885e77beb3e0d9fe47cc8eee3a3fe9dfd5d9f1d6eb50a44d99e5a",
       "declarations": [],
       "signals": {},
       "semantic_status": "UNVERIFIED"

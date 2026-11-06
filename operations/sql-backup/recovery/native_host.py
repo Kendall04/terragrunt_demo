@@ -120,7 +120,9 @@ def fence(sql, request):
     before = sql.query(SNAPSHOT)
     check_data(before, request)
     require(before['otherSessions'] == 0 and before['accessMode'] == 'READ_WRITE', 'SOURCE_NOT_QUIESCED')
-    require(run(['systemctl', 'show', 'sql-backup.service', '--property=ActiveState', '--value']).strip() != 'active',
+    # A running Type=oneshot backup is "activating", not "active". Reject both
+    # and every other transitional state before stopping its timer or fencing SQL.
+    require(run(['systemctl', 'show', 'sql-backup.service', '--property=ActiveState', '--value']).strip() in ('inactive', 'failed'),
             'BACKUP_IN_PROGRESS')
     run(['systemctl', 'stop', 'sql-backup.timer'])
     sql.query("ALTER LOGIN [recovery_app] DISABLE; ALTER LOGIN [recovery_migrator] DISABLE; "
