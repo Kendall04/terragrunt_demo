@@ -100,9 +100,9 @@
       "purpose": "Isolated signed portable provider lock; does not replace AWS 5.100 TARGET locks."
     },
     "operations/integrations/portable/trial/main.tf": {
-      "sha256_lf": "b478d82171fd1f45838216a60ca4f29c61e4b95da3fdf306252a26c5f6a6b3d2",
+      "sha256_lf": "84c185f33f4e942ab37efb0bdbfbea6cfd9d216396ab3ad82f907db396d8eed5",
       "introduced_by": "25f037e04b0e059e868c66b0c8282d410452bfd9",
-      "last_changed_by": "073cb56b7b8940a2bdb946e31905f4a9e2368bd1",
+      "last_changed_by": "c348fc1d9294668b13c35e565c79f9d0b8f7280b",
       "owner": "ECS_PORTABLE_LOCAL_INTEGRATION",
       "classification": "LOCAL_INTEGRATION_SOURCE",
       "purpose": "Reviewed opt-in portable trial wrapper; requires staged runtime and explicit package inputs, not execution authority."
@@ -124,7 +124,7 @@
       "purpose": "Same reviewed output declarations relocated into the real materialized child module; no declarations excluded."
     },
     "operations/integrations/portable/trial/runtime/main.tf": {
-      "sha256_lf": "c81a2a9c1919cb40026e4c043791e32c08c05754c5f882a628be488fd19bcac9",
+      "sha256_lf": "91b504ea56d5d24497b81c84b6689bfb2a4d388cb91bbf59a3c8f24bc8cc2d02",
       "introduced_by": "04e665d75973377357298333092711ac1c43d753",
       "last_changed_by": "c348fc1d9294668b13c35e565c79f9d0b8f7280b",
       "owner": "ECS_PORTABLE_LOCAL_INTEGRATION",

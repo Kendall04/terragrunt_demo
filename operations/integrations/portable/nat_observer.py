@@ -20,9 +20,9 @@ def observe(clients, c, now, invocation):
         instances = [i for r in reservations for i in r['Instances']]
         require(len(instances) == 1, 'EC2_IDENTITY')
         i = instances[0]
-        evidence.update(instance=i['InstanceId'], state=i['State']['Name'], subnet=i['SubnetId'],
-                        launchTemplate=members[0].get('LaunchTemplate'), sdc=i['SourceDestCheck'], eni=i['NetworkInterfaces'][0]['NetworkInterfaceId'])
-        if i['State']['Name'] != 'running' or i['SubnetId'] != c['publicSubnet'] or i['VpcId'] != c['vpc'] or members[0].get('LaunchTemplate', {}).get('LaunchTemplateId') != c['lt'] or str(members[0].get('LaunchTemplate', {}).get('Version')) != '4' or i['SourceDestCheck'] is not False:
+        evidence.update(instance=i['InstanceId'], state=i['State']['Name'], subnet=i.get('SubnetId'),
+                        launchTemplate=members[0].get('LaunchTemplate'), sdc=i.get('SourceDestCheck'), eni=next((x['NetworkInterfaceId'] for x in i.get('NetworkInterfaces', [])), None))
+        if i['State']['Name'] != 'running' or i.get('SubnetId') != c['publicSubnet'] or i.get('VpcId') != c['vpc'] or members[0].get('LaunchTemplate', {}).get('LaunchTemplateId') != c['lt'] or str(members[0].get('LaunchTemplate', {}).get('Version')) != '4' or i.get('SourceDestCheck') is not False:
             failures.append('NAT_CONFIGURATION_NOT_RECOVERED')
     routes = clients('ec2').describe_route_tables(RouteTableIds=[c['routeTable']])['RouteTables']
     require(len(routes) == 1 and routes[0]['VpcId'] == c['vpc'], 'ROUTE_TABLE_IDENTITY')

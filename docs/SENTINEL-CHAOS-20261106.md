@@ -123,3 +123,19 @@ notifications, archive work and non-monitor recovery are excluded. No old journa
 rows are rewritten manually. Dispatch admission measures this shorter path within
 the same 64-request/four-job bound; per-work request deltas are logged without
 payloads. This is a code correction, not approval to discard pending notices.
+
+The first real A replacement recovered its EIP, private route, SDC and private
+HTTPS in approximately 2m40s. Detection remained partial: DescribeInstances for
+the terminated member omitted network fields, causing two honest `Unknown`
+observations. The observer now treats missing fields on that member as an
+unrecovered configuration and still runs the private HTTPS probe. The owner
+explicitly approved the second and final replacement without suspending ASG
+Launch; B remains untouched.
+
+The three monitors also exceeded the sustained throughput of one worker
+admission per minute. A second target on the same rule admits two serialized
+invocations per minute (120/hour within the existing 128/hour profile), retaining
+concurrency one, 64 requests/four jobs per invocation, exact input, no transport
+retries and the existing DLQ. One-time manual catch-up is recorded separately;
+it is not evidence of unattended throughput. The trial preparer copies the
+maintained consumer runtime so these reviewed settings survive re-preparation.

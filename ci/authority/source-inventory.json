@@ -6442,7 +6442,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/model.py": {
-      "sha256": "9d9d3cadbc72c3436224079209036bd22cfcbd868c0134169ab8c0758c4aaf7c",
+      "sha256": "368362f6edb69af5cd393245624140ab9a3e8a72e94dada84c78e1e59453d9ea",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -11913,19 +11913,19 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/portable/prepare_module.py": {
-      "sha256": "85400f1353284c9212cad2e965cbe1abe7ba1cf5179fac5885d1cc931c2edfd0",
+      "sha256": "e7f0a46c4851a93666d5c41cf08e3677152bb649a958e305ecf61491c74c1b61",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           4,
-          56,
-          57,
-          63
+          62,
+          63,
+          69
         ],
         "executable-dependency": [
           34,
           37,
-          56
+          62
         ],
         "security-control": [
           13,
@@ -11972,7 +11972,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/portable/trial/main.tf": {
-      "sha256": "b478d82171fd1f45838216a60ca4f29c61e4b95da3fdf306252a26c5f6a6b3d2",
+      "sha256": "84c185f33f4e942ab37efb0bdbfbea6cfd9d216396ab3ad82f907db396d8eed5",
       "declarations": [
         {
           "kind": "data",
@@ -12002,7 +12002,7 @@
           "kind": "module",
           "type": "runtime",
           "name": null,
-          "line": 62
+          "line": 70
         }
       ],
       "signals": {
@@ -12016,7 +12016,7 @@
         "executable-dependency": [
           53,
           54,
-          63
+          71
         ],
         "security-control": [
           35,
@@ -12028,7 +12028,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/portable/trial/tests/portable.tftest.hcl": {
-      "sha256": "e44b6558556adc3d2c4b40d2d8029b9ed3dfb9032aa59c85a36febe6e8c3af4a",
+      "sha256": "e25d6eab768b5432aa28cbcd4c4147fa1877f03e94198f324c0daf42b8c3ba95",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -12040,29 +12040,32 @@
           9,
           10,
           11,
-          15,
-          19,
-          27,
+          12,
+          16,
+          20,
           28,
-          65,
-          81,
-          83,
-          95
+          29,
+          66,
+          95,
+          97,
+          109
         ],
         "executable-dependency": [
-          35,
-          70,
-          78,
+          36,
+          71,
+          79,
+          87,
           92,
-          100
+          106,
+          114
         ],
         "security-control": [
           5,
           6,
-          14,
-          18,
-          37,
-          94
+          15,
+          19,
+          38,
+          108
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -12305,7 +12308,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/portable/trial/runtime/main.tf": {
-      "sha256": "c81a2a9c1919cb40026e4c043791e32c08c05754c5f882a628be488fd19bcac9",
+      "sha256": "91b504ea56d5d24497b81c84b6689bfb2a4d388cb91bbf59a3c8f24bc8cc2d02",
       "declarations": [
         {
           "kind": "data",
@@ -12429,51 +12432,57 @@
         },
         {
           "kind": "resource",
+          "type": "aws_cloudwatch_event_target",
+          "name": "worker_second",
+          "line": 227
+        },
+        {
+          "kind": "resource",
           "type": "aws_lambda_permission",
           "name": "tick",
-          "line": 216
+          "line": 250
         },
         {
           "kind": "resource",
           "type": "aws_lambda_function_event_invoke_config",
           "name": "runtime",
-          "line": 225
+          "line": 259
         },
         {
           "kind": "resource",
           "type": "aws_sqs_queue_policy",
           "name": "operations",
-          "line": 235
+          "line": 269
         },
         {
           "kind": "resource",
           "type": "aws_cloudwatch_log_metric_filter",
           "name": "health",
-          "line": 239
+          "line": 273
         },
         {
           "kind": "resource",
           "type": "aws_cloudwatch_metric_alarm",
           "name": "health",
-          "line": 249
+          "line": 283
         },
         {
           "kind": "resource",
           "type": "aws_cloudwatch_metric_alarm",
           "name": "dead",
-          "line": 263
+          "line": 297
         },
         {
           "kind": "resource",
           "type": "aws_cloudwatch_metric_alarm",
           "name": "errors",
-          "line": 278
+          "line": 312
         },
         {
           "kind": "resource",
           "type": "aws_iam_policy",
           "name": "ecs_boundary",
-          "line": 300
+          "line": 334
         }
       ],
       "signals": {
@@ -12487,7 +12496,7 @@
           132,
           143,
           157,
-          237
+          271
         ],
         "executable-dependency": [
           4,
@@ -12502,8 +12511,8 @@
           159,
           161,
           174,
-          237,
-          298
+          271,
+          332
         ],
         "security-control": [
           87,
@@ -12518,12 +12527,12 @@
           168,
           173,
           184,
-          216,
-          235,
-          237,
-          301,
-          304,
-          307
+          250,
+          269,
+          271,
+          335,
+          338,
+          341
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -13635,7 +13644,7 @@
     },
     "operations/integrations/portable/nat_observer.py": {
       "semantic_status": "UNVERIFIED",
-      "sha256": "668b019a1e6c75a26185136d31731bb3e164ccfe0955c1ecb999672c2e49d002",
+      "sha256": "1c876f4814e4063aca3247a5ce549efc4bec637ae85d3b83a7a06c8522bdb856",
       "declarations": [],
       "signals": {}
     },
@@ -13673,7 +13682,7 @@
     },
     "operations/integrations/portable/test_nat_observer.py": {
       "semantic_status": "UNVERIFIED",
-      "sha256": "e4a4e50398ce23884812f724fcfdcb3fb0244f9c424d66e451155c879052605b",
+      "sha256": "146b9c2cb87777f754fbd6bbcd98694682865574d10603e5a62902df48e0e1c2",
       "declarations": [],
       "signals": {}
     },

@@ -213,6 +213,40 @@ resource "aws_cloudwatch_event_target" "tick" {
   }
   dead_letter_config { arn = aws_sqs_queue.dead["operations"].arn }
 }
+# Two serialized asynchronous admissions consume the existing 128/hour profile.
+# Each invocation keeps 64 requests/four jobs; concurrency remains one. The same
+# fenced journal, exact input and existing rule permission prevent effect races.
+variable "worker_admissions_per_tick" {
+  type    = number
+  default = 1
+  validation {
+    condition     = contains([1, 2], var.worker_admissions_per_tick)
+    error_message = "At most two admissions per minute fit the unchanged 128/hour profile."
+  }
+}
+resource "aws_cloudwatch_event_target" "worker_second" {
+  count     = var.worker_admissions_per_tick == 2 ? 1 : 0
+  rule      = aws_cloudwatch_event_rule.tick["worker"].name
+  target_id = "bounded-second-admission"
+  arn       = aws_lambda_alias.live["worker"].arn
+  input     = jsonencode({ Deployment = local.name, Mode = "tick" })
+  retry_policy {
+    maximum_event_age_in_seconds = 60
+    maximum_retry_attempts       = 0
+  }
+  dead_letter_config { arn = aws_sqs_queue.dead["operations"].arn }
+}
+output "ecs_worker_admission_contract" {
+  value = {
+    admissions  = 1 + length(aws_cloudwatch_event_target.worker_second)
+    concurrency = aws_lambda_function.runtime["worker"].reserved_concurrent_executions
+    second_target_is_same_worker = alltrue([for t in aws_cloudwatch_event_target.worker_second :
+      t.rule == aws_cloudwatch_event_target.tick["worker"].rule &&
+      t.arn == aws_cloudwatch_event_target.tick["worker"].arn &&
+      t.input == aws_cloudwatch_event_target.tick["worker"].input &&
+    t.retry_policy[0].maximum_retry_attempts == 0])
+  }
+}
 resource "aws_lambda_permission" "tick" {
   for_each       = local.schedules
   action         = "lambda:InvokeFunction"

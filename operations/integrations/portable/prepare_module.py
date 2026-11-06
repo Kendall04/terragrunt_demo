@@ -44,7 +44,13 @@ s=s[:begin]+s[end:]
 (M/'security.tf').write_bytes((B/'templates/security.tf.tftpl').read_bytes())
 if a.trial_root:
  assert a.package_manifest and a.config and a.zip
- child=M/'runtime';child.mkdir();(child/'main.tf').write_text(s,encoding='utf-8',newline='\n');(child/'outputs.tf').write_bytes((B/'trial/runtime/outputs.tf').read_bytes());(M/'security.tf').rename(child/'security.tf')
+ # The trial is the maintained consumer installation, including its checkpoint
+ # metric and bounded schedule. Re-generating the old upstream projection here
+ # would silently lose reviewed consumer fixes on the next installation.
+ child=M/'runtime';child.mkdir()
+ for name in ('main.tf','outputs.tf','security.tf'):
+  (child/name).write_bytes((B/'trial/runtime'/name).read_bytes())
+ (M/'security.tf').unlink()
  (M/'main.tf').write_bytes((B/'trial/main.tf').read_bytes());(M/'tests').mkdir()
  (M/'storage-observer.tf').write_bytes((B/'trial/storage-observer.tf').read_bytes())
  (M/'nat-observer.tf').write_bytes((B/'trial/nat-observer.tf').read_bytes())
