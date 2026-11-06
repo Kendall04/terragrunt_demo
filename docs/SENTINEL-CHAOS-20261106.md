@@ -110,8 +110,8 @@ GetItem permission. The metric uses an explicit bounded numeric log line;
 the detailed structured health event is retained. Missing metrics still breach.
 
 Worker dispatch admission distinguishes a source-evaluation job from a smaller
-archive/effect dispatch. The hard 64-request/four-job profile and eight-request
-checkpoint reserve remain unchanged. Independent smaller work can progress in the
+archive/effect dispatch. The hard 64-request/four-job profile remains unchanged.
+Independent smaller work can progress in the
 same invocation; uncertain results still use the original lease/idempotency rules.
 
 Live continuous reports exposed redundant queued timer checks: their due slot had
@@ -151,3 +151,13 @@ tests interrupt an actual blocked socket without public network access. They do
 not retroactively certify either AWS fault or authorize a third replacement.
 See [Python signal timers](https://docs.python.org/3/library/signal.html) and
 [Lambda invocation timeout](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtime-environment.html).
+
+A later readback proved one false current-health alarm: audit `9954cd82…` was
+archived and confirmed at 07:16:29.854 UTC, but the 07:17 watchdog evaluated the
+queue photographed just before that work. The worker now observes authoritative
+pending rows after dispatch, immediately before its durable checkpoint. Ten of
+the same 64 requests are reserved for the two observation reads and up to seven
+CAS/readback requests; no invocation or job limit increases. An observation
+failure records missing visibility and a failed completion, never an empty queue.
+Tests cover that ordering, failure path and two CAS conflicts plus an ambiguous
+write readback. Existing historical failures and all journal identities remain.

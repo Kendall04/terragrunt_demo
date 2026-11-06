@@ -14,16 +14,12 @@
       "after": "if(ioBudget is not null&&!ioBudget.CanStartWork(1)||attempted>=profile.MaxJobs||timer.Elapsed"
     },
     {
-      "before": "            // Persist discovered identities before execution: terminal work may leave W#.",
-      "after": "            // A bounded current read shares the worker I/O budget; no new watchdog permissions.\n            if(observeBacklog is not null)snapshot=observeBacklog(clock());\n            // Persist discovered identities before execution: terminal work may leave W#."
-    },
-    {
       "before": "                if(!journal.Owns(journal.Read(scope)!,lease,clock()))",
       "after": "                // Checks evaluate sources and commit domain transactions; dispatch has a smaller bound.\n                // The hard 64 cap and reserved checkpoint apply even to conflicts or uncertain I/O.\n                var bound=workBound?.Invoke(entry)??(isCheck?40:18);\n                if(ioBudget is not null&&!ioBudget.CanStartWork(bound)){outcome=\"BudgetYield\";continue;}\n                if(!journal.Owns(journal.Read(scope)!,lease,clock()))"
     },
     {
       "before": "        finally {",
-      "after": "        finally {\n            ioBudget?.BeginCheckpoint();"
+      "after": "        finally {\n            ioBudget?.BeginCheckpoint();\n            // Observe after effects complete: a pre-work photograph can falsely\n            // report an archive stalled even after its durable confirmation.\n            // Two reads plus seven CAS/readback requests fit the reserved ten.\n            if(observeBacklog is not null) {\n                try { snapshot=observeBacklog(clock()); }\n                catch(Exception e) when(e is not OutOfMemoryException) {\n                    snapshot=null;outcome=\"TransientFailure\";failures++;error=\"BacklogObservationUnavailable\";\n                }\n            }"
     }
   ]
 }

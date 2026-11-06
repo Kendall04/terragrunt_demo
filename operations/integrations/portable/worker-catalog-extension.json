@@ -1,7 +1,7 @@
 {
   "upstreamCommit": "b3d0b3b595a9257bb6d4d849c899bf4e8dbc2828",
   "file": "src/Sentinel.Portable.Lambda/Function.cs",
-  "baseSha256": "be5ceacb4029ae81c8fd481ced14742fdeaa002281e8db0d18e6858ce8305c79",
+  "baseSha256": "fdd6e028c8131e390678c0909b234eecf70481e43062d9f457b868b1c9d1a269",
   "replacements": [
     {
       "before": "    public Function(Func<IncidentNotice,(string Subject,string Message)> snsFormat) { this.snsFormat=snsFormat??throw new ArgumentNullException(nameof(snsFormat)); }",

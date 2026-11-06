@@ -48,6 +48,35 @@ internal static class CheckpointChecks {
             return new(entry.Id,CompletionStatus.Recorded,"bounded dispatch double");
         },profile,()=>now,budget).Tick(scope,"two-dispatches",now);
         check("smaller independent dispatches share one unchanged budget",cheapResult.Confirmed==2&&cheapResult.Failures==0&&budget.Requests<=64&&cheapMemory.Read(scope)!.BufferedWork.IsEmpty);
+        // Real AWS diagnosis: the old pre-work snapshot still named an archive
+        // confirmed later in that tick, causing a false STALLED on the next tick.
+        foreach(var readFails in new[]{false,true}) {
+            budget=new OperationalBudget(profile,()=>now);budget.ReserveCheckpoint(10);
+            var finalMemory=new OperationalMemoryStore(new());var finalDirectory=new Directory(scope,budget,now);
+            var finalJournal=new OperationalJournal(new MeteredStore(finalMemory,budget),profile);
+            var executed=0;var observedAfterWork=false;
+            var finalResult=new OperationalWorker(finalJournal,finalDirectory,(entry,_,_)=>{
+                executed++;for(var i=0;i<14;i++)budget.BeforeIo();
+                finalDirectory.Entries[entry.Id]=entry with{Status=OutboxStatus.Confirmed};
+                return new(entry.Id,CompletionStatus.Recorded,"confirmed work double");
+            },profile,()=>now,budget,at=>{
+                observedAfterWork=executed==2;budget.BeforeIo(true);budget.BeforeIo();
+                if(readFails)throw new IOException("read unavailable");
+                return Ecs.Backup.Portable.Host.CurrentBacklog.Observe(finalDirectory.Entries.Values,at,true);
+            }).Tick(scope,"post-work-"+readFails,now);
+            var persisted=finalMemory.Read(scope)!;
+            check("backlog is observed after durable effect completion "+readFails,observedAfterWork&&budget.Requests<=64&&persisted.Owner is null);
+            check("read failure cannot claim healthy backlog "+readFails,readFails
+                ?persisted.Backlog is null&&persisted.LastCompletedAt is null&&finalResult.Failures==1
+                :persisted.Backlog?.Due==0&&persisted.LastCompletedAt==now&&finalResult.Confirmed==2);
+        }
+        budget=new OperationalBudget(profile,()=>now);budget.ReserveCheckpoint(10);
+        var finalCasMemory=new OperationalMemoryStore(new());var finalCasStore=new MeteredStore(finalCasMemory,budget);
+        var finalCasJournal=new OperationalJournal(finalCasStore,profile);var finalLease=finalCasJournal.Start(scope,"final-cas",now,now,now)!;
+        while(budget.Requests<54)budget.BeforeIo();budget.BeginCheckpoint();budget.BeforeIo(true);budget.BeforeIo();
+        finalCasStore.Conflicts=2;finalCasStore.UnknownAfterCommit=true;
+        check("two final reads plus worst-case checkpoint fit the original 64",
+            finalCasJournal.Update(finalLease,now,s=>s with{LastCompletedAt=now},release:true)==OperationalWrite.Committed&&budget.Requests==63&&finalCasMemory.Read(scope)!.Owner is null);
         budget=new OperationalBudget(profile,()=>now);budget.ReserveCheckpoint(8);
         var memory=new OperationalMemoryStore(new());var metered=new MeteredStore(memory,budget);
         var j=new OperationalJournal(metered,profile);var lease=j.Start(scope,"cas",now,now,now)!;
