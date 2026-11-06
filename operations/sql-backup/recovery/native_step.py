@@ -61,6 +61,30 @@ def source_disk(ec2, source, volume_id, terminated):
     return rows[0]
 
 
+def verify_drained_tasks(ecs):
+    # ECS service counts can reach zero while ALB deregistration still leaves a
+    # task DEACTIVATING/STOPPING with an open SQL connection. Check actual task
+    # status, including tasks whose desired status is already STOPPED.
+    for service in SERVICES:
+        for desired in ('RUNNING', 'STOPPED'):
+            token = None
+            for _ in range(20):
+                page = ecs.list_tasks(cluster=CLUSTER, serviceName=service,
+                    desiredStatus=desired, maxResults=100,
+                    **({'nextToken': token} if token else {}))
+                identities = page['taskArns']
+                if identities:
+                    observed = ecs.describe_tasks(cluster=CLUSTER, tasks=identities)
+                    require(not observed.get('failures') and
+                            {t['taskArn'] for t in observed['tasks']} == set(identities) and
+                            all(t['lastStatus'] == 'STOPPED' for t in observed['tasks']),
+                            'ECS_TASKS_STILL_DRAINING')
+                token = page.get('nextToken')
+                if not token:
+                    break
+            require(not token, 'UNBOUNDED_ECS_TASK_HISTORY')
+
+
 def preflight(ec2, ecs, request, action, volume_id):
     validate(request, inspect=action == 'inspect')
     host = instance(ec2, request['instanceId'])
@@ -73,6 +97,7 @@ def preflight(ec2, ecs, request, action, volume_id):
     require(not services.get('failures') and len(services['services']) == 2 and
             all(s['desiredCount'] == s['runningCount'] == s['pendingCount'] == 0
                 for s in services['services']), 'ECS_WRITERS_NOT_DRAINED')
+    verify_drained_tasks(ecs)
     terminated = source['State']['Name'] == 'terminated'
     require((action == 'fence' and not terminated and request['instanceId'] == request['sourceInstanceId']) or
             (action == 'restore' and terminated and request['instanceId'] != request['sourceInstanceId']),

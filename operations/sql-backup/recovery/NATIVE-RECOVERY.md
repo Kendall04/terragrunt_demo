@@ -2,8 +2,10 @@
 
 This procedure uses the existing Data Terraform owner and portable SQL backup
 package. It does not introduce a second recovery controller. The host steps are
-implemented and tested; **cold SAME-AZ/CROSS-AZ AWS execution is still pending
-the owner's interruption/cost approval**. Local tests are not an RTO result.
+implemented and tested. The owner approved two bounded cold trials on 6 November;
+measured AWS results and any reconciled failures are recorded in
+[the recovery evidence](../../../docs/V2-RECOVERY-SECURITY-20261105.md).
+Local tests alone are not an RTO result.
 
 ## Preconditions and evidence
 
@@ -39,7 +41,10 @@ changing an ID is not permission to repeat a mutation.
 
 1. Start the RTO clock before draining writers. Acquire the existing operation
    exclusion, record the blue/green desired counts and scale them to zero through
-   native delivery. Verify zero running/pending tasks and no other writers.
+   native delivery. Verify zero running/pending counts **and actual STOPPED task
+   status**, including tasks whose desired status is already STOPPED. ALB draining
+   can leave a DEACTIVATING task with a SQL session after service counts reach zero.
+   The dispatcher checks both task lists; SQL independently checks other writers.
 2. Run `fence` once on the source. It checks data and migrations, stops the backup
    timer, disables runtime/migrator logins, sets `demodb` READ_ONLY with NO_WAIT,
    verifies no sessions, and produces a new remote-verified backup. An old success
@@ -47,6 +52,10 @@ changing an ID is not permission to repeat a mutation.
 3. Apply only the reviewed **full Data plan**, using the same owner/backend and
    normal locking. CROSS-AZ selects the other real private subnet; SAME-AZ uses
    an explicitly reviewed compute replacement plan. Preserve encrypted disks.
+   Seal and recheck the full transitive configuration, not only files in Data:
+   `authority.json`, referenced user data/helpers, provider lock and private inputs
+   must match the plan. A changed file read by Terraform can invalidate a saved
+   plan during apply even when the native root files are unchanged.
    No target, import, manual state surgery or automatic corrective apply.
 4. Positively verify the exact source EC2 ID is **terminated**, and its original
    encrypted disk is available/detached. Stopped, unreachable, timed-out or an
@@ -65,10 +74,19 @@ changing an ID is not permission to repeat a mutation.
    re-reads the original SSM result and current EC2/volume APIs. The host restores
    into a new database, runs the existing CHECKDB verification, compares row count,
    ciphertext hash and both migrations, preserves the empty bootstrap database,
-   remaps approved users and keeps runtime disabled. No database DROP or WITH
+   remaps approved users and keeps runtime disabled. The portable CLI runs as
+   the actual `mssql` UID/GID with no supplementary groups and private mode 0700/0600
+   paths; root-owned download files are not made world-readable. The public package
+   installer uses umask 022 only for public parent directories and restores 077
+   before credential bootstrap. A final READ_ONLY backup is made READ_WRITE only
+   on the positively fenced, restored copy before its rename. The successful native
+   restore receipt is persisted before promotion so a rename failure never demands
+   a blind second RESTORE. No database DROP or WITH
    REPLACE is used. Any uncertain step stops before activation.
-8. Execute the existing reviewed `sql_principals_activate_runtime` handoff using
-   its strict-TLS client, verify runtime SELECT/INSERT plus EF-metadata SELECT and
+8. Run `activate_native_runtime.py <private-request> <sql-principals.sh>
+   <helper-LF-SHA256>` on the new host after the restore receipt passes. This invokes
+   the existing `sql_principals_activate_runtime` handoff using its strict-TLS
+   client, verifies runtime SELECT/INSERT plus EF-metadata SELECT and
    absence of administrative/DDL grants. Write one new connection-secret version
    via the authenticated in-memory SDK path, retaining the old version. Register
    the native task revision with the current qualified image and exact secret

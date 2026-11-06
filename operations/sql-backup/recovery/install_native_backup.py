@@ -52,6 +52,17 @@ def verified_files(body):
         return files
 
 
+def install_public_package(package, root):
+    # The package contains public binaries/configuration, with explicit file
+    # modes. Its parent directories must remain traversable by the service UID.
+    # Restore the private umask before provisioning credential files below.
+    private_umask = os.umask(0o022)
+    try:
+        package.install(root / 'SqlBackup.tar', SHA, root / 'config.json', Path('/'), 'mssql', True, SHA)
+    finally:
+        os.umask(private_umask)
+
+
 def main():
     import resource
     from botocore.session import Session
@@ -99,7 +110,7 @@ def main():
     sys.path.insert(0, str(root))
     import package
     import ec2_credentials
-    package.install(root / 'SqlBackup.tar', SHA, root / 'config.json', Path('/'), 'mssql', True, SHA)
+    install_public_package(package, root)
     ec2_credentials.operate(root / 'approval.json', root / 'config.json', Path('/'), True,
                             hashlib.sha256((root / 'approval.json').read_bytes()).hexdigest())
     subprocess.run(['systemctl', 'daemon-reload'], check=True, capture_output=True)

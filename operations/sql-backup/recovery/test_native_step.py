@@ -10,6 +10,25 @@ import native_step as step
 
 
 class NativeDispatchTests(unittest.TestCase):
+    def test_zero_service_counts_do_not_prove_task_stopped(self):
+        ecs = Mock()
+        ecs.list_tasks.return_value = {'taskArns': ['task-one']}
+        for status in ('RUNNING', 'DEACTIVATING', 'STOPPING', 'DEPROVISIONING'):
+            ecs.describe_tasks.return_value = {'tasks': [{'taskArn': 'task-one', 'lastStatus': status}]}
+            with self.subTest(status=status), self.assertRaisesRegex(ValueError, 'ECS_TASKS_STILL_DRAINING'):
+                step.verify_drained_tasks(ecs)
+        ecs.describe_tasks.return_value = {'tasks': [{'taskArn': 'task-one', 'lastStatus': 'STOPPED'}]}
+        step.verify_drained_tasks(ecs)
+        self.assertEqual({call.kwargs['desiredStatus'] for call in ecs.list_tasks.call_args_list},
+                         {'RUNNING', 'STOPPED'})
+
+    def test_missing_task_readback_is_not_quiescence(self):
+        ecs = Mock()
+        ecs.list_tasks.return_value = {'taskArns': ['task-one']}
+        ecs.describe_tasks.return_value = {'tasks': [], 'failures': [{'arn': 'task-one'}]}
+        with self.assertRaisesRegex(ValueError, 'ECS_TASKS_STILL_DRAINING'):
+            step.verify_drained_tasks(ecs)
+
     def test_isolated_cli_help_needs_no_credentials_or_sdk(self):
         result = subprocess.run([sys.executable, '-I', '-B', str(Path(step.__file__)), '--help'],
                                 capture_output=True, text=True, timeout=10)

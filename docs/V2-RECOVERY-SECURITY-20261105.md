@@ -48,7 +48,7 @@ a planned-cutover optimization, not disaster RPO evidence.
 - Proposed retention: seven days for this new experiment prefix. No old object,
   version, lifecycle rule or Sentinel journal is to be deleted or rewritten.
 - Initial RTO engineering target: 60 minutes including provisioning. **Unmeasured**
-  until the complete cold test succeeds.
+  until the complete cold test succeeds; see the subsequent measured trials below.
 - Runtime role: own backup prefix and exact package version only; no S3 delete,
   IAM mutation, secret creation or access to another backup prefix.
 - New strict credential-bootstrap mode uses `sqlcmd -N -F sql.demo.internal` and
@@ -73,8 +73,8 @@ The next run was **automatic**, triggered by systemd at
 `REMOTE_VERIFIED_CLEANUP_VERIFIED`. Backup SHA256:
 `8f58c3f70dae6b88a8a3e56389b13685c081c7fb20a24bb675c78e6638c9dd88`.
 Readback showed `Persistent=yes`, `UnitFileState=enabled`, `ActiveState=active`
-and next trigger 01:00 UTC. This proves one scheduled execution. Persistence is
-configured; an actual reboot of the active database has not been performed.
+and next trigger 01:00 UTC. This proves a scheduled execution. The later SAME-AZ
+trial below additionally verifies the producer after an actual host reboot.
 
 The producer grant expires at the existing laboratory closure, 7 November
 04:00 UTC. Seven-day retention is a **proposal**, not an installed deletion
@@ -102,10 +102,9 @@ historical permanent failures are byte-identical; no journal reset occurred.
 
 These are real storage/processing observations, not a new SQL restore or an inbox
 receipt. The prior owner-confirmed notice remains the separate inbox evidence.
-Current Sentinel/observer permissions expire **6 November 02:00 UTC**, earlier
-than SQL/NAT closure. This trial configuration is not a permanently maintained
-monitor. Continuing beyond that timestamp requires a reviewed bounded renewal
-or inhibition; it must not silently become an expired, failing scheduler.
+The initial Sentinel/observer expiry was 6 November 02:00 UTC. The separately
+approved renewal below moved the existing expiry conditions to **7 November
+04:00 UTC**. This remains a bounded trial, not permanent monitoring.
 
 ### Preserving the source disk
 
@@ -123,8 +122,9 @@ boundaries, Deny and other roots were preserved.
 The prepared CROSS-AZ plan is
 `6a45412c7ba4af2401c79f4db8725e36b9d572be8ac9c5a9660dca0fc556c417`:
 one SQL instance replacement into private subnet B and three alarm dimension
-updates, no drift. **Not applied**: database interruption and the additional
-USD 3 recovery reserve are awaiting the owner's decision. Neither a plan nor
+updates, no drift. At preparation it was **not applied**; the owner subsequently
+approved both trials and USD 3. The actual execution below records a partial
+failure and reconciled completion of this plan. Neither a plan nor
 local tests establish cold-recovery RTO/RPO. The retained disk is an additional
 safety asset, not a second active database or an automatically authorized rollback.
 
@@ -191,8 +191,8 @@ uses the existing Data root and exact published backup package. Read-only AWS/SQ
 inspection passed: three rows, exact two migrations, expected Express identity,
 runtime enabled, no concurrent SQL session at the sampling instant. A client
 argument error (`sqlcmd -y 8192`, maximum 8000) was found before SQL execution and
-corrected to 8000; the corrected real readback passed. No source fence or compute
-replacement has been executed in this session.
+corrected to 8000; the corrected real readback passed. That inspection preceded
+the source fence and cold trials described below.
 
 The Linux recovery/portable suite passed **289 tests in 23 suites, zero skips**
 using the existing local CI image, with no network/credentials. The isolated
@@ -219,3 +219,131 @@ systemd's `activating` state for a running oneshot. It rechecks after stopping
 the timer to close a timer-fire race before any SQL write fence. A refusal at
 that point leaves the timer stopped for explicit operational reconciliation;
 it does not stop a backup already in flight or mutate SQL.
+
+## Cold recovery execution — 6 November UTC
+
+The owner approved sequential CROSS-AZ and SAME-AZ trials, at most 90 minutes each,
+with temporary API interruption, exact temporary subnet/TLS-secret permissions,
+all source disks/backups retained and USD 3 additional reserve. The cumulative
+model is **USD 7.84 against USD 8 authorized**, not observed billing. The existing
+7 November closure remains unchanged.
+
+### CROSS-AZ A → B: functional PASS with reconciled failures
+
+RTO started at **01:17:11.489316** before ECS drain and ended at
+**01:58:42.993704** after real API health/readiness, preservation of all three prior
+records and a new POST/GET/KMS decrypt round trip: **2,491.504388 seconds
+(41 minutes 31.5 seconds)**. This includes provisioning and all repairs;
+it is not an unattended first-pass recovery claim.
+
+The source was positively fenced at 01:24:43: zero writers, READ_ONLY and disabled
+runtime/migrator logins. Its final remote-verified backup started at
+01:24:44.9681095, with SHA256
+`3a27ae8c0c7060f76352ce2ad4e986050add00d9e4d504bb5f0c7c1c89af1a1a`
+and object version `7RQeysasFZPXAfxydJ81VFGtFZoCjUpA`. Original instance
+`i-0ca57b4758f2c2821` was verified terminated; its encrypted 30-GiB disk
+`vol-02ba613d809942381` remained detached and available. The fresh destination
+`i-0becd5dbb41e6d487`, `10.0.101.242`, was created in `us-east-1b` without a
+pre-provisioned recovery server.
+
+The original saved plan became invalid because a transitive `authority.json` read
+changed after planning; the initial preflight checked only Data root files. Apply
+terminated the source and then stopped before creating the destination. Data 15
+was reconciled, the retained disk and backup verified, and a new full-root plan
+sealed all 264 tracked Terraform configuration files. It contained the identical
+approved destination (one create and three alarm updates), without another delete.
+Plan `e3b1d9f44d7ccecfe27314800bc8e8f2fdc022165ec1d82ff995440552b95151`
+completed to Data 16. No state surgery, old-plan replay or source rollback occurred.
+
+Three host defects were corrected without discarding failed receipts:
+root-owned private restore files caused SQL errors 3201/3013; inherited umask 077
+made public package directories untraversable; and the restored READ_ONLY database
+needed READ_WRITE before promotion. The fixes run the CLI as `mssql`, scope public
+directory umask 022, and persist the completed restore receipt before making only
+the restored copy writable and renaming it. A completed restore was reconciled by
+CHECKDB/hash and promoted, **not restored a second time**.
+
+All three original ciphertext rows and both migrations matched. Runtime regained
+only existing SELECT/INSERT and migration-metadata SELECT; the migrator stayed
+disabled. ECS blue revision 14 used the same qualified image and only a new SQL
+endpoint/connection-secret version. A new row made four rows. At 01:59:54 the new
+host completed another remote-verified backup and enabled its hourly timer.
+
+The last scheduled pre-interruption backup began at **01:00:03.8725578**: age
+**17 minutes 7.6 seconds at RTO start**, **24 minutes 39.5 seconds at the write
+fence**. No committed rows were lost in the planned cutover because a final backup
+was taken after fencing. This does not establish zero RPO for abrupt outage or
+prove a transaction-log/PITR chain.
+
+### SAME-AZ B → B: second trial
+
+The independently reviewed plan
+`d4ba413b6ade860b67ad1b13288694909c4cfcbfd3ddf3ec7cb71cebab39fdcf`
+contains one SQL replacement and three alarm dimension updates, no drift, identical
+desired configuration and retained root disk. RTO starts at **02:06:19.052177**.
+Its final backup preserves four rows with SHA256
+`e6412e581f0a1df6a0b1707970d1a1c04d8cce6dce7acf6ff565949127e845ae`.
+The destination is `i-010e3bf5edd05d11a`, `10.0.101.160`, AZ B. Its predecessor is
+terminated and disk `vol-0235be4922f977c92` is retained. Data state is serial 17,
+version `l4ryszZHZjcEeoQh1q9RHzEdkEtNitGm`, without a lock.
+
+**Functional PASS at 02:31:01.635056: 1,482.582879 seconds (24 minutes 42.6
+seconds)** from initial drain through API health/readiness and POST/GET/KMS.
+This corrected trial completed its sole apply, installation, restore and handoff
+without corrective replay or manual file/SQL repair. CHECKDB, four original rows,
+ciphertext hash and two migrations matched; a new application write made five rows.
+The image, task roles, listener and SQL grants remained unchanged. Blue revision
+15 points to `10.0.101.160`, with a new versioned connection secret; green stays zero.
+
+Before reactivating ECS, one supervised reboot changed boot ID from
+`c5cd1230-9752-40d4-b56f-59cc33385d67` to
+`2da5afce-75f5-4907-bc51-a6bcd9345a66`. SQL/TLS and data identity passed afterwards;
+the timer remained enabled/active with `Persistent=yes`. A real post-reboot service
+run finished at 02:28:47 with `REMOTE_VERIFIED_CLEANUP_VERIFIED`, backup SHA256
+`5fbb6c6baea0993e3b7031f406a767d9df6eb6e562a9b420f38b7de7af43582e`,
+version `8zPBT_1wtX97VNbouWoDbLhEu7CINs0w`. This is actual reboot persistence plus
+functional backup execution, separate from the earlier automatic hourly runs.
+
+The verified backup available before this second interruption began at
+01:59:52.6855848: age 6 minutes 26.4 seconds at RTO start. The later final fenced
+backup again preserved all rows. Neither trial simulates loss of every region-wide
+dependency or proves an automatic recovery decision.
+
+The corrected Linux recovery/portable suites pass **297 tests in 23 suites with
+zero skips**. A direct Windows CRLF mount initially failed shell parsing; the LF
+Git export passed. This fixture issue is separate from AWS results.
+
+### Post-recovery observation and resource closure
+
+The scheduled external observer verified the second trial's final backup and the
+new host's 02:26:28 backup using exact versions and full hashes. At 02:35:27 the
+Sentinel checkpoint was revision **594**, owner/lease null and consecutive failures
+zero. All eight records representing the four historical permanent failures matched
+their prior content. No journal reset or historical resend occurred.
+
+Archive audit `fd7213b47a79d6faff6076976045d2ec925ac0ae6abb4216153bcf415764b43a`
+was confirmed in one worker attempt at 02:34:26. S3 readback confirmed version
+`nJnEivlS1JYT2WGo4v0k8hmbuXcvud4P`, 9,990 bytes and the expected SSE-KMS key.
+The administrator's independent body read was denied `kms:Decrypt`; no permission
+or identity was changed to bypass it. Content verification is the worker's actual
+receipt, not a second administrative hash claim. Prior owner-confirmed email remains
+the separate inbox evidence; no new inbox receipt is claimed here.
+
+At 02:35:56, one SQL EC2 and two NAT EC2s were running; blue had one task and green
+zero. Data 17, shared 3, global 37, platform 5, apps 12 and edge 20 had no persistent
+S3 locks. The two predecessor SQL disks are detached, encrypted and retained; the
+current 30-GiB root also has delete-on-termination false. Their key is AWS-managed
+`alias/aws/ebs`, not a customer-managed CMK.
+
+Cost Explorer reported **USD 1.3251945145 estimated, account-wide for 5 November**
+at this readback. This delayed number cannot be attributed to these trials or
+compared as an actual execution bill against the USD 7.84 model. The two retained
+30-GiB gp3 disks add approximately **USD 4.80/month** while retained; all three SQL
+roots would total approximately USD 7.20/month if compute is later retired and all
+remain. No disk/backup deletion is authorized by these trials.
+
+The existing native closure procedure remains required at 7 November 02:30–04:00
+UTC. Earlier Data retirement binaries refer to replaced instances/state and are
+**invalid**. Any retirement must review a fresh plan against Data 17/current instance,
+drain writers and preserve retained data unless separately authorized for deletion.
+No automatic shutdown or extension has been installed or assumed.

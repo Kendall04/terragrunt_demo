@@ -62,8 +62,12 @@ def identity(request):
     return doc
 
 
-def run(argv, *, data=None, env=None, timeout=660):
-    result = subprocess.run(argv, input=data, env=env, capture_output=True, text=True, timeout=timeout)
+def run(argv, *, data=None, env=None, timeout=660, **process_identity):
+    result = subprocess.run(argv, input=data, env=env, capture_output=True, text=True,
+                            timeout=timeout, **process_identity)
+    if result.returncode != 0 and argv[0].endswith('/sqlcmd'):
+        numbers = re.findall(r'\bMsg (\d{1,6})\b', result.stdout + result.stderr)
+        require(not numbers, 'SQLCMD_ERROR_NUMBERS_' + '_'.join(numbers[:8]))
     require(result.returncode == 0, 'CHILD_FAILED_RECONCILE_BEFORE_RETRY')
     return result.stdout
 
@@ -115,6 +119,26 @@ def check_data(observed, request):
             [x['MigrationId'] for x in observed['migrations']] == MIGRATIONS, 'RESTORED_DATA_MISMATCH')
 
 
+def restore_identity(directory):
+    # SQL Server opens the downloaded backup and creates MDF/LDF itself. The
+    # portable restore must therefore own its private files as the SQL service
+    # user, not root. Keep the SA credential in the child environment only.
+    import stat
+    require(directory == Path('/var/opt/mssql/backup/v2-restores'), 'RESTORE_DIRECTORY_SCOPE')
+    require(not any(p.is_symlink() for p in (directory, *directory.parents)), 'RESTORE_DIRECTORY_LINK')
+    import pwd as unix_accounts
+    who = unix_accounts.getpwnam('mssql')
+    require(who.pw_uid != 0 and who.pw_gid != 0, 'SQL_SERVICE_IDENTITY')
+    if not directory.exists():
+        directory.mkdir(mode=0o700)
+        os.chown(directory, who.pw_uid, who.pw_gid)
+    observed = directory.stat()
+    require(stat.S_ISDIR(observed.st_mode) and observed.st_uid == who.pw_uid and
+            observed.st_gid == who.pw_gid and stat.S_IMODE(observed.st_mode) == 0o700,
+            'EXISTING_RESTORE_DIRECTORY_REQUIRES_RECONCILIATION')
+    return {'user': who.pw_uid, 'group': who.pw_gid, 'extra_groups': [], 'umask': 0o077}
+
+
 def fence(sql, request):
     require(request['instanceId'] == request['sourceInstanceId'], 'SOURCE_HOST_REQUIRED')
     before = sql.query(SNAPSHOT)
@@ -160,6 +184,7 @@ def restore(sql, request):
     require(before == {'tables': 0, 'sessions': 0, 'disabled': True}, 'FRESH_DISABLED_TARGET_REQUIRED')
     target = 'demodb_restore_' + request['trial'].replace('-', '_')
     config = Path('/etc/terragrunt-demo/sql-backup/config.json')
+    process_identity = restore_identity(Path(json.loads(config.read_text())['RestoreDirectory']))
     connection = 'Server=tcp:127.0.0.1,1433;Database=master;User Id=sa;Password="' + sql.password(SA).replace('"', '""') + '";Encrypt=True;TrustServerCertificate=False;HostNameInCertificate=sql.demo.internal;'
     env = dict(os.environ, SQL_RESTORE_CONNECTION_STRING=connection, AWS_EC2_METADATA_V1_DISABLED='true')
     connection = None
@@ -167,15 +192,21 @@ def restore(sql, request):
     try:
         result = json.loads(run(['/opt/terragrunt-demo/sql-backup/bin/SqlBackup', 'restore', '--config', str(config),
             '--aws', '--ec2-role', '--manifest-key', receipt['ManifestKey'], '--manifest-version', receipt['ManifestVersion'],
-            '--target', target], env=env))
+            '--target', target], env=env, **process_identity))
     finally:
         env.pop('SQL_RESTORE_CONNECTION_STRING', None)
     require(result['Status'] == 'RESTORED_CHECKDB_READABLE' and result['Rows'] == request['expectedRows'], 'RESTORE_UNCONFIRMED')
+    with (Path('/var/opt/mssql/backup/recovery-receipts') /
+          (request['trial'] + '-native-restore.result.json')).open('x') as stream:
+        json.dump({'completedAt': stamp(), 'restore': result,
+                   'manifestVersion': receipt['ManifestVersion'], 'target': target}, stream)
     # Preserve the fresh empty bootstrap database, too. Never DROP or WITH REPLACE.
+    # The final backup inherits the source READ_ONLY fence. Make only the restored
+    # copy writable before renaming; application logins are still disabled.
     empty = 'demodb_bootstrap_' + request['trial'].replace('-', '_')
     sql.query(f"IF DB_ID(N'{empty}') IS NOT NULL THROW 51000,'EMPTY_TARGET_EXISTS',1; "
+        f"ALTER DATABASE [{target}] SET READ_WRITE WITH NO_WAIT; "
         f"ALTER DATABASE [demodb] MODIFY NAME=[{empty}]; ALTER DATABASE [{target}] MODIFY NAME=[demodb]; "
-        "ALTER DATABASE [demodb] SET READ_WRITE WITH NO_WAIT; "
         "SELECT 1 AS renamed FOR JSON PATH,WITHOUT_ARRAY_WRAPPER;")
     sql.query("ALTER USER [recovery_app] WITH LOGIN=[recovery_app]; "
         "ALTER USER [recovery_migrator] WITH LOGIN=[recovery_migrator]; "
@@ -220,6 +251,8 @@ def main():
 if __name__ == '__main__':
     try:
         main()
-    except Exception:
-        print('NATIVE_RECOVERY_FAILED_OR_UNCERTAIN; inspect metadata before any further mutation')
+    except Exception as error:
+        code = str(error) if isinstance(error, ValueError) and re.fullmatch(r'SQLCMD_ERROR_NUMBERS_[0-9_]+', str(error)) else None
+        print('NATIVE_RECOVERY_FAILED_OR_UNCERTAIN; inspect metadata before any further mutation' +
+              (('; ' + code) if code else ''))
         raise SystemExit(1)
