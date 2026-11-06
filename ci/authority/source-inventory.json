@@ -6442,7 +6442,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/model.py": {
-      "sha256": "368362f6edb69af5cd393245624140ab9a3e8a72e94dada84c78e1e59453d9ea",
+      "sha256": "0b7ff586b8ea544348ad5882c839379858b2e29b603efe02783d684230af36ba",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -12905,7 +12905,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/portable/trial/runtime/tests/security.tftest.hcl": {
-      "sha256": "c96975eace24b944974084308be9d6fed1a61018e5665535cf2242c6388d0286",
+      "sha256": "65e40408f1ab488f0b6d8bebbf94048c73dda5ad3dae02f6b629c4ff4ce8bed4",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
