@@ -5,6 +5,105 @@ approved on 2026-11-06. The new modeled ceiling is USD 20, separate from previou
 work. Stop new experiments on November 9 at 02:30 UTC; closure is due at 04:00 UTC.
 Approval is not retroactive and does not provide an AWS billing cap.
 
+## Operational certification update — November 6, afternoon UTC
+
+This update supplements the morning record below; it does not rewrite the
+original experiments or turn their Unknown observations into network failures.
+
+### Inbox evidence supplied by the owner
+
+The owner reports that ChatGPT, through connected Gmail, read the full bodies
+and verified IncidentId, DeliveryId and AuditId of these messages in **INBOX**:
+
+| Domain event | Inbox reception UTC, November 6 | Revision |
+| --- | --- | ---: |
+| First NAT A recovery | 06:44:26 | 78 |
+| Second NAT A recovery | 07:14:26 | 108 |
+| Expired SQL backup escalation | 07:58:29 | 132 |
+| SQL backup incident resolution | 08:30:27 | 141 |
+
+The SQL messages share one IncidentId and match the original experiment.
+This is **external ChatGPT/Gmail verification supplied by the owner**, not a new
+AWS API or inbox inspection in this session. It closes the four inbox gaps in
+the historical record below. Neither NAT message is a failure-detection notice.
+The separate 06:47 CloudWatch health email remains infrastructure monitoring,
+not a NAT domain notification. No old notice was resent for this verification.
+
+### Detection correction and its boundary
+
+The observer now retains independent `controlPlane` and `connectivity` verdicts.
+Terminated/replacing members, EIP, route and SDC evidence remain visible if the
+probe executor fails, but connectivity remains Unknown. A failed real HTTPS
+request remains visible if an AWS read fails. A replacement event or an ASG
+Healthy state alone never proves a failed or successful HTTPS request.
+
+The fixed HTTPS operation runs in a child process without inherited credentials
+or caller-selected destinations/commands. The parent enforces a six-second
+deadline and kills/reaps the child; two seconds remain for termination and the
+Lambda response. This covers native DNS/TCP/TLS work that could delay Python's
+signal handler. Child startup/runtime failure remains Unknown, not network Fail.
+The endpoint stays `https://checkip.amazonaws.com/`, redirects are rejected,
+response bytes are bounded and success must match NAT A's EIP.
+See [Python subprocess timeouts](https://docs.python.org/3.13/library/subprocess.html)
+and [signal-handler execution](https://docs.python.org/3/library/signal.html).
+
+The existing one-minute observer and two-minute incident evaluation are sampling
+limits. An outage shorter than those intervals can be missed or resolved before
+escalation dispatch. Auto Scaling events can provide supplemental timestamps,
+but are [best-effort control-plane events](https://docs.aws.amazon.com/autoscaling/ec2/userguide/ec2-auto-scaling-event-reference.html),
+not proof of HTTPS loss. No extra event pipeline or lifecycle hook is installed
+by this correction. A third disruptive experiment requires separate approval;
+the original two authorizations are consumed. Local deadline tests and healthy
+AWS probes do not establish outage-detection PASS.
+
+Readable domain notices now identify NAT A, SQL backups or the actual monitor in
+their heading; both escalation and resolution subjects retain the monitor ID.
+The synthetic/laboratory label and immutable incident/delivery/audit fields remain.
+No historical message is rewritten or resent. Source corrections initially
+passed 64 Python tests and 88 CLR checks; five additional continuity-report tests
+verify gaps, unhealthy cycles, duplicate rejection and non-extrapolated duration.
+Installation and any later AWS trial must be recorded separately below.
+
+### Current health versus retained debt
+
+The expanded readback found one genuine **STALLED** cycle at 09:51:04.759:
+`OldWorkRemainsDespiteOtherProgress`. The oldest pending archive dated
+09:46:55.790; four archive executions completed at 09:51:27–31 and the next
+watchdog sample was healthy. This was bounded backlog delay, not a missing
+checkpoint, new permanent failure or permission denial. The four-minute age
+threshold is retained; the incident is not erased to claim continuous health.
+
+The next independently exported interval has **406 healthy watchdog samples**
+from **09:52:05.519 to 16:37:04.930**, exactly **6h44m59.411s** between first/last
+samples, with no gaps exceeding 90 seconds. There are 812 worker ticks:
+427 Completed, 385 BudgetYield, maximum 58/64 requests, zero reported failed jobs.
+This is sampled automatic progress, not 12 or 24 hours of demonstrated health.
+The previous 07:37 start cannot be extended across the 09:51 incident.
+
+The operations DLQ still has approximately 14 retained messages, no inflight
+messages, 14-day retention, zero new sends and zero deletions since 07:37 in the
+inspected metrics. Historical inspections account for receives. No receive,
+redrive, purge or deletion was performed in this update. Its alarm remains
+visible. Current health still verifies all four append-only compensations;
+the original four permanent failures remain in the journal.
+
+CloudWatch logs/metrics, DynamoDB checkpoints/audits and SSE-KMS archives already
+collect evidence independently of this computer. The read-only exporter
+`operations/integrations/portable/collect_continuity.py` can capture up to 26 hours
+to a new private file. It fails on incomplete pagination/unexpected records,
+separates missing visibility and unhealthy samples, and never extrapolates a
+sample into future uptime. Reconcile deployment/manual-invocation intervals
+separately. Repeat at 12/24 actual hours; do not keep an interactive session open
+as a substitute for persistent evidence.
+
+At 16:20 `/ready` returned 200; SQL, blue ECS and both NAT ASGs remained healthy.
+All eight state serials in the morning inventory were unchanged, without locks.
+Cost Explorer then reported account-wide **USD 2.3664246464 for November 5** and
+**USD 0.617863946 for November 6**, both estimated/incomplete, not attributed trial
+charges. The approved USD 14.60/20 model and November 9 closure boundary remain.
+The small code deployment/readbacks fit the existing Lambda/logging allowance;
+they do not authorize new infrastructure, an extended window or another fault.
+
 ## Implementation and evidence boundary
 
 This page records the installed implementation and its supervised AWS validation.

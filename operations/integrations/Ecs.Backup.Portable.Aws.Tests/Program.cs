@@ -26,6 +26,15 @@ Check("raw internal schema2 notice remains structured",DomainJson.Deserialize<In
 foreach(var altered in new[]{notice with{SchemaVersion=1},notice with{Consumer="foreign"},notice with{Generation="foreign"},notice with{ConfirmedServiceImpact=true},notice with{Summary="unsafe\nheader"}}){try{ReadableNotice.Render(altered,c,true);throw new Exception("NOT_REFUSED");}catch(ArgumentException){cases.Add("malformed/version/scope notice refused");}}
 var resolved=notice with{Event="ResolveIncident",Condition=NoticeCondition.ExpectationSatisfied,Summary="Evidence satisfies configured expectation.",State="RESOLVED",Assessment="Successful",Revision=notice.Revision+1};
 Check("resolution has clear heading without overwriting technical evidence",ReadableNotice.Render(resolved,c,true).Message.Contains("RECUPERACIÓN VERIFICADA PARA ESTA EXPECTATIVA"));
+var nat=monitor with{Id="nat-a-egress",Kind="report",Resource="nat/dev/a",Generation="lt4-e13v6",RequiredAssurance=Assurance.Reported};
+var natConfig=c with{Monitors=c.Monitors.Add(nat)};natConfig.Validate();
+foreach(var original in new[]{notice,resolved}) {
+ var scoped=original with{Monitor=nat.Id,Resource=nat.Resource,Generation=nat.Generation,RequiredAssurance=nat.RequiredAssurance};
+ var rendered=ReadableNotice.Render(scoped,natConfig,true);
+ Check("NAT incident and resolution identify service and retain lab label",rendered.Subject.StartsWith("PRUEBA SINTÉTICA | ECS · nat-a-egress:") && rendered.Message.StartsWith("PRUEBA SINTÉTICA | ECS · Salida privada NAT A") && !rendered.Message.Contains("Observabilidad de backups"));
+ Check("NAT formatting preserves immutable delivery and audit identities",rendered.Message.Contains(scoped.DeliveryId) && rendered.Message.Contains(scoped.AuditId) && rendered.Message.Contains(scoped.IncidentId));
+}
+Check("SQL notification retains its own service",ReadableNotice.Render(notice,c,true).Message.StartsWith("PRUEBA SINTÉTICA | ECS · Backups SQL"));
 var bundleRoot=Path.Combine(Path.GetTempPath(),"ecs-portable-factory-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(bundleRoot);
 try {
  var body=File.ReadAllBytes(Path.Combine(args.Single(),"sentinel.json"));File.WriteAllBytes(Path.Combine(bundleRoot,"sentinel.json"),body);

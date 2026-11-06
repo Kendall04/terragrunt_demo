@@ -21,12 +21,13 @@ public static class ReadableNotice {
    NoticeCondition.ExpectationSatisfied=>"RECUPERACIÓN VERIFICADA PARA ESTA EXPECTATIVA",
    _=>throw new ArgumentException("Unknown notice condition.")};
   var mark=syntheticTrial?"PRUEBA SINTÉTICA | ":"";
-  var message=$"{mark}ECS · Observabilidad de backups\n\nEstado: {state}\nMonitor: {Safe(notice.Monitor)}\nRecurso: {Safe(notice.Resource)}\nMotivo: {Safe(notice.Summary)}\nGarantía exigida: {notice.RequiredAssurance}\nEvaluación UTC: {notice.EvaluatedAt:O}\nRevisión: {notice.Revision}\n";
+  var service=monitor.Id=="nat-a-egress"?"Salida privada NAT A":monitor.Kind=="sql-backup"?"Backups SQL":"Observación de "+Safe(monitor.Id);
+  var message=$"{mark}ECS · {service}\n\nEstado: {state}\nMonitor: {Safe(notice.Monitor)}\nRecurso: {Safe(notice.Resource)}\nMotivo: {Safe(notice.Summary)}\nGarantía exigida: {notice.RequiredAssurance}\nEvaluación UTC: {notice.EvaluatedAt:O}\nRevisión: {notice.Revision}\n";
   foreach(var reason in notice.Reasons.Take(8))message+=$"- {Safe(reason)}\n";
   message+=$"\nAlcance: {Safe(notice.Deployment)} / {Safe(notice.Consumer)}\nResponsable: {Safe(notice.Owner)}\n";
   message+="No implica una restauración SQL ni salud de la aplicación salvo evidencia explícita del contrato.\nAceptar el aviso en SNS no acredita recepción en inbox. SNS puede duplicar o reordenar avisos.\n";
   message+=$"\nDatos técnicos\nSchemaVersion: 2\nEvent: {Safe(notice.Event)}\nCondition: {notice.Condition}\nAssessment: {Safe(notice.Assessment)}\nState: {Safe(notice.State)}\nConfirmedServiceImpact: {notice.ConfirmedServiceImpact}\nCritical: {notice.Critical}\nGeneration: {Safe(notice.Generation)}\nIncidentId: {Safe(notice.IncidentId,128)}\nEpoch: {notice.Epoch}\nDeliveryId: {Safe(notice.DeliveryId,128)}\nAuditId: {Safe(notice.AuditId,128)}\nAcceptance: SNS_PUBLISH_ONLY_NOT_INBOX_RECEIPT\n";
-  var subject=mark+"ECS: "+(notice.Event=="ResolveIncident"?"expectativa recuperada":"revisar "+Safe(notice.Monitor));
+  var subject=mark+"ECS · "+Safe(notice.Monitor)+": "+(notice.Event=="ResolveIncident"?"expectativa recuperada":"revisar");
   if(message.Length>8192)throw new ArgumentException("Notice too large.");return(subject,message);
  }
 }
