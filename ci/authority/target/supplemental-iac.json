@@ -124,9 +124,9 @@
       "purpose": "Same reviewed output declarations relocated into the real materialized child module; no declarations excluded."
     },
     "operations/integrations/portable/trial/runtime/main.tf": {
-      "sha256_lf": "459c8250238865dba5186e18cf0900ddbb18a03ffda0d49dc782c9789957014d",
+      "sha256_lf": "c81a2a9c1919cb40026e4c043791e32c08c05754c5f882a628be488fd19bcac9",
       "introduced_by": "04e665d75973377357298333092711ac1c43d753",
-      "last_changed_by": "073cb56b7b8940a2bdb946e31905f4a9e2368bd1",
+      "last_changed_by": "c348fc1d9294668b13c35e565c79f9d0b8f7280b",
       "owner": "ECS_PORTABLE_LOCAL_INTEGRATION",
       "classification": "LOCAL_INTEGRATION_SOURCE",
       "purpose": "Materialized pinned upstream plus reviewed ECS boundaries/handlers and owner-approved future snt- archive namespace; no deployment authority."

@@ -40,6 +40,15 @@ internal static class CheckpointChecks {
         }
         // An ambiguous checkpoint can be reconciled, but never repeated blindly.
         budget=new OperationalBudget(profile,()=>now);budget.ReserveCheckpoint(8);
+        var cheapMemory=new OperationalMemoryStore(new());var cheapDirectory=new Directory(scope,budget,now);
+        var cheapJournal=new OperationalJournal(new MeteredStore(cheapMemory,budget),profile);
+        var cheapResult=new OperationalWorker(cheapJournal,cheapDirectory,(entry,_,_)=>{
+            for(var i=0;i<14;i++)budget.BeforeIo();
+            cheapDirectory.Entries[entry.Id]=entry with{Status=OutboxStatus.Confirmed};
+            return new(entry.Id,CompletionStatus.Recorded,"bounded dispatch double");
+        },profile,()=>now,budget).Tick(scope,"two-dispatches",now);
+        check("smaller independent dispatches share one unchanged budget",cheapResult.Confirmed==2&&cheapResult.Failures==0&&budget.Requests<=64&&cheapMemory.Read(scope)!.BufferedWork.IsEmpty);
+        budget=new OperationalBudget(profile,()=>now);budget.ReserveCheckpoint(8);
         var memory=new OperationalMemoryStore(new());var metered=new MeteredStore(memory,budget);
         var j=new OperationalJournal(metered,profile);var lease=j.Start(scope,"cas",now,now,now)!;
         while(budget.Requests<56)budget.BeforeIo();budget.BeginCheckpoint();

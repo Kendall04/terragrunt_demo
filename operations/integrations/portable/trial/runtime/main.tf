@@ -239,11 +239,11 @@ resource "aws_sqs_queue_policy" "operations" {
 resource "aws_cloudwatch_log_metric_filter" "health" {
   name           = "${local.name}-health"
   log_group_name = aws_cloudwatch_log_group.runtime["watchdog"].name
-  pattern        = "{ $.type = \"SentinelHealth\" }"
+  pattern        = "[timestamp, request, level, kind = SentinelHealthMetric, health]"
   metric_transformation {
     name      = "Health"
     namespace = "Sentinel/${local.name}"
-    value     = "$.healthy"
+    value     = "$health"
   }
 }
 resource "aws_cloudwatch_metric_alarm" "health" {

@@ -11,7 +11,11 @@
     },
     {
       "before": "if(attempted>=profile.MaxJobs||timer.Elapsed",
-      "after": "if(ioBudget is not null&&!ioBudget.CanStartWork(40)||attempted>=profile.MaxJobs||timer.Elapsed"
+      "after": "if(ioBudget is not null&&!ioBudget.CanStartWork(1)||attempted>=profile.MaxJobs||timer.Elapsed"
+    },
+    {
+      "before": "                if(!journal.Owns(journal.Read(scope)!,lease,clock()))",
+      "after": "                // Checks evaluate sources and commit domain transactions; dispatch has a smaller bound.\n                // The hard 64 cap and reserved checkpoint apply even to conflicts or uncertain I/O.\n                if(ioBudget is not null&&!ioBudget.CanStartWork(isCheck?40:18)){outcome=\"BudgetYield\";continue;}\n                if(!journal.Owns(journal.Read(scope)!,lease,clock()))"
     },
     {
       "before": "        finally {",

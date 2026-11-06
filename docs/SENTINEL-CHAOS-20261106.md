@@ -91,3 +91,24 @@ At most 20 notices go to the existing confirmed destination. Publication, SNS
 delivery metrics and inbox confirmation are separate facts. Each experiment must
 record fault, detection, journal, archive, publication and recovery timestamps,
 including unsuccessful attempts. These are supervised DEV trials, not an SLA.
+
+## Current health versus retained history
+
+The four authenticated archive failures retain their original effect, attempt,
+audit and operational records. Separate `AC#` receipts identify the exact
+create-only SSE-KMS versions and verified bytes; the watchdog deducts only these
+four dispositions in its in-memory health view. A fifth failure remains visible.
+
+Continuous observation exposed two additional issues: a four-entry work page
+could take several invocations, making its completed sweep stale; and the JSON
+health value was not extracted by the installed metric filter from Lambda's
+text-prefixed log events. The watchdog now reads at most 32 authoritative work
+pointers and their current effects (at most 46 total requests including history).
+A continuation means incomplete visibility, never healthy. This read does not
+rewrite the worker journal. The metric uses an explicit bounded numeric log line;
+the detailed structured health event is retained. Missing metrics still breach.
+
+Worker dispatch admission distinguishes a source-evaluation job from a smaller
+archive/effect dispatch. The hard 64-request/four-job profile and eight-request
+checkpoint reserve remain unchanged. Independent smaller work can progress in the
+same invocation; uncertain results still use the original lease/idempotency rules.
