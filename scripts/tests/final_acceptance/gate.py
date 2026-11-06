@@ -187,7 +187,7 @@ def main():
     shared_alert_methods = {
         'test_generated_sources_match',
         'test_topic_and_subscription_keep_their_addresses',
-        'test_exact_fourteen_alarm_names',
+        'test_original_fourteen_plus_three_installed_sql_alarm_names',
         'test_publisher_grant_is_not_generic',
         'test_key_has_retention_rotation_and_exact_administrator',
         'test_policy_keeps_original_statements_and_rejects_duplicate_owned_sid',
@@ -198,6 +198,11 @@ def main():
     required_shared_alerts = {'test_shared_alerts.SharedAlertsTests.' + name for name in shared_alert_methods}
     if not required_shared_alerts <= set(records['security_root'].get('test_ids', [])):
         errors.append('Shared notification security coverage is incomplete')
+    required_recovery_disk = {
+        'test_recovery_disk.RecoveryDiskTests.test_source_root_can_be_preserved_without_changing_resource_identity'
+    }
+    if not required_recovery_disk <= set(records['security_root'].get('test_ids', [])):
+        errors.append('Native DEV disk-retention coverage is incomplete')
     dev_neutral_methods = {
         'test_dev_neutral_exact_scope_and_shared_consumer',
         'test_dev_neutral_missing_invented_and_unavailable_rejected',
@@ -243,7 +248,7 @@ def main():
         'test_closed_source_full_seal_detects_backup_mutation')}
     if not required_source_closure <= set(records['internal_release'].get('test_ids', [])):
         errors.append('Closed .NET source export coverage is incomplete')
-    expected_regression = 1076 + len(required_shared_alerts) + len(required_dev_neutral) + len(required_admin_publication) + len(required_dev_recipes) + len(required_source_closure)
+    expected_regression = 1076 + len(required_shared_alerts) + len(required_dev_neutral) + len(required_admin_publication) + len(required_dev_recipes) + len(required_source_closure) + len(required_recovery_disk)
     if regression != expected_regression:
         errors.append(f'Accepted regression count changed: {regression} != {expected_regression}')
     static_good = all(records[n]['status'] == 'PASS' for n, _ in CHECKS)

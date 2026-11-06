@@ -4962,13 +4962,13 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/final_acceptance/gate.py": {
-      "sha256": "b2aef3950c51ed4e0ab6c09777e7039931c6014d162ae0b22e8d5f3f1b52fd1d",
+      "sha256": "3346eba94755649cfa7cb9a7638873c1d096eaef85ea86934c9b7c4376297dc2",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           69,
           152,
-          262
+          267
         ],
         "executable-dependency": [
           3,
@@ -12891,7 +12891,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/integrations/portable/trial/runtime/tests/security.tftest.hcl": {
-      "sha256": "c47af6b7c7ef4d6d969dcbfa610fb1d1a2dafbb81f96a43ae32618b6357a052e",
+      "sha256": "c96975eace24b944974084308be9d6fed1a61018e5665535cf2242c6388d0286",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -13450,15 +13450,15 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/recovery/install_native_tls.py": {
-      "sha256": "bc3f38cb6c598a5d30c0485663197b8b533f658fba0898f85150435ceb6f46c2",
+      "sha256": "f3965407d46d1732bd9dc1bef1edc85c5ba90aaba1ae0be30806d3b45518077f",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          6,
-          7
+          7,
+          8
         ],
         "executable-dependency": [
-          12
+          13
         ]
       },
       "semantic_status": "UNVERIFIED"

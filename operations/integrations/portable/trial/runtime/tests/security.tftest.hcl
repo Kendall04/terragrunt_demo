@@ -129,7 +129,7 @@ run "accept_bounded_two_day_lab" {
   command = plan
   variables { security = { archive_kms_key_arn = "arn:aws:kms:us-east-1:341936017254:key/44444444-4444-4444-8444-444444444444", notice_kms_key_arn = "arn:aws:kms:us-east-1:341936017254:key/55555555-5555-4555-8555-555555555555", access_log_bucket = "snt-logs-ecs-portable-r20261026p1-341936017254", starts_at = "2026-10-28T00:00:00Z", expires_at = "2026-10-30T00:00:00Z" } }
   assert {
-    condition = local.archive_kms_statement.Condition.DateLessThan["aws:CurrentTime"] == "2026-10-30T00:00:00Z"
+    condition     = local.archive_kms_statement.Condition.DateLessThan["aws:CurrentTime"] == "2026-10-30T00:00:00Z"
     error_message = "The explicit expiry must still constrain the actual grant."
   }
 }

@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 """One-host DEV TLS installation. No secret material in arguments or output."""
-import argparse, hashlib, json, os, pathlib, pwd, resource, subprocess, sys
+import argparse, hashlib, json, os, pathlib, resource, subprocess, sys
+import pwd as unix_accounts
 PIN='206095fa0ba9e17a84c80eff5021db93d05e2dc377e982a64d517696ed21a1e7'
 REGION='us-east-1'
 ROLE='arn:aws:sts::341936017254:assumed-role/demo-dev-data-sql-ec2-role/'
@@ -48,7 +49,7 @@ def install(secret,version):
     resource.setrlimit(resource.RLIMIT_CORE,(0,0));os.umask(0o077)
     if BASE.exists(): raise ValueError('Existing TLS directory; manual reconciliation required')
     run(['systemctl','is-active','--quiet','mssql-server'])
-    who=pwd.getpwnam('mssql');cert,key=get_material(secret,version)
+    who=unix_accounts.getpwnam('mssql');cert,key=get_material(secret,version)
     BASE.mkdir(mode=0o700);os.chown(BASE,who.pw_uid,who.pw_gid)
     for name,data in [('sql.demo.internal.crt',cert),('sql.demo.internal.key',key)]:
         fd=os.open(BASE/name,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o600)
