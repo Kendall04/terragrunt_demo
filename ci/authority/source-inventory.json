@@ -6288,7 +6288,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/run_recovery_ci.py": {
-      "sha256": "af779a816532962ffe0fba7aa8df68f23f726032293404cb8875ba9c0acbf1d9",
+      "sha256": "5555a24339a28be94167ee79570c51ade57fda7350024c3e20cbd5aa9beb75da",
       "declarations": [],
       "signals": {
         "executable-dependency": [
@@ -13644,13 +13644,13 @@
     },
     "operations/integrations/portable/nat_observer.py": {
       "semantic_status": "UNVERIFIED",
-      "sha256": "1c876f4814e4063aca3247a5ce549efc4bec637ae85d3b83a7a06c8522bdb856",
+      "sha256": "5c0a70a17cab50dcf5e5d54fd20e38b3afea9170aab2b9732977ffc850bbc0a3",
       "declarations": [],
       "signals": {}
     },
     "operations/integrations/portable/nat_probe.py": {
       "semantic_status": "UNVERIFIED",
-      "sha256": "b9efe4768ea30fae6abf17ed81b048a88b4d19bb6797f1957e08d1e9779bfdaf",
+      "sha256": "4e329c8f25af4ccf0bda91945c8fe636cf75ba9025c4d21a7ee4abc6fdef1ca4",
       "declarations": [],
       "signals": {}
     },
@@ -13682,7 +13682,7 @@
     },
     "operations/integrations/portable/test_nat_observer.py": {
       "semantic_status": "UNVERIFIED",
-      "sha256": "146b9c2cb87777f754fbd6bbcd98694682865574d10603e5a62902df48e0e1c2",
+      "sha256": "0739e6ef17535022b71787faa6561f66d6618a007119031e6f9b3451eab7360c",
       "declarations": [],
       "signals": {}
     },
@@ -13785,7 +13785,30 @@
     },
     "operations/integrations/portable/test_nat_probe.py": {
       "semantic_status": "UNVERIFIED",
-      "sha256": "0b6a290f839f9e8637efc0ac55cd4211fbdf7b79e5edfb04549d6d4efd509e4a",
+      "sha256": "36b052f1187ee649057cfa9f79809252c5dc31e6b7356a56e9b95334b53ea622",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          41
+        ]
+      }
+    },
+    "operations/integrations/portable/collect_continuity.py": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "5cd5ed2c1f5f2762d74f546bcec469a6c19df10ec1c623b70da656a08dacb85b",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          71,
+          73,
+          76,
+          82
+        ]
+      }
+    },
+    "operations/integrations/portable/test_continuity.py": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "1236f246ec8d67726cbb8365a23cdfcdffd16fbf8195a48f6f4c27a1ea8f6a87",
       "declarations": [],
       "signals": {}
     }
