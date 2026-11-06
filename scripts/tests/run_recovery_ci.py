@@ -24,7 +24,7 @@ SUITES = ('test_recovery.py', 'test_cold_path.py', 'test_cold_execution.py',
           'test_wp4_recovery_contract.py', 'test_native_host.py', 'test_native_step.py')
 PORTABLE = ROOT / 'operations/integrations/portable'
 PORTABLE_SUITES = ('test_bridge.py', 'test_publisher.py', 'test_wiring_proposal.py', 'test_storage_observer.py',
-                   'test_backup_retention.py', 'test_backup_restore_pin.py', 'test_nat_observer.py')
+                   'test_backup_retention.py', 'test_backup_restore_pin.py', 'test_nat_observer.py', 'test_nat_probe.py')
 SUITES += PORTABLE_SUITES
 CHILD = r'''
 import json,sys,unittest

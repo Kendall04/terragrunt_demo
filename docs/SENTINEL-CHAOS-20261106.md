@@ -139,3 +139,15 @@ concurrency one, 64 requests/four jobs per invocation, exact input, no transport
 retries and the existing DLQ. One-time manual catch-up is recorded separately;
 it is not evidence of unattended throughput. The trial preparer copies the
 maintained consumer runtime so these reviewed settings survive re-preparation.
+
+The second A replacement recovered private HTTPS at 07:11:55 UTC on November 6,
+but detection remained partial for a different reason: socket timeouts applied
+per connection/address allowed the private probe to reach Lambda's ten-second
+timeout. The observer correctly reported Unknown. A six-second Linux process
+timer now bounds DNS, all connection attempts, TLS and response reading together;
+its exception is deliberately not an OSError, so urllib cannot retry an address
+after expiry. The timer is removed and its handler restored on every exit. Local
+tests interrupt an actual blocked socket without public network access. They do
+not retroactively certify either AWS fault or authorize a third replacement.
+See [Python signal timers](https://docs.python.org/3/library/signal.html) and
+[Lambda invocation timeout](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtime-environment.html).

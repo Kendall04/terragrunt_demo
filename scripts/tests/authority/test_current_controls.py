@@ -96,14 +96,19 @@ resource "aws_iam_instance_profile" "node" {
         rows=[r for r in d.records if r['source'].startswith('operations/integrations/portable/')]
         # All previous declarations plus security inputs, metadata, owned logging and
         # outputs remain visible; applicable controls are still UNKNOWN.
-        self.assertEqual(len(rows),86)
+        # Two bounded admission inputs, one derived output and the second worker
+        # target add four declarations; the target remains unsupported authority.
+        self.assertEqual(len(rows),90)
+        target=[r for r in rows if r.get('declaration',{}).get('id')=='operations/integrations/portable/trial/runtime/main.tf#resource:aws_cloudwatch_event_target:worker_second']
+        self.assertEqual(len(target),1)
+        self.assertEqual(target[0]['admission'],'UNSUPPORTED_APPLICABLE')
         receipt=[r for r in rows if r['source']=='operations/integrations/portable/trial/main.tf'
                  and r.get('declaration',{}).get('kind')=='output'
                  and r.get('declaration',{}).get('id')=='operations/integrations/portable/trial/main.tf#output:package_manifest_sha256:']
         self.assertEqual(len(receipt),1)
         self.assertEqual(receipt[0]['admission'],'NON_SECURITY_RELEVANT')
         self.assertEqual(receipt[0]['affects'],[])
-        self.assertEqual(sum(r['admission']=='UNSUPPORTED_APPLICABLE' for r in rows),44)
+        self.assertEqual(sum(r['admission']=='UNSUPPORTED_APPLICABLE' for r in rows),45)
         self.assertTrue(any(r.get('mechanism_schema')=='aws_dynamodb_table' for r in rows))
         self.assertEqual(sum(bool(r.get('policy_action_domain')) for r in rows),5)
 

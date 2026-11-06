@@ -6288,7 +6288,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/run_recovery_ci.py": {
-      "sha256": "8904746a330431c45e70104a532523dfa584820ee07dd293e85d3e1c822fd0c6",
+      "sha256": "af779a816532962ffe0fba7aa8df68f23f726032293404cb8875ba9c0acbf1d9",
       "declarations": [],
       "signals": {
         "executable-dependency": [
@@ -13650,7 +13650,7 @@
     },
     "operations/integrations/portable/nat_probe.py": {
       "semantic_status": "UNVERIFIED",
-      "sha256": "3ea8da27a069c7280c332513eeb160c94b89aa2ac8333e5b4a96533c1032ba6d",
+      "sha256": "b9efe4768ea30fae6abf17ed81b048a88b4d19bb6797f1957e08d1e9779bfdaf",
       "declarations": [],
       "signals": {}
     },
@@ -13782,6 +13782,12 @@
           107
         ]
       }
+    },
+    "operations/integrations/portable/test_nat_probe.py": {
+      "semantic_status": "UNVERIFIED",
+      "sha256": "0b6a290f839f9e8637efc0ac55cd4211fbdf7b79e5edfb04549d6d4efd509e4a",
+      "declarations": [],
+      "signals": {}
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",
