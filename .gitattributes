@@ -9,6 +9,11 @@ docs/interactive/evidence/screenshots/*.json text eol=lf
 scripts/diagrams/*.mjs text eol=lf
 scripts/diagrams/*.py text eol=lf
 portfolio/archify-pins.json text eol=lf
+portfolio/product/*.mjs text eol=lf
+portfolio/product/*.css text eol=lf
+portfolio/product/*.html text eol=lf
+portfolio/product/*.md text eol=lf
+portfolio/product/evidence/*.json text eol=lf
 operations/integrations/trial-review/part4-amendment/** text eol=lf
 
 # Deterministic SQL helper payload must hash identically on Windows and Linux.

@@ -1,5 +1,18 @@
 # Cloud Platform ECS · local portfolio
 
+## Entrada principal ECS V2 · 7-nov-2026
+
+La nueva [experiencia Product Demo y Architecture Explorer](product/README.md)
+integra siete diagramas V2, cinco históricos, recorridos de resiliencia y una
+edición AWS local supervisada comprobada con POST/GET auténticos. Ejecutar
+`node portfolio/product/server.mjs` y abrir <http://127.0.0.1:4182/demo>.
+Incluye build estático DEMO independiente, [validación](product/VALIDATION.md)
+y [propuesta de hosting](product/HOSTING.md), todavía sin publicar.
+
+El contenido restante de este documento describe el **portafolio histórico del
+26-oct**, conservado en `portfolio/server.mjs` (4181). Sus pendientes no representan
+el estado ECS V2 actual. Los diagramas originales y sus pins no se modificaron.
+
 ## Estado actual - cierre local portable y revisión26-oct-2026
 
 La demo incorpora una tarjeta LOCAL CON DOBLES del paquete portable, dos expectativas

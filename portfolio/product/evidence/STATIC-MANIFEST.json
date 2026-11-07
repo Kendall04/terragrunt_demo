@@ -1,0 +1,224 @@
+{
+  "schema": "ECS_PORTFOLIO_STATIC_V1",
+  "edition": "demo",
+  "files": [
+    {
+      "path": "architecture/index.html",
+      "bytes": 3096,
+      "sha256": "701ce04d353716c99b88ef32f4b8be2e2e4c952dc8291337bcf7ab18f099411c"
+    },
+    {
+      "path": "assets/api.mjs",
+      "bytes": 4251,
+      "sha256": "4795f2690605d7f9c308d929d78c68a2d836c1a44a41a47f7ce2b2d9960aff17"
+    },
+    {
+      "path": "assets/app.mjs",
+      "bytes": 26613,
+      "sha256": "1360d29689cc5b5626d3c960fac615adeb78d56c72a82fb015646b4d3bb8f7b1"
+    },
+    {
+      "path": "assets/atlas.mjs",
+      "bytes": 44271,
+      "sha256": "ae13367d327d3a8955c48118b575e476601a354cd8c00c9e55e6beaa0fe55fa0"
+    },
+    {
+      "path": "assets/config.mjs",
+      "bytes": 28,
+      "sha256": "ca0cdc33e4b6c6f950b71ab16db2dbab6adfd3d1f37546ffe40d2cc14edbe6f5"
+    },
+    {
+      "path": "assets/data.mjs",
+      "bytes": 4884,
+      "sha256": "4c0a2068c2a88c082bfe28f71deb26693c05012cc911cd86b797c2a147fac328"
+    },
+    {
+      "path": "assets/style.css",
+      "bytes": 17461,
+      "sha256": "a0d77bc4b20d58a52d1e6000e1c72dff2616b5aeab15c780b52e96b66ed88a2c"
+    },
+    {
+      "path": "demo/index.html",
+      "bytes": 3096,
+      "sha256": "701ce04d353716c99b88ef32f4b8be2e2e4c952dc8291337bcf7ab18f099411c"
+    },
+    {
+      "path": "diagrams/az6-recovery.html",
+      "bytes": 820233,
+      "sha256": "61cc2de5e0e2312aaee7942c32fe40a6aa5027bca9552d5c6bf5bd62100248b1"
+    },
+    {
+      "path": "diagrams/backup-signals.html",
+      "bytes": 817208,
+      "sha256": "54f38aced586d01cc04f054c4aef696a14aa2a4228ed59e881c853555d7ecfca"
+    },
+    {
+      "path": "diagrams/future-integrations.html",
+      "bytes": 819868,
+      "sha256": "f5f00ec0943f846b815ea71f862aac23796f4417a50e9499e94d6d9091b0a590"
+    },
+    {
+      "path": "diagrams/v1-network.html",
+      "bytes": 819887,
+      "sha256": "7a9b812779c09e54045ffb3fc59e43371c8cd5b1b9c4ca19167112a2653ac0d2"
+    },
+    {
+      "path": "diagrams/v1-platform.html",
+      "bytes": 819890,
+      "sha256": "df3f5fc4f4a81dca4980df29d8bd88168cd4c83011ec18aa8e7fd6255b9ceab6"
+    },
+    {
+      "path": "diagrams/v2-delivery.html",
+      "bytes": 833697,
+      "sha256": "8305dd8636222e4a13eefa1f9b7c21f848a5f190807275a896e3b15e7803ca12"
+    },
+    {
+      "path": "diagrams/v2-nat-incident.html",
+      "bytes": 829570,
+      "sha256": "a492fe3f6433a7997ce22ed6744f06fd654bfd55deda49fa99b54e4c63370070"
+    },
+    {
+      "path": "diagrams/v2-network.html",
+      "bytes": 833273,
+      "sha256": "e31649fcf0ef12387cfa48ee1cbfc6df955f098907f5ed3ee1691c063615795c"
+    },
+    {
+      "path": "diagrams/v2-platform.html",
+      "bytes": 840707,
+      "sha256": "7295672673db09740cbe217d2f47f52824c48ae2f649255d4d1293d9cf7dab30"
+    },
+    {
+      "path": "diagrams/v2-sentinel.html",
+      "bytes": 848165,
+      "sha256": "24e6b12a9d0f6ffe53a0bcb71f14356813baecab1e67451f34c3e0cd142d5f98"
+    },
+    {
+      "path": "diagrams/v2-sql-recovery.html",
+      "bytes": 835976,
+      "sha256": "da231adb96d10a979e41062b3d5b3a7ce1ced0adc95b65b8183d9eaa75d5f58e"
+    },
+    {
+      "path": "diagrams/v2-trust.html",
+      "bytes": 837496,
+      "sha256": "602c17fc8e3ae450d267480f9f1685bb657c389d15148d5e0e98eb94ce607ccf"
+    },
+    {
+      "path": "evidence/index.html",
+      "bytes": 3096,
+      "sha256": "701ce04d353716c99b88ef32f4b8be2e2e4c952dc8291337bcf7ab18f099411c"
+    },
+    {
+      "path": "HOSTING.json",
+      "bytes": 729,
+      "sha256": "0e71b80190d37c4acbc7a58e48122e5f45d949607fe995b655a5dc4a23802039"
+    },
+    {
+      "path": "index.html",
+      "bytes": 3096,
+      "sha256": "701ce04d353716c99b88ef32f4b8be2e2e4c952dc8291337bcf7ab18f099411c"
+    },
+    {
+      "path": "reading/v2-delivery.html",
+      "bytes": 241814,
+      "sha256": "547f79b9b68e45a965872efd225c80c89f99dc37bb8db12ebd367b4a090b15fe"
+    },
+    {
+      "path": "reading/v2-nat-incident.html",
+      "bytes": 238468,
+      "sha256": "9ffa69b4382de7ecfcc7c467473b180245425b5e98f409e103edc6ea213f66c9"
+    },
+    {
+      "path": "reading/v2-network.html",
+      "bytes": 241750,
+      "sha256": "36a9c79d3475d7fbe7646dc34dfec52abdd5b78cf76d202877c292610334b94a"
+    },
+    {
+      "path": "reading/v2-platform.html",
+      "bytes": 250402,
+      "sha256": "148791dfdd39bfa5963e604bba552eaa61b908206e00c720fb4b2b772c21103e"
+    },
+    {
+      "path": "reading/v2-sentinel.html",
+      "bytes": 258897,
+      "sha256": "1ca3713bdaa2476ac557b09d39861adfc09c7cfc302537825e4fa837372a1db9"
+    },
+    {
+      "path": "reading/v2-sql-recovery.html",
+      "bytes": 244750,
+      "sha256": "a4c6aefa78b359f302cd495720bc0bb565fc18da3d4c338ac1ff5a60e08d68ac"
+    },
+    {
+      "path": "reading/v2-trust.html",
+      "bytes": 246599,
+      "sha256": "50c8405e82795d151b3325365790984aa63027b1bc615d202ad28852856b6a16"
+    },
+    {
+      "path": "resilience/index.html",
+      "bytes": 3096,
+      "sha256": "701ce04d353716c99b88ef32f4b8be2e2e4c952dc8291337bcf7ab18f099411c"
+    },
+    {
+      "path": "sources/az6-recovery.json",
+      "bytes": 3707,
+      "sha256": "82a5eeccb6c44a9163c1c5e77f927abed89ff641385e16f72fffc04a4ae7bfca"
+    },
+    {
+      "path": "sources/backup-signals.json",
+      "bytes": 3229,
+      "sha256": "7da299616f2ccf92207fc1aa49064b759442f53777bfdadb30d0fc88f80c654e"
+    },
+    {
+      "path": "sources/future-integrations.json",
+      "bytes": 3797,
+      "sha256": "a1e4a2943cf1b266080526151c7ef5c0098d22781713e189c8ace2b92d9dce58"
+    },
+    {
+      "path": "sources/v1-network.json",
+      "bytes": 3526,
+      "sha256": "019d052a2f302c46724c9ac98acb7ccd4261eb9cadb3b0d9390962433dbe4aea"
+    },
+    {
+      "path": "sources/v1-platform.json",
+      "bytes": 3526,
+      "sha256": "c64ffbd3b7fec8b93addc73645cd213a8455bd4480ead71fc44afde3ccf6d276"
+    },
+    {
+      "path": "sources/v2-delivery.json",
+      "bytes": 7297,
+      "sha256": "271bf14988293919ab27145daa797f07e16500dc6fc5e3660c3774565025769b"
+    },
+    {
+      "path": "sources/v2-nat-incident.json",
+      "bytes": 5398,
+      "sha256": "1f68b058dff98b5a75bda15452fd5168d8df7b5541ef9759ac6175fe3cb65417"
+    },
+    {
+      "path": "sources/v2-network.json",
+      "bytes": 7703,
+      "sha256": "f4c669bf7c8dbfe07fb64e2a6615909040a3fbf494f4790f8096f43b1220102d"
+    },
+    {
+      "path": "sources/v2-platform.json",
+      "bytes": 8976,
+      "sha256": "33656628d3dca58fea4665d3b7fc6a7d9beaeda1462ac1182e1f7fa107b5343e"
+    },
+    {
+      "path": "sources/v2-sentinel.json",
+      "bytes": 11487,
+      "sha256": "1470ca61815760c4037790db9b15d01e6b4b80675e3ce71c1afaab339064d3c9"
+    },
+    {
+      "path": "sources/v2-sql-recovery.json",
+      "bytes": 8335,
+      "sha256": "0b845b957b582252a18b9ea16b75dcb7dfd1eb850d04dee0f8dfb30f846b04f9"
+    },
+    {
+      "path": "sources/v2-trust.json",
+      "bytes": 8743,
+      "sha256": "501a6ac567e740b262f3390539eacf56fe9082a3232bea8523022211fb09e25f"
+    }
+  ],
+  "contentSHA256": "411fb3e06c4a030beeea29990fe89c0c6e2a3c4ce8a451893844492f223cf3e6",
+  "awsCredentials": false,
+  "awsProxy": false
+}

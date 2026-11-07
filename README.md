@@ -181,21 +181,17 @@ approved teardown. Retained storage and security services mean **DOWN is not $0*
 - Costa Rica; remote Cloud / DevOps / Platform Engineering work.
 
 
-## Local Product Demo and Architecture Explorer
+## ECS V2 Product Demo and Architecture Explorer
 
-The [portfolio](portfolio/README.md) is a dependency-free local UI: synthetic
-memory-only message interaction, architecture component navigation and explicit
-historical/pending evidence. Run `node portfolio/server.mjs` from this repository
-and open http://127.0.0.1:4181. It has no AWS/backend connection, credentials,
-infrastructure controls or live mode. V1 and the scoped az6 experiment are separate
-historical topologies; Sentinel delivery remains pending and PKI is outside ECS scope. The guide includes the existing
-workspace-local Node command and isolated browser-test instructions. No hosting,
-new repository, CI/CD or whole-V2 acceptance is implied by this UI.
+Run `node portfolio/product/server.mjs` and open <http://127.0.0.1:4182/demo>.
+The [V2 portfolio](portfolio/product/README.md) provides a memory-only DEMO,
+seven accepted V2 diagrams, five historical diagrams and evidence-based NAT,
+SQL recovery and backup replays. It works with AWS shut down. A separate,
+explicit loopback AWS edition was tested against the real API using one
+synthetic POST and bounded GET readbacks; it is not a public authenticated UI.
 
-
-## Local Product Demo and Archify
-
-Run the [local portfolio](portfolio/README.md) for a synthetic Product Demo and
-[five authentic Archify diagrams](docs/interactive/README.md). Views distinguish
-retired V1/az6, historical A-to-B-to-A delivery, local backup observability and pending installation; none query AWS.
-See the [current acceptance boundary](portfolio/ACCEPTANCE.md) and screenshots.
+See [validation and screenshots](portfolio/product/VALIDATION.md),
+[the architecture atlas](docs/interactive/V2-INDEX.md), and the
+[independent static hosting proposal](portfolio/product/HOSTING.md).
+No hosting was created. The previous [October portfolio](portfolio/README.md)
+and its original diagram provenance remain historical evidence.

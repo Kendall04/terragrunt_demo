@@ -106,3 +106,5 @@ test('portable local evidence binds the actual source-bound packages and preserv
  assert.match(input.html,/data-tour="observability" data-tour-focus="#portable-evidence h2"/);
  const response=await request('/source/sentinel-portable');assert.equal(response.status,200);assert.match(response.text,/No AWS/);
 });
+// V2 contracts run in the existing hygiene CI; the historical suite stays intact.
+import './product/test-product.mjs';

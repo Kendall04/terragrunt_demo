@@ -1,0 +1,167 @@
+{
+  "schema": "ECS_PRODUCT_AWS_EVIDENCE_V1",
+  "sourceBase": "a46636d6b0b9f38bdbe2512f54cb75d99b406e8d",
+  "account": "341936017254",
+  "region": "us-east-1",
+  "identityReadback": "arn:aws:iam::341936017254:user/cnp-cert-admin",
+  "preflightAt": "2026-11-07T01:03:12.869890+00:00",
+  "api": {
+    "ApiId": "4cjyis8dsa",
+    "Name": "demo-dev-edge",
+    "ApiEndpoint": "https://4cjyis8dsa.execute-api.us-east-1.amazonaws.com",
+    "ProtocolType": "HTTP",
+    "DisableExecuteApiEndpoint": false
+  },
+  "routeAuthorization": "NONE (existing DEV limitation)",
+  "ecs": [
+    {
+      "serviceName": "demo-dev-app-api-blue-svc",
+      "status": "ACTIVE",
+      "desiredCount": 1,
+      "runningCount": 1,
+      "taskDefinition": "arn:aws:ecs:us-east-1:341936017254:task-definition/demo-dev-app-api-blue:15"
+    },
+    {
+      "serviceName": "demo-dev-app-api-green-svc",
+      "status": "ACTIVE",
+      "desiredCount": 0,
+      "runningCount": 0,
+      "taskDefinition": "arn:aws:ecs:us-east-1:341936017254:task-definition/demo-dev-app-api-green:9"
+    }
+  ],
+  "earlyBrowser": {
+    "at": "2026-11-07T01:10:06.694Z",
+    "kind": "AUTHENTIC_AWS_BROWSER",
+    "endpoint": "https://4cjyis8dsa.execute-api.us-east-1.amazonaws.com",
+    "calls": [
+      {
+        "at": "2026-11-07T01:10:07.711Z",
+        "method": "GET",
+        "path": "/health/live",
+        "status": 200,
+        "durationMs": 332
+      },
+      {
+        "at": "2026-11-07T01:10:08.049Z",
+        "method": "GET",
+        "path": "/ready",
+        "status": 200,
+        "durationMs": 464
+      },
+      {
+        "at": "2026-11-07T01:10:08.596Z",
+        "method": "POST",
+        "path": "/text",
+        "status": 200,
+        "durationMs": 126
+      },
+      {
+        "at": "2026-11-07T01:10:08.746Z",
+        "method": "GET",
+        "path": "/text?page=1&pageSize=5",
+        "status": 200,
+        "durationMs": 138
+      }
+    ],
+    "errors": [],
+    "postAttempts": 1,
+    "row": {
+      "id": 6,
+      "createdAt": "2026-11-07T01:10:08.7073381Z",
+      "textSHA256": "5622a688df8000e5ce2d0755e3037d56cebc7bc4720b92a3858303d53e3aace5"
+    },
+    "persistedReadback": true,
+    "uiVerified": true,
+    "status": "PASS"
+  },
+  "finalReadback": {
+    "kind": "AUTHENTIC_AWS_BROWSER",
+    "at": "2026-11-07T01:25:07.172Z",
+    "mode": "--readback",
+    "endpoint": "https://4cjyis8dsa.execute-api.us-east-1.amazonaws.com",
+    "calls": [
+      {
+        "at": "2026-11-07T01:25:08.566Z",
+        "method": "GET",
+        "path": "/health/live",
+        "status": 200,
+        "durationMs": 291
+      },
+      {
+        "at": "2026-11-07T01:25:08.868Z",
+        "method": "GET",
+        "path": "/ready",
+        "status": 200,
+        "durationMs": 195
+      },
+      {
+        "at": "2026-11-07T01:25:09.464Z",
+        "method": "GET",
+        "path": "/text?page=1&pageSize=5",
+        "status": 200,
+        "durationMs": 118
+      }
+    ],
+    "postAttempts": 0,
+    "errors": [],
+    "sourceHashes": {
+      "app.mjs": "1360d29689cc5b5626d3c960fac615adeb78d56c72a82fb015646b4d3bb8f7b1",
+      "api.mjs": "4795f2690605d7f9c308d929d78c68a2d836c1a44a41a47f7ce2b2d9960aff17",
+      "data.mjs": "4c0a2068c2a88c082bfe28f71deb26693c05012cc911cd86b797c2a147fac328",
+      "style.css": "a0d77bc4b20d58a52d1e6000e1c72dff2616b5aeab15c780b52e96b66ed88a2c",
+      "proxy.mjs": "9df1d1f7980a9bb41902f4d313cad13107b64e0930234858fba79df0fd504ec2",
+      "server.mjs": "259529a34bbfdf56c5e096c556be5935adf87e3f4d7f9ca2d567d62290432887",
+      "diagrams.mjs": "89719b8520ac17c2c79d2b5f8da4df31b30a6c158cf7e77acfa7be0bc443a24f",
+      "test-aws-browser.mjs": "3da93ba51071b31da82949cecf4df7d22d8bb19adbbd9d3961353c5008474a35"
+    },
+    "captureSHA256": "88ebbb6ec2430696b0280afd575dcb81067444e656d2204b693cd742e9999aa6",
+    "row": {
+      "id": 6,
+      "createdAt": "2026-11-07T01:10:08.7073381Z",
+      "textSHA256": "5622a688df8000e5ce2d0755e3037d56cebc7bc4720b92a3858303d53e3aace5"
+    },
+    "persistedReadback": true,
+    "uiVerified": true,
+    "utcVerified": true,
+    "status": "PASS"
+  },
+  "intermediateHarnessFailure": {
+    "at": "2026-11-07T01:24:26.116Z",
+    "calls": [
+      {
+        "at": "2026-11-07T01:24:27.440Z",
+        "method": "GET",
+        "path": "/health/live",
+        "status": 200,
+        "durationMs": 325
+      },
+      {
+        "at": "2026-11-07T01:24:27.774Z",
+        "method": "GET",
+        "path": "/ready",
+        "status": 200,
+        "durationMs": 984
+      },
+      {
+        "at": "2026-11-07T01:24:28.851Z",
+        "method": "GET",
+        "path": "/text?page=1&pageSize=5",
+        "status": 200,
+        "durationMs": 131
+      }
+    ],
+    "postAttempts": 0,
+    "status": "FAIL",
+    "cause": "Runner expected ISO T separator; UI correctly renders a space plus UTC. Fixed assertion; preserved failed receipt privately. No extra POST."
+  },
+  "httpCallsIncludingPreflight": 12,
+  "totalSyntheticPOSTs": 1,
+  "estimatedIncrementalUSD": 0.02,
+  "previousModelUSD": 14.7,
+  "modelAfterUSD": 14.72,
+  "authorizedCeilingUSD": 20,
+  "billedCostObserved": null,
+  "mutations": "One synthetic POST /text only; no configuration changes",
+  "closeUTC": "2026-11-09T04:00:00Z",
+  "captureRedaction": "Other returned plaintext replaced in screenshot; their payloads not retained in public evidence."
+}
