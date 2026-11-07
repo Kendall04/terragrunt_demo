@@ -14,6 +14,12 @@ portfolio/product/*.css text eol=lf
 portfolio/product/*.html text eol=lf
 portfolio/product/*.md text eol=lf
 portfolio/product/evidence/*.json text eol=lf
+portfolio/product/fonts/*.txt text eol=lf
+portfolio/product/fonts/*.json text eol=lf
+portfolio/product/hosting/*.mjs text eol=lf
+portfolio/product/hosting/*.py text eol=lf
+portfolio/product/evidence/redesign/*.json text eol=lf
+portfolio/product/evidence/public/*.json text eol=lf
 operations/integrations/trial-review/part4-amendment/** text eol=lf
 
 # Deterministic SQL helper payload must hash identically on Windows and Linux.

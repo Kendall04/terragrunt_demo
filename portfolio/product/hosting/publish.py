@@ -107,6 +107,51 @@ def main():
                 else:
                     assert "Subscription" not in outputs
                 s3 = s.client("s3", config=config)
+                receipt["publicAccessBlock"] = s3.get_public_access_block(Bucket=BUCKET)["PublicAccessBlockConfiguration"]
+                assert all(receipt["publicAccessBlock"].values())
+                receipt["versioning"] = s3.get_bucket_versioning(Bucket=BUCKET)["Status"]
+                assert receipt["versioning"] == "Enabled"
+                ownership = s3.get_bucket_ownership_controls(Bucket=BUCKET)["OwnershipControls"]
+                assert ownership == {"Rules": [{"ObjectOwnership": "BucketOwnerEnforced"}]}
+                encryption = s3.get_bucket_encryption(Bucket=BUCKET)["ServerSideEncryptionConfiguration"]
+                assert encryption["Rules"][0]["ApplyServerSideEncryptionByDefault"]["SSEAlgorithm"] == "AES256"
+                front = s.client("cloudfront", config=config)
+                dist = front.get_distribution(Id=outputs["DistributionId"])["Distribution"]
+                distribution_config = dist["DistributionConfig"]
+                assert distribution_config["Origins"]["Quantity"] == 1
+                origin = distribution_config["Origins"]["Items"][0]
+                assert origin["DomainName"] == f"{BUCKET}.s3.us-east-1.amazonaws.com"
+                assert origin["OriginPath"] == f"/releases/{seal}"
+                oac = front.get_origin_access_control(Id=origin["OriginAccessControlId"])["OriginAccessControl"]["OriginAccessControlConfig"]
+                assert oac["SigningBehavior"] == "always" and oac["SigningProtocol"] == "sigv4"
+                assert oac["OriginAccessControlOriginType"] == "s3"
+                receipt["originAccessControl"] = oac
+                behavior = distribution_config["DefaultCacheBehavior"]
+                assert behavior["ViewerProtocolPolicy"] == "redirect-to-https"
+                assert sorted(behavior["AllowedMethods"]["Items"]) == ["GET", "HEAD"]
+                assert distribution_config.get("CacheBehaviors", {}).get("Quantity", 0) == 0
+                assert distribution_config.get("CustomErrorResponses", {}).get("Quantity", 0) == 0
+                assert distribution_config["ViewerCertificate"]["CloudFrontDefaultCertificate"]
+                expected_functions = {"viewer-request": "Routes", "viewer-response": "Headers"}
+                associations = behavior["FunctionAssociations"]["Items"]
+                assert len(associations) == 2
+                receipt["functions"] = []
+                for association in associations:
+                    logical_id = expected_functions[association["EventType"]]
+                    properties = template["Resources"][logical_id]["Properties"]
+                    assert association["FunctionARN"] == f"arn:aws:cloudfront::{ACCOUNT}:function/{properties['Name']}"
+                    code = front.get_function(Name=properties["Name"], Stage="LIVE")["FunctionCode"].read()
+                    assert code == properties["FunctionCode"].encode()
+                    receipt["functions"].append({"name": properties["Name"], "sha256": digest(code), "stage": "LIVE"})
+                policy = json.loads(s3.get_bucket_policy(Bucket=BUCKET)["Policy"])
+                assert len(policy["Statement"]) == 2
+                allow, deny = policy["Statement"]
+                assert allow["Effect"] == "Allow" and allow["Action"] == "s3:GetObject"
+                assert allow["Principal"] == {"Service": "cloudfront.amazonaws.com"}
+                assert allow["Resource"] == f"arn:aws:s3:::{BUCKET}/releases/*"
+                assert allow["Condition"] == {"StringEquals": {"AWS:SourceArn": f"arn:aws:cloudfront::{ACCOUNT}:distribution/{outputs['DistributionId']}"}}
+                assert deny["Effect"] == "Deny" and deny["Condition"] == {"Bool": {"aws:SecureTransport": "false"}}
+                receipt["bucketPolicy"] = policy
                 receipt["objects"] = []
                 for name, data in files:
                     key = f"releases/{seal}/{name}"
@@ -131,13 +176,8 @@ def main():
                         Parameters=[{"ParameterKey": "Release", "UsePreviousValue": True}, {"ParameterKey": "Enabled", "ParameterValue": "true"}],
                         ClientRequestToken="ecs-portfolio-enable-" + str(uuid.uuid4()))
                 if args.action == "verify":
-                    receipt["publicAccessBlock"] = s3.get_public_access_block(Bucket=BUCKET)["PublicAccessBlockConfiguration"]
-                    assert all(receipt["publicAccessBlock"].values())
-                    receipt["bucketPolicy"] = json.loads(s3.get_bucket_policy(Bucket=BUCKET)["Policy"])
-                    receipt["distribution"] = s.client("cloudfront", config=config).get_distribution(Id=outputs["DistributionId"])["Distribution"]
-                    dist = receipt["distribution"]
+                    receipt["distribution"] = dist
                     assert dist["Status"] == "Deployed" and dist["DistributionConfig"]["Enabled"]
-                    assert dist["DistributionConfig"]["Origins"]["Quantity"] == 1
         receipt["resultStatus"] = "PASS"
     except Exception as e:
         receipt["resultStatus"] = "FAILED_OR_UNCERTAIN"

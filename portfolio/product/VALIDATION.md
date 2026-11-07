@@ -20,7 +20,7 @@ adaptadores, datos históricos, diagramas originales y sus pins no cambian.
   `3ede367cc3a7e4d48c8fa1d0fc2f66ef75be9ebf8e34d74299d86d9dda6b9b21`.
   Build reproducible, edición DEMO fija, sin proxy, credenciales o conexiones API.
 - Se añadieron pruebas de allowlist CloudFront, CSP diferenciada, aislamiento del
-  stack, plan FREE y hashes/licencia de fuentes. La suite existente CI de higiene
+  stack, alternativas Free/pay-as-you-go y hashes/licencia de fuentes. CI de higiene
   importa estas pruebas mediante `portfolio/test-contract.mjs`.
 
 Los recibos y capturas originales de PR #36 se preservan. Las capturas nuevas
@@ -29,12 +29,31 @@ de red en el mapa, menú a 320 px y áreas táctiles, sin modificar diagramas Ar
 
 ## Publicación
 
-El propietario autorizó una publicación del stack y reserva de USD 1/mes,
-separada del laboratorio, con template revisado
-`2cfaad42bf57a86e64d69fd7fa8426a05ee6a8a2e9b72c4a84cc10e575c84952`.
-Se exige suscripción FREE/ACTIVE, checksum de cada objeto y pruebas HTTPS reales
-antes de declarar publicación PASS. El estado final y URL se registran en
-[HOSTING.md](HOSTING.md); no se confunde CREATE_COMPLETE con verificación de UI.
+**PASS** en [CloudFront real](https://d20ioz705caon7.cloudfront.net/).
+AWS rechazó Free; tras rollback y autorización nueva se instaló pay-as-you-go,
+template `11fd9d4ad78a290a3c0d9e4ed20088484475ed8062e94bdebf3323316c0de3fe`,
+manteniendo la reserva separada USD 1/mes. [HOSTING.md](HOSTING.md) conserva el fallo,
+la decisión, recursos, coste modelado y rollback.
+
+[Recibo HTTPS](evidence/public/PUBLIC-HTTPS-QA.json): 47 archivos públicos idénticos
+al manifest sellado, MIME/CSP correctos; cinco vistas en 320/390/768/1440/1920;
+navegación directa, refresh, menú, foco y skip link; doce diagramas desktop/móvil,
+zoom/fit/sandbox/lectura; CRUD/reset DEMO y tres reproducciones históricas.
+Cero errores JS, cero solicitudes externas o al API. Se revisaron capturas
+auténticas públicas de portada y Product Demo móvil, además de la revisión local.
+
+[Readback AWS](evidence/public/HOSTING-READBACK.json): UPDATE_COMPLETE,
+Deployed/Enabled, 48 objetos con checksum/versionId, S3 privado/versionado/cifrado,
+OAC firmado, bucket policy limitada y Functions idénticas al template. No se
+apagó el runtime para esta comprobación: la independencia se demuestra por
+origen estático único, edición fija, CSP y ausencia de solicitudes, no por un
+teardown inventado.
+
+El primer CI detectó `UNMODELED_SOURCE` para el publicador Python nuevo. Se registró
+únicamente ese archivo en el inventario existente, con digest real y disposición
+UNVERIFIED; no se alteraron tests, contratos ni recursos E1. La suite de contratos
+del portafolio pasó en Linux. Dos solicitudes de HTML grandes dieron ECONNRESET
+en Node local Windows; Chrome local/público y CI Linux completaron esos recorridos.
 
 ## Reproducir sin AWS
 

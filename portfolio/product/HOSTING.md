@@ -1,7 +1,19 @@
 # Hosting DEMO independiente
 
-Estado: **Free autorizado y rechazado por AWS; alternativa pendiente**. Cuenta `341936017254`,
+Estado: **PUBLICADO y verificado por HTTPS — 7-nov-2026**. Cuenta `341936017254`,
 región `us-east-1`, propietario Kendall. No usa el hosting EKS ni estados del runtime.
+
+**[Abrir Cloud Resilience Laboratory](https://d20ioz705caon7.cloudfront.net/)**.
+Distribución `E1PKEWJYYS672Q`, stack `ecs-v2-portfolio-demo`, UPDATE_COMPLETE;
+CloudFront Deployed/Enabled. [Readback AWS](evidence/public/HOSTING-READBACK.json)
+y [Chrome HTTPS](evidence/public/PUBLIC-HTTPS-QA.json): PASS. 48 objetos versionados
+verificados (47 archivos + manifest), cinco vistas, doce diagramas, DEMO/reset,
+rutas directas/refresh, 404, MIME, CSP, desktop/móvil; cero llamadas al backend.
+
+Release inmutable:
+`3ede367cc3a7e4d48c8fa1d0fc2f66ef75be9ebf8e34d74299d86d9dda6b9b21`.
+Reserva independiente USD 1/mes. Facturación atribuible aún no disponible; no se
+presenta el modelo como gasto observado ni como límite automático.
 
 ## Resultado auténtico del intento Free
 
@@ -18,7 +30,7 @@ cero publicación. La distribución estuvo deshabilitada. Coste transitorio mode
 < USD 0,01 por WAF durante unos minutos; facturación atribuible aún no observada.
 No se repitió la escritura ni se activó una tarifa alternativa automáticamente.
 
-## Alternativa concreta para aprobación
+## Alternativa expresamente aprobada
 
 [`hosting/payg-template.mjs`](hosting/payg-template.mjs), SHA256 generado
 `11fd9d4ad78a290a3c0d9e4ed20088484475ed8062e94bdebf3323316c0de3fe`:
@@ -31,15 +43,16 @@ Se conserva Shield Standard de CloudFront, pero no se afirma rate limiting propi
 Pay-as-you-go explícito: modelo USD 0,10–0,20/mes, misma reserva USD 1/mes con
 10.000 solicitudes, 1 GB de salida y <0,1 GB S3; sin asumir franquicias de la cuenta.
 Puede superar la reserva si crece el tráfico; no existe límite automático AWS.
-No hay cuota mensual fija PRO/BUSINESS. Antes de recrear se retiraría únicamente
-el registro del stack fallido y su bucket vacío, verificando cero versiones/delete
-markers. Esta alternativa requiere una decisión nueva porque la autorización
-anterior condicionaba la publicación a FREE/ACTIVE. No modifica EKS ni el runtime.
+No hay cuota mensual fija PRO/BUSINESS. El propietario aprobó expresamente esta
+alternativa y la misma reserva USD 1/mes. Se retiraron únicamente el registro del
+stack fallido y su bucket vacío, verificando cero versiones/delete markers.
+La autorización original condicionaba la publicación a FREE/ACTIVE; no se hizo
+fallback hasta recibir la nueva decisión. No modifica EKS ni el runtime.
 
 ## Recursos exactos
 
 Stack CloudFormation `ecs-v2-portfolio-demo`, generado por
-[`hosting/template.mjs`](hosting/template.mjs). Ocho recursos:
+[`hosting/payg-template.mjs`](hosting/payg-template.mjs). Seis recursos:
 
 | Recurso | Configuración |
 | --- | --- |
@@ -49,20 +62,21 @@ Stack CloudFormation `ecs-v2-portfolio-demo`, generado por
 | CloudFront distribution | Un origen S3, dominio HTTPS CloudFront, GET/HEAD, caché administrada, compresión; inicialmente deshabilitada |
 | Function `ecs-v2-portfolio-routes` | Allowlist exacta del paquete; reescritura de cinco vistas; 404 real para desconocidas y `/_api` |
 | Function `ecs-v2-portfolio-headers` | CSP diferenciada del shell y Archify, HSTS, nosniff, referrer-policy, permissions-policy |
-| WAF `ecs-v2-portfolio-free` | Requerido por el plan, exclusivo de ECS; una regla IP 1.000 solicitudes/5 min, sin grupos pagados ni logs |
-| PricingPlanManager subscription | `CloudFront / FREE / DEFAULT`, solo esta distribución y este WAF |
+
+El generador Free original conserva los dos recursos rechazados como evidencia
+de la propuesta revisada; no están en la instalación pay-as-you-go.
 
 Las Functions de CloudFront se publican en su stage `LIVE`; esto es una propiedad
 AWS, no el modo de automatización «live» de Impeccable, que no se instala ni ejecuta.
 
-## Plan y coste
+## Comparación de planes y coste
 
 Consulta oficial y lecturas de cuenta: 7-nov-2026. Cuenta `PAID / ACTIVE`, cero
-suscripciones flat-rate; nombres disponibles. CloudFormation valida el template y
-el tipo de recurso Subscription está registrado en la región. Esto acredita
-prerrequisitos; **la admisión definitiva requiere Subscription ACTIVE / FREE**.
+suscripciones flat-rate; nombres disponibles. CloudFormation validó el template y
+el tipo de recurso Subscription estaba registrado en la región. Esos prerrequisitos
+no acreditaban admisión: AWS rechazó efectivamente la suscripción Free.
 
-Se selecciona **Free, USD 0/mes**, con 1 millón de solicitudes y 100 GB mensuales.
+Se evaluó **Free, USD 0/mes**, con 1 millón de solicitudes y 100 GB mensuales.
 Admite OAC, Functions y rate limiting; exige WAF. No admite response-header policies
 personalizadas. Las dos CSP se conservan mediante viewer-response Function,
 sin reducir el sandbox. No usamos Lambda@Edge, KeyValueStore, dominio propio,
@@ -70,18 +84,16 @@ Route53, logs pagados ni origen API.
 [Capacidades y límites oficiales](https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/flat-rate-pricing-plan.html).
 
 Modelo: tres versiones del paquete (<0,1 GB), 1 GB de salida y 10.000 solicitudes/mes.
-CloudFront/Functions/WAF cubiertos por Free; S3 requests y almacenamiento/versiones
-no cubiertos por créditos, invalidaciones o servicios fuera del plan pueden generar
-cargos. Estimación conservadora **< USD 0,10/mes**, reserva solicitada **USD 1/mes**,
-separada del laboratorio. Incluye el breve intervalo pay-as-you-go de creación de
-WAF/distribución antes de asociar Free. No es un límite automático AWS. No se añade
-ningún plan pagado ni se presupone continuidad ilimitada al exceder cuotas.
+La propuesta Free modelaba **< USD 0,10/mes** y reserva **USD 1/mes** separada del
+laboratorio. El coste transitorio del intento fallido no equivale a facturación
+observada. No se contrató un plan fijo PRO/BUSINESS.
 
-Alternativa pay-as-you-go sin WAF: aproximadamente USD 0,10–0,20/mes bajo las mismas
+Plan elegido tras aprobación, pay-as-you-go sin WAF: **USD 0,10–0,20/mes** bajo las mismas
 hipótesis y tráfico norteamericano, sin descontar franquicias compartidas; mayor
-exposición a coste por tráfico. **No se activa como fallback automático.**
-Si Free rechaza requisitos, se detiene la publicación y se retiran solamente los
-recursos nuevos vacíos que la autorización permita; no se cambia EKS/runtime.
+exposición a coste por tráfico. Reserva aprobada **USD 1/mes**, sin límite automático
+AWS. Requests S3, almacenamiento/versiones, transferencia, Functions e invalidaciones
+fuera de franquicia pueden generar cargos. Revisar consumo antes de promocionar
+a una audiencia mayor. No se activó como fallback automático ni se cambió EKS/runtime.
 [Precios CloudFront](https://aws.amazon.com/cloudfront/pricing/pay-as-you-go/),
 [S3](https://aws.amazon.com/s3/pricing/).
 
@@ -89,9 +101,9 @@ recursos nuevos vacíos que la autorización permita; no se cambia EKS/runtime.
 
 El administrador existente ejecuta CloudFormation; no se crean roles ni policies
 IAM ni credenciales de navegador. Requiere acciones de creación/lectura/actualización
-del stack y de sus S3, OAC, Functions, distribución, WAF y suscripción FREE, upload
+del stack y de sus S3, OAC, Functions y distribución, upload
 de objetos y lectura de checksums, y CreateInvalidation sobre la distribución propia.
-No necesita `ApprovePaidSubscription`, permisos de API Gateway, ECS, EC2, KMS, SQL
+No necesita PricingPlanManager, WAF, `ApprovePaidSubscription`, API Gateway, ECS, EC2, KMS, SQL
 o Sentinel. La bucket policy es el único grant de lectura entre servicios añadido.
 Si falta permiso, se informa; no se amplía IAM automáticamente.
 
@@ -99,30 +111,47 @@ El paquete no incluye server/proxy AWS, secretos ni credenciales. DEMO usa memor
 `connect-src 'none'` bloquea solicitudes API. Archify mantiene sus pins originales,
 derivados ya admitidos y iframe opaco (`sandbox=allow-scripts`, sin same-origin).
 Su CSP HTTP añade sandbox y permite solo los inline imprescindibles; el shell
-no permite inline. Sin catch-all de 403/404 a una página 200. El WAF puede responder
-403 antes de las Functions; ese error no contiene documentos ni scripts propios.
+no permite inline. Sin catch-all de 403/404 a una página 200. No hay WAF propio ni
+rate limiting del proyecto; no se presenta CloudFront como autenticación.
+
+Se verifican por AWS API template instalado, OAC, bucket policy, BPA, ownership,
+cifrado, versioning, Functions efectivas y asociaciones. Cada objeto se lee con
+ChecksumMode=ENABLED. No basta con CREATE_COMPLETE.
 
 ## Publicación y rollback
 
 1. Construir dos veces y comparar manifests. Ejecutar pruebas de rutas, CSP,
    aislamiento, doce diagramas, responsive y ausencia de red externa.
-2. Generar template, registrar SHA256 y obtener la autorización consolidada.
+2. Generar template pay-as-you-go, registrar SHA256 y comprobar la aprobación.
 3. Crear exclusivamente el stack nuevo, `Enabled=false`, `Release=<contentSHA256>`.
-   Verificar FREE/ACTIVE; no aprobar otra tarifa. Crear una suscripción Free no
-   requiere la operación de aprobación de planes pagados.
-   [Contrato CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-pricingplanmanager-subscription.html).
+   Esperar CREATE_COMPLETE y verificar configuración efectiva. No crear una
+   suscripción flat-rate ni un WAF en esta alternativa.
 4. Subir únicamente manifest y archivos enumerados a `releases/<SHA>/`, con
    `If-None-Match: *`, SHA256, MIME y cache de 60 s. Nunca sobrescribir una release.
    Leer checksums/versiones de vuelta. Conservar recibo privado.
-5. Habilitar la distribución tras verificar objetos, OAC, bucket privado y plan.
+5. Habilitar la distribución tras verificar objetos, OAC y bucket privado.
    Comprobar HTTPS público, rutas directas, refresh, 404, headers, móvil, DEMO y atlas.
 6. Publicaciones futuras: nuevo prefijo verificado, actualización de Release e
-   invalidación `/*`. Rollback vuelve al prefijo anterior verificado e invalida.
+   invalidación `/*`. Revisar allowlist si cambia el conjunto de rutas. Rollback
+   vuelve al prefijo anterior verificado, restaura sus Functions si cambiaron e invalida.
    Assets tienen nombres estables; durante propagación/caché puede requerirse reload.
    Versiones anteriores se conservan, no hay limpieza automática destructiva.
 
-Retirada propia del hosting: deshabilitar distribución, cancelar Free según estado
-real, retirar distribución/functions/WAF/OAC/policy mediante su stack y conservar
+Retirada propia del hosting: deshabilitar distribución, esperar Deployed,
+retirar distribución/functions/OAC/policy mediante su stack y conservar
 el bucket. Borrar versiones/bucket necesita una decisión explícita. La retirada de
 EC2/ECS/SQL/NAT del laboratorio no afecta a esta web. No se programa retirada ni se
-crean automatizaciones mediante este documento.
+crean automatizaciones mediante este documento. No hay suscripción Free que cancelar.
+
+Ensayo HTTPS explícito con Chrome/Playwright existentes:
+
+```powershell
+$env:PLAYWRIGHT_MODULE='<Playwright existente>/index.mjs'
+$env:CHROME_EXECUTABLE='<Chrome existente>/chrome.exe'
+node portfolio/product/test-public.mjs https://<distribucion>.cloudfront.net <paquete-sellado> <evidencia-nueva>
+```
+
+GET/HEAD al hosting y datos sintéticos en memoria. Verifica todos los bytes públicos
+contra manifest, MIME/CSP, cinco vistas, doce diagramas, móvil, refresh y errores.
+No vuelve a probar SQL/KMS ni llama a la API; esa evidencia permanece separada en
+[VALIDATION-PR36.md](VALIDATION-PR36.md). No instala herramientas automáticamente.

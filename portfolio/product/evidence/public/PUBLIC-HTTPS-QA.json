@@ -1,0 +1,737 @@
+{
+  "schema": "ECS_PUBLIC_DEMO_HTTPS_V1",
+  "at": "2026-11-07T03:27:26.705Z",
+  "origin": "https://d20ioz705caon7.cloudfront.net",
+  "contentSHA256": "3ede367cc3a7e4d48c8fa1d0fc2f66ef75be9ebf8e34d74299d86d9dda6b9b21",
+  "result": "PASS",
+  "checks": [
+    "Every public byte matches sealed DEMO package, MIME and distinct CSP",
+    "Direct routes, trailing routes and genuine 404; no proxy/private assets",
+    "Five public pages, direct navigation/refresh, 320/390/768/1440/1920 layout",
+    "Public navigation desktop/mobile and keyboard focus/skip link",
+    "Public DEMO create/read/reset in memory, no backend calls",
+    "12 public diagrams desktop/mobile: zoom/fit, opaque iframe and reader",
+    "Three public historical replays, with no AWS mutation",
+    "Zero external/API calls and zero JavaScript errors"
+  ],
+  "assets": [
+    {
+      "path": "architecture/index.html",
+      "sha256": "c00413eda4eab2a474f13e9c477510662d83cf74108fb4faee9b936d5be23ce3",
+      "bytes": 2922
+    },
+    {
+      "path": "assets/api.mjs",
+      "sha256": "4795f2690605d7f9c308d929d78c68a2d836c1a44a41a47f7ce2b2d9960aff17",
+      "bytes": 4251
+    },
+    {
+      "path": "assets/app.mjs",
+      "sha256": "067a7d7e887dcc55f5f66fcb53e2e911d05b9acf362c3e455d06fa09ab34e5fb",
+      "bytes": 32440
+    },
+    {
+      "path": "assets/atlas.mjs",
+      "sha256": "ae13367d327d3a8955c48118b575e476601a354cd8c00c9e55e6beaa0fe55fa0",
+      "bytes": 44271
+    },
+    {
+      "path": "assets/config.mjs",
+      "sha256": "ca0cdc33e4b6c6f950b71ab16db2dbab6adfd3d1f37546ffe40d2cc14edbe6f5",
+      "bytes": 28
+    },
+    {
+      "path": "assets/data.mjs",
+      "sha256": "4c0a2068c2a88c082bfe28f71deb26693c05012cc911cd86b797c2a147fac328",
+      "bytes": 4884
+    },
+    {
+      "path": "assets/fonts/OFL.txt",
+      "sha256": "ba0b9729c9428ba79a0459ab8ec575791b51509dbec213e383d0316d37fec299",
+      "bytes": 4385
+    },
+    {
+      "path": "assets/fonts/sora-regular.ttf",
+      "sha256": "1b547e90e4c49aa12e9a35ca8acc91732e188aa9fdbe08d2299ea4d4cae72145",
+      "bytes": 46040
+    },
+    {
+      "path": "assets/fonts/sora-semibold.ttf",
+      "sha256": "4e79171a1720d04b72eb68bd7604f85888c31c05bb6b432147d4524e9439af30",
+      "bytes": 46216
+    },
+    {
+      "path": "assets/style.css",
+      "sha256": "994d406a59f5f077a3660d335b47323a29349630d9694ace869fba2edaa647e1",
+      "bytes": 30203
+    },
+    {
+      "path": "assets/visuals.mjs",
+      "sha256": "99678b0e53728eaa4d90995f60d08176e7433dcecfc1cda4b918e0a4ec87bfc3",
+      "bytes": 4715
+    },
+    {
+      "path": "demo/index.html",
+      "sha256": "c00413eda4eab2a474f13e9c477510662d83cf74108fb4faee9b936d5be23ce3",
+      "bytes": 2922
+    },
+    {
+      "path": "diagrams/az6-recovery.html",
+      "sha256": "61cc2de5e0e2312aaee7942c32fe40a6aa5027bca9552d5c6bf5bd62100248b1",
+      "bytes": 820233
+    },
+    {
+      "path": "diagrams/backup-signals.html",
+      "sha256": "54f38aced586d01cc04f054c4aef696a14aa2a4228ed59e881c853555d7ecfca",
+      "bytes": 817208
+    },
+    {
+      "path": "diagrams/future-integrations.html",
+      "sha256": "f5f00ec0943f846b815ea71f862aac23796f4417a50e9499e94d6d9091b0a590",
+      "bytes": 819868
+    },
+    {
+      "path": "diagrams/v1-network.html",
+      "sha256": "7a9b812779c09e54045ffb3fc59e43371c8cd5b1b9c4ca19167112a2653ac0d2",
+      "bytes": 819887
+    },
+    {
+      "path": "diagrams/v1-platform.html",
+      "sha256": "df3f5fc4f4a81dca4980df29d8bd88168cd4c83011ec18aa8e7fd6255b9ceab6",
+      "bytes": 819890
+    },
+    {
+      "path": "diagrams/v2-delivery.html",
+      "sha256": "8305dd8636222e4a13eefa1f9b7c21f848a5f190807275a896e3b15e7803ca12",
+      "bytes": 833697
+    },
+    {
+      "path": "diagrams/v2-nat-incident.html",
+      "sha256": "a492fe3f6433a7997ce22ed6744f06fd654bfd55deda49fa99b54e4c63370070",
+      "bytes": 829570
+    },
+    {
+      "path": "diagrams/v2-network.html",
+      "sha256": "e31649fcf0ef12387cfa48ee1cbfc6df955f098907f5ed3ee1691c063615795c",
+      "bytes": 833273
+    },
+    {
+      "path": "diagrams/v2-platform.html",
+      "sha256": "7295672673db09740cbe217d2f47f52824c48ae2f649255d4d1293d9cf7dab30",
+      "bytes": 840707
+    },
+    {
+      "path": "diagrams/v2-sentinel.html",
+      "sha256": "24e6b12a9d0f6ffe53a0bcb71f14356813baecab1e67451f34c3e0cd142d5f98",
+      "bytes": 848165
+    },
+    {
+      "path": "diagrams/v2-sql-recovery.html",
+      "sha256": "da231adb96d10a979e41062b3d5b3a7ce1ced0adc95b65b8183d9eaa75d5f58e",
+      "bytes": 835976
+    },
+    {
+      "path": "diagrams/v2-trust.html",
+      "sha256": "602c17fc8e3ae450d267480f9f1685bb657c389d15148d5e0e98eb94ce607ccf",
+      "bytes": 837496
+    },
+    {
+      "path": "evidence/index.html",
+      "sha256": "c00413eda4eab2a474f13e9c477510662d83cf74108fb4faee9b936d5be23ce3",
+      "bytes": 2922
+    },
+    {
+      "path": "HOSTING.json",
+      "sha256": "8446026413bab905bca97cf878da52494a900e34bdf267bef75c80dee2558e4f",
+      "bytes": 738
+    },
+    {
+      "path": "index.html",
+      "sha256": "c00413eda4eab2a474f13e9c477510662d83cf74108fb4faee9b936d5be23ce3",
+      "bytes": 2922
+    },
+    {
+      "path": "reading/v2-delivery.html",
+      "sha256": "547f79b9b68e45a965872efd225c80c89f99dc37bb8db12ebd367b4a090b15fe",
+      "bytes": 241814
+    },
+    {
+      "path": "reading/v2-nat-incident.html",
+      "sha256": "9ffa69b4382de7ecfcc7c467473b180245425b5e98f409e103edc6ea213f66c9",
+      "bytes": 238468
+    },
+    {
+      "path": "reading/v2-network.html",
+      "sha256": "36a9c79d3475d7fbe7646dc34dfec52abdd5b78cf76d202877c292610334b94a",
+      "bytes": 241750
+    },
+    {
+      "path": "reading/v2-platform.html",
+      "sha256": "148791dfdd39bfa5963e604bba552eaa61b908206e00c720fb4b2b772c21103e",
+      "bytes": 250402
+    },
+    {
+      "path": "reading/v2-sentinel.html",
+      "sha256": "1ca3713bdaa2476ac557b09d39861adfc09c7cfc302537825e4fa837372a1db9",
+      "bytes": 258897
+    },
+    {
+      "path": "reading/v2-sql-recovery.html",
+      "sha256": "a4c6aefa78b359f302cd495720bc0bb565fc18da3d4c338ac1ff5a60e08d68ac",
+      "bytes": 244750
+    },
+    {
+      "path": "reading/v2-trust.html",
+      "sha256": "50c8405e82795d151b3325365790984aa63027b1bc615d202ad28852856b6a16",
+      "bytes": 246599
+    },
+    {
+      "path": "resilience/index.html",
+      "sha256": "c00413eda4eab2a474f13e9c477510662d83cf74108fb4faee9b936d5be23ce3",
+      "bytes": 2922
+    },
+    {
+      "path": "sources/az6-recovery.json",
+      "sha256": "82a5eeccb6c44a9163c1c5e77f927abed89ff641385e16f72fffc04a4ae7bfca",
+      "bytes": 3707
+    },
+    {
+      "path": "sources/backup-signals.json",
+      "sha256": "7da299616f2ccf92207fc1aa49064b759442f53777bfdadb30d0fc88f80c654e",
+      "bytes": 3229
+    },
+    {
+      "path": "sources/future-integrations.json",
+      "sha256": "a1e4a2943cf1b266080526151c7ef5c0098d22781713e189c8ace2b92d9dce58",
+      "bytes": 3797
+    },
+    {
+      "path": "sources/v1-network.json",
+      "sha256": "019d052a2f302c46724c9ac98acb7ccd4261eb9cadb3b0d9390962433dbe4aea",
+      "bytes": 3526
+    },
+    {
+      "path": "sources/v1-platform.json",
+      "sha256": "c64ffbd3b7fec8b93addc73645cd213a8455bd4480ead71fc44afde3ccf6d276",
+      "bytes": 3526
+    },
+    {
+      "path": "sources/v2-delivery.json",
+      "sha256": "271bf14988293919ab27145daa797f07e16500dc6fc5e3660c3774565025769b",
+      "bytes": 7297
+    },
+    {
+      "path": "sources/v2-nat-incident.json",
+      "sha256": "1f68b058dff98b5a75bda15452fd5168d8df7b5541ef9759ac6175fe3cb65417",
+      "bytes": 5398
+    },
+    {
+      "path": "sources/v2-network.json",
+      "sha256": "f4c669bf7c8dbfe07fb64e2a6615909040a3fbf494f4790f8096f43b1220102d",
+      "bytes": 7703
+    },
+    {
+      "path": "sources/v2-platform.json",
+      "sha256": "33656628d3dca58fea4665d3b7fc6a7d9beaeda1462ac1182e1f7fa107b5343e",
+      "bytes": 8976
+    },
+    {
+      "path": "sources/v2-sentinel.json",
+      "sha256": "1470ca61815760c4037790db9b15d01e6b4b80675e3ce71c1afaab339064d3c9",
+      "bytes": 11487
+    },
+    {
+      "path": "sources/v2-sql-recovery.json",
+      "sha256": "0b845b957b582252a18b9ea16b75dcb7dfd1eb850d04dee0f8dfb30f846b04f9",
+      "bytes": 8335
+    },
+    {
+      "path": "sources/v2-trust.json",
+      "sha256": "501a6ac567e740b262f3390539eacf56fe9082a3232bea8523022211fb09e25f",
+      "bytes": 8743
+    }
+  ],
+  "requests": [
+    {
+      "uri": "/MANIFEST.json",
+      "status": 200,
+      "mime": "application/json",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/architecture/index.html",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/assets/api.mjs",
+      "status": 200,
+      "mime": "text/javascript; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/assets/app.mjs",
+      "status": 200,
+      "mime": "text/javascript; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/assets/atlas.mjs",
+      "status": 200,
+      "mime": "text/javascript; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/assets/config.mjs",
+      "status": 200,
+      "mime": "text/javascript; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/assets/data.mjs",
+      "status": 200,
+      "mime": "text/javascript; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/assets/fonts/OFL.txt",
+      "status": 200,
+      "mime": "text/plain; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/assets/fonts/sora-regular.ttf",
+      "status": 200,
+      "mime": "font/ttf",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/assets/fonts/sora-semibold.ttf",
+      "status": 200,
+      "mime": "font/ttf",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/assets/style.css",
+      "status": 200,
+      "mime": "text/css; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/assets/visuals.mjs",
+      "status": 200,
+      "mime": "text/javascript; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/demo/index.html",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/diagrams/az6-recovery.html",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'; sandbox allow-scripts",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/diagrams/backup-signals.html",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'; sandbox allow-scripts",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/diagrams/future-integrations.html",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'; sandbox allow-scripts",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/diagrams/v1-network.html",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'; sandbox allow-scripts",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/diagrams/v1-platform.html",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'; sandbox allow-scripts",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/diagrams/v2-delivery.html",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'; sandbox allow-scripts",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/diagrams/v2-nat-incident.html",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'; sandbox allow-scripts",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/diagrams/v2-network.html",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'; sandbox allow-scripts",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/diagrams/v2-platform.html",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'; sandbox allow-scripts",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/diagrams/v2-sentinel.html",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'; sandbox allow-scripts",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/diagrams/v2-sql-recovery.html",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'; sandbox allow-scripts",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/diagrams/v2-trust.html",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'; sandbox allow-scripts",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/evidence/index.html",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/HOSTING.json",
+      "status": 200,
+      "mime": "application/json",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/index.html",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/reading/v2-delivery.html",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'; sandbox allow-scripts",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/reading/v2-nat-incident.html",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'; sandbox allow-scripts",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/reading/v2-network.html",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'; sandbox allow-scripts",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/reading/v2-platform.html",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'; sandbox allow-scripts",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/reading/v2-sentinel.html",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'; sandbox allow-scripts",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/reading/v2-sql-recovery.html",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'; sandbox allow-scripts",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/reading/v2-trust.html",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'; sandbox allow-scripts",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/resilience/index.html",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/sources/az6-recovery.json",
+      "status": 200,
+      "mime": "application/json",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/sources/backup-signals.json",
+      "status": 200,
+      "mime": "application/json",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/sources/future-integrations.json",
+      "status": 200,
+      "mime": "application/json",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/sources/v1-network.json",
+      "status": 200,
+      "mime": "application/json",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/sources/v1-platform.json",
+      "status": 200,
+      "mime": "application/json",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/sources/v2-delivery.json",
+      "status": 200,
+      "mime": "application/json",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/sources/v2-nat-incident.json",
+      "status": 200,
+      "mime": "application/json",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/sources/v2-network.json",
+      "status": 200,
+      "mime": "application/json",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/sources/v2-platform.json",
+      "status": 200,
+      "mime": "application/json",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/sources/v2-sentinel.json",
+      "status": 200,
+      "mime": "application/json",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/sources/v2-sql-recovery.json",
+      "status": 200,
+      "mime": "application/json",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/sources/v2-trust.json",
+      "status": 200,
+      "mime": "application/json",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/not-a-route",
+      "status": 404,
+      "mime": "text/plain; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "FunctionGeneratedResponse from cloudfront"
+    },
+    {
+      "uri": "/_api/text",
+      "status": 404,
+      "mime": "text/plain; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "FunctionGeneratedResponse from cloudfront"
+    },
+    {
+      "uri": "/server.mjs",
+      "status": 404,
+      "mime": "text/plain; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "FunctionGeneratedResponse from cloudfront"
+    },
+    {
+      "uri": "/proxy.mjs",
+      "status": 404,
+      "mime": "text/plain; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "FunctionGeneratedResponse from cloudfront"
+    },
+    {
+      "uri": "/.aws/credentials",
+      "status": 404,
+      "mime": "text/plain; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "FunctionGeneratedResponse from cloudfront"
+    },
+    {
+      "uri": "/demo/missing",
+      "status": 404,
+      "mime": "text/plain; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "FunctionGeneratedResponse from cloudfront"
+    },
+    {
+      "uri": "/",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/demo",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/demo/",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Hit from cloudfront"
+    },
+    {
+      "uri": "/architecture",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/architecture/",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Hit from cloudfront"
+    },
+    {
+      "uri": "/resilience",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    },
+    {
+      "uri": "/evidence",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "csp": "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; frame-src 'self'; frame-ancestors 'none'; object-src 'none'; base-uri 'none'; form-action 'none'",
+      "cache": "Miss from cloudfront"
+    }
+  ],
+  "captures": [
+    {
+      "file": "public-390-overview.png",
+      "sha256": "3ab6ebaccb6c2a98032f792d45a35ec695485ba894e875f6832f274a5e51ef9e"
+    },
+    {
+      "file": "public-390-demo.png",
+      "sha256": "b02b0364c13795ccac456af7cd327383c31e5bc0aeb1a3859b251069a8027bee"
+    },
+    {
+      "file": "public-390-architecture.png",
+      "sha256": "31ec9f6a5413f0ba77195692df8d3656a83ef03af4b9d8e76c46bc02c052a642"
+    },
+    {
+      "file": "public-390-resilience.png",
+      "sha256": "7f9836cb79e8a33453e1e38688cfaa799f92f3a66b89118f4513b25fa2eaf46f"
+    },
+    {
+      "file": "public-390-evidence.png",
+      "sha256": "e6e86fe1e5618333258dc69c48387d75abe3f109809693b08166fc55f5d78293"
+    },
+    {
+      "file": "public-1440-overview.png",
+      "sha256": "e02fb1453063d1c7f2c58d3ee18df64763581bc65cd3e1f98875c96a430b961a"
+    },
+    {
+      "file": "public-1440-demo.png",
+      "sha256": "d23e3b97de27a5d4f7c6158b56ce9c1b1c6cf4bf39d430bcfb6a45c0ad8df2c1"
+    },
+    {
+      "file": "public-1440-architecture.png",
+      "sha256": "b5e3687261f1ef0e80a57f37a89441584b84c427404952abdcb2c32c9f207c64"
+    },
+    {
+      "file": "public-1440-resilience.png",
+      "sha256": "1b226cc78d2f006674708610cb830ef988e4f92277fff55466c6d122fb5c4d47"
+    },
+    {
+      "file": "public-1440-evidence.png",
+      "sha256": "b97672df8ddd79bec3b60c0e0dd66e5c914ac4b4717ac9601808f330184937f3"
+    },
+    {
+      "file": "public-1440-sentinel.png",
+      "sha256": "350cc10e014a32c5f51cd5b6fb33241b85203e4ca1be46d2ca247eebddfb3e1f"
+    },
+    {
+      "file": "public-390-sentinel.png",
+      "sha256": "dbe38bee6decaa92ad95a64e8aa73c3d3bf73aa010d9f4d0389f12875830dc2c"
+    }
+  ],
+  "externalRequests": [],
+  "apiRequests": [],
+  "browserErrors": [],
+  "finishedAt": "2026-11-07T03:28:17.390Z"
+}

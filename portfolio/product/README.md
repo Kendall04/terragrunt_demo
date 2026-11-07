@@ -6,6 +6,13 @@ supervisada, **no una web pública autenticada**.
 
 ## Abrir
 
+**[Sitio público HTTPS](https://d20ioz705caon7.cloudfront.net/)** ·
+[Product Demo](https://d20ioz705caon7.cloudfront.net/demo) ·
+[Architecture Explorer](https://d20ioz705caon7.cloudfront.net/architecture) ·
+[Resilience Lab](https://d20ioz705caon7.cloudfront.net/resilience) ·
+[Evidence](https://d20ioz705caon7.cloudfront.net/evidence).
+Solo DEMO, sin conexión a la API. [Publicación y costes](HOSTING.md).
+
 Desde la raíz del repositorio, con Node 22+ existente (sin `npm install`):
 
 ```powershell
@@ -125,7 +132,7 @@ con las mismas fuentes producen el mismo manifiesto. No depende de rutas del
 equipo, hora ni Git metadata. Solo incluye DEMO, assets, catálogo, JSON y derivados
 de diagramas. No incluye servidor, proxy, test runners, recibos privados o sesión
 AWS. `HOSTING.json` especifica rutas/headers; [HOSTING.md](HOSTING.md) detalla la
-publicación futura pendiente. El preview comprueba hashes antes de servir.
+publicación real independiente. El preview comprueba hashes antes de servir.
 
 ## Pruebas
 

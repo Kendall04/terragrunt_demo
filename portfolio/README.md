@@ -7,7 +7,9 @@ integra siete diagramas V2, cinco históricos, recorridos de resiliencia y una
 edición AWS local supervisada comprobada con POST/GET auténticos. Ejecutar
 `node portfolio/product/server.mjs` y abrir <http://127.0.0.1:4182/demo>.
 Incluye build estático DEMO independiente, [validación](product/VALIDATION.md)
-y [propuesta de hosting](product/HOSTING.md), todavía sin publicar.
+y [hosting independiente publicado](product/HOSTING.md):
+**[Cloud Resilience Laboratory](https://d20ioz705caon7.cloudfront.net/)**.
+La edición pública es DEMO, no consulta AWS ni depende del runtime ECS.
 
 El contenido restante de este documento describe el **portafolio histórico del
 26-oct**, conservado en `portfolio/server.mjs` (4181). Sus pendientes no representan
