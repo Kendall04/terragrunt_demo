@@ -4,8 +4,9 @@ Source baseline: `24cd87c0a780fe398d46553ee8c539bdd32eafa5`.
 Read-only AWS inventory: **7 November 2026, 04:45–04:53 UTC**, account
 `341936017254`, region `us-east-1`, authenticated `cnp-cert-admin`.
 GitHub settings, source, execution records and logs were examined separately.
-This review changes documentation only: no runtime, IAM, workflow, state, journal,
-timer, artifact identity or infrastructure operation.
+The initial PR #38 review changed documentation only. The **7-Nov 06:00–06:14 UTC
+follow-up** installed only GitHub required checks and refreshed closure readbacks;
+no AWS runtime, IAM, workflow, state, journal, timer or artifact was modified.
 
 ## Assessment
 
@@ -13,8 +14,8 @@ ECS V2 is a defensible **DEV recovery and observability laboratory**, with a
 working application and independent public static DEMO. SQL cold recovery and
 NAT/backup incident handling have authentic evidence. It is not a production HA
 platform, a current automatic main-based CD system or a continuously certified
-security baseline. The most useful remaining decisions are merge enforcement,
-the single future DEV delivery path, and disposition of security/cost residuals.
+security baseline. Merge enforcement is now installed and negatively tested;
+remaining decisions concern the future DEV delivery path and safe closure/retention.
 
 ## Current inventory and ownership
 
@@ -38,6 +39,10 @@ State bodies and secret values were not downloaded. The last authenticated seria
 remain dated evidence (Data 17, Sentinel 44, security 71); this audit does **not**
 invent a current serial from an S3 HEAD or require an old serial after unrelated work.
 No security-root override or ignored lock file was removed from the local checkout.
+The subsequent [closure readback](../terraform/docs/portfolio-operations.md) parsed
+authentic state bodies in memory, confirmed the current serials/address counts,
+and identified Sentinel's private probe ENI as an external Global dependency.
+This later check does not rewrite the narrower evidence of the initial review.
 
 ## Security findings and priorities
 
@@ -51,7 +56,7 @@ and current readiness, not a new administrative database session.
 | Priority / classification | Evidence and impact | Appropriate next decision |
 | --- | --- | --- |
 | High · effective exposure | API routes have `AuthorizationType=NONE`; authorized application path can return decrypted synthetic text and incur KMS/API/SQL cost. CORS/CloudFront do not authenticate it. | Retire the lab endpoint in its window. Require real backend authorization before any public AWS Edition or sensitive data. Public DEMO is independent. |
-| High · merge-control gap | Active main/develop ruleset requires PR but no status checks and zero approving reviews. Current CI itself enforces results, but merge policy does not. | Review required `CI Validation` and `CD Safety Validation` checks before changing CI. No rules changed here. |
+| High · corrected merge-control gap | Ruleset 12173787 now requires `CI Validation` and `CD Safety Validation`, bound to GitHub Actions, strict/up-to-date main/develop and no bypass. Both a cancelled run and an ordinary failed link gate produced HTTP 405 merge rejection on PR #39. | Preserve unconditional aggregate checks; zero human reviews remains intentional for a single maintainer. [Configuration and proof](CI-CD-REVIEW.md#installed-merge-gate). |
 | High · active image debt | Installed NAT image `8ce1c0ed…` retains a completed October scan with 19 HIGH/24 MEDIUM/9 LOW/1 UNDEFINED. Image worker `1d160fc3…` has 15 CRITICAL/56 HIGH. | Patch/requalify before longer-lived use or another protected image build. No refresh scan or runtime replacement in this audit. |
 | Medium · storage protection gap | Both actual NAT root EBS volumes are unencrypted; SQL roots are encrypted with `alias/aws/ebs`. | Encrypt future NAT launch versions through a reviewed replacement. Do not claim every volume uses a CMK. |
 | Medium · transit boundary | Public TLS terminates at API Gateway; VPC Link→ALB→task uses SG-restricted HTTP. SQL TLS verifies name/trust with a demo self-signed leaf. | Explicitly accept lab boundary; internal TLS and certificate lifecycle are production work, not proof supplied by perimeter HTTPS. |
@@ -279,17 +284,28 @@ documentation must not be merged by deleting tests or editing gate expectations.
 
 ## Small decision list
 
-**Before presenting:** retain the precise DEV scope and authentic evidence, make
-CI checks mandatory for future merges, and preserve a safe closure/retention
-decision. Choose a repository-wide license if reuse is intended; none is currently
-declared, while Archify/font licenses remain intact. Public static DEMO is suitable
-for presentation; the unauthenticated runtime is not a public application product.
+| Timing | Decision / action |
+| --- | --- |
+| **Resolve now: governance and safe closure** | Required checks are installed; preserve their negative/positive PR proof. Review the exact Sentinel probe VPC/SG retirement and designate the legitimate security owner for inhibition that the runtime operator cannot perform. Choose disk/backups/key retention and duration before authorizing closure. No renewal or deletion is implicit. |
+| **Before another AWS deployment** | Patch/requalify auxiliary images, encrypt future NAT roots, establish backend authorization for public real-data access, re-admit expired recovery permissions and review needed object audit coverage. Approve the [single DEV delivery design](DEV-DELIVERY-DESIGN.md) and exact IAM/OIDC changes before implementing it. |
+| **Document as production limits** | SQL Express single-host cold recovery, hourly full-backup RPO objective without PITR, SG-restricted internal HTTP, demo certificate lifecycle, incomplete audit coverage and no regional/account disaster guarantee. Neither portfolio presentation nor measured RTO makes these production certifications. |
 
-**Before another long-lived lab or delivery trial:** patch/requalify active
-auxiliary runtimes, encrypt future NAT volumes, reconcile expired recovery grants,
-and agree one V2 delivery path. These are targeted changes, not a new control plane.
+The [closure guide](../terraform/docs/portfolio-operations.md) compares USD 7.20/month
+for all three SQL disks, USD 2.40 for the current disk, snapshots, and logical-backup
+retention. Keeping S3 objects alone is insufficient: both backup and application
+CMKs and a future authorized decrypt path are required. The current administrator
+cannot decrypt backup manifests, although the running observer verifies them.
+The private probe ENI must be released before Global's VPC, allowing up to 20 minutes
+while its role permissions remain valid. These are concrete closure prerequisites,
+not reasons to expand the historical control plane.
 
-**Outside the demonstrated DEV scope:** multi-writer SQL HA, PITR, regional/account
-disaster guarantees, production identity/authorization, end-to-end internal TLS,
-comprehensive audit coverage and production security certification. They should
-remain explicit limits rather than a new mandatory portfolio roadmap.
+No new continuous-health duration is claimed from a short follow-up read. Four
+historical failures/compensations remain, with zero active permanent failures;
+the 14-message historical DLQ has finite 14-day retention. Independent monitoring
+continues. Follow-up receipts are in `governance-closure-20261107-01`; previous
+evidence is preserved, including incomplete account-wide costs. No new Cost Explorer
+query, application write, SSM command or AWS mutation was performed.
+
+Choose a repository-wide license if reuse is intended; none is currently declared,
+while Archify/font licenses remain intact. The public static DEMO is suitable for
+presentation; the unauthenticated runtime is not a public application product.

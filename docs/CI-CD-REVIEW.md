@@ -1,17 +1,19 @@
 # CI/CD engineering review
 
-Reviewed source: `24cd87c0a780fe398d46553ee8c539bdd32eafa5`.
-GitHub settings/history read on **7 November 2026, 04:47 UTC**. This review changes
-no workflow, selector, policy, environment, IAM trust or required-check setting.
+Reviewed source: `dc3edcd64225a044d8a47b197ae585181cd0d385`.
+GitHub settings/history refreshed on **7 November 2026, 06:00–06:14 UTC**.
+The required-check rule below is installed. Workflow/selector optimization and the
+[DEV delivery design](DEV-DELIVERY-DESIGN.md) remain proposals; no workflow,
+environment, AWS IAM trust or deployment control was changed.
 
 ## Conclusion
 
 CI executes useful, enforced tests within the orchestrator. Its scope selector
 fails conservatively and the final validation job requires selected jobs to have
-actually succeeded. However, GitHub does **not currently require those checks for
-merging main**. The active ruleset requires a PR, prohibits deletion/non-fast-forward
-updates, and requires zero approving reviews; it contains no required-status-check
-rule. A green badge and a repository-enforced merge gate are different controls.
+actually succeeded. GitHub now **requires `CI Validation` and `CD Safety Validation`
+for main and develop**, from GitHub Actions, with up-to-date branches and no bypass
+actors. The earlier merge-control gap is closed. Zero approving reviews remains
+appropriate for the single-maintainer workflow; this does not waive CI.
 
 Automatic CD is disabled. The current main versions of the public release,
 deployment, rollback and plan wrappers fail closed or skip on incompatible refs.
@@ -33,8 +35,61 @@ flowchart LR
   Hygiene --> Result
   Infra --> Result
   Event --> Safety[Independent CD Safety]
-  Result -.-> Gap[Merge rules currently do not require these checks]
+  Result --> Merge[Required checks / up-to-date branch / no bypass]
+  Safety --> Merge
 ```
+
+## Installed merge gate
+
+Ruleset [12173787](https://github.com/Kendall04/terragrunt_demo/rules/12173787),
+`Main/Develop Ruleset`, remains active on exactly `refs/heads/main` and
+`refs/heads/develop`. The only installed delta is:
+
+```json
+{
+  "type": "required_status_checks",
+  "parameters": {
+    "required_status_checks": [
+      {"context": "CI Validation", "integration_id": 15368},
+      {"context": "CD Safety Validation", "integration_id": 15368}
+    ],
+    "strict_required_status_checks_policy": true,
+    "do_not_enforce_on_create": false
+  }
+}
+```
+
+App ID 15368 is the actual `github-actions` producer read from successful main
+checks, not an assumed integration. Full ruleset and effective branch-rule readbacks
+match. PR/review settings, Copilot, deletion/non-fast-forward rules and empty bypass
+list are unchanged; the authenticated maintainer reports `current_user_can_bypass=never`.
+Exact update payload SHA256:
+`283ea3e3ecbb5ad7b9c13a5e9cb9ff6e19a75cbd4100a1f4e8818ee91586ee38`.
+
+[PR #39](https://github.com/Kendall04/terragrunt_demo/pull/39) exercised the real
+rule with a deliberately missing Markdown target on head `f0f8289144188ba2f744640afefef0499af9e8c0`:
+
+| Case | Actual result |
+| --- | --- |
+| CI pending | PR `mergeStateStatus=BLOCKED`, with no merge conflict. |
+| CI cancelled | Run 42345179748 attempt 1 cancelled; the always-running aggregator failed because selected jobs were cancelled. Ordinary merge API returned **405**, explicitly naming failing `CI Validation`. |
+| CI failed | Attempt 2 failed the existing knowledge/link check; hygiene passed, unselected App/infra correctly skipped. Aggregator failed and ordinary merge API again returned **405**. |
+| Corrected documentation | Probe removed; normal CI and merge under this same ruleset are the positive integration test recorded in the PR. No bypass or synthetic status was used. |
+
+GitHub accepts `success`, `neutral` and `skipped` check conclusions; therefore
+require the two unconditional **aggregate** checks, not individually conditional
+jobs. The CI aggregate uses `always()` and enforces actual results; Safety has an
+unconditional job and `always()` result enforcement. Failure/cancellation is not
+converted into an exemption. Workflow-level skips leave a required result pending.
+Both workflows handle PRs to main/develop and their postmerge pushes; branch-push
+CI does not replace the PR's merge-diff validation. Merge queue is not enabled, so
+`merge_group` is not currently required. See [GitHub's check semantics](https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks)
+and [ruleset settings](https://docs.github.com/en/rest/repos/rules).
+
+This is a merge gate, not immutable workflow enforcement: a maintainer-authorized
+future workflow change still needs review. Binding the producer prevents an unrelated
+status publisher from satisfying the check; it does not authenticate arbitrary future
+job code by name alone. No extra reviewer or organization control plane was introduced.
 
 [ci.yml](../.github/workflows/ci.yml) runs on branch pushes and PR lifecycle events,
 including edited/ready-for-review. Its concurrency cancels superseded CI runs;
@@ -129,6 +184,53 @@ temporary storage and logs; no durable uploaded report is guaranteed by these YA
 Saving compact test/finding reports would improve diagnosability without rerunning
 failed work. Do not treat cache hits as skipped security validation.
 
+### Measured optimization priorities
+
+Six recent successful runs were inspected job-by-job. PR #38's exact source
+`23afbe61587651359962e92df2d12c1ae1d8bf69` ran twice:
+
+| Run | Event | Elapsed run envelope | Sum of job execution time |
+| --- | --- | ---: | ---: |
+| [42342216307](https://github.com/Kendall04/terragrunt_demo/actions/runs/42342216307) | Feature push | 8m45s | 18m45s |
+| [42342221990](https://github.com/Kendall04/terragrunt_demo/actions/runs/42342221990) | PR | 7m46s | 17m33s |
+| [42342860251](https://github.com/Kendall04/terragrunt_demo/actions/runs/42342860251) | Main postmerge | 7m18s | 17m26s |
+
+The duplicate premerge pair consumes **36m18s of summed job time**. Retaining the
+PR and removing that feature-push run would save 18m45s for this sample (~52% of
+the pair), not 52% of all CI or wall time. Public runner billing was not queried;
+these are execution measurements, not dollar charges. Skipped jobs contribute zero
+(GitHub returned a -1-second timestamp artifact on one skipped diagnostic job).
+
+On the PR run, Terraform install took 1s, infra tools 3s and hygiene tools 2s;
+repeated fmt checks took 0–1s. Acceptance took 7m01s. Combining jobs or maintaining
+a new tool image to save seconds is lower value than deduplicating event execution.
+NuGet cache lookup took 3s, .NET setup 7s and Docker cache lookup 6s; locked restore
+and actual build/test still ran. Preserve diagnostic artifacts on failure without
+uploading state, connection strings or unredacted native evidence.
+
+The current selector was executed locally on these representative paths:
+
+| Change | Current gates | Conservative next proposal, not installed |
+| --- | --- | --- |
+| Root README | Acceptance + hygiene | Keep; authority/link consumers make “all Markdown exempt” unsafe. |
+| `docs/CI-CD-REVIEW.md` | All four | Acceptance + hygiene after proving all document consumers; protect specs/manifests separately. |
+| Product JS | All four | Hygiene/portfolio + provenance, with packaging and document/authority consumers explicitly mapped. Do not drop browser evidence requirements. |
+| API `Program.cs` | App | Keep App; release still requalifies the exact artifact. |
+| Native Terraform | Acceptance + hygiene + infra | Keep. No remote plan implied. |
+| Portable NAT observer | All four | Keep initially: Python, generated module and CLR/package fixtures cross boundaries. |
+| CI workflow/selector/shared action | All four | Keep all; ambiguity, rename/type changes and unknown paths remain conservative. |
+
+Do not implement narrower selection from this table alone. Before removal of any
+gate, map its actual imports/file reads/generated pins, compare decisions over
+historical PR diffs, and add negative tests for missing/renamed dependencies, empty
+history, base changes and cancellations. Trial the proposed selector in reporting
+mode beside the current one. A deliberate reduction must have evidence that the
+removed job has no affected consumer; matching today's positive examples is insufficient.
+
+First optimization should be PR CI plus main/develop postmerge CI, with a documented
+choice for branches without a PR. Do not cancel deployments to deduplicate CI, and
+do not introduce path-level workflow filters that leave required checks pending.
+
 ## Inventory: all 27 workflows
 
 `active` below means registered/enabled in GitHub, **not operationally admitted**.
@@ -207,8 +309,8 @@ SHA-pinned. `dorny/paths-filter@v4` remains mutable in the retained CD scope con
 and is explicitly deferred in the toolchain manifest. The legacy protected-workflow
 pins and governance receipts must not be silently rewritten to remove this debt.
 Ruleset HTTP 404 from the classic branch-protection endpoint does not mean main
-is unprotected: the effective ruleset was separately read. Its missing required
-checks remain a real merge-control gap.
+is unprotected: the effective ruleset was separately read. The missing required
+checks identified in PR #38 were installed and behaviorally verified above.
 
 ## Recommended target — proposal only
 
@@ -219,19 +321,15 @@ selection only after differential/mutation tests prove no under-selection.
 Deduplicate repeated fmt checks/tool installation; do not remove trust-boundary
 requalification from a real release merely because PR tests already ran.
 
-For delivery, prefer **one manually approved DEV release/deploy entry** plus an
-explicit rollback operation using the existing proven helpers, immutable image
-digest, per-task readiness, current operation exclusion and deployment record.
-Keep native infrastructure lifecycle separate and plan-bound. Keep PROD disabled
-until its independent ownership, identities and admission are designed and tested.
-Do not develop another controller layer. Reuse the useful validation/ownership
-contracts while retiring unreachable wrappers only after their callers and IAM
-trust are mapped. Retiring a workflow file does not revoke AWS authority.
+The [DEV delivery design](DEV-DELIVERY-DESIGN.md) specifies one manual release,
+separate rollback, jobs, OIDC/resource authority, readiness, partial-failure behavior
+and migration. It explicitly distinguishes reusable validators from retired executable
+wrappers. No new controller, CD activation or AWS permission is installed.
 
 Recommended order for a later reviewed change:
 
-1. Make the actual CI final result and CD Safety required for merge; decide reviewer
-   policy suitable for one maintainer. Verify with a failing test PR, without bypass.
+1. **Done:** required CI final result and CD Safety, strict main/develop, no bypass;
+   failing/cancelled PR rejection verified. Preserve this contract during migration.
 2. Narrow CI selection with dependency tests, retain unknown-path fallback, publish
    concise test reports, and measure before/after duration on representative diffs.
 3. Choose the single V2 DEV delivery route; reconcile exact source/environment/OIDC
@@ -243,4 +341,4 @@ Recommended order for a later reviewed change:
 Migration risks are accidentally granting main/PROD authority, losing conflict
 exclusion or per-task readiness, treating a skipped job as success, and breaking
 generated workflow/authority hashes. Those require a deliberate implementation
-review. **None of this target architecture was installed by this audit.**
+review. **No CI optimization or proposed CD executor was installed by this audit.**
