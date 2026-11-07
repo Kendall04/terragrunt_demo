@@ -355,21 +355,21 @@
       "fragmentLfSha256": "6baefd00012d81cf6b5e4022664fece66fb5996683897cdd74d0253547f76739",
       "text": "2. Run `fence` once on the source. It checks data and migrations, stops the backup\n   timer, disables runtime/migrator logins, sets `demodb` READ_ONLY with NO_WAIT,\n   verifies no sessions, and produces a new remote-verified backup. An old success\n   file cannot satisfy this step. Capture its exact manifest/backup VersionIds.\n3. Apply only the reviewed **full Data plan**, using the same owner/backend and\n"
     },
-    "operations/integrations/portable/backup_retention.py:1-21": {
-      "path": "operations/integrations/portable/backup_retention.py",
-      "line": 1,
-      "endLine": 21,
-      "commitFileSha256": "55ef37abde10c69a0e4775fa22983e6ad631f28e92472ecae812f6649914ee96",
-      "fragmentLfSha256": "943cfd1ebd9ea2f412a58c2645524d7990be93ea65a208a7f906a8d44a890d49",
-      "text": "\"\"\"Bounded native Lifecycle admission for NEW DEV backup pairs only.\n\nThis module never deletes objects. S3 expires only explicitly admitted versions.\nThe two newest verified pairs and any uncommitted/ambiguous input fail closed.\nRestore must stage and verify its selected input outside this lifecycle prefix\nbefore it starts; tag removal alone is not proof that a restore input survives.\n\"\"\"\nimport copy\nimport datetime as dt\nimport hashlib\nimport json\nimport re\n\nfrom storage_observer import inspect_manifest, require\n\nBUCKET = 'terragrunt-demo-sql-backup-341936017254-fa48a32dc9'\nPREFIX = 'terragrunt-demo/dev/sql-backups/v2-20261106/'\nTAG = {'Key': 'ecs-retention', 'Value': 'verified-superseded-v1'}\nHOLD_PREFIX = 'terragrunt-demo/dev/sql-backup-restore-holds/v2-20261106/'\nKEEP = 2\nMAX_PAIRS = 8\n"
+    "operations/integrations/portable/backup_restore_pin.py:29-60": {
+      "path": "operations/integrations/portable/backup_restore_pin.py",
+      "line": 29,
+      "endLine": 60,
+      "commitFileSha256": "70f88dcacdd98ed33f7e6ff76c1e6c6d03535691088dd4e6b2413b91ff59cfa2",
+      "fragmentLfSha256": "9197c505a14fd944766d1c028d6f07db144c8c77c4d4015410d32ff841c7fac7",
+      "text": "    checked = inspect_manifest(s3, config, now, manifest_key)\n    raw = read(s3, config, manifest_key, checked['manifestVersion'], 65536)\n    original = unique_json(raw)\n    backup = read(s3, config, original['BackupKey'], checked['backupVersion'], config['maxBytes'])\n    require(hashlib.sha256(backup).hexdigest() == checked['sha256'], 'PIN_BACKUP_CHANGED')\n    prefix = HOLD_PREFIX + operation\n    destination = prefix + '/runs/' + checked['runId'] + '/'\n    versions = s3.list_object_versions(Bucket=BUCKET, Prefix=prefix + '/', MaxKeys=1)\n    require(not versions.get('Versions') and not versions.get('DeleteMarkers'), 'PIN_ALREADY_EXISTS_STOP')\n\n    def put(key, data):\n        result = s3.put_object(Bucket=BUCKET, Key=key, Body=data, IfNoneMatch='*',\n            ServerSideEncryption='aws:kms', SSEKMSKeyId=config['backupKeyArn'],\n            ChecksumSHA256=__import__('base64').b64encode(hashlib.sha256(data).digest()).decode())\n        version = result.get('VersionId')\n        require(version not in (None, '', 'null'), 'PIN_WRITE_UNCONFIRMED')\n        require(read(s3, config, key, version, max(len(data), 65536)) == data, 'PIN_READBACK_MISMATCH')\n        return version\n\n    backup_version = put(destination + 'database.bak', backup)\n    original_version = put(destination + 'original-manifest.json', raw)\n    rebound = {**original, 'BackupKey': destination + 'database.bak', 'BackupVersion': backup_version}\n    manifest_version = put(destination + 'manifest.json', canonical(rebound))\n    pinned_config = {**config, 'prefix': prefix}\n    actual = inspect_manifest(s3, pinned_config, now, destination + 'manifest.json')\n    require(actual['manifestVersion'] == manifest_version and actual['sha256'] == checked['sha256'], 'PIN_FINAL_READBACK')\n    receipt = {'schemaVersion': 1, 'at': now.isoformat(), 'operation': operation,\n               'source': checked, 'pinned': actual, 'originalManifestVersion': original_version,\n               'restoreConfigPrefix': prefix, 'automaticDeletion': False, 'sqlMutations': 0}\n    receipt_version = put(prefix + '/pin-receipt.json', canonical(receipt))\n    return {**receipt, 'receiptVersion': receipt_version}\n\n"
     },
-    "operations/integrations/portable/backup_retention.py:60-65": {
-      "path": "operations/integrations/portable/backup_retention.py",
-      "line": 60,
-      "endLine": 65,
-      "commitFileSha256": "55ef37abde10c69a0e4775fa22983e6ad631f28e92472ecae812f6649914ee96",
-      "fragmentLfSha256": "beb9c2bf393a74e79e67f4ef261c3e67325bfdfc805319538bd6e86482967181",
-      "text": "def plan(s3, config, now):\n    \"\"\"Full verification precedes eligibility; no writes or tag removals here.\n\n    Restore admission requires a verified independent pin before relying on a\n    Lifecycle-eligible pair; a stale absence check is not a restore lease.\n    \"\"\"\n"
+    "docs/SENTINEL-CHAOS-20261106.md:282-292": {
+      "path": "docs/SENTINEL-CHAOS-20261106.md",
+      "line": 282,
+      "endLine": 292,
+      "commitFileSha256": "45c73a73202270282f2c2ba73d62d9d71d97a400cd0bca193fabc04de47297e3",
+      "fragmentLfSha256": "11b7844c7f197af74b604ff5ae0c9703acefe3993ba27810b8bdf8d7790770b6",
+      "text": "Before relying on an eligible object for restore, run `backup_restore_pin.py` to\ncopy and fully verify the exact pair into the excluded\n`terragrunt-demo/dev/sql-backup-restore-holds/v2-20261106/<operation>/` prefix.\nThe original manifest is retained; the restore manifest binds genuine destination\nVersionIds. Its receipt must exist **before fencing the source or provisioning a\nreplacement**. A failed pin does not authorize continuing recovery. AWS documents\nthat Lifecycle re-evaluates current tags before executing expiration, so removing\nthe triggering tag can prevent a queued expiration. It cannot restore a version\nalready deleted or by itself prove a stable restore input. This implementation\ntherefore requires the independent verified copy. Restore holds have no automatic\ndeletion and require a later explicit disposition.\n"
     },
     "operations/sql-backup/recovery/NATIVE-RECOVERY.md:42-69": {
       "path": "operations/sql-backup/recovery/NATIVE-RECOVERY.md",
@@ -461,7 +461,7 @@
     "operations/integrations/Ecs.Backup.Portable.Host/CurrentBacklog.cs": "ceb987cf85b4bf0d777eed66d711ba087b2b99619dd7383129879172eb6825c8",
     "operations/integrations/Ecs.Backup.Portable.Notice/ReadableNotice.cs": "83f7576f76e017ddad5a1c8f705ecdff8bb109718d29e6918d5c366513315a33",
     "operations/sql-backup/sql-backup.timer.in": "832097e3e5a746d19bb8a8d4399d32609dedc3bdbcca95eba3ed15492514c49a",
-    "operations/integrations/portable/backup_retention.py": "55ef37abde10c69a0e4775fa22983e6ad631f28e92472ecae812f6649914ee96",
+    "operations/integrations/portable/backup_restore_pin.py": "70f88dcacdd98ed33f7e6ff76c1e6c6d03535691088dd4e6b2413b91ff59cfa2",
     "demo-api/terragrunt-demo/Data/RuntimeDatabasePermissions.cs": "4f1a7213490ce1acd05edef4971d7eb724cfc678319f065cb5b682d1d6733e98"
   },
   "diagrams": {
@@ -1388,10 +1388,10 @@
         },
         "hold": {
           "label": "Proteger entrada de restore",
-          "status": "NO VALIDADO",
+          "status": "IMPLEMENTADO",
           "references": [
-            "operations/integrations/portable/backup_retention.py:1-21",
-            "operations/integrations/portable/backup_retention.py:60-65"
+            "operations/integrations/portable/backup_restore_pin.py:29-60",
+            "docs/SENTINEL-CHAOS-20261106.md:282-292"
           ]
         },
         "drain": {
@@ -1462,8 +1462,8 @@
           "to": "hold",
           "label": "Antes de restore",
           "references": [
-            "operations/integrations/portable/backup_retention.py:1-21",
-            "operations/integrations/portable/backup_retention.py:60-65",
+            "docs/SENTINEL-CHAOS-20261106.md:282-292",
+            "operations/integrations/portable/backup_restore_pin.py:29-60",
             "operations/integrations/portable/storage_observer.py:35-102"
           ]
         },
@@ -1524,8 +1524,8 @@
           "to": "restore",
           "label": "Versión fijada",
           "references": [
-            "operations/integrations/portable/backup_retention.py:1-21",
-            "operations/integrations/portable/backup_retention.py:60-65",
+            "docs/SENTINEL-CHAOS-20261106.md:282-292",
+            "operations/integrations/portable/backup_restore_pin.py:29-60",
             "operations/sql-backup/recovery/NATIVE-RECOVERY.md:73-100"
           ]
         },

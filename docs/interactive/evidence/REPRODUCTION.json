@@ -56,7 +56,7 @@
   },
   {
     "id": "v2-sql-recovery",
-    "htmlSha256": "eb2d9ee01abdadc004fb30b5479ab17681226ac7d7c362f9ce80efa3c885f9bc",
+    "htmlSha256": "ce41963a80dae4ce03e984cdaaf5d0c892f36b447de4c3a8e6615e1e84a0c76d",
     "gates": {
       "validate": "pass",
       "deliver": "pass",

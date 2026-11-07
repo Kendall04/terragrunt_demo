@@ -81,8 +81,9 @@ canceló legítimamente. `Unknown` por throttling sigue siendo evidencia insufic
 Lifecycle retira únicamente pares admitidos del nuevo prefijo. Los dos últimos
 pares verificados permanecen sin etiqueta de expiración; los prefijos protegidos
 no se incorporan a esta regla. No hay borrado atómico backup/manifiesto, plazo
-físico exacto de eliminación ni Object Lock. La copia independiente para una
-restauración bajo Lifecycle es un requisito pendiente de prueba específica.
+físico exacto de eliminación ni Object Lock. El CLI de copia independiente fuera
+TTL está implementado; restaurar desde ese hold bajo Lifecycle sigue pendiente
+de prueba específica.
 
 ## Organización posterior del portafolio
 

@@ -310,8 +310,8 @@
         "height": 1000
       },
       "file": "v2-sql-recovery-official-1440.png",
-      "pngSha256": "015c9302a135312691ad290998bb2139a19b50fa29e9382cc19ecde851339b88",
-      "htmlSha256": "eb2d9ee01abdadc004fb30b5479ab17681226ac7d7c362f9ce80efa3c885f9bc",
+      "pngSha256": "ef9237df50c892c1c24a1ab65900715f394a8c9c55717f2a1dfc414779ce0226",
+      "htmlSha256": "ce41963a80dae4ce03e984cdaaf5d0c892f36b447de4c3a8e6615e1e84a0c76d",
       "pageWidth": 1440,
       "svgCount": 2,
       "clippedText": 0,
@@ -325,8 +325,8 @@
         "height": 1000
       },
       "file": "v2-sql-recovery-official-390.png",
-      "pngSha256": "058f1fdccf0b13f01dcae4f29f13786eb5f31e7700c51a3dcaba9cae59fa54ab",
-      "htmlSha256": "eb2d9ee01abdadc004fb30b5479ab17681226ac7d7c362f9ce80efa3c885f9bc",
+      "pngSha256": "394b70456ad8e901d2e7c1262154ec4a195fe44882fd23bd1d2709e00eebc460",
+      "htmlSha256": "ce41963a80dae4ce03e984cdaaf5d0c892f36b447de4c3a8e6615e1e84a0c76d",
       "pageWidth": 390,
       "svgCount": 2,
       "clippedText": 0,
@@ -340,8 +340,8 @@
         "height": 1000
       },
       "file": "v2-sql-recovery-reading-1440.png",
-      "pngSha256": "9cab2d851451b9f8c3555da4ebb147dbe25e7fd5f1e979862258c6da7d67ac1a",
-      "htmlSha256": "d0199f433e63ccebadae970fb2dacf0a69115695b971872cb849ab7bb3fa1c35",
+      "pngSha256": "56d036fd0f9d80d8b282a7b3b831ec31baed1ea76085579629ae240cafc3a51f",
+      "htmlSha256": "bcf746904a3d4236f2cc79a682cc66e6f748ca76f4198306c3be712b2f97275a",
       "pageWidth": 1440,
       "svgCount": 1,
       "clippedText": 0,
@@ -355,8 +355,8 @@
         "height": 1000
       },
       "file": "v2-sql-recovery-reading-390.png",
-      "pngSha256": "72187a6a7271da4d2315a8d09eb347b14456b8c0874fdf22a9a0f2b732ed9af7",
-      "htmlSha256": "d0199f433e63ccebadae970fb2dacf0a69115695b971872cb849ab7bb3fa1c35",
+      "pngSha256": "c1d362260dd85cd1db182741892c6aba4ec3704cba5c1ad93015b1500e88f2be",
+      "htmlSha256": "bcf746904a3d4236f2cc79a682cc66e6f748ca76f4198306c3be712b2f97275a",
       "pageWidth": 390,
       "svgCount": 1,
       "clippedText": 0,
@@ -488,13 +488,13 @@
       "id": "v2-sql-recovery",
       "file": "v2-sql-recovery-mobile-top.png",
       "pngSha256": "564243f5ce281e17ed4e5c9e63e9468acf0140716dbb93a1925961e291114946",
-      "htmlSha256": "d0199f433e63ccebadae970fb2dacf0a69115695b971872cb849ab7bb3fa1c35"
+      "htmlSha256": "bcf746904a3d4236f2cc79a682cc66e6f748ca76f4198306c3be712b2f97275a"
     },
     {
       "id": "v2-sql-recovery",
       "file": "v2-sql-recovery-mobile-text.png",
-      "pngSha256": "1d24c435c59009f22221fa5d64b28bce711a94fcb2b3b62faf137956d9bd97e8",
-      "htmlSha256": "d0199f433e63ccebadae970fb2dacf0a69115695b971872cb849ab7bb3fa1c35"
+      "pngSha256": "0ec3ccb249f635aae5d09a314cbf284b250c666962c17b91af219e93a9ea54df",
+      "htmlSha256": "bcf746904a3d4236f2cc79a682cc66e6f748ca76f4198306c3be712b2f97275a"
     },
     {
       "id": "v2-trust",

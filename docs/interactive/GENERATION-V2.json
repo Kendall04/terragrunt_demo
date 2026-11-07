@@ -95,9 +95,9 @@
       "type": "architecture",
       "source": "docs/interactive/source/v2-sql-recovery.json",
       "output": "docs/interactive/v2-sql-recovery.html",
-      "sourceSha256": "cfc550503f7fc7574d817c1ecc18c9a33135cd4793fd0a4a0d4bf62b60aacf95",
-      "htmlSha256": "eb2d9ee01abdadc004fb30b5479ab17681226ac7d7c362f9ce80efa3c885f9bc",
-      "finalizerSummarySha256": "bf435e4911fa13d3f439aea0eca5cdaf3a2888a25e514c88e0e037b23a411c8d",
+      "sourceSha256": "0b845b957b582252a18b9ea16b75dcb7dfd1eb850d04dee0f8dfb30f846b04f9",
+      "htmlSha256": "ce41963a80dae4ce03e984cdaaf5d0c892f36b447de4c3a8e6615e1e84a0c76d",
+      "finalizerSummarySha256": "8cb1fcef1fb2209a4be6c4249402e130501376c7b00aa6a7ee67a5c6ab9ead58",
       "gates": {
         "validate": "pass",
         "deliver": "pass",

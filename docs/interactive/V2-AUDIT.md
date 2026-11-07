@@ -47,7 +47,7 @@ referencias. Esta matriz explica la inferencia que una lista de hashes no puede 
 | Execution role ≠ task role ≠ usuario SQL | `apps/modules/ecs_service/taskdef.tf`; tabla de identidades y readbacks de handoff en los registros de seguridad/recuperación | Execution pull/logs/secreto al inicio; task KMS; runtime SELECT/INSERT + metadata EF. Host admin y migrador separado no son permisos runtime. |
 | Productor → S3 | `operations/sql-backup/sql-backup.timer.in`; `recovery/install_native_backup.py`; `recovery/NATIVE-RECOVERY.md:48–52,86–100`; evidencia de timer real | Horario persistente, COPY_ONLY/CHECKSUM y subida versionada. El observador externo no ejecuta un restore ni CHECKDB. |
 | Backup → Lifecycle | `portable/backup_retention.py:33–130`; snapshot tres reglas `dev-v2-20261106-*`; registro Sentinel §Remote backup retention | 7 días para objetos elegibles, +1 día no actuales; últimos dos pares sin tag. Preservar prefijos ajenos no significa que todos los prefijos históricos carezcan de sus propias reglas antiguas. |
-| Restauración ↔ retención | `backup_retention.py:1–6,60–65`; `NATIVE-RECOVERY.md:48–100` | Pin independiente exigido fuera TTL, marcado NO VALIDADO para copia automatizada/ensayo con Lifecycle. No afirmar atomicidad ni Object Lock. |
+| Restauración ↔ retención | `backup_restore_pin.py:29–60`; `SENTINEL-CHAOS-20261106.md:282–292` | CLI de copia independiente fuera TTL IMPLEMENTADO, con VersionIds reales, manifiesto reenlazado y readback. Restore desde ese hold bajo Lifecycle NO DEMOSTRADO. No afirmar atomicidad ni Object Lock. |
 | Fence → nueva EC2 → restore → activación | `NATIVE-RECOVERY.md:42–100`; `native_host.py`; recibos CROSS/SAME-AZ del informe de recuperación | Drain, logins OFF, READ_ONLY, backup final, sustitución revisada, source terminated comprobado, CHECKDB/hash/EF y handoff. Discos cifrados conservados; recuperación supervisada. |
 | Observador → bus → SQS → ingestión → DDB | `storage_observer.py:128–148`, `nat_observer.py:79–99`, `trial/runtime/main.tf:97–133,192–197` | Cola reports explícita; batch 5 y fallos parciales. DLQ reports distinta de DLQ operations. No bus→Lambda directo. |
 | Observador NAT ↔ sonda | `nat_observer.py:8–99`; `nat_probe.py:19–67`; `trial/nat-observer.tf:74–115` | Lecturas ASG/EC2/EIP/ruta/SDC y prueba HTTPS son señales distintas; sonda privada A, plazo total 6 s. Error del ejecutor/throttling = Unknown. |
@@ -69,7 +69,7 @@ El prefijo abreviado `target/dev/` en la tabla corresponde a
 3. Imagen de aplicación cualificada no sanea los hallazgos de imágenes históricas
    de control-plane; véase el informe de seguridad. No se reescaneó ni desplegó nada.
 4. No PITR, no Object Lock, eliminación Lifecycle asíncrona, pin de restore por
-   verificar; los permisos administrativos siguen siendo un límite de confianza.
+   verificar en una restauración real; los permisos administrativos siguen siendo un límite de confianza.
 5. La sonda de A no demuestra B ni disponibilidad de toda la API. Eventos EC2 y
    salud ASG tampoco sustituyen HTTPS real.
 6. Los cuatro fallos y compensaciones del journal son evidencia preservada. La

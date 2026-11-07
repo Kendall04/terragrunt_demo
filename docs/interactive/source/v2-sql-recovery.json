@@ -66,7 +66,7 @@
       "id": "hold",
       "type": "database",
       "label": "Proteger entrada de restore",
-      "sublabel": "Pin fuera TTL · requisito",
+      "sublabel": "CLI: pin previo al fence",
       "pos": [
         760,
         40
@@ -75,17 +75,17 @@
         210,
         82
       ],
-      "tag": "NO VALIDADO",
+      "tag": "IMPLEMENTADO",
       "sources": [
         {
-          "path": "operations/integrations/portable/backup_retention.py",
-          "line": 1,
-          "end_line": 21
+          "path": "operations/integrations/portable/backup_restore_pin.py",
+          "line": 29,
+          "end_line": 60
         },
         {
-          "path": "operations/integrations/portable/backup_retention.py",
-          "line": 60,
-          "end_line": 65
+          "path": "docs/SENTINEL-CHAOS-20261106.md",
+          "line": 282,
+          "end_line": 292
         }
       ]
     },
@@ -349,7 +349,7 @@
         "Objetivo RPO: 1 h + duración de backup/subida; freshness: 2 h. No PITR.",
         "Lifecycle instalado: elegibles 7 d, versiones no actuales +1 d; últimos dos pares sin tag.",
         "Prefijos históricos / holds excluidos. Expiración por objeto asíncrona, no transacción por pareja.",
-        "Pin fuera TTL exigido por retención; copia automatizada y ensayo con Lifecycle NO VALIDADOS."
+        "CLI pin implementado: copia create-only fuera TTL antes del fence. Restore desde ese hold bajo Lifecycle NO DEMOSTRADO."
       ]
     },
     {

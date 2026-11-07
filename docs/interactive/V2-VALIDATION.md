@@ -45,7 +45,7 @@ etiquetas, puntas de flecha, separación de funciones, cuadros y leyendas.
 | Plataforma | Camino de entrada y dependencia SQL/KMS inequívocos. El aviso rodea el archivo: no lo atraviesa ni convierte S3 en un relay SNS. |
 | Red | Marcos VPC/AZ y destinos por zona correctos. Un cruce gráfico resuelto entre EIP A y ruta B; sin punto de unión ni dependencia A→B. |
 | Sentinel | Ingestión y evaluación separadas; cleanup y watchdog distintos. El email rodea CloudWatch; CloudWatch no procesa el aviso de dominio. |
-| SQL | Flujo ordenado, backup final visible; el pin fuera TTL está marcado NO VALIDADO, distinto de la recuperación fría demostrada. |
+| SQL | Flujo ordenado, backup final visible; el CLI pin fuera TTL está IMPLEMENTADO. Su uso en una restauración bajo Lifecycle sigue NO DEMOSTRADO, distinto de la recuperación fría ya probada. |
 | Confianza | Execution role, task role, host y login SQL separados. Las relaciones representan autoridad/uso; no implican que IAM sea autenticación SQL. |
 | Entrega | Caminos nativos e inhibidos diferenciados. Dos recorridos periféricos largos conservan el significado; ningún cruce ambiguo. |
 | Incidente NAT | Escala temporal, carriles y textos sin colisiones. Gmail usa segundos; ACK durable SNS no se presenta como instante de envío. |
