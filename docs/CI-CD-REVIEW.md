@@ -87,6 +87,13 @@ those events. The minimal correction keeps `CI Validation` / `CD Safety Validati
 and permissions are otherwise unchanged. A regression test binds that distinction;
 fresh live PR checks and the positive merge verify the corrected contexts.
 
+Both source-freshness controls detected these edits. The original inventory scanner
+updated exactly the two workflow entries and their regression test after review,
+preserving `UNVERIFIED` and every unrelated entry. The atlas's separate current-file
+pin was [reviewed against its unchanged claims](interactive/V2-AUDIT.md#revisión-de-dependencia-ci--7-noviembre-pr-39);
+original diagram sources/fragments/output receipts remain intact. These are freshness
+records, not new authority or installation receipts; no verifier was relaxed.
+
 GitHub accepts `success`, `neutral` and `skipped` check conclusions; therefore
 require the two unconditional **aggregate** checks, not individually conditional
 jobs. The CI aggregate uses `always()` and enforces actual results; Safety has an
