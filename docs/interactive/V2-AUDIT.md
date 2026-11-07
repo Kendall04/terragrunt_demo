@@ -87,3 +87,24 @@ representa orden operativo y estados, no una réplica activa. El incidente muest
 hechos fechados; su resultado no modifica el contrato de todos los fallos futuros.
 La matriz, el inventario saneado, los fragmentos fijados y las capturas permiten
 revisar estas decisiones sin acceso a evidencia privada o credenciales.
+
+## Revisión de dependencia CI — 7 noviembre, PR #39
+
+El commit `743450adeb6b90918138d1532307a433b87d5b95` cambia únicamente el nombre
+del resultado agregado de `ci.yml` según el evento: `CI Validation` para PR y
+`CI Push Validation` para push. Evita que un push verde satisfaga una validación
+de PR pendiente. Se revisaron las relaciones de `v2-delivery` que citan este archivo:
+GitHub/source→operador nativo y el límite del contrato OIDC. Conservan sus garantías:
+CI sigue activo, con `contents: read`, sin AWS/OIDC, los mismos triggers, jobs,
+checkout y condiciones de resultado. No activa el CD ni cambia ownership.
+
+La comprobación de reproducibilidad detectó correctamente el cambio de bytes.
+Tras revisar el diff y esas afirmaciones, se actualiza **solo** el pin vigente
+`implementationFiles[".github/workflows/ci.yml"]` de
+`40aed2f3cc55de3b508571e6376047027a4cdece6e8b4b569628f5a0f5b1bd4f` a
+`db1615416afa6e866d929046e305fe6e887d0a2f67d2f36c6054f55e82f40513` (SHA256 con LF).
+El fragmento original 1–28 no cambió; su `commitFileSha256`, texto y revisión
+histórica permanecen intactos. Los JSON de diagramas, HTML/SVG oficiales, hojas,
+capturas y recibos de generación conservan exactamente sus bytes. No se regeneran
+ni se atribuye a Archify esta revisión de gobernanza. El verificador sigue
+rechazando cualquier otro cambio de implementación no revisado.

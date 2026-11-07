@@ -135,7 +135,7 @@
       ]
     },
     "validation": {
-      "name": "CI Validation",
+      "name": "${{ github.event_name == 'pull_request' && 'CI Validation' || 'CI Push Validation' }}",
       "needs": [
         "detect-changes",
         "e1-acceptance",

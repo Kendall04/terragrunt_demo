@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   cd-safety:
-    name: CD Safety Validation
+    name: ${{ github.event_name == 'pull_request' && 'CD Safety Validation' || 'CD Safety Push Validation' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout exact event revision

@@ -126,9 +126,11 @@ is an explicit, expiring loopback session, not public backend authentication.
   effects and require current identity, inputs, locks, retention and authorization.
 - [Cold recovery runbook](operations/sql-backup/recovery/NATIVE-RECOVERY.md):
   positive source fencing, one active writer and retained encrypted disks.
-- [CI/CD review](docs/CI-CD-REVIEW.md): CI is active; automatic CD is disabled.
+- [CI/CD review](docs/CI-CD-REVIEW.md): CI and CD Safety are required to merge into
+  main/develop; automatic CD is disabled.
   V2 used supervised native delivery. Historical V1 A→B→A proves that earlier
-  bound deployment, not a working main-based V2 delivery pipeline.
+  bound deployment, not a working main-based V2 delivery pipeline. The
+  [single DEV delivery design](docs/DEV-DELIVERY-DESIGN.md) awaits review.
 - [Technical audit](docs/ENGINEERING-REVIEW.md): security findings, current readbacks,
   recovery guarantees, costs and closure. [Validation guide](terraform/docs/validation.md)
   separates offline checks from AWS effects.

@@ -206,6 +206,22 @@ class SelectionTests(unittest.TestCase):
 
 
 class WorkflowTests(unittest.TestCase):
+    def test_required_check_names_are_reserved_for_pull_requests(self):
+        # A successful branch push must not satisfy a still-pending PR aggregate
+        # on the same head SHA. Keep both GitHub-required contexts PR-exclusive.
+        expressions = {
+            'CI Validation': WORKFLOW['jobs']['validation']['name'],
+            'CD Safety Validation': next(line.strip().removeprefix('name: ')
+                for line in (ROOT / '.github/workflows/ci-cd-safety.yml').read_text().splitlines()
+                if line.startswith('    name: ')),
+        }
+        for required, expression in expressions.items():
+            with self.subTest(required=required):
+                push = required.replace(' Validation', ' Push Validation')
+                self.assertEqual(expression,
+                    "${{ github.event_name == 'pull_request' && '" + required + "' || '" + push + "' }}")
+                self.assertNotIn(push, expressions)
+
     def test_outer_triggers_and_exact_checkout(self):
         events = WORKFLOW['on']
         self.assertEqual(events['push'], {})
