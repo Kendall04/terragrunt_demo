@@ -1,5 +1,14 @@
 # Development and validation entry points
 
+## Current validation map
+
+Use [the documentation index](../../docs/README.md) for maintained procedures,
+[the technical audit](../../docs/ENGINEERING-REVIEW.md) for the latest evidence
+matrix and [CI/CD review](../../docs/CI-CD-REVIEW.md) for actual job coverage.
+The many dated qualifications below preserve their original scope and failures;
+old test totals, permission dates and pending claims are not current deployment
+status. No command below is authorization for a new AWS mutation.
+
 > **Current DEV operations (2026-10-28):** use the [native Terraform lifecycle](native-dev-lifecycle.md). E16 execution/session requirements below are historical; independent security and delivery contracts remain.
 
 The combined portable-security/native-lifecycle tree retains the 44 E1 checks and
@@ -536,7 +545,7 @@ The evidence is provider-free repository validation, not AWS installation.
 
 ## Batch 2 combined integration evidence
 
-[Combined reconciliation and validation](batch2-integration.md) records preserved
+[Combined reconciliation and validation](https://github.com/Kendall04/terragrunt_demo/blob/24cd87c0a780fe398d46553ee8c539bdd32eafa5/terraform/docs/batch2-integration.md) records preserved
 E2/E13/E14-B contracts, actual lint debt comparisons and local tooling gaps.
 The full jq-dependent CD/E3 suites and exact pinned SDK/container execution remain
 unverified on this host; independent candidate or earlier Batch 1 results are not

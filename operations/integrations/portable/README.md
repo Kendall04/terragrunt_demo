@@ -1,5 +1,19 @@
 # Portable Sentinel integration
 
+## Operational reading order
+
+The [November incident record](../../../docs/SENTINEL-CHAOS-20261106.md) documents
+installed observers, NAT/backup incidents, durable checkpoints, encrypted archives,
+verified inbox delivery and four append-only historical compensations. The
+[current audit](../../../docs/ENGINEERING-REVIEW.md) reports sampled continuity and
+remaining DLQ debt. Sentinel observes and notifies; it does not replace NAT or
+recover SQL. The original 64-request/four-job profile is unchanged.
+
+The dated local/install corrections below preserve failures and qualification
+boundaries. In particular, the earlier unconditional historical-failure STALLED
+behavior is superseded by the verified compensation-aware current-health check;
+the four original records are not erased. Local fixtures do not establish AWS health.
+
 ## DEV installation corrections â€” 2026-11-05
 
 The live installation exposed two SNS validation requirements: explicit supported

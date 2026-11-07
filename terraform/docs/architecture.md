@@ -1,5 +1,21 @@
 # Architecture and current contracts
 
+## Current ECS V2 deployment and reading order
+
+The [V2 atlas](../../docs/interactive/V2-INDEX.md) and
+[technical review](../../docs/ENGINEERING-REVIEW.md) reconcile source, real DEV
+execution and current readbacks. The static [CloudFront DEMO](https://d20ioz705caon7.cloudfront.net/)
+has its own private S3/OAC stack and no backend origin. V2 runs one SQL writer and
+one blue Fargate task; SAME/CROSS-AZ recovery, hourly backups and Sentinel incidents
+are demonstrated. Automatic CD is inhibited; native administration owns delivery.
+
+The protected-controller declarations below explain retained source contracts.
+Their default inactive bindings and October closure are not today's runtime
+inventory. Portable Sentinel has an additional isolated owner under
+`operations/integrations/portable/trial`; it observes/reports and does not repair
+NAT or execute SQL recovery. Use the native lifecycle for operation, and retain
+controller contracts for authority review. Do not apply the whole source graph.
+
 > **V2 diagram audit — 2026-11-06:** the [dated architecture atlas](../../docs/interactive/V2-INDEX.md)
 > reconciles source at `5d35edef` with a read-only AWS inventory. It separates current
 > V2 deployment, demonstrated recovery, inhibited delivery and historical diagrams.
@@ -94,15 +110,18 @@ Each private subnet has a route table whose default route is Lambda-managed.
 Both environment CIDRs overlap; no interconnection exists.
 
 Ingress SG references allow VPC Link → ALB → app → DB. ALB/tasks/DB are private.
-Application and database egress allow all protocols to 0.0.0.0/0; this is not a
-permanent accepted invariant. No VPC endpoints are configured.
+Application general egress is HTTPS with a separate SQL/1433 rule; the SQL host
+retains broad outbound access. Review actual SGs before operation. No VPC endpoints
+are configured for this runtime.
 
 Two t3.micro NAT ASGs each maintain one instance. User data configures forwarding
 and masquerading. Three independent ASG launch-success targets associate an EIP,
 update a route and disable source/destination checks. This is per-AZ replacement
 recovery. [E13](e13-nat-reliability.md) separately contains EventBridge delivery
 and Lambda execution failures, verifies exact network/bootstrap evidence and keeps
-private-subnet egress explicitly unverified pending genuine traffic observations.
+the original source qualification separate from live egress evidence. November
+trials verified real private HTTPS loss/recovery and the expected EIP; see the
+[Sentinel record](../../docs/SENTINEL-CHAOS-20261106.md).
 There is no cross-AZ failover or continuous packet-forwarding health algorithm.
 
 Evidence: [global](../modules/target/dev/global),
@@ -178,7 +197,8 @@ base images to verified Linux/x86-64 manifests and explicitly runs the applicati
 and packaged readiness probe as UID 1654. HTTP 8080, `/app`, the framework-dependent
 DLL entrypoint and ECS environment/secret semantics are preserved. Deterministic
 checks, host startup and isolated Linux container execution pass; live Fargate
-execution of this .NET 10 revision remains unverified. The owner-authorized
+execution is demonstrated for the qualified November SQL-Lab digest in the
+[V2 record](../../docs/DEV-V2-20261105.md), not for every source revision. The owner-authorized
 [2026-10-16 migration](validation.md#net-10-lts-local-migration---2026-10-16)
 preserves the SQL schema, API, readiness and execution contracts. Dated V1 AWS
 trials used .NET 8. See the linked batch integration evidence.
@@ -215,10 +235,14 @@ fallback. KMS_KEY_ID selects encryption; SDK credentials use the runtime chain.
 APP_ENV does not select ASP.NET Development; APP_ENV/DEPLOYMENT are not used by
 the inspected application logic.
 
-SQL Server 2022 Express runs on Ubuntu EC2 in the first private subnet, default
-t3a.small. Its encrypted 30-GiB root disk is deleted on termination. The app user
-has db_owner; startup EF migrations are enabled by default and fail startup on
-error. Both colors share the DB. Image rollback does not reverse schema changes.
+SQL Server 2022 Express runs on Ubuntu EC2, default t3a.small. The native Data
+owner accepts the selected private subnet; the latest cold recovery placed SQL
+in B. `recovery_preserve_root_volume=true` retains the encrypted 30-GiB root.
+The installed validated-v2 runtime has SELECT/INSERT on DemoTexts and SELECT on
+EF history, no db_owner/DDL; the migrator is separate and disabled after handoff.
+Startup migrations default off and validated-v2 refuses them. The legacy recipe
+remains distinguishable in source and is not the deployed strict profile. Both
+colors share the DB. Image rollback does not reverse schema changes.
 The ciphertext-expansion migration explicitly declares its DbContext and migration
 identity so EF discovers and applies the existing `nvarchar(max)` operation.
 A provider-only regression scripts it without opening SQL; the first real DEV
@@ -231,16 +255,14 @@ Evidence: [Program](../../demo-api/terragrunt-demo/Program.cs),
 [encryption](../../demo-api/terragrunt-demo/Services/IEncryptionService.cs),
 [data](../modules/target/dev/data/ordinary-main.tf), [SQL setup](../infra/data/user_data.sh).
 
-The owner-authorized [SQL backup/restore CLI](../../operations/sql-backup/README.md)
-adds a local V2 contract: private bounded native Express backups with CHECKSUM,
-separate backup/verifier contexts, immutable exact-version storage evidence and
-restore to an isolated new DB with CHECKDB/readback. It does not change SQL EC2,
-root-disk deletion, application credentials/migrations or the five-layer lifecycle.
-Native SQL and the bounded S3/KMS component drill are verified separately. The
-[local service increment](validation.md#sql-backup-service-local-qualification---2026-10-16)
-adds verified packaging, owned-file cleanup and inhibit/wait/resume. No host
-service, EC2 role/secret delivery, real timer, alert or cross-AZ/app restore is
-installed or qualified. [Initial evidence](validation.md#sql-backuprestore-local-increment---2026-10-16).
+The [SQL backup/restore CLI](../../operations/sql-backup/README.md) provides
+COPY_ONLY/CHECKSUM, exact-version S3/KMS verification and isolated restore/CHECKDB.
+The hourly persistent producer and external observer are installed. Seven-day
+Lifecycle admission protects the two newest valid pairs; restore inputs need an
+independently verified hold. [Native cold recovery](../../operations/sql-backup/recovery/NATIVE-RECOVERY.md)
+positively fences the original writer before provisioning and activating a new
+host. SAME/CROSS-AZ trials include API/KMS validation and measured RTO; no automatic
+SQL failover, transaction-log PITR or abrupt-disaster zero-RPO guarantee is implied.
 
 The original simple demo is not the final backend target. Read the decision
 register before adding identity or treating database limitations as accepted.

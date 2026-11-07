@@ -9,7 +9,9 @@ needed for the task; this file is a map, not the architecture reference.
   [the register](terraform/docs/decisions-and-limitations.md) determine constraints
   and intent. Keep targets, unresolved choices and historical narratives distinct.
 - No AWS infrastructure existed at owner reconciliation on 2026-09-18.
-  Do not assume live resources or treat old state/examples as current evidence.
+  That date is historical. November V2 deployment, cold SQL recovery, Sentinel
+  and independent DEMO hosting are recorded in the [current reading map](docs/README.md).
+  Reconcile live resources before operations; dated receipts are not live status.
 - Secret values MUST NOT enter Terraform state, outputs, logs or committed artifacts.
 - Terraform owns skeletons; deploy tooling owns task revisions/counts and ALB
   forwarding. Do not accidentally let competing tools own those fields.
@@ -19,9 +21,9 @@ needed for the task; this file is a map, not the architecture reference.
   The owner authorized the first local V2 SQL backup/restore increment on
   2026-10-16. Its [runbook](operations/sql-backup/README.md) and
   [validation boundary](terraform/docs/validation.md#sql-backuprestore-local-increment---2026-10-16)
-  separate native Express proof, the accepted S3/KMS component drill and future
-  EC2 installation. The [local service contract](operations/sql-backup/README.md#local-service-increment---2026-10-16)
-  adds packaging/cleanup/inhibition; it installs no host service or cloud access.
+  distinguish the original component proof from the later EC2 installation and
+  native recovery. The [local service contract](operations/sql-backup/README.md#local-service-increment---2026-10-16)
+  describes the earlier local increment; use the current runbook for installed behavior.
   [EC2 installation preparation](operations/sql-backup/EC2-INSTALL-REVIEW.md) has
   received grouped owner approval. The [execution checkpoint](terraform/docs/validation.md#approved-ec2-backup-execution-preflight---2026-10-16)
   and E16 plan-only review are historical, not approval for new creation.
@@ -44,8 +46,8 @@ needed for the task; this file is a map, not the architecture reference.
 
 The owner authorized the .NET 10 LTS source migration on 2026-10-16.
 [Current local qualification](terraform/docs/validation.md#net-10-lts-local-migration---2026-10-16)
-records the SDK/image pins, test boundary and shared checkout. Historical .NET 8
-AWS trials do not prove deployment of the .NET 10 source.
+records the SDK/image pins and local test boundary. The [V2 execution record](docs/DEV-V2-20261105.md)
+establishes the later .NET 10 deployment. Historical .NET 8 AWS trials remain separate.
 
 ## Validation and hazards
 

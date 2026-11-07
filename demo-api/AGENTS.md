@@ -18,8 +18,9 @@ health gates or schema compatibility; security docs for credential/KMS changes.
   validated-v2 refuses it. The explicit database-migrate command uses a separate
   supplied connection and requires schema-change confirmation. No migration
   credential belongs in a runtime task. See ../terraform/docs/sql-runtime-security.md.
-  Existing SQL bootstrap still grants db_owner; strict opt-in requires a reviewed
-  permission/certificate handoff. Image rollback never undoes the shared schema.
+  The legacy bootstrap still grants db_owner; the installed DEV validated-v2
+  handoff has minimal runtime grants and a disabled separate migrator. Do not
+  substitute the legacy source defaults for that deployed contract. Image rollback never undoes the shared schema.
 - Tests use doubles and disable migrations. A normal local app start may mutate
   a configured DB and contact KMS. dotnet build/test writes outputs and restore
   uses dependencies/cache; do not run in strict read-only work.

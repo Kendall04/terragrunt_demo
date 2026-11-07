@@ -1,5 +1,19 @@
 # SQL backup/restore increment
 
+## Current recovery and retention
+
+Use [native cold recovery](recovery/NATIVE-RECOVERY.md) for the implemented host
+replacement procedure. Real SAME-AZ **24m42.6s** and CROSS-AZ **41m31.5s** trials
+include source fencing, new EC2, restore/CHECKDB and API/KMS validation.
+[The dated record](../../docs/V2-RECOVERY-SECURITY-20261105.md#cold-recovery-execution--6-november-utc)
+preserves failures and the planned-cutover RPO limitation.
+
+Hourly production and external verification are installed. The
+[retention/incident record](../../docs/SENTINEL-CHAOS-20261106.md) covers seven-day
+Lifecycle admission only for the new prefix, the two newest valid pairs, restore
+holds and historical exclusions. Older local/component proposals below remain
+historical; their “uninstalled/unmeasured” statements are not current V2 status.
+
 ## Current DEV installation — 2026-11-05
 
 The existing SQL host now has the strict-TLS producer installed, a persistent
