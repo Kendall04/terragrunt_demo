@@ -151,3 +151,6 @@ No repository-wide software license is currently declared. Third-party licenses
 remain attached to their assets. Diagram provenance, Archify 3.1.0
 pins and historical sources are retained in the [atlas documentation](docs/interactive/README.md).
 Font licenses and reviewed design-tool provenance remain with the [web product](portfolio/product/README.md).
+
+<!-- Temporary negative governance test: removed before integration. -->
+[Required-check negative test](docs/governance-negative-test-intentionally-missing.md)
