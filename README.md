@@ -19,7 +19,8 @@ The API accepts text, encrypts it with KMS, stores the ciphertext in SQL and
 decrypts it on retrieval. Private workloads use two NAT instances, one per AZ.
 Hourly verified backups support supervised recovery into a newly provisioned SQL
 host. Reliability Sentinel observes backups and private HTTPS egress, persists
-incident progress and archives evidence before delivering notifications.
+incident progress, archives evidence and delivers notifications through separate
+durable effects.
 
 ```mermaid
 flowchart LR

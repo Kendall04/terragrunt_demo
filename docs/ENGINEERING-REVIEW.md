@@ -81,8 +81,9 @@ retains these limitations.
 
 The exact current-main CI run re-executed **TFLint 0.64.0: 24 warnings** and
 **tfsec 1.28.14: 46 findings**, matching rule/resource/message/source hashes and
-multiplicity. The requested historical “27 warnings” is not today's reproduced
-count. No suppressions or acceptance baseline edits were made.
+multiplicity. The previously reported 24/46 totals remain reproducible; they are
+not 70 independently confirmed vulnerabilities. No suppressions or acceptance
+baseline edits were made.
 
 | Family | Count | Interpretation |
 | --- | ---: | --- |
