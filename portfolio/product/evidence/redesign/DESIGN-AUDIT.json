@@ -1,0 +1,224 @@
+{
+  "at": "2026-11-07T03:02:33.677Z",
+  "scope": "Shell semantics, core palette contrast, focus and reduced motion; not a WCAG certification or replacement for assistive-technology testing.",
+  "checks": [
+    {
+      "width": 320,
+      "route": "/",
+      "result": "PASS"
+    },
+    {
+      "width": 320,
+      "route": "/demo",
+      "result": "PASS"
+    },
+    {
+      "width": 320,
+      "route": "/resilience",
+      "result": "PASS"
+    },
+    {
+      "width": 320,
+      "route": "/architecture",
+      "result": "PASS"
+    },
+    {
+      "width": 320,
+      "route": "/evidence",
+      "result": "PASS"
+    },
+    {
+      "width": 390,
+      "route": "/",
+      "result": "PASS"
+    },
+    {
+      "width": 390,
+      "route": "/demo",
+      "result": "PASS"
+    },
+    {
+      "width": 390,
+      "route": "/resilience",
+      "result": "PASS"
+    },
+    {
+      "width": 390,
+      "route": "/architecture",
+      "result": "PASS"
+    },
+    {
+      "width": 390,
+      "route": "/evidence",
+      "result": "PASS"
+    },
+    {
+      "width": 768,
+      "route": "/",
+      "result": "PASS"
+    },
+    {
+      "width": 768,
+      "route": "/demo",
+      "result": "PASS"
+    },
+    {
+      "width": 768,
+      "route": "/resilience",
+      "result": "PASS"
+    },
+    {
+      "width": 768,
+      "route": "/architecture",
+      "result": "PASS"
+    },
+    {
+      "width": 768,
+      "route": "/evidence",
+      "result": "PASS"
+    },
+    {
+      "width": 1440,
+      "route": "/",
+      "result": "PASS"
+    },
+    {
+      "width": 1440,
+      "route": "/demo",
+      "result": "PASS"
+    },
+    {
+      "width": 1440,
+      "route": "/resilience",
+      "result": "PASS"
+    },
+    {
+      "width": 1440,
+      "route": "/architecture",
+      "result": "PASS"
+    },
+    {
+      "width": 1440,
+      "route": "/evidence",
+      "result": "PASS"
+    },
+    {
+      "width": 1920,
+      "route": "/",
+      "result": "PASS"
+    },
+    {
+      "width": 1920,
+      "route": "/demo",
+      "result": "PASS"
+    },
+    {
+      "width": 1920,
+      "route": "/resilience",
+      "result": "PASS"
+    },
+    {
+      "width": 1920,
+      "route": "/architecture",
+      "result": "PASS"
+    },
+    {
+      "width": 1920,
+      "route": "/evidence",
+      "result": "PASS"
+    }
+  ],
+  "contrast": [
+    {
+      "fg": "--text",
+      "bg": "--ink",
+      "ratio": 16.97
+    },
+    {
+      "fg": "--text",
+      "bg": "--surface",
+      "ratio": 15.26
+    },
+    {
+      "fg": "--text",
+      "bg": "--raised",
+      "ratio": 13.3
+    },
+    {
+      "fg": "--muted",
+      "bg": "--ink",
+      "ratio": 9.97
+    },
+    {
+      "fg": "--muted",
+      "bg": "--surface",
+      "ratio": 8.96
+    },
+    {
+      "fg": "--muted",
+      "bg": "--raised",
+      "ratio": 7.81
+    },
+    {
+      "fg": "--accent",
+      "bg": "--ink",
+      "ratio": 10.82
+    },
+    {
+      "fg": "--accent",
+      "bg": "--surface",
+      "ratio": 9.73
+    },
+    {
+      "fg": "--accent",
+      "bg": "--raised",
+      "ratio": 8.48
+    },
+    {
+      "fg": "--mint",
+      "bg": "--ink",
+      "ratio": 11.7
+    },
+    {
+      "fg": "--mint",
+      "bg": "--surface",
+      "ratio": 10.53
+    },
+    {
+      "fg": "--mint",
+      "bg": "--raised",
+      "ratio": 9.17
+    },
+    {
+      "fg": "--violet",
+      "bg": "--ink",
+      "ratio": 8.9
+    },
+    {
+      "fg": "--violet",
+      "bg": "--surface",
+      "ratio": 8.01
+    },
+    {
+      "fg": "--violet",
+      "bg": "--raised",
+      "ratio": 6.98
+    },
+    {
+      "fg": "--error",
+      "bg": "--ink",
+      "ratio": 10.52
+    },
+    {
+      "fg": "--error",
+      "bg": "--surface",
+      "ratio": 9.46
+    },
+    {
+      "fg": "--error",
+      "bg": "--raised",
+      "ratio": 8.25
+    }
+  ],
+  "status": "PASS"
+}

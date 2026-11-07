@@ -6,12 +6,20 @@ supervisada, **no una web pública autenticada**.
 
 ## Abrir
 
+**[Sitio público HTTPS](https://d20ioz705caon7.cloudfront.net/)** ·
+[Product Demo](https://d20ioz705caon7.cloudfront.net/demo) ·
+[Architecture Explorer](https://d20ioz705caon7.cloudfront.net/architecture) ·
+[Resilience Lab](https://d20ioz705caon7.cloudfront.net/resilience) ·
+[Evidence](https://d20ioz705caon7.cloudfront.net/evidence).
+Solo DEMO, sin conexión a la API. [Publicación y costes](HOSTING.md).
+
 Desde la raíz del repositorio, con Node 22+ existente (sin `npm install`):
 
 ```powershell
 node portfolio/product/server.mjs
 ```
 
+- <http://127.0.0.1:4182/>: plataforma, mapa de relaciones y resultados medidos.
 - <http://127.0.0.1:4182/demo>: mensajes sintéticos, recorrido API → KMS → SQL → lectura.
 - <http://127.0.0.1:4182/architecture>: siete vistas V2 y cinco históricas.
 - <http://127.0.0.1:4182/resilience>: reproducciones visuales NAT, SQL y backups.
@@ -24,7 +32,7 @@ históricos avanzan a una velocidad de presentación, no de telemetría en vivo.
 
 ## Decisión frontend
 
-Se conserva HTML/CSS y módulos ESM nativos con componentes DOM pequeños: cuatro
+Se conserva HTML/CSS y módulos ESM nativos con componentes DOM pequeños: cinco
 vistas no requieren un runtime React ni un bundler. Navegación History API,
 estado explícito, tipado mediante validación del contrato en los límites, cero
 dependencias de producción. Los builds copian una allowlist y sellan cada archivo.
@@ -33,7 +41,8 @@ La referencia visual fue el proyecto propio
 [EKS, commit f3b8039](https://github.com/Kendall04/cloud-native-eks-platform/tree/f3b80397a1cb41dbb5dcfa5df955f70c734907fb/frontend),
 incluyendo App, config, API, Explorer, proxy y CSS, además de Chrome real en
 `/demo` y `/architecture`. Se comparte la jerarquía de navegación, tema oscuro y
-separación de modos; ECS usa acento cian y escenarios de infraestructura propios.
+separación de modos. El rediseño usa tinta, ámbar y lavanda, Sora autoalojada y
+una presentación de laboratorio de sistemas. Véase [DESIGN.md](DESIGN.md).
 No se reutilizan funcionalidades Shipment/Auth ni recursos EKS. El portafolio
 anterior de `portfolio/server.mjs` continúa disponible como archivo histórico.
 
@@ -123,7 +132,7 @@ con las mismas fuentes producen el mismo manifiesto. No depende de rutas del
 equipo, hora ni Git metadata. Solo incluye DEMO, assets, catálogo, JSON y derivados
 de diagramas. No incluye servidor, proxy, test runners, recibos privados o sesión
 AWS. `HOSTING.json` especifica rutas/headers; [HOSTING.md](HOSTING.md) detalla la
-publicación futura pendiente. El preview comprueba hashes antes de servir.
+publicación real independiente. El preview comprueba hashes antes de servir.
 
 ## Pruebas
 

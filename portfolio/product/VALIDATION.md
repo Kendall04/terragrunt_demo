@@ -1,115 +1,79 @@
-# ECS V2 UI · validación del 7-nov-2026
+# Cloud Resilience Laboratory — validación del rediseño
 
-Base revisada: `a46636d6b0b9f38bdbe2512f54cb75d99b406e8d` (PR35).
-El cambio es frontend/documentación/pruebas. No modifica diagramas originales,
-Terraform funcional, IAM, runtime ECS, SQL, NAT o Sentinel. EKS se consultó como
-referencia de solo lectura.
+Base PR #36: `21701c91026c0b6b4de7afff0175c529a2d0995e`.
+La prueba auténtica navegador → API → SQL/KMS sigue conservada en
+[VALIDATION-PR36.md](VALIDATION-PR36.md) y [AWS-VALIDATION.json](evidence/AWS-VALIDATION.json).
+No se repitió un POST AWS para justificar un cambio visual. El backend, proxy,
+adaptadores, datos históricos, diagramas originales y sus pins no cambian.
 
-## API AWS auténtica: PASS
+## Pruebas locales
 
-[Recibo saneado](evidence/AWS-VALIDATION.json) y
-[captura final](evidence/aws-real-desktop.png). Sin credenciales ni cuerpos de
-otros registros. No hay fallback, mock o almacenamiento local en esta prueba.
+- [Chrome final](evidence/BROWSER-QA.json): **PASS**, 57 capturas, cero errores JS,
+  cero llamadas externas. DEMO crear/leer/reset/XSS literal; errores HTTP503,
+  timeout, pérdida de conexión y expiración de AWS Edition con dobles explícitos.
+- Doce diagramas en escritorio/móvil, zoom, ajuste, opaque sandbox, inspector,
+  fuentes y lectura adaptable. Navegación teclado/skip/foco/Escape.
+- Cinco resoluciones: 320, 390, 768, 1440, 1920 px; cinco vistas sin overflow.
+- [Auditoría de diseño](DESIGN-AUDIT.md): contraste, semántica, tamaño táctil y
+  reduced motion PASS en 25 combinaciones. No equivale a certificación WCAG.
+- [Manifest actual](evidence/STATIC-MANIFEST.json):
+  `3ede367cc3a7e4d48c8fa1d0fc2f66ef75be9ebf8e34d74299d86d9dda6b9b21`.
+  Build reproducible, edición DEMO fija, sin proxy, credenciales o conexiones API.
+- Se añadieron pruebas de allowlist CloudFront, CSP diferenciada, aislamiento del
+  stack, alternativas Free/pay-as-you-go y hashes/licencia de fuentes. CI de higiene
+  importa estas pruebas mediante `portfolio/test-contract.mjs`.
 
-Preflight `2026-11-07T01:03:12.869890Z`: STS administrador en cuenta
-`341936017254`, región `us-east-1`; API ID `4cjyis8dsa`, nombre `demo-dev-edge`,
-HTTPS endpoint original y cuatro rutas verificadas. Blue ACTIVE 1/1 revisión15;
-green ACTIVE 0/0 revisión9. Liveness/readiness 200, SQL y KMS Healthy. Esto es una
-lectura fechada, no garantía de disponibilidad futura ni nueva auditoría AWS.
+Los recibos y capturas originales de PR #36 se preservan. Las capturas nuevas
+están en `evidence/redesign/`. Las tres iteraciones locales corrigieron separación
+de red en el mapa, menú a 320 px y áreas táctiles, sin modificar diagramas Archify.
 
-| Petición desde Chrome | UTC | HTTP | Duración |
-| --- | --- | --- | --- |
-| GET `/health/live` | 01:10:07.711 | 200 | 332 ms |
-| GET `/ready` | 01:10:08.049 | 200 | 464 ms |
-| POST `/text` | 01:10:08.596 | 200 | 126 ms |
-| GET `/text?page=1&pageSize=5` | 01:10:08.746 | 200 | 138 ms |
+## Publicación
 
-Un único mensaje sintético, ID **6**, creado a `01:10:08.7073381Z`.
-SHA256 del texto: `5622a688df8000e5ce2d0755e3037d56cebc7bc4720b92a3858303d53e3aace5`.
-ID y contenido coinciden en POST, GET y DOM. Se respetó la paginación; no se
-enumeraron todas las páginas ni se borraron registros.
+**PASS** en [CloudFront real](https://d20ioz705caon7.cloudfront.net/).
+AWS rechazó Free; tras rollback y autorización nueva se instaló pay-as-you-go,
+template `11fd9d4ad78a290a3c0d9e4ed20088484475ed8062e94bdebf3323316c0de3fe`,
+manteniendo la reserva separada USD 1/mes. [HOSTING.md](HOSTING.md) conserva el fallo,
+la decisión, recursos, coste modelado y rollback.
 
-Readback final **01:25:08–01:25:09 UTC**: tres GET 200, mismo ID/hash y fecha UTC
-correcta bajo zona de navegador Costa Rica. Cero POST adicionales. El código
-del backend cifra/persiste/descifra; readiness comprueba sus dependencias. La
-UI no inspecciona ciphertext ni afirma haber leído directamente SQL o CloudTrail.
+[Recibo HTTPS](evidence/public/PUBLIC-HTTPS-QA.json): 47 archivos públicos idénticos
+al manifest sellado, MIME/CSP correctos; cinco vistas en 320/390/768/1440/1920;
+navegación directa, refresh, menú, foco y skip link; doce diagramas desktop/móvil,
+zoom/fit/sandbox/lectura; CRUD/reset DEMO y tres reproducciones históricas.
+Cero errores JS, cero solicitudes externas o al API. Se revisaron capturas
+auténticas públicas de portada y Product Demo móvil, además de la revisión local.
 
-Se conservó un fallo intermedio del runner: esperaba `T` en la fecha cuando el
-DOM presenta un espacio y `UTC`. Sus tres GET fueron 200; se corrigió la aserción,
-no el backend. La primera versión de UI también había interpretado la fecha
-sin sufijo de zona como hora local; el adaptador ahora respeta el contrato UTC
-de `DateTime.UtcNow`, con test específico y readback final. No se ocultan ambos
-hallazgos ni se confunden con un fallo de SQL/KMS.
+[Readback AWS](evidence/public/HOSTING-READBACK.json): UPDATE_COMPLETE,
+Deployed/Enabled, 48 objetos con checksum/versionId, S3 privado/versionado/cifrado,
+OAC firmado, bucket policy limitada y Functions idénticas al template. No se
+apagó el runtime para esta comprobación: la independencia se demuestra por
+origen estático único, edición fija, CSP y ausencia de solicitudes, no por un
+teardown inventado.
 
-**Coste:** 12 peticiones HTTP reales contando dos preflight, cuatro iniciales y
-dos lecturas de tres; un solo POST. Modelo incremental conservador USD0,02,
-USD14,72/20 acumulados según el modelo previo. No hay gasto facturado atribuible
-observado ni nuevos recursos. Ventana preservada: reserva 9-nov 02:30 UTC y cierre
-04:00 UTC. No quedan procesos proxy AWS abiertos por estos tests.
+El primer CI detectó `UNMODELED_SOURCE` para el publicador Python nuevo. Se registró
+únicamente ese archivo en el inventario existente, con digest real y disposición
+UNVERIFIED; no se alteraron tests, contratos ni recursos E1. La suite de contratos
+del portafolio pasó en Linux. Dos solicitudes de HTML grandes dieron ECONNRESET
+en Node local Windows; Chrome local/público y CI Linux completaron esos recorridos.
 
-## DEMO, contratos y navegador
+## Reproducir sin AWS
 
-12 tests nuevos cubren memoria/paginación/reset, contrato/UTC, UTF-8, errores,
-ausencia de retry/fallback, rutas y origen/capacidad local, expiración, carrera
-de POST concurrentes, pins/sandbox, reproducibilidad y preview contra alteraciones.
-Se ejecutan junto con los 18 tests históricos mediante `portfolio/test-contract.mjs`
-en el job existente CI - Repo Hygiene. El test AWS manual no se importa en CI.
+```powershell
+node --test portfolio/test-contract.mjs
+node portfolio/product/build.mjs <directorio-nuevo-vacio>
+node portfolio/product/preview.mjs <directorio-generado>
+```
 
-Las primeras 11 pruebas nuevas pasaron en una ejecución local de la suite combinada.
-La suite focalizada final, incluyendo errores upstream no JSON y comparación
-de manifiesto/capturas con sus bytes, terminó **12/12 PASS**.
-Otras ejecuciones Windows presentaron `ECONNRESET` intermitente al descargar el
-HTML grande de Sentinel desde el preview (10/11 y 11/12); la suite histórica también
-falló al servir sus HTML grandes (28/29 en la ejecución combinada, Node22 y
-Node24). No se omitió ni debilitó ningún gate. El resultado remoto Linux
-debe verificarse en la PR antes de integrar. Chrome sí abrió los doce documentos
-en escritorio y móvil. Los resultados remotos de la integración están enlazados
-en la PR asociada a este cambio.
+Chrome existente + Playwright existente, sin instalación automática:
 
-[BROWSER-QA.json](evidence/BROWSER-QA.json): **PASS**, 36 capturas, cero requests
-externos y cero errores JavaScript. La suite se ejecutó sobre Chrome real con
-Playwright existente; las fallas HTTP503, timeout y desconexión son **dobles
-identificados**, no interrupciones de AWS. Se comprobaron:
+```powershell
+$env:PLAYWRIGHT_MODULE='<ruta/index.mjs>'
+$env:CHROME_EXECUTABLE='<ruta/chrome.exe>'
+$env:UI_EVIDENCE_DIRECTORY='<directorio-nuevo-vacio>'
+node portfolio/product/test-browser.mjs
+node portfolio/product/audit-design.mjs <recibo-nuevo.json>
+```
 
-- Mensajes DEMO como texto literal (incluido payload XSS), reset, cero llamadas API.
-- Skip link, foco al navegar, navegación por teclado, modo visible.
-- Vistas en 320/390/768 px, sin overflow horizontal del host.
-- Doce diagramas a 1440 y 390 px: nodos, zoom/fit y sandbox opaco; inspector,
-  fuentes verificadas, lectura alternativa y hoja adaptable.
-- Tres replays con paso/pausa/reset y límites históricos visibles.
-- Modo AWS con fallos HTTP, timeout, pérdida de conexión y capacidad perdida al
-  recargar: nunca aparecen registros sintéticos como sustituto.
-- Paquete estático servido desde sus propios bytes: rutas directas/con barra final, creación y
-  consulta DEMO, diagramas aislados, sin backend.
-
-Revisión visual: se corrigieron un skip link visible en la captura completa,
-una carrera de captura mientras cargaba el iframe, una colisión de clases en
-la cronología y navegación móvil cortada. Capturas finales:
-
-| Vista | Escritorio | Móvil |
-| --- | --- | --- |
-| Product Demo | [workspace](evidence/desktop-product.png) | [390 px](evidence/mobile-demo.png) |
-| Architecture | [Sentinel](evidence/desktop-explorer.png) | [390 px](evidence/mobile-explorer.png) |
-| Resiliencia | [NAT](evidence/desktop-resilience-nat.png) | [390 px](evidence/mobile-resilience.png) |
-| Evidencias | [fuentes en la UI](app.mjs) | [390 px](evidence/mobile-evidence.png) |
-| AWS | [readback auténtico](evidence/aws-real-desktop.png) | No se repitió el POST en móvil |
-
-No es certificación WCAG completa ni prueba de Safari/Firefox. La arquitectura
-global requiere zoom o lectura textual en móvil; no se reduce a etiquetas
-ilegibles como único modo de acceso. Todas las capturas de diagramas se conservan
-junto al recibo, con SHA256.
-
-## Reproducibilidad y alcance
-
-[STATIC-MANIFEST.json](evidence/STATIC-MANIFEST.json): 43 archivos, 11.868.121 bytes,
-content SHA256 `decda5e48b145c9a1938e4f20cd0550e1f787ed8f9d44dc362f5da867c932089`.
-El manifiesto enumera cada archivo; dos builds de las mismas fuentes comparan
-igual. No incluye evidencia privada, servidor, proxy ni selector AWS. Los
-originales Archify, JSON, `GENERATION-V2.json`, `TRACEABILITY-V2.json` y pins
-permanecen byte-identical. Las fuentes públicas del inspector están fijadas a
-commits del atlas, no a una rama mutable.
-
-La reserva de hosting futuro **no está aprobada**. DEMO puede publicarse tras
-revisar [la propuesta independiente](HOSTING.md); AWS Edition permanece local.
-No se abre ni mantiene infraestructura para sostener una presentación visual.
-No se repiten ensayos de recuperación ni se certifica continuidad de Sentinel.
+Las pruebas de navegador usan DEMO y dobles locales; no invocan el API AWS.
+El generador de hosting es offline. `hosting/publish.py` sí muta AWS cuando se
+elige create/upload/enable y requiere autorización de propietario; no forma parte
+de CI ni se ejecuta por abrir esta documentación.

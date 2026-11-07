@@ -1,0 +1,22 @@
+{
+  "family": "Sora",
+  "license": "SIL Open Font License 1.1",
+  "licenseFile": "OFL.txt",
+  "licenseSource": "https://raw.githubusercontent.com/google/fonts/main/ofl/sora/OFL.txt",
+  "retrieved": "2026-11-07",
+  "files": [
+    {
+      "path": "sora-regular.ttf",
+      "weight": 400,
+      "source": "https://fonts.gstatic.com/s/sora/v17/xMQOuFFYT72X5wkB_18qmnndmSdSnn-K.ttf",
+      "sha256": "1b547e90e4c49aa12e9a35ca8acc91732e188aa9fdbe08d2299ea4d4cae72145"
+    },
+    {
+      "path": "sora-semibold.ttf",
+      "weight": 600,
+      "source": "https://fonts.gstatic.com/s/sora/v17/xMQOuFFYT72X5wkB_18qmnndmSeMmX-K.ttf",
+      "sha256": "4e79171a1720d04b72eb68bd7604f85888c31c05bb6b432147d4524e9439af30"
+    }
+  ],
+  "networkAtRuntime": false
+}

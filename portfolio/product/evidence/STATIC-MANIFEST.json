@@ -4,8 +4,8 @@
   "files": [
     {
       "path": "architecture/index.html",
-      "bytes": 3096,
-      "sha256": "701ce04d353716c99b88ef32f4b8be2e2e4c952dc8291337bcf7ab18f099411c"
+      "bytes": 2922,
+      "sha256": "c00413eda4eab2a474f13e9c477510662d83cf74108fb4faee9b936d5be23ce3"
     },
     {
       "path": "assets/api.mjs",
@@ -14,8 +14,8 @@
     },
     {
       "path": "assets/app.mjs",
-      "bytes": 26643,
-      "sha256": "7a84f08a0977fed377a10b93300cc0c90e3f0719e7c8cc95e4dc7fdbb93822fd"
+      "bytes": 32440,
+      "sha256": "067a7d7e887dcc55f5f66fcb53e2e911d05b9acf362c3e455d06fa09ab34e5fb"
     },
     {
       "path": "assets/atlas.mjs",
@@ -33,14 +33,34 @@
       "sha256": "4c0a2068c2a88c082bfe28f71deb26693c05012cc911cd86b797c2a147fac328"
     },
     {
+      "path": "assets/fonts/OFL.txt",
+      "bytes": 4385,
+      "sha256": "ba0b9729c9428ba79a0459ab8ec575791b51509dbec213e383d0316d37fec299"
+    },
+    {
+      "path": "assets/fonts/sora-regular.ttf",
+      "bytes": 46040,
+      "sha256": "1b547e90e4c49aa12e9a35ca8acc91732e188aa9fdbe08d2299ea4d4cae72145"
+    },
+    {
+      "path": "assets/fonts/sora-semibold.ttf",
+      "bytes": 46216,
+      "sha256": "4e79171a1720d04b72eb68bd7604f85888c31c05bb6b432147d4524e9439af30"
+    },
+    {
       "path": "assets/style.css",
-      "bytes": 17461,
-      "sha256": "a0d77bc4b20d58a52d1e6000e1c72dff2616b5aeab15c780b52e96b66ed88a2c"
+      "bytes": 30203,
+      "sha256": "994d406a59f5f077a3660d335b47323a29349630d9694ace869fba2edaa647e1"
+    },
+    {
+      "path": "assets/visuals.mjs",
+      "bytes": 4715,
+      "sha256": "99678b0e53728eaa4d90995f60d08176e7433dcecfc1cda4b918e0a4ec87bfc3"
     },
     {
       "path": "demo/index.html",
-      "bytes": 3096,
-      "sha256": "701ce04d353716c99b88ef32f4b8be2e2e4c952dc8291337bcf7ab18f099411c"
+      "bytes": 2922,
+      "sha256": "c00413eda4eab2a474f13e9c477510662d83cf74108fb4faee9b936d5be23ce3"
     },
     {
       "path": "diagrams/az6-recovery.html",
@@ -104,18 +124,18 @@
     },
     {
       "path": "evidence/index.html",
-      "bytes": 3096,
-      "sha256": "701ce04d353716c99b88ef32f4b8be2e2e4c952dc8291337bcf7ab18f099411c"
+      "bytes": 2922,
+      "sha256": "c00413eda4eab2a474f13e9c477510662d83cf74108fb4faee9b936d5be23ce3"
     },
     {
       "path": "HOSTING.json",
-      "bytes": 729,
-      "sha256": "0e71b80190d37c4acbc7a58e48122e5f45d949607fe995b655a5dc4a23802039"
+      "bytes": 738,
+      "sha256": "8446026413bab905bca97cf878da52494a900e34bdf267bef75c80dee2558e4f"
     },
     {
       "path": "index.html",
-      "bytes": 3096,
-      "sha256": "701ce04d353716c99b88ef32f4b8be2e2e4c952dc8291337bcf7ab18f099411c"
+      "bytes": 2922,
+      "sha256": "c00413eda4eab2a474f13e9c477510662d83cf74108fb4faee9b936d5be23ce3"
     },
     {
       "path": "reading/v2-delivery.html",
@@ -154,8 +174,8 @@
     },
     {
       "path": "resilience/index.html",
-      "bytes": 3096,
-      "sha256": "701ce04d353716c99b88ef32f4b8be2e2e4c952dc8291337bcf7ab18f099411c"
+      "bytes": 2922,
+      "sha256": "c00413eda4eab2a474f13e9c477510662d83cf74108fb4faee9b936d5be23ce3"
     },
     {
       "path": "sources/az6-recovery.json",
@@ -218,7 +238,7 @@
       "sha256": "501a6ac567e740b262f3390539eacf56fe9082a3232bea8523022211fb09e25f"
     }
   ],
-  "contentSHA256": "decda5e48b145c9a1938e4f20cd0550e1f787ed8f9d44dc362f5da867c932089",
+  "contentSHA256": "3ede367cc3a7e4d48c8fa1d0fc2f66ef75be9ebf8e34d74299d86d9dda6b9b21",
   "awsCredentials": false,
   "awsProxy": false
 }

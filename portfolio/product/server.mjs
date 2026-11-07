@@ -12,10 +12,16 @@ const assets = new Map([
   ["/architecture", "index.html"],
   ["/resilience", "index.html"],
   ["/evidence", "index.html"],
-  ...["app.mjs", "api.mjs", "data.mjs", "style.css"].map((x) => [
-    "/assets/" + x,
-    x,
-  ]),
+  ...[
+    "app.mjs",
+    "api.mjs",
+    "data.mjs",
+    "style.css",
+    "visuals.mjs",
+    "fonts/sora-regular.ttf",
+    "fonts/sora-semibold.ttf",
+    "fonts/OFL.txt",
+  ].map((x) => ["/assets/" + x, x]),
 ]);
 export function createProductServer({
   mode = "demo",
@@ -89,9 +95,13 @@ export function createProductServer({
         body = await readFile(new URL(file, import.meta.url));
         type = file.endsWith(".html")
           ? "text/html"
-          : file.endsWith(".css")
-            ? "text/css"
-            : "text/javascript";
+          : file.endsWith(".ttf")
+            ? "font/ttf"
+            : file.endsWith(".txt")
+              ? "text/plain"
+              : file.endsWith(".css")
+                ? "text/css"
+                : "text/javascript";
       } else if (
         url.pathname === "/assets/atlas.mjs" ||
         /^\/(?:diagrams|reading)\/[a-z0-9-]+\.html$/.test(url.pathname) ||

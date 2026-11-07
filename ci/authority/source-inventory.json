@@ -13867,6 +13867,30 @@
       "declarations": [],
       "signals": {},
       "semantic_status": "UNVERIFIED"
+    },
+    "portfolio/product/hosting/publish.py": {
+      "sha256": "e02ba7f6f8adeeeca237e72314533ca9fc7d859ff485da8f64280bd8bca10870",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          3,
+          15,
+          66,
+          72,
+          102,
+          142,
+          151,
+          152,
+          153
+        ],
+        "executable-dependency": [
+          59
+        ],
+        "security-control": [
+          146
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",

@@ -2,6 +2,7 @@ import { edition } from "./config.mjs";
 import { createDemo, createAws, MAX_BYTES } from "./api.mjs";
 import { scenarios, facts } from "./data.mjs";
 import { atlas } from "./atlas.mjs";
+import { topology, incidentSystem } from "./visuals.mjs";
 const fragment = new URLSearchParams(location.hash.slice(1)),
   token = fragment.get("session") ?? "";
 if (fragment.has("session"))
@@ -9,7 +10,7 @@ if (fragment.has("session"))
 const api = edition === "demo" ? createDemo() : createAws(token);
 const main = document.querySelector("main"),
   announce = document.querySelector("#announcer");
-let current = "/demo",
+let current = "/",
   pageNumber = 1,
   busy = false,
   lastCreated = null,
@@ -40,13 +41,7 @@ const heading = (eyebrow, title, desc, extra) =>
   el(
     "div",
     { class: "page-heading" },
-    el(
-      "div",
-      {},
-      el("span", { class: "eyebrow" }, eyebrow),
-      el("h1", { tabindex: "-1" }, title),
-      el("p", {}, desc),
-    ),
+    el("div", {}, el("h1", { tabindex: "-1" }, title), el("p", {}, desc)),
     extra,
   );
 function say(text) {
@@ -70,6 +65,21 @@ document.addEventListener("click", (e) => {
   }
 });
 addEventListener("popstate", () => render(true));
+$("#menu-toggle").addEventListener("click", (e) => {
+  const open = e.currentTarget.getAttribute("aria-expanded") !== "true";
+  e.currentTarget.setAttribute("aria-expanded", String(open));
+  $("#side-nav").classList.toggle("open", open);
+});
+document.addEventListener("keydown", (e) => {
+  if (
+    e.key === "Escape" &&
+    $("#menu-toggle").getAttribute("aria-expanded") === "true"
+  ) {
+    $("#side-nav").classList.remove("open");
+    $("#menu-toggle").setAttribute("aria-expanded", "false");
+    $("#menu-toggle").focus();
+  }
+});
 $("#edition-badge").textContent =
   edition === "aws" ? "AWS · SESIÓN LOCAL" : "DEMO · SINTÉTICO";
 $("#edition-badge").className =
@@ -78,7 +88,8 @@ $("#edition-note").textContent =
   edition === "aws"
     ? "API real. Acceso local supervisado y temporal. Nunca se sustituye por DEMO."
     : "Solo memoria en esta pestaña. Cero solicitudes AWS. Sin cifrado KMS real.";
-$("#global-mode").textContent = $("#edition-badge").textContent;
+$("#global-mode").textContent =
+  edition === "demo" ? "DEMO offline" : "AWS local";
 $("#global-mode").className = $("#edition-badge").className;
 $("#footer-mode").textContent =
   edition === "aws"
@@ -89,27 +100,27 @@ function render(focus = false) {
   diagramListener = null;
   clearInterval(scenarioTimer);
   scenarioTimer = null;
-  current = location.pathname.replace(/\/$/, "") || "/demo";
+  current = location.pathname.replace(/\/$/, "") || "/";
+  main.className = "view-" + (current.slice(1) || "overview");
   main.replaceChildren();
-  $("#diagram-nav").replaceChildren();
-  document
-    .querySelectorAll("[data-route]")
-    .forEach((a) =>
-      a.classList.toggle("active", new URL(a.href).pathname === current),
-    );
+  $("#menu-toggle").setAttribute("aria-expanded", "false");
+  $("#side-nav").classList.remove("open");
+  document.querySelectorAll("[data-route]").forEach((a) => {
+    const active = new URL(a.href).pathname === current;
+    a.classList.toggle("active", active);
+    if (active) a.setAttribute("aria-current", "page");
+    else a.removeAttribute("aria-current");
+  });
   if (current === "/architecture") {
     architecture();
-    $("#breadcrumb").textContent = "Architecture / ECS V2";
   } else if (current === "/resilience") {
     resilience();
-    $("#breadcrumb").textContent = "Experimentos / Evidencia histórica";
   } else if (current === "/evidence") {
     evidence();
-    $("#breadcrumb").textContent = "Evidencia / Alcance y límites";
-  } else if (current === "/demo" || current === "/") {
+  } else if (current === "/demo") {
     product();
-    $("#breadcrumb").textContent = "Workspace / Texto cifrado";
-  } else
+  } else if (current === "/") overview();
+  else
     main.append(
       heading(
         "404",
@@ -119,12 +130,200 @@ function render(focus = false) {
       link("Volver al workspace", "/demo"),
     );
   if (focus) $("h1")?.focus();
+  document.title =
+    ($("h1")?.textContent ?? "ECS V2") + " | Cloud Resilience Laboratory";
+}
+function overview() {
+  const map = el("div", { class: "topology-canvas" }, topology());
+  const lens = el(
+    "p",
+    { class: "topology-description", id: "topology-description" },
+    "Una solicitud atraviesa API Gateway y la red privada hasta Fargate. La API cifra con KMS y persiste en SQL.",
+  );
+  const lensCopy = [
+    "Una solicitud atraviesa API Gateway y la red privada hasta Fargate. La API cifra con KMS y persiste en SQL.",
+    "ASG repone la NAT. E13 recupera EIP, ruta y source/destination checking. SQL se recupera en una EC2 nueva mediante un procedimiento supervisado.",
+    "Sentinel observa evidencia de backups y conectividad, persiste incidentes y notifica. No controla ASG ni ejecuta la recuperación.",
+  ];
+  const controls = ["Aplicación", "Recuperación", "Sentinel"].map((name, i) =>
+    button(
+      name,
+      () => {
+        map.dataset.lens = ["data", "recovery", "observation"][i];
+        controls.forEach((b, j) =>
+          b.setAttribute("aria-pressed", String(i === j)),
+        );
+        lens.textContent = lensCopy[i];
+      },
+      "lens-control",
+      { "aria-pressed": i === 0 },
+    ),
+  );
+  main.append(
+    el(
+      "section",
+      { class: "hero" },
+      el(
+        "div",
+        { class: "hero-heading" },
+        el(
+          "h1",
+          { tabindex: "-1" },
+          "Cloud Resilience",
+          el("br"),
+          "Laboratory.",
+        ),
+        el(
+          "div",
+          { class: "hero-intro" },
+          el(
+            "p",
+            {},
+            "Una plataforma AWS puesta a prueba. Aplicación real, fallos controlados y recuperación verificable.",
+          ),
+          link("Explorar los incidentes", "/resilience"),
+        ),
+      ),
+      el(
+        "figure",
+        { class: "hero-system" },
+        el(
+          "div",
+          { class: "system-toolbar" },
+          el("span", {}, "ECS V2 / mapa de relaciones"),
+          el(
+            "div",
+            {
+              class: "lens-controls",
+              role: "group",
+              "aria-label": "Explorar el sistema",
+            },
+            controls,
+          ),
+        ),
+        map,
+        el(
+          "div",
+          { class: "mobile-system" },
+          [
+            "HTTPS → API Gateway",
+            "VPC Link → ALB → Fargate",
+            "SQL TLS + KMS",
+            "ASG / E13 recupera · Sentinel observa",
+          ].map((x) => el("p", {}, x)),
+        ),
+        el(
+          "figcaption",
+          {},
+          lens,
+          link(
+            "Abrir arquitectura completa",
+            "/architecture?diagram=v2-platform",
+          ),
+        ),
+      ),
+      el(
+        "div",
+        { class: "hero-bottom" },
+        el(
+          "p",
+          {},
+          "Laboratorio DEV documentado en noviembre de 2026. Esta web reproduce evidencia; no muestra telemetría actual.",
+        ),
+        link("Probar la aplicación", "/demo"),
+      ),
+    ),
+    el(
+      "section",
+      { class: "measured" },
+      el(
+        "div",
+        {},
+        el("h2", {}, "La recuperación, medida."),
+        el("p", {}, "Tiempos observados en ensayos fechados. No son SLAs."),
+      ),
+      el(
+        "dl",
+        { class: "measurement-list" },
+        ...[
+          ["59,115 s", "Detección NAT"],
+          ["2m 29,191s", "HTTPS recuperado"],
+          ["41m 31,5s", "SQL CROSS-AZ"],
+          ["24m 42,6s", "SQL SAME-AZ"],
+        ].map(([v, k]) => el("div", {}, el("dt", {}, k), el("dd", {}, v))),
+      ),
+    ),
+    el(
+      "section",
+      { class: "sentinel-feature" },
+      el(
+        "div",
+        { class: "feature-copy" },
+        el("h2", {}, "Sentinel convierte señales en una historia verificable."),
+        el(
+          "p",
+          {},
+          "Observa desde fuera del host. Correlaciona incidentes, conserva su journal y comprueba cuándo la evidencia vuelve a ser saludable.",
+        ),
+        link("Explorar Sentinel", "/architecture?diagram=v2-sentinel"),
+      ),
+      el(
+        "div",
+        { class: "sentinel-chain" },
+        ...[
+          ["Observar", "HTTPS privado y backups S3"],
+          ["Evaluar", "Incidente, estado y checkpoint"],
+          ["Demostrar", "Archivo SSE-KMS e inbox verificado"],
+        ].map(([a, b], i) =>
+          el(
+            "div",
+            {},
+            el("span", { class: "chain-number" }, String(i + 1)),
+            el("div", {}, el("h3", {}, a), el("p", {}, b)),
+          ),
+        ),
+      ),
+    ),
+    el(
+      "section",
+      { class: "explore-stories" },
+      el("h2", {}, "Entra por el sistema. Quédate por la evidencia."),
+      ...[
+        [
+          "Un mensaje, cuatro servicios.",
+          "Experimenta con el recorrido API → KMS → SQL. Datos sintéticos, sin AWS.",
+          "/demo",
+          "Product Demo",
+        ],
+        [
+          "Una base activa. Otra AZ cuando hace falta.",
+          "Aislamiento positivo, nueva EC2, restore y validación antes de reactivar la API.",
+          "/resilience?scenario=sql",
+          "SQL recovery",
+        ],
+        [
+          "Doce vistas, una implementación trazable.",
+          "Siete diagramas V2 y cinco históricos. Código, relaciones y límites de confianza.",
+          "/architecture",
+          "Architecture Explorer",
+        ],
+      ].map(([title, copy, href, label]) =>
+        el(
+          "article",
+          { class: "story-row" },
+          el("h3", {}, title),
+          el("p", {}, copy),
+          link(label, href),
+        ),
+      ),
+    ),
+  );
 }
 function product() {
   main.append(
     heading(
       "TEXT WORKSPACE",
-      "Tu texto. Un recorrido cloud.",
+      "Sigue el recorrido de un mensaje.",
       edition === "demo"
         ? "Explora cómo una API .NET recibe, cifra, persiste y recupera texto. Aquí todo es sintético."
         : "Conexión explícita a AWS DEV. Solo texto sintético no sensible; los mensajes persisten en SQL.",
@@ -133,19 +332,6 @@ function product() {
         edition === "demo" ? "amber" : "cyan",
       ),
     ),
-  );
-  const stats = el(
-    "div",
-    { class: "stats" },
-    stat("01", "API .NET 10", "ECS Fargate · contrato /text"),
-    stat(
-      "02",
-      "Cifrado + persistencia",
-      edition === "demo"
-        ? "Representación, sin KMS ni SQL"
-        : "KMS y SQL del backend real",
-    ),
-    stat("03", "Leer y verificar", "El navegador recibe texto descifrado"),
   );
   const health = el(
     "div",
@@ -193,6 +379,9 @@ function product() {
       placeholder: "Una idea pequeña. Una plataforma completa.",
       required: "",
       maxlength: "4096",
+      name: "message",
+      autocomplete: "off",
+      "aria-describedby": "message-help",
     }),
     count = el("span", { class: "counter" }, "0 / 4096 bytes");
   input.addEventListener(
@@ -244,7 +433,7 @@ function product() {
     el("div", { class: "form-bottom" }, count, submit),
     el(
       "p",
-      { class: "fine" },
+      { class: "fine", id: "message-help" },
       edition === "demo"
         ? "No se envía ni se cifra. Recargar restaura los ejemplos."
         : "No incluyas datos personales. El proxy permite como máximo dos escrituras por sesión.",
@@ -303,7 +492,6 @@ function product() {
   }
   const flow = flowPanel();
   main.append(
-    stats,
     health,
     el(
       "div",
@@ -314,7 +502,7 @@ function product() {
         el(
           "div",
           { class: "panel-title" },
-          el("h2", {}, "Escribe algo que importe"),
+          el("h2", {}, "Empieza con unas palabras."),
           badge(edition === "demo" ? "DEMO" : "POST /text"),
         ),
         form,
@@ -409,15 +597,6 @@ function product() {
       ),
     );
 }
-function stat(n, title, desc) {
-  return el(
-    "article",
-    { class: "stat" },
-    el("span", { class: "stat-index" }, n),
-    el("strong", {}, title),
-    el("p", {}, desc),
-  );
-}
 function flowPanel() {
   const details = [
     "HTTP API → VPC Link → ALB → ECS. El backend recibe texto; la API DEV no autentica usuarios.",
@@ -460,11 +639,13 @@ function flowPanel() {
   };
 }
 function resilience() {
+  const requested = new URLSearchParams(location.search).get("scenario");
+  if (requested && Object.hasOwn(scenarios, requested)) scenarioKey = requested;
   const s = scenarios[scenarioKey];
   main.append(
     heading(
       "RESILIENCE LAB",
-      "El fallo también tiene una historia.",
+      "Cuando falla, ¿qué ocurre después?",
       "Recorridos interactivos basados en ensayos documentados. Ningún control de esta vista ejecuta acciones AWS.",
       badge("REPLAY VISUAL", "amber"),
     ),
@@ -482,7 +663,7 @@ function resilience() {
         () => {
           scenarioKey = key;
           scenarioIndex = 0;
-          render();
+          navigate("/resilience?scenario=" + key, false);
         },
         key === scenarioKey ? "selected" : "",
         { "aria-pressed": key === scenarioKey },
@@ -562,18 +743,10 @@ function resilience() {
               : "CONTROL / EVALUACIÓN",
         tone === "success" ? "green" : "amber",
       ),
+      incidentSystem(el, scenarioKey, scenarioIndex),
       el("span", { class: "incident-time" }, at),
       el("h2", {}, title),
       el("p", {}, copy),
-      el(
-        "div",
-        { class: "incident-signal" },
-        el("span", {}, "01  INFRAESTRUCTURA"),
-        el("i", {}),
-        el("span", {}, "02  OBSERVACIÓN"),
-        el("i", {}),
-        el("span", {}, "03  EVIDENCIA"),
-      ),
     );
     progress.value = scenarioIndex;
   }
@@ -585,7 +758,7 @@ function resilience() {
       el(
         "div",
         {},
-        el("span", { class: "eyebrow" }, s.label),
+        el("span", { class: "trial-date" }, s.label),
         el("h2", {}, s.title),
         el("p", {}, s.note),
       ),
@@ -644,8 +817,11 @@ function architecture() {
     ? requested
     : "v2-platform";
   const d = atlas.find((x) => x.id === selectedDiagram);
-  $("#diagram-nav").append(
-    el("p", { class: "nav-caption" }, "ATLAS ECS V2"),
+  const diagramNav = el("nav", {
+    id: "diagram-nav",
+    "aria-label": "Colección de arquitectura",
+  });
+  diagramNav.append(
     ...atlas
       .filter((x) => !x.historical)
       .map((x) =>
@@ -685,6 +861,7 @@ function architecture() {
       ),
     ),
   );
+  main.append(diagramNav);
   const selector = el(
     "select",
     {
