@@ -59,7 +59,7 @@ Las primeras 11 pruebas nuevas pasaron en una ejecución local de la suite combi
 La suite focalizada final, incluyendo errores upstream no JSON y comparación
 de manifiesto/capturas con sus bytes, terminó **12/12 PASS**.
 Otras ejecuciones Windows presentaron `ECONNRESET` intermitente al descargar el
-HTML grande de Sentinel desde el preview (10/11); la suite histórica también
+HTML grande de Sentinel desde el preview (10/11 y 11/12); la suite histórica también
 falló al servir sus HTML grandes (28/29 en la ejecución combinada, Node22 y
 Node24). No se omitió ni debilitó ningún gate. El resultado remoto Linux
 debe verificarse en la PR antes de integrar. Chrome sí abrió los doce documentos
@@ -79,7 +79,7 @@ identificados**, no interrupciones de AWS. Se comprobaron:
 - Tres replays con paso/pausa/reset y límites históricos visibles.
 - Modo AWS con fallos HTTP, timeout, pérdida de conexión y capacidad perdida al
   recargar: nunca aparecen registros sintéticos como sustituto.
-- Paquete estático servido desde sus propios bytes: rutas directas, creación y
+- Paquete estático servido desde sus propios bytes: rutas directas/con barra final, creación y
   consulta DEMO, diagramas aislados, sin backend.
 
 Revisión visual: se corrigieron un skip link visible en la captura completa,
@@ -101,8 +101,8 @@ junto al recibo, con SHA256.
 
 ## Reproducibilidad y alcance
 
-[STATIC-MANIFEST.json](evidence/STATIC-MANIFEST.json): 43 archivos, 11.868.091 bytes,
-content SHA256 `411fb3e06c4a030beeea29990fe89c0c6e2a3c4ce8a451893844492f223cf3e6`.
+[STATIC-MANIFEST.json](evidence/STATIC-MANIFEST.json): 43 archivos, 11.868.121 bytes,
+content SHA256 `decda5e48b145c9a1938e4f20cd0550e1f787ed8f9d44dc362f5da867c932089`.
 El manifiesto enumera cada archivo; dos builds de las mismas fuentes comparan
 igual. No incluye evidencia privada, servidor, proxy ni selector AWS. Los
 originales Archify, JSON, `GENERATION-V2.json`, `TRACEABILITY-V2.json` y pins

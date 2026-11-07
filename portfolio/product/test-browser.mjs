@@ -228,7 +228,7 @@ try {
   });
   const sp = await sc.newPage();
   sp.on("pageerror", (e) => receipt.browserErrors.push(e.message));
-  await sp.goto(staticOrigin + "/demo");
+  await sp.goto(staticOrigin + "/demo/");
   await sp.locator(".message-row").first().waitFor();
   await sp
     .locator("#message")
@@ -238,12 +238,12 @@ try {
     .locator(".message-row")
     .filter({ hasText: "Paquete estático independiente" })
     .waitFor();
-  await sp.goto(staticOrigin + "/architecture");
+  await sp.goto(staticOrigin + "/architecture/?diagram=v2-sentinel");
   await capture(sp, "static-explorer");
   assert.deepEqual(staticRequests, []);
   await sc.close();
   pass(
-    "Reproducible static package: direct routes, DEMO write/read and isolated diagram without backend",
+    "Reproducible static package: direct/trailing-slash routes, DEMO write/read and isolated diagram without backend",
   );
   // An explicit AWS-mode local server with no real upstream. Tests label fault injection as doubles.
   let behavior = "healthy",

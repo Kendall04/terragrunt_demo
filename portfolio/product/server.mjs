@@ -63,6 +63,8 @@ export function createProductServer({
       return;
     }
     const url = new URL(req.url, origin);
+    if (/^\/(demo|architecture|resilience|evidence)\/$/.test(url.pathname))
+      url.pathname = url.pathname.slice(0, -1);
     try {
       if (url.pathname.startsWith("/_api/")) {
         if (!proxy) {

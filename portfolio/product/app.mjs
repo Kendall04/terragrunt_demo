@@ -89,7 +89,7 @@ function render(focus = false) {
   diagramListener = null;
   clearInterval(scenarioTimer);
   scenarioTimer = null;
-  current = location.pathname;
+  current = location.pathname.replace(/\/$/, "") || "/demo";
   main.replaceChildren();
   $("#diagram-nav").replaceChildren();
   document

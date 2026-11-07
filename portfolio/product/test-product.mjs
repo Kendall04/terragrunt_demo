@@ -122,6 +122,7 @@ function request(origin, route, { method = "GET", headers = {}, body } = {}) {
 test("DEMO server has no API/proxy, blocks traversal and sensitive files, CSP no connect", async () =>
   withServer({}, async (origin) => {
     const r = await request(origin, "/demo");
+    assert.equal((await request(origin, "/demo/")).status, 200);
     assert.equal(r.status, 200);
     assert.match(r.headers["content-security-policy"], /connect-src 'none'/);
     assert.equal(

@@ -1,13 +1,13 @@
 {
   "kind": "DEMO_AND_HTTP_DOUBLES_NOT_AWS",
-  "at": "2026-11-07T01:27:22.472Z",
+  "at": "2026-11-07T01:39:57.018Z",
   "checks": [
     "Keyboard skip link",
     "DEMO create/read/reset and literal XSS",
     "Three honest historical replays, pause/step/reset",
     "12 pinned diagrams desktop/mobile, zoom/fit, opaque sandbox, sources, reader and text alternative",
     "DEMO zero API/external calls, keyboard routes, 320/390/768 responsive",
-    "Reproducible static package: direct routes, DEMO write/read and isolated diagram without backend",
+    "Reproducible static package: direct/trailing-slash routes, DEMO write/read and isolated diagram without backend",
     "HTTP 503 / timeout / lost connection / expired in-memory capability: no synthetic fallback"
   ],
   "captures": [
@@ -29,7 +29,7 @@
     },
     {
       "file": "1440-v2-platform.png",
-      "sha256": "d5b95844240b5c0a37e4c426063deae2de3cb01331001e9a794ae4a6dd8d2cf1",
+      "sha256": "7e4c4f03515d9763567ed2122c2285c5ad3df4c4553ebd2b2c2259e7165da798",
       "diagram": "v2-platform",
       "width": 1440
     },
@@ -41,71 +41,71 @@
     },
     {
       "file": "1440-v2-nat-incident.png",
-      "sha256": "281ff147816e3284b57f9bfc4b74598169ee4cc894fb716054795609e8b57a05",
+      "sha256": "254a6eefd2867cf0a4ec466878d23109c5f9544ed070d7cc5a30fddbddc838ab",
       "diagram": "v2-nat-incident",
       "width": 1440
     },
     {
       "file": "1440-v2-sql-recovery.png",
-      "sha256": "276b5a8934233e075a93877f905daf9515475bd30c019a4024d3cdd72d77fff9",
+      "sha256": "d840cde34fa19fe49691ab86cdbb659f7c01a415eb1f569d4c0b9a0abead4929",
       "diagram": "v2-sql-recovery",
       "width": 1440
     },
     {
       "file": "1440-v2-network.png",
-      "sha256": "33916e5b55892931677d18ed7f20288e32c3ef674388795c6da7283f648c3ccb",
+      "sha256": "7091cda219453381255e0c024d0321a7d35bf52dc6115dc34e2ff6ea0d2823d2",
       "diagram": "v2-network",
       "width": 1440
     },
     {
       "file": "1440-v2-trust.png",
-      "sha256": "7f89ff3d35f6faed550b9992b60ef6aacf8cc54948434844a4aba4c8124d5903",
+      "sha256": "abff423394a41877c4a916d29c0da9e0d437bb51cef684dfad391bad5c9d9cd5",
       "diagram": "v2-trust",
       "width": 1440
     },
     {
       "file": "1440-v2-delivery.png",
-      "sha256": "187a36a366854fe29547e1b231dae8d7d34f2102d5f0a5e72d943113907be474",
+      "sha256": "b8675de0f3d9d0413e3f48e14d43ad8109dbc91ccfd7d2fdea015267572a65c0",
       "diagram": "v2-delivery",
       "width": 1440
     },
     {
       "file": "1440-v1-platform.png",
-      "sha256": "31ddadd77fc041a21444cd9e8a2ae6185a659a936c86c8c5d1a5d2c3d255031a",
+      "sha256": "8bfc060df21cb755f93a7a585e78396ad7adeac526215efdf5ed81af2d73b8c0",
       "diagram": "v1-platform",
       "width": 1440
     },
     {
       "file": "1440-v1-network.png",
-      "sha256": "df6dc3ab7eafbcfbbaa0856762f4bdbe22984e49adf523f28de31f2da7997c5a",
+      "sha256": "396eba33ea514c50141f41f27d67711c8ce19d1b7387f674b4653b704c809894",
       "diagram": "v1-network",
       "width": 1440
     },
     {
       "file": "1440-az6-recovery.png",
-      "sha256": "8180c0bb70c26f4804a773fa4d6380bcc8c9d713271d616773087c376e3ae879",
+      "sha256": "8d467c6c5d48f92544adddb6f51e85ad156f84a87aa08653e4b2b5929f0551a2",
       "diagram": "az6-recovery",
       "width": 1440
     },
     {
       "file": "1440-backup-signals.png",
-      "sha256": "044f4654716e209637aa6f8c652d319141c3a9369353905aebc6fe9ff34736c2",
+      "sha256": "80d6e724c8f9a41c23ad73714e4688144285ba5b83c971c5cf1877d318ad1355",
       "diagram": "backup-signals",
       "width": 1440
     },
     {
       "file": "1440-future-integrations.png",
-      "sha256": "6b00e285d5c2b32a09f3c5e1f2ad818a9d4da7e7631096970a7ba083dfb791ba",
+      "sha256": "b2edcb5d0a99839a6da73a575d0c11b7a9f14ef834c6981ca25beb801f37f6dc",
       "diagram": "future-integrations",
       "width": 1440
     },
     {
       "file": "desktop-explorer.png",
-      "sha256": "9e359046673b18db9dff0f11837b482fe062e5cdf851c58c17818db61b6665f9"
+      "sha256": "e235a03e936be0c48d443f2f58b9125ad6ad11e348fdd16aad3c8ab902dcf379"
     },
     {
       "file": "390-v2-platform.png",
-      "sha256": "9e370bd32eea14421bbf8feebd78ee5a83d86962c6ec3dc6ba923d8e7b40017f",
+      "sha256": "58100f43c956cae34c722a53b04647e203ec33f2ef3f8d553114afd49b982d80",
       "diagram": "v2-platform",
       "width": 390
     },
@@ -117,55 +117,55 @@
     },
     {
       "file": "390-v2-nat-incident.png",
-      "sha256": "7bf307c5fcb69821006e4fc2caa4eb5c543852d9c74c93d99703c37d5cb307ae",
+      "sha256": "79ac709f1472896b915e8dad42525d067f1684faadaf80f1c411e3bd7654d625",
       "diagram": "v2-nat-incident",
       "width": 390
     },
     {
       "file": "390-v2-sql-recovery.png",
-      "sha256": "e44a8baf22af6571501e951c7c5bf469c2c653e9e3ccdd7bb8bef026261b365b",
+      "sha256": "0cf0e6dd65d79c88a60c93f97e969cec320d4d8f880efc755fb89d489f3e33b0",
       "diagram": "v2-sql-recovery",
       "width": 390
     },
     {
       "file": "390-v2-network.png",
-      "sha256": "4d98def37ef0b0b3b7403af379d571a2fb5eb1e8f331ac07b42267c3ae2f409c",
+      "sha256": "c5ed2ef045a666481b6d75969ac7b810804ecb373ad14fa7ad763547695587b2",
       "diagram": "v2-network",
       "width": 390
     },
     {
       "file": "390-v2-trust.png",
-      "sha256": "0d6f0daf464a76af86186da4ef85a46e2b16b7ddfeb311331e3df53365ae9d21",
+      "sha256": "fb52acd12a2df7c45e577979fb99c0d0e8f1ca9fd36140b23ded9564552626ed",
       "diagram": "v2-trust",
       "width": 390
     },
     {
       "file": "390-v2-delivery.png",
-      "sha256": "782d28854d32b8e6d8147e2691f8ce84dcb9e28718406b15ffacd56901b8435c",
+      "sha256": "c408d17af260daba3e6f45a1a4103ab8529042416bce30466a83a90df5706463",
       "diagram": "v2-delivery",
       "width": 390
     },
     {
       "file": "390-v1-platform.png",
-      "sha256": "282cfb69c041d7d7c7ec1fabbef5d145385d7871fcf341fd25621be312713009",
+      "sha256": "a7b709008667fa6316686441ea83ea10463db492cb1d87f6a0c0282e1e86c5df",
       "diagram": "v1-platform",
       "width": 390
     },
     {
       "file": "390-v1-network.png",
-      "sha256": "b2add4c2b41cd78f94de0cb4b1f1407356d026a82bc30c700e916b66e9380b46",
+      "sha256": "97e83f1bc1df720b677e03d73a2403dc2c2ada39c445fae32cf407b90949f3c0",
       "diagram": "v1-network",
       "width": 390
     },
     {
       "file": "390-az6-recovery.png",
-      "sha256": "a00d11548ea44ebd8bb4e34c65a9fda326ec643250258308b1828f10106c729f",
+      "sha256": "ff26bb9029635f90ff2d8e1e9b663ff07fd4d380b953c38a87b30adf2867eada",
       "diagram": "az6-recovery",
       "width": 390
     },
     {
       "file": "390-backup-signals.png",
-      "sha256": "768c1acc807919fc3a498be305fd00a1c114bbc735da4b206e37b67fff521571",
+      "sha256": "afa2cd7e8f8f8d4562a2d7c02ac74fa78867495768f8060423841d2ba428e95f",
       "diagram": "backup-signals",
       "width": 390
     },
@@ -177,7 +177,7 @@
     },
     {
       "file": "mobile-explorer.png",
-      "sha256": "22ba5083d86570f8a9997194af94a2e2d64156c86434fc4dae431a9f77906257"
+      "sha256": "f5979e57e5e6e065108c41c92e07978526e387b103dbf8e933727cd3fce951c1"
     },
     {
       "file": "mobile-demo.png",
@@ -189,7 +189,7 @@
     },
     {
       "file": "mobile-architecture.png",
-      "sha256": "da42f333d7e92e78361c2b593c818e6a1b79beeff45f3283f25a592195972678"
+      "sha256": "090752128095749509f6f0330b8ed8cde984228382fd5d63444cd21e1df088fd"
     },
     {
       "file": "mobile-evidence.png",
@@ -197,7 +197,7 @@
     },
     {
       "file": "static-explorer.png",
-      "sha256": "f7f89fcb151f0766f225c647050c79fccba76e4f76b2417a5eac3cb3df55faa8"
+      "sha256": "bc3eb781f9bdd85981f6ad706ebbf6aec1f835329fecae3c1cbff61ad08b6707"
     },
     {
       "file": "aws-offline-double.png",
@@ -222,8 +222,8 @@
       },
       {
         "path": "assets/app.mjs",
-        "bytes": 26613,
-        "sha256": "1360d29689cc5b5626d3c960fac615adeb78d56c72a82fb015646b4d3bb8f7b1"
+        "bytes": 26643,
+        "sha256": "7a84f08a0977fed377a10b93300cc0c90e3f0719e7c8cc95e4dc7fdbb93822fd"
       },
       {
         "path": "assets/atlas.mjs",
@@ -426,7 +426,7 @@
         "sha256": "501a6ac567e740b262f3390539eacf56fe9082a3232bea8523022211fb09e25f"
       }
     ],
-    "contentSHA256": "411fb3e06c4a030beeea29990fe89c0c6e2a3c4ce8a451893844492f223cf3e6",
+    "contentSHA256": "decda5e48b145c9a1938e4f20cd0550e1f787ed8f9d44dc362f5da867c932089",
     "awsCredentials": false,
     "awsProxy": false
   },

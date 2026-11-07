@@ -14,8 +14,8 @@
     },
     {
       "path": "assets/app.mjs",
-      "bytes": 26613,
-      "sha256": "1360d29689cc5b5626d3c960fac615adeb78d56c72a82fb015646b4d3bb8f7b1"
+      "bytes": 26643,
+      "sha256": "7a84f08a0977fed377a10b93300cc0c90e3f0719e7c8cc95e4dc7fdbb93822fd"
     },
     {
       "path": "assets/atlas.mjs",
@@ -218,7 +218,7 @@
       "sha256": "501a6ac567e740b262f3390539eacf56fe9082a3232bea8523022211fb09e25f"
     }
   ],
-  "contentSHA256": "411fb3e06c4a030beeea29990fe89c0c6e2a3c4ce8a451893844492f223cf3e6",
+  "contentSHA256": "decda5e48b145c9a1938e4f20cd0550e1f787ed8f9d44dc362f5da867c932089",
   "awsCredentials": false,
   "awsProxy": false
 }

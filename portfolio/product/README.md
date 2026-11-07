@@ -74,7 +74,7 @@ Salvaguardas comprobadas:
 - 4096 bytes UTF-8 por texto, respuesta ≤128 KiB, timeout upstream 10 s;
   ninguna respuesta fallida se sustituye por DEMO. Una escritura incierta se
   reconcilia con lecturas, nunca se reintenta automáticamente.
-- Ningún token en logs, localStorage, cookies, Git o paquete público. El recibo
+- Ningún token en registros de solicitudes, localStorage, cookies, Git o paquete público. El recibo
   registra método, ruta, estado y duración; no payload ni headers.
 - El CLI cierra al expirar. No ejecutar pruebas durante la reserva de retirada
   del 9-nov 02:30 UTC. Una sesión posterior requiere una ventana y endpoint
