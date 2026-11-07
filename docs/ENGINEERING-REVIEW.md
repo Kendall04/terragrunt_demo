@@ -187,6 +187,12 @@ USD 0.01 under [AWS pricing](https://aws.amazon.com/aws-cost-management/aws-cost
 No new infrastructure or scan/build charge was initiated; ordinary read/log/S3
 requests fit the existing model contingency.
 
+Largest account-wide service subtotals in that response are ELB **USD 3.0150**,
+EC2 compute **1.8748**, VPC **1.3405**, Secrets Manager **1.0903**, KMS **0.6306**,
+and unrelated RDS **0.5938**. ECS itself reports **0.2141**. These service totals
+show why attributing the entire account bill to Fargate or to this trial is wrong;
+tags/resource allocation were not sufficient to establish a separate ECS invoice.
+
 Keep three separate concepts:
 
 - **Laboratory model:** last recorded approximately USD **14.72/20**, with existing

@@ -113,6 +113,14 @@ passed / one native test skipped**, and **323 offline recovery/portable tests in
 28 suites, zero skips**. Static findings were 24/46, unchanged. PR-only diagnostics
 were correctly skipped on push. Counts describe this source/run, not universal coverage.
 
+An open PR also receives both a branch-push run and a pull-request run for the
+same head. Their concurrency groups differ (branch ref versus PR number), so
+neither cancels the other. PR #38 reproduced this duplication. The event diffs
+are not identical, so removing one trigger needs a deliberate coverage decision;
+prefer PR validation plus main/develop postmerge validation, with an explicit
+policy for branches that do not yet have a PR. This can save more work than
+micro-optimizing individual tests.
+
 NuGet cache keys include project files, locks and SDK; the broad restore key is
 followed by locked restore. Docker caches layers; builds still use pinned recipes.
 Tool downloads verify checked-in hashes. Hosted runner versions and some platform
