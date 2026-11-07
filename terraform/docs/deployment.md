@@ -1,21 +1,32 @@
 # Deployment and release contract
 
+## Current deployment status
+
+V2 is deployed through supervised native administration; the public static DEMO
+has its own [hosting owner](../../portfolio/product/HOSTING.md). Automatic CD is
+disabled and current main release/deploy wrappers fail closed. The
+[CI/CD review](../../docs/CI-CD-REVIEW.md) inventories all 27 workflows, actual
+GitHub settings and their current limitations. The V1 A→B→A runs below remain
+genuine historical evidence, not proof of main-based V2 CD. The October offline
+checkpoint and earlier pending-installation paragraphs are dated history.
+
 > **Current DEV operations (2026-10-28):** use the [native Terraform lifecycle](native-dev-lifecycle.md). E16 execution/session requirements below are historical; independent security and delivery contracts remain.
 
 > **Closure status — 2026-10-16:** later dated evidence in [real qualification and
 > distinct-digest
 > rollback](#real-sourcetransport-qualification-and-distinct-digest-dev-rollback) supersedes
-> the early pending-installation/rollback checkpoints. Final DEV DOWN has completed; the API
-> is offline. [Portfolio operations](portfolio-operations.md) records current retained
-> resources and exact branch-bound OIDC limits; a main-based deployment route is not
-> demonstrated.
+> the early pending-installation/rollback checkpoints. The October V1 DEV DOWN
+> completed and its API was offline; November V2 was subsequently deployed.
+> [Portfolio operations](portfolio-operations.md) records current retained resources;
+> the [CI/CD review](../../docs/CI-CD-REVIEW.md) records exact branch-bound OIDC limits.
+> A main-based deployment route is not demonstrated.
 
 Read [architecture](architecture.md) for ownership and [validation](validation.md)
 for command effects. This describes checked-in behavior, not proven deployment
 results. The owner reconciliation on 2026-09-18 preceded all AWS resources.
 The [first real DEV deployment record](first-real-dev-deployment.md) distinguishes
 authenticated runtime evidence from uninstalled protected GitHub/WP3/WP4 delivery.
-The [current real CI/CD preflight](final-github-actions-cicd.md) records the public
+The [historical CI/CD preflight](https://github.com/Kendall04/terragrunt_demo/blob/24cd87c0a780fe398d46553ee8c539bdd32eafa5/terraform/docs/final-github-actions-cicd.md) records the public
 GitHub/history audit, authentic OIDC-provider installation and the still-pending
 publication, protected WP3/WP4 installation and actual Actions execution.
 
@@ -250,7 +261,7 @@ Production should retain robust blue/green; development may become simpler.
 Strict provenance and production-like governance are targets, not present
 guarantees. See [decision register](decisions-and-limitations.md).
 The old [pipeline diagram](diagrams/cd-pipelines.png) and
-[phase plan](ci-cd-target-architecture.md) are historical, not instructions.
+[phase plan](https://github.com/Kendall04/terragrunt_demo/blob/24cd87c0a780fe398d46553ee8c539bdd32eafa5/terraform/docs/ci-cd-target-architecture.md) are historical, not instructions.
 
 ## E15-E/F combined DEV quiescence boundary
 

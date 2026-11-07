@@ -1,5 +1,15 @@
 # Security and secret lifecycle
 
+## Installed V2 security boundary
+
+The [trust review](../../docs/V2-TRUST-AND-THREATS.md) and
+[current technical audit](../../docs/ENGINEERING-REVIEW.md) distinguish source
+defaults from the installed validated-v2 profile: strict SQL certificate/name
+validation, minimal runtime, separate disabled migrator, confidential secret-value
+delivery and existing application/backup CMKs. Secret metadata includes the DEV
+migrator container. The legacy recipe and October uninstalled proposals below
+describe their dated checkpoints. They do not override this installed boundary.
+
 > **Current DEV operations (2026-10-28):** use the [native Terraform lifecycle](native-dev-lifecycle.md). E16 execution/session requirements below are historical; independent security and delivery contracts remain.
 
 ## ACCEPTED DECISION — state invariant
@@ -23,8 +33,9 @@ Fargate general egress narrows to HTTPS while retaining exact SQL/1433. No contr
 were installed; legacy bootstrap remains db_owner/TrustServerCertificate=True,
 an opt-in bootstrap now prepares a separate migrator and disabled minimal runtime.
 SQL host egress and internal HTTP remain unresolved. The table below describes
-that legacy deployed recipe, not acceptance of the strict profile. Certificate
-inputs, reviewed privilege handoff, Linux artifacts and native tests are pending.
+that legacy deployed recipe, not acceptance of the strict profile. At that October checkpoint, certificate
+inputs, handoff, Linux artifacts and native tests were pending; November execution
+completed them for DEV.
 
 ## CURRENT CONTRACT — secret ownership and encryption
 

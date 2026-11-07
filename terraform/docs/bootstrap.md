@@ -1,5 +1,14 @@
 # Bootstrap, operations and recovery
 
+## Current operational entry points
+
+Use [native DEV lifecycle](native-dev-lifecycle.md),
+[cold SQL recovery](../../operations/sql-backup/recovery/NATIVE-RECOVERY.md) and
+[current resource/closure review](../../docs/ENGINEERING-REVIEW.md). The November
+deployment includes strict SQL TLS, a retained root disk, hourly verified backups,
+external observation and Sentinel. The dated protected-controller preparation
+below remains source/history, not an instruction to reconstruct working components.
+
 > **Current DEV operations (2026-10-28):** use the [native Terraform lifecycle](native-dev-lifecycle.md). E16 execution is retired. Dated installation history below preserves independent security and delivery controls.
 
 ## Accepted context and operating model
@@ -82,15 +91,17 @@ Evidence: [ECS alarm](../modules/target/dev/apps/modules/ecs_service/alarm_ecs_s
 [NAT alarms](../modules/target/dev/global/wp5-nat-alarms-a.tf),
 [ASGs](../modules/target/dev/global/wp5-nat.tf.json).
 
-NAT recovery performs three independent launch-event actions, without configured
-DLQ or forwarding probe. EC2 health does not prove NAT function. AMI changes are
+NAT recovery performs three independent launch-event actions with separate delivery
+and execution failure queues. The Sentinel private HTTPS probe observes forwarding
+independently; EC2 health alone does not prove NAT function. AMI changes are
 ignored in NAT launch templates and DB lifecycle; patching/replacement policy
 remains unresolved.
 
 SQL bootstrap waits for secret availability, installs packages from public
 repositories, then uses a fixed wait before SQL setup. SSM access is configured
-for the DB. No repository-defined SQL backup/restore or separate persistent data
-volume exists. Root storage is deleted on termination.
+for the DB. The native backup/recovery package supplies hourly backup and cold
+restore; the installed DEV root disk is retained on termination. Data remains on
+that root volume, not a separate permanent database volume.
 Evidence: [data](../modules/target/dev/data/ordinary-main.tf), [user data](../infra/data/user_data.sh).
 
 If future deployment fails, runtime traffic, service revision, candidate rule,
@@ -110,11 +121,10 @@ The existing [state audit](../../scripts/audit-terraform-state-secrets.sh) downl
 state into private temporary files; it is AWS-connected and its resource/output
 pattern scan is supporting evidence, not a complete proof of no plaintext secrets.
 
-Database durability is HIGH importance but deliberately deferred until near the
-end of the improvement program, after AWS redeployment. Keep SQL Server on EC2.
-Then learn and safely test persistence, replacement/destruction, backups, restore
-and accidental-deletion behavior against real infrastructure. Do not substitute
-a paper design or default RDS migration for that experiment.
+Database durability uses the demonstrated supervised cold-recovery procedure.
+Keep SQL Server on EC2 and preserve the positive fencing/data-retention boundary.
+Abrupt disaster, PITR and regional loss remain unproved; do not repeat destructive
+experiments or infer their acceptance from the planned-cutover results.
 
 Recovery objectives, safe destructive-test boundaries, alert responses, capacity,
 patching and budgets need later decisions. Historical teardown snippets are not

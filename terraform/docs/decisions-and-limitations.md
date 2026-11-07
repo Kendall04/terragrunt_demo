@@ -1,5 +1,16 @@
 # Decisions, limitations and improvement register
 
+## Current V2 reconciliation — 7 November 2026
+
+The November implementation supersedes the earlier durability deferral: hourly
+verified backups, strict SQL TLS/minimal runtime, retained encrypted disks,
+supervised cold SAME/CROSS-AZ recovery and Sentinel incidents have real evidence.
+The static CloudFront DEMO is published independently. See the
+[technical audit](../../docs/ENGINEERING-REVIEW.md) and
+[CI/CD review](../../docs/CI-CD-REVIEW.md) for unresolved decisions. Earlier dated
+budget, teardown and disposable-data approvals are historical and do not authorize
+new operations. Current laboratory closure is 9 November, 02:30–04:00 UTC.
+
 > **Current DEV operations (2026-10-28):** use the [native Terraform lifecycle](native-dev-lifecycle.md). E16 execution/session requirements below are historical; independent security and delivery contracts remain.
 
 Authoritative owner reconciliation: 2026-09-18. Implementation evidence lives in
@@ -89,7 +100,7 @@ mean low importance. Scope/dependencies below do not authorize implementation.
 | B2 / E2 High delivery — repository implementation; E2-R partial | [Environment mutation arbitration](e2-environment-mutation.md) coordinates protected delivery/recovery/lifecycle and generation-bound cleanup; [E2-R](e2r-owner-recovery.md) adds read-only interrupted-owner diagnosis | No timeout takeover; head CAS cannot cancel checked/in-flight calls; exact executor termination and remote quiescence cannot currently be verified, so administrative recovery stays BLOCKED | Provider-free repository evidence; live installation/termination/effect settlement remain unverified; E4 compensation remains deferred |
 | B3 High readiness — completed | Per-task one-shot readiness gate precedes promotion; the bounded ECS/ALB observation model and historical rather than continuous readiness are explicit | Preserve exact cohort/digest/target evidence, bounded failure, unchanged `/health`, fail-closed external evidence handling and immediate final revalidation | [Durable spec](../../specs/deployment-readiness-promotion/spec.md), [plan](../../specs/deployment-readiness-promotion/plan.md) and [reviewed evidence](validation.md#deployment-readiness-promotion--reviewed-evidence) complete the feature; optional hardening below is separate |
 | B4 / E4 High recovery — PARTIALLY_RESOLVED | [Bounded same-invocation continuation](e4-post-switch-recovery.md) reconciles switch evidence-persistence failure with current readbacks and original E2 grant | No attempted-stage resend, compensation, interrupted-owner takeover or new approval model; schedule/index/orphan failures remain | Deterministic repository evidence; live recovery remains unverified |
-| B5 High durability - PARTIALLY_RESOLVED | Native and real S3/KMS component restore plus October 21 EC2-role manual/two-hourly backups passed; runtime and residual network retired. Cross-AZ SQL/API recovery and measured RPO/RTO remain unproven | D4 remains: SQL stays EC2, its root disk is disposable and migrations use db_owner; preserve original keys, secrets and backups. The [isolated recovery packet](../../operations/sql-backup/recovery/RUNBOOK.md) is local preparation only, not an AWS authorization | Fresh synthetic marker/backup, different-AZ restore/CHECKDB, real KMS decrypt and isolated API read/write remain the next bounded proof; warm-target/component timing is distinct from full ECS recovery |
+| B5 Durability - DEMONSTRATED WITH LIMITS | Cold CROSS-AZ 41m31.5s and SAME-AZ 24m42.6s, hourly backup/reboot persistence and verified remote retention are demonstrated in [November evidence](../../docs/V2-RECOVERY-SECURITY-20261105.md). | One active SQL writer; positive source fence, retained encrypted disks, validated-v2 TLS/minimal runtime. | Abrupt-disaster RPO, PITR, regional recovery and unattended SQL failover remain unproved; final planned backups do not establish zero RPO. |
 | B6 High conditional API security | Public writes and plaintext reads | Medium; domain/data policy first; high compatibility risk | Auth follows backend expansion |
 | B7 High observability — configuration corrected | [E7](e7-cloudwatch-alarms.md) fixes active dev/prod ECS namespace, NAT collection and gauge missing-data behavior; real metric/notification delivery remains unverified | Preserve bounded dimensions, protected ownership and sparse-error policy; no observability redesign | Provider-free repository evidence; live AWS validation remains separate |
 | B8 / E8 Medium artifacts — PARTIALLY_RESOLVED | E1 already protects exact immutable manifest evidence; [E8](e8-rollback-image-retention.md) removes automatic expiration from three protected application repositories and checks exact image availability | WP3 publishes untagged images, so untagged/count cleanup is unsafe; retained ECR storage is unbounded and no cleanup authority is added | Owner horizon/budget and evidence-driven cleanup remain unresolved; live retention/rollback is unverified |
