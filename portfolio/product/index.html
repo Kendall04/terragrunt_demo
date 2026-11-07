@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Explora ECS V2: texto cifrado, resiliencia y arquitectura con evidencia real."
+    />
+    <title>ECS V2 · Cloud Platform</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%237ce4d8' d='M16 1 31 16 16 31 1 16Zm0 7-8 8 8 8 8-8Z'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="/assets/style.css" />
+    <script type="module" src="/assets/app.mjs"></script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Saltar al contenido</a>
+    <header class="top">
+      <a class="brand" href="/demo" data-route
+        ><span class="brand-icon">◈</span
+        ><span>Cloud Platform <b>ECS</b></span></a
+      >
+      <nav aria-label="Espacios">
+        <a href="/demo" data-route>Product Demo</a
+        ><a href="/architecture" data-route>Architecture Explorer</a>
+      </nav>
+      <span id="global-mode" class="badge amber">DEMO · SINTÉTICO</span>
+    </header>
+    <div class="shell">
+      <aside>
+        <div class="workspace">
+          AWS CLOUD PLATFORM<span>ECS V2 · laboratorio DEV</span>
+        </div>
+        <nav id="side-nav" aria-label="Navegación principal">
+          <a href="/demo" data-route>◫ <span>Text workspace</span></a
+          ><a href="/resilience" data-route>⌁ <span>Resilience lab</span></a
+          ><a href="/architecture" data-route
+            >◇ <span>Architecture Explorer</span></a
+          ><a href="/evidence" data-route
+            >✓ <span>Evidencias y límites</span></a
+          >
+        </nav>
+        <div id="diagram-nav"></div>
+        <div class="sidebar-foot">
+          <span id="edition-badge" class="badge amber">DEMO · SINTÉTICO</span>
+          <p id="edition-note">Solo memoria local. Cero solicitudes AWS.</p>
+          <span class="owner"
+            >KF
+            <span
+              >Kendall Fernández<small
+                >Cloud Architecture · Reliability</small
+              ></span
+            ></span
+          >
+        </div>
+      </aside>
+      <div class="content">
+        <div class="context-bar">
+          <span id="breadcrumb">Workspace / Texto cifrado</span
+          ><span class="context-note">.NET 10 · ECS Fargate</span>
+        </div>
+        <main id="main" tabindex="-1"></main>
+        <footer>
+          <span>Cloud Platform ECS · ingeniería demostrada</span
+          ><span id="footer-mode"
+            >Datos sintéticos · sin infraestructura activa necesaria</span
+          >
+        </footer>
+      </div>
+    </div>
+    <div id="announcer" class="sr-only" role="status" aria-live="polite"></div>
+  </body>
+</html>
