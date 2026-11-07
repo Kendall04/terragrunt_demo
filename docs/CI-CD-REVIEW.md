@@ -2,9 +2,10 @@
 
 Reviewed source: `dc3edcd64225a044d8a47b197ae585181cd0d385`.
 GitHub settings/history refreshed on **7 November 2026, 06:00–06:14 UTC**.
-The required-check rule below is installed. Workflow/selector optimization and the
-[DEV delivery design](DEV-DELIVERY-DESIGN.md) remain proposals; no workflow,
-environment, AWS IAM trust or deployment control was changed.
+The required-check rule below is installed. Two CI aggregate display names are
+separated by event to prevent push checks satisfying a pending PR. Structural
+CI/selector optimization and the [DEV delivery design](DEV-DELIVERY-DESIGN.md)
+remain proposals; no environment, AWS IAM trust or deployment control was changed.
 
 ## Conclusion
 
@@ -76,13 +77,23 @@ rule with a deliberately missing Markdown target on head `f0f8289144188ba2f74464
 | CI failed | Attempt 2 failed the existing knowledge/link check; hygiene passed, unselected App/infra correctly skipped. Aggregator failed and ordinary merge API again returned **405**. |
 | Corrected documentation | Probe removed; normal CI and merge under this same ruleset are the positive integration test recorded in the PR. No bypass or synthetic status was used. |
 
+The positive test exposed a second issue: on head `dd5e8613…`, push run
+42347157636 published successful `CI Validation` at 06:34 UTC while PR run
+42347181783 was still executing. GitHub then reported `UNSTABLE`, not `BLOCKED`.
+No merge was attempted in that state. Name/app binding alone did not distinguish
+those events. The minimal correction keeps `CI Validation` / `CD Safety Validation`
+**only for `pull_request`**, and names their push counterparts `CI Push Validation`
+/ `CD Safety Push Validation`. Both aggregates, all tests, triggers, result enforcement
+and permissions are otherwise unchanged. A regression test binds that distinction;
+fresh live PR checks and the positive merge verify the corrected contexts.
+
 GitHub accepts `success`, `neutral` and `skipped` check conclusions; therefore
 require the two unconditional **aggregate** checks, not individually conditional
 jobs. The CI aggregate uses `always()` and enforces actual results; Safety has an
 unconditional job and `always()` result enforcement. Failure/cancellation is not
 converted into an exemption. Workflow-level skips leave a required result pending.
-Both workflows handle PRs to main/develop and their postmerge pushes; branch-push
-CI does not replace the PR's merge-diff validation. Merge queue is not enabled, so
+Both workflows handle PRs to main/develop and their postmerge pushes, with separate
+aggregate names. Branch-push results cannot fill the required PR context. Merge queue is not enabled, so
 `merge_group` is not currently required. See [GitHub's check semantics](https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/troubleshooting-required-status-checks)
 and [ruleset settings](https://docs.github.com/en/rest/repos/rules).
 

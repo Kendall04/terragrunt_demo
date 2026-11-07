@@ -5,8 +5,10 @@ Read-only AWS inventory: **7 November 2026, 04:45–04:53 UTC**, account
 `341936017254`, region `us-east-1`, authenticated `cnp-cert-admin`.
 GitHub settings, source, execution records and logs were examined separately.
 The initial PR #38 review changed documentation only. The **7-Nov 06:00–06:14 UTC
-follow-up** installed only GitHub required checks and refreshed closure readbacks;
-no AWS runtime, IAM, workflow, state, journal, timer or artifact was modified.
+follow-up** installed GitHub required checks and refreshed closure readbacks.
+The subsequent live PR test exposed a push/PR check-name collision; only the two
+CI aggregate display names and their regression test were corrected. No AWS
+runtime, IAM, CD workflow, state, journal, timer or artifact was modified.
 
 ## Assessment
 
