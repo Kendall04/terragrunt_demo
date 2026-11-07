@@ -219,6 +219,13 @@ NuGet cache lookup took 3s, .NET setup 7s and Docker cache lookup 6s; locked res
 and actual build/test still ran. Preserve diagnostic artifacts on failure without
 uploading state, connection strings or unredacted native evidence.
 
+There is also a substantial duplicate **within** each full run: App and hygiene
+both execute `scripts/tests/run-offline-readiness-tests.sh`. On PR #38 they took
+199s and 262s respectively (461s summed); the packaged-image probe is a distinct
+3s test and should remain. A future shared readiness job must run when **either**
+consumer is selected, and its actual result must feed the final aggregate. Do not
+simply remove one copy: App-only and hygiene-only changes currently rely on it.
+
 The current selector was executed locally on these representative paths:
 
 | Change | Current gates | Conservative next proposal, not installed |
