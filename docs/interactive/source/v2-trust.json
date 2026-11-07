@@ -1,0 +1,391 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "ECS V2 · identidades y límites de confianza",
+    "locale": "es",
+    "output": "docs/interactive/v2-trust.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/Kendall04/terragrunt_demo.git",
+      "revision": "5d35edef4f2ee1c0463df483d22745d13cae47cd",
+      "link_mode": "web"
+    }
+  },
+  "components": [
+    {
+      "id": "public",
+      "type": "external",
+      "label": "Cliente no autenticado",
+      "sublabel": "Solo datos sintéticos DEV",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "LÍMITE",
+      "sources": [
+        {
+          "path": "docs/V2-TRUST-AND-THREATS.md",
+          "line": 39,
+          "end_line": 68
+        }
+      ]
+    },
+    {
+      "id": "network",
+      "type": "cloud",
+      "label": "API / Link / ALB",
+      "sublabel": "HTTPS → HTTP privado",
+      "pos": [
+        400,
+        40
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "terraform/modules/target/dev/edge/modules/apigateway/apigw_http.tf",
+          "line": 25,
+          "end_line": 63
+        }
+      ]
+    },
+    {
+      "id": "task",
+      "type": "security",
+      "label": "Aplicación · task role",
+      "sublabel": "KMS; sin rol migrador",
+      "pos": [
+        760,
+        40
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "terraform/modules/target/dev/apps/modules/ecs_service/taskdef.tf",
+          "line": 1,
+          "end_line": 17
+        }
+      ]
+    },
+    {
+      "id": "exec",
+      "type": "security",
+      "label": "ECS execution role",
+      "sublabel": "Pull / logs / secret",
+      "pos": [
+        400,
+        280
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "terraform/modules/target/dev/apps/modules/ecs_service/taskdef.tf",
+          "line": 1,
+          "end_line": 17
+        }
+      ]
+    },
+    {
+      "id": "secret",
+      "type": "security",
+      "label": "Secrets Manager",
+      "sublabel": "Valor fuera de Terraform",
+      "pos": [
+        40,
+        280
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "docs/V2-TRUST-AND-THREATS.md",
+          "line": 39,
+          "end_line": 68
+        }
+      ]
+    },
+    {
+      "id": "kms",
+      "type": "security",
+      "label": "KMS texto",
+      "sublabel": "Encrypt / Decrypt autorizados",
+      "pos": [
+        760,
+        280
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "demo-api/terragrunt-demo/Services/IEncryptionService.cs",
+          "line": 30,
+          "end_line": 51
+        }
+      ]
+    },
+    {
+      "id": "sql",
+      "type": "database",
+      "label": "Login recovery_app",
+      "sublabel": "SELECT/INSERT + metadata",
+      "pos": [
+        760,
+        520
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "demo-api/terragrunt-demo/Data/RuntimeDatabasePermissions.cs",
+          "line": 1,
+          "end_line": 54
+        }
+      ]
+    },
+    {
+      "id": "host",
+      "type": "security",
+      "label": "Host SQL · instance role",
+      "sublabel": "SSM / backup / TLS secret",
+      "pos": [
+        400,
+        520
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "docs/V2-TRUST-AND-THREATS.md",
+          "line": 39,
+          "end_line": 68
+        }
+      ]
+    },
+    {
+      "id": "admin",
+      "type": "external",
+      "label": "Administrador humano",
+      "sublabel": "Autoridad privilegiada",
+      "pos": [
+        40,
+        520
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "docs/V2-TRUST-AND-THREATS.md",
+          "line": 39,
+          "end_line": 68
+        }
+      ]
+    },
+    {
+      "id": "observer",
+      "type": "security",
+      "label": "Roles observer / probe",
+      "sublabel": "Lee / publica; no remedia",
+      "pos": [
+        40,
+        760
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "operations/integrations/portable/trial/nat-observer.tf",
+          "line": 74,
+          "end_line": 115
+        }
+      ]
+    },
+    {
+      "id": "sentinel",
+      "type": "security",
+      "label": "Roles Sentinel",
+      "sublabel": "Boundary + expiración",
+      "pos": [
+        400,
+        760
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "operations/integrations/portable/trial/runtime/security.tf",
+          "line": 49,
+          "end_line": 96
+        }
+      ]
+    },
+    {
+      "id": "keys",
+      "type": "security",
+      "label": "CMK archivo / SNS",
+      "sublabel": "Servicios y contextos acotados",
+      "pos": [
+        760,
+        760
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "operations/integrations/portable/trial/runtime/security.tf",
+          "line": 49,
+          "end_line": 96
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "public-network",
+      "from": "public",
+      "to": "network",
+      "label": "HTTPS",
+      "variant": "default"
+    },
+    {
+      "id": "network-task",
+      "from": "network",
+      "to": "task",
+      "label": "HTTP :8080",
+      "variant": "default"
+    },
+    {
+      "id": "exec-secret",
+      "from": "exec",
+      "to": "secret",
+      "label": "GetSecretValue",
+      "variant": "security"
+    },
+    {
+      "id": "exec-task",
+      "from": "exec",
+      "to": "task",
+      "label": "Inyección inicial",
+      "variant": "security"
+    },
+    {
+      "id": "task-kms",
+      "from": "task",
+      "to": "kms",
+      "label": "AWS SDK",
+      "variant": "security"
+    },
+    {
+      "id": "task-sql",
+      "from": "task",
+      "to": "sql",
+      "label": "SQL TLS",
+      "variant": "security"
+    },
+    {
+      "id": "admin-host",
+      "from": "admin",
+      "to": "host",
+      "label": "SSM",
+      "variant": "security"
+    },
+    {
+      "id": "host-sql",
+      "from": "host",
+      "to": "sql",
+      "label": "SO / bootstrap",
+      "variant": "security"
+    },
+    {
+      "id": "observer-sentinel",
+      "from": "observer",
+      "to": "sentinel",
+      "label": "Observación",
+      "variant": "dashed"
+    },
+    {
+      "id": "sentinel-keys",
+      "from": "sentinel",
+      "to": "keys",
+      "label": "Archivo / aviso",
+      "variant": "security"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "slate",
+      "title": "Cómo leer la evidencia",
+      "items": [
+        "IMPLEMENTADO = código; DESPLEGADO = readback AWS fechado; DEMOSTRADO = ensayo real.",
+        "Snapshot DEV: 6 nov 2026. No certifica PROD ni disponibilidad continua.",
+        "Gris: datos/control; violeta: eventos; rosa: seguridad. Respuestas implícitas."
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "Límites explícitos",
+      "items": [
+        "Ejecución ECS y task role son identidades diferentes. El secreto se inyecta al iniciar tarea.",
+        "SQL runtime no tiene DDL/db_owner; migrador separado y deshabilitado. Host admin es otra frontera.",
+        "TLS SQL valida nombre y trust público; leaf autofirmado de demo, no CA ni rotación automática."
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "Permisos compuestos, no aislamiento absoluto",
+      "items": [
+        "Boundary + identity policy + resource policy + Deny + condiciones temporales se evalúan juntos.",
+        "Sonda: ENI administradas por Lambda con Resource *, Deny a su propio código; no remediación.",
+        "GitHub/OIDC y administradores de Terraform aparecen por separado en v2-delivery."
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Riesgos residuales conservados",
+      "items": [
+        "API sin autorización; HTTP interno; sin Object Lock; administradores pueden alterar recursos.",
+        "Claves de disco SQL: alias/aws/ebs, no CMK propia. Imagen app revisada ≠ todos los runtimes sanos.",
+        "Roles expirables y laboratorio acotado; sin certificación PROD ni independencia DEV/PROD resuelta."
+      ]
+    }
+  ]
+}

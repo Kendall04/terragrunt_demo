@@ -1,0 +1,522 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Sentinel · observar, persistir y notificar",
+    "locale": "es",
+    "output": "docs/interactive/v2-sentinel.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/Kendall04/terragrunt_demo.git",
+      "revision": "5d35edef4f2ee1c0463df483d22745d13cae47cd",
+      "link_mode": "web"
+    }
+  },
+  "components": [
+    {
+      "id": "backup",
+      "type": "database",
+      "label": "Backup S3 verificado",
+      "sublabel": "Versiones / SHA / SSE-KMS",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "operations/integrations/portable/storage_observer.py",
+          "line": 35,
+          "end_line": 102
+        }
+      ]
+    },
+    {
+      "id": "observer",
+      "type": "backend",
+      "label": "Lambda regional",
+      "sublabel": "SQL 15 min · NAT 1 min",
+      "pos": [
+        400,
+        40
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "operations/integrations/portable/trial/storage-observer.tf",
+          "line": 68,
+          "end_line": 124
+        },
+        {
+          "path": "operations/integrations/portable/nat_observer.py",
+          "line": 40,
+          "end_line": 99
+        }
+      ]
+    },
+    {
+      "id": "probe",
+      "type": "backend",
+      "label": "Sonda privada A",
+      "sublabel": "HTTPS fijo · plazo 6 s",
+      "pos": [
+        760,
+        40
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "operations/integrations/portable/nat_probe.py",
+          "line": 19,
+          "end_line": 67
+        }
+      ]
+    },
+    {
+      "id": "bus",
+      "type": "messagebus",
+      "label": "EventBridge bus",
+      "sublabel": "Observaciones admitidas",
+      "pos": [
+        400,
+        260
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "operations/integrations/portable/trial/runtime/main.tf",
+          "line": 110,
+          "end_line": 137
+        }
+      ]
+    },
+    {
+      "id": "queue",
+      "type": "messagebus",
+      "label": "SQS reports",
+      "sublabel": "Batch 5 · fallo parcial",
+      "pos": [
+        690,
+        260
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "operations/integrations/portable/trial/runtime/main.tf",
+          "line": 192,
+          "end_line": 219
+        }
+      ]
+    },
+    {
+      "id": "ingest",
+      "type": "backend",
+      "label": "Lambda Ingest",
+      "sublabel": "Deduplica / persiste",
+      "pos": [
+        760,
+        480
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "operations/integrations/Ecs.Backup.Portable.Host/Function.cs",
+          "line": 30,
+          "end_line": 64
+        }
+      ]
+    },
+    {
+      "id": "ddb",
+      "type": "database",
+      "label": "DynamoDB",
+      "sublabel": "Journal / outbox / CAS",
+      "pos": [
+        400,
+        480
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "operations/integrations/portable/trial/runtime/main.tf",
+          "line": 38,
+          "end_line": 65
+        }
+      ]
+    },
+    {
+      "id": "worker",
+      "type": "backend",
+      "label": "Lambda Worker",
+      "sublabel": "64 solicitudes / 4 jobs",
+      "pos": [
+        40,
+        480
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "operations/integrations/Ecs.Backup.Portable.Host/Function.cs",
+          "line": 30,
+          "end_line": 64
+        },
+        {
+          "path": "operations/integrations/Ecs.Backup.Portable.Host/CurrentBacklog.cs",
+          "line": 1,
+          "end_line": 55
+        }
+      ]
+    },
+    {
+      "id": "archive",
+      "type": "database",
+      "label": "S3 de evidencias",
+      "sublabel": "Create-only + SSE-KMS",
+      "pos": [
+        40,
+        700
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "operations/integrations/portable/trial/runtime/security.tf",
+          "line": 49,
+          "end_line": 96
+        }
+      ]
+    },
+    {
+      "id": "watchdog",
+      "type": "backend",
+      "label": "Lambda Watchdog",
+      "sublabel": "Salud actual / deuda histórica",
+      "pos": [
+        400,
+        700
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "operations/integrations/Ecs.Backup.Portable.Host/Function.cs",
+          "line": 49,
+          "end_line": 64
+        },
+        {
+          "path": "operations/integrations/Ecs.Backup.Portable.Host/CurrentBacklog.cs",
+          "line": 1,
+          "end_line": 55
+        }
+      ]
+    },
+    {
+      "id": "dlq",
+      "type": "messagebus",
+      "label": "DLQ reports / ops",
+      "sublabel": "Deuda histórica retenida",
+      "pos": [
+        1000,
+        260
+      ],
+      "size": [
+        190,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "operations/integrations/portable/trial/runtime/main.tf",
+          "line": 97,
+          "end_line": 124
+        }
+      ]
+    },
+    {
+      "id": "sns",
+      "type": "messagebus",
+      "label": "SNS de Sentinel",
+      "sublabel": "Aviso de dominio",
+      "pos": [
+        40,
+        920
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "operations/integrations/Ecs.Backup.Portable.Notice/ReadableNotice.cs",
+          "line": 1,
+          "end_line": 28
+        }
+      ]
+    },
+    {
+      "id": "alarms",
+      "type": "cloud",
+      "label": "CloudWatch alarms",
+      "sublabel": "Health / errores / DLQ",
+      "pos": [
+        400,
+        920
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "operations/integrations/portable/trial/runtime/main.tf",
+          "line": 283,
+          "end_line": 310
+        }
+      ]
+    },
+    {
+      "id": "inbox",
+      "type": "external",
+      "label": "Inbox confirmado",
+      "sublabel": "No equivale a SNS ACK",
+      "pos": [
+        760,
+        920
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DEMOSTRADO",
+      "sources": [
+        {
+          "path": "docs/SENTINEL-CHAOS-20261106.md",
+          "line": 142,
+          "end_line": 169
+        }
+      ]
+    },
+    {
+      "id": "cleanup",
+      "type": "backend",
+      "label": "Lambda Cleanup",
+      "sublabel": "Retención acotada del journal",
+      "pos": [
+        760,
+        700
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "operations/integrations/Ecs.Backup.Portable.Host/Function.cs",
+          "line": 64,
+          "end_line": 64
+        },
+        {
+          "path": "operations/integrations/portable/trial/runtime/main.tf",
+          "line": 198,
+          "end_line": 216
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "observer-backup",
+      "from": "observer",
+      "to": "backup",
+      "label": "GET exacto",
+      "variant": "default"
+    },
+    {
+      "id": "observer-probe",
+      "from": "observer",
+      "to": "probe",
+      "label": "Invoca HTTPS",
+      "variant": "default"
+    },
+    {
+      "id": "observer-bus",
+      "from": "observer",
+      "to": "bus",
+      "label": "PutEvents",
+      "variant": "dashed"
+    },
+    {
+      "id": "bus-queue",
+      "from": "bus",
+      "to": "queue",
+      "label": "Entrega",
+      "variant": "dashed"
+    },
+    {
+      "id": "queue-ingest",
+      "from": "queue",
+      "to": "ingest",
+      "label": "Mapping SQS",
+      "variant": "dashed"
+    },
+    {
+      "id": "ingest-ddb",
+      "from": "ingest",
+      "to": "ddb",
+      "label": "Observación",
+      "variant": "default"
+    },
+    {
+      "id": "worker-ddb",
+      "from": "worker",
+      "to": "ddb",
+      "label": "Evalúa + CAS",
+      "variant": "default"
+    },
+    {
+      "id": "worker-archive",
+      "from": "worker",
+      "to": "archive",
+      "label": "Bytes + ACK",
+      "variant": "security"
+    },
+    {
+      "id": "worker-sns",
+      "from": "worker",
+      "to": "sns",
+      "label": "Efecto",
+      "variant": "dashed"
+    },
+    {
+      "id": "watchdog-ddb",
+      "from": "watchdog",
+      "to": "ddb",
+      "label": "Lee progreso",
+      "variant": "default"
+    },
+    {
+      "id": "watchdog-alarms",
+      "from": "watchdog",
+      "to": "alarms",
+      "label": "Métrica",
+      "variant": "dashed"
+    },
+    {
+      "id": "alarms-sns",
+      "from": "alarms",
+      "to": "sns",
+      "label": "Alarma",
+      "variant": "dashed"
+    },
+    {
+      "id": "sns-inbox",
+      "from": "sns",
+      "to": "inbox",
+      "label": "Email",
+      "variant": "dashed"
+    },
+    {
+      "id": "queue-dlq",
+      "from": "queue",
+      "to": "dlq",
+      "label": "Redrive",
+      "variant": "dashed"
+    },
+    {
+      "id": "cleanup-ddb",
+      "from": "cleanup",
+      "to": "ddb",
+      "label": "Retención",
+      "variant": "default"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "slate",
+      "title": "Cómo leer la evidencia",
+      "items": [
+        "IMPLEMENTADO = código; DESPLEGADO = readback AWS fechado; DEMOSTRADO = ensayo real.",
+        "Snapshot DEV: 6 nov 2026. No certifica PROD ni disponibilidad continua.",
+        "Gris: datos/control; violeta: eventos; rosa: seguridad. Respuestas implícitas."
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "Ejecución fuera de la VPC, salvo la sonda",
+      "items": [
+        "Una Lambda observadora atiende dos reglas: no son dos servidores permanentes.",
+        "El observador conserva controlPlane y connectivity; executor/throttling desconocido = Unknown.",
+        "Worker: dos admisiones serializadas por minuto, concurrencia 1, mismo límite por invocación."
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "Incidente y progreso durable",
+      "items": [
+        "Ingestión persiste; worker evalúa Freshness, programa checks, archiva y despacha outbox.",
+        "Idempotencia / lease / CAS; BudgetYield preserva trabajo y reserva checkpoint. SNS puede duplicar.",
+        "Watchdog contrasta progreso/backlog y cuatro compensaciones sin borrar fallos históricos."
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Fallos y límites",
+      "items": [
+        "reports DLQ: mensajes no procesables; operations DLQ: entrega EventBridge / async Lambda.",
+        "También los targets y destinos async pueden enviar a operations (omitidos del trazado principal).",
+        "No ejecuta ASG/E13 ni recuperación SQL. 12–24 h saludables siguen NO VALIDADAS."
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "security-group",
+      "label": "VPC · privada A · SG probe",
+      "wraps": [
+        "probe"
+      ],
+      "pad": 18
+    }
+  ]
+}

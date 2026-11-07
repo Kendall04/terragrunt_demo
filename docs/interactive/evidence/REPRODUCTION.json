@@ -1,0 +1,79 @@
+[
+  {
+    "id": "v2-delivery",
+    "htmlSha256": "ca8f79e09dc842ee394a8e70928a43745325e716076e966a7587889463392990",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    },
+    "byteIdentical": true
+  },
+  {
+    "id": "v2-nat-incident",
+    "htmlSha256": "9c870a1b2b920d560d48e421cb0cbae3f35e27ce914b3b51126bc45e97528043",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    },
+    "byteIdentical": true
+  },
+  {
+    "id": "v2-network",
+    "htmlSha256": "d2de73b9de6dbb756630e3faa8f2a7135cbceb08b155c91e24275506e8038f8e",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    },
+    "byteIdentical": true
+  },
+  {
+    "id": "v2-platform",
+    "htmlSha256": "e466b8f007ec064649d20b0c550560d1a7cb9497dc847003e7c73b013a5c570f",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    },
+    "byteIdentical": true
+  },
+  {
+    "id": "v2-sentinel",
+    "htmlSha256": "b482a69897e68d6aa2746bb228ef4bc5a985efc2d1af329a517baae9c4dd5b42",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    },
+    "byteIdentical": true
+  },
+  {
+    "id": "v2-sql-recovery",
+    "htmlSha256": "ce41963a80dae4ce03e984cdaaf5d0c892f36b447de4c3a8e6615e1e84a0c76d",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    },
+    "byteIdentical": true
+  },
+  {
+    "id": "v2-trust",
+    "htmlSha256": "96be2d6bf52f40cae47a22394bd59260726ce2f08a4554652eb9c5c8496fc430",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    },
+    "byteIdentical": true
+  }
+]

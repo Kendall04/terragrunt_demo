@@ -1,0 +1,103 @@
+[
+  {
+    "id": "v2-delivery",
+    "sourceSha256": "271bf14988293919ab27145daa797f07e16500dc6fc5e3660c3774565025769b",
+    "htmlSha256": "ca8f79e09dc842ee394a8e70928a43745325e716076e966a7587889463392990",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    },
+    "diagnostics": [],
+    "perceptualReviewRequired": {
+      "routesOverSuggestedBends": 2,
+      "routesOverSuggestedStretch": 1
+    }
+  },
+  {
+    "id": "v2-nat-incident",
+    "sourceSha256": "1f68b058dff98b5a75bda15452fd5168d8df7b5541ef9759ac6175fe3cb65417",
+    "htmlSha256": "9c870a1b2b920d560d48e421cb0cbae3f35e27ce914b3b51126bc45e97528043",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    },
+    "diagnostics": [],
+    "perceptualReviewRequired": {}
+  },
+  {
+    "id": "v2-network",
+    "sourceSha256": "f4c669bf7c8dbfe07fb64e2a6615909040a3fbf494f4790f8096f43b1220102d",
+    "htmlSha256": "d2de73b9de6dbb756630e3faa8f2a7135cbceb08b155c91e24275506e8038f8e",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    },
+    "diagnostics": [],
+    "perceptualReviewRequired": {
+      "resolvedCrossovers": 1,
+      "routesOverSuggestedBends": 1
+    }
+  },
+  {
+    "id": "v2-platform",
+    "sourceSha256": "33656628d3dca58fea4665d3b7fc6a7d9beaeda1462ac1182e1f7fa107b5343e",
+    "htmlSha256": "e466b8f007ec064649d20b0c550560d1a7cb9497dc847003e7c73b013a5c570f",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    },
+    "diagnostics": [],
+    "perceptualReviewRequired": {
+      "routesOverSuggestedBends": 1
+    }
+  },
+  {
+    "id": "v2-sentinel",
+    "sourceSha256": "1470ca61815760c4037790db9b15d01e6b4b80675e3ce71c1afaab339064d3c9",
+    "htmlSha256": "b482a69897e68d6aa2746bb228ef4bc5a985efc2d1af329a517baae9c4dd5b42",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    },
+    "diagnostics": [],
+    "perceptualReviewRequired": {
+      "routesOverSuggestedBends": 1
+    }
+  },
+  {
+    "id": "v2-sql-recovery",
+    "sourceSha256": "0b845b957b582252a18b9ea16b75dcb7dfd1eb850d04dee0f8dfb30f846b04f9",
+    "htmlSha256": "ce41963a80dae4ce03e984cdaaf5d0c892f36b447de4c3a8e6615e1e84a0c76d",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    },
+    "diagnostics": [],
+    "perceptualReviewRequired": {}
+  },
+  {
+    "id": "v2-trust",
+    "sourceSha256": "501a6ac567e740b262f3390539eacf56fe9082a3232bea8523022211fb09e25f",
+    "htmlSha256": "96be2d6bf52f40cae47a22394bd59260726ce2f08a4554652eb9c5c8496fc430",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    },
+    "diagnostics": [],
+    "perceptualReviewRequired": {}
+  }
+]

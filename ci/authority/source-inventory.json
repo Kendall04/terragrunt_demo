@@ -13811,6 +13811,62 @@
       "sha256": "1236f246ec8d67726cbb8365a23cdfcdffd16fbf8195a48f6f4c27a1ea8f6a87",
       "declarations": [],
       "signals": {}
+    },
+    "scripts/diagrams/capture.mjs": {
+      "sha256": "eae4f50df3e0f1d3bc96dc47f10872b8c29af7ce98213ec5de9bad5f09a54e95",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/diagrams/readable.mjs": {
+      "sha256": "c448cdbe6cac44053bbbefdbae579514c50646e87fc68615ff671c3f71eeece7",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          28
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/diagrams/reproduce.py": {
+      "sha256": "083e5c543d2ad4a1c1a94ddbc19e46a486c1f45d00e014709c9ce838166d4b49",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          46,
+          49
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/diagrams/test-diagrams.mjs": {
+      "sha256": "eaf67c37b0e092a44500ce15b1f1c20e148926ad9df0f7b3815daebb3b4d3ae3",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          6
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/diagrams/verify.mjs": {
+      "sha256": "78c0a44ed771c15c14e84d67494792ed4a84eec63940f94ea770a26e603b3803",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          14
+        ],
+        "executable-dependency": [
+          38
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/tests/reproducibility/test_diagrams.py": {
+      "sha256": "2d094a5791a89bcae172396679406d3084046bbaa93d315561b0017babef2faf",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",

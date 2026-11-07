@@ -1,0 +1,207 @@
+{
+  "schema_version": 1,
+  "diagram_type": "timeline",
+  "meta": {
+    "title": "NAT A · incidente real del 6 nov 2026 (UTC)",
+    "locale": "es",
+    "output": "docs/interactive/v2-nat-incident.html",
+    "quality_profile": "showcase",
+    "evidence": "observed",
+    "timezone": "UTC",
+    "repository": {
+      "url": "https://github.com/Kendall04/terragrunt_demo.git",
+      "revision": "5d35edef4f2ee1c0463df483d22745d13cae47cd",
+      "link_mode": "web"
+    }
+  },
+  "lanes": [
+    {
+      "id": "aws",
+      "label": "ASG / E13"
+    },
+    {
+      "id": "probe",
+      "label": "HTTPS privado"
+    },
+    {
+      "id": "sentinel",
+      "label": "Journal Sentinel"
+    },
+    {
+      "id": "notice",
+      "label": "SNS / Gmail"
+    }
+  ],
+  "events": [
+    {
+      "id": "terminate",
+      "at": "2026-11-06T17:01:02.357Z",
+      "title": "Interrupción autorizada",
+      "detail": "TerminateInstances; no equivale al instante físico de pérdida.",
+      "lane": "aws",
+      "kind": "action",
+      "sources": [
+        {
+          "path": "docs/SENTINEL-CHAOS-20261106.md",
+          "line": 131,
+          "end_line": 185
+        }
+      ]
+    },
+    {
+      "id": "failed",
+      "at": "2026-11-06T17:02:01.077Z",
+      "title": "HTTPS falló",
+      "detail": "Probe inició 17:01:55.069; plazo real 6.008 s.",
+      "lane": "probe",
+      "kind": "alert",
+      "sources": [
+        {
+          "path": "docs/SENTINEL-CHAOS-20261106.md",
+          "line": 131,
+          "end_line": 185
+        }
+      ]
+    },
+    {
+      "id": "persist",
+      "at": "2026-11-06T17:02:01.473Z",
+      "title": "Incidente persistido",
+      "detail": "Rev 783 / epoch 3: RECOVERING; 59.115 s tras despacho.",
+      "lane": "sentinel",
+      "kind": "alert",
+      "sources": [
+        {
+          "path": "docs/SENTINEL-CHAOS-20261106.md",
+          "line": 131,
+          "end_line": 185
+        }
+      ]
+    },
+    {
+      "id": "asg",
+      "at": "2026-11-06T17:02:46.000Z",
+      "title": "Nueva EC2 lanzada",
+      "detail": "ASG LT A:4; aún no demuestra salida HTTPS.",
+      "lane": "aws",
+      "kind": "change",
+      "sources": [
+        {
+          "path": "docs/SENTINEL-CHAOS-20261106.md",
+          "line": 131,
+          "end_line": 185
+        }
+      ]
+    },
+    {
+      "id": "unknown",
+      "at": "2026-11-06T17:02:53.758Z",
+      "title": "Unknown por throttling",
+      "detail": "Sonda RCE=1: coincidió guardia diagnóstica; no inventar fallo.",
+      "lane": "probe",
+      "kind": "default",
+      "sources": [
+        {
+          "path": "docs/SENTINEL-CHAOS-20261106.md",
+          "line": 131,
+          "end_line": 185
+        }
+      ]
+    },
+    {
+      "id": "https",
+      "at": "2026-11-06T17:03:31.549Z",
+      "title": "HTTPS recuperado",
+      "detail": "Primera respuesta confirmada; misma EIP; cota 2m29.191s.",
+      "lane": "probe",
+      "kind": "recovery",
+      "sources": [
+        {
+          "path": "docs/SENTINEL-CHAOS-20261106.md",
+          "line": 131,
+          "end_line": 185
+        }
+      ]
+    },
+    {
+      "id": "scheduled",
+      "at": "2026-11-06T17:03:56.401Z",
+      "title": "Probe programado PASS",
+      "detail": "17:03:54.915 + 1.486 s; plano control y HTTPS sanos.",
+      "lane": "probe",
+      "kind": "recovery",
+      "sources": [
+        {
+          "path": "docs/SENTINEL-CHAOS-20261106.md",
+          "line": 131,
+          "end_line": 185
+        }
+      ]
+    },
+    {
+      "id": "resolve",
+      "at": "2026-11-06T17:03:56.771Z",
+      "title": "Incidente resuelto",
+      "detail": "Rev 785; 2m54.414s desde despacho.",
+      "lane": "sentinel",
+      "kind": "recovery",
+      "sources": [
+        {
+          "path": "docs/SENTINEL-CHAOS-20261106.md",
+          "line": 131,
+          "end_line": 185
+        }
+      ]
+    },
+    {
+      "id": "mail",
+      "at": "2026-11-06T17:04:30.000Z",
+      "title": "Correo en INBOX",
+      "detail": "Precisión Gmail: segundos; ID de incidente/delivery/audit coinciden.",
+      "lane": "notice",
+      "kind": "recovery",
+      "sources": [
+        {
+          "path": "docs/SENTINEL-CHAOS-20261106.md",
+          "line": 131,
+          "end_line": 185
+        }
+      ]
+    },
+    {
+      "id": "sns",
+      "at": "2026-11-06T17:04:30.597Z",
+      "title": "Efecto SNS confirmado",
+      "detail": "Readback durable posterior; 33.826s desde resolución.",
+      "lane": "notice",
+      "kind": "recovery",
+      "sources": [
+        {
+          "path": "docs/SENTINEL-CHAOS-20261106.md",
+          "line": 131,
+          "end_line": 185
+        }
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "slate",
+      "title": "Qué está demostrado",
+      "items": [
+        "NAT A perdió HTTPS; Sentinel persistió el incidente y su resolución; ASG/E13 recuperó.",
+        "SQL y API en B permanecieron sanos; no fue una caída de la aplicación.",
+        "Archivo de fallo y resolución SSE-KMS verificados; una publicación de resolución e inbox."
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "No inventar una escalación",
+      "items": [
+        "El fallo corto se resolvió antes de despachar escalación: NO hubo correo de caída.",
+        "Timestamps medidos en sistemas distintos; el ACK SNS durable no es hora de envío.",
+        "La guardia terminó sin cambiar rutas. Muestreo 1 min puede omitir fallos breves."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,325 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "ECS V2 · propiedad, entrega y caminos inactivos",
+    "locale": "es",
+    "output": "docs/interactive/v2-delivery.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/Kendall04/terragrunt_demo.git",
+      "revision": "5d35edef4f2ee1c0463df483d22745d13cae47cd",
+      "link_mode": "web"
+    }
+  },
+  "components": [
+    {
+      "id": "git",
+      "type": "external",
+      "label": "GitHub · source + CI",
+      "sublabel": "Checks / merge revisado",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "IMPLEMENTADO",
+      "sources": [
+        {
+          "path": ".github/workflows/ci.yml",
+          "line": 1,
+          "end_line": 28
+        }
+      ]
+    },
+    {
+      "id": "operator",
+      "type": "external",
+      "label": "Operador nativo DEV",
+      "sublabel": "Entrega V2 supervisada",
+      "pos": [
+        400,
+        40
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DEMOSTRADO",
+      "sources": [
+        {
+          "path": "terraform/docs/native-dev-lifecycle.md",
+          "line": 1,
+          "end_line": 28
+        }
+      ]
+    },
+    {
+      "id": "ecr",
+      "type": "database",
+      "label": "ECR · digest inmutable",
+      "sublabel": "Imagen .NET 10 SQL-Lab",
+      "pos": [
+        760,
+        40
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DEMOSTRADO",
+      "sources": [
+        {
+          "path": "docs/V2-RECOVERY-SECURITY-20261105.md",
+          "line": 159,
+          "end_line": 186
+        }
+      ]
+    },
+    {
+      "id": "tf",
+      "type": "backend",
+      "label": "Terraform nativo",
+      "sublabel": "Global / Data / Apps / Edge",
+      "pos": [
+        400,
+        280
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "IMPLEMENTADO",
+      "sources": [
+        {
+          "path": "terraform/docs/native-dev-lifecycle.md",
+          "line": 1,
+          "end_line": 28
+        }
+      ]
+    },
+    {
+      "id": "ecs",
+      "type": "backend",
+      "label": "ECS task revision / count",
+      "sublabel": "Propiedad de deploy",
+      "pos": [
+        760,
+        280
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "terraform/modules/target/dev/apps/modules/ecs_service/service.tf",
+          "line": 13,
+          "end_line": 38
+        }
+      ]
+    },
+    {
+      "id": "security",
+      "type": "security",
+      "label": "Security root + TG",
+      "sublabel": "IAM / controladores / LT",
+      "pos": [
+        40,
+        280
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "docs/V2-TRUST-AND-THREATS.md",
+          "line": 49,
+          "end_line": 69
+        }
+      ]
+    },
+    {
+      "id": "oidc",
+      "type": "security",
+      "label": "GitHub OIDC",
+      "sublabel": "Solicitudes protegidas",
+      "pos": [
+        40,
+        520
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "IMPLEMENTADO",
+      "sources": [
+        {
+          "path": ".github/workflows/cd.yml",
+          "line": 1,
+          "end_line": 28
+        }
+      ]
+    },
+    {
+      "id": "wp",
+      "type": "backend",
+      "label": "WP3 / WP4 gateways",
+      "sublabel": "Release / delivery inhibidos",
+      "pos": [
+        400,
+        520
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "INACTIVO V2",
+      "sources": [
+        {
+          "path": "docs/V2-TRUST-AND-THREATS.md",
+          "line": 89,
+          "end_line": 106
+        }
+      ]
+    },
+    {
+      "id": "alb",
+      "type": "cloud",
+      "label": "ALB forwarding",
+      "sublabel": "Propiedad de deploy",
+      "pos": [
+        760,
+        520
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "terraform/modules/target/dev/global/modules/alb/alb.tf",
+          "line": 18,
+          "end_line": 33
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "git-operator",
+      "from": "git",
+      "to": "operator",
+      "label": "Commit revisado",
+      "variant": "default"
+    },
+    {
+      "id": "operator-ecr",
+      "from": "operator",
+      "to": "ecr",
+      "label": "Build / publicar",
+      "variant": "default"
+    },
+    {
+      "id": "operator-tf",
+      "from": "operator",
+      "to": "tf",
+      "label": "Plan / apply",
+      "variant": "default"
+    },
+    {
+      "id": "tf-ecs",
+      "from": "tf",
+      "to": "ecs",
+      "label": "Solo skeleton",
+      "variant": "default"
+    },
+    {
+      "id": "ecr-ecs",
+      "from": "ecr",
+      "to": "ecs",
+      "label": "Pull por digest",
+      "variant": "default"
+    },
+    {
+      "id": "operator-ecs",
+      "from": "operator",
+      "to": "ecs",
+      "label": "Deploy nativo",
+      "variant": "default"
+    },
+    {
+      "id": "operator-security",
+      "from": "operator",
+      "to": "security",
+      "label": "Admin explícito",
+      "variant": "security"
+    },
+    {
+      "id": "git-oidc",
+      "from": "git",
+      "to": "oidc",
+      "label": "Contrato OIDC",
+      "variant": "security"
+    },
+    {
+      "id": "oidc-wp",
+      "from": "oidc",
+      "to": "wp",
+      "label": "Inhibido",
+      "variant": "dashed"
+    },
+    {
+      "id": "operator-alb",
+      "from": "operator",
+      "to": "alb",
+      "label": "Forwarding nativo",
+      "variant": "default"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "slate",
+      "title": "Cómo leer la evidencia",
+      "items": [
+        "IMPLEMENTADO = código; DESPLEGADO = readback AWS fechado; DEMOSTRADO = ensayo real.",
+        "Snapshot DEV: 6 nov 2026. No certifica PROD ni disponibilidad continua.",
+        "Gris: datos/control; violeta: eventos; rosa: seguridad. Respuestas implícitas."
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "Sin propietario doble",
+      "items": [
+        "Terraform conserva skeletons; ignora desired_count/task_definition y forwarding del listener.",
+        "El operador verifica readiness por tarea y fija imagen/secret versionados; no migra al iniciar HTTP.",
+        "E13, no Terraform, mantiene la ruta privada NAT. Security conserva handlers :6 y LT :4."
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "Lo demostrado no activa otro flujo",
+      "items": [
+        "V2 se desplegó por operación nativa autorizada. No se reclama qualification WP3 ni CD automático.",
+        "Los workers/controladores publicados son candidatos distintos de instalación y ejecución efectiva.",
+        "Una configuración OIDC o un workflow presente no prueba un despliegue automático activo."
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Límites de rollback",
+      "items": [
+        "A→B→A V1 sí fue probado; un rollback V2 de digest distinto queda NO VALIDADO.",
+        "Rollback de imagen no revierte esquema ni datos; SQL recovery usa fence/backup/handoff.",
+        "E2 y un operador reducen carreras, no son un lease atómico contra otro administrador."
+      ]
+    }
+  ]
+}

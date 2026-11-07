@@ -7,6 +7,12 @@ evidence and recovery results belong in [the operational record](V2-RECOVERY-SEC
 
 ## Implemented data path
 
+Diagram-only reconciliation, 6 November 2026: the flow below now exposes the
+reports queue and private NAT probe already implemented in the portable runtime.
+See the [dated V2 atlas](interactive/V2-INDEX.md) for source-linked views, current
+placement and the separation between Sentinel observation and ASG/E13 recovery.
+This annotation does not renew the security review or certify 12–24h monitoring.
+
 ```mermaid
 flowchart LR
   U[Public client] -->|HTTPS; currently unauthenticated| API[HTTP API Gateway]
@@ -15,20 +21,26 @@ flowchart LR
     ALB -->|HTTP 8080; SG reference| APP[Fargate blue: one task]
     APP -->|SQL TLS; hostname and certificate checked| DB[One SQL Express writer]
     DB -->|Hourly COPY_ONLY + CHECKSUM| BAK[Local backup staging]
-    NA[NAT A] ~~~ NB[NAT B]
+    PROBE[Private A HTTPS probe] -->|HTTPS egress through A| NA[NAT A]
+    NA ~~~ NB[NAT B]
   end
   API --> LINK
   APP -->|Task role; Encrypt / Decrypt| KMS[Application CMK]
   EXEC[ECS execution role] -->|Exact version; no value in Terraform| SEC[Secrets Manager]
   EXEC -->|Digest-pinned image| ECR[ECR]
   BAK -->|Instance role; create-only; SSE-KMS| S3[Versioned backup S3]
-  OBS[External Lambda observer] -->|Exact VersionId + full SHA256; read-only| S3
-  OBS -->|Two existing observation identities| BUS[Sentinel EventBridge bus]
-  BUS --> ING[Sentinel ingest]
+  OBS[Regional SQL / NAT observer] -->|Exact VersionId + full SHA256| S3
+  OBS -->|Invoke bounded probe; no recovery authority| PROBE
+  OBS -->|SQL and NAT observations| BUS[Sentinel EventBridge bus]
+  BUS --> Q[SQS reports]
+  Q -->|Batch / partial failures| ING[Sentinel ingest]
+  Q -->|Redrive after repeated failure| DLQ[Reports DLQ]
   ING --> DDB[Journal / observations in DynamoDB]
   WORK[Bounded Sentinel worker] --> DDB
   WORK --> ARC[SSE-KMS evidence archive]
   WORK --> SNS[SNS / confirmed email destination]
+  WATCH[Watchdog: current health and historical debt] --> DDB
+  REC[ASG / E13 recovery] -.->|Replace NAT; EIP / route / SDC| NA
   ADMIN[Human AWS administrator] -->|Authenticated SSM; no inbound SSH| DB
 ```
 

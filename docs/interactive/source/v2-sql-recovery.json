@@ -1,0 +1,365 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "SQL V2 · recuperación fría supervisada",
+    "locale": "es",
+    "output": "docs/interactive/v2-sql-recovery.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/Kendall04/terragrunt_demo.git",
+      "revision": "5d35edef4f2ee1c0463df483d22745d13cae47cd",
+      "link_mode": "web"
+    }
+  },
+  "components": [
+    {
+      "id": "writer",
+      "type": "database",
+      "label": "SQL origen único",
+      "sublabel": "Backup horario + CHECKSUM",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DEMOSTRADO",
+      "sources": [
+        {
+          "path": "operations/sql-backup/sql-backup.timer.in",
+          "line": 1,
+          "end_line": 8
+        },
+        {
+          "path": "operations/sql-backup/recovery/NATIVE-RECOVERY.md",
+          "line": 48,
+          "end_line": 52
+        }
+      ]
+    },
+    {
+      "id": "store",
+      "type": "database",
+      "label": "S3 backup + manifiesto",
+      "sublabel": "Versiones / SHA / SSE-KMS",
+      "pos": [
+        400,
+        40
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "operations/integrations/portable/storage_observer.py",
+          "line": 35,
+          "end_line": 102
+        }
+      ]
+    },
+    {
+      "id": "hold",
+      "type": "database",
+      "label": "Proteger entrada de restore",
+      "sublabel": "CLI: pin previo al fence",
+      "pos": [
+        760,
+        40
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "IMPLEMENTADO",
+      "sources": [
+        {
+          "path": "operations/integrations/portable/backup_restore_pin.py",
+          "line": 29,
+          "end_line": 60
+        },
+        {
+          "path": "docs/SENTINEL-CHAOS-20261106.md",
+          "line": 282,
+          "end_line": 292
+        }
+      ]
+    },
+    {
+      "id": "drain",
+      "type": "security",
+      "label": "Drenar ECS + aislar",
+      "sublabel": "Logins OFF · READ_ONLY",
+      "pos": [
+        40,
+        280
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DEMOSTRADO",
+      "sources": [
+        {
+          "path": "operations/sql-backup/recovery/NATIVE-RECOVERY.md",
+          "line": 42,
+          "end_line": 69
+        }
+      ]
+    },
+    {
+      "id": "fence",
+      "type": "security",
+      "label": "Origen terminado",
+      "sublabel": "Disco cifrado conservado",
+      "pos": [
+        40,
+        520
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DEMOSTRADO",
+      "sources": [
+        {
+          "path": "operations/sql-backup/recovery/NATIVE-RECOVERY.md",
+          "line": 60,
+          "end_line": 87
+        }
+      ]
+    },
+    {
+      "id": "new",
+      "type": "cloud",
+      "label": "Nueva EC2 en A o B",
+      "sublabel": "Data + SSM + TLS estricto",
+      "pos": [
+        400,
+        520
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DEMOSTRADO",
+      "sources": [
+        {
+          "path": "operations/sql-backup/recovery/NATIVE-RECOVERY.md",
+          "line": 52,
+          "end_line": 79
+        }
+      ]
+    },
+    {
+      "id": "restore",
+      "type": "database",
+      "label": "Restaurar copia nueva",
+      "sublabel": "CHECKDB / hash / EF 2/2",
+      "pos": [
+        760,
+        520
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DEMOSTRADO",
+      "sources": [
+        {
+          "path": "operations/sql-backup/recovery/NATIVE-RECOVERY.md",
+          "line": 73,
+          "end_line": 100
+        }
+      ]
+    },
+    {
+      "id": "handoff",
+      "type": "security",
+      "label": "Handoff validado",
+      "sublabel": "Runtime mínimo; migrador OFF",
+      "pos": [
+        760,
+        760
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DEMOSTRADO",
+      "sources": [
+        {
+          "path": "operations/sql-backup/recovery/NATIVE-RECOVERY.md",
+          "line": 86,
+          "end_line": 113
+        }
+      ]
+    },
+    {
+      "id": "app",
+      "type": "backend",
+      "label": "ECS → nuevo SQL",
+      "sublabel": "Secret versionado / mismo digest",
+      "pos": [
+        400,
+        760
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DEMOSTRADO",
+      "sources": [
+        {
+          "path": "operations/sql-backup/recovery/NATIVE-RECOVERY.md",
+          "line": 86,
+          "end_line": 113
+        }
+      ]
+    },
+    {
+      "id": "proof",
+      "type": "external",
+      "label": "API real + timer",
+      "sublabel": "POST/GET/KMS + backup",
+      "pos": [
+        40,
+        760
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DEMOSTRADO",
+      "sources": [
+        {
+          "path": "docs/V2-RECOVERY-SECURITY-20261105.md",
+          "line": 297,
+          "end_line": 324
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "writer-store",
+      "from": "writer",
+      "to": "store",
+      "label": "Horario",
+      "variant": "default"
+    },
+    {
+      "id": "store-hold",
+      "from": "store",
+      "to": "hold",
+      "label": "Antes de restore",
+      "variant": "default"
+    },
+    {
+      "id": "writer-drain",
+      "from": "writer",
+      "to": "drain",
+      "label": "Inicio RTO",
+      "variant": "default"
+    },
+    {
+      "id": "drain-fence",
+      "from": "drain",
+      "to": "fence",
+      "label": "Fence positivo",
+      "variant": "security"
+    },
+    {
+      "id": "drain-store",
+      "from": "drain",
+      "to": "store",
+      "label": "Backup final verificado",
+      "variant": "security"
+    },
+    {
+      "id": "fence-new",
+      "from": "fence",
+      "to": "new",
+      "label": "Plan revisado",
+      "variant": "default"
+    },
+    {
+      "id": "new-restore",
+      "from": "new",
+      "to": "restore",
+      "label": "SSM + paquete",
+      "variant": "default"
+    },
+    {
+      "id": "hold-restore",
+      "from": "hold",
+      "to": "restore",
+      "label": "Versión fijada",
+      "variant": "security"
+    },
+    {
+      "id": "restore-handoff",
+      "from": "restore",
+      "to": "handoff",
+      "label": "Solo si PASS",
+      "variant": "security"
+    },
+    {
+      "id": "handoff-app",
+      "from": "handoff",
+      "to": "app",
+      "label": "Activar",
+      "variant": "default"
+    },
+    {
+      "id": "app-proof",
+      "from": "app",
+      "to": "proof",
+      "label": "Validar",
+      "variant": "default"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "slate",
+      "title": "Cómo leer la evidencia",
+      "items": [
+        "IMPLEMENTADO = código; DESPLEGADO = readback AWS fechado; DEMOSTRADO = ensayo real.",
+        "Snapshot DEV: 6 nov 2026. No certifica PROD ni disponibilidad continua.",
+        "Gris: datos/control; violeta: eventos; rosa: seguridad. Respuestas implícitas."
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "RTO observado, desde drain hasta API",
+      "items": [
+        "CROSS-AZ A → B: 41m31.5s, incluye fallos reconciliados y reparaciones.",
+        "SAME-AZ B → B: 24m42.6s, incluye reboot; camino corregido sin replay.",
+        "La copia destino se crea desde cero. No hay segunda base activa permanente."
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "Backup, retención y RPO",
+      "items": [
+        "Objetivo RPO: 1 h + duración de backup/subida; freshness: 2 h. No PITR.",
+        "Lifecycle instalado: elegibles 7 d, versiones no actuales +1 d; últimos dos pares sin tag.",
+        "Prefijos históricos / holds excluidos. Expiración por objeto asíncrona, no transacción por pareja.",
+        "CLI pin implementado: copia create-only fuera TTL antes del fence. Restore desde ese hold bajo Lifecycle NO DEMOSTRADO."
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Activación con condiciones",
+      "items": [
+        "Un origen inaccesible no es un fence. Se comprueba identidad EC2 terminada antes de activar.",
+        "Backup final tras fence SQL evita pérdida planificada: NO demuestra RPO cero abrupto.",
+        "Discos previos no son rollback automático; escritura posterior exige reconciliar datos."
+      ]
+    }
+  ]
+}
