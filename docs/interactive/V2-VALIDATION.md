@@ -99,8 +99,19 @@ oficial. No eran locks Terraform. La generación/reproducción final pasó compl
 
 La suite no modificada del portafolio pasó 17/18 localmente con Node 22 y 24; el test
 HTTP de presentación terminó con `ECONNRESET`, también fuera del sandbox. No se
-alteró el servidor ni se omitió el test. El CI normal vuelve a ejecutarlo en
-Ubuntu y su resultado debe revisarse antes de integrar.
+alteró el servidor ni se omitió el test. El [CI normal en Ubuntu de la PR #35](https://github.com/Kendall04/terragrunt_demo/actions/runs/42314949659/job/128225225085),
+revisión `81723398c79eaed9a79b9b2791346bc7603ae305`, completó correctamente esa
+suite y el paso de reproducibilidad que incluye los seis tests nuevos. Esto
+distingue el fallo local del resultado remoto; no atribuye una causa no demostrada.
+El estado final de todos los controles y la integración se consulta en la
+[PR #35](https://github.com/Kendall04/terragrunt_demo/pull/35).
+
+La primera aceptación global rechazó seis `UNMODELED_SOURCE`: los cinco helpers
+de diagramas y su wrapper de pruebas. Se registraron únicamente esas seis
+entradas con el scanner original, conservando `semantic_status=UNVERIFIED` y
+todas las entradas previas intactas. Son hashes de cobertura, no una nueva
+aprobación de seguridad. La verificación del inventario sobre una copia de los
+archivos versionados pasó; el historial del primer CI fallido permanece visible.
 
 Capturas opcionales, con Playwright y Chrome existentes, sin instalar dependencias:
 
