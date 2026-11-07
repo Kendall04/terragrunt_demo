@@ -110,6 +110,16 @@ export function proxyHandler({
         redirect: "error",
         signal: AbortSignal.timeout(10000),
       });
+      if (!r.ok) {
+        status = r.status;
+        await r.body?.cancel();
+        // Preserve HTTP semantics without exposing upstream diagnostics or secrets.
+        reply(
+          status,
+          "AWS rejected the request; no retry or synthetic fallback",
+        );
+        return;
+      }
       if (!r.headers.get("content-type")?.includes("application/json"))
         throw new Error("Unexpected content type");
       const chunks = [];

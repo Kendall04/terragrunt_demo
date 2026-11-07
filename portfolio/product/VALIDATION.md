@@ -49,13 +49,15 @@ observado ni nuevos recursos. Ventana preservada: reserva 9-nov 02:30 UTC y cier
 
 ## DEMO, contratos y navegador
 
-11 tests nuevos cubren memoria/paginación/reset, contrato/UTC, UTF-8, errores,
+12 tests nuevos cubren memoria/paginación/reset, contrato/UTC, UTF-8, errores,
 ausencia de retry/fallback, rutas y origen/capacidad local, expiración, carrera
 de POST concurrentes, pins/sandbox, reproducibilidad y preview contra alteraciones.
 Se ejecutan junto con los 18 tests históricos mediante `portfolio/test-contract.mjs`
 en el job existente CI - Repo Hygiene. El test AWS manual no se importa en CI.
 
-Las 11 pruebas nuevas pasaron en una ejecución local de la suite combinada.
+Las primeras 11 pruebas nuevas pasaron en una ejecución local de la suite combinada.
+La suite focalizada final, incluyendo errores upstream no JSON y comparación
+de manifiesto/capturas con sus bytes, terminó **12/12 PASS**.
 Otras ejecuciones Windows presentaron `ECONNRESET` intermitente al descargar el
 HTML grande de Sentinel desde el preview (10/11); la suite histórica también
 falló al servir sus HTML grandes (28/29 en la ejecución combinada, Node22 y

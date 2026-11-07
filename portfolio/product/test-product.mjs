@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import http from "node:http";
-import { randomBytes } from "node:crypto";
+import { randomBytes, createHash } from "node:crypto";
 import { readFile, mkdtemp, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -318,6 +318,29 @@ test("concurrent POST bodies cannot exceed the session write ceiling", async () 
     },
   );
 });
+
+test("upstream non-JSON errors preserve HTTP status but never disclose diagnostics", async () => {
+  const token = randomBytes(32).toString("hex");
+  await withServer(
+    {
+      mode: "aws",
+      token,
+      fetcher: async () =>
+        new Response("upstream diagnostic marker", {
+          status: 400,
+          headers: { "Content-Type": "text/plain" },
+        }),
+    },
+    async (origin) => {
+      const result = await request(origin, "/_api/ready", {
+        headers: { "X-ECS-Session": token },
+      });
+      assert.equal(result.status, 400);
+      assert.doesNotMatch(result.text, /diagnostic marker/);
+      assert.match(result.headers["content-type"], /application\/json/);
+    },
+  );
+});
 test("seven V2 / five historical diagrams, source pins and opaque isolated derivatives", async () => {
   const all = await catalog();
   assert.equal(all.filter((x) => !x.historical).length, 7);
@@ -349,6 +372,36 @@ test("static DEMO package is reproducible, separate from runtime proxy and AWS c
     const a = await build(path.join(dir, "a")),
       b = await build(path.join(dir, "b"));
     assert.deepEqual(a, b);
+    const reviewed = JSON.parse(
+      await readFile(
+        new URL("evidence/STATIC-MANIFEST.json", import.meta.url),
+        "utf8",
+      ),
+    );
+    assert.deepEqual(
+      a,
+      reviewed,
+      "Static evidence must describe the actual presentation bytes",
+    );
+    const qa = JSON.parse(
+      await readFile(
+        new URL("evidence/BROWSER-QA.json", import.meta.url),
+        "utf8",
+      ),
+    );
+    for (const capture of qa.captures) {
+      assert.equal(
+        createHash("sha256")
+          .update(
+            await readFile(
+              new URL("evidence/" + capture.file, import.meta.url),
+            ),
+          )
+          .digest("hex"),
+        capture.sha256,
+        capture.file,
+      );
+    }
     assert.equal(a.edition, "demo");
     const files = await staticFiles();
     assert.equal(
