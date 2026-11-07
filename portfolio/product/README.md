@@ -12,6 +12,7 @@ Desde la raíz del repositorio, con Node 22+ existente (sin `npm install`):
 node portfolio/product/server.mjs
 ```
 
+- <http://127.0.0.1:4182/>: plataforma, mapa de relaciones y resultados medidos.
 - <http://127.0.0.1:4182/demo>: mensajes sintéticos, recorrido API → KMS → SQL → lectura.
 - <http://127.0.0.1:4182/architecture>: siete vistas V2 y cinco históricas.
 - <http://127.0.0.1:4182/resilience>: reproducciones visuales NAT, SQL y backups.
@@ -24,7 +25,7 @@ históricos avanzan a una velocidad de presentación, no de telemetría en vivo.
 
 ## Decisión frontend
 
-Se conserva HTML/CSS y módulos ESM nativos con componentes DOM pequeños: cuatro
+Se conserva HTML/CSS y módulos ESM nativos con componentes DOM pequeños: cinco
 vistas no requieren un runtime React ni un bundler. Navegación History API,
 estado explícito, tipado mediante validación del contrato en los límites, cero
 dependencias de producción. Los builds copian una allowlist y sellan cada archivo.
@@ -33,7 +34,8 @@ La referencia visual fue el proyecto propio
 [EKS, commit f3b8039](https://github.com/Kendall04/cloud-native-eks-platform/tree/f3b80397a1cb41dbb5dcfa5df955f70c734907fb/frontend),
 incluyendo App, config, API, Explorer, proxy y CSS, además de Chrome real en
 `/demo` y `/architecture`. Se comparte la jerarquía de navegación, tema oscuro y
-separación de modos; ECS usa acento cian y escenarios de infraestructura propios.
+separación de modos. El rediseño usa tinta, ámbar y lavanda, Sora autoalojada y
+una presentación de laboratorio de sistemas. Véase [DESIGN.md](DESIGN.md).
 No se reutilizan funcionalidades Shipment/Auth ni recursos EKS. El portafolio
 anterior de `portfolio/server.mjs` continúa disponible como archivo histórico.
 

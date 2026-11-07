@@ -17,6 +17,24 @@ import { proxyHandler, AWS_ENDPOINT, LAB_END } from "./proxy.mjs";
 import { catalog, diagramAsset } from "./diagrams.mjs";
 import { build, staticFiles } from "./build.mjs";
 import { createPreview } from "./preview.mjs";
+import "./hosting/test-hosting.mjs";
+test("self-hosted Sora bytes match reviewed provenance", async () => {
+  const provenance = JSON.parse(
+    await readFile(new URL("fonts/PROVENANCE.json", import.meta.url), "utf8"),
+  );
+  assert.equal(provenance.networkAtRuntime, false);
+  for (const file of provenance.files)
+    assert.equal(
+      createHash("sha256")
+        .update(await readFile(new URL("fonts/" + file.path, import.meta.url)))
+        .digest("hex"),
+      file.sha256,
+    );
+  assert.match(
+    await readFile(new URL("fonts/OFL.txt", import.meta.url), "utf8"),
+    /SIL OPEN FONT LICENSE/,
+  );
+});
 test("memory demo supports text/XSS literals, pagination and reset without fetch", async () => {
   const old = globalThis.fetch;
   globalThis.fetch = () => {

@@ -37,6 +37,7 @@ function pass(s) {
   receipt.checks.push(s);
 }
 async function capture(page, name) {
+  await page.evaluate(() => document.fonts.ready);
   if (await page.locator("#diagram-frame").count()) {
     const f = await (
       await page.locator("#diagram-frame").elementHandle()
@@ -59,6 +60,15 @@ async function capture(page, name) {
     file: name + ".png",
     sha256: createHash("sha256").update(bytes).digest("hex"),
   });
+}
+async function navigate(page, route) {
+  const toggle = page.locator("#menu-toggle");
+  if (
+    (await toggle.isVisible()) &&
+    (await toggle.getAttribute("aria-expanded")) !== "true"
+  )
+    await toggle.click();
+  await page.locator(`#side-nav a[href="${route}"]`).click();
 }
 try {
   browser = await chromium.launch({
@@ -102,7 +112,7 @@ try {
   assert.equal(await p.locator(".message-row").count(), 2);
   pass("DEMO create/read/reset and literal XSS");
   await capture(p, "desktop-product");
-  await p.locator('aside a[href="/resilience"]').click();
+  await navigate(p, "/resilience");
   assert(await p.locator("h1").evaluate((n) => n === document.activeElement));
   for (const [key, label] of [
     ["nat", "NAT / E13"],
@@ -121,7 +131,7 @@ try {
   await p.waitForFunction(() => document.querySelector("progress").value > 0);
   await p.getByRole("button", { name: "Pausar", exact: true }).click();
   pass("Three honest historical replays, pause/step/reset");
-  await p.locator('aside a[href="/architecture"]').click();
+  await navigate(p, "/architecture");
   const diagrams = await catalog();
   for (const width of [1440, 390]) {
     await p.setViewportSize({ width, height: 1000 });
@@ -189,10 +199,16 @@ try {
   pass(
     "12 pinned diagrams desktop/mobile, zoom/fit, opaque sandbox, sources, reader and text alternative",
   );
-  for (const width of [320, 390, 768]) {
+  for (const width of [320, 390, 768, 1440, 1920]) {
     await p.setViewportSize({ width, height: 844 });
-    for (const view of ["/demo", "/resilience", "/architecture", "/evidence"]) {
-      await p.locator(`aside a[href="${view}"]`).click();
+    for (const view of [
+      "/",
+      "/demo",
+      "/resilience",
+      "/architecture",
+      "/evidence",
+    ]) {
+      await navigate(p, view);
       assert(
         await p.evaluate(
           () => document.documentElement.scrollWidth <= innerWidth,
@@ -203,12 +219,26 @@ try {
         await p.locator("h1").evaluate((n) => n === document.activeElement),
       );
       assert(await p.locator("#global-mode").isVisible());
-      if (width === 390) await capture(p, "mobile-" + view.slice(1));
+      await capture(p, `${width}-${view.slice(1) || "overview"}`);
     }
   }
   assert.equal(apiCalls, 0);
   assert.deepEqual(receipt.externalRequests, []);
-  pass("DEMO zero API/external calls, keyboard routes, 320/390/768 responsive");
+  await p.setViewportSize({ width: 390, height: 844 });
+  await p.locator("#menu-toggle").click();
+  await p.keyboard.press("Escape");
+  assert.equal(
+    await p.locator("#menu-toggle").getAttribute("aria-expanded"),
+    "false",
+  );
+  assert(
+    await p
+      .locator("#menu-toggle")
+      .evaluate((n) => n === document.activeElement),
+  );
+  pass(
+    "DEMO zero API/external calls, keyboard routes/Escape, 320/390/768/1440/1920 responsive",
+  );
   const staticDirectory = path.join(destination, "static-package");
   receipt.staticManifest = await build(staticDirectory);
   const staticServer = await createPreview(staticDirectory);

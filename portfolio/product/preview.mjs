@@ -69,9 +69,13 @@ export async function createPreview(directory) {
         ? "text/html"
         : name.endsWith(".css")
           ? "text/css"
-          : name.endsWith(".mjs")
-            ? "text/javascript"
-            : "application/json";
+          : name.endsWith(".ttf")
+            ? "font/ttf"
+            : name.endsWith(".txt")
+              ? "text/plain"
+              : name.endsWith(".mjs")
+                ? "text/javascript"
+                : "application/json";
       res.writeHead(200, {
         "Content-Type": type + "; charset=utf-8",
         "Content-Length": bytes.length,

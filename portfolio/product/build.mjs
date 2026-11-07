@@ -7,7 +7,16 @@ import { CSP_DEMO } from "./server.mjs";
 const sha = (x) => createHash("sha256").update(x).digest("hex");
 export async function staticFiles() {
   const files = new Map();
-  for (const name of ["app.mjs", "api.mjs", "data.mjs", "style.css"])
+  for (const name of [
+    "app.mjs",
+    "api.mjs",
+    "data.mjs",
+    "style.css",
+    "visuals.mjs",
+    "fonts/sora-regular.ttf",
+    "fonts/sora-semibold.ttf",
+    "fonts/OFL.txt",
+  ])
     files.set("assets/" + name, await readFile(new URL(name, import.meta.url)));
   files.set("assets/config.mjs", Buffer.from('export const edition="demo";'));
   let html = await readFile(new URL("index.html", import.meta.url), "utf8");
@@ -35,7 +44,7 @@ export async function staticFiles() {
     "assets/atlas.mjs",
     Buffer.from((await diagramAsset("/assets/atlas.mjs")).body),
   );
-  // Instructions for a future host, never an automatic deployment or proxy.
+  // Static host contract, never an automatic deployment or proxy.
   files.set(
     "HOSTING.json",
     Buffer.from(
@@ -44,7 +53,7 @@ export async function staticFiles() {
           edition: "demo",
           awsProxyIncluded: false,
           apiCallsAllowed: false,
-          spaRoutes: ["/demo", "/architecture", "/resilience", "/evidence"],
+          spaRoutes: ["/", "/demo", "/architecture", "/resilience", "/evidence"],
           rewrite:
             "Only these exact paths (and trailing slash) to their index.html. Unknown paths return 404; never rewrite /_api.",
           headers: {
