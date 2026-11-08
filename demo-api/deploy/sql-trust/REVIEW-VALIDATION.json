@@ -39,8 +39,8 @@
     "sqlclient": "6.1.7"
   },
   "sql": {
-    "started_utc": "2026-11-08T20:07:06.718497+00:00",
-    "ended_utc": "2026-11-08T20:07:47.556187+00:00",
+    "started_utc": "2026-11-08T20:12:03.948613+00:00",
+    "ended_utc": "2026-11-08T20:12:40.988078+00:00",
     "server_image": "mcr.microsoft.com/mssql/server@sha256:cf8f0ab2ebe61feec2eed2629061a07d247f791c2a8ddda74a4ac9f06a291718",
     "passed": 20,
     "failed": 0,
@@ -50,20 +50,20 @@
         "expected": "DATABASE_RUNTIME_ADMITTED",
         "passed": true,
         "exit_code": null,
-        "log_sha256": "7c0cff3fe48a6bc5243f9abb85c9cb48fab8cba2ab8c46da13a52c4da23cd33c"
+        "log_sha256": "7eeaa902b43273d1e65ba596a70eab3c13414e7b19c9084d0768adaeb46bd5c2"
       },
       {
         "case": "dev_rejects_prod",
         "expected": "DATABASE_TLS_HANDSHAKE_REFUSED",
         "passed": true,
         "exit_code": null,
-        "log_sha256": "cd09e4ed6ae23321cdcf6c3477dfe3d5743cbd38971a816677fc0c8d75aa1d6d"
+        "log_sha256": "896d1f196397c56266196db05f1a664d109ff3995a0471a87ef27de883363e19"
       },
       {
         "case": "prod_rejects_subject_spoof_ca",
         "expected": "SQL_TRUST_CA_REQUIRED",
         "passed": true,
-        "exit_code": null,
+        "exit_code": 78,
         "log_sha256": "1bc32e7f99ce474c9aeab3fdd8b9583b18f5760a9ae9b74fe825538941705fc8"
       },
       {
@@ -71,48 +71,48 @@
         "expected": "DATABASE_TLS_HANDSHAKE_REFUSED",
         "passed": true,
         "exit_code": null,
-        "log_sha256": "47488b03a543155ba1f5dbc0fc4e80941b5b06ed713474ae3132f7c29fa4d03b"
+        "log_sha256": "cc8ae51a3f3ab519659097808669116c230c597ea28288946404ad933d8017da"
       },
       {
         "case": "missing_manifest",
         "expected": "SQL_TRUST_MANIFEST_REQUIRED",
         "passed": true,
-        "exit_code": null,
+        "exit_code": 78,
         "log_sha256": "19a54e6851a9575b09cc62af1d60d90fe6fc2f177d4a3310edb9e6a749f1c39b"
       },
       {
         "case": "altered_manifest",
         "expected": "SQL_TRUST_MANIFEST_HASH_REFUSED",
         "passed": true,
-        "exit_code": null,
+        "exit_code": 78,
         "log_sha256": "64830c507624841d0604306ccb264c98592d76558bafee510460cbc0c2984896"
       },
       {
         "case": "missing_profile",
         "expected": "DATABASE_VALIDATED_PROFILE_REQUIRED",
         "passed": true,
-        "exit_code": null,
+        "exit_code": 78,
         "log_sha256": "1ca3a415ce2c95d427980000880f60f559fc7a8f9d395b903c55c712600f6f16"
       },
       {
         "case": "legacy_profile",
         "expected": "DATABASE_VALIDATED_PROFILE_REQUIRED",
         "passed": true,
-        "exit_code": null,
+        "exit_code": 78,
         "log_sha256": "1ca3a415ce2c95d427980000880f60f559fc7a8f9d395b903c55c712600f6f16"
       },
       {
         "case": "prod_rejects_bridge",
         "expected": "SQL_TRUST_SCHEMA_REFUSED",
         "passed": true,
-        "exit_code": null,
+        "exit_code": 78,
         "log_sha256": "4178003db4ebcd4606dc26995a7708ddcbf6ca8eddccc494f18d896353ff8ad8"
       },
       {
         "case": "anchor_bytes_changed",
         "expected": "SQL_TRUST_ANCHOR_HASH_REFUSED",
         "passed": true,
-        "exit_code": null,
+        "exit_code": 78,
         "log_sha256": "a31a61813b6b5bb8a8021050506b2b56f3d5597e54d62930ab0ff8ca3f2cab8f"
       },
       {
@@ -120,13 +120,13 @@
         "expected": "DATABASE_RUNTIME_HAS_MIGRATION_CREDENTIAL",
         "passed": true,
         "exit_code": null,
-        "log_sha256": "fce4bb2ee4662dbc7e71a6f469945e5216ee7358fe7e7996f1075c533a5274e4"
+        "log_sha256": "0d4970516cf87fb972087d55750378e961c3b3c9c3d5732c6b419f9eda6d9117"
       },
       {
         "case": "migrator_requires_confirmation",
         "expected": "SQL_TRUST_COMMAND_REFUSED",
         "passed": true,
-        "exit_code": null,
+        "exit_code": 78,
         "log_sha256": "409e82f2097e2f0edff849a46c719812583da43a7fb1250fba252ca376e312dd"
       },
       {
@@ -134,21 +134,21 @@
         "expected": "DATABASE_MIGRATION_REFUSED_OR_FAILED",
         "passed": true,
         "exit_code": null,
-        "log_sha256": "a0426488eae3f1f2de110d6b3189ea865d16f0e74687126f1bcf08445d15901d"
+        "log_sha256": "18d37ed951dbe535c836214bc19cb5ba6e7ae2a68eab9fabb0539228f71b53fb"
       },
       {
         "case": "migrator_rejects_runtime_identity",
         "expected": "DATABASE_MIGRATION_REFUSED_OR_FAILED",
         "passed": true,
         "exit_code": null,
-        "log_sha256": "a0426488eae3f1f2de110d6b3189ea865d16f0e74687126f1bcf08445d15901d"
+        "log_sha256": "18d37ed951dbe535c836214bc19cb5ba6e7ae2a68eab9fabb0539228f71b53fb"
       },
       {
         "case": "migrator_positive_strict_tls",
         "expected": "DATABASE_MIGRATION_COMPLETED",
         "passed": true,
         "exit_code": 0,
-        "log_sha256": "943f06511e9bc04ae73027fa1741964710e2d9932bdd9ad0d4deb744cc80aaa8",
+        "log_sha256": "87269b4929efdc94c6366cc7cc6a9b8d3c02114fca29a48b69eee5094ec35552",
         "history_verified": true,
         "history_absent_before": true,
         "history_sha256": "a34a32b71a839c4a3da05cc518ecb93c079408649d808d34102025bd5b162b9f"
@@ -158,20 +158,20 @@
         "expected": "DATABASE_RUNTIME_ADMITTED",
         "passed": true,
         "exit_code": null,
-        "log_sha256": "1471dae1d843a81ead181867caa74eb326ac265df53d82001e2e6c828fe8e6c4"
+        "log_sha256": "2db489a7dd6ffe32d6b3e3440a15188750ae675c6878586b44318e1058b36000"
       },
       {
         "case": "prod_rejects_dev",
         "expected": "DATABASE_TLS_HANDSHAKE_REFUSED",
         "passed": true,
         "exit_code": null,
-        "log_sha256": "107645e091f3e389fbea394023219ebc006d8d0176eab8020f8b3973851777e6"
+        "log_sha256": "c7e9b52ac7615dcf53987e58d5c666d15cac492bfbf36eb9d73de9b05f40f899"
       },
       {
         "case": "bridge_expired",
         "expected": "SQL_TRUST_TRANSITION_REFUSED",
         "passed": true,
-        "exit_code": null,
+        "exit_code": 78,
         "log_sha256": "f67704047ca9edad17206a0f4956e7eab5235b410ddc4656f06a0b5d11cb4107"
       },
       {
@@ -210,7 +210,7 @@
     "e1-adapters.log": "a5d26e8e59a7b2e6b9c660a9070ac277e9b0ab37f1d22de4c23ab525b420e29a",
     "reproducibility-clean.log": "a9e02979f1fcf1271b374b5397b1d662ba59913eb0bb6ffeaf061d8be0043a19",
     "shellcheck-lf.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "sql-committed/migration-history.txt": "1bd093bf49981983e8751f85702eaefa20f206961963187eb0e850465f734c13"
+    "sql-verified/migration-history.txt": "1bd093bf49981983e8751f85702eaefa20f206961963187eb0e850465f734c13"
   },
   "unchanged_historical_paths": {
     "demo-api/Dockerfile": "0d68f60d366d39c1d88cc4984a634a4f5709895f021f289e25a79fe203ac39ed",

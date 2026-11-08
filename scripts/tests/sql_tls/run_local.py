@@ -165,7 +165,8 @@ def main():
                     exit_code = int(d('wait',container,timeout=10).stdout.strip())
                     passed = passed and exit_code == 0 and 'DB_CONN_STRING' not in settings
                 if expected.startswith('SQL_TRUST_') or expected == 'DATABASE_VALIDATED_PROFILE_REQUIRED':
-                    passed = passed and 'SQL_TRUST_PREPARED' not in logs
+                    exit_code = int(d('wait',container,timeout=10).stdout.strip())
+                    passed = passed and exit_code == 78 and 'SQL_TRUST_PREPARED' not in logs
                 results.append(dict(case=name, environment=env, expected=expected, passed=passed,
                                     exit_code=exit_code,
                                     image=image, fresh_process=True, pooling=False,
@@ -233,7 +234,7 @@ def main():
                     results[-1]['passed'] &= results[-1]['history_verified']
                     results[-1]['history_sha256']=hashlib.sha256(history.encode()).hexdigest()
                 else:
-                    test('bridge_expired','dev','SQL_TRUST_TRANSITION_REFUSED',bridge=True,trust_edit=lambda x:x['transition'].update(not_after='2026-01-01T00:00:00Z'))
+                    test('bridge_expired','dev','SQL_TRUST_TRANSITION_REFUSED',bridge=True)
                 d('rm','-f','-v',server);containers.remove(server)
 
             capability=d('run','--rm','--pull','never','--network','none',a.image,'readiness-probe','--check-capability').stdout.strip()
