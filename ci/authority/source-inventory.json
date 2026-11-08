@@ -1174,16 +1174,19 @@
       "semantic_status": "UNVERIFIED"
     },
     "demo-api/Dockerfile": {
-      "sha256": "1bcf22803d95232078f49ccbb028fc8d697c1dd38aca941d2cdc3e6940c77238",
+      "sha256": "0d68f60d366d39c1d88cc4984a634a4f5709895f021f289e25a79fe203ac39ed",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           4,
-          20,
-          23,
-          26,
-          29,
-          46
+          30,
+          33,
+          36,
+          39
+        ],
+        "executable-dependency": [
+          54,
+          57
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -2609,7 +2612,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "operations/sql-backup/recovery/test_service_renderer.py": {
-      "sha256": "d18d54c8fecd307789dd4cbf2917868cba09737eae6517a0296350ad5100875b",
+      "sha256": "12394359730c778e66784206628c5a1daf17f440db298f0b1e3f6745ba98a59c",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -2617,8 +2620,8 @@
           65,
           66,
           112,
-          165,
-          176
+          161,
+          172
         ],
         "executable-dependency": [
           28,
@@ -2626,9 +2629,9 @@
           42,
           59,
           60,
-          153,
-          183,
-          184
+          149,
+          181,
+          182
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -4270,36 +4273,38 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/render-demo-api-taskdef.sh": {
-      "sha256": "a17b05863feb9ed91d774a1cf729d593f375e2e92b2e87fa4a61aab260147804",
+      "sha256": "4cde93cd6f12d4c752ac7ad8d662dcc02b262503a2da14075dd883b7c986afc5",
       "declarations": [],
       "signals": {
         "role-input": [
-          166,
-          167,
-          173,
-          174,
-          187,
-          188,
-          202,
-          203
+          234,
+          235,
+          241,
+          242,
+          256,
+          257,
+          271,
+          272
         ],
         "launch-or-mutation": [
-          26,
-          119,
-          126,
-          128,
-          140,
-          173,
-          174,
-          175
+          35,
+          135,
+          144,
+          146,
+          208,
+          241,
+          242,
+          243
         ],
         "executable-dependency": [
-          22,
-          38,
-          39,
-          205,
-          207,
-          229
+          25,
+          48,
+          49,
+          152,
+          153,
+          274,
+          276,
+          298
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -5233,43 +5238,43 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/internal_release/test_adapters.py": {
-      "sha256": "51caa1bde9e92918890094c8082b9c682cba183382bea49cc99f2817902949ac",
+      "sha256": "59a08f15e7cedf2a5cb351c5f8573f02a5cf2ac0b1bd0088517e8fd85d2bafc5",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          200,
-          203,
-          236,
-          380,
-          392,
-          414,
-          419,
-          439,
-          459,
+          206,
+          209,
+          242,
+          386,
+          398,
+          420,
+          425,
+          445,
           465,
-          489,
-          505
+          471,
+          495,
+          511
         ],
         "executable-dependency": [
-          170,
-          182,
-          183,
-          187,
+          176,
           188,
           189,
-          212,
-          219,
-          314,
-          317,
-          319,
-          326,
-          380,
-          473,
-          501,
-          514,
-          530,
-          533,
-          559
+          193,
+          194,
+          195,
+          218,
+          225,
+          320,
+          323,
+          325,
+          332,
+          386,
+          479,
+          507,
+          520,
+          536,
+          539,
+          565
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -6272,7 +6277,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/run-offline-readiness-tests.sh": {
-      "sha256": "b4d4b0b2b90cbebfaca535d25953cc7506ef95a61c0f8ad8d8a033b1cc045f40",
+      "sha256": "750ffdd7623f74dc01140ced17174bea9551a0c37021b08b3ed4172708365b0d",
       "declarations": [],
       "signals": {
         "role-input": [
@@ -6282,7 +6287,8 @@
         "executable-dependency": [
           9,
           10,
-          35
+          35,
+          38
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -7229,30 +7235,33 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/test-render-demo-api-taskdef.sh": {
-      "sha256": "2409e3104a3e30d437a67cc3055a39cb3b377f4396967259d4e32eca3ad06303",
+      "sha256": "0e69e67055e24b5a38a0ba5e115e38f0cbe31666dacb3b3820aad4df4d17dfa2",
       "declarations": [],
       "signals": {
         "role-input": [
-          37,
-          38
+          97,
+          98
         ],
         "launch-or-mutation": [
-          16,
-          18,
-          21,
-          32,
-          37,
-          38,
-          44,
-          65
+          9,
+          11,
+          12,
+          22,
+          24,
+          27,
+          43,
+          97,
+          98,
+          104,
+          125
         ],
         "executable-dependency": [
-          26,
-          42,
           50,
-          52,
-          63,
-          64
+          102,
+          110,
+          112,
+          123,
+          124
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -13891,10 +13900,150 @@
         ]
       },
       "semantic_status": "UNVERIFIED"
+    },
+    "demo-api/deploy/sql-trust/entrypoint.sh": {
+      "sha256": "e9b707f5ce0e6ed982ad5f6c9b6e481983614799131c351a5f5f1eb1f615f9a6",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          7,
+          92
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "demo-api/deploy/sql-trust/LOCAL-VALIDATION.json": {
+      "sha256": "4cdb1ab80228dfaa0ab01be8abf247d6f29fe013b4ed3188de505936f1685ca0",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          134,
+          135,
+          136,
+          137,
+          138,
+          139,
+          140,
+          141,
+          142,
+          143,
+          144,
+          145,
+          146,
+          147,
+          148,
+          149,
+          150,
+          151,
+          152,
+          153,
+          154,
+          155,
+          156,
+          157,
+          158,
+          159,
+          160,
+          161,
+          162
+        ],
+        "executable-dependency": [
+          133
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "demo-api/deploy/sql-trust/README.md": {
+      "sha256": "2d6fe599a7f57a2ba33cae7abadde16e88b46270647666827154248d34a06238",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          8,
+          60,
+          73,
+          154,
+          174,
+          188
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/tests/sql_tls/run_local.py": {
+      "sha256": "75cd54d2682b9212d3411eb3d54fae0ea83af5ee9c5ef39521bd5f58e2b6bb98",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          56
+        ],
+        "executable-dependency": [
+          43,
+          44,
+          48,
+          53,
+          109,
+          138,
+          154,
+          155,
+          172,
+          184,
+          215,
+          216,
+          217,
+          219,
+          228,
+          241,
+          247,
+          251,
+          252,
+          254
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "demo-api/deploy/sql-trust/REVIEW-VALIDATION.json": {
+      "sha256": "1649ddc792c2904109826800406fcc22207d9653896e5501d74aed8ccfefc017",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          18,
+          219,
+          220,
+          221,
+          222,
+          226
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/tests/sql_tls/test_bootstrap.py": {
+      "sha256": "e2ab5e68e0b054d496af0cdc821a6a269599344dbc799ef43a8ff1f8539b32ca",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          96
+        ],
+        "executable-dependency": [
+          5,
+          18,
+          63,
+          65,
+          66
+        ],
+        "security-control": [
+          59
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/validate-sql-secret-binding.py": {
+      "sha256": "339fb1e93e08b78a5373d970f1ad002d5ebf9d3f38abfe66b36b197feac3df17",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",
-  "review_revision": "f27e26c804e966f408113e538c9390dc53f97819",
-  "review_note": "Eleven exact local concurrency/timing/test/candidate surfaces. WP6 source hash refreshed with approvals empty; all semantics UNVERIFIED. No installed authority, IAM/trust/claims, state, remote workflow or AWS change.; 2026-10-27 CI integration: reviewed inactive package descriptors, isolated container mount, parser contract, scanner diagnostics and formatting only; no installation or runtime approval.",
-  "review_delta_sha256": "1cde9b3dd7166d7c1a54281711b20d0c9d7cc9d62ac1a9c4c8839dcc320e28d4"
+  "review_revision": "beaf4106ea92850cffb9e068704b710985080964",
+  "review_note": "Five SQL trust findings reproduced and corrected locally. Ten exact operational/test/evidence surfaces reviewed; semantics remain UNVERIFIED. No historical recipe, codec, workflow, IAM, installed authority or runtime approval changes.",
+  "review_delta_sha256": "877f0c09c64752c952584a39d3662b7bdfba9799241774db8e05c927e820edb5"
 }

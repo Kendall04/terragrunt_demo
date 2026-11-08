@@ -128,15 +128,11 @@ class ServiceRendererTests(unittest.TestCase):
             next(e for e in altered['containerDefinitions'][0]['environment'] if e['name']==key)['value']=bad
             with self.assertRaises(ValueError):prepare.service_taskdef(value,altered)
 
-    def test_real_normal_render_preserves_unversioned_secret_and_migration_defaults(self):
+    def test_real_normal_render_refuses_old_implicit_profile_before_output(self):
         value=self.real_fixture();result,payload=self.materialize(value,recovery=False)
-        self.assertEqual(result.returncode,0,result.stderr)
-        candidate=json.loads(payload);app=candidate['containerDefinitions'][0]
-        env={e['name']:e['value'] for e in app['environment']}
-        self.assertNotIn('Database__RunMigrationsOnStartup',env)
-        self.assertEqual(env['KMS_KEY_ID'],'alias/dev-kms-service')
-        self.assertEqual(app['secrets'][0]['valueFrom'],value['Connection']['SecretArn'])
-        with self.assertRaises(ValueError):prepare.service_taskdef(value,candidate)
+        self.assertNotEqual(result.returncode,0)
+        self.assertIn('Ordinary DEV/PROD requires',result.stderr)
+        self.assertIsNone(payload)
 
     def test_real_renderer_refuses_bad_recovery_inputs_before_creating_output(self):
         value=self.real_fixture()
@@ -172,9 +168,11 @@ class ServiceRendererTests(unittest.TestCase):
             with self.subTest(updates=updates):
                 self.assertNotEqual(self.run_validation(updates).returncode, 0)
 
-    def test_normal_profile_still_allows_existing_unversioned_secret_and_default_key(self):
+    def test_normal_profile_no_longer_allows_implicit_identity_and_default_key(self):
         result = self.run_validation({'--db-secret-id':f'arn:aws:secretsmanager:{prepare.REGION}:{prepare.ACCOUNT}:secret:demo/dev/db/connection-fixture', '--kms-key-id':''}, recovery=False)
-        self.assertEqual((result.returncode, result.stdout), (0, 'VALIDATED'), result.stderr)
+        self.assertNotEqual(result.returncode,0)
+        self.assertNotIn('VALIDATED',result.stdout)
+        self.assertIn('Ordinary DEV/PROD requires',result.stderr)
 
     def test_source_is_inert_and_full_script_is_valid_bash(self):
         result = self.run_validation(source_only=True)

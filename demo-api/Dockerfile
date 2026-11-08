@@ -7,6 +7,16 @@ WORKDIR /app
 
 EXPOSE 8080
 ENV ASPNETCORE_URLS=http://+:8080
+# Preserve the reviewed SQL-Lab vendor fixes; no laboratory certificate is copied.
+USER root
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y \
+       apt=2.8.4ubuntu0.1 libapt-pkg6.0t64=2.8.4ubuntu0.1 \
+       libpcre2-8-0=10.42-4ubuntu2.2 zlib1g=1:1.3.dfsg-3.1ubuntu2.3 \
+       ca-certificates=20260816ubuntu0.24.04.2 liblzma5=5.6.1+really5.4.5-1ubuntu0.4 \
+       jq=1.7.1-3ubuntu0.24.04.2 openssl=3.0.13-0ubuntu3.16 \
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p /app/empty-cert-dir && chmod 0555 /app/empty-cert-dir
 USER $APP_UID
 
 # ===========================
@@ -41,6 +51,7 @@ WORKDIR /app
 
 # Keep published files root-owned and readable; runtime does not modify /app.
 COPY --from=build /app/publish .
+COPY --chown=0:0 --chmod=0555 deploy/sql-trust/entrypoint.sh /app/entrypoint.sh
 USER $APP_UID
 
-ENTRYPOINT ["dotnet", "terragrunt-demo.dll"]
+ENTRYPOINT ["/app/entrypoint.sh"]
