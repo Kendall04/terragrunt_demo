@@ -840,23 +840,23 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/ci-repo-hygiene.yml": {
-      "sha256": "095a57438c4161d0e57cc4b4e4a7431755016cdd3acc2466ae69bae3f8f0e769",
+      "sha256": "75380d0acb15c9e0395d597e4e86d2ff208ec2d7efac0a004ad05ad12ade2ada",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           32,
-          44,
-          56,
+          47,
           59,
-          86,
-          131,
-          132,
-          133,
-          149,
-          150,
-          151,
-          179,
-          182
+          62,
+          89,
+          134,
+          135,
+          136,
+          152,
+          153,
+          154,
+          182,
+          185
         ],
         "executable-dependency": [
           16,
@@ -867,20 +867,20 @@
           33,
           34,
           38,
-          44,
-          53,
-          59,
-          66,
-          85,
-          97,
-          98,
+          47,
+          56,
+          62,
+          69,
+          88,
           100,
-          114,
-          120,
-          136,
-          138,
-          160,
-          162
+          101,
+          103,
+          117,
+          123,
+          139,
+          141,
+          163,
+          165
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -4936,32 +4936,32 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/final_acceptance/contract.py": {
-      "sha256": "359fbe068bfa5530628428ffb68d7d4094cff468fc5ad2a24a62972e2fd4ee43",
+      "sha256": "fa430ddd3948ef58a489f6e8e034672c60f1e9d65e1a2538ac9ea6cb47107ad1",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
-          58
+          64
         ],
         "role-input": [
-          58
+          64
         ],
         "launch-or-mutation": [
           36,
-          58
+          64
         ],
         "executable-dependency": [
           24,
           33,
           37,
-          58,
-          60,
-          61,
-          105,
-          109,
-          110
+          64,
+          66,
+          67,
+          111,
+          115,
+          116
         ],
         "security-control": [
-          86
+          92
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -14040,10 +14040,231 @@
       "declarations": [],
       "signals": {},
       "semantic_status": "UNVERIFIED"
+    },
+    ".github/workflows/api-delivery.yml": {
+      "sha256": "b3191e5383af7c47802ecbbc7b77e40419b91eaef00964ff8b10b4e6210b12cd",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          29
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    ".github/workflows/api-execute.yml": {
+      "sha256": "5572a605cdea19c3bf8543c7396a3a637faeab625b005a059255cc91bb40e92c",
+      "declarations": [],
+      "signals": {
+        "credential-acquisition": [
+          54
+        ],
+        "role-input": [
+          56
+        ],
+        "launch-or-mutation": [
+          11,
+          54,
+          57
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    ".github/workflows/api-promotion.yml": {
+      "sha256": "b7900c57253764e5c7ad244eb2b3d92747db4a6c8866d82a13cdecee6a816510",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/api_delivery/__init__.py": {
+      "sha256": "9f93c0c5479fa8627c209cb43b32c4931f4eea4ce198acd74afddcf7ca648614",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/api_delivery/aws.py": {
+      "sha256": "851bdaba884bbba25312f634528dd03cd0461d30200ec46c1afd8f016dc6d24f",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          26,
+          29,
+          33,
+          36,
+          37,
+          70,
+          86,
+          107,
+          108,
+          114,
+          124,
+          129,
+          136,
+          155,
+          187,
+          217,
+          219,
+          230,
+          279,
+          281,
+          285,
+          287,
+          298,
+          307
+        ],
+        "executable-dependency": [
+          176,
+          198,
+          210,
+          213,
+          291,
+          295
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/api_delivery/cli.py": {
+      "sha256": "d890b950cf7b3a396c11be37241e3a2339707c7e55c5cddde283923a9b7079da",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          121,
+          127,
+          130,
+          148,
+          152,
+          156
+        ],
+        "executable-dependency": [
+          87,
+          91,
+          141,
+          142,
+          144,
+          146,
+          156,
+          168
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/api_delivery/executor.py": {
+      "sha256": "168001f01006401dae9f2d4317c825cbb9e397b195d005aba5a1877bd9acaff8",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          41
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/api_delivery/github.py": {
+      "sha256": "bc13a68118934ed8fcec1694c7f1ab7f1a31d17c884bc9555690a112f2db72e7",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/api_delivery/model.py": {
+      "sha256": "11bc33147fb83a90ecbd6e89fe383a6521dd1abb2a5819ea9fa36e804f0abfc2",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          7
+        ],
+        "executable-dependency": [
+          1
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/api_delivery/permissions.py": {
+      "sha256": "f23fd33783d977926c9a0e1162f123816d75c536e7df171bd8ec20a0e23b194e",
+      "declarations": [],
+      "signals": {
+        "credential-acquisition": [
+          18
+        ],
+        "role-input": [
+          10,
+          13
+        ],
+        "launch-or-mutation": [
+          6,
+          13,
+          17,
+          23,
+          24,
+          25,
+          26,
+          27,
+          33,
+          43,
+          46,
+          47,
+          54,
+          56
+        ],
+        "executable-dependency": [
+          30
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/api_delivery/workflow_contract.py": {
+      "sha256": "6cdf4739696e2ff252c0f49d50474f7ed05bb01a4b10ab332af315bfc284f4a1",
+      "declarations": [],
+      "signals": {
+        "credential-acquisition": [
+          102
+        ],
+        "role-input": [
+          104
+        ],
+        "launch-or-mutation": [
+          38,
+          59,
+          102,
+          105
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/tests/api_delivery/test_delivery.py": {
+      "sha256": "fc44a76bf8e55615af7ce388fb546dcaee616dc50ec8b6055c34d885096d59b8",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          15,
+          40,
+          41,
+          72,
+          183,
+          188,
+          191,
+          195,
+          197,
+          202,
+          206,
+          226,
+          232
+        ],
+        "executable-dependency": [
+          22,
+          24,
+          49,
+          189
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
+    },
+    "scripts/tests/api_delivery/test_provenance.py": {
+      "sha256": "c97e713e7651d2aabf03d8c0a6fe568f98f50a25f1104aa2121fb6e2b39594f2",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "UNVERIFIED"
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",
-  "review_revision": "beaf4106ea92850cffb9e068704b710985080964",
-  "review_note": "Five SQL trust findings reproduced and corrected locally. Ten exact operational/test/evidence surfaces reviewed; semantics remain UNVERIFIED. No historical recipe, codec, workflow, IAM, installed authority or runtime approval changes.",
-  "review_delta_sha256": "877f0c09c64752c952584a39d3662b7bdfba9799241774db8e05c927e820edb5"
+  "review_revision": "e25600f60fc88f4479aef35a9e9ea5c2ba5a4b36",
+  "review_note": "Reviewed automatic API delivery implementation, exact workflow admission and offline tests. Semantics UNVERIFIED until reviewed activation; no installed IAM, ruleset, AWS or historical-controller changes.",
+  "review_delta_sha256": "043925ef3b6439ff5d7bdb5d181fc52353879bb077bfff948dac9df34aa2fd30"
 }

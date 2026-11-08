@@ -1,0 +1,39 @@
+{
+  "name": "API automatic delivery",
+  "on": {
+    "push": {
+      "branches": [
+        "develop",
+        "main"
+      ]
+    },
+    "workflow_dispatch": {
+      "inputs": {
+        "environment": {
+          "description": "Rollback the selected environment to its previous compatible healthy release",
+          "required": true,
+          "type": "choice",
+          "options": [
+            "dev",
+            "prod"
+          ]
+        }
+      }
+    }
+  },
+  "permissions": {
+    "contents": "read"
+  },
+  "jobs": {
+    "delivery": {
+      "if": "${{ vars.API_DELIVERY_ENABLED == 'true' && github.repository == 'Kendall04/terragrunt_demo' }}",
+      "uses": "./.github/workflows/api-execute.yml",
+      "permissions": {
+        "contents": "read",
+        "actions": "read",
+        "pull-requests": "read",
+        "id-token": "write"
+      }
+    }
+  }
+}
