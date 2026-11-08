@@ -1,0 +1,57 @@
+{
+  "EvaluationResults": [
+    {
+      "EvalActionName": "s3:DeleteBucket",
+      "EvalResourceName": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254",
+      "EvalDecision": "explicitDeny",
+      "MatchedStatements": [
+        {
+          "SourcePolicyId": "PolicyInputList.1",
+          "SourcePolicyType": "IAM Policy",
+          "StartPosition": {
+            "Line": 1,
+            "Column": 2948
+          },
+          "EndPosition": {
+            "Line": 1,
+            "Column": 3149
+          }
+        }
+      ],
+      "MissingContextValues": [],
+      "EvalDecisionDetails": {},
+      "ResourceSpecificResults": [
+        {
+          "EvalResourceName": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254",
+          "EvalResourceDecision": "explicitDeny",
+          "MatchedStatements": [
+            {
+              "SourcePolicyId": "PolicyInputList.1",
+              "SourcePolicyType": "IAM Policy",
+              "StartPosition": {
+                "Line": 1,
+                "Column": 2948
+              },
+              "EndPosition": {
+                "Line": 1,
+                "Column": 3149
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "IsTruncated": false,
+  "ResponseMetadata": {
+    "RequestId": "d15cc52d-ae26-46ae-b351-2da41e0a4ab2",
+    "HTTPStatusCode": 200,
+    "HTTPHeaders": {
+      "date": "Fri, 23 Oct 2026 21:07:56 GMT",
+      "x-amzn-requestid": "d15cc52d-ae26-46ae-b351-2da41e0a4ab2",
+      "content-type": "text/xml",
+      "content-length": "1918"
+    },
+    "RetryAttempts": 0
+  }
+}

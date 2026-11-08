@@ -1,0 +1,68 @@
+{
+  "runId": "ecs-sentinel-r20261024b2",
+  "classification": "CAPTURED_FAILURES_NOT_NATIVE_SUCCESS_FIXTURES",
+  "records": [
+    {
+      "intent": {
+        "atUtc": "2026-10-24T06:09:13.051556+00:00",
+        "instance": "i-009e213ec6cf1e3cb",
+        "document": "ecs-sentinel-r20261024b2-observer-control",
+        "documentVersion": "1",
+        "documentHash": "29b383c0a0a1731781ab6c3f828d5945de4afdbbc8912b17f2f495b52a3a66fe",
+        "action": "status",
+        "comment": "ecs-sentinel-r20261024b2 status 7bd8bbee58ea"
+      },
+      "accepted": {
+        "commandId": "a3894787-1d3d-430a-9d6d-900578376935",
+        "atUtc": "2026-10-24T06:09:13.214628+00:00"
+      },
+      "result": {
+        "CommandId": "a3894787-1d3d-430a-9d6d-900578376935",
+        "InstanceId": "i-009e213ec6cf1e3cb",
+        "Status": "Failed",
+        "StatusDetails": "AccessDenied",
+        "ResponseCode": -1,
+        "StandardOutputContent": "",
+        "StandardErrorContent": "",
+        "ExecutionStartDateTime": null,
+        "ExecutionEndDateTime": ""
+      },
+      "sourceSha256": {
+        "intent": "db3c68ac40ebbf2c5f5090e91837117c160fd48ba427dce2e7d808712a98e83f",
+        "accepted": "7bad04bb43553a2a9dcb4ffcadd1f7d38cef8393afffe7d13583f22855263dd2",
+        "result": "7c2b572dd853ce5ee45d1be592b8a3d61f9f27762e12f444ced7c190d53f170b"
+      }
+    },
+    {
+      "intent": {
+        "atUtc": "2026-10-24T06:40:56.581850+00:00",
+        "instance": "i-009e213ec6cf1e3cb",
+        "document": "ecs-sentinel-r20261024b2-observer-control",
+        "documentVersion": "1",
+        "documentHash": "29b383c0a0a1731781ab6c3f828d5945de4afdbbc8912b17f2f495b52a3a66fe",
+        "action": "status",
+        "comment": "ecs-sentinel-r20261024b2 status fc1067757b92"
+      },
+      "accepted": {
+        "commandId": "e5d894d1-1ce7-4d49-8c4f-bd8a72f5ede3",
+        "atUtc": "2026-10-24T06:40:56.749727+00:00"
+      },
+      "result": {
+        "CommandId": "e5d894d1-1ce7-4d49-8c4f-bd8a72f5ede3",
+        "InstanceId": "i-009e213ec6cf1e3cb",
+        "Status": "Failed",
+        "StatusDetails": "AccessDenied",
+        "ResponseCode": -1,
+        "StandardOutputContent": "",
+        "StandardErrorContent": "",
+        "ExecutionStartDateTime": null,
+        "ExecutionEndDateTime": ""
+      },
+      "sourceSha256": {
+        "intent": "55380ae9c2f2da13ede5595fd1858c40a9064f0451ffb1cdb414e89806993720",
+        "accepted": "07b00d71a54300f04d5cb4637034c0c035fd92459650175d86c6aeca61db37ae",
+        "result": "ce62f8ee17a5f5cd35f4bc7977482edd6a6bd15c78d6d84dffd0fa8df12f49d2"
+      }
+    }
+  ]
+}

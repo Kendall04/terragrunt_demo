@@ -1,0 +1,91 @@
+{
+  "status": "OFFICIAL_SIGNED_ZIP_AND_H1_VERIFIED",
+  "fingerprint": "C874011F0AB405110D02105534365D9472D7468F",
+  "fingerprintSource": "https://www.hashicorp.com/en/trust/security",
+  "signingSubkey": "374EC75B485913604A831CC7C820C6D5CD27AB87",
+  "signatureEpoch": 1749753185,
+  "publicKeyMetadata": [
+    {
+      "fingerprint": "C874011F0AB405110D02105534365D9472D7468F",
+      "type": "pub",
+      "validity": "-",
+      "created": 1618869017,
+      "expires": 1898637264,
+      "capabilities": "scESC",
+      "usedForThisSignature": true
+    },
+    {
+      "fingerprint": "E091216D7CC258B2EB97DC3654422F612379BA9A",
+      "type": "sub",
+      "validity": "-",
+      "created": 1618869017,
+      "expires": 1898637293,
+      "capabilities": "e",
+      "usedForThisSignature": false
+    },
+    {
+      "fingerprint": "B36CBA91A2C0730C435FC280B0B441097685B676",
+      "type": "sub",
+      "validity": "e",
+      "created": 1618869797,
+      "expires": 1650413312,
+      "capabilities": "s",
+      "usedForThisSignature": false
+    },
+    {
+      "fingerprint": "374EC75B485913604A831CC7C820C6D5CD27AB87",
+      "type": "sub",
+      "validity": "-",
+      "created": 1619024934,
+      "expires": 1898637322,
+      "capabilities": "s",
+      "usedForThisSignature": true
+    }
+  ],
+  "archiveSha256": "9f8b909d3ec50ade83c8062290378b1ec553edef6a447c56dadc01a99f4eaa93",
+  "packageH1": "h1:H3mU/7URhP0uCRGK8jeQRKxx2XFzEqLiOq/L2Bbiaxs=",
+  "matchesExistingCache": true,
+  "files": [
+    {
+      "name": "LICENSE.txt",
+      "bytes": 16761,
+      "sha256": "4e2bb185ebd706f76329206869ccb348b92b6236100cfb07775fe31530dab0d5"
+    },
+    {
+      "name": "terraform-provider-aws_v5.100.0_x5.exe",
+      "bytes": 718820352,
+      "sha256": "12b413fada9bad9125f344749181020bb373f45726c7879790a95999eff19e7d"
+    }
+  ],
+  "downloads": [
+    {
+      "url": "https://releases.hashicorp.com/terraform-provider-aws/5.100.0/terraform-provider-aws_5.100.0_SHA256SUMS",
+      "bytes": 1697,
+      "sha256": "43e80a4c7d3e7c0146429c0dd6cf7a3a372420f1aca6eecd6b81451501d27b71",
+      "reusedMetadata": true
+    },
+    {
+      "url": "https://releases.hashicorp.com/terraform-provider-aws/5.100.0/terraform-provider-aws_5.100.0_SHA256SUMS.72D7468F.sig",
+      "bytes": 566,
+      "sha256": "0de1ac780ca1d2562e7ce40c5c62a55f37145f42a61311eb22ee2cb519254261",
+      "reusedMetadata": true
+    },
+    {
+      "url": "https://www.hashicorp.com/.well-known/pgp-key.txt",
+      "bytes": 7717,
+      "sha256": "c2f5bc1163bd8d15a711616b587bcede212d045a5b8b52df01c74095897cd065",
+      "reusedMetadata": true
+    },
+    {
+      "url": "https://releases.hashicorp.com/terraform-provider-aws/5.100.0/terraform-provider-aws_5.100.0_windows_amd64.zip",
+      "finalUrl": "https://releases.hashicorp.com/terraform-provider-aws/5.100.0/terraform-provider-aws_5.100.0_windows_amd64.zip",
+      "bytes": 156704800,
+      "sha256": "9f8b909d3ec50ade83c8062290378b1ec553edef6a447c56dadc01a99f4eaa93"
+    }
+  ],
+  "publicKeyOnlyIsolatedHomeRemoved": true,
+  "providerInstalled": false,
+  "providerExecuted": false,
+  "globalSettingsChanged": false,
+  "awsExecuted": false
+}

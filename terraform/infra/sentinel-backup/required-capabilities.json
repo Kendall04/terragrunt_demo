@@ -1,0 +1,189 @@
+{
+  "schemaVersion": 1,
+  "status": "REQUIRED_CAPABILITIES_CONTRACT_NOT_INSTALLED_IAM_POLICY",
+  "runId": "ecs-sentinel-r20261024b2",
+  "account": "341936017254",
+  "region": "us-east-1",
+  "intendedLifecycleRole": "arn:aws:iam::341936017254:role/TerragruntDemoDevOperator",
+  "adminAssistance": "existing cnp-cert-admin only under grouped future approval",
+  "deriveMinimalDeltaAfterRead": true,
+  "basePipeline": "main.tf.json and modules/pipeline/main.tf.json + NEXT-INTEGRATED-TRIAL.md full S3/Dynamo/SQS/SNS/Lambda/Logs/EventBridge/IAM/backend create/read/delete list",
+  "hostDelta": [
+    {
+      "group": "EC2Read",
+      "actions": [
+        "ec2:DescribeImages",
+        "ec2:DescribeInstances",
+        "ec2:DescribeInstanceStatus",
+        "ec2:DescribeVolumes",
+        "ec2:DescribeNetworkInterfaces",
+        "ec2:DescribeVpcs",
+        "ec2:DescribeSubnets",
+        "ec2:DescribeInternetGateways",
+        "ec2:DescribeRouteTables",
+        "ec2:DescribeSecurityGroups",
+        "ec2:DescribeSecurityGroupRules",
+        "ec2:DescribeInstanceAttribute",
+        "ec2:DescribeTags",
+        "ec2:DescribeInstanceCreditSpecifications"
+      ],
+      "scope": "regional metadata *; exact IDs/filter in executor, no false resource restriction"
+    },
+    {
+      "group": "EC2Network",
+      "actions": [
+        "ec2:CreateVpc",
+        "ec2:ModifyVpcAttribute",
+        "ec2:DeleteVpc",
+        "ec2:CreateSubnet",
+        "ec2:ModifySubnetAttribute",
+        "ec2:DeleteSubnet",
+        "ec2:CreateInternetGateway",
+        "ec2:AttachInternetGateway",
+        "ec2:DetachInternetGateway",
+        "ec2:DeleteInternetGateway",
+        "ec2:CreateRouteTable",
+        "ec2:DeleteRouteTable",
+        "ec2:AssociateRouteTable",
+        "ec2:DisassociateRouteTable",
+        "ec2:CreateRoute",
+        "ec2:DeleteRoute",
+        "ec2:CreateSecurityGroup",
+        "ec2:DeleteSecurityGroup",
+        "ec2:AuthorizeSecurityGroupEgress",
+        "ec2:RevokeSecurityGroupEgress",
+        "ec2:CreateTags",
+        "ec2:DeleteTags"
+      ],
+      "scope": "only NEW own VPC/subnet/IGW/table/SG with exact Trial ownership; create actions required RequestTag, existing actions ResourceTag; no EKS or historical IDs"
+    },
+    {
+      "group": "EC2Instance",
+      "actions": [
+        "ec2:RunInstances",
+        "ec2:TerminateInstances",
+        "ec2:ModifyInstanceCreditSpecification"
+      ],
+      "scope": "Run only reviewed AMI/type8GiB/own network/profile with required tags; terminate only owned returned instance; no Reboot/Stop/DeleteVolume"
+    },
+    {
+      "group": "IAMRead",
+      "actions": [
+        "iam:GetRole",
+        "iam:GetRolePolicy",
+        "iam:ListRolePolicies",
+        "iam:ListAttachedRolePolicies",
+        "iam:GetPolicy",
+        "iam:GetPolicyVersion",
+        "iam:ListPolicyVersions",
+        "iam:GetInstanceProfile",
+        "iam:ListInstanceProfilesForRole",
+        "iam:ListInstanceProfileTags",
+        "iam:ListRoleTags",
+        "iam:ListPolicyTags"
+      ],
+      "scope": "exact own3 roles/3 boundaries/profile plus captured original operator policy versions for review/reversal"
+    },
+    {
+      "group": "IAMOwnLifecycle",
+      "actions": [
+        "iam:CreateRole",
+        "iam:UpdateAssumeRolePolicy",
+        "iam:UpdateRole",
+        "iam:UpdateRoleDescription",
+        "iam:DeleteRole",
+        "iam:PutRolePolicy",
+        "iam:DeleteRolePolicy",
+        "iam:PutRolePermissionsBoundary",
+        "iam:DeleteRolePermissionsBoundary",
+        "iam:CreatePolicy",
+        "iam:CreatePolicyVersion",
+        "iam:SetDefaultPolicyVersion",
+        "iam:DeletePolicyVersion",
+        "iam:DeletePolicy",
+        "iam:TagRole",
+        "iam:UntagRole",
+        "iam:TagPolicy",
+        "iam:UntagPolicy",
+        "iam:CreateInstanceProfile",
+        "iam:DeleteInstanceProfile",
+        "iam:AddRoleToInstanceProfile",
+        "iam:RemoveRoleFromInstanceProfile",
+        "iam:TagInstanceProfile",
+        "iam:UntagInstanceProfile"
+      ],
+      "scope": "ONLY own ingest/dispatch/observer roles and boundaries +observer profile. Ability to edit own boundary content is material; do not claim name scope freezes JSON. Never include other role actions."
+    },
+    {
+      "group": "PassRole",
+      "actions": [
+        "iam:PassRole"
+      ],
+      "scope": "exact own2 Lambda roles to lambda.amazonaws.com; own observer role to ec2.amazonaws.com; separate statements, no ssm/CF PassRole"
+    },
+    {
+      "group": "SSMDocument",
+      "actions": [
+        "ssm:CreateDocument",
+        "ssm:GetDocument",
+        "ssm:DescribeDocument",
+        "ssm:DescribeDocumentPermission",
+        "ssm:UpdateDocument",
+        "ssm:UpdateDocumentDefaultVersion",
+        "ssm:ListDocumentVersions",
+        "ssm:DeleteDocument",
+        "ssm:AddTagsToResource",
+        "ssm:ListTagsForResource",
+        "ssm:RemoveTagsFromResource"
+      ],
+      "scope": "exact ecs-sentinel-r20261024b2-observer-control Command document only; no ModifyDocumentPermission/public sharing"
+    },
+    {
+      "group": "SSMCommand",
+      "actions": [
+        "ssm:SendCommand"
+      ],
+      "scope": "exact own Command ARN AND own EC2 Trial-tagged instance (ssm:resourceTag/Trial); inspect delegated service-context requirements, do not use AWS-RunShellScript or arbitrary command parameter"
+    },
+    {
+      "group": "SSMRead",
+      "actions": [
+        "ssm:GetCommandInvocation",
+        "ssm:ListCommandInvocations",
+        "ssm:DescribeInstanceInformation"
+      ],
+      "scope": "regional metadata * as supported; use only own command/instance IDs; disclose wider metadata capability. No StartSession, no EC2 DeregisterManagedInstance"
+    },
+    {
+      "group": "HostCodeRetirement",
+      "actions": [
+        "s3:GetObjectVersion",
+        "s3:PutObject",
+        "s3:DeleteObject",
+        "s3:DeleteObjectVersion",
+        "s3:ListBucketVersions"
+      ],
+      "scope": "own pipeline bucket observer-packages/<exact bundle SHA>.tar.gz only; enumerate version IDs before delete; no force_destroy"
+    },
+    {
+      "group": "EBSMetadata",
+      "actions": [
+        "kms:DescribeKey"
+      ],
+      "scope": "canonical alias/aws/ebs key metadata; KeyManager AWS, no customer key CreateGrant/DeleteKey"
+    }
+  ],
+  "runtimeHostPolicySource": "modules/observer/main.tf.json locals.policy; identical boundary/inline, expiry, no workload infrastructure mutation",
+  "pipelineBucketHostDenySource": "modules/pipeline/main.tf.json aws_s3_bucket_policy.archive; exact GetObjectVersion exception plus NotResource/NotAction Deny",
+  "originalsNeverDeleted": [
+    "terragrunt-demo-sql-backup-341936017254-fa48a32dc9",
+    "e1-lifecycle-dev-341936017254-us-east-1",
+    "arn:aws:kms:us-east-1:341936017254:key/30f01bb6-03b5-4e5f-b7a8-e304fe607ced",
+    "arn:aws:kms:us-east-1:341936017254:key/50d3fe36-8128-4d09-ac13-8f5536a230a7",
+    "all EKS states/resources",
+    "original2+2 backups"
+  ],
+  "permissionsReversal": "remove any separate operator supplement, restore exact Part4/default/original bucket and KMS policy hashes and preserved history; remove own3 roles/boundaries/profile after data export and actual destroy",
+  "privatePreflight": "READONLY-PREFLIGHT.json",
+  "awsCalls": 0
+}

@@ -1,0 +1,501 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Temporary bounded ECS trial CF execution role and immutable runtime boundaries; offline only",
+  "Parameters": {
+    "NotificationEmail": {
+      "Type": "String",
+      "AllowedPattern": "[^\\s@]+@[^\\s@]+\\.[^\\s@]+",
+      "NoEcho": true,
+      "Description": "Owner supplied/consented email; confirmation is performed by the owner."
+    }
+  },
+  "Conditions": {
+    "BoundEnvironment": {
+      "Fn::And": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "AWS::AccountId"
+            },
+            "341936017254"
+          ]
+        },
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "AWS::Region"
+            },
+            "us-east-1"
+          ]
+        }
+      ]
+    }
+  },
+  "Resources": {
+    "IngestBoundary": {
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Condition": "BoundEnvironment",
+      "Properties": {
+        "ManagedPolicyName": "ecs-sentinel-r20261023b1-ingest-boundary",
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "dynamodb:GetItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:ConditionCheckItem"
+              ],
+              "Resource": "arn:aws:dynamodb:us-east-1:341936017254:table/ecs-sentinel-r20261023b1",
+              "Condition": {
+                "ForAllValues:StringEquals": {
+                  "dynamodb:LeadingKeys": [
+                    "NS#4ebefbe15b843f4db70b623238a3f1115219cfa6a437ffc71aa9fb86d6306f65"
+                  ]
+                },
+                "Null": {
+                  "dynamodb:LeadingKeys": "false"
+                }
+              }
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "sqs:ReceiveMessage",
+                "sqs:DeleteMessage",
+                "sqs:GetQueueAttributes"
+              ],
+              "Resource": "arn:aws:sqs:us-east-1:341936017254:ecs-sentinel-r20261023b1-ingestion"
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Resource": "arn:aws:logs:us-east-1:341936017254:log-group:/aws/lambda/ecs-sentinel-r20261023b1-ingest:log-stream:*"
+            }
+          ]
+        }
+      }
+    },
+    "DispatchBoundary": {
+      "Type": "AWS::IAM::ManagedPolicy",
+      "Condition": "BoundEnvironment",
+      "Properties": {
+        "ManagedPolicyName": "ecs-sentinel-r20261023b1-dispatch-boundary",
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "dynamodb:GetItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:ConditionCheckItem"
+              ],
+              "Resource": "arn:aws:dynamodb:us-east-1:341936017254:table/ecs-sentinel-r20261023b1",
+              "Condition": {
+                "ForAllValues:StringEquals": {
+                  "dynamodb:LeadingKeys": [
+                    "NS#4ebefbe15b843f4db70b623238a3f1115219cfa6a437ffc71aa9fb86d6306f65"
+                  ]
+                },
+                "Null": {
+                  "dynamodb:LeadingKeys": "false"
+                }
+              }
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:GetObject",
+                "s3:PutObject"
+              ],
+              "Resource": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254/sentinel/v3/4ebefbe15b843f4db70b623238a3f1115219cfa6a437ffc71aa9fb86d6306f65/*"
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "sns:Publish"
+              ],
+              "Resource": "arn:aws:sns:us-east-1:341936017254:ecs-sentinel-r20261023b1-notices"
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Resource": "arn:aws:logs:us-east-1:341936017254:log-group:/aws/lambda/ecs-sentinel-r20261023b1-dispatch:log-stream:*"
+            }
+          ]
+        }
+      }
+    },
+    "ExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Condition": "BoundEnvironment",
+      "Properties": {
+        "RoleName": "ecs-sentinel-r20261023b1-cfn",
+        "Tags": [
+          {
+            "Key": "Project",
+            "Value": "EcsBackupSentinel"
+          },
+          {
+            "Key": "Environment",
+            "Value": "Sandbox"
+          },
+          {
+            "Key": "Owner",
+            "Value": "Kendall04"
+          },
+          {
+            "Key": "RunId",
+            "Value": "ecs-sentinel-r20261023b1"
+          },
+          {
+            "Key": "Purpose",
+            "Value": "SyntheticSignalTrial"
+          }
+        ],
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "cloudformation.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "CreateAndRetireOwnTrial",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:DescribeLogGroups"
+                  ],
+                  "Resource": "*",
+                  "Condition": {
+                    "StringEquals": {
+                      "aws:RequestedRegion": "us-east-1"
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "dynamodb:CreateTable",
+                    "dynamodb:DescribeTable",
+                    "dynamodb:DeleteTable",
+                    "dynamodb:TagResource",
+                    "dynamodb:UntagResource",
+                    "dynamodb:ListTagsOfResource"
+                  ],
+                  "Resource": "arn:aws:dynamodb:us-east-1:341936017254:table/ecs-sentinel-r20261023b1",
+                  "Condition": {
+                    "StringEquals": {
+                      "aws:RequestedRegion": "us-east-1"
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:CreateBucket",
+                    "s3:DeleteBucket",
+                    "s3:GetBucketLocation",
+                    "s3:GetBucketAcl",
+                    "s3:GetBucketPolicy",
+                    "s3:PutBucketPolicy",
+                    "s3:DeleteBucketPolicy",
+                    "s3:GetBucketTagging",
+                    "s3:PutBucketTagging",
+                    "s3:GetBucketVersioning",
+                    "s3:PutBucketVersioning",
+                    "s3:GetEncryptionConfiguration",
+                    "s3:PutEncryptionConfiguration",
+                    "s3:GetBucketPublicAccessBlock",
+                    "s3:PutBucketPublicAccessBlock",
+                    "s3:GetBucketOwnershipControls",
+                    "s3:PutBucketOwnershipControls",
+                    "s3:ListBucket",
+                    "s3:ListBucketVersions"
+                  ],
+                  "Resource": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:GetObject",
+                    "s3:GetObjectVersion"
+                  ],
+                  "Resource": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254/packages/*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "sqs:CreateQueue",
+                    "sqs:GetQueueUrl",
+                    "sqs:GetQueueAttributes",
+                    "sqs:SetQueueAttributes",
+                    "sqs:DeleteQueue",
+                    "sqs:TagQueue",
+                    "sqs:UntagQueue",
+                    "sqs:ListQueueTags"
+                  ],
+                  "Resource": [
+                    "arn:aws:sqs:us-east-1:341936017254:ecs-sentinel-r20261023b1-ingestion",
+                    "arn:aws:sqs:us-east-1:341936017254:ecs-sentinel-r20261023b1-dlq"
+                  ],
+                  "Condition": {
+                    "StringEquals": {
+                      "aws:RequestedRegion": "us-east-1"
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogGroup",
+                    "logs:DeleteLogGroup",
+                    "logs:DescribeLogStreams",
+                    "logs:PutRetentionPolicy",
+                    "logs:DeleteRetentionPolicy",
+                    "logs:TagResource",
+                    "logs:UntagResource",
+                    "logs:ListTagsForResource"
+                  ],
+                  "Resource": [
+                    "arn:aws:logs:us-east-1:341936017254:log-group:/aws/lambda/ecs-sentinel-r20261023b1-ingest",
+                    "arn:aws:logs:us-east-1:341936017254:log-group:/aws/lambda/ecs-sentinel-r20261023b1-dispatch",
+                    "arn:aws:logs:us-east-1:341936017254:log-group:/aws/lambda/ecs-sentinel-r20261023b1-ingest:*",
+                    "arn:aws:logs:us-east-1:341936017254:log-group:/aws/lambda/ecs-sentinel-r20261023b1-dispatch:*"
+                  ],
+                  "Condition": {
+                    "StringEquals": {
+                      "aws:RequestedRegion": "us-east-1"
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "lambda:CreateFunction",
+                    "lambda:GetFunction",
+                    "lambda:GetFunctionConfiguration",
+                    "lambda:DeleteFunction",
+                    "lambda:TagResource",
+                    "lambda:UntagResource",
+                    "lambda:ListTags",
+                    "lambda:UpdateFunctionCode",
+                    "lambda:UpdateFunctionConfiguration",
+                    "lambda:PutFunctionConcurrency",
+                    "lambda:GetFunctionConcurrency",
+                    "lambda:DeleteFunctionConcurrency"
+                  ],
+                  "Resource": [
+                    "arn:aws:lambda:us-east-1:341936017254:function:ecs-sentinel-r20261023b1-ingest",
+                    "arn:aws:lambda:us-east-1:341936017254:function:ecs-sentinel-r20261023b1-dispatch"
+                  ],
+                  "Condition": {
+                    "StringEquals": {
+                      "aws:RequestedRegion": "us-east-1"
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "lambda:CreateEventSourceMapping"
+                  ],
+                  "Resource": "*",
+                  "Condition": {
+                    "ArnEquals": {
+                      "lambda:FunctionArn": "arn:aws:lambda:us-east-1:341936017254:function:ecs-sentinel-r20261023b1-ingest"
+                    },
+                    "StringEquals": {
+                      "aws:RequestedRegion": "us-east-1"
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "lambda:TagResource"
+                  ],
+                  "Resource": "arn:aws:lambda:us-east-1:341936017254:event-source-mapping:*",
+                  "Condition": {
+                    "StringEquals": {
+                      "aws:RequestTag/RunId": "ecs-sentinel-r20261023b1",
+                      "aws:RequestedRegion": "us-east-1"
+                    },
+                    "ForAllValues:StringLike": {
+                      "aws:TagKeys": [
+                        "Project",
+                        "Environment",
+                        "Owner",
+                        "RunId",
+                        "Purpose",
+                        "aws:cloudformation:*"
+                      ]
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "lambda:GetEventSourceMapping",
+                    "lambda:UpdateEventSourceMapping",
+                    "lambda:DeleteEventSourceMapping"
+                  ],
+                  "Resource": "arn:aws:lambda:us-east-1:341936017254:event-source-mapping:*",
+                  "Condition": {
+                    "ArnEquals": {
+                      "lambda:FunctionArn": "arn:aws:lambda:us-east-1:341936017254:function:ecs-sentinel-r20261023b1-ingest"
+                    },
+                    "StringEquals": {
+                      "aws:RequestedRegion": "us-east-1"
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "sns:CreateTopic",
+                    "sns:GetTopicAttributes",
+                    "sns:SetTopicAttributes",
+                    "sns:DeleteTopic",
+                    "sns:TagResource",
+                    "sns:UntagResource",
+                    "sns:ListTagsForResource",
+                    "sns:ListSubscriptionsByTopic",
+                    "sns:GetSubscriptionAttributes",
+                    "sns:Unsubscribe"
+                  ],
+                  "Resource": "arn:aws:sns:us-east-1:341936017254:ecs-sentinel-r20261023b1-notices",
+                  "Condition": {
+                    "StringEquals": {
+                      "aws:RequestedRegion": "us-east-1"
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "sns:Subscribe"
+                  ],
+                  "Resource": "arn:aws:sns:us-east-1:341936017254:ecs-sentinel-r20261023b1-notices",
+                  "Condition": {
+                    "StringEquals": {
+                      "sns:Protocol": "email",
+                      "sns:Endpoint": {
+                        "Ref": "NotificationEmail"
+                      },
+                      "aws:RequestedRegion": "us-east-1"
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "iam:CreateRole",
+                    "iam:PutRolePermissionsBoundary"
+                  ],
+                  "Resource": "arn:aws:iam::341936017254:role/ecs-sentinel-r20261023b1-ingest-role",
+                  "Condition": {
+                    "StringEquals": {
+                      "iam:PermissionsBoundary": "arn:aws:iam::341936017254:policy/ecs-sentinel-r20261023b1-ingest-boundary"
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "iam:GetRole",
+                    "iam:TagRole",
+                    "iam:UntagRole",
+                    "iam:ListRolePolicies",
+                    "iam:ListAttachedRolePolicies",
+                    "iam:ListInstanceProfilesForRole",
+                    "iam:GetRolePolicy",
+                    "iam:PutRolePolicy",
+                    "iam:DeleteRolePolicy",
+                    "iam:DeleteRole"
+                  ],
+                  "Resource": "arn:aws:iam::341936017254:role/ecs-sentinel-r20261023b1-ingest-role"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "iam:PassRole"
+                  ],
+                  "Resource": "arn:aws:iam::341936017254:role/ecs-sentinel-r20261023b1-ingest-role",
+                  "Condition": {
+                    "StringEquals": {
+                      "iam:PassedToService": "lambda.amazonaws.com"
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "iam:CreateRole",
+                    "iam:PutRolePermissionsBoundary"
+                  ],
+                  "Resource": "arn:aws:iam::341936017254:role/ecs-sentinel-r20261023b1-dispatch-role",
+                  "Condition": {
+                    "StringEquals": {
+                      "iam:PermissionsBoundary": "arn:aws:iam::341936017254:policy/ecs-sentinel-r20261023b1-dispatch-boundary"
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "iam:GetRole",
+                    "iam:TagRole",
+                    "iam:UntagRole",
+                    "iam:ListRolePolicies",
+                    "iam:ListAttachedRolePolicies",
+                    "iam:ListInstanceProfilesForRole",
+                    "iam:GetRolePolicy",
+                    "iam:PutRolePolicy",
+                    "iam:DeleteRolePolicy",
+                    "iam:DeleteRole"
+                  ],
+                  "Resource": "arn:aws:iam::341936017254:role/ecs-sentinel-r20261023b1-dispatch-role"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "iam:PassRole"
+                  ],
+                  "Resource": "arn:aws:iam::341936017254:role/ecs-sentinel-r20261023b1-dispatch-role",
+                  "Condition": {
+                    "StringEquals": {
+                      "iam:PassedToService": "lambda.amazonaws.com"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  }
+}

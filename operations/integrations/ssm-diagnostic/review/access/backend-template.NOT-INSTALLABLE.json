@@ -1,0 +1,335 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "TLSOnly",
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": "s3:*",
+      "Resource": [
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/*"
+      ],
+      "Condition": {
+        "Bool": {
+          "aws:SecureTransport": "false"
+        }
+      }
+    },
+    {
+      "Sid": "OnlyOwnEnvironmentAndAdmin",
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": "s3:*",
+      "Resource": [
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/*"
+      ],
+      "Condition": {
+        "ArnNotEquals": {
+          "aws:PrincipalArn": [
+            "arn:aws:iam::341936017254:user/cnp-cert-admin",
+            "arn:aws:iam::341936017254:role/e1-request-plan-dev",
+            "arn:aws:iam::341936017254:role/e1-request-infra-dev",
+            "arn:aws:iam::341936017254:role/e1-request-infra-high-risk-dev",
+            "arn:aws:iam::341936017254:role/e1-gateway-infra-dev-exec",
+            "arn:aws:iam::341936017254:role/e1-gateway-infra-high-risk-dev-exec",
+            "arn:aws:iam::341936017254:role/e1-controller-infra-dev-exec",
+            "arn:aws:iam::341936017254:role/e1-controller-infra-high-risk-dev-exec",
+            "arn:aws:iam::341936017254:role/TerragruntDemoDevOperator"
+          ]
+        }
+      }
+    },
+    {
+      "Sid": "ExternalNoWrite",
+      "Effect": "Deny",
+      "Principal": "*",
+      "NotAction": [
+        "s3:GetObject",
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/*"
+      ],
+      "Condition": {
+        "ArnLike": {
+          "aws:PrincipalArn": "arn:aws:iam::341936017254:role/e1-request-*"
+        }
+      }
+    },
+    {
+      "Sid": "ExternalOnlyOwnPublic",
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "NotResource": [
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/operations/environment-lifecycle/infra-dev/*/public.json",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/operations/environment-lifecycle/infra-high-risk-dev/*/public.json"
+      ],
+      "Condition": {
+        "ArnEquals": {
+          "aws:PrincipalArn": [
+            "arn:aws:iam::341936017254:role/e1-request-infra-dev",
+            "arn:aws:iam::341936017254:role/e1-request-infra-high-risk-dev"
+          ]
+        }
+      }
+    },
+    {
+      "Sid": "PlanOnlyOwnState",
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "NotResource": [
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/shared/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/secrets/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/global/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/data/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/platform/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/apps/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/edge/terraform.tfstate"
+      ],
+      "Condition": {
+        "ArnEquals": {
+          "aws:PrincipalArn": "arn:aws:iam::341936017254:role/e1-request-plan-dev"
+        }
+      }
+    },
+    {
+      "Sid": "E16ExclusiveDevRuntimeWriter",
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": [
+        "s3:PutObject",
+        "s3:DeleteObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/global/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/global/terraform.tfstate.tflock",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/data/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/data/terraform.tfstate.tflock",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/platform/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/platform/terraform.tfstate.tflock",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/apps/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/apps/terraform.tfstate.tflock",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/edge/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/edge/terraform.tfstate.tflock"
+      ],
+      "Condition": {
+        "ArnNotEquals": {
+          "aws:PrincipalArn": "arn:aws:iam::341936017254:role/TerragruntDemoDevOperator"
+        }
+      }
+    },
+    {
+      "Sid": "E16RetainStateObjects",
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": "s3:DeleteObject",
+      "Resource": [
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/global/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/data/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/platform/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/apps/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/edge/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/ssm-diagnostic/ecs-sentinel-ssmdiag-r20261024d1/runtime/terraform.tfstate"
+      ],
+      "Condition": {
+        "ArnEquals": {
+          "aws:PrincipalArn": "arn:aws:iam::341936017254:role/TerragruntDemoDevOperator"
+        }
+      }
+    },
+    {
+      "Sid": "E16RuntimeStateObjects",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::341936017254:role/TerragruntDemoDevOperator"
+      },
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/global/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/global/terraform.tfstate.tflock",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/data/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/data/terraform.tfstate.tflock",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/platform/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/platform/terraform.tfstate.tflock",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/apps/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/apps/terraform.tfstate.tflock",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/edge/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/edge/terraform.tfstate.tflock"
+      ]
+    },
+    {
+      "Sid": "E16RuntimeLockDelete",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::341936017254:role/TerragruntDemoDevOperator"
+      },
+      "Action": "s3:DeleteObject",
+      "Resource": [
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/global/terraform.tfstate.tflock",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/data/terraform.tfstate.tflock",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/platform/terraform.tfstate.tflock",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/apps/terraform.tfstate.tflock",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/edge/terraform.tfstate.tflock"
+      ]
+    },
+    {
+      "Sid": "E16RuntimeList",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::341936017254:role/TerragruntDemoDevOperator"
+      },
+      "Action": "s3:ListBucket",
+      "Resource": "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1",
+      "Condition": {
+        "StringLike": {
+          "s3:prefix": [
+            "e1/lifecycle/dev/global/terraform.tfstate*",
+            "e1/lifecycle/dev/data/terraform.tfstate*",
+            "e1/lifecycle/dev/platform/terraform.tfstate*",
+            "e1/lifecycle/dev/apps/terraform.tfstate*",
+            "e1/lifecycle/dev/edge/terraform.tfstate*"
+          ]
+        }
+      }
+    },
+    {
+      "Sid": "E16RuntimeBackendRead",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::341936017254:role/TerragruntDemoDevOperator"
+      },
+      "Action": [
+        "s3:GetBucketLocation",
+        "s3:GetBucketVersioning",
+        "s3:GetBucketPublicAccessBlock",
+        "s3:GetBucketPolicy",
+        "s3:GetEncryptionConfiguration"
+      ],
+      "Resource": "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1"
+    },
+    {
+      "Sid": "E16NoOtherDevObjects",
+      "Effect": "Deny",
+      "Principal": "*",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject"
+      ],
+      "NotResource": [
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/global/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/global/terraform.tfstate.tflock",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/data/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/data/terraform.tfstate.tflock",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/platform/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/platform/terraform.tfstate.tflock",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/apps/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/apps/terraform.tfstate.tflock",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/edge/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/edge/terraform.tfstate.tflock",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/ssm-diagnostic/ecs-sentinel-ssmdiag-r20261024d1/runtime/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/ssm-diagnostic/ecs-sentinel-ssmdiag-r20261024d1/runtime/terraform.tfstate.tflock"
+      ],
+      "Condition": {
+        "ArnEquals": {
+          "aws:PrincipalArn": "arn:aws:iam::341936017254:role/TerragruntDemoDevOperator"
+        }
+      }
+    },
+    {
+      "Sid": "E16NoBackendAdministration",
+      "Effect": "Deny",
+      "Principal": "*",
+      "NotAction": [
+        "s3:GetBucketLocation",
+        "s3:GetBucketVersioning",
+        "s3:GetBucketPublicAccessBlock",
+        "s3:GetBucketPolicy",
+        "s3:GetEncryptionConfiguration",
+        "s3:ListBucket",
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/*"
+      ],
+      "Condition": {
+        "ArnEquals": {
+          "aws:PrincipalArn": "arn:aws:iam::341936017254:role/TerragruntDemoDevOperator"
+        }
+      }
+    },
+    {
+      "Sid": "DiagStateReadWrite",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::341936017254:role/TerragruntDemoDevOperator"
+      },
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/ssm-diagnostic/ecs-sentinel-ssmdiag-r20261024d1/runtime/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/ssm-diagnostic/ecs-sentinel-ssmdiag-r20261024d1/runtime/terraform.tfstate.tflock"
+      ],
+      "Condition": {
+        "DateLessThan": {
+          "aws:CurrentTime": "${var.expires_at}"
+        }
+      }
+    },
+    {
+      "Sid": "DiagLockDelete",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::341936017254:role/TerragruntDemoDevOperator"
+      },
+      "Action": [
+        "s3:DeleteObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/ssm-diagnostic/ecs-sentinel-ssmdiag-r20261024d1/runtime/terraform.tfstate.tflock"
+      ],
+      "Condition": {
+        "DateLessThan": {
+          "aws:CurrentTime": "${var.expires_at}"
+        }
+      }
+    },
+    {
+      "Sid": "DiagList",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::341936017254:role/TerragruntDemoDevOperator"
+      },
+      "Action": [
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1"
+      ],
+      "Condition": {
+        "DateLessThan": {
+          "aws:CurrentTime": "${var.expires_at}"
+        },
+        "StringLike": {
+          "s3:prefix": [
+            "ssm-diagnostic/ecs-sentinel-ssmdiag-r20261024d1/runtime/terraform.tfstate*",
+            "ssm-diagnostic/ecs-sentinel-ssmdiag-r20261024d1/runtime/workspaces/*"
+          ]
+        }
+      }
+    }
+  ]
+}

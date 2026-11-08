@@ -1,0 +1,12 @@
+{
+  "upstreamCommit": "b3d0b3b595a9257bb6d4d849c899bf4e8dbc2828",
+  "file": "src/Sentinel.Portable/Installation.cs",
+  "baseSha256": "1883c84ec5a0ad7117fe437ebf1c272db104bcfc844918b2ca48cc235a4bf64d",
+  "replacements": [
+    {
+      "before": "MaxQueries = 16, MaxArchiveObjects = MaxJobs",
+      "after": "MaxQueries = 16, MaxAttempts = 3, MaxArchiveObjects = MaxJobs"
+    }
+  ],
+  "reason": "Consumer bounded trial: three durable effect attempts, no critical retry beyond limit; upstream profile otherwise unchanged."
+}

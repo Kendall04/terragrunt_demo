@@ -1,0 +1,189 @@
+{
+  "Status": "OFFLINE_SERVICE_PLAN_PASS_NOT_LIVE_RECOVERY",
+  "AtUtc": "2026-10-24T19:59:25.086417+00:00",
+  "BaseCommit": "e9e6c91e3156320895733b4143eba22c109eef67",
+  "RecoveryCi": {
+    "Suites": 6,
+    "Pass": 77,
+    "Skipped": 0,
+    "EffectiveLocalUid": 65534,
+    "Environment": "Existing WSL Ubuntu-24.04; no installs",
+    "Results": [
+      {
+        "Suite": "test_recovery.py",
+        "Status": "PASS",
+        "Tests": [
+          "test_recovery.BlueprintTests.test_authorization_override_integrates_with_review_create_cli_offline",
+          "test_recovery.BlueprintTests.test_azs_backend_and_bootstrap_are_bounded",
+          "test_recovery.BlueprintTests.test_backend_permissions_cannot_delete_state_or_touch_original_states",
+          "test_recovery.BlueprintTests.test_bad_trial_is_rejected",
+          "test_recovery.BlueprintTests.test_create_delete_review_does_not_authorize",
+          "test_recovery.BlueprintTests.test_duplicate_id_alias_across_state_blocks_refused",
+          "test_recovery.BlueprintTests.test_duplicate_ids_within_each_multi_resource_type_refused",
+          "test_recovery.BlueprintTests.test_effective_tag_normalization_preserves_all_host_controls",
+          "test_recovery.BlueprintTests.test_effective_volume_tags_accept_only_absent_null_or_empty_nested_tags",
+          "test_recovery.BlueprintTests.test_effective_volume_tags_reject_missing_wrong_extra_or_malformed_tags",
+          "test_recovery.BlueprintTests.test_effective_volume_tags_reject_nonempty_or_malformed_nested_tags",
+          "test_recovery.BlueprintTests.test_fixed_window",
+          "test_recovery.BlueprintTests.test_foreign_partial_retirement_state_refused",
+          "test_recovery.BlueprintTests.test_inventory_has_no_legacy_runtime",
+          "test_recovery.BlueprintTests.test_missing_second_host_refused_and_distinct_hosts_bound",
+          "test_recovery.BlueprintTests.test_prefix_security_and_no_old_secret_writes",
+          "test_recovery.BlueprintTests.test_publish_scope_is_exact_artifact_only",
+          "test_recovery.BlueprintTests.test_reject_public_unencrypted_and_widened_egress",
+          "test_recovery.BlueprintTests.test_reject_replacement_foreign_and_incomplete_plans",
+          "test_recovery.BlueprintTests.test_retirement_includes_companion_resources",
+          "test_recovery.BlueprintTests.test_source_target_privacy_and_disk_retirement",
+          "test_recovery.BundleTests.test_deterministic_bundle_and_tamper_rejection",
+          "test_recovery.BundleTests.test_traversal_archive_is_rejected",
+          "test_recovery.HostTests.test_connection_escapes_password_and_config_stays_public",
+          "test_recovery.HostTests.test_default_command_has_no_host_or_cloud_effects",
+          "test_recovery.HostTests.test_dependency_denial_is_never_readiness_polled",
+          "test_recovery.HostTests.test_full_fake_flow_is_only_contract_evidence",
+          "test_recovery.HostTests.test_host_requires_exact_operator_bound_identity",
+          "test_recovery.HostTests.test_missing_decrypt_marker_and_unexpected_post_marker_fail",
+          "test_recovery.HostTests.test_same_host_az_active_source_and_bad_order_refused"
+        ],
+        "Count": 30,
+        "Skipped": 0,
+        "Failures": 0,
+        "Errors": 0
+      },
+      {
+        "Suite": "test_cold_path.py",
+        "Status": "PASS",
+        "Tests": [
+          "test_cold_path.ColdPathTests.test_backup_stale_unverified_wrong_scope_or_unversioned",
+          "test_cold_path.ColdPathTests.test_cli_emits_only_an_offline_plan",
+          "test_cold_path.ColdPathTests.test_modes_one_target_total_clock_and_no_authority",
+          "test_cold_path.ColdPathTests.test_prepared_target_future_events_and_missing_end_to_end_checks_refuse",
+          "test_cold_path.ColdPathTests.test_unknown_fence_sql_stop_auth_failure_and_stale_evidence_refuse",
+          "test_cold_path.ColdPathTests.test_wrong_az_account_source_or_mode",
+          "test_cold_path.ColdPathTests.test_wrong_incarnation_versions_hash_or_request_refuse"
+        ],
+        "Count": 7,
+        "Skipped": 0,
+        "Failures": 0,
+        "Errors": 0
+      },
+      {
+        "Suite": "test_cold_execution.py",
+        "Status": "PASS",
+        "Tests": [
+          "test_cold_execution.ColdExecutionTests.test_native_adapter_exact_reads_and_unknown_results_fail_without_retry",
+          "test_cold_execution.ColdExecutionTests.test_restore_rechecks_fence_before_any_write_and_refuses_uncertainty",
+          "test_cold_execution.ColdExecutionTests.test_single_target_retirement_rejects_old_or_foreign_state"
+        ],
+        "Count": 3,
+        "Skipped": 0,
+        "Failures": 0,
+        "Errors": 0
+      },
+      {
+        "Suite": "test_host_entrypoints.py",
+        "Status": "PASS",
+        "Tests": [
+          "test_host_entrypoints.HostEntrypointTests.test_clean_source_quiesce_restore_main_preserves_private_paths_and_dotnet_manifest",
+          "test_host_entrypoints.HostEntrypointTests.test_existing_staging_never_repaired_or_reused_by_main",
+          "test_host_entrypoints.HostEntrypointTests.test_failed_backup_keeps_started_and_refuses_replay_before_more_secrets_or_ddl",
+          "test_host_entrypoints.HostEntrypointTests.test_wrong_identity_or_binary_hash_refuses_before_secrets_or_sql"
+        ],
+        "Count": 4,
+        "Skipped": 0,
+        "Failures": 0,
+        "Errors": 0
+      },
+      {
+        "Suite": "test_bootstrap.py",
+        "Status": "PASS",
+        "Tests": [
+          "test_bootstrap.BootstrapTests.test_candidate_metadata_required_for_tools_and_odbc_dependency",
+          "test_bootstrap.BootstrapTests.test_candidate_missing_or_wrong_repository_refuses_before_install",
+          "test_bootstrap.BootstrapTests.test_candidate_origin_rejects_lower_microsoft_decoy_and_ambiguity",
+          "test_bootstrap.BootstrapTests.test_candidate_table_requires_one_matching_package_header",
+          "test_bootstrap.BootstrapTests.test_cli_install_arguments_are_isolated_in_both_recipes",
+          "test_bootstrap.BootstrapTests.test_cli_precedes_secret_consumers_and_recovery_stops_on_install_failure",
+          "test_bootstrap.BootstrapTests.test_failure_categories_hide_raw_output_and_preserve_exit",
+          "test_bootstrap.BootstrapTests.test_main_has_one_setup_start_without_post_start_configuration_or_restart",
+          "test_bootstrap.BootstrapTests.test_normal_secret_consumers_keep_cli_contract",
+          "test_bootstrap.BootstrapTests.test_odbc_candidate_can_have_only_recognized_security_and_update_sources",
+          "test_bootstrap.BootstrapTests.test_odbc_candidate_official_jammy_metadata_passes",
+          "test_bootstrap.BootstrapTests.test_original_suppressed_cause_but_returned_apt_exit",
+          "test_bootstrap.BootstrapTests.test_platform_rejects_root_architecture_or_distribution_mismatch",
+          "test_bootstrap.BootstrapTests.test_pre_setup_requires_inactive_and_never_changes_service_state",
+          "test_bootstrap.BootstrapTests.test_public_metadata_permissions_and_secret_boundary_order",
+          "test_bootstrap.BootstrapTests.test_readiness_authorization_denial_does_not_poll_again",
+          "test_bootstrap.BootstrapTests.test_readiness_success_and_exhaustion_clear_values_preserve_last_code",
+          "test_bootstrap.BootstrapTests.test_realistic_candidate_and_installed_status_metadata_pass",
+          "test_bootstrap.BootstrapTests.test_recovery_secret_consumer_keeps_cli_contract",
+          "test_bootstrap.BootstrapTests.test_repository_unreadable_by_apt_is_a_separate_stage",
+          "test_bootstrap.BootstrapTests.test_secret_failure_never_classifies_value_and_clears_secrets",
+          "test_bootstrap.BootstrapTests.test_secret_read_exit_and_empty_result_are_distinct_no_value_logged",
+          "test_bootstrap.BootstrapTests.test_setup_keeps_consent_and_password_in_environment_not_arguments",
+          "test_bootstrap.BootstrapTests.test_setup_supplies_initial_memory_and_loopback_before_service_start",
+          "test_bootstrap.BootstrapTests.test_source_is_inert",
+          "test_bootstrap.BootstrapTests.test_success_hides_command_output",
+          "test_bootstrap.BootstrapTests.test_unexpected_trap_preserves_code_without_command_text"
+        ],
+        "Count": 27,
+        "Skipped": 0,
+        "Failures": 0,
+        "Errors": 0
+      },
+      {
+        "Suite": "test_service_plan.py",
+        "Status": "PASS",
+        "Tests": [
+          "test_service_plan.ServicePlanTests.test_cli_offline_does_not_enter_terraform_renderer_or_add_secret_values",
+          "test_service_plan.ServicePlanTests.test_foreign_endpoint_vpc_instance_listener_and_ingress_refuse",
+          "test_service_plan.ServicePlanTests.test_foreign_routing_or_public_host_and_invalid_gateway_payload_refuse",
+          "test_service_plan.ServicePlanTests.test_real_gateway_validator_and_renderer_arguments_without_authority",
+          "test_service_plan.ServicePlanTests.test_rollback_schema_image_secret_or_key_mismatch_refuse",
+          "test_service_plan.ServicePlanTests.test_unfenced_wrong_source_stale_and_prepared_receipts_refuse"
+        ],
+        "Count": 6,
+        "Skipped": 0,
+        "Failures": 0,
+        "Errors": 0
+      },
+      {
+        "Status": "PASS",
+        "Suites": 6,
+        "Tests": 77,
+        "CloudExecuted": false,
+        "NativeSqlExecuted": false
+      }
+    ]
+  },
+  "Cli": {
+    "Status": "SERVICE_CUTOVER_DRY_PLAN",
+    "SyntheticInput": true,
+    "OutputSha256": "d5af3594353c923b1b4b64dd3f27695b3fedb25309dca76686a64ac2c48c040e",
+    "AllowsActivation": false,
+    "EvidenceAuthenticated": false
+  },
+  "Renderer": {
+    "CanonicalGitBlobBashSyntax": "PASS",
+    "Materialization": "NOT_EXECUTED_JQ_UNAVAILABLE",
+    "WindowsMountedCheckout": "CRLF; use qualified Linux LF checkout/export",
+    "NativeEcsExecuted": false
+  },
+  "EvidenceFiles": {
+    "service-cutover-ci.jsonl": "127280f7f12fecf86d42c47244169211dcb84a19adefac4cf602d59cb32fdedc",
+    "service-cutover-ci.log": "e0bdbfef98c7e8896e373e130e2043fa85772b2af37f63d1a896ec88c253625e",
+    "service-cutover-dry-plan.json": "d5af3594353c923b1b4b64dd3f27695b3fedb25309dca76686a64ac2c48c040e"
+  },
+  "SourceSha256Lf": {
+    "operations/sql-backup/recovery/prepare.py": "5e87b8915f7da9221ad094126402456b1be83aa15f6de38d70a547b995501a55",
+    "operations/sql-backup/recovery/test_service_plan.py": "96c80e30025f33b94e84b62c0c35d50d82a51e2ba09cb921c96ccf0b6eacb72e",
+    "operations/sql-backup/recovery/fixtures/service-cutover.synthetic.json": "7c770e4fa105fbb493ab3ed4eae3d3d30c6d47bdcb0c17dcda8ba761c65ab177",
+    "scripts/tests/run_recovery_ci.py": "44d1d5e7e62eaf7accc3641d83e6b160b979881612f70196b5703037586e388c",
+    "operations/sql-backup/recovery/SERVICE-CUTOVER.md": "33387e89bef12138a9a34241edc1067ac13e520d00dbeb7f93031e92206d90fa",
+    "operations/sql-backup/recovery/RUNBOOK.md": "c71cd2fec8eb4195de5d7709e27bd75e6d775a7dd3a4ce4622788f523225634d",
+    "operations/integrations/SSM-DIAGNOSTIC-TRIAL-DESIGN.md": "4f8c1b13d41e28bc08674697462bf00c503b09e20e632eec12865cf20096fc11"
+  },
+  "AwsExecuted": false,
+  "NativeSqlExecuted": false,
+  "RemoteCiExecuted": false,
+  "SsmDesignApprovedOrExecuted": false
+}

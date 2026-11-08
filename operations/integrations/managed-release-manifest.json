@@ -1,0 +1,331 @@
+{
+  "schemaVersion": 1,
+  "status": "LOCAL_AMENDMENT_READY_FOR_GROUPED_CONSENT_NOT_INSTALLED",
+  "createdUtc": "2026-10-23T20:43:22.479347+00:00",
+  "codeSourceCommit": "8f7eba925f4c7117c10855cc8a409692377c6768",
+  "sourceFilesSha256": {
+    "operations/integrations/Ecs.Backup.Managed.Tests/Ecs.Backup.Managed.Tests.csproj": "c4c6379be7d7393417b34561a1a78be256bea5e3e137c12bcc40c52702f8aad2",
+    "operations/integrations/Ecs.Backup.Managed.Tests/Program.cs": "868b09462fb7dbeb1f4f53d8de4b3715cec4501fb57a9dd052d7dd52bd185fd4",
+    "operations/integrations/Ecs.Backup.Managed.Tests/packages.lock.json": "029313a33157eabc1684899d8aadcee81a31e2d0eec5c25767a72e526b0402bb",
+    "operations/integrations/Ecs.Backup.Managed/BackupComposition.cs": "ec1fef379425236f4e49c06e32503857545634237c5be412267a45b23e32986f",
+    "operations/integrations/Ecs.Backup.Managed/BackupDispatch.cs": "0a44e8b622524f8fe3707929b10226e7ef3fd854bdaa01f8e4ba99292290f39c",
+    "operations/integrations/Ecs.Backup.Managed/BackupSettings.cs": "3cc58a4a8f1941c1d1492bb4c4f1199d4856254eb4b1e3ae2e13442010555ab8",
+    "operations/integrations/Ecs.Backup.Managed/Ecs.Backup.Managed.csproj": "026df8d70f66f0f419e039502012c1336a07ace5f4898e8a4fa4235f258b84b8",
+    "operations/integrations/Ecs.Backup.Managed/Functions.cs": "81f757981545616835d2abcca43dc277b33563eff501b45956031fa69f4c5ca0",
+    "operations/integrations/Ecs.Backup.Managed/SnsNoticeAdapter.cs": "42dcf3eec4f5ffb89a04fc361fcae87397e18c5e6859f0aed51af52d47951d06",
+    "operations/integrations/Ecs.Backup.Managed/packages.lock.json": "8fbe618ea2e8f6c9ba9efbeb70ad2b0c68810803d4ca08f752d835e27d896bcb",
+    "operations/integrations/Ecs.Backup.Sentinel/ObserverNormalizer.cs": "28e000c3e13357ea4c3eec24d88f003fb3824665630284900f0d728a6af55801",
+    "operations/integrations/Ecs.Backup.Sentinel/packages.lock.json": "17f4e1409ad559b7e6d84aaa8924a7b55b991840376d7e95be5c22f2a75452db",
+    "operations/integrations/OPERATIONAL-SCOPE-PROPOSAL.json": "47e3ace33e6de025d6464d43f93099d681b1f7c52c9ff1913bd4251923df78a4",
+    "operations/integrations/OPERATIONAL-TRIAL.md": "1ca3ff1efb75bda4f8f5bffac936789ed586ab9da4136706be33077e90ed8131",
+    "operations/integrations/README.md": "0788a5b29b331c50ed1e7b985a70f0ae70292040d229b2747ae45f7dab02dea2",
+    "operations/integrations/generate_fixtures.py": "6767cf81de2f03332633162a506402674ddcd54d96cac2bcc9d737c6e3e17d04",
+    "operations/integrations/managed-source-extension.json": "c3d2cada50a000df4def856b071aadc9b43dac83fd247f01f7eb90aad1901210",
+    "operations/integrations/managed_trial_iac.py": "70c3fa3419cfd01820fe2084a022fd2640ca57c48049916bd52e232803116f4c",
+    "operations/integrations/package_managed.py": "faec91a2a877890711727b90eab27d2500d63f76436dc6332f5c187b6e1c6b90",
+    "operations/integrations/prepare_managed_source.py": "6d2200d8b1ef646b98515bd81b4f1cce37795371610e13811b6940fa25ffc429",
+    "operations/integrations/test_managed_trial_iac.py": "b8753861516ff19bcc465b0251b149b2cec47529f9f30dd133ab2a3c147807d8",
+    "portfolio/ACCEPTANCE.md": "36f0e8f12b8df85e78358c8fac8ad07282f3fc152178e041ca1d4e25bb1566e0"
+  },
+  "sourceSnapshotSha256": "0f1c6b72ba8324c87db415c71235f39103cbbec8c301a52c1cc20e8312b060e5",
+  "upstream": {
+    "origin": "https://github.com/Kendall04/reliability-sentinel.git",
+    "commit": "0e8fc55333ddde3b9816885915310a7e69f3de45",
+    "originalCheckoutUnmodified": true,
+    "explicitExtensionSha256": "c3d2cada50a000df4def856b071aadc9b43dac83fd247f01f7eb90aad1901210"
+  },
+  "artifact": {
+    "localPathRelativeToTask3": "sentinel-managed-qualification/ecs-managed-8f7eba9.zip",
+    "schemaVersion": 1,
+    "sourceCommit": "8f7eba925f4c7117c10855cc8a409692377c6768",
+    "upstreamCommit": "0e8fc55333ddde3b9816885915310a7e69f3de45",
+    "sourceExtensionSha256": "c3d2cada50a000df4def856b071aadc9b43dac83fd247f01f7eb90aad1901210",
+    "managedLockSha256": "8fbe618ea2e8f6c9ba9efbeb70ad2b0c68810803d4ca08f752d835e27d896bcb",
+    "entries": {
+      "Amazon.Lambda.Core.dll": {
+        "sha256": "60f1ffa088a46e94b3f4d75d8f57abd3c9bd27c1c489ca981eacf86e90fa9b5b",
+        "bytes": 35496
+      },
+      "Amazon.Lambda.Serialization.SystemTextJson.dll": {
+        "sha256": "0c3fb6e5916129c5fba9ff6d11a1917f73d40c063a36f834fee182c001bc02ee",
+        "bytes": 28328
+      },
+      "Amazon.Lambda.SQSEvents.dll": {
+        "sha256": "473ce07e74c792c7a969cb5537987be354e06a162c44e8f71f6d1e2fbf776389",
+        "bytes": 21160
+      },
+      "AWSSDK.Core.dll": {
+        "sha256": "53d1ffe32d7b3151e652e053349a84fe893c0dae691f4bc9a2538eff77446ac8",
+        "bytes": 1065128
+      },
+      "AWSSDK.DynamoDBv2.dll": {
+        "sha256": "f833be5f6d0deee46c5e8442582de83ee522d56992acce84ee977c0cd683e48c",
+        "bytes": 1121448
+      },
+      "AWSSDK.S3.dll": {
+        "sha256": "df1db9b6714dc145eef264c4cc0965632808e40ceaea824cf48eac108ba287d6",
+        "bytes": 1185960
+      },
+      "AWSSDK.SimpleNotificationService.dll": {
+        "sha256": "379748a8a34f752fe02754ff5145a3f3d79079cda59eca59010a505afe685db6",
+        "bytes": 225448
+      },
+      "Ecs.Backup.Managed.deps.json": {
+        "sha256": "ea3ca1346a2fed79b7e862a84eee833d766a3890d2ef64adfd6e11684357eee1",
+        "bytes": 10085
+      },
+      "Ecs.Backup.Managed.dll": {
+        "sha256": "e12829e1384a233ab4aa7112a85ca3295a92d59498dbc547f0f966f3e8a0ba7c",
+        "bytes": 43008
+      },
+      "Ecs.Backup.Managed.runtimeconfig.json": {
+        "sha256": "c230a317a54dd960bcbeb5f347f52e18dc665a26f7efda2159fced9a5ac7e097",
+        "bytes": 342
+      },
+      "Ecs.Backup.Sentinel.dll": {
+        "sha256": "1144908d4028db22eae89f808da475797d01fc287574ae4fc388b0bd3bd85ce3",
+        "bytes": 24576
+      },
+      "Sentinel.Accounting.Aws.dll": {
+        "sha256": "1132e24bf0093706f02abb749d424ecc14c42eb020f9452e3e2cb1a741cf5214",
+        "bytes": 27136
+      },
+      "Sentinel.Application.dll": {
+        "sha256": "981b09d9eb1239a93387f3395c63ab7f63de3a0ce823cf48644369eccc430ab9",
+        "bytes": 68608
+      },
+      "Sentinel.Core.dll": {
+        "sha256": "7462f21374dd4be3689d20591644f9ef19dda3f864562ca3f2e7d486a75ad5c6",
+        "bytes": 98816
+      },
+      "Sentinel.Ingestion.Aws.dll": {
+        "sha256": "25be2e89d23a61f0d910a97d6f5a748c888f5a4004e5f066582382caf85577b8",
+        "bytes": 24576
+      },
+      "Sentinel.Ingestion.dll": {
+        "sha256": "7da57ca71dbd601e7986a8fe4eb04ba145b0ab1944ce6d8bed3d36167c0b0468",
+        "bytes": 30208
+      },
+      "Sentinel.Observability.dll": {
+        "sha256": "0c3549254ffe71502bffefb8bd20a3f7f04489495a8de155caa421751f0eed57",
+        "bytes": 59392
+      },
+      "Sentinel.Operations.dll": {
+        "sha256": "acde44764a2066079afb3a14489091bf88296765540cfb89837b08ebbc203eba",
+        "bytes": 80896
+      },
+      "Sentinel.Persistence.DynamoDb.dll": {
+        "sha256": "06fe480bada193c458050ccf9ac3f739ec15a60e0033ce062fa5b9a82ba1d6a5",
+        "bytes": 71680
+      },
+      "Sentinel.Persistence.S3.dll": {
+        "sha256": "4d97ccb5c9994012185cf0aba1caea7df3a4870b2633839fa325f4f1b56664e2",
+        "bytes": 19456
+      },
+      "Sentinel.Worker.Lambda.dll": {
+        "sha256": "ad2b02403daf03716deda8854c6261032fce5ca8dcb91ffdf076ff85c81edcdf",
+        "bytes": 40960
+      }
+    },
+    "runtime": "framework-dependent .NET10; no native Lambda execution claimed",
+    "handlerAssembly": "Ecs.Backup.Managed",
+    "awsCalls": 0,
+    "secretsScan": "publish allowlist + credential-shaped patterns, no findings; not a universal secret detector",
+    "zipSha256": "2e0035796d753cd8f72304fa7946a6da9ca99549516984cd25a1933c0f557c99",
+    "zipBytes": 1479877,
+    "zipMembers": 22,
+    "cloudObjectKey": "packages/2e0035796d753cd8f72304fa7946a6da9ca99549516984cd25a1933c0f557c99.zip",
+    "uploaded": false,
+    "deterministicInMemoryRepackVerified": true
+  },
+  "inventory": {
+    "mainResources": 16,
+    "bootstrapIamResources": 3,
+    "cloudFormationStackObjects": 2,
+    "runId": "ecs-sentinel-r20261023b1",
+    "account": "341936017254",
+    "region": "us-east-1"
+  },
+  "principals": {
+    "normalOperator": "arn:aws:iam::341936017254:role/TerragruntDemoDevOperator",
+    "bootstrapAndReversal": "cnp-cert-dev / cnp-cert-admin; current identity/effectiveness must be verified before any admitted change",
+    "temporaryOperatorInlinePolicyName": "ecs-sentinel-r20261023b1",
+    "changesAffectAllSessionsWhileInstalled": true
+  },
+  "generatedReviewFiles": {
+    "bootstrap-admin-scope.json": {
+      "bytes": 2175,
+      "sha256": "8516f01285e84af0e322c9759a00a10cc5dc76c95b11d264b50bdd9b1a209b05"
+    },
+    "bootstrap-template.json": {
+      "bytes": 18190,
+      "sha256": "63f7a4f6f527d919525753b7b5e446f02d4b5d00047facd0f5097f2613000c27"
+    },
+    "operator-temporary-policy.json": {
+      "bytes": 6320,
+      "sha256": "f74aa44382afccba19fe8437750597b84f42cd60cd95a72ab5a354f38b3efd2d"
+    },
+    "required-decisions.json": {
+      "bytes": 603,
+      "sha256": "3e489c83f45d5b9854a4266fd5d32f308e836470c6e88571b9a343cf4f8789e6"
+    },
+    "runtime-policies.json": {
+      "bytes": 2679,
+      "sha256": "47285cbdb654fba81ec1fcadf44b1402a2d6c58b6efff638582faf7cf5912a46"
+    },
+    "scope-summary.json": {
+      "bytes": 1209,
+      "sha256": "79235901a38db937d5534a03505bb8fe5d2d8f2c909608f81ceb6ad2708fb45e"
+    },
+    "trial-template.json": {
+      "bytes": 33584,
+      "sha256": "f295d5f26534f61292bfc64aa8009c94977ca524b564f3ff0719f44ccd3546b3"
+    }
+  },
+  "recommendedOnlyNotInstalled": {
+    "SenderLabel": "ECS Backup Trial",
+    "NotificationMode": "EscalationAndRecovery",
+    "Owner": "Kendall04",
+    "EvidenceSeconds": 300,
+    "BudgetSeconds": 600,
+    "CheckSeconds": 60,
+    "HoldSeconds": 0,
+    "DedupSeconds": 86400,
+    "SignalAgeSeconds": 3600,
+    "AuditSeconds": 86400,
+    "EffectSeconds": 86400,
+    "QueueRetentionSeconds": 3600,
+    "DlqRetentionSeconds": 86400,
+    "LogRetentionDays": 1,
+    "NotificationEmail": null,
+    "maximumWindowHours": 24,
+    "targetFinishHours": 2,
+    "plannedNoticeIntents": 2,
+    "maximumPublishAttemptsPerIntent": 3,
+    "cloudPreservation": "Export/hash locally then delete admitted synthetic cloud state/archives; original backup2+2 days unchanged"
+  },
+  "cost": {
+    "newAllowanceProposedUsd": 1,
+    "modeledEnvelopeUsd": 0.147,
+    "oldBudgetReopened": false,
+    "pastActualSpendKnown": false,
+    "automaticBillingCap": false,
+    "sources": [
+      "https://aws.amazon.com/lambda/pricing/",
+      "https://aws.amazon.com/dynamodb/pricing/",
+      "https://aws.amazon.com/sns/faqs/",
+      "https://aws.amazon.com/cloudwatch/pricing/",
+      "https://aws.amazon.com/s3/pricing/",
+      "https://aws.amazon.com/sqs/pricing/",
+      "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AWSQueueService/current/us-east-1/index.json"
+    ],
+    "sqsDirectPricing": {
+      "pricingPage": "https://aws.amazon.com/sqs/pricing/",
+      "officialRateSource": "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AWSQueueService/current/us-east-1/index.json",
+      "publicationDate": "2026-09-11T12:46:07Z",
+      "offerVersion": "20260911124607",
+      "sku": "8RN6B8U4MERHRXP3",
+      "unit": "Requests",
+      "usdPerRequest": "0.0000004000",
+      "plannedRequests": 100000,
+      "costUsd": "0.0400000000",
+      "freeTierAssumed": false,
+      "messageGroupIdProposed": false,
+      "rawOfferSha256": "787061c859b2ed47c2249b0b54516230b9d245b76ab41d87ce11f449a27813dc"
+    }
+  },
+  "qualification": {
+    "managedSdkDoubleTests": 56,
+    "existingMemoryFakeRegression": 61,
+    "offlineIacTests": 13,
+    "historicalFixtureDefaultsByteIdentical": 13,
+    "buildWarnings": 0,
+    "buildErrors": 0,
+    "proofsSha256": {
+      "managed-56-final.json": "3a256b909403f9314820ebca8ba3d3cb58fd320208313ba8fc9c2f1e6042ebca",
+      "build.log": "7a9dc14feff3f65a123fc06719962ca19fc34dacfc6f505a1f360c7f637e1426",
+      "publish.log": "0dfc9b23fd05c29af2795864a9b0c387d669938b7884ae6af61ecd3badaa5c84",
+      "restore-locked.log": "4b7897b1070f2e237e814b7fbdedc9e1c9fa9b96b044ce0ae009a0d7a201d70f",
+      "iac-13-final.log": "11a1420b047dc0e60503e3a5d5dd2237ebfa28b0a28e68a8ad76ffe1afe31ecb",
+      "evidence-integrity-addendum.json": "3eb41d802f733639389680f95a24b62808a3821c07d2a6cde497fd365e68397a",
+      "final-regression/qualification.json": "08be56262b0cadf9a3aa2880f765cee4585e278298bcdf842136473173fb994a",
+      "final-regression/build.log": "3dccfa04ed9b537ae38a0dbce2198bbc6c31f1faa3cdba485d75235a8fdd0a6e",
+      "final-regression/tests.log": "96f8f33f1942ea934e4bcf566f6a2d82b7d0beb0aa012ae445f2674fc2fdda1c"
+    },
+    "secretPatternFindings": 0,
+    "emailSent": false,
+    "snsAcceptanceNotInboxDelivery": true,
+    "noNatWorkerConnected": true,
+    "zipUploaded": false,
+    "awsAccountApiCalls": 0,
+    "installedTimers": false,
+    "largeHistoricalArchivesDuplicated": false
+  },
+  "iamDocumentSizes": {
+    "cfnRoleInlineBytes": 6197,
+    "operatorNewInlineBytes": 4572,
+    "runtimeBoundaryBytes": {
+      "ingest": 811,
+      "dispatch": 962
+    },
+    "existingOperatorInlineTotalCapacity": "Must be checked on admitted execution; existing policies are not replaced to make space."
+  },
+  "integrityDisclosure": {
+    "earlierLocalBuildLogOverwritten": true,
+    "historicalQualificationRestoredToExactPinnedHash": true,
+    "historicalTestsLogStillExact": true,
+    "oldManifestAndClosureUnmodified": true,
+    "awsReceiptsAndLargeArtifactsUntouched": true,
+    "details": "task-3/sentinel-managed-qualification/evidence-integrity-addendum.json"
+  },
+  "remainingExternal": [
+    "Grouped consent for exact Part4 amendment and archived nondefault v1 substitution; current AWS deny remains installed until approved changes. No alternate principal.",
+    "owner email address/consent and SNS sender-label acceptance",
+    "accept/override explicit recommended trial parameters, new USD1 and temporary create/test/delete grants",
+    "current identity/effective authority, actual immutable upload version, native AWS change set/runtime/retirement qualification",
+    "owner confirmation of subscription and separate inbox receipt evidence"
+  ],
+  "notClaimed": [
+    "AWS DynamoDB/S3 persistence qualification",
+    "native Lambda acceptance",
+    "inbox delivery or exactly-once SNS",
+    "independent periodic remote backup checking",
+    "SQL/ECS recovery/RPO/RTO",
+    "full hosted CI or project completion"
+  ],
+  "sourceHashScope": "UTF8-LF Git blobs at codeSourceCommit; delivery-only docs/review metadata are a later commit, not a code rebuild.",
+  "generatedTemplateValidation": "Earlier CloudFormation ValidateTemplate passed both frozen templates; Part4 amendment has focused IAM custom-policy simulation only, not native apply/delete or complete future authority proof.",
+  "readOnlyPreflight": {
+    "receipt": "operations/integrations/readonly-preflight.json",
+    "sha256": "b88e0c51ffa16215b790a63f87413509aa58cab55d7ba959f7e6fc1430d07755",
+    "awsReadOnlyCalls": 45,
+    "mutations": 0,
+    "readyForConsent": false,
+    "blocker": {
+      "hypotheticalAction": "s3:DeleteBucket",
+      "target": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254",
+      "principal": "arn:aws:iam::341936017254:role/TerragruntDemoDevOperator",
+      "decision": "explicitDeny",
+      "sourcePolicy": "TerragruntDemoDevOperatorPart4",
+      "actualDeleteRequested": false,
+      "attemptedOtherPrincipal": false,
+      "effect": "Current main template retains bucket; proposed native operator deletion cannot complete. Temporary Allow does not override this deny. Teardown plan must be corrected/reviewed before one execution consent."
+    }
+  },
+  "policyAmendment": {
+    "manifest": "operations/integrations/trial-review/part4-amendment/manifest.json",
+    "sha256": "1d991aafd6353093fa327405be5c23f94b58641f90aae946fcc31ccdd6595b31",
+    "reviewContentSha256": "0cbb8c23c8ad035e9d269df473212a7efc7c01f5978b89ca829cdfa011b6e408",
+    "readyForGroupedConsent": true,
+    "installed": false,
+    "versionCapacityConsequence": {
+      "used": 5,
+      "limit": 5,
+      "preservedVersion": "v1",
+      "originalDefaultNeverDeleted": "v5",
+      "requiredAdditionalConsent": "Temporarily delete archived nondefault v1; restore its exact content at closure under a new VersionId/CreateDate. Original metadata cannot be restored exactly.",
+      "effectivePolicyRollback": "Select preserved original v5; remove trial version and restore archived v1 content as nondefault; v2-v4 unchanged."
+    },
+    "note": "Original readonly-preflight and its NO_GO result are historical and unchanged. This proposal can resolve it only after explicit grouped consent and actual installation."
+  }
+}

@@ -1,0 +1,65 @@
+# SQL cohost opt-in. Metadata only; never trace or echo provider/SQL output.
+(
+set -euo pipefail
+umask 077
+/usr/bin/python3 -I - <<'SQL_BACKUP_COHOST_BOOTSTRAP'
+import base64,hashlib,json,os,stat,subprocess,sys,tarfile
+from pathlib import Path,PurePosixPath
+v=json.loads(base64.b64decode('${cohost_config}',validate=True))
+a=v['artifact'];sha=a['Sha256']
+def need(ok,code):
+ if not ok:raise ValueError(code)
+def run(args):
+ env={'PATH':'/usr/sbin:/usr/bin:/sbin:/bin','HOME':'/nonexistent','AWS_CONFIG_FILE':'/dev/null','AWS_SHARED_CREDENTIALS_FILE':'/dev/null','AWS_EC2_METADATA_V1_DISABLED':'true','AWS_MAX_ATTEMPTS':'1','AWS_PAGER':''}
+ p=subprocess.run(args,capture_output=True,env=env,timeout=120)
+ need(p.returncode==0,'COHOST_BOOTSTRAP_PORT_FAILED')
+ return p.stdout
+try:
+ need(os.geteuid()==0,'ROOT_REQUIRED')
+ need(len(sha)==64 and all(x in '0123456789abcdef' for x in sha),'EXACT_PACKAGE_SHA_REQUIRED')
+ identity=json.loads(run(['/usr/bin/aws','sts','get-caller-identity','--region','us-east-1','--output','json']))
+ need(identity.get('Account')=='341936017254' and identity.get('Arn','').startswith('arn:aws:sts::341936017254:assumed-role/'+v['backup']['ExpectedEc2RoleName']+'/'),'SQL_ROLE_REQUIRED')
+ root=Path('/var/lib/terragrunt-demo/cohost-bootstrap')/sha
+ need(not any(x.is_symlink() for x in (root,*root.parents)),'SAFE_BOOTSTRAP_ROOT_REQUIRED')
+ root.mkdir(parents=True,mode=0o700,exist_ok=True);need(root.stat().st_uid==0 and stat.S_IMODE(root.stat().st_mode)==0o700,'PRIVATE_BOOTSTRAP_ROOT_REQUIRED')
+ archive=root/'package.tar'
+ if not archive.exists():
+  metadata=json.loads(run(['/usr/bin/aws','s3api','get-object','--region','us-east-1','--bucket',a['Bucket'],'--key',a['Key'],'--version-id',a['VersionId'],'--expected-bucket-owner','341936017254',str(archive)]))
+  need(metadata.get('VersionId')==a['VersionId'] and metadata.get('ServerSideEncryption')=='aws:kms' and metadata.get('SSEKMSKeyId')==v['backup']['BackupKeyArn'] and metadata.get('BucketKeyEnabled',False) is False,'EXACT_ARTIFACT_ENCRYPTION_REQUIRED')
+ need(archive.is_file() and not archive.is_symlink() and archive.stat().st_size<=536870912,'BOUNDED_PACKAGE_REQUIRED')
+ h=hashlib.sha256()
+ with archive.open('rb') as f:
+  for block in iter(lambda:f.read(1048576),b''):h.update(block)
+ need(h.hexdigest()==sha,'PACKAGE_SHA_MISMATCH')
+ unpack=root/'unpacked';unpack.mkdir(mode=0o700,exist_ok=True)
+ with tarfile.open(archive,'r:') as t:
+  entries=t.getmembers();names=[x.name for x in entries]
+  need(len(entries)<=2000 and len(set(names))==len(names) and sum(x.size for x in entries)<=536870912,'PACKAGE_BOUNDS')
+  need(all(x.isfile() and not PurePosixPath(x.name).is_absolute() and '..' not in PurePosixPath(x.name).parts and PurePosixPath(x.name).as_posix()==x.name and x.mode in (0o644,0o755) for x in entries),'SAFE_PACKAGE_MEMBERS_REQUIRED')
+  for item in entries:
+   p=unpack/item.name;need(not any(x.is_symlink() for x in (p,*p.parents)),'SYMLINK_DENIED');p.parent.mkdir(mode=0o755,parents=True,exist_ok=True)
+   raw=t.extractfile(item).read()
+   if p.exists():need(p.is_file() and p.read_bytes()==raw and stat.S_IMODE(p.stat().st_mode)==item.mode,'UNPACKED_CONTENT_DRIFT')
+   else:
+    fd=os.open(p,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,item.mode)
+    with os.fdopen(fd,'wb') as f:f.write(raw)
+    p.chmod(item.mode)
+ sys.path.insert(0,str(unpack));import package,cohost
+ for key in ['backup','sentinel']:
+  p=root/(key+'.json');raw=(json.dumps(v[key],sort_keys=True,separators=(',',':'))+'\n').encode()
+  if p.exists():need(not p.is_symlink() and p.read_bytes()==raw,'BOOTSTRAP_CONFIG_DRIFT')
+  else:
+   fd=os.open(p,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o600)
+   with os.fdopen(fd,'wb') as f:f.write(raw)
+ result=package.install(archive,sha,root/'backup.json',Path('/'),'mssql',True,sha,root/'sentinel.json')
+ cohost.verify()
+ # Observer needs no SQL credentials; producer has a separate admitted handoff gate.
+ if v['enable_after_native_gates']:
+  cohost.activate(apply=True,confirmation=sha,component='observer')
+ if v.get('enable_producer_after_native_gates',False):
+  cohost.activate(apply=True,confirmation=sha,component='producer')
+ print(json.dumps({'Status':'COHOST_BOOTSTRAP_COMPLETE','ObserverRequested':v['enable_after_native_gates'],'ProducerRequested':v.get('enable_producer_after_native_gates',False),'NativeTimerAcceptance':False}))
+except Exception:
+ print('{"Status":"REFUSED","Code":"COHOST_BOOTSTRAP_FAILED_REQUIRES_REVIEW"}');sys.exit(1)
+SQL_BACKUP_COHOST_BOOTSTRAP
+)

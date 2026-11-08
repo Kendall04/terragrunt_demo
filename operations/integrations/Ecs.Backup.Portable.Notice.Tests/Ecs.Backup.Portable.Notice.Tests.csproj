@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+ <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><TreatWarningsAsErrors>true</TreatWarningsAsErrors></PropertyGroup>
+ <ItemGroup><ProjectReference Include="$(PortableSentinelSourceRoot)/src/Sentinel.Portable/Sentinel.Portable.csproj" />
+ <Compile Include="$(PortableNoticeContractRoot)/IncidentNoticeContract.cs" Link="Upstream/IncidentNoticeContract.cs" />
+ <Compile Include="../Ecs.Backup.Portable.Notice/ReadableNotice.cs" Link="ReadableNotice.cs" /></ItemGroup>
+ <Target Name="RequireSourceContract" BeforeTargets="PrepareForBuild"><Error Condition="!Exists('$(PortableNoticeContractRoot)/receipt.json')" Text="Extract exact upstream source contract first; this test does not execute an SDK notification." /></Target>
+</Project>

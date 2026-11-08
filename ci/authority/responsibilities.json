@@ -1,0 +1,73 @@
+{
+  "classification": "TARGET_REQUIREMENT",
+  "spec_revision": "a8607a3ae01e48f254246e53a6918c355e671e7e",
+  "planning_revision": "acbe54481c8c5c86f6cb6d4b5826b07aa64713eb",
+  "responsibilities": [
+    {
+      "id": "infrastructure-planning",
+      "authorized_outcome": "Read environment metadata/state and produce plans",
+      "excluded": "No mutations, secret values, publication or apply acquisition",
+      "necessity": "TARGET_REQUIRED"
+    },
+    {
+      "id": "ordinary-infrastructure-lifecycle",
+      "authorized_outcome": "Reconcile approved environment skeletons",
+      "excluded": "No security administration, broader privileged compute or unrelated environment",
+      "necessity": "TARGET_REQUIRED"
+    },
+    {
+      "id": "security-administration",
+      "authorized_outcome": "Install protected security/bootstrap controls",
+      "excluded": "Separately held human authority; never acquired by ordinary jobs",
+      "necessity": "TARGET_REQUIRED"
+    },
+    {
+      "id": "release-build-publication",
+      "authorized_outcome": "Build and publish exact approved release identity",
+      "excluded": "No activation or deployment receipt fabrication",
+      "necessity": "TARGET_REQUIRED"
+    },
+    {
+      "id": "application-deployment",
+      "authorized_outcome": "Deploy eligible content in approved runtime contract",
+      "excluded": "No arbitrary runtime or contract redefinition",
+      "necessity": "TARGET_REQUIRED"
+    },
+    {
+      "id": "production-promotion",
+      "authorized_outcome": "Promote same qualified digest with dev success",
+      "excluded": "No rebuild, dev control or evidence manufacture",
+      "necessity": "TARGET_REQUIRED"
+    },
+    {
+      "id": "manifest-history-rollback",
+      "authorized_outcome": "Redeploy currently eligible historical release",
+      "excluded": "No history-only eligibility exemption",
+      "necessity": "TARGET_REQUIRED"
+    },
+    {
+      "id": "emergency-color-flip",
+      "authorized_outcome": "Restore enrolled existing deployed content",
+      "excluded": "No new revision, role replacement or publication",
+      "necessity": "TARGET_REQUIRED"
+    },
+    {
+      "id": "application-runtime",
+      "authorized_outcome": "DB access and KMS Encrypt/Decrypt",
+      "excluded": "No control-plane administration",
+      "necessity": "TARGET_REQUIRED"
+    },
+    {
+      "id": "ecs-execution",
+      "authorized_outcome": "Image pull, logs and exact DB secret bootstrap",
+      "excluded": "Not usable as application task role",
+      "necessity": "TARGET_REQUIRED"
+    },
+    {
+      "id": "bounded-cleanup-recovery",
+      "authorized_outcome": "Owned inactive capacity and per-AZ NAT repair",
+      "excluded": "No arbitrary content or cross-environment control",
+      "necessity": "TARGET_REQUIRED"
+    }
+  ]
+}

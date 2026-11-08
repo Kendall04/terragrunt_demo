@@ -1,0 +1,463 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "E1 WP3A protected qualification contracts",
+  "$defs": {
+    "checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dotnet_restore",
+        "dotnet_build",
+        "dotnet_test",
+        "image_build",
+        "image_publish",
+        "probe_capability",
+        "probe_no_server"
+      ],
+      "properties": {
+        "dotnet_restore": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "SKIPPED",
+            "NOT_RUN",
+            "UNKNOWN"
+          ]
+        },
+        "dotnet_build": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "SKIPPED",
+            "NOT_RUN",
+            "UNKNOWN"
+          ]
+        },
+        "dotnet_test": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "SKIPPED",
+            "NOT_RUN",
+            "UNKNOWN"
+          ]
+        },
+        "image_build": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "SKIPPED",
+            "NOT_RUN",
+            "UNKNOWN"
+          ]
+        },
+        "image_publish": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "SKIPPED",
+            "NOT_RUN",
+            "UNKNOWN"
+          ]
+        },
+        "probe_capability": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "SKIPPED",
+            "NOT_RUN",
+            "UNKNOWN"
+          ]
+        },
+        "probe_no_server": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "SKIPPED",
+            "NOT_RUN",
+            "UNKNOWN"
+          ]
+        }
+      }
+    },
+    "manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bucket",
+        "key",
+        "version_id",
+        "sha256"
+      ],
+      "properties": {
+        "bucket": {
+          "type": "string",
+          "pattern": "demo-release-artifacts-[0-9]{12}",
+          "maxLength": 1024
+        },
+        "key": {
+          "type": "string",
+          "pattern": "releases/demo-api/by-digest/sha256-[0-9a-f]{64}\\.json",
+          "maxLength": 1024
+        },
+        "version_id": {
+          "type": "string",
+          "pattern": "(?![Nn][Uu][Ll][Ll]$|[Ll][Aa][Tt][Ee][Ss][Tt]$)[A-Za-z0-9._+/=-]{1,1024}",
+          "maxLength": 1024
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "[0-9a-f]{64}",
+          "maxLength": 1024
+        }
+      }
+    },
+    "wakeup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "operation_id"
+      ],
+      "properties": {
+        "operation_id": {
+          "type": "string",
+          "pattern": "[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}",
+          "maxLength": 1024
+        }
+      }
+    },
+    "operation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "writer",
+        "operation_id",
+        "project",
+        "build_id",
+        "source_commit",
+        "account",
+        "region",
+        "repository"
+      ],
+      "properties": {
+        "schema": {
+          "const": "E1_RELEASE_OPERATION_V1"
+        },
+        "writer": {
+          "const": "RELEASE_GATEWAY"
+        },
+        "operation_id": {
+          "type": "string",
+          "pattern": "[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}",
+          "maxLength": 1024
+        },
+        "project": {
+          "const": "e1-controller-release"
+        },
+        "build_id": {
+          "type": "string",
+          "pattern": "e1-controller-release:[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}",
+          "maxLength": 1024
+        },
+        "source_commit": {
+          "type": "string",
+          "pattern": "[0-9a-f]{40}",
+          "maxLength": 1024
+        },
+        "account": {
+          "type": "string",
+          "pattern": "[0-9]{12}",
+          "maxLength": 1024
+        },
+        "region": {
+          "type": "string",
+          "pattern": "[a-z]{2}(?:-[a-z]+)+-[0-9]",
+          "maxLength": 1024
+        },
+        "repository": {
+          "const": "Kendall04/terragrunt_demo"
+        }
+      }
+    },
+    "build": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "operation_id",
+        "project",
+        "build_id",
+        "source_commit",
+        "state",
+        "checks",
+        "account",
+        "region",
+        "repository"
+      ],
+      "properties": {
+        "schema": {
+          "const": "E1_BUILD_OBSERVATION_V1"
+        },
+        "operation_id": {
+          "type": "string",
+          "pattern": "[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}",
+          "maxLength": 1024
+        },
+        "project": {
+          "const": "e1-controller-release"
+        },
+        "build_id": {
+          "type": "string",
+          "pattern": "e1-controller-release:[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}",
+          "maxLength": 1024
+        },
+        "source_commit": {
+          "type": "string",
+          "pattern": "[0-9a-f]{40}",
+          "maxLength": 1024
+        },
+        "state": {
+          "enum": [
+            "SUCCEEDED",
+            "FAILED",
+            "INCOMPLETE"
+          ]
+        },
+        "checks": {
+          "$ref": "#/$defs/checks"
+        },
+        "account": {
+          "type": "string",
+          "pattern": "[0-9]{12}",
+          "maxLength": 1024
+        },
+        "region": {
+          "type": "string",
+          "pattern": "[a-z]{2}(?:-[a-z]+)+-[0-9]",
+          "maxLength": 1024
+        },
+        "repository": {
+          "const": "Kendall04/terragrunt_demo"
+        }
+      }
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "operation_id",
+        "project",
+        "build_id",
+        "source_commit",
+        "state",
+        "checks",
+        "image_repository",
+        "image_digest",
+        "runtime_contract",
+        "manifest",
+        "account",
+        "region",
+        "repository"
+      ],
+      "properties": {
+        "schema": {
+          "const": "E1_SUPERVISED_RESULT_V1"
+        },
+        "operation_id": {
+          "type": "string",
+          "pattern": "[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}",
+          "maxLength": 1024
+        },
+        "project": {
+          "const": "e1-controller-release"
+        },
+        "build_id": {
+          "type": "string",
+          "pattern": "e1-controller-release:[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}",
+          "maxLength": 1024
+        },
+        "source_commit": {
+          "type": "string",
+          "pattern": "[0-9a-f]{40}",
+          "maxLength": 1024
+        },
+        "state": {
+          "enum": [
+            "SUCCEEDED",
+            "FAILED",
+            "INCOMPLETE"
+          ]
+        },
+        "checks": {
+          "$ref": "#/$defs/checks"
+        },
+        "image_repository": {
+          "const": "demo-shared-demo-ms"
+        },
+        "image_digest": {
+          "type": "string",
+          "pattern": "sha256:[0-9a-f]{64}",
+          "maxLength": 1024
+        },
+        "runtime_contract": {
+          "const": "E1_RUNTIME_V1"
+        },
+        "manifest": {
+          "$ref": "#/$defs/manifest"
+        },
+        "account": {
+          "type": "string",
+          "pattern": "[0-9]{12}",
+          "maxLength": 1024
+        },
+        "region": {
+          "type": "string",
+          "pattern": "[a-z]{2}(?:-[a-z]+)+-[0-9]",
+          "maxLength": 1024
+        },
+        "repository": {
+          "const": "Kendall04/terragrunt_demo"
+        }
+      }
+    },
+    "qualification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "writer",
+        "account",
+        "region",
+        "repository",
+        "operation_id",
+        "project",
+        "build_id",
+        "source_commit",
+        "checks",
+        "image_repository",
+        "image_digest",
+        "runtime_contract",
+        "manifest",
+        "release_id"
+      ],
+      "properties": {
+        "schema": {
+          "const": "E1_QUALIFICATION_V1"
+        },
+        "writer": {
+          "const": "QUALIFICATION_FINALIZER"
+        },
+        "account": {
+          "type": "string",
+          "pattern": "[0-9]{12}",
+          "maxLength": 1024
+        },
+        "region": {
+          "type": "string",
+          "pattern": "[a-z]{2}(?:-[a-z]+)+-[0-9]",
+          "maxLength": 1024
+        },
+        "repository": {
+          "const": "Kendall04/terragrunt_demo"
+        },
+        "operation_id": {
+          "type": "string",
+          "pattern": "[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}",
+          "maxLength": 1024
+        },
+        "project": {
+          "const": "e1-controller-release"
+        },
+        "build_id": {
+          "type": "string",
+          "pattern": "e1-controller-release:[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}",
+          "maxLength": 1024
+        },
+        "source_commit": {
+          "type": "string",
+          "pattern": "[0-9a-f]{40}",
+          "maxLength": 1024
+        },
+        "checks": {
+          "$ref": "#/$defs/checks"
+        },
+        "image_repository": {
+          "const": "demo-shared-demo-ms"
+        },
+        "image_digest": {
+          "type": "string",
+          "pattern": "sha256:[0-9a-f]{64}",
+          "maxLength": 1024
+        },
+        "runtime_contract": {
+          "const": "E1_RUNTIME_V1"
+        },
+        "manifest": {
+          "$ref": "#/$defs/manifest"
+        },
+        "release_id": {
+          "type": "string",
+          "pattern": "sha256-[0-9a-f]{64}",
+          "maxLength": 1024
+        }
+      }
+    },
+    "eligibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema",
+        "writer",
+        "release_id",
+        "state",
+        "version_id"
+      ],
+      "properties": {
+        "schema": {
+          "const": "E1_ELIGIBILITY_V1"
+        },
+        "writer": {
+          "const": "SECURITY_ADMIN"
+        },
+        "release_id": {
+          "type": "string",
+          "pattern": "sha256-[0-9a-f]{64}",
+          "maxLength": 1024
+        },
+        "state": {
+          "enum": [
+            "ELIGIBLE",
+            "REVOKED"
+          ]
+        },
+        "version_id": {
+          "type": "string",
+          "pattern": "(?![Nn][Uu][Ll][Ll]$|[Ll][Aa][Tt][Ee][Ss][Tt]$)[A-Za-z0-9._+/=-]{1,1024}",
+          "maxLength": 1024
+        }
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/wakeup"
+    },
+    {
+      "$ref": "#/$defs/operation"
+    },
+    {
+      "$ref": "#/$defs/build"
+    },
+    {
+      "$ref": "#/$defs/result"
+    },
+    {
+      "$ref": "#/$defs/qualification"
+    },
+    {
+      "$ref": "#/$defs/eligibility"
+    }
+  ]
+}

@@ -1,0 +1,1214 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "ECS synthetic backup signal trial; offline reviewed, no deployment authorized",
+  "Parameters": {
+    "NotificationEmail": {
+      "Type": "String",
+      "AllowedPattern": "[^\\s@]+@[^\\s@]+\\.[^\\s@]+",
+      "NoEcho": true,
+      "Description": "Owner supplied/consented email; confirmation is performed by the owner."
+    },
+    "SenderLabel": {
+      "Type": "String",
+      "AllowedPattern": "[a-zA-Z0-9 ._-]{1,40}",
+      "Description": "Subject/body label; SNS controls the actual From address."
+    },
+    "NotificationMode": {
+      "Type": "String",
+      "AllowedValues": [
+        "EscalationOnly",
+        "EscalationAndRecovery"
+      ]
+    },
+    "Owner": {
+      "Type": "String",
+      "AllowedPattern": "[a-zA-Z0-9._-]{1,64}"
+    },
+    "StartsAt": {
+      "Type": "String",
+      "AllowedPattern": "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z"
+    },
+    "ExpiresAt": {
+      "Type": "String",
+      "AllowedPattern": "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z"
+    },
+    "DeployRuntime": {
+      "Type": "String",
+      "AllowedValues": [
+        "false",
+        "true"
+      ],
+      "Default": "false",
+      "Description": "Base stack first; runtime only after immutable package upload/version receipt."
+    },
+    "PackageKey": {
+      "Type": "String",
+      "AllowedPattern": "packages/[a-f0-9]{64}\\.zip",
+      "AllowedValues": [
+        "packages/2e0035796d753cd8f72304fa7946a6da9ca99549516984cd25a1933c0f557c99.zip"
+      ],
+      "Default": "packages/2e0035796d753cd8f72304fa7946a6da9ca99549516984cd25a1933c0f557c99.zip"
+    },
+    "PackageVersion": {
+      "Type": "String",
+      "MinLength": 1,
+      "Default": "BASE_ONLY_UNPUBLISHED"
+    },
+    "LogRetentionDays": {
+      "Type": "Number",
+      "AllowedValues": [
+        1,
+        3,
+        5,
+        7,
+        14,
+        30
+      ]
+    },
+    "QueueRetentionSeconds": {
+      "Type": "Number",
+      "MinValue": 60,
+      "MaxValue": 1209600
+    },
+    "DlqRetentionSeconds": {
+      "Type": "Number",
+      "MinValue": 60,
+      "MaxValue": 1209600
+    },
+    "EvidenceSeconds": {
+      "Type": "Number",
+      "MinValue": 1,
+      "MaxValue": 2592000
+    },
+    "BudgetSeconds": {
+      "Type": "Number",
+      "MinValue": 1,
+      "MaxValue": 2592000
+    },
+    "CheckSeconds": {
+      "Type": "Number",
+      "MinValue": 1,
+      "MaxValue": 2592000
+    },
+    "HoldSeconds": {
+      "Type": "Number",
+      "MinValue": 0,
+      "MaxValue": 2592000
+    },
+    "DedupSeconds": {
+      "Type": "Number",
+      "MinValue": 1,
+      "MaxValue": 2592000
+    },
+    "SignalAgeSeconds": {
+      "Type": "Number",
+      "MinValue": 1,
+      "MaxValue": 2592000
+    },
+    "AuditSeconds": {
+      "Type": "Number",
+      "MinValue": 1,
+      "MaxValue": 2592000
+    },
+    "EffectSeconds": {
+      "Type": "Number",
+      "MinValue": 1,
+      "MaxValue": 2592000
+    }
+  },
+  "Conditions": {
+    "BoundEnvironment": {
+      "Fn::And": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "AWS::AccountId"
+            },
+            "341936017254"
+          ]
+        },
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "AWS::Region"
+            },
+            "us-east-1"
+          ]
+        }
+      ]
+    },
+    "WithRuntime": {
+      "Fn::And": [
+        {
+          "Condition": "BoundEnvironment"
+        },
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "DeployRuntime"
+            },
+            "true"
+          ]
+        }
+      ]
+    }
+  },
+  "Rules": {
+    "RuntimePackagePublished": {
+      "RuleCondition": {
+        "Fn::Equals": [
+          {
+            "Ref": "DeployRuntime"
+          },
+          "true"
+        ]
+      },
+      "Assertions": [
+        {
+          "Assert": {
+            "Fn::Not": [
+              {
+                "Fn::Equals": [
+                  {
+                    "Ref": "PackageVersion"
+                  },
+                  "BASE_ONLY_UNPUBLISHED"
+                ]
+              }
+            ]
+          },
+          "AssertDescription": "Runtime requires the actual recorded version of the immutable published package."
+        }
+      ]
+    }
+  },
+  "Resources": {
+    "Sentinel": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "TableName": "ecs-sentinel-r20261023b1",
+        "BillingMode": "PAY_PER_REQUEST",
+        "KeySchema": [
+          {
+            "AttributeName": "PK",
+            "KeyType": "HASH"
+          },
+          {
+            "AttributeName": "SK",
+            "KeyType": "RANGE"
+          }
+        ],
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "PK",
+            "AttributeType": "S"
+          },
+          {
+            "AttributeName": "SK",
+            "AttributeType": "S"
+          },
+          {
+            "AttributeName": "DuePK",
+            "AttributeType": "S"
+          },
+          {
+            "AttributeName": "DueSK",
+            "AttributeType": "S"
+          },
+          {
+            "AttributeName": "ActivePK",
+            "AttributeType": "S"
+          },
+          {
+            "AttributeName": "ActiveSK",
+            "AttributeType": "S"
+          },
+          {
+            "AttributeName": "CleanPK",
+            "AttributeType": "S"
+          },
+          {
+            "AttributeName": "CleanSK",
+            "AttributeType": "S"
+          }
+        ],
+        "GlobalSecondaryIndexes": [
+          {
+            "IndexName": "Due",
+            "KeySchema": [
+              {
+                "AttributeName": "DuePK",
+                "KeyType": "HASH"
+              },
+              {
+                "AttributeName": "DueSK",
+                "KeyType": "RANGE"
+              }
+            ],
+            "Projection": {
+              "ProjectionType": "KEYS_ONLY"
+            }
+          },
+          {
+            "IndexName": "Active",
+            "KeySchema": [
+              {
+                "AttributeName": "ActivePK",
+                "KeyType": "HASH"
+              },
+              {
+                "AttributeName": "ActiveSK",
+                "KeyType": "RANGE"
+              }
+            ],
+            "Projection": {
+              "ProjectionType": "KEYS_ONLY"
+            }
+          },
+          {
+            "IndexName": "Cleanup",
+            "KeySchema": [
+              {
+                "AttributeName": "CleanPK",
+                "KeyType": "HASH"
+              },
+              {
+                "AttributeName": "CleanSK",
+                "KeyType": "RANGE"
+              }
+            ],
+            "Projection": {
+              "ProjectionType": "KEYS_ONLY"
+            }
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Project",
+            "Value": "EcsBackupSentinel"
+          },
+          {
+            "Key": "Environment",
+            "Value": "Sandbox"
+          },
+          {
+            "Key": "Owner",
+            "Value": "Kendall04"
+          },
+          {
+            "Key": "RunId",
+            "Value": "ecs-sentinel-r20261023b1"
+          },
+          {
+            "Key": "Purpose",
+            "Value": "SyntheticSignalTrial"
+          }
+        ]
+      },
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain",
+      "Condition": "BoundEnvironment"
+    },
+    "Archive": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": "ecs-sentinel-r20261023b1-341936017254",
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "BlockPublicPolicy": true,
+          "IgnorePublicAcls": true,
+          "RestrictPublicBuckets": true
+        },
+        "OwnershipControls": {
+          "Rules": [
+            {
+              "ObjectOwnership": "BucketOwnerEnforced"
+            }
+          ]
+        },
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "AES256"
+              }
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Project",
+            "Value": "EcsBackupSentinel"
+          },
+          {
+            "Key": "Environment",
+            "Value": "Sandbox"
+          },
+          {
+            "Key": "Owner",
+            "Value": "Kendall04"
+          },
+          {
+            "Key": "RunId",
+            "Value": "ecs-sentinel-r20261023b1"
+          },
+          {
+            "Key": "Purpose",
+            "Value": "SyntheticSignalTrial"
+          }
+        ]
+      },
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain",
+      "Condition": "BoundEnvironment"
+    },
+    "ArchivePolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "Bucket": {
+          "Ref": "Archive"
+        },
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "s3:*",
+              "Resource": [
+                "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254",
+                "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254/*"
+              ],
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": "false",
+                  "aws:PrincipalIsAWSService": "false"
+                }
+              }
+            },
+            {
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "s3:*",
+              "Resource": [
+                "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254",
+                "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254/*"
+              ],
+              "Condition": {
+                "ArnNotEquals": {
+                  "aws:PrincipalArn": [
+                    "arn:aws:iam::341936017254:role/TerragruntDemoDevOperator",
+                    "arn:aws:iam::341936017254:role/ecs-sentinel-r20261023b1-cfn",
+                    "arn:aws:iam::341936017254:role/ecs-sentinel-r20261023b1-dispatch-role"
+                  ]
+                },
+                "Bool": {
+                  "aws:PrincipalIsAWSService": "false"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "Condition": "BoundEnvironment"
+    },
+    "Dlq": {
+      "Type": "AWS::SQS::Queue",
+      "Properties": {
+        "QueueName": "ecs-sentinel-r20261023b1-dlq",
+        "MessageRetentionPeriod": {
+          "Ref": "DlqRetentionSeconds"
+        },
+        "SqsManagedSseEnabled": true,
+        "Tags": [
+          {
+            "Key": "Project",
+            "Value": "EcsBackupSentinel"
+          },
+          {
+            "Key": "Environment",
+            "Value": "Sandbox"
+          },
+          {
+            "Key": "Owner",
+            "Value": "Kendall04"
+          },
+          {
+            "Key": "RunId",
+            "Value": "ecs-sentinel-r20261023b1"
+          },
+          {
+            "Key": "Purpose",
+            "Value": "SyntheticSignalTrial"
+          }
+        ],
+        "RedriveAllowPolicy": {
+          "redrivePermission": "byQueue",
+          "sourceQueueArns": [
+            "arn:aws:sqs:us-east-1:341936017254:ecs-sentinel-r20261023b1-ingestion"
+          ]
+        }
+      },
+      "Condition": "BoundEnvironment"
+    },
+    "Queue": {
+      "Type": "AWS::SQS::Queue",
+      "Properties": {
+        "QueueName": "ecs-sentinel-r20261023b1-ingestion",
+        "VisibilityTimeout": 90,
+        "ReceiveMessageWaitTimeSeconds": 20,
+        "MessageRetentionPeriod": {
+          "Ref": "QueueRetentionSeconds"
+        },
+        "SqsManagedSseEnabled": true,
+        "Tags": [
+          {
+            "Key": "Project",
+            "Value": "EcsBackupSentinel"
+          },
+          {
+            "Key": "Environment",
+            "Value": "Sandbox"
+          },
+          {
+            "Key": "Owner",
+            "Value": "Kendall04"
+          },
+          {
+            "Key": "RunId",
+            "Value": "ecs-sentinel-r20261023b1"
+          },
+          {
+            "Key": "Purpose",
+            "Value": "SyntheticSignalTrial"
+          }
+        ],
+        "RedrivePolicy": {
+          "deadLetterTargetArn": {
+            "Fn::GetAtt": [
+              "Dlq",
+              "Arn"
+            ]
+          },
+          "maxReceiveCount": 5
+        }
+      },
+      "Condition": "BoundEnvironment"
+    },
+    "QueuePolicy": {
+      "Type": "AWS::SQS::QueuePolicy",
+      "Properties": {
+        "Queues": [
+          {
+            "Ref": "Queue"
+          },
+          {
+            "Ref": "Dlq"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "sqs:*",
+              "Resource": [
+                "arn:aws:sqs:us-east-1:341936017254:ecs-sentinel-r20261023b1-ingestion",
+                "arn:aws:sqs:us-east-1:341936017254:ecs-sentinel-r20261023b1-dlq"
+              ],
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": "false",
+                  "aws:PrincipalIsAWSService": "false"
+                }
+              }
+            },
+            {
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "sqs:*",
+              "Resource": [
+                "arn:aws:sqs:us-east-1:341936017254:ecs-sentinel-r20261023b1-ingestion",
+                "arn:aws:sqs:us-east-1:341936017254:ecs-sentinel-r20261023b1-dlq"
+              ],
+              "Condition": {
+                "ArnNotEquals": {
+                  "aws:PrincipalArn": [
+                    "arn:aws:iam::341936017254:role/TerragruntDemoDevOperator",
+                    "arn:aws:iam::341936017254:role/ecs-sentinel-r20261023b1-cfn",
+                    "arn:aws:iam::341936017254:role/ecs-sentinel-r20261023b1-ingest-role"
+                  ]
+                },
+                "Bool": {
+                  "aws:PrincipalIsAWSService": "false"
+                }
+              }
+            },
+            {
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "sqs:SendMessage",
+              "Resource": "arn:aws:sqs:us-east-1:341936017254:ecs-sentinel-r20261023b1-ingestion",
+              "Condition": {
+                "ArnNotEquals": {
+                  "aws:PrincipalArn": "arn:aws:iam::341936017254:role/TerragruntDemoDevOperator"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "Condition": "BoundEnvironment"
+    },
+    "IngestLogs": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/ecs-sentinel-r20261023b1-ingest",
+        "RetentionInDays": {
+          "Ref": "LogRetentionDays"
+        },
+        "Tags": [
+          {
+            "Key": "Project",
+            "Value": "EcsBackupSentinel"
+          },
+          {
+            "Key": "Environment",
+            "Value": "Sandbox"
+          },
+          {
+            "Key": "Owner",
+            "Value": "Kendall04"
+          },
+          {
+            "Key": "RunId",
+            "Value": "ecs-sentinel-r20261023b1"
+          },
+          {
+            "Key": "Purpose",
+            "Value": "SyntheticSignalTrial"
+          }
+        ]
+      },
+      "Condition": "BoundEnvironment"
+    },
+    "IngestRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "ecs-sentinel-r20261023b1-ingest-role",
+        "PermissionsBoundary": "arn:aws:iam::341936017254:policy/ecs-sentinel-r20261023b1-ingest-boundary",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Project",
+            "Value": "EcsBackupSentinel"
+          },
+          {
+            "Key": "Environment",
+            "Value": "Sandbox"
+          },
+          {
+            "Key": "Owner",
+            "Value": "Kendall04"
+          },
+          {
+            "Key": "RunId",
+            "Value": "ecs-sentinel-r20261023b1"
+          },
+          {
+            "Key": "Purpose",
+            "Value": "SyntheticSignalTrial"
+          }
+        ],
+        "Policies": [
+          {
+            "PolicyName": "BackupTrialRuntime",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "dynamodb:GetItem",
+                    "dynamodb:PutItem",
+                    "dynamodb:UpdateItem",
+                    "dynamodb:DeleteItem",
+                    "dynamodb:ConditionCheckItem"
+                  ],
+                  "Resource": "arn:aws:dynamodb:us-east-1:341936017254:table/ecs-sentinel-r20261023b1",
+                  "Condition": {
+                    "ForAllValues:StringEquals": {
+                      "dynamodb:LeadingKeys": [
+                        "NS#4ebefbe15b843f4db70b623238a3f1115219cfa6a437ffc71aa9fb86d6306f65"
+                      ]
+                    },
+                    "Null": {
+                      "dynamodb:LeadingKeys": "false"
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "sqs:ReceiveMessage",
+                    "sqs:DeleteMessage",
+                    "sqs:GetQueueAttributes"
+                  ],
+                  "Resource": "arn:aws:sqs:us-east-1:341936017254:ecs-sentinel-r20261023b1-ingestion"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": "arn:aws:logs:us-east-1:341936017254:log-group:/aws/lambda/ecs-sentinel-r20261023b1-ingest:log-stream:*"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "Condition": "BoundEnvironment"
+    },
+    "IngestFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Condition": "WithRuntime",
+      "DependsOn": [
+        "IngestLogs",
+        "ArchivePolicy",
+        "QueuePolicy"
+      ],
+      "Properties": {
+        "FunctionName": "ecs-sentinel-r20261023b1-ingest",
+        "Role": {
+          "Fn::GetAtt": [
+            "IngestRole",
+            "Arn"
+          ]
+        },
+        "Runtime": "dotnet10",
+        "Handler": "Ecs.Backup.Managed::Ecs.Backup.Managed.IngestFunction::Handler",
+        "MemorySize": 512,
+        "Timeout": 15,
+        "Architectures": [
+          "x86_64"
+        ],
+        "ReservedConcurrentExecutions": 2,
+        "Code": {
+          "S3Bucket": {
+            "Ref": "Archive"
+          },
+          "S3Key": {
+            "Ref": "PackageKey"
+          },
+          "S3ObjectVersion": {
+            "Ref": "PackageVersion"
+          }
+        },
+        "Environment": {
+          "Variables": {
+            "SENTINEL_MODE": "synthetic-trial",
+            "SENTINEL_RUN_ID": "ecs-sentinel-r20261023b1",
+            "SENTINEL_ACCOUNT": "341936017254",
+            "SENTINEL_REGION": "us-east-1",
+            "SENTINEL_PROJECT": "ecs-backup-trial",
+            "SENTINEL_CONSUMER": "ecs-sentinel-r20261023b1",
+            "SENTINEL_SUBJECT": "sql-backup-trial",
+            "SENTINEL_SERVICE": "sql-backup",
+            "SENTINEL_SCOPE": "trial",
+            "SENTINEL_FAILURE_SIGNATURE": "backup-health",
+            "SENTINEL_QUEUE_ARN": "arn:aws:sqs:us-east-1:341936017254:ecs-sentinel-r20261023b1-ingestion",
+            "SENTINEL_TABLE": "ecs-sentinel-r20261023b1",
+            "SENTINEL_BUCKET": "ecs-sentinel-r20261023b1-341936017254",
+            "SENTINEL_NAMESPACE": "NS#4ebefbe15b843f4db70b623238a3f1115219cfa6a437ffc71aa9fb86d6306f65",
+            "SENTINEL_ARCHIVE_PREFIX": "sentinel/v3/4ebefbe15b843f4db70b623238a3f1115219cfa6a437ffc71aa9fb86d6306f65",
+            "SENTINEL_TOPIC_ARN": "arn:aws:sns:us-east-1:341936017254:ecs-sentinel-r20261023b1-notices",
+            "SENTINEL_OWNER": {
+              "Ref": "Owner"
+            },
+            "SENTINEL_EVIDENCE_SECONDS": {
+              "Ref": "EvidenceSeconds"
+            },
+            "SENTINEL_BUDGET_SECONDS": {
+              "Ref": "BudgetSeconds"
+            },
+            "SENTINEL_CHECK_SECONDS": {
+              "Ref": "CheckSeconds"
+            },
+            "SENTINEL_HOLD_SECONDS": {
+              "Ref": "HoldSeconds"
+            },
+            "SENTINEL_DEDUP_SECONDS": {
+              "Ref": "DedupSeconds"
+            },
+            "SENTINEL_SIGNAL_AGE_SECONDS": {
+              "Ref": "SignalAgeSeconds"
+            },
+            "SENTINEL_AUDIT_SECONDS": {
+              "Ref": "AuditSeconds"
+            },
+            "SENTINEL_EFFECT_SECONDS": {
+              "Ref": "EffectSeconds"
+            },
+            "SENTINEL_SENDER_LABEL": {
+              "Ref": "SenderLabel"
+            },
+            "SENTINEL_NOTIFICATION_MODE": {
+              "Ref": "NotificationMode"
+            },
+            "SENTINEL_STARTS_AT": {
+              "Ref": "StartsAt"
+            },
+            "SENTINEL_EXPIRES_AT": {
+              "Ref": "ExpiresAt"
+            }
+          }
+        },
+        "Tags": [
+          {
+            "Key": "Project",
+            "Value": "EcsBackupSentinel"
+          },
+          {
+            "Key": "Environment",
+            "Value": "Sandbox"
+          },
+          {
+            "Key": "Owner",
+            "Value": "Kendall04"
+          },
+          {
+            "Key": "RunId",
+            "Value": "ecs-sentinel-r20261023b1"
+          },
+          {
+            "Key": "Purpose",
+            "Value": "SyntheticSignalTrial"
+          }
+        ]
+      }
+    },
+    "DispatchLogs": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/ecs-sentinel-r20261023b1-dispatch",
+        "RetentionInDays": {
+          "Ref": "LogRetentionDays"
+        },
+        "Tags": [
+          {
+            "Key": "Project",
+            "Value": "EcsBackupSentinel"
+          },
+          {
+            "Key": "Environment",
+            "Value": "Sandbox"
+          },
+          {
+            "Key": "Owner",
+            "Value": "Kendall04"
+          },
+          {
+            "Key": "RunId",
+            "Value": "ecs-sentinel-r20261023b1"
+          },
+          {
+            "Key": "Purpose",
+            "Value": "SyntheticSignalTrial"
+          }
+        ]
+      },
+      "Condition": "BoundEnvironment"
+    },
+    "DispatchRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": "ecs-sentinel-r20261023b1-dispatch-role",
+        "PermissionsBoundary": "arn:aws:iam::341936017254:policy/ecs-sentinel-r20261023b1-dispatch-boundary",
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Tags": [
+          {
+            "Key": "Project",
+            "Value": "EcsBackupSentinel"
+          },
+          {
+            "Key": "Environment",
+            "Value": "Sandbox"
+          },
+          {
+            "Key": "Owner",
+            "Value": "Kendall04"
+          },
+          {
+            "Key": "RunId",
+            "Value": "ecs-sentinel-r20261023b1"
+          },
+          {
+            "Key": "Purpose",
+            "Value": "SyntheticSignalTrial"
+          }
+        ],
+        "Policies": [
+          {
+            "PolicyName": "BackupTrialRuntime",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "dynamodb:GetItem",
+                    "dynamodb:PutItem",
+                    "dynamodb:UpdateItem",
+                    "dynamodb:DeleteItem",
+                    "dynamodb:ConditionCheckItem"
+                  ],
+                  "Resource": "arn:aws:dynamodb:us-east-1:341936017254:table/ecs-sentinel-r20261023b1",
+                  "Condition": {
+                    "ForAllValues:StringEquals": {
+                      "dynamodb:LeadingKeys": [
+                        "NS#4ebefbe15b843f4db70b623238a3f1115219cfa6a437ffc71aa9fb86d6306f65"
+                      ]
+                    },
+                    "Null": {
+                      "dynamodb:LeadingKeys": "false"
+                    }
+                  }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:GetObject",
+                    "s3:PutObject"
+                  ],
+                  "Resource": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254/sentinel/v3/4ebefbe15b843f4db70b623238a3f1115219cfa6a437ffc71aa9fb86d6306f65/*"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "sns:Publish"
+                  ],
+                  "Resource": "arn:aws:sns:us-east-1:341936017254:ecs-sentinel-r20261023b1-notices"
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": "arn:aws:logs:us-east-1:341936017254:log-group:/aws/lambda/ecs-sentinel-r20261023b1-dispatch:log-stream:*"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "Condition": "BoundEnvironment"
+    },
+    "DispatchFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Condition": "WithRuntime",
+      "DependsOn": [
+        "DispatchLogs",
+        "ArchivePolicy",
+        "QueuePolicy"
+      ],
+      "Properties": {
+        "FunctionName": "ecs-sentinel-r20261023b1-dispatch",
+        "Role": {
+          "Fn::GetAtt": [
+            "DispatchRole",
+            "Arn"
+          ]
+        },
+        "Runtime": "dotnet10",
+        "Handler": "Ecs.Backup.Managed::Ecs.Backup.Managed.DispatchFunction::Handler",
+        "MemorySize": 512,
+        "Timeout": 15,
+        "Architectures": [
+          "x86_64"
+        ],
+        "ReservedConcurrentExecutions": 1,
+        "Code": {
+          "S3Bucket": {
+            "Ref": "Archive"
+          },
+          "S3Key": {
+            "Ref": "PackageKey"
+          },
+          "S3ObjectVersion": {
+            "Ref": "PackageVersion"
+          }
+        },
+        "Environment": {
+          "Variables": {
+            "SENTINEL_MODE": "synthetic-trial",
+            "SENTINEL_RUN_ID": "ecs-sentinel-r20261023b1",
+            "SENTINEL_ACCOUNT": "341936017254",
+            "SENTINEL_REGION": "us-east-1",
+            "SENTINEL_PROJECT": "ecs-backup-trial",
+            "SENTINEL_CONSUMER": "ecs-sentinel-r20261023b1",
+            "SENTINEL_SUBJECT": "sql-backup-trial",
+            "SENTINEL_SERVICE": "sql-backup",
+            "SENTINEL_SCOPE": "trial",
+            "SENTINEL_FAILURE_SIGNATURE": "backup-health",
+            "SENTINEL_QUEUE_ARN": "arn:aws:sqs:us-east-1:341936017254:ecs-sentinel-r20261023b1-ingestion",
+            "SENTINEL_TABLE": "ecs-sentinel-r20261023b1",
+            "SENTINEL_BUCKET": "ecs-sentinel-r20261023b1-341936017254",
+            "SENTINEL_NAMESPACE": "NS#4ebefbe15b843f4db70b623238a3f1115219cfa6a437ffc71aa9fb86d6306f65",
+            "SENTINEL_ARCHIVE_PREFIX": "sentinel/v3/4ebefbe15b843f4db70b623238a3f1115219cfa6a437ffc71aa9fb86d6306f65",
+            "SENTINEL_TOPIC_ARN": "arn:aws:sns:us-east-1:341936017254:ecs-sentinel-r20261023b1-notices",
+            "SENTINEL_OWNER": {
+              "Ref": "Owner"
+            },
+            "SENTINEL_EVIDENCE_SECONDS": {
+              "Ref": "EvidenceSeconds"
+            },
+            "SENTINEL_BUDGET_SECONDS": {
+              "Ref": "BudgetSeconds"
+            },
+            "SENTINEL_CHECK_SECONDS": {
+              "Ref": "CheckSeconds"
+            },
+            "SENTINEL_HOLD_SECONDS": {
+              "Ref": "HoldSeconds"
+            },
+            "SENTINEL_DEDUP_SECONDS": {
+              "Ref": "DedupSeconds"
+            },
+            "SENTINEL_SIGNAL_AGE_SECONDS": {
+              "Ref": "SignalAgeSeconds"
+            },
+            "SENTINEL_AUDIT_SECONDS": {
+              "Ref": "AuditSeconds"
+            },
+            "SENTINEL_EFFECT_SECONDS": {
+              "Ref": "EffectSeconds"
+            },
+            "SENTINEL_SENDER_LABEL": {
+              "Ref": "SenderLabel"
+            },
+            "SENTINEL_NOTIFICATION_MODE": {
+              "Ref": "NotificationMode"
+            },
+            "SENTINEL_STARTS_AT": {
+              "Ref": "StartsAt"
+            },
+            "SENTINEL_EXPIRES_AT": {
+              "Ref": "ExpiresAt"
+            }
+          }
+        },
+        "Tags": [
+          {
+            "Key": "Project",
+            "Value": "EcsBackupSentinel"
+          },
+          {
+            "Key": "Environment",
+            "Value": "Sandbox"
+          },
+          {
+            "Key": "Owner",
+            "Value": "Kendall04"
+          },
+          {
+            "Key": "RunId",
+            "Value": "ecs-sentinel-r20261023b1"
+          },
+          {
+            "Key": "Purpose",
+            "Value": "SyntheticSignalTrial"
+          }
+        ]
+      }
+    },
+    "Mapping": {
+      "Type": "AWS::Lambda::EventSourceMapping",
+      "Condition": "WithRuntime",
+      "DependsOn": [
+        "IngestFunction",
+        "QueuePolicy"
+      ],
+      "Properties": {
+        "EventSourceArn": {
+          "Fn::GetAtt": [
+            "Queue",
+            "Arn"
+          ]
+        },
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "IngestFunction",
+            "Arn"
+          ]
+        },
+        "BatchSize": 5,
+        "FunctionResponseTypes": [
+          "ReportBatchItemFailures"
+        ],
+        "ScalingConfig": {
+          "MaximumConcurrency": 2
+        },
+        "Enabled": false,
+        "Tags": [
+          {
+            "Key": "Project",
+            "Value": "EcsBackupSentinel"
+          },
+          {
+            "Key": "Environment",
+            "Value": "Sandbox"
+          },
+          {
+            "Key": "Owner",
+            "Value": "Kendall04"
+          },
+          {
+            "Key": "RunId",
+            "Value": "ecs-sentinel-r20261023b1"
+          },
+          {
+            "Key": "Purpose",
+            "Value": "SyntheticSignalTrial"
+          }
+        ]
+      }
+    },
+    "Topic": {
+      "Type": "AWS::SNS::Topic",
+      "Properties": {
+        "TopicName": "ecs-sentinel-r20261023b1-notices",
+        "Tags": [
+          {
+            "Key": "Project",
+            "Value": "EcsBackupSentinel"
+          },
+          {
+            "Key": "Environment",
+            "Value": "Sandbox"
+          },
+          {
+            "Key": "Owner",
+            "Value": "Kendall04"
+          },
+          {
+            "Key": "RunId",
+            "Value": "ecs-sentinel-r20261023b1"
+          },
+          {
+            "Key": "Purpose",
+            "Value": "SyntheticSignalTrial"
+          }
+        ]
+      },
+      "Condition": "BoundEnvironment"
+    },
+    "TopicPolicy": {
+      "Type": "AWS::SNS::TopicPolicy",
+      "Properties": {
+        "Topics": [
+          {
+            "Ref": "Topic"
+          }
+        ],
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "sns:Publish",
+              "Resource": "arn:aws:sns:us-east-1:341936017254:ecs-sentinel-r20261023b1-notices",
+              "Condition": {
+                "ArnNotEquals": {
+                  "aws:PrincipalArn": "arn:aws:iam::341936017254:role/ecs-sentinel-r20261023b1-dispatch-role"
+                }
+              }
+            },
+            {
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "sns:*",
+              "Resource": "arn:aws:sns:us-east-1:341936017254:ecs-sentinel-r20261023b1-notices",
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": "false",
+                  "aws:PrincipalIsAWSService": "false"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "Condition": "BoundEnvironment"
+    },
+    "Subscription": {
+      "Type": "AWS::SNS::Subscription",
+      "Properties": {
+        "TopicArn": {
+          "Ref": "Topic"
+        },
+        "Protocol": "email",
+        "Endpoint": {
+          "Ref": "NotificationEmail"
+        }
+      },
+      "Condition": "BoundEnvironment"
+    }
+  },
+  "Outputs": {
+    "Table": {
+      "Value": "ecs-sentinel-r20261023b1",
+      "Condition": "BoundEnvironment"
+    },
+    "Bucket": {
+      "Value": {
+        "Ref": "Archive"
+      },
+      "Condition": "BoundEnvironment"
+    },
+    "QueueUrl": {
+      "Value": {
+        "Ref": "Queue"
+      },
+      "Condition": "BoundEnvironment"
+    },
+    "MappingId": {
+      "Value": {
+        "Ref": "Mapping"
+      },
+      "Condition": "WithRuntime"
+    },
+    "Topic": {
+      "Value": {
+        "Ref": "Topic"
+      },
+      "Condition": "BoundEnvironment"
+    }
+  }
+}

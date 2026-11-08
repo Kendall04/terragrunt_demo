@@ -1,0 +1,59 @@
+{
+  "PackageVersion": "16.0.4305.5-1",
+  "PackageSha256": "3fbd4e3d2ad41e9abf9195b22a2dd213632ce4eeac6da3f806bc9d8f7369385a",
+  "PackageUrl": "https://packages.microsoft.com/ubuntu/22.04/mssql-server-2022/pool/main/m/mssql-server/mssql-server_16.0.4305.5-1_amd64.deb",
+  "CapturedTrial": "r20261023az5",
+  "CapturedNativeMissingOutputSha256": "da1b908f33cd2edc41fa90195a3ea55188a8ca1bdf2fbb4642fd6ed5823f40f1",
+  "CapturedNativeMissingOutputBytes": 70,
+  "WrongDottedCalls": [
+    {
+      "Args": [
+        "get",
+        "memory.memorylimitmb"
+      ],
+      "ExitCode": 0,
+      "Stdout": "No setting for the given option found in '/var/opt/mssql/mssql.conf'.\n",
+      "StdoutBytes": 70,
+      "StdoutSha256": "da1b908f33cd2edc41fa90195a3ea55188a8ca1bdf2fbb4642fd6ed5823f40f1",
+      "Stderr": ""
+    },
+    {
+      "Args": [
+        "get",
+        "network.ipaddress"
+      ],
+      "ExitCode": 0,
+      "Stdout": "No setting for the given option found in '/var/opt/mssql/mssql.conf'.\n",
+      "StdoutBytes": 70,
+      "StdoutSha256": "da1b908f33cd2edc41fa90195a3ea55188a8ca1bdf2fbb4642fd6ed5823f40f1",
+      "Stderr": ""
+    }
+  ],
+  "CorrectSeparateCalls": [
+    {
+      "Args": [
+        "get",
+        "memory",
+        "memorylimitmb"
+      ],
+      "ExitCode": 0,
+      "Stdout": "memorylimitmb : 2048\n",
+      "StdoutBytes": 21,
+      "StdoutSha256": "f83557a1c907e3f82cb828be29a457b07effd5d5a291ce57d437ac4d08396a35",
+      "Stderr": ""
+    },
+    {
+      "Args": [
+        "get",
+        "network",
+        "ipaddress"
+      ],
+      "ExitCode": 0,
+      "Stdout": "ipaddress : 127.0.0.1\n",
+      "StdoutBytes": 22,
+      "StdoutSha256": "4574d74c65cb6ba22421b8bcfdc849ad450fa2764f2c26eecc8b5172fc849b4c",
+      "Stderr": ""
+    }
+  ],
+  "Provenance": "Unmodified Microsoft argument-parser/getSettings/handleGet/processCommands functions; synthetic ConfigParser read port only. Wrong-call bytes match native captured hashes exactly. Correct-call formatter reproduced offline; not a native corrected helper/SQL recovery qualification."
+}

@@ -1,0 +1,17 @@
+{
+  "Database": "DemoDb",
+  "StagingDirectory": "/var/opt/mssql/backup/v2",
+  "RestoreDirectory": "/var/opt/mssql/backup/v2-restores",
+  "Bucket": "replace-before-cloud-terragrunt-demo",
+  "Prefix": "terragrunt-demo/dev/sql-backups",
+  "BackupKeyArn": "arn:aws:kms:us-east-1:341936017254:key/00000000-0000-0000-0000-000000000001",
+  "TextKeyArn": "arn:aws:kms:us-east-1:341936017254:key/00000000-0000-0000-0000-000000000002",
+  "MaxBackupBytes": 536870912,
+  "FreeReserveBytes": 268435456,
+  "TimeoutSeconds": 600,
+  "ProposedIntervalHours": 1,
+  "ProposedRetentionDays": 2,
+  "ProposedMaxAgeHours": 2,
+  "ExpectedEc2RoleName": "replace-before-install",
+  "RetainLocalVerifiedBackups": 2
+}

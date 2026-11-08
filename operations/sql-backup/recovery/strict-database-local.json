@@ -1,0 +1,135 @@
+{
+  "classification": "LOCAL_STRICT_RECOVERY_QUALIFICATION_NOT_NATIVE_ACCEPTANCE",
+  "sourceBaseline": "7e0ac5b5dc0275f64e90faa84491f3455a81b537",
+  "linux": {
+    "environment": "Existing WSL Ubuntu-24.04/Python3.12/Bash; existing isolated official jq1.8.2",
+    "passed": 154,
+    "failed": 0,
+    "skipped": 0,
+    "suites": [
+      {
+        "suite": "test_strict_database_recovery",
+        "passed": 7,
+        "skipped": 0,
+        "log": "strict-final-linux-test_strict_database_recovery.log",
+        "sha256": "0dbcff6d92f6411a08b5215064ebcd802564659c707a22c342e9cc864a4a008e"
+      },
+      {
+        "suite": "test_recovery",
+        "passed": 37,
+        "skipped": 0,
+        "log": "strict-linux-test_recovery.log",
+        "sha256": "d00d07bac095901dc93c1409fc759537133edbcbdb30bedddd6878eacd5a0946"
+      },
+      {
+        "suite": "test_cold_execution",
+        "passed": 4,
+        "skipped": 0,
+        "log": "strict-linux-test_cold_execution.log",
+        "sha256": "c222024165177f0e7e2baaaae22cbfb6c4565ffdc732f0108968ecf5d4d83fe1"
+      },
+      {
+        "suite": "test_connection_version",
+        "passed": 10,
+        "skipped": 0,
+        "log": "strict-final-linux-test_connection_version.log",
+        "sha256": "08ec9e3fdd0b3c4bb9956ecce690097e639393c9cc5e553614546e545f671e40"
+      },
+      {
+        "suite": "test_service_plan",
+        "passed": 10,
+        "skipped": 0,
+        "log": "strict-linux-test_service_plan.log",
+        "sha256": "91dc4a44c8b831307ccaa4e6cfeff24e7d0f190125c583af249be58343013e05"
+      },
+      {
+        "suite": "test_service_renderer",
+        "passed": 9,
+        "skipped": 0,
+        "log": "strict-linux-test_service_renderer.log",
+        "sha256": "58ed6bfb3eace9cc8e121b620c59b4d8aae693117225d42119a00c8057f3610c"
+      },
+      {
+        "suite": "test_host_entrypoints",
+        "passed": 4,
+        "skipped": 0,
+        "log": "strict-linux-test_host_entrypoints.log",
+        "sha256": "4e0300163950360b5f6e8e1fa634a095a478b10472eb948543c5e2b8021c1bbc"
+      },
+      {
+        "suite": "test_bundle_runtime",
+        "passed": 3,
+        "skipped": 0,
+        "log": "strict-linux-test_bundle_runtime.log",
+        "sha256": "40905269a3c36977635e7a0254ba89dfe6ffaadacdcc84ac67032eddd021b877"
+      },
+      {
+        "suite": "test_sql_principals",
+        "passed": 8,
+        "skipped": 0,
+        "log": "strict-final-linux-test_sql_principals.log",
+        "sha256": "af40d6c0018a31b3ef841cb9a5aa4f80e7787914ad71b6cf779ba57c73fa482f"
+      },
+      {
+        "suite": "test_runtime_precheck",
+        "passed": 27,
+        "skipped": 0,
+        "log": "strict-linux-test_runtime_precheck.log",
+        "sha256": "f774ea4a6ed9d3fb9cd25f9f55667e0a4cd4318211bc777c8c063fb9d557b843"
+      },
+      {
+        "suite": "test_private_listener",
+        "passed": 10,
+        "skipped": 0,
+        "log": "strict-linux-test_private_listener.log",
+        "sha256": "4d8a4534974bb2d89f74ccf19479815f8ab5b773c2aa342a82a14820722997a2"
+      },
+      {
+        "suite": "test_listener_transition",
+        "passed": 11,
+        "skipped": 0,
+        "log": "strict-linux-test_listener_transition.log",
+        "sha256": "df7ee03a27b644b1042c4a964d4eea84c3a71467dce17c3919d0caa786b6bef9"
+      },
+      {
+        "suite": "test_recovery_v2",
+        "passed": 14,
+        "skipped": 0,
+        "log": "strict-final-linux-test_recovery_v2.log",
+        "sha256": "577b89c16ccc92e6cd1f4abde1062a975ec312fa63faf6c803d737af6dc99058"
+      }
+    ]
+  },
+  "ciDiscovery": {
+    "suites": 20,
+    "cases": 270,
+    "status": "DISCOVERY_ONLY"
+  },
+  "sourceLfSha256": {
+    "operations/sql-backup/recovery/host.py": "271c8ae9fb4985aaf4ed6d224944ee7147a0e683cf46bb1960a03ca88b9af9a7",
+    "operations/sql-backup/recovery/prepare.py": "aeca9f8bfad3a7ea797140cd6eb9efcf3807ae224fcd4d111184593737e7bc05",
+    "operations/sql-backup/recovery/bundle.py": "b2f54747e896ac12bcac9d194b235169dd44dbd2791d6b550ae6e86670114b72",
+    "operations/sql-backup/recovery/test_connection_version.py": "3e2d072a607d3320c9bfac7b8c17ae53fabca00e14868b29ec27acd047b1ef7f",
+    "operations/sql-backup/recovery/test_service_renderer.py": "d18d54c8fecd307789dd4cbf2917868cba09737eae6517a0296350ad5100875b",
+    "operations/sql-backup/recovery/test_strict_database_recovery.py": "cadb6826d5086a62aee17cb90981c74b36099d41503cde8927fde4be10e8de57",
+    "scripts/normal_delivery/recovery.py": "382e517d3dad97226af8fb26ace695e3f2556caa2192bd4bfc5c6fa4070da0fd",
+    "scripts/render-demo-api-taskdef.sh": "a17b05863feb9ed91d774a1cf729d593f375e2e92b2e87fa4a61aab260147804",
+    "scripts/tests/normal_delivery/test_recovery_v2.py": "5a22d79f730926c8ad8dd9e90c134f763d538713dee1efda8c7a7f001fede0d8",
+    "scripts/tests/run_recovery_ci.py": "1cfdd8d928f2cf8efcaab8d841f305ef84243f73ea43d89ff0d2404560f9235e"
+  },
+  "preservedFailure": "First Linux test snapshot omitted an unchanged public .gz.b64 fixture; one fixture error preserved. Corrected snapshot and all8 principal cases passed.",
+  "AWSExecuted": false,
+  "SQLExecuted": false,
+  "HandshakeProven": false,
+  "CredentialsGenerated": false,
+  "TrustInstalled": false,
+  "BindingInstalled": false,
+  "ExecutionAuthorized": false,
+  "historicalArchives": "Preserved unchanged; no old archive/hash repinned as current strict runtime.",
+  "remainingGates": [
+    "Actual SQL TLS chain/name/expiry and minimal grants",
+    "Reviewed strict bundle/image and protected binding installation",
+    "Migrator secret/reference and confidential key handoff admission",
+    "Admitted SQL control transport and integrated platform/resource/cost/retirement plan"
+  ]
+}

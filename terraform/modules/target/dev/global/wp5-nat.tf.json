@@ -1,0 +1,77 @@
+{
+  "variable": {
+    "protected_nat_launch": {
+      "type": "map(object({ id = string, version = number, subnet = string, recovery = string }))",
+      "default": {},
+      "validation": {
+        "condition": "${length(var.protected_nat_launch) == 0 || sort(keys(var.protected_nat_launch)) == sort([\"a\", \"b\"])}",
+        "error_message": "Only the exact two protected NAT slots are admitted."
+      }
+    }
+  },
+  "resource": {
+    "aws_eip": {
+      "wp5_nat": {
+        "for_each": "${toset([\"a\", \"b\"])}",
+        "domain": "vpc",
+        "tags": {
+          "Project": "demo",
+          "Environment": "dev",
+          "Name": "${\"demo-dev-nat-eip-${each.key}\"}"
+        }
+      }
+    },
+    "aws_autoscaling_group": {
+      "wp5_nat": {
+        "for_each": "${var.protected_nat_launch}",
+        "name": "${\"demo-dev-asg-nat-${each.key}\"}",
+        "min_size": 1,
+        "max_size": 1,
+        "desired_capacity": 1,
+        "vpc_zone_identifier": [
+          "${each.value.subnet}"
+        ],
+        "enabled_metrics": [
+          "GroupDesiredCapacity",
+          "GroupInServiceInstances"
+        ],
+        "metrics_granularity": "1Minute",
+        "launch_template": {
+          "id": "${each.value.id}",
+          "version": "${tostring(each.value.version)}"
+        },
+        "tag": [
+          {
+            "key": "Environment",
+            "value": "dev",
+            "propagate_at_launch": true
+          },
+          {
+            "key": "Group",
+            "value": "${each.key}",
+            "propagate_at_launch": true
+          },
+          {
+            "key": "Role",
+            "value": "nat",
+            "propagate_at_launch": true
+          }
+        ],
+        "lifecycle": {
+          "precondition": {
+            "condition": "${each.value.recovery == \"ADMIN_VERIFIED_ALL_THREE_HANDLERS_AND_EXACT_MEMBERSHIP\" && each.value.version > 0 && floor(each.value.version) == each.value.version && can(regex(\"^lt-[0-9a-f]{8,17}$\", each.value.id))}",
+            "error_message": "Exact administrator-installed NAT launch identity required."
+          }
+        }
+      }
+    }
+  },
+  "output": {
+    "nat_eip_allocation_ids": {
+      "value": "${{for key,v in aws_eip.wp5_nat:key=>v.allocation_id}}"
+    },
+    "nat_asg_names": {
+      "value": "${{for key,v in aws_autoscaling_group.wp5_nat:key=>v.name}}"
+    }
+  }
+}

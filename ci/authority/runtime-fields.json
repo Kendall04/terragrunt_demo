@@ -1,0 +1,489 @@
+{
+  "classification": "TARGET_REQUIREMENT",
+  "enforced_on_deployment": false,
+  "unknown_field": "REJECT_UNKNOWN",
+  "fields": {
+    "task.family": {
+      "category": "role-placement",
+      "disposition": "PROTECTED_BINDING",
+      "rule": "Exact environment/color role tuple, fields never interchangeable; family selected server-side"
+    },
+    "task.taskRoleArn": {
+      "category": "role-placement",
+      "disposition": "PROTECTED_BINDING",
+      "rule": "Exact environment/color role tuple, fields never interchangeable; family selected server-side"
+    },
+    "task.executionRoleArn": {
+      "category": "role-placement",
+      "disposition": "PROTECTED_BINDING",
+      "rule": "Exact environment/color role tuple, fields never interchangeable; family selected server-side"
+    },
+    "task.networkMode": {
+      "category": "network-process",
+      "disposition": "CONSTANT",
+      "rule": "awsvpc FARGATE 256/512 Linux X86_64"
+    },
+    "task.requiresCompatibilities": {
+      "category": "network-process",
+      "disposition": "CONSTANT",
+      "rule": "awsvpc FARGATE 256/512 Linux X86_64"
+    },
+    "task.cpu": {
+      "category": "network-process",
+      "disposition": "CONSTANT",
+      "rule": "awsvpc FARGATE 256/512 Linux X86_64"
+    },
+    "task.memory": {
+      "category": "network-process",
+      "disposition": "CONSTANT",
+      "rule": "awsvpc FARGATE 256/512 Linux X86_64"
+    },
+    "task.runtimePlatform": {
+      "category": "network-process",
+      "disposition": "CONSTANT",
+      "rule": "awsvpc FARGATE 256/512 Linux X86_64"
+    },
+    "task.containerDefinitions": {
+      "category": "containers",
+      "disposition": "CONSTANT",
+      "rule": "Exactly essential app and nonessential same-image probe"
+    },
+    "task.volumes": {
+      "category": "volumes-network-privilege",
+      "disposition": "REJECT",
+      "rule": "Not in approved canonical request; no user input"
+    },
+    "task.placementConstraints": {
+      "category": "volumes-network-privilege",
+      "disposition": "REJECT",
+      "rule": "Not in approved canonical request; no user input"
+    },
+    "task.proxyConfiguration": {
+      "category": "volumes-network-privilege",
+      "disposition": "REJECT",
+      "rule": "Not in approved canonical request; no user input"
+    },
+    "task.inferenceAccelerators": {
+      "category": "volumes-network-privilege",
+      "disposition": "REJECT",
+      "rule": "Not in approved canonical request; no user input"
+    },
+    "task.ephemeralStorage": {
+      "category": "volumes-network-privilege",
+      "disposition": "REJECT",
+      "rule": "Not in approved canonical request; no user input"
+    },
+    "task.enableFaultInjection": {
+      "category": "volumes-network-privilege",
+      "disposition": "REJECT",
+      "rule": "Not in approved canonical request; no user input"
+    },
+    "task.pidMode": {
+      "category": "volumes-network-privilege",
+      "disposition": "REJECT",
+      "rule": "Not in approved canonical request; no user input"
+    },
+    "task.ipcMode": {
+      "category": "volumes-network-privilege",
+      "disposition": "REJECT",
+      "rule": "Not in approved canonical request; no user input"
+    },
+    "task.tags": {
+      "category": "metadata",
+      "disposition": "PROTECTED_BINDING",
+      "rule": "Installed bounded tags only, never caller authorization tags"
+    },
+    "container.name": {
+      "category": "containers",
+      "disposition": "CONSTANT",
+      "rule": "Exact names, essential flags, application 8080/tcp mapping"
+    },
+    "container.essential": {
+      "category": "containers",
+      "disposition": "CONSTANT",
+      "rule": "Exact names, essential flags, application 8080/tcp mapping"
+    },
+    "container.portMappings": {
+      "category": "containers",
+      "disposition": "CONSTANT",
+      "rule": "Exact names, essential flags, application 8080/tcp mapping"
+    },
+    "container.image": {
+      "category": "image-identity",
+      "disposition": "QUALIFIED_DIGEST",
+      "rule": "Exact qualified account/region/repository/digest identical in both containers"
+    },
+    "container.command": {
+      "category": "command-entrypoint",
+      "disposition": "CONSTANT",
+      "rule": "App both absent; probe command [readiness-probe], entryPoint absent"
+    },
+    "container.entryPoint": {
+      "category": "command-entrypoint",
+      "disposition": "CONSTANT",
+      "rule": "App both absent; probe command [readiness-probe], entryPoint absent"
+    },
+    "container.environment": {
+      "category": "environment-secrets-logging",
+      "disposition": "PROTECTED_BINDING",
+      "rule": "Only protected app AWS_REGION APP_ENV DEPLOYMENT KMS_KEY_ID and exact DB_CONN_STRING secret; probe no env/secrets; awslogs exact settings"
+    },
+    "container.secrets": {
+      "category": "environment-secrets-logging",
+      "disposition": "PROTECTED_BINDING",
+      "rule": "Only protected app AWS_REGION APP_ENV DEPLOYMENT KMS_KEY_ID and exact DB_CONN_STRING secret; probe no env/secrets; awslogs exact settings"
+    },
+    "container.logConfiguration": {
+      "category": "environment-secrets-logging",
+      "disposition": "PROTECTED_BINDING",
+      "rule": "Only protected app AWS_REGION APP_ENV DEPLOYMENT KMS_KEY_ID and exact DB_CONN_STRING secret; probe no env/secrets; awslogs exact settings"
+    },
+    "container.environmentFiles": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "container.mountPoints": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "container.volumesFrom": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "container.repositoryCredentials": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "container.resourceRequirements": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "container.firelensConfiguration": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "container.credentialSpecs": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "container.linuxParameters": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "container.privileged": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "container.user": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "container.workingDirectory": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "container.readonlyRootFilesystem": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "container.dockerSecurityOptions": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "container.ulimits": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "container.systemControls": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "container.disableNetworking": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "container.links": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "container.hostname": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "container.extraHosts": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "container.dnsServers": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "container.dnsSearchDomains": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "container.interactive": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "container.pseudoTerminal": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "container.dockerLabels": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "container.healthCheck": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "container.restartPolicy": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "container.dependsOn": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "container.startTimeout": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "container.stopTimeout": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "container.versionConsistency": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "container.cpu": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "container.memory": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "container.memoryReservation": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "container.gpuIds": {
+      "category": "injection-privilege-lifecycle",
+      "disposition": "REJECT",
+      "rule": "Absent from canonical request; known empty/disabled response defaults require explicit normalization, not forwarding"
+    },
+    "service.cluster": {
+      "category": "activation",
+      "disposition": "PROTECTED_BINDING",
+      "rule": "Exact mapped service and exact returned authorized revision"
+    },
+    "service.service": {
+      "category": "activation",
+      "disposition": "PROTECTED_BINDING",
+      "rule": "Exact mapped service and exact returned authorized revision"
+    },
+    "service.taskDefinition": {
+      "category": "activation",
+      "disposition": "PROTECTED_BINDING",
+      "rule": "Exact mapped service and exact returned authorized revision"
+    },
+    "service.desiredCount": {
+      "category": "capacity",
+      "disposition": "BOUNDED_INPUT",
+      "rule": "Installed endpoint limit; candidate revision authorization must precede nonzero count"
+    },
+    "service.enableExecuteCommand": {
+      "category": "ecs-exec",
+      "disposition": "CONSTANT",
+      "rule": "false"
+    },
+    "service.networkConfiguration": {
+      "category": "service-execution",
+      "disposition": "PROTECTED_BINDING",
+      "rule": "Installed skeleton constants; normal/emergency may not forward caller values; lifecycle cannot remap active content"
+    },
+    "service.platformVersion": {
+      "category": "service-execution",
+      "disposition": "PROTECTED_BINDING",
+      "rule": "Installed skeleton constants; normal/emergency may not forward caller values; lifecycle cannot remap active content"
+    },
+    "service.loadBalancers": {
+      "category": "service-execution",
+      "disposition": "PROTECTED_BINDING",
+      "rule": "Installed skeleton constants; normal/emergency may not forward caller values; lifecycle cannot remap active content"
+    },
+    "service.deploymentConfiguration": {
+      "category": "service-execution",
+      "disposition": "PROTECTED_BINDING",
+      "rule": "Installed skeleton constants; normal/emergency may not forward caller values; lifecycle cannot remap active content"
+    },
+    "service.deploymentController": {
+      "category": "service-execution",
+      "disposition": "PROTECTED_BINDING",
+      "rule": "Installed skeleton constants; normal/emergency may not forward caller values; lifecycle cannot remap active content"
+    },
+    "service.capacityProviderStrategy": {
+      "category": "service-execution",
+      "disposition": "PROTECTED_BINDING",
+      "rule": "Installed skeleton constants; normal/emergency may not forward caller values; lifecycle cannot remap active content"
+    },
+    "service.schedulingStrategy": {
+      "category": "service-execution",
+      "disposition": "PROTECTED_BINDING",
+      "rule": "Installed skeleton constants; normal/emergency may not forward caller values; lifecycle cannot remap active content"
+    },
+    "service.launchType": {
+      "category": "service-execution",
+      "disposition": "PROTECTED_BINDING",
+      "rule": "Installed skeleton constants; normal/emergency may not forward caller values; lifecycle cannot remap active content"
+    },
+    "service.healthCheckGracePeriodSeconds": {
+      "category": "service-execution",
+      "disposition": "PROTECTED_BINDING",
+      "rule": "Installed skeleton constants; normal/emergency may not forward caller values; lifecycle cannot remap active content"
+    },
+    "service.enableECSManagedTags": {
+      "category": "service-execution",
+      "disposition": "PROTECTED_BINDING",
+      "rule": "Installed skeleton constants; normal/emergency may not forward caller values; lifecycle cannot remap active content"
+    },
+    "service.propagateTags": {
+      "category": "service-execution",
+      "disposition": "PROTECTED_BINDING",
+      "rule": "Installed skeleton constants; normal/emergency may not forward caller values; lifecycle cannot remap active content"
+    },
+    "service.availabilityZoneRebalancing": {
+      "category": "service-execution",
+      "disposition": "PROTECTED_BINDING",
+      "rule": "Installed skeleton constants; normal/emergency may not forward caller values; lifecycle cannot remap active content"
+    },
+    "service.serviceConnectConfiguration": {
+      "category": "alternate-execution",
+      "disposition": "REJECT",
+      "rule": "No caller-selected alternate execution/routing path"
+    },
+    "service.serviceRegistries": {
+      "category": "alternate-execution",
+      "disposition": "REJECT",
+      "rule": "No caller-selected alternate execution/routing path"
+    },
+    "service.volumeConfigurations": {
+      "category": "alternate-execution",
+      "disposition": "REJECT",
+      "rule": "No caller-selected alternate execution/routing path"
+    },
+    "service.vpcLatticeConfigurations": {
+      "category": "alternate-execution",
+      "disposition": "REJECT",
+      "rule": "No caller-selected alternate execution/routing path"
+    },
+    "service.forceNewDeployment": {
+      "category": "alternate-execution",
+      "disposition": "REJECT",
+      "rule": "No caller-selected alternate execution/routing path"
+    },
+    "service.placementConstraints": {
+      "category": "alternate-execution",
+      "disposition": "REJECT",
+      "rule": "No caller-selected alternate execution/routing path"
+    },
+    "service.placementStrategy": {
+      "category": "alternate-execution",
+      "disposition": "REJECT",
+      "rule": "No caller-selected alternate execution/routing path"
+    },
+    "service.lifecycleHooks": {
+      "category": "alternate-execution",
+      "disposition": "REJECT",
+      "rule": "No caller-selected alternate execution/routing path"
+    },
+    "response.taskDefinitionArn": {
+      "category": "aws-return-only",
+      "disposition": "RETURN_ONLY",
+      "rule": "Recognize and validate type/identity; never copy into registration request"
+    },
+    "response.revision": {
+      "category": "aws-return-only",
+      "disposition": "RETURN_ONLY",
+      "rule": "Recognize and validate type/identity; never copy into registration request"
+    },
+    "response.status": {
+      "category": "aws-return-only",
+      "disposition": "RETURN_ONLY",
+      "rule": "Recognize and validate type/identity; never copy into registration request"
+    },
+    "response.registeredAt": {
+      "category": "aws-return-only",
+      "disposition": "RETURN_ONLY",
+      "rule": "Recognize and validate type/identity; never copy into registration request"
+    },
+    "response.registeredBy": {
+      "category": "aws-return-only",
+      "disposition": "RETURN_ONLY",
+      "rule": "Recognize and validate type/identity; never copy into registration request"
+    },
+    "response.deregisteredAt": {
+      "category": "aws-return-only",
+      "disposition": "RETURN_ONLY",
+      "rule": "Recognize and validate type/identity; never copy into registration request"
+    },
+    "response.compatibilities": {
+      "category": "aws-return-only",
+      "disposition": "RETURN_ONLY",
+      "rule": "Recognize and validate type/identity; never copy into registration request"
+    },
+    "response.requiresAttributes": {
+      "category": "aws-return-only",
+      "disposition": "RETURN_ONLY",
+      "rule": "Recognize and validate type/identity; never copy into registration request"
+    }
+  },
+  "semantic_rules": [
+    "Exact task/execution role tuple and placement",
+    "App/probe identical qualified digest",
+    "No duplicate container/environment/secret names",
+    "No null or unknown execution-relevant fields",
+    "Validate canonical intent before registration and exact response before startup",
+    "Probe uses inherited entrypoint and exactly readiness-probe command",
+    "Bootstrap zero-count/no workload roles or secrets; never emergency-enrolled",
+    "Only successful normal activation enrolls emergency content",
+    "Current eligibility required for new execution; E3 required before normal switch"
+  ],
+  "snapshot_limit": "Reviewed field vocabulary only. Full pinned ECS SDK/API model and response normalization required in WP4 before deployment enforcement."
+}

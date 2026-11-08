@@ -1,0 +1,94 @@
+{
+  "ingest": {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Action": [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:ConditionCheckItem"
+        ],
+        "Resource": "arn:aws:dynamodb:us-east-1:341936017254:table/ecs-sentinel-r20261023b1",
+        "Condition": {
+          "ForAllValues:StringEquals": {
+            "dynamodb:LeadingKeys": [
+              "NS#4ebefbe15b843f4db70b623238a3f1115219cfa6a437ffc71aa9fb86d6306f65"
+            ]
+          },
+          "Null": {
+            "dynamodb:LeadingKeys": "false"
+          }
+        }
+      },
+      {
+        "Effect": "Allow",
+        "Action": [
+          "sqs:ReceiveMessage",
+          "sqs:DeleteMessage",
+          "sqs:GetQueueAttributes"
+        ],
+        "Resource": "arn:aws:sqs:us-east-1:341936017254:ecs-sentinel-r20261023b1-ingestion"
+      },
+      {
+        "Effect": "Allow",
+        "Action": [
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        "Resource": "arn:aws:logs:us-east-1:341936017254:log-group:/aws/lambda/ecs-sentinel-r20261023b1-ingest:log-stream:*"
+      }
+    ]
+  },
+  "dispatch": {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Action": [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:ConditionCheckItem"
+        ],
+        "Resource": "arn:aws:dynamodb:us-east-1:341936017254:table/ecs-sentinel-r20261023b1",
+        "Condition": {
+          "ForAllValues:StringEquals": {
+            "dynamodb:LeadingKeys": [
+              "NS#4ebefbe15b843f4db70b623238a3f1115219cfa6a437ffc71aa9fb86d6306f65"
+            ]
+          },
+          "Null": {
+            "dynamodb:LeadingKeys": "false"
+          }
+        }
+      },
+      {
+        "Effect": "Allow",
+        "Action": [
+          "s3:GetObject",
+          "s3:PutObject"
+        ],
+        "Resource": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254/sentinel/v3/4ebefbe15b843f4db70b623238a3f1115219cfa6a437ffc71aa9fb86d6306f65/*"
+      },
+      {
+        "Effect": "Allow",
+        "Action": [
+          "sns:Publish"
+        ],
+        "Resource": "arn:aws:sns:us-east-1:341936017254:ecs-sentinel-r20261023b1-notices"
+      },
+      {
+        "Effect": "Allow",
+        "Action": [
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ],
+        "Resource": "arn:aws:logs:us-east-1:341936017254:log-group:/aws/lambda/ecs-sentinel-r20261023b1-dispatch:log-stream:*"
+      }
+    ]
+  }
+}

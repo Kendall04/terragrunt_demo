@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><TreatWarningsAsErrors>true</TreatWarningsAsErrors><RestorePackagesWithLockFile>true</RestorePackagesWithLockFile><GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles><CopyOutputSymbolsToPublishDirectory>false</CopyOutputSymbolsToPublishDirectory></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Ecs.Backup.Sentinel/Ecs.Backup.Sentinel.csproj" />
+    <ProjectReference Include="$(SentinelSourceRoot)/src/Sentinel.Worker.Lambda/Sentinel.Worker.Lambda.csproj" />
+    <ProjectReference Include="$(SentinelSourceRoot)/src/Sentinel.Persistence.S3/Sentinel.Persistence.S3.csproj" />
+    <PackageReference Include="AWSSDK.Core" Version="[4.0.102.10]" />
+    <PackageReference Include="AWSSDK.SimpleNotificationService" Version="[4.0.100.17]" />
+  </ItemGroup>
+  <Target Name="RequireManagedSource" BeforeTargets="PrepareForBuild"><Error Condition="!Exists('$(SentinelSourceRoot)/ecs-source-receipt.json')" Text="Prepare verified upstream source with the checked-in managed extension first." /></Target>
+  <Target Name="ExcludeTransitivePublishSymbols" AfterTargets="ComputeFilesToPublish">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)" Condition="'%(ResolvedFileToPublish.Extension)' == '.pdb'" />
+    </ItemGroup>
+  </Target>
+</Project>

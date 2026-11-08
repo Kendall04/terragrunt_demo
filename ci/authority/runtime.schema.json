@@ -1,0 +1,228 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "family": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "[A-Za-z0-9][A-Za-z0-9_-]{0,127}"
+    },
+    "taskRoleArn": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "arn:aws:iam::[0-9]{12}:role/[A-Za-z0-9_/-]+"
+    },
+    "executionRoleArn": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "arn:aws:iam::[0-9]{12}:role/[A-Za-z0-9_/-]+"
+    },
+    "networkMode": {
+      "type": "string",
+      "const": "awsvpc"
+    },
+    "requiresCompatibilities": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "const": "FARGATE"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "cpu": {
+      "type": "string",
+      "const": "256"
+    },
+    "memory": {
+      "type": "string",
+      "const": "512"
+    },
+    "runtimePlatform": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cpuArchitecture": {
+          "type": "string",
+          "const": "X86_64"
+        },
+        "operatingSystemFamily": {
+          "type": "string",
+          "const": "LINUX"
+        }
+      },
+      "required": [
+        "cpuArchitecture",
+        "operatingSystemFamily"
+      ]
+    },
+    "containerDefinitions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "[A-Za-z0-9][A-Za-z0-9_-]{0,127}"
+          },
+          "image": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "[0-9]{12}\\.dkr\\.ecr\\.[a-z0-9-]+\\.amazonaws\\.com/[a-z0-9/_-]+@sha256:[0-9a-f]{64}"
+          },
+          "essential": {
+            "type": "boolean"
+          },
+          "command": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "const": "readiness-probe"
+            },
+            "minItems": 1,
+            "maxItems": 1
+          },
+          "portMappings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "containerPort": {
+                  "type": "integer",
+                  "const": 8080
+                },
+                "protocol": {
+                  "type": "string",
+                  "const": "tcp"
+                }
+              },
+              "required": [
+                "containerPort",
+                "protocol"
+              ]
+            },
+            "maxItems": 1
+          },
+          "environment": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "enum": [
+                    "AWS_REGION",
+                    "APP_ENV",
+                    "DEPLOYMENT",
+                    "KMS_KEY_ID"
+                  ]
+                },
+                "value": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256
+                }
+              },
+              "required": [
+                "name",
+                "value"
+              ]
+            },
+            "maxItems": 4
+          },
+          "secrets": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "const": "DB_CONN_STRING"
+                },
+                "valueFrom": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256
+                }
+              },
+              "required": [
+                "name",
+                "valueFrom"
+              ]
+            },
+            "maxItems": 1
+          },
+          "logConfiguration": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "logDriver": {
+                "type": "string",
+                "const": "awslogs"
+              },
+              "options": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "awslogs-group": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  },
+                  "awslogs-region": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  },
+                  "awslogs-stream-prefix": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  }
+                },
+                "required": [
+                  "awslogs-group",
+                  "awslogs-region",
+                  "awslogs-stream-prefix"
+                ]
+              }
+            },
+            "required": [
+              "logDriver",
+              "options"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "image",
+          "essential"
+        ]
+      },
+      "minItems": 2,
+      "maxItems": 2
+    }
+  },
+  "required": [
+    "family",
+    "taskRoleArn",
+    "executionRoleArn",
+    "networkMode",
+    "requiresCompatibilities",
+    "cpu",
+    "memory",
+    "runtimePlatform",
+    "containerDefinitions"
+  ],
+  "description": "TARGET_REQUIREMENT structural schema only; protected binding equality, role pairing, qualification, per-container rules and response normalization must be enforced in WP4. This schema is not deployment authorization."
+}

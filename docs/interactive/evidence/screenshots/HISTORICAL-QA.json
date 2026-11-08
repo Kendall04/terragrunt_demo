@@ -1,0 +1,52 @@
+[
+  {
+    "file": "historical-az6-recovery-1440.png",
+    "sha256": "6c7f797742e434e8b2f69c2093849f217d84f9f8d7048f54b8bc713371cace6f",
+    "classification": "HISTORICAL_UNCHANGED"
+  },
+  {
+    "file": "historical-az6-recovery-390.png",
+    "sha256": "87b66c02df8bbb9d832032d153fce8bbf527af46a361968a6ac052d4ff6f838d",
+    "classification": "HISTORICAL_UNCHANGED"
+  },
+  {
+    "file": "historical-backup-signals-1440.png",
+    "sha256": "9b4149b24e618c146032a4db31ff31b0d6bc39bb5793a683aad9a90759010da1",
+    "classification": "HISTORICAL_UNCHANGED"
+  },
+  {
+    "file": "historical-backup-signals-390.png",
+    "sha256": "f04320bc026b44acd4cd6733963dbcf9c7fa76d242dc241c27a7ed4251423104",
+    "classification": "HISTORICAL_UNCHANGED"
+  },
+  {
+    "file": "historical-future-integrations-1440.png",
+    "sha256": "b32208b26a4ab5f69102ab76850e00f8811dbbf46df2ef841fed18e305c817f1",
+    "classification": "HISTORICAL_UNCHANGED"
+  },
+  {
+    "file": "historical-future-integrations-390.png",
+    "sha256": "3517e7e4a418e94354f6b7e4978184f8c924b615ef9f46bbcbb9fd500de8a48b",
+    "classification": "HISTORICAL_UNCHANGED"
+  },
+  {
+    "file": "historical-v1-network-1440.png",
+    "sha256": "0b5fe5bed92c1e690f1bcc2ed9d65bb4975f06dfbfe2930d3a2cbb32e7a8df8f",
+    "classification": "HISTORICAL_UNCHANGED"
+  },
+  {
+    "file": "historical-v1-network-390.png",
+    "sha256": "1f4ad2f7a421341912d8dc2dabd450324d15fb754463088b82e09db1e390b9d1",
+    "classification": "HISTORICAL_UNCHANGED"
+  },
+  {
+    "file": "historical-v1-platform-1440.png",
+    "sha256": "b53c3e1d03508a278aa68a19835695da82f0d514442471e65743ef63b7bd93d0",
+    "classification": "HISTORICAL_UNCHANGED"
+  },
+  {
+    "file": "historical-v1-platform-390.png",
+    "sha256": "6bef59220ea71984499590a5a482bf65853657923adb75a2168999f01009e954",
+    "classification": "HISTORICAL_UNCHANGED"
+  }
+]

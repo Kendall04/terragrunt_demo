@@ -1,0 +1,276 @@
+# E1 WP2A — protected security root foundation
+
+## Opt-in DEV SQL migrator metadata
+
+`dev_sql_migrator_metadata=false` preserves the installed graph. A separately
+authorized administrator may plan `true` to add only
+`module.protected_resources.aws_secretsmanager_secret.dev_sql_migrator[0]`, named
+`demo/dev/db/sql-migrator-password`, in account 341936017254/us-east-1. It reuses
+the existing DEV workload CMK, has a 30-day recovery window and `prevent_destroy`.
+The additional output is its metadata ARN, not a value, publication or approval.
+Historical protected publications, their catalog/digest and consumers are unchanged.
+
+Terraform never generates a password or creates a secret version. After separate
+metadata apply approval, the administrator writes one cryptographically generated
+value through the confidential SDK channel, with no value in arguments, files,
+tracing or evidence. Only the authentic returned ARN can enter a proposed exact
+SQL-role read grant and the strict `sql_database_security` input. Existing IAM,
+Part6 and KMS policies are not changed by this metadata option. TLS installation
+and value/host permissions remain independent gates described in
+[SQL runtime security](../../docs/sql-runtime-security.md#proposed-confidential-sql-certificate-transfer).
+
+The refreshed serial-66 reconciliation exposed installed WP6 request identities
+whose historical approval records are unavailable. Their two closed preservation
+fingerprints retain the observed trust, request-only policies and qualified
+gateway readbacks. `wp6_preservation_approval_sha256` defaults to null and requires
+a separate new owner decision on a complete document; it is not covered by rev5.
+Missing or partial preservation blocks the historical limited installation.
+The normal G1-G9 activation gate is unchanged. Historical WP3 preservation keeps
+release concurrency zero and the observed completion target/permission on version
+1; the finalizer function already has version 2, which is not a new publication.
+
+Limited mode omits only uninstalled keyed reservations (WP5/status ECR, PROD
+state bucket and local declaration receipts), preserving all existing addresses.
+The 29 PROD declarations absent from the installed serial-66 state now use
+`count = var.dev_cicd_installation_only ? 0 : 1`. Limited DEV mode omits them;
+full mode retains their security attributes and dependencies at the future
+addresses `module.protected_resources.<type>.prod_<name>[0]`. Existing DEV and
+neutral addresses do not change. No `moved` blocks, imports or state migration
+are required for that installed state. A different state containing old PROD
+singleton addresses must stop for a separate migration review before using this
+source. Excluded PROD output candidates are explicitly unavailable with null
+values; their indexed references are evaluated only in full mode.
+No adoption, apply or fresh PLAN-ONLY is authorized by this code. Rev5 remains
+unchanged and the additional WP6 preservation decision is still pending.
+
+Every future indexed address has the prefix `module.protected_resources.` and
+the suffix `[0]`. The complete set is:
+
+| Resource types | Names (each type/name pair is one address) |
+| --- | --- |
+| `aws_iam_role`, `aws_iam_role_policy` | `prod_sql`, `prod_flow`, `prod_nat`, `prod_nat_recovery`, `prod_cleanup`, `prod_blue_task`, `prod_blue_exec`, `prod_green_task`, `prod_green_exec` |
+| `aws_iam_role_policy_attachment` | `prod_sql`, `prod_blue_exec`, `prod_green_exec` |
+| `aws_iam_instance_profile` | `prod_sql_profile`, `prod_nat_profile` |
+| `aws_kms_key`, `aws_kms_alias` | `prod_kms` |
+| `aws_secretsmanager_secret` | `prod_sa`, `prod_db_user`, `prod_connection` |
+| `aws_ecr_repository` | `prod_repository` |
+
+WP3C adds [internal release wiring](../../docs/e1-internal-release.md) within this
+root. Canonical installation/runtime records remain empty; no live resources or
+external request authority are claimed.
+
+WP4D adds [exact IAM and selective materialization](../../docs/e1-wp4d-iam-materialization.md)
+for the accepted delivery/recovery contracts. Its installation and environment
+maps also remain empty, so no WP4D compute or external request grant is active.
+
+WP5 adds [protected environment lifecycle](../../docs/e1-protected-environment-lifecycle.md)
+using the eight existing ordinary/high-risk reservations. Installation, approval
+and environment-binding registries remain empty; lifecycle compute stays inactive.
+
+Classification: `E1_WP2A_PROTECTED_SECURITY_ROOT_FOUNDATION`.
+Historical WP2A stage classification. WP7 completes [repository E1 acceptance](../../docs/e1-final-acceptance.md); **not deployed or operationally active**.
+The accepted baseline is `c8e880b552b5782e9bca94891b75a71b45ddc113`.
+The immutable [spec](../../../specs/iam-hardening/spec.md) and
+[plan section 6](../../../specs/iam-hardening/plan.md#61-security-root) govern it.
+
+WP2B extends this accepted foundation with the
+[protected control-bundle contract](../../docs/e1-control-bundles.md): canonical
+inactive bundle reservations and admin-only storage. The WP2A identity, backend
+and external-administration boundaries below remain unchanged.
+
+## Neutral root and external administration
+
+`terraform/live/security/terragrunt.hcl` selects this root. It inherits neither
+dev nor prod configuration and has no dependency on either environment. The root
+calls `modules/request_identities` and the WP2B `modules/control_bundle_storage`.
+WP2C adds `modules/controller_compute`; WP2D adds
+`modules/protected_resources` and the [ownership/publication substrate](../../docs/e1-ownership-publication.md).
+No workflow or existing bootstrap script invokes it. The existing operational
+dev/prod paths are unchanged.
+
+The operator supplies an **existing, separately authenticated human administrative
+principal**. This root does not create an admin role, assume one from a requester,
+or grant administration. The input ARN records that external identity; it is not
+credentials, an authentication check or proof of admin permissions. The AWS
+provider restricts the selected account. Actual caller authentication and backend
+access controls remain external, UNVERIFIED prerequisites. Do not run apply with
+ordinary lifecycle credentials or interpret the source contract as AWS enforcement
+against the still-broad legacy roles.
+
+## State and empty-account bootstrap contract
+
+The S3 backend is separate from environment lifecycle state. Before a separately
+authorized init, the human admin must establish a dedicated admin-only bucket,
+versioning, public-access blocking, TLS-only access and admin-only state/lock
+permissions. That bootstrap implementation and any live policy verification are
+deferred. There is no backend auto-creation or state migration in this slice.
+Terraform >=1.10 S3 native locking is required; the repository CI selects 1.13.4.
+
+The external administration interface requires these non-secret values with
+**no dev/prod fallback**:
+
+| Input | Meaning |
+| --- | --- |
+| `E1_SECURITY_STATE_BUCKET` | Externally bootstrapped dedicated admin bucket name |
+| `E1_SECURITY_STATE_REGION` | Its actual region |
+| `E1_SECURITY_ACCOUNT_ID` | Admin-selected account, checked by the provider |
+| `E1_SECURITY_AWS_REGION` | Security resource region |
+| `E1_SECURITY_ADMIN_PRINCIPAL_ARN` | Existing same-account human-admin IAM role/user ARN |
+
+Backend key is `e1/security/terraform.tfstate`; its lock is the corresponding
+`.tflock` object. Encryption and `use_lockfile` are fixed true. Bucket and lock
+administration remain security-admin owned. The generated root fixes key,
+encryption and locking directly from the canonical source. Bucket and region are
+deliberately unspecified partial-backend inputs: a later authorized admin init
+must supply them as backend configuration from the first two interface values.
+The wrapper reads only the account, resource region and admin ARN inputs. It does
+not initialize or provision a backend, and cannot grant external permissions.
+Do not put credentials, token files or secret values in backend arguments, tfvars,
+the authority source, outputs or state. Ordinary lifecycle has neither read nor
+write access to this state in the target contract, including the lock object.
+
+There is deliberately no bootstrap/apply command in this implementation task.
+The current empty-account assumption does not assert that the backend exists.
+
+## One closed authority source
+
+[`authority.json`](authority.json) is the canonical WP2A target authority and
+ownership contract. It contains the role inventory, exact deny-only IAM documents,
+ownership categories, backend requirements, future interface reservations and
+UNVERIFIED governance expectations. Terraform loads it using `templatefile` and
+`jsondecode`; the sole substitution is the validated admin principal ARN.
+Both role trust and inline permission policy are encoded from that same object.
+No second policy body is maintained in Terraform or expected-answer fixtures.
+
+[`model.py`](../../../scripts/tests/security_root/model.py) validates a closed
+WP2A grammar and generates the fixed `.tf.json` plumbing and Terragrunt wrapper.
+[`render.py`](../../../scripts/tests/security_root/render.py) checks by default;
+`--write` regenerates only that plumbing. Tests compare the checked-in wiring to
+the generator, then evaluate documents from the authority source with WP1's
+admitted policy semantics. This is not a general HCL or policy DSL interpreter.
+
+Admission covers all repository `.tf`, `.tf.json`, `.hcl`, `.tfvars` and
+`.tfvars.json` sources. Additional/changed target declarations, modules, backends,
+provider mappings, hooks and input files fail. Protected-root payload files are
+also closed. New mechanisms require an explicit reviewed grammar/generator/test
+extension, not an inventory refresh. Source symlinks/junctions are not admitted.
+
+The [legacy source snapshot](../../../ci/authority/target/legacy-sources.json)
+pins the baseline's 137 IaC files as `TRANSITIONAL_LEGACY_NOT_TARGET_ACCEPTED`.
+It is a migration exclusion, not a target Allow mechanism or proof of safety.
+Its digest is independently pinned by admission. A new role hidden in ordinary
+Terraform, a second security-root invocation or a changed legacy declaration
+fails even if someone refreshes WP1's freshness inventory. Later migrations must
+explicitly revise this exclusion with new target ownership evidence. Arbitrary
+executable behavior outside the target root is not simulated; no target controller
+execution is installed by WP2A.
+
+## Ownership and output interfaces
+
+The manifest distinguishes `SECURITY_ROOT_OWNED`, `ORDINARY_LIFECYCLE_OWNED`,
+`HIGH_RISK_LIFECYCLE_OWNED`, `DELIVERY_CONTROLLER_OWNED`,
+`RECOVERY_CONTROLLER_OWNED`, `EXTERNAL_GOVERNANCE` and `UNVERIFIED`.
+All OIDC/IAM/trust/profile/boundary administration, KMS policy/grant authority,
+secret metadata/resource policies, shared ECR/storage/evidence protection,
+controller identities/code/configuration and security state/lock ownership point
+outward to security administration. WP2A declares inert request identities; WP2B
+declares bundle storage; WP2C declares inert controller identities; WP2D extracts
+workload/recovery IAM, KMS, secret metadata, ECR, artifact storage and OIDC into
+neutral TARGET ownership. Recovery execution remains disabled/reserved.
+
+Ordinary owns intended network/platform skeleton reconciliation; high-risk owns
+intended data/apps skeleton reconciliation. Normal revision/count/forwarding and
+existing-color restoration are separate controller responsibilities. None owns
+security controls, and no mutable ceiling is supplied to an ordinary module.
+These are target ownership allocations, not changes to current runtime owners.
+
+`foundation` outputs the stage, canonical-source hash, created request-role ARNs
+and `target_accepted=false`. `protected_interface_contract` reserves ARN/ID-only
+records for workload/recovery roles, KMS, secret metadata, artifact/evidence/ECR
+identities and qualified controller endpoints. They remain `UNAVAILABLE`, without
+invented resource identifiers. Later admin publication must expose only these
+sanitized records; ordinary consumers must not use `terraform_remote_state` on
+this root. WP2D now implements candidate output production, closed record
+validation and offline administrator publication. The live publication registry
+remains empty; no deployed identifiers or installation are claimed.
+
+## Inert identities and deferred activation
+
+Eleven neutral-root request identities are declared: plan-dev/prod, infra-dev/prod,
+infra-high-risk-dev/prod, release, deploy-dev, promote-prod and emergency-dev/prod.
+Their names use the new `e1-request-` namespace. Each has a trust document with
+no Allow and an inline `Deny Action=* Resource=*`. Even the recorded admin is
+denied assumption; admin manages these resources through separately held authority.
+There is no OIDC principal in the declared trust, no endpoint, no operational grant and
+no enable switch. Later activation must replace this inert policy through a
+reviewed security-admin change; adding an Allow alongside the deny is insufficient.
+No permissions boundary is introduced: final responsibility ceilings are deferred,
+and boundaries will be defense in depth, never the sole proof.
+
+Future OIDC expectations preserve repo/context/job_workflow_ref and distinct
+responsibility/environment identities. Workflow paths are reserved contracts, not
+installed workflows; commit pins are null/unbound and GitHub verification is
+UNVERIFIED. No OIDC cutover or external setting is performed.
+
+## WP6 protected workflow candidate
+
+[Protected workflow integration](../../docs/e1-protected-workflows.md) extends the
+same eleven reservations with exact, conditional OIDC request grants. The canonical
+approval registry is empty; all request identities and WP4D/WP5 compute remain
+inactive. Positive trust/permissions require admin-admitted immutable source and
+G1-G9 observations plus actual installed numeric gateway endpoints (or exact
+read-only plan bindings). Callers cannot supply those records. No AWS/GitHub
+configuration, installation, migration or operational cutover occurred. Legacy
+source retirement and final acceptance remain WP7 responsibilities.
+
+The older foundation sections below describe their original bounded contributions,
+not current deployment evidence or the latest implementation status.
+
+## Evidence limits and offline checks
+
+Run from the repository root with installed Python, without AWS credentials:
+
+```text
+python -I -B scripts/tests/security_root/render.py
+python -I -B scripts/tests/security_root/run.py --report <temporary-report-path>
+python -I -B scripts/tests/authority/run.py --report <temporary-report-path>
+```
+
+Both test runners use WP1's credential/proxy scrub and socket/process guards.
+Tests mutate disposable source copies. WP2A tests check ownership, inert trust
+and permissions, competing declarations, wiring/source drift, backend separation,
+external governance and retained CURRENT positive/PARTIAL witnesses.
+
+WP1 is unchanged: CURRENT results remain trustworthy positive witnesses with
+PARTIAL/UNKNOWN, not exhaustive negative authority proof. EFFECTIVE_DENY is
+demonstrated only inside closed synthetic fixture universes. WP2A's synthetic
+projection uses source policies but certifies only its explicitly enumerated
+policy-permission routes, not the target repository/account. Final target negative
+acceptance requires a genuinely closed admitted source universe after migration.
+The legacy exclusion and deferred classes prevent any present E1-secure claim.
+
+Static Terraform/Terragrunt formatting does not need initialization. Provider-
+dependent validate may be unavailable without downloaded plugins; do not initialize
+or download for this task. Git Bash selector remains FAILED/UNRESOLVED cleanup;
+supported Linux execution remains UNVALIDATED. Windows tests do not clear either.
+
+External deployment still owns live backend bootstrap/protection and state
+inventory/migration. Repository TARGET ownership and offline publication exist;
+live AWS bootstrap, migration, installation/readback remain UNVERIFIED / NOT
+PERFORMED. Later packages own operational ceilings/boundaries, executable
+controllers, images and activation. Controller/recovery execution remains inactive.
+WP3–WP7 delivery/qualification,
+runtime enforcement, protected lifecycle execution, workflow cutover and legacy
+revocation remain out of scope. No state import, live IAM change or deployment
+has occurred.
+
+## WP2C — inactive protected compute foundation
+
+The root also calls `modules/controller_compute`, described in the
+[WP2C contract](../../docs/e1-controller-compute.md). It declares 18 protected
+node records and deny-only execution roles, with zero Lambda/CodeBuild instances.
+The earlier WP2A/WP2B sections describe their bounded contributions; the added
+compute declaration is still not a deployed/operational controller plane. All
+eleven request identities, bundle reservations and external administration
+requirements remain unchanged. Run the dedicated
+`python -I -B scripts/tests/controller_compute/run.py` suite with WP1/WP2A/WP2B.

@@ -51,7 +51,7 @@ case "${GITHUB_EVENT_NAME:-}" in
       "$base" "$actual" -- >> "$work/paths" || run merge-diff-failed
     ;;
   push)
-    [[ ${GITHUB_REF:-} == refs/heads/develop ]] || run unexpected-push-target
+    [[ ${GITHUB_REF:-} == refs/heads/develop || ${GITHUB_REF:-} == refs/heads/main ]] || run unexpected-push-target
     [[ $head == "$actual" ]] || die 'Push head differs from tested revision'
     git merge-base --is-ancestor "$base" "$head" || run non-ancestor-push
     git diff --raw --no-abbrev -z --no-renames --no-ext-diff --no-textconv \

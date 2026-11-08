@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "origin": "https://github.com/Kendall04/service-identity-pki.git",
+    "commit": "29a3dfc70a0b1646388c0229212898b4be164afe"
+  },
+  "upstreamSdk": "9.0.101 (already installed)",
+  "upstreamTarget": "net8.0 unchanged",
+  "consumerSdk": "10.0.402",
+  "consumerTarget": "net10.0",
+  "packageVersion": "0.1.0-alpha.1",
+  "packages": {
+    "ServiceIdentity.Pki.Core.0.1.0-alpha.1.nupkg": {
+      "sha256": "226e16bddd63b1e6ea069f7cfd32e67afa73657546ce25ad6e78caefc2874988",
+      "bytes": 21046
+    },
+    "ServiceIdentity.Pki.Integration.AspNetCore.0.1.0-alpha.1.nupkg": {
+      "sha256": "85d73806ffcc00de1916f3ad4264e247d5d2cbb710cb4665301c3a9601e6eace",
+      "bytes": 32967
+    },
+    "ServiceIdentity.Pki.Providers.Local.0.1.0-alpha.1.nupkg": {
+      "sha256": "8b241e2c14eacddff426abdab1bbb3e1cf4421d3445eaf7b1b4c56b5fe6eacc4",
+      "bytes": 23696
+    }
+  },
+  "externalDownloads": false,
+  "published": false,
+  "bitReproduciblePackageClaim": false
+}

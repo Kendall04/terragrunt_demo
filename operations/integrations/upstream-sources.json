@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "sources": {
+    "sentinel": {
+      "origin": "https://github.com/Kendall04/reliability-sentinel.git",
+      "commit": "0e8fc55333ddde3b9816885915310a7e69f3de45"
+    },
+    "pki": {
+      "origin": "https://github.com/Kendall04/service-identity-pki.git",
+      "commit": "29a3dfc70a0b1646388c0229212898b4be164afe"
+    }
+  }
+}

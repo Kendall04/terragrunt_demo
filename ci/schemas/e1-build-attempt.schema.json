@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Protected non-qualifying terminal build attempt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "operation_id",
+    "project",
+    "build_id",
+    "source_commit",
+    "account",
+    "region",
+    "repository",
+    "schema",
+    "writer",
+    "observed_source_commit",
+    "state",
+    "terminal_stage",
+    "checks",
+    "classification"
+  ],
+  "properties": {
+    "operation_id": {
+      "type": "string",
+      "pattern": "[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}",
+      "maxLength": 1024
+    },
+    "project": {
+      "const": "e1-controller-release"
+    },
+    "build_id": {
+      "type": "string",
+      "pattern": "e1-controller-release:[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}",
+      "maxLength": 1024
+    },
+    "source_commit": {
+      "type": "string",
+      "pattern": "[0-9a-f]{40}",
+      "maxLength": 1024
+    },
+    "account": {
+      "type": "string",
+      "pattern": "[0-9]{12}",
+      "maxLength": 1024
+    },
+    "region": {
+      "type": "string",
+      "pattern": "[a-z]{2}(?:-[a-z]+)+-[0-9]",
+      "maxLength": 1024
+    },
+    "repository": {
+      "const": "Kendall04/terragrunt_demo"
+    },
+    "schema": {
+      "const": "E1_BUILD_ATTEMPT_TERMINAL_V1"
+    },
+    "writer": {
+      "const": "BUILD_SUPERVISOR"
+    },
+    "observed_source_commit": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "state": {
+      "const": "FAILED"
+    },
+    "terminal_stage": {
+      "enum": [
+        "source",
+        "dotnet_restore",
+        "dotnet_build",
+        "dotnet_test",
+        "image_context",
+        "image_build",
+        "image_publish",
+        "manifest_publish",
+        "manifest_readback",
+        "result_publish"
+      ]
+    },
+    "checks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dotnet_restore",
+        "dotnet_build",
+        "dotnet_test",
+        "image_build",
+        "image_publish",
+        "probe_capability",
+        "probe_no_server"
+      ],
+      "properties": {
+        "dotnet_restore": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "SKIPPED",
+            "NOT_RUN",
+            "UNKNOWN"
+          ]
+        },
+        "dotnet_build": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "SKIPPED",
+            "NOT_RUN",
+            "UNKNOWN"
+          ]
+        },
+        "dotnet_test": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "SKIPPED",
+            "NOT_RUN",
+            "UNKNOWN"
+          ]
+        },
+        "image_build": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "SKIPPED",
+            "NOT_RUN",
+            "UNKNOWN"
+          ]
+        },
+        "image_publish": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "SKIPPED",
+            "NOT_RUN",
+            "UNKNOWN"
+          ]
+        },
+        "probe_capability": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "SKIPPED",
+            "NOT_RUN",
+            "UNKNOWN"
+          ]
+        },
+        "probe_no_server": {
+          "enum": [
+            "PASS",
+            "FAIL",
+            "SKIPPED",
+            "NOT_RUN",
+            "UNKNOWN"
+          ]
+        }
+      }
+    },
+    "classification": {
+      "enum": [
+        "EXECUTION_OR_PUBLICATION_FAILED",
+        "SOURCE_INTEGRITY_VIOLATION"
+      ]
+    }
+  }
+}

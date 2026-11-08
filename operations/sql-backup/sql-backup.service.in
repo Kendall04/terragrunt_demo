@@ -1,0 +1,23 @@
+# Install is inert. Enable only after separately authorized host/role/SQL bootstrap.
+[Unit]
+Description=Verified SQL Express backup and bounded local cleanup
+After=network-online.target mssql-server.service
+Wants=network-online.target
+Requisite=mssql-server.service
+
+[Service]
+Type=oneshot
+User=@SERVICE_USER@
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=@STAGING@
+LoadCredential=backup-connection:/run/sql-backup-credentials/backup-connection
+LoadCredential=verify-connection:/run/sql-backup-credentials/verify-connection
+Environment=AWS_EC2_METADATA_V1_DISABLED=true
+Environment=DOTNET_CLI_TELEMETRY_OPTOUT=1
+ExecStart=/usr/bin/python3 /opt/terragrunt-demo/sql-backup/host.py run --config /etc/terragrunt-demo/sql-backup/config.json --executable /opt/terragrunt-demo/sql-backup/bin/SqlBackup --local-sql-self-signed
+TimeoutStartSec=1300
+# No automatic retry: UNKNOWN is not remote cancellation or replay authority.

@@ -1,0 +1,130 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net10.0": {
+      "AWSSDK.Core": {
+        "type": "Direct",
+        "requested": "[4.0.102.10, 4.0.102.10]",
+        "resolved": "4.0.102.10",
+        "contentHash": "ngedi+19mHnszODbUrZLtpU6JeIXVbR/MxslGZPJIcC5YVZcJSZxasnde3+0iboQj9V9bKri7b8D+TXTrOW6Aw=="
+      },
+      "AWSSDK.SimpleNotificationService": {
+        "type": "Direct",
+        "requested": "[4.0.100.17, 4.0.100.17]",
+        "resolved": "4.0.100.17",
+        "contentHash": "djEB33vWeQ2i6XetSY+HgIkXPQPpN5vCisq/Vye+ojKgQ1UvZglpX6aoBwpKvlCep6eoYOJMYs7XIWU3ajwR0g==",
+        "dependencies": {
+          "AWSSDK.Core": "[4.0.102.9, 5.0.0)"
+        }
+      },
+      "Amazon.Lambda.Core": {
+        "type": "Transitive",
+        "resolved": "3.3.0",
+        "contentHash": "CZKlX8ZDMi6aKPo5lPAjmsJFDXNJHX00aiiYeRQOEszP8cjx6qklBvTPj4qpr4dlp3YYQjmB87CqAiWV7vk2fA=="
+      },
+      "Amazon.Lambda.Serialization.SystemTextJson": {
+        "type": "Transitive",
+        "resolved": "3.0.1",
+        "contentHash": "QsHygaMyxQdgh5NPs5GGyBjK6mqQr5nv8rpqlrWC5+e1k7sVx+2xwDHv493S5IMw461S/PyHfjkUDjIQU5ArSA==",
+        "dependencies": {
+          "Amazon.Lambda.Core": "3.3.0"
+        }
+      },
+      "Amazon.Lambda.SQSEvents": {
+        "type": "Transitive",
+        "resolved": "3.0.1",
+        "contentHash": "57cPCJQIDLYzKHXsK6hXZUFH+Ra6JpNXXlyjP/O/hvjBmhRud7EPt4IBgowW8P6s1wqoS+9txmi+iuLwhZ7I4A=="
+      },
+      "AWSSDK.DynamoDBv2": {
+        "type": "Transitive",
+        "resolved": "4.0.107.1",
+        "contentHash": "Ss+7cm8kC6WNr1Z8nzuVRkOlWAFVWT/HLIhH9KxxUGVQWdHiCo78sCXgOVRLp37Hb5bPWK/CDCH1E/7W68eHlQ==",
+        "dependencies": {
+          "AWSSDK.Core": "[4.0.102.9, 5.0.0)"
+        }
+      },
+      "AWSSDK.S3": {
+        "type": "Transitive",
+        "resolved": "4.0.104.2",
+        "contentHash": "ImZ1pO9SWh+RAN8hmN5OnonyTvq+/q4dXLxTxjtsZ60c06dnCCy+MX3sc4F3Q8c9J1bg8WoU+VkrrVIpXLviww==",
+        "dependencies": {
+          "AWSSDK.Core": "[4.0.102.9, 5.0.0)"
+        }
+      },
+      "ecs.backup.sentinel": {
+        "type": "Project",
+        "dependencies": {
+          "Sentinel.Ingestion": "[1.0.0, )"
+        }
+      },
+      "sentinel.accounting.aws": {
+        "type": "Project",
+        "dependencies": {
+          "AWSSDK.Core": "[4.0.102.10, )",
+          "AWSSDK.DynamoDBv2": "[4.0.107.1, )"
+        }
+      },
+      "sentinel.application": {
+        "type": "Project",
+        "dependencies": {
+          "Sentinel.Core": "[1.0.0, )"
+        }
+      },
+      "sentinel.core": {
+        "type": "Project"
+      },
+      "sentinel.ingestion": {
+        "type": "Project",
+        "dependencies": {
+          "Sentinel.Application": "[1.0.0, )"
+        }
+      },
+      "sentinel.ingestion.aws": {
+        "type": "Project",
+        "dependencies": {
+          "Sentinel.Ingestion": "[1.0.0, )",
+          "Sentinel.Observability": "[1.0.0, )"
+        }
+      },
+      "sentinel.observability": {
+        "type": "Project",
+        "dependencies": {
+          "Sentinel.Application": "[1.0.0, )"
+        }
+      },
+      "sentinel.operations": {
+        "type": "Project",
+        "dependencies": {
+          "Sentinel.Observability": "[1.0.0, )"
+        }
+      },
+      "sentinel.persistence.dynamodb": {
+        "type": "Project",
+        "dependencies": {
+          "AWSSDK.DynamoDBv2": "[4.0.107.1, )",
+          "Sentinel.Application": "[1.0.0, )",
+          "Sentinel.Operations": "[1.0.0, )"
+        }
+      },
+      "sentinel.persistence.s3": {
+        "type": "Project",
+        "dependencies": {
+          "AWSSDK.S3": "[4.0.104.2, )",
+          "Sentinel.Application": "[1.0.0, )",
+          "Sentinel.Operations": "[1.0.0, )"
+        }
+      },
+      "sentinel.worker.lambda": {
+        "type": "Project",
+        "dependencies": {
+          "Amazon.Lambda.Core": "[3.3.0, )",
+          "Amazon.Lambda.SQSEvents": "[3.0.1, )",
+          "Amazon.Lambda.Serialization.SystemTextJson": "[3.0.1, )",
+          "Sentinel.Accounting.Aws": "[1.0.0, )",
+          "Sentinel.Ingestion.Aws": "[1.0.0, )",
+          "Sentinel.Persistence.DynamoDb": "[1.0.0, )"
+        }
+      }
+    }
+  }
+}

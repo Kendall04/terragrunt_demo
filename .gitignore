@@ -111,3 +111,6 @@ Thumbs.db
 *.exe
 *.dll
 *.pdb
+
+# Archify local delivery receipts contain machine-specific absolute paths.
+/docs/interactive/*.delivery.json

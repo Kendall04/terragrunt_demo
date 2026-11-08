@@ -1,129 +1,178 @@
-# Secrets Strategy
+# Security and secret lifecycle
 
-This demo intentionally keeps secret values out of Terraform and Terragrunt state.
+## Installed V2 security boundary
 
-## What Terraform Manages
+The [trust review](../../docs/V2-TRUST-AND-THREATS.md) and
+[current technical audit](../../docs/ENGINEERING-REVIEW.md) distinguish source
+defaults from the installed validated-v2 profile: strict SQL certificate/name
+validation, minimal runtime, separate disabled migrator, confidential secret-value
+delivery and existing application/backup CMKs. Secret metadata includes the DEV
+migrator container. The legacy recipe and October uninstalled proposals below
+describe their dated checkpoints. They do not override this installed boundary.
 
-- `terraform/infra/secrets` owns all Secrets Manager secret metadata:
-  - SQL Server SA password secret
-  - SQL Server application user password secret
-  - application DB connection string secret
-- the reusable `secret_metadata` module creates only `aws_secretsmanager_secret`
-- KMS key references used to encrypt the secret values at rest
-- IAM permissions that allow:
-  - the SQL Server EC2 instance to read only the SQL bootstrap password secrets
-  - the ECS execution role to inject only the DB connection string secret
-- ECS task definition references to secret ARNs
+> **Current DEV operations (2026-10-28):** use the [native Terraform lifecycle](native-dev-lifecycle.md). E16 execution/session requirements below are historical; independent security and delivery contracts remain.
 
-Terraform does not manage `aws_secretsmanager_secret_version` resources and does not generate passwords with `random_password`.
-The data layer no longer declares the Random provider; no random password resources remain in configuration.
+## ACCEPTED DECISION — state invariant
 
-Secret names are normalized before rebuild:
+**SECRET VALUES MUST NOT BE INTRODUCED INTO TERRAFORM STATE.**
+Keep passwords, connection strings and other secret values out of Terraform
+resources/data sources, inputs, outputs and generated artifacts. Marking a value
+sensitive only redacts display; it is not an alternative to this invariant.
 
-```text
-demo/<env>/db/sql-sa-password
-demo/<env>/db/sql-app-password
-demo/<env>/app/db-connection-string
-```
+Owner reconciliation, 2026-09-18: historical state likely contained secret values
+but was destroyed. No forensic/cleanup task is required for deleted state.
+The next deployment must verify the invariant through evidence; no AWS inspection
+has been performed as part of this documentation bootstrap.
 
-## What Terraform Does Not Manage
+## Local SQL security follow-up - 2026-10-27
 
-- Actual SQL passwords
-- Actual DB connection string values
-- Secret rotation values
-- Any plaintext secret in outputs, Terragrunt inputs, CI variables, logs, or artifacts
+[Implementation and admission boundary](sql-runtime-security.md) separates an explicit
+migration command from the data-only runtime and adds opt-in validated-v2 SQL TLS/
+effective-permission guards. Startup migrations now default off. TARGET DEV/PROD
+Fargate general egress narrows to HTTPS while retaining exact SQL/1433. No controls
+were installed; legacy bootstrap remains db_owner/TrustServerCertificate=True,
+an opt-in bootstrap now prepares a separate migrator and disabled minimal runtime.
+SQL host egress and internal HTTP remain unresolved. The table below describes
+that legacy deployed recipe, not acceptance of the strict profile. At that October checkpoint, certificate
+inputs, handoff, Linux artifacts and native tests were pending; November execution
+completed them for DEV.
 
-## Secret Bootstrap
+## CURRENT CONTRACT — secret ownership and encryption
 
-Secret values are bootstrapped outside Terraform with:
+[Neutral protected resources](../infra/security/modules/protected_resources/main.tf.json)
+create secret metadata containers only:
 
-```bash
-scripts/bootstrap.sh bootstrap-db-passwords --env dev --region us-east-1 --profile terraform-lab
-scripts/bootstrap.sh bootstrap-db-connection --env dev --region us-east-1 --profile terraform-lab
-```
+- demo/<env>/db/sql-sa-password
+- demo/<env>/db/sql-app-password
+- demo/<env>/app/db-connection-string
 
-Prefer the wrapper commands above. The lower-level `scripts/bootstrap-db-secrets.sh`
-helper is intentionally guarded and refuses to run unless
-`--confirm-secret-value-bootstrap` is passed, because it reads and writes secret
-values without printing them.
+Terraform does not create secret versions or generate the passwords.
+[bootstrap-db-secrets.sh](../../scripts/bootstrap-db-secrets.sh) writes values
+outside Terraform; its lower-level entry point requires
+--confirm-secret-value-bootstrap. Use the explicit administrator/lifecycle sequence in
+[bootstrap](bootstrap.md), not a graph-wide initial apply.
 
-The script is idempotent:
+Existing passwords stay unchanged unless --rotate is requested. A different
+nonempty connection string stays unchanged unless explicitly forced/rotated.
+Rotation updates Secrets Manager values only: an existing SQL login must also
+be updated and tasks restarted/redeployed to consume new injected values.
+This is an operational dependency, not an implemented end-to-end rotation service.
 
-- existing password secrets are left unchanged unless `--rotate` is used
-- generated values are never printed
-- the DB connection string is written when empty, left unchanged when already
-  matching, and left unchanged when it already has a different non-empty value
-  unless `--force-update-db-conn` or `--rotate` is used deliberately
+The DB instance role reads the two password secrets. ECS execution roles inject
+the connection string; application task roles use KMS Encrypt/Decrypt.
+A per-environment customer-managed KMS key encrypts both secret values and text;
+rotation is enabled and deletion waits 30 days. EBS defaults to its AWS-managed
+key. Loss of the text key affects decryptability independently of DB backups.
+Evidence: [data IAM](../modules/target/dev/data/ordinary-main.tf),
+[app IAM](../modules/target/dev/apps/ordinary-demo.tf),
+[KMS](../infra/security/modules/protected_resources/main.tf.json).
 
-Required IAM for the bootstrap identity:
+## CURRENT CONTRACT — final E1 protected authority
 
-- `secretsmanager:DescribeSecret`
-- `secretsmanager:GetSecretValue`
-- `secretsmanager:PutSecretValue`
-- `ec2:DescribeInstances` when DB host auto-discovery is used
-- `kms:Encrypt`, `kms:GenerateDataKey`, and `kms:Decrypt` when secrets use a customer-managed KMS key
+[WP6 protected workflows](e1-protected-workflows.md) supplies exact environment,
+repository, audience and immutable reusable-entry OIDC trust templates. All eleven
+request identities remain deny-only until genuine protected installation and
+G1-G9 conformance are supplied. Internal execution roles retain service-only trust,
+exact PassRole/resource boundaries and no external OIDC acquisition. Ordinary
+infra callers cannot administer security; delivery/recovery cannot administer
+lifecycle, qualifications, eligibility, code installation or IAM.
 
-For a fresh rebuild, use the staged bootstrap flow:
+Workflows now use only pinned closed requests or a separate read-only plan identity.
+They expose no legacy AWS-role secrets, static keys, role chaining, app-CD/TG_CD
+fallback or direct ECS/ALB/infra mutation. Sanitized result readers cannot write
+protected evidence/configuration; protected object policies deny internal reads.
+External environment branch/reviewer controls remain unverified.
 
-1. Apply `shared` so the KMS key exists.
-2. Apply `secrets` so Secret Manager metadata exists.
-3. Run `scripts/bootstrap.sh bootstrap-db-passwords` so SQL bootstrap password values exist before DB provisioning.
-4. Apply `data`; the EC2 SQL bootstrap reads the SA/app password secret values.
-5. Run `scripts/bootstrap.sh bootstrap-db-connection` so it reads the DB private IP and writes the DB connection string secret value.
-6. Apply `platform`.
-7. Run `scripts/deploy.sh deploy-app`; it builds and pushes the demo API image to ECR, resolves the immutable image digest, applies the `apps/fargate` ECS skeleton, renders the task definition template, and promotes a blue/green color.
-8. ECS injects the DB connection string from Secrets Manager into the container task definition.
+WP7 removes legacy broad roles, policies, attachments, default OIDC trusts,
+PassRole grants and environment roots from operational configuration. They survive
+only as inert digest-pinned source data for regression/provenance. No residual AWS
+session exists to revoke in this undeployed account. See [WP7](e1-final-acceptance.md).
 
-The EC2 SQL bootstrap script waits for password secret values to become available and does not enable shell tracing.
+## CURRENT CONTRACT versus security decisions
 
-Do not use `terragrunt run --all apply` for initial bootstrap. The Terragrunt
-dependency graph cannot express the required out-of-band secret value writes
-between the `secrets`, `data`, and `apps/fargate` layers. Use the staged
-bootstrap commands instead. After the environment exists, `run --all plan` may
-still require caution because dependency outputs must exist.
+| Current implementation | Status of future treatment |
+| --- | --- |
+| Public API routes authorization NONE; plaintext read/write interface | TARGET: meaningful backend expansion before auth design; no cosmetic auth retrofit |
+| Broad application/DB egress | UNRESOLVED hardening candidate, not permanent acceptance |
+| Internal ALB HTTP:8080 | UNRESOLVED TLS decision; blue/green does not require HTTP |
+| Encrypt=True;TrustServerCertificate=True SQL connection | UNRESOLVED certificate-validation review |
+| Runtime user db_owner; migrations at task startup | UNRESOLVED migration/runtime privilege separation |
+| Neutral protected OIDC/artifact dependencies | E1 security ownership corrected; broader operational independence remains a target |
 
-The full dev orchestration is documented in [Bootstrap Guide](bootstrap.md):
+Evidence: [routes](../modules/target/dev/edge/modules/apigateway/routes.tf),
+[SG rules](../modules/target/dev/global/ordinary-security_rules.tf),
+[ALB](../modules/target/dev/global/modules/alb/alb.tf),
+[connection bootstrap](../../scripts/bootstrap-db-secrets.sh),
+[SQL setup](../infra/data/user_data.sh).
 
-```bash
-scripts/bootstrap.sh full-dev-bootstrap --profile terraform-lab --region us-east-1
-```
+## Evidence handling
 
-## State Cleanup
+Do not print secret values or raw state into documentation, logs or PRs.
+Use synthetic/redacted examples. Existing audit scripts are AWS-connected,
+download state and create temporary files; see [validation](validation.md).
+Pattern-based auditing supports, but does not alone prove, secret-free state.
+The owner will require evidence for future deployment rather than assuming
+metadata-only configuration proves the whole operational path safe.
 
-Previous versions of this demo stored generated SQL passwords and DB connection
-strings in Terraform state. Current configuration is metadata-only, but state
-history must still be treated carefully.
+Least privilege, stricter provenance and environment independence remain targets.
+Do not invent certificate/account architectures or silently accept these gaps.
 
-Run the redacted state audit before considering the secrets cleanup complete:
+## CURRENT CONTRACT — protected administration and installation
 
-```bash
-scripts/audit-terraform-state-secrets.sh --env dev --region us-east-1 --profile terraform-lab --historical
-```
+The neutral [security root](../infra/security/README.md) owns security controls and
+workload role/secret metadata bindings. Ordinary/high-risk lifecycle cannot
+administer IAM/OIDC/KMS, secret policies, protected storage or its own execution
+dependencies. Sensitive bootstrap/update remains separately authenticated operator
+authority. Public requesters have no PassRole/AssumeRole; internal trusts are
+service-only. Exact PassRole belongs to accepted service-specific execution roles
+and fixed workload tuples. App DB/KMS and execution pull/log/secret injection remain.
 
-From the EC2/Codex instance:
+Admin-only versioned control storage, package digest, exact S3 VersionId/readback,
+approved immutable runtime image and current environment membership are required
+for installation. Caller flags cannot activate compute. Eleven request identities,
+sixteen WP4D and eight WP5 bindings stay inactive. Repository acceptance does not
+verify live IAM/provider behavior, external grants, GitHub settings or bootstrap.
 
-```bash
-scripts/audit-terraform-state-secrets.sh --env dev --region us-east-1 --use-instance-role --historical
-```
+## E15-E/F combined DEV quiescence boundary
 
-The audit script downloads state versions only to a private temporary directory,
-scans resource addresses, resource types and output names, and deletes the
-temporary files automatically. It must not print secret values, full state, state
-object keys, S3 bucket names, account IDs, ARNs, or Secrets Manager values.
+[Combined contract and remaining decisions](e15ef-combined-quiescence.md) wires
+separate ECS/NAT guards into protected WP5/E15-D, with immutable UNKNOWN evidence
+and the original E2 hold. Whole-operation ownership/stage order, terminal ECS
+cluster handoff, installed authenticated adapters and issued-effect settlement
+remain unavailable. Complete DOWN stays denied; no IAM or activation is added.
 
-Rotate/recreate credentials if the latest or historical state audit finds exact
-secret-value resources such as `random_password`,
-`aws_secretsmanager_secret_version`, credential-like `random_string`, or
-SecureString-style `aws_ssm_parameter` resources. Rotation means:
+## E15-G operational component follow-up
 
-1. Rotate the SQL Server SA password secret value.
-2. Rotate the SQL application user password secret value.
-3. Update or recreate the matching SQL login/user on the DB host.
-4. Rebuild the DB connection-string secret value.
-5. Redeploy/restart ECS tasks so they consume the new secret version.
-6. Treat copied local state files, CI artifacts and terminal logs from the
-   contaminated period as sensitive and delete them where possible.
+[E15-G](e15g-operational-teardown.md) adds original-E2-owner composition, bounded
+ECS drain, sealed terminal cohort handoff and residual completion checks.
+Complete installed DOWN remains PARTIALLY_READY and denied: NAT executor/effect
+closure, authentic ECS closure, whole-operation preparation and exhaustive
+residual installation remain required. No IAM/activation or live AWS evidence.
 
-Metadata-pattern findings, such as `aws_secretsmanager_secret` containers, ECS
-secret references, IAM policies that allow `GetSecretValue`, or outputs whose
-names contain `secret`, require review but are not automatically leaked values.
+## Historical E16 supervised mode (retired 2026-10-28)
+
+The [historical E16 operator record](e16-practical-dev-lifecycle.md) implements
+per-layer original DEV saved-plan review/apply and observed shutdown under an
+explicitly authorized, exclusive existing-human state-writer transfer. Default
+mode remains inert; PROD/shared/security-root ownership is retained. Existing
+WP3/WP4 delivery and E13 recovery remain. E15-G/H advanced finality contracts are
+not weakened or activated. Source readiness is distinct from genuine installation
+and live AWS validation; no AWS operations occurred.
+
+## Proposed EC2 backup credential installation (2026-10-16)
+
+The [grouped installation review](../../operations/sql-backup/EC2-INSTALL-REVIEW.md)
+proposes two dedicated local SQL logins. After explicit approval, root on the
+selected EC2 instance would use its existing SA-secret read permission, generate
+passwords locally, and store only the two connection strings in root:root 0600
+files under a 0700 directory on encrypted EBS. systemd LoadCredential supplies
+private runtime copies to the backup job. SA remains process-only, and no secret
+value enters Terraform, argv, SSM command text, output, evidence or Git. No new
+secret container, text-key grant or application-login change is proposed.
+
+This is an uninstalled lab proposal. The source plans without access by default;
+actual bootstrap requires root, reviewed package/config, explicit approval hash
+and exact IMDS role/account. Existing logins/credentials or an uncertain receipt
+block replay. Reboot persistence is limited to that disposable encrypted EBS;
+no managed rotation, cross-host continuity or production credential guarantee
+is introduced. Preserve security-admin ownership of the separate role/KMS overlay.

@@ -1,0 +1,72 @@
+{
+  "SqlRoleArn": "arn:aws:iam::341936017254:role/demo-dev-data-sql-ec2-role",
+  "SqlRoleEventBridgeDelta": {
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Sid": "SqlCohostPortableReportOnly",
+        "Effect": "Allow",
+        "Action": "events:PutEvents",
+        "Resource": "arn:aws:events:us-east-1:341936017254:event-bus/ecs-portable-r20261026p1",
+        "Condition": {
+          "DateGreaterThanEquals": {
+            "aws:CurrentTime": "2026-10-26T00:00:00Z"
+          },
+          "DateLessThan": {
+            "aws:CurrentTime": "2026-10-27T00:00:00Z"
+          },
+          "StringEquals": {
+            "aws:RequestedRegion": "us-east-1",
+            "events:source": "sentinel.report.sql-observer",
+            "events:detail-type": "Sentinel Observation v1"
+          }
+        }
+      }
+    ]
+  },
+  "LegacySqsSendRequired": false,
+  "RemoveOnlyOwnAdmittedLegacySqsDelta": true,
+  "AdditionalObserverCloudResources": 0,
+  "ExternalSentinelRequired": true,
+  "LambdaPackage": {
+    "schemaVersion": 1,
+    "sourceCommit": "25f037e04b0e059e868c66b0c8282d410452bfd9",
+    "upstreamCommit": "b3d0b3b595a9257bb6d4d849c899bf4e8dbc2828",
+    "runtime": "dotnet10",
+    "runtimeFactory": "Ecs.Backup.Portable.Host::Ecs.Backup.Portable.Host.Function",
+    "configSha256": "95f7c05b06abed164fc2c98d6142fa6268fb5b40065ca6853bb185b10b49fdc6",
+    "syntheticTrial": true,
+    "executionAuthorized": false,
+    "zipSha256": "4e89587b2760b5ec6d4a37a4bc6327ed6f770d0316d2e1f3fba32d4b1d54cca7",
+    "zipBytes": 3783279,
+    "path": "ecs-portable-lambda-25f037e.zip",
+    "payloadFiles": 36,
+    "includedSqlHostPublisher": false,
+    "noticeAttempts": 3
+  },
+  "ExecutionAuthorized": false,
+  "Installed": false,
+  "Classification": "LOCAL_SCOPE_PROPOSAL_NOT_INSTALLABLE_WITH_FIXTURE_TIMES",
+  "Window": "Native admission must bind actual StartsAt/ExpiresAt; preserved fixture times are not current approval",
+  "SourceArchiveSha256": "081b62f739cd309e84abf64b5c8e327bf6b7445214f37d85069fa070f0e2f24f",
+  "FutureArtifactRead": {
+    "Bucket": "terragrunt-demo-sql-backup-341936017254-fa48a32dc9",
+    "Key": "terragrunt-demo/dev/sql-backup-artifacts/ecs-sentinel-r20261026p1/081b62f739cd309e84abf64b5c8e327bf6b7445214f37d85069fa070f0e2f24f/SqlBackup.tar",
+    "VersionId": "UNBOUND_UNTIL_EXACT_PUBLICATION",
+    "S3Actions": [
+      "s3:GetObjectVersion"
+    ],
+    "KmsActions": [
+      "kms:Decrypt"
+    ],
+    "KmsKeyArn": "arn:aws:kms:us-east-1:341936017254:key/30f01bb6-03b5-4e5f-b7a8-e304fe607ced",
+    "Conditions": [
+      "exact s3:VersionId",
+      "kms:ViaService=s3.us-east-1.amazonaws.com",
+      "exact kms:EncryptionContext:aws:s3:arn for artifact object",
+      "admitted time window"
+    ],
+    "CurrentPolicyDeltaKnown": false,
+    "ExtraBakRead": false
+  }
+}

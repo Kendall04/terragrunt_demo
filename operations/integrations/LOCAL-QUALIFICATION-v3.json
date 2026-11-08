@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "contract": "ecs-backup-managed-v3",
+  "scope": "LOCAL_ONLY_NO_AWS_OR_EMAIL",
+  "sourceCommit": "Bound by containing Git commit and resulting ZIP manifest; no invented future commit",
+  "upstreamCommit": "0e8fc55333ddde3b9816885915310a7e69f3de45",
+  "sourceExtensionSha256": "c3d2cada50a000df4def856b071aadc9b43dac83fd247f01f7eb90aad1901210",
+  "normalization": "UTF8 source/metadata CRLF->LF before SHA256",
+  "files": {
+    ".github/workflows/ci-repo-hygiene.yml": "626927946957c91f54392339b2b586000c1846a06c962066e416bdf8eb6b41e2",
+    "operations/integrations/Ecs.Backup.Managed/BackupComposition.cs": "78a4a2d6ef1ebdf91bba60d369e9772bbd86f5241d3e3404535b0f0140b3db53",
+    "operations/integrations/Ecs.Backup.Managed/BackupCursorStore.cs": "cf64055a2328c476a081a62fa0720e633a96648ea6ced78ac1b9e1b78eeefe1c",
+    "operations/integrations/Ecs.Backup.Managed/BackupDispatch.cs": "9fe368d6ca1b869d09b8f82cb29a7610c5bc67977909bc82cfe00c94216b67e8",
+    "operations/integrations/Ecs.Backup.Managed/BackupNoticeText.cs": "906599f038ff0e502acdea8e40868584e0df9db1aa157fd287cc3097f8bf87d3",
+    "operations/integrations/Ecs.Backup.Managed/BackupObserverWatchdog.cs": "8a7a75b181520aeb8ad0cbf9522e10d95be98dbdaf881ce533a47e3ad2024980",
+    "operations/integrations/Ecs.Backup.Managed/BackupSettings.cs": "33a77bc57d05ff4bff98a5cfaacf0706b47cd152b01fa3a62c04f62e91bfed13",
+    "operations/integrations/Ecs.Backup.Managed/Ecs.Backup.Managed.csproj": "d83b3056b616cd8bd406084ae7f0c37a5fa243c84dc594d2739e7e1a18e5a8fb",
+    "operations/integrations/Ecs.Backup.Managed/Functions.cs": "ac39d25ca47e504d19f93e32aee284156c054d01abb9f62d2c193069229d208e",
+    "operations/integrations/Ecs.Backup.Managed/packages.lock.json": "8fbe618ea2e8f6c9ba9efbeb70ad2b0c68810803d4ca08f752d835e27d896bcb",
+    "operations/integrations/Ecs.Backup.Managed/SnsNoticeAdapter.cs": "4a26e41464c592d3d5b2f769fdb739368aa402de5727846a0c1feaad858f0556",
+    "operations/integrations/Ecs.Backup.Managed.Tests/Ecs.Backup.Managed.Tests.csproj": "c4c6379be7d7393417b34561a1a78be256bea5e3e137c12bcc40c52702f8aad2",
+    "operations/integrations/Ecs.Backup.Managed.Tests/packages.lock.json": "029313a33157eabc1684899d8aadcee81a31e2d0eec5c25767a72e526b0402bb",
+    "operations/integrations/Ecs.Backup.Managed.Tests/Program.cs": "3ebaeefcb55505e0a622ec6b6075a23cb318ca13f8548d87d49786a8ceee915f",
+    "operations/integrations/Ecs.Backup.Sentinel/BackupIncidentPolicy.cs": "8a7c2d15d3afadf5db3403ab85a83d088b7ab8298061330c66cae06f7fbf0a52",
+    "operations/integrations/Ecs.Backup.Sentinel/Ecs.Backup.Sentinel.csproj": "d60fdcddd765148b0f44e86651b037bc4489a4354674c7bec6ef2d6e9d01a35d",
+    "operations/integrations/Ecs.Backup.Sentinel/ObserverNormalizer.cs": "28e000c3e13357ea4c3eec24d88f003fb3824665630284900f0d728a6af55801",
+    "operations/integrations/Ecs.Backup.Sentinel/packages.lock.json": "17f4e1409ad559b7e6d84aaa8924a7b55b991840376d7e95be5c22f2a75452db",
+    "operations/integrations/package_managed.py": "696f00c8add1a633d6f6e8365a97eae71d2cb1721ad4f9f676fe09af2c3de933",
+    "operations/integrations/test_package_managed.py": "d82225d9de9bddec55d677439d2074ab6d84b3377c22ad450ac31b58a22093e8",
+    "operations/integrations/test_terraform_pipeline.py": "7b005541be9cfd8165b5b40f6a1d6f24959d0ddc849bd5b575f8d1e40bf126c1",
+    "operations/sql-backup/observer.py": "03e6466f2461412be10380d8918c6a9b39c9250dab859ffd62599878d759e920",
+    "operations/sql-backup/sentinel_publish.py": "177db577b1eace564211ebe2d5cec7f36dfb864a949a71e1f68f6b2341c2df26",
+    "operations/sql-backup/signals.py": "da1da8b85777717ed89fc59dab4130435e4be38734c4506458f21ea291b5f2fb",
+    "operations/sql-backup/sql-backup-sentinel-producer.service.in": "3cd26e6e7b9af768e9fed107e6168cb6953661ef6b82fe8dd026548e78485f6b",
+    "operations/sql-backup/sql-backup-sentinel-producer.timer.in": "4314991cd68c4175efa4619ad57912d9015b4c1505869d3a682651bba6389280",
+    "portfolio/ACCEPTANCE.md": "504d74ab33d3182802a8ec2571fe29868f4f4a18cca0ed886d5b0c950a202514",
+    "terraform/infra/sentinel-backup/.terraform.lock.hcl": "be1182b2f765f01c210a0d1327471dd5cd3cc316acd9f11edb8c959888b5fe3d",
+    "terraform/infra/sentinel-backup/main.tf.json": "497b87017e026287279010a3a4b3805fd997fba2713d86491f6b043c20b0d35e",
+    "terraform/infra/sentinel-backup/modules/pipeline/main.tf.json": "4391fc279f214758a1bd11ab2d95a35373991069d1019b620f3cec56d278743f",
+    "terraform/infra/sentinel-backup/NEXT-INTEGRATED-TRIAL.md": "bae346b8f1826fb9d338afd158c348710025c41b286f7dcb02d3e45a294346e8",
+    "terraform/infra/sentinel-backup/provider-qualification.json": "0a8d981846a652a15520fef38d5a298b4266d6a485afa794f07f5b0c27789939",
+    "terraform/infra/sentinel-backup/README.md": "224727f390a058549d238ebab90c42a645f5f3691791d310386f1cbcb0bd4f3f",
+    "terraform/live/sentinel-backup/terragrunt.hcl": "bf9996ba541fef94dc31c834ee03571c6a743b9584da15a2b1397af71d310474"
+  },
+  "verified": {
+    "managedOfflineTests": 104,
+    "packageTests": 7,
+    "terraformSourceTests": 13,
+    "posixObserverTests": 15,
+    "posixPublisherTests": 15,
+    "signalTests": 9,
+    "provider": "6.27.0 Windows official checksum and GPG signature",
+    "terraformNativeValidate": {
+      "format_version": "1.0",
+      "valid": true,
+      "error_count": 0,
+      "warning_count": 0,
+      "diagnostics": []
+    },
+    "scheduleNativeEvaluation": {
+      "engine": "Terraform1.13.4 actual console, backend-free resource-free probe",
+      "inputs": [
+        "rate(1 minute)",
+        "rate(60 minutes)",
+        "rate(0 minutes)",
+        "rate(61 minutes)",
+        "rate(1 minute)bad"
+      ],
+      "accepted": [
+        true,
+        true,
+        false,
+        false,
+        false
+      ],
+      "awsCalls": 0
+    }
+  },
+  "evidence": {
+    "watchdog-catalog-build.log": "0d3f4e5208bc977065bfe0e7fe9f93062831a818c8db9d49a71e899c5c7431ef",
+    "watchdog-catalog-tests.log": "29aa5f804bdbd5987627a218d13a167caf80d39e88ee8ed637172b0447d59bce",
+    "terraform-validate-final.json": "870b77a12518d244f5b14bcf2072f03dbeeff4f3902e316f5539072c9694ce5b",
+    "provider-qualified.json": "1b010ab96f88b738457109715a342e52491471450cf392436f2114a4637cb620",
+    "schedule-validation-native.json": "67c695cc3370667d0d1b78d2540a4c3e437e9accc8353882b16626885258a8e5"
+  },
+  "limits": [
+    "SDK doubles are not AWS durability proof",
+    "No native v3 Lambda/EC2/timer installation",
+    "Unsupported active probes remain Pending; obsolete closed-episode intents may CAS-cancel",
+    "Historical 10 Pending trial effects remain immutable",
+    "Observer host slice and immutable distribution not yet implemented",
+    "No budget/authority carryover from closed trials"
+  ],
+  "qualifiedArtifact": {
+    "sourceCommit": "bcac19fe8ab61f54f2fe6f6f2055ea0739a04cd6",
+    "zipSha256": "a361c2b56b6949260f8d709e1318bd4da96399313932343d4998fe53b02260d2",
+    "zipBytes": 1490593,
+    "zipMembers": 22,
+    "uploaded": false,
+    "nativeLambdaV3Accepted": false
+  }
+}

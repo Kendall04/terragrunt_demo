@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "deployment": "ecs-portable-local",
+  "account": "341936017254",
+  "region": "us-east-1",
+  "project": "ecs-demo",
+  "environment": "dev",
+  "consumer": "backup-portable-local",
+  "notificationsEnabled": false,
+  "maxJobs": 4,
+  "maxRequests": 64,
+  "auditRetentionDays": 7,
+  "monitors": [
+    {
+      "id": "sql-backup",
+      "kind": "sql-backup",
+      "resource": "sqlserver/dev-sql/sql-backup",
+      "generation": "cohost-split-local-v1",
+      "owner": "Kendall",
+      "model": "Freshness",
+      "requiredAssurance": "Artifact",
+      "sources": [
+        "sql-observer"
+      ],
+      "checkInterval": "00:05:00",
+      "maxAge": "02:00:00",
+      "startupGrace": "00:10:00",
+      "failureGrace": "00:02:00",
+      "selector": "full"
+    },
+    {
+      "id": "sql-telemetry",
+      "kind": "report",
+      "resource": "sqlserver/dev-sql/sql-telemetry",
+      "generation": "cohost-split-local-v1",
+      "owner": "Kendall",
+      "model": "Freshness",
+      "requiredAssurance": "Reported",
+      "sources": [
+        "sql-observer"
+      ],
+      "checkInterval": "00:05:00",
+      "maxAge": "00:20:00",
+      "startupGrace": "00:10:00",
+      "failureGrace": "00:02:00"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "upstreamCommit": "b3d0b3b595a9257bb6d4d849c899bf4e8dbc2828",
+  "file": "src/Sentinel.Operations/WorkRunner.cs",
+  "baseSha256": "700a8db0a3d9f0705ac0c8354f69af9a891a039db0f47fc9e68e8144a7ae8205",
+  "purpose": "Yield before another job and release only reserved checkpoint I/O; preserve journal identity and failures",
+  "replacements": [
+    {
+      "before": "OperationalProfile profile,Func<DateTimeOffset> clock) {",
+      "after": "OperationalProfile profile,Func<DateTimeOffset> clock,OperationalBudget? ioBudget=null,Func<DateTimeOffset,BacklogObservation>? observeBacklog=null,Func<OutboxEntry,int>? workBound=null) {"
+    },
+    {
+      "before": "if(attempted>=profile.MaxJobs||timer.Elapsed",
+      "after": "if(ioBudget is not null&&!ioBudget.CanStartWork(1)||attempted>=profile.MaxJobs||timer.Elapsed"
+    },
+    {
+      "before": "                if(!journal.Owns(journal.Read(scope)!,lease,clock()))",
+      "after": "                // Checks evaluate sources and commit domain transactions; dispatch has a smaller bound.\n                // The hard 64 cap and reserved checkpoint apply even to conflicts or uncertain I/O.\n                var bound=workBound?.Invoke(entry)??(isCheck?40:18);\n                if(ioBudget is not null&&!ioBudget.CanStartWork(bound)){outcome=\"BudgetYield\";continue;}\n                if(!journal.Owns(journal.Read(scope)!,lease,clock()))"
+    },
+    {
+      "before": "        finally {",
+      "after": "        finally {\n            ioBudget?.BeginCheckpoint();\n            // Observe after effects complete: a pre-work photograph can falsely\n            // report an archive stalled even after its durable confirmation.\n            // Two reads plus seven CAS/readback requests fit the reserved ten.\n            if(observeBacklog is not null) {\n                try { snapshot=observeBacklog(clock()); }\n                catch(Exception e) when(e is not OutOfMemoryException) {\n                    snapshot=null;outcome=\"TransientFailure\";failures++;error=\"BacklogObservationUnavailable\";\n                }\n            }"
+    }
+  ]
+}

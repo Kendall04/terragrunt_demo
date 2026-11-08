@@ -1,0 +1,149 @@
+{
+  "generator": "Archify 3.1.0",
+  "tool": {
+    "official_repository": "https://github.com/tt-a1i/archify",
+    "tag": "v3.1.0",
+    "commit": "1c2b42d660e4a7571813fb43839c79e3e9ca7720",
+    "artifact_url": "https://raw.githubusercontent.com/tt-a1i/archify/1c2b42d660e4a7571813fb43839c79e3e9ca7720/archify.zip",
+    "zip_sha256": "ffedc53390c9da6e859f41e432c5d2d0615a23cf00a503181f07efbba88a7ce8",
+    "bytes": 5017500,
+    "global_install": false,
+    "dependencies_installed": false,
+    "source": "Same upstream/version credited in EKS docs/maintenance.md; isolated local skill release only."
+  },
+  "sourceCommit": "19b1f5e538bbd8f63c882335c1dd76edffab462b",
+  "sourceMode": "Local-only evidence in sparse fixture from migrated Git objects; historical repository identity from README links, no remote availability asserted. Original ECS remote unchanged.",
+  "diagrams": [
+    {
+      "id": "v1-platform",
+      "sourceSha256": "c64ffbd3b7fec8b93addc73645cd213a8455bd4480ead71fc44afde3ccf6d276",
+      "htmlSha256": "8638dadb59b8cc5ef26d0f0fdfb063010f05d63be43b3278488d2e5bbb9b40dd",
+      "gates": {
+        "validate": "pass",
+        "deliver": "pass",
+        "check": "pass",
+        "browser-check": "pass"
+      },
+      "finalizerSummarySha256": "93fbd8f713a757b559b366a4fe589e12f9d815e4b6a41335c4bbf1d9b9c11b70",
+      "diagnosticCount": 0
+    },
+    {
+      "id": "v1-network",
+      "sourceSha256": "019d052a2f302c46724c9ac98acb7ccd4261eb9cadb3b0d9390962433dbe4aea",
+      "htmlSha256": "c2a3f7973b625f665324c309eef523168a9928b7ad7d576914ca553cc67b7624",
+      "gates": {
+        "validate": "pass",
+        "deliver": "pass",
+        "check": "pass",
+        "browser-check": "pass"
+      },
+      "finalizerSummarySha256": "7c8f015143c5bc6f55bdb5abec276e52b354d78aad11289159eeef23f05ec212",
+      "diagnosticCount": 0
+    },
+    {
+      "id": "az6-recovery",
+      "sourceSha256": "82a5eeccb6c44a9163c1c5e77f927abed89ff641385e16f72fffc04a4ae7bfca",
+      "htmlSha256": "9499e2f87b99200d9b7fd0b9196caf82964a8e7b9a42aefd2113a48289f474d1",
+      "gates": {
+        "validate": "pass",
+        "deliver": "pass",
+        "check": "pass",
+        "browser-check": "pass"
+      },
+      "finalizerSummarySha256": "04394ae345a805c4496cad3383b5f3cd432fb547c44e43a239cb40a1b08d8025",
+      "diagnosticCount": 0
+    },
+    {
+      "id": "backup-signals",
+      "sourceSha256": "7da299616f2ccf92207fc1aa49064b759442f53777bfdadb30d0fc88f80c654e",
+      "htmlSha256": "0508e9897fd8326cecf4ecf632ec5e702b8f429d51c25ae2ae6747c7551d842f",
+      "gates": {
+        "validate": "pass",
+        "deliver": "pass",
+        "check": "pass",
+        "browser-check": "pass"
+      },
+      "finalizerSummarySha256": "1c2b9111b759885f0090852a32cb0338377673ef483d21842be04445d8192b1b",
+      "diagnosticCount": 0
+    },
+    {
+      "id": "future-integrations",
+      "sourceSha256": "e3a320c894a19b1dcb91c78f810c24e20cea2016883199378a1a5e4bc520150c",
+      "htmlSha256": "a8b33fbc3675ba9dc09c4301b35bc9e17aff30bb5e6e1641c67c78777896e0d9",
+      "gates": {
+        "validate": "pass",
+        "deliver": "pass",
+        "check": "pass",
+        "browser-check": "pass"
+      },
+      "finalizerSummarySha256": "5968d77f2ca4ed162c7ca5ac0604c229188ffdc6514b287fa63e9b529508c3fb",
+      "diagnosticCount": 0,
+      "sourceCommit": "2c8c3e7b79ba84029ec3965ea0cb4202cc0ddd55",
+      "supersededProposal": {
+        "preservedGitCommit": "5afa45ee3dd3d2068be42dc4a355444d5658a9c3",
+        "htmlPath": "docs/interactive/future-integrations.html",
+        "htmlSha256": "54014ee395c3d98445146d6067d2efee06957c59583185021032b590a5d4c4a7",
+        "sourceSha256": "fbf4c9592d6bfb10eb73d5da14dedc2ada58d588e1caabcbc77710360a9ad89b",
+        "reason": "Superseded proposal includes PKI/second service now outside ECS; preserved in Git, not in public traversal"
+      },
+      "previousLocalOnlyDiagram": {
+        "preservedGitCommit": "2c8c3e7b79ba84029ec3965ea0cb4202cc0ddd55",
+        "htmlSha256": "7d156e1220fa67cef9523068f8f6c5c7f04fd2afee5efd5bc68e5d26f60ed47a",
+        "sourceSha256": "f3c051490ef57bf0ca9d6abb495d7abc1e931a63dc3b66662bdb5bb0aa7bb305",
+        "reason": "Historical local-only view superseded by native synthetic pilot and separate undeployed TF/TG proposal"
+      }
+    }
+  ],
+  "nodeTestsPassed": 17,
+  "perceptualReview": "Current fifth diagram desktop/mobile and desktop evidence inspected; mobile overview needs native zoom. Historical SQL, retired synthetic pilot and undeployed TF/TG target kept distinct; no full accessibility certification.",
+  "noAwsPushHostingOrRemoteWorkflow": true,
+  "perDiagramCommitMeaning": "sourceCommitByDiagram or per-diagram sourceCommit overrides the original common sourceCommit; prior four generated originals unchanged.",
+  "previousIntegratedBrowser": {
+    "finishedUtc": "2026-10-23T19:25:44.224Z",
+    "sha256": "7fc6ef0c16db2551c1bcefc492873755937a56339e88c71431d6a30859e3a8be",
+    "checksPassed": 16,
+    "chrome": "155.0.8059.86",
+    "diagramWidths": [
+      1440,
+      390
+    ],
+    "allThreeViewWidths": [
+      320,
+      390,
+      768
+    ],
+    "allSvgNodesInitiallyVisible": true,
+    "nativeZoomAndReset": true,
+    "nativeSvgKeyboardFocus": true,
+    "guidedTourVerified": true,
+    "externalRequests": 0,
+    "consoleErrors": 0,
+    "opaqueIframeVerified": true,
+    "browserClosed": true,
+    "serverClosed": true
+  },
+  "integratedBrowser": {
+    "finishedUtc": "2026-10-24T02:38:35.609Z",
+    "sha256": "8ca617a837bc031a376370606ac9809a7cd620dc628b943c71d66d10926c6a8c",
+    "checksPassed": 16,
+    "chrome": "155.0.8059.86",
+    "diagramWidths": [
+      1440,
+      390
+    ],
+    "allThreeViewWidths": [
+      320,
+      390,
+      768
+    ],
+    "allSvgNodesInitiallyVisible": true,
+    "nativeZoomAndReset": true,
+    "nativeSvgKeyboardFocus": true,
+    "guidedTourVerified": true,
+    "externalRequests": 0,
+    "consoleErrors": 0,
+    "opaqueIframeVerified": true,
+    "browserClosed": true,
+    "serverClosed": true
+  }
+}

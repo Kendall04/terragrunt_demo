@@ -12,6 +12,10 @@ namespace terragrunt_demo.Services
 
     public class KmsEncryptionService : IEncryptionService
     {
+        // Current symmetric direct-KMS contract (default SYMMETRIC_DEFAULT):
+        // https://docs.aws.amazon.com/kms/latest/APIReference/API_Encrypt.html
+        private const int MaxPlaintextBytes = 4096;
+
         private readonly IAmazonKeyManagementService _kms;
         private readonly string _keyId;
 
@@ -26,6 +30,9 @@ namespace terragrunt_demo.Services
 
         public async Task<string> EncryptAsync(string plainText, CancellationToken ct = default)
         {
+            if (Encoding.UTF8.GetByteCount(plainText) > MaxPlaintextBytes)
+                throw new PlaintextTooLargeException(MaxPlaintextBytes);
+
             var response = await _kms.EncryptAsync(new EncryptRequest
             {
                 KeyId = _keyId,

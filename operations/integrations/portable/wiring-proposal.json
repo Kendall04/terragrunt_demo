@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 1,
+  "classification": "LOCAL_PROPOSAL_NOT_EXECUTION_AUTHORITY",
+  "upstreamCommit": "b3d0b3b595a9257bb6d4d849c899bf4e8dbc2828",
+  "singleOwner": "Dedicated Terragrunt unit of the ECS project; preserve the legacy unit/history, never apply both to same names/state",
+  "source": "git::https://github.com/Kendall04/reliability-sentinel.git//deploy/portable?ref=b3d0b3b595a9257bb6d4d849c899bf4e8dbc2828",
+  "upstreamModuleSha256": "1b412dc5d48c52ec8a17ad567569e33a648d553a0aaab6f65d677461e0d09195",
+  "provider": {
+    "existingRoot": "5.100.0",
+    "upstreamMinimum": "6.28.0",
+    "upstreamLock": "6.70.0",
+    "compatibleWith5_100": false,
+    "globalUpgradeAllowed": false,
+    "recommended": "Isolated6.28.0 signed/schema/mock-qualified root; keep global5.100, legacy6.27, upstream6.70 unchanged.",
+    "isolatedQualified": "6.28.0 official signed/checksum, validation passed; no global upgrade"
+  },
+  "inputs": {
+    "config_path": "Exact same two-monitor manifest inside qualified Lambda bundle",
+    "lambda_zip": "ecs-portable-lambda-25f037e.zip",
+    "enabled": false
+  },
+  "host": {
+    "newObserverEc2": false,
+    "producerPlacement": "existing proposed SQL host",
+    "observerCredentials": "none",
+    "activation": "observer and SQL producer remain separate opt-ins; no SSM/SSH command or changed recovery gate",
+    "portablePackageQualifiedLocally": true,
+    "portableCohostSourceCommit": "0359bafa1fbb3c48ebc53ce29836acf034381108",
+    "portableCohostSha256": "081b62f739cd309e84abf64b5c8e327bf6b7445214f37d85069fa070f0e2f24f",
+    "additionalObserverCloudResources": 0,
+    "observerNativeInstalled": false
+  },
+  "counts": {
+    "upstreamResourceBlocks": 27,
+    "upstreamExpandedAddressesWithReports": 55,
+    "consumerBoundariesProposed": 4,
+    "consumerSnsTopicPolicySubscriptionProposed": 3,
+    "proposedCombinedAddresses": 62,
+    "actualTerraformPlan": false,
+    "previous102AndUsd6Applicable": false,
+    "mockPlanResources": 62,
+    "mockPlanRunsPassed": 3
+  },
+  "boundaries": {
+    "upstreamSuppliesThem": false,
+    "requiredBeforeUse": "Four role-specific permissions boundaries mirroring each exact runtime policy; no blanket Allow*. Add explicit module input/role assignment in a reviewed source extension before any deployment. No double ownership of roles.",
+    "consumerAdaptationImplementedLocally": true
+  },
+  "scope": {
+    "candidateDeployment": "ecs-portable-r20261026p1",
+    "account": "341936017254",
+    "region": "us-east-1",
+    "finalNameAndWindowAdmitted": false
+  },
+  "runtimePermissions": {
+    "producer": {
+      "principal": "arn:aws:iam::341936017254:role/demo-dev-data-sql-ec2-role",
+      "Action": [
+        "events:PutEvents"
+      ],
+      "Resource": "arn:aws:events:us-east-1:341936017254:event-bus/ecs-portable-r20261026p1",
+      "Conditions": {
+        "events:source": "sentinel.report.sql-observer",
+        "events:detail-type": "Sentinel Observation v1",
+        "timeWindow": "UNBOUND_PENDING_ADMISSION"
+      },
+      "legacySendMessage": "Not needed by portable mode; reverse only any future own temporary delta, not existing unrelated grants"
+    },
+    "ingestion": [
+      "own DynamoDB item/transaction capabilities",
+      "own reports queue ReceiveMessage/DeleteMessage/GetQueueAttributes",
+      "own log stream/events",
+      "own operations DLQ SendMessage"
+    ],
+    "worker": [
+      "own DynamoDB item/transaction/query capabilities",
+      "own archive prefix GetObject/PutObject",
+      "exact own notices SNS Publish",
+      "own logs and operations DLQ"
+    ],
+    "watchdog": [
+      "own DynamoDB GetItem",
+      "own logs and operations DLQ"
+    ],
+    "cleanup": [
+      "own DynamoDB item/transaction/query capabilities",
+      "own logs and operations DLQ"
+    ],
+    "noRuntimeGrants": [
+      "ec2",
+      "ssm",
+      "iam",
+      "secretsmanager",
+      "kms",
+      "NAT",
+      "source backups .bak",
+      "RDS/AWS Backup reads"
+    ],
+    "regionalReadWildcardsNeededByTheseTwoReportMonitors": []
+  },
+  "deploymentLifecycleProposal": {
+    "principal": "TerragruntDemoDevOperator; existing administrator only for reviewed access bootstrap/reversal",
+    "createReadUpdateDeleteScopes": [
+      "exact own table/index/PITR/deletion-protection",
+      "exact own archive bucket/config/policy/versions",
+      "exact own queues/policies",
+      "exact event bus/rules/targets",
+      "four own roles/log groups/boundaries/inline policies",
+      "four own Lambdas/versions/aliases/invoke-config",
+      "own mapping",
+      "own metric filter/alarms",
+      "own notices topic/policy/subscription"
+    ],
+    "knownRegionalExposure": "Lambda Get/DeleteEventSourceMapping Resource* previously required by actual callbacks; scope disclosure/expiry/reversal must be included if still needed. Do not infer UUID isolation from a name. No retry of past denied operations in this task.",
+    "resourceGenerationIds": "Future actual plan and AWS-created IDs; unknown now, never filled with examples",
+    "retire": "Disable publisher/triggers/notifications; export/classify pending/outbox/DLQ/archive; explicit own table protection removal, object+version purge, saved destroy of exact resources, verify residuals, reverse exact temporary IAM/backend deltas with concurrency checks",
+    "defaultsNotSilentlyAccepted": {
+      "auditDays": 7,
+      "effectsDays": 7,
+      "logsDays": 30,
+      "queueDays": 14,
+      "s3Expiry": "none; versioned manual retention/deletion decision required"
+    },
+    "originalSqlBackupsRetention": "2+2 days unchanged"
+  },
+  "blockers": [
+    "Fresh native admission/current IAM/backend/paired publication and real plan required",
+    "Actual SQL-host boot/timers/role/EventBridge/native SQL/S3 not proven",
+    "AWS durability/ACK/outbox/watchdog/SNS/inbox remain native gates",
+    "SSM unresolved for separate recovery transport; no denied-operation workaround"
+  ],
+  "awsCalls": 0,
+  "installed": false,
+  "noticeAttempts": 3,
+  "alarmActionsEnabledByDefault": false,
+  "newBudgetProposalUsd": 2,
+  "priorBudgetsApplicable": false,
+  "archiveNameContract": {
+    "namespacePrefix": "snt-",
+    "futureResourcesOnly": true,
+    "maxLength": 63,
+    "characterSubset": "lowercase letters, digits, hyphens; starts/ends alphanumeric",
+    "reservedSuffixesRejected": [
+      "-s3alias",
+      "--ol-s3",
+      "--x-s3",
+      "--table-s3",
+      "-an"
+    ],
+    "invalidNames": "plan precondition fails; no truncation or legacy fallback",
+    "existingBucketsRenamed": false,
+    "appliedToAws": false,
+    "source": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html"
+  }
+}

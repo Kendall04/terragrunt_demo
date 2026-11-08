@@ -1,0 +1,8 @@
+{
+  "bucket": "e1-lifecycle-dev-341936017254-us-east-1",
+  "key": "ssm-diagnostic/ecs-sentinel-ssmdiag-r20261024d1/bootstrap/terraform.tfstate",
+  "region": "us-east-1",
+  "encrypt": true,
+  "use_lockfile": true,
+  "workspace_key_prefix": "ssm-diagnostic/ecs-sentinel-ssmdiag-r20261024d1/bootstrap/workspaces"
+}

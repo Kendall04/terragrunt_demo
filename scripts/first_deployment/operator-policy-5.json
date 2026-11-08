@@ -1,0 +1,75 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "OnlyObservedNatLaunchResources",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:RunInstances"
+      ],
+      "Resource": [
+        "arn:aws:ec2:us-east-1::image/ami-0f8f318086d72b1b4",
+        "arn:aws:ec2:us-east-1:341936017254:subnet/subnet-0c0015acb0147b62e",
+        "arn:aws:ec2:us-east-1:341936017254:subnet/subnet-07cfc3b9ed3fe5a77",
+        "arn:aws:ec2:us-east-1:341936017254:security-group/sg-05a0c795917e7b133",
+        "arn:aws:ec2:us-east-1:341936017254:launch-template/lt-04ab8d2ec1f975f96",
+        "arn:aws:ec2:us-east-1:341936017254:launch-template/lt-0b3ed490a53f8dfe7",
+        "arn:aws:ec2:us-east-1:341936017254:network-interface/*",
+        "arn:aws:ec2:us-east-1:341936017254:volume/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        },
+        "ArnEquals": {
+          "ec2:LaunchTemplate": [
+            "arn:aws:ec2:us-east-1:341936017254:launch-template/lt-04ab8d2ec1f975f96",
+            "arn:aws:ec2:us-east-1:341936017254:launch-template/lt-0b3ed490a53f8dfe7"
+          ]
+        }
+      }
+    },
+    {
+      "Sid": "OnlyObservedNatInstanceSpecification",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:RunInstances"
+      ],
+      "Resource": [
+        "arn:aws:ec2:us-east-1:341936017254:instance/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1",
+          "ec2:InstanceType": "t3.micro",
+          "ec2:MetadataHttpTokens": "required"
+        },
+        "ArnEquals": {
+          "ec2:LaunchTemplate": [
+            "arn:aws:ec2:us-east-1:341936017254:launch-template/lt-04ab8d2ec1f975f96",
+            "arn:aws:ec2:us-east-1:341936017254:launch-template/lt-0b3ed490a53f8dfe7"
+          ]
+        }
+      }
+    },
+    {
+      "Sid": "TagNatInstancesOnlyAtLaunch",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:CreateTags"
+      ],
+      "Resource": [
+        "arn:aws:ec2:us-east-1:341936017254:instance/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1",
+          "ec2:CreateAction": "RunInstances",
+          "aws:RequestTag/Environment": "dev",
+          "aws:RequestTag/Project": "demo",
+          "aws:RequestTag/Role": "nat"
+        }
+      }
+    }
+  ]
+}

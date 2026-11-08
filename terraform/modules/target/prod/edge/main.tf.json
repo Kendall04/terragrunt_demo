@@ -1,0 +1,28 @@
+{
+  "terraform": {
+    "backend": {
+      "s3": {
+        "encrypt": true,
+        "use_lockfile": true
+      }
+    }
+  },
+  "provider": {
+    "aws": {
+      "region": "${var.region}",
+      "allowed_account_ids": [
+        "${var.account_id}"
+      ]
+    }
+  },
+  "variable": {
+    "account_id": {
+      "type": "string",
+      "nullable": false
+    },
+    "region": {
+      "type": "string",
+      "nullable": false
+    }
+  }
+}

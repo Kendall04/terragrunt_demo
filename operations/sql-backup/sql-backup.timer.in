@@ -1,0 +1,8 @@
+[Unit]
+Description=Hourly SQL backup while the owner enables the SQL host
+[Timer]
+OnCalendar=hourly
+Persistent=true
+Unit=sql-backup.service
+[Install]
+WantedBy=timers.target

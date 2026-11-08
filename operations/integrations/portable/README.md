@@ -1,0 +1,338 @@
+# Portable Sentinel integration
+
+## Operational reading order
+
+The [November incident record](../../../docs/SENTINEL-CHAOS-20261106.md) documents
+installed observers, NAT/backup incidents, durable checkpoints, encrypted archives,
+verified inbox delivery and four append-only historical compensations. The
+[current audit](../../../docs/ENGINEERING-REVIEW.md) reports sampled continuity and
+remaining DLQ debt. Sentinel observes and notifies; it does not replace NAT or
+recover SQL. The original 64-request/four-job profile is unchanged.
+
+The dated local/install corrections below preserve failures and qualification
+boundaries. In particular, the earlier unconditional historical-failure STALLED
+behavior is superseded by the verified compensation-aware current-health check;
+the four original records are not erased. Local fixtures do not establish AWS health.
+
+## DEV installation corrections â€” 2026-11-05
+
+The live installation exposed two SNS validation requirements: explicit supported
+topic-policy actions and unique policy/statement IDs. The TLS deny and the
+CloudWatch grant retain their original scope. Both buckets explicitly retain
+`blocked_encryption_types = ["SSE-C"]`; a refreshed plan must not remove the
+AWS-created protection. The consumer passes the existing approved archive CMK
+to `S3ArchiveAdapter` through `SENTINEL_ARCHIVE_KMS_KEY`; no additional key or
+permission is implied. The installed operational profile remains four jobs and 64 requests per
+invocation. Changing it invalidates the existing journal profile; do not change
+that binding or edit persisted records to conceal a budget failure.
+These corrections do not certify unattended monitoring or a remote SQL backup.
+
+### Bounded checkpoint correction
+
+The 2026-11-05 worker trace exhausted 64 requests inside a recovery check, then
+could not read the journal to checkpoint. Transaction-size preflight performed
+one GetItem per write action. The consumer extension batches those same reads
+with TransactGetItems; item/transaction byte bounds, conditional writes and
+idempotency tokens remain unchanged. Transactional reads can use more read
+capacity per item even though they need fewer API requests.
+
+The worker reserves eight of the existing 64 calls for its final journal CAS
+(three attempts plus an uncertain-write readback). Discovery pages contain at
+most four pointers. A new job starts only with 40 work calls remaining: the
+reproduced recovery check uses 33, plus directory/authority reads and margin.
+This admission threshold is not a guarantee for arbitrary external providers;
+the hard work limit still yields with durable pending work and the checkpoint
+reserve remains available. The configured four-job maximum, request/query limits,
+profile hash, receipts, fences, retry limits and historical failures do not change.
+Deadline/cancellation and persistent storage failure can still prevent a write;
+such an outcome must not be reported as a confirmed checkpoint.
+
+The actual persisted DEV snapshot reproduces the original failure offline and
+completes the same check and checkpoint in 49 requests with the correction.
+The focused runtime suite checks bounded yield, uncertain CAS readback, unchanged
+profile/failures and the original hard cap. Offline effect transports are doubles,
+not evidence of archive or email delivery. Historical permanent failures still
+cause STALLED; this fix does not clear or replay them.
+
+## Current security and retirement contract
+
+The reviewed root now requires two **distinct external customer-managed KMS key
+ARNs**, no defaults or aliases. Account/region/UUID, enabled state, symmetric
+ENCRYPT_DECRYPT use and CUSTOMER ownership are checked, including DescribeKey
+metadata in a future native plan. Archive SSE-KMS uses object encryption context
+(bucket keys OFF); SNS uses its separate key. Worker inline policy and boundary
+mirror only GenerateDataKey/Decrypt for the exact keys, service/context and explicit
+UTC window (maximum 48 hours for the bounded laboratory; the owner's closure
+and cost approval still govern the actual expiry). `external_key_policy_requirements` exports
+review-only statements for each enclosing key, never installs/replaces a key policy.
+Existing administration/Denies and the external key owner's approval remain required.
+
+The child owns a dedicated `snt-logs-<deployment>-<account>` bucket, SSE-S3,
+BucketOwnerEnforced, all four public blocks, TLS policy, exact archive source/account
+delivery grant and 30-day prefix lifecycle. Archive logging explicitly depends on
+these controls. Neither bucket permits force_destroy. DynamoDB retains SSE and
+PITR with **one day** explicit recovery period. Audit is constrained to **7 days**;
+effects remain **7 days** in the unchanged pinned Portable Installation.Storage
+contract. Queues retain **14 days** and CloudWatch/access logs **30 days**.
+
+Deletion protection stays ON with `retirement=null`, including `enabled=true`.
+A retirement transition requires the exact owned table ARN, SHA256 of a separately
+approved transition receipt and literal `DISABLE DELETION PROTECTION <table ARN>`,
+with both enabled flags false. The hash is a binding, not proof of authorization.
+No table lookup/update, adoption/import or imperative teardown route is introduced.
+
+Retire through the existing owner/state, with checkpoints in the preserved
+`logs/certification-20261027/RETIREMENT.md`: stop publisher, plan/review/apply runtime
+and alarm inhibition; reconcile ACK/outbox/in-flight effects and preserve evidence;
+bind state lineage/serial, table ARN and approval receipt; plan the explicit
+protection transition and reject any unrelated change before its separately
+authorized apply. Then use the owner's saved destroy plan with the **same** inputs.
+Keep archive and logs until export/retention decisions and the manifest authorize
+finite S3 deletion batches, including archive versions/delete markers; re-list and
+reconcile each batch, multipart uploads and late access logs. `force_destroy=false`
+blocks a nonempty bucket. Destroy archive logging/source before the destination;
+preserve external CMKs, backups, secrets, remote states and version history. On
+interruption keep the receipt/state/checkpoints, refresh and review a new plan;
+never replay an old binary, disable locks or manually delete around Terraform.
+Verify absence of owned operational resources, retained-data costs and reversal of
+temporary permissions. Nothing in this procedure authorizes its execution now.
+
+`prepare_module.py` still pins upstream b3d0b3b and its original module hash;
+`templates/security.tf.tftpl` is the maintained addition, reproduced into the child.
+Linux local qualification: Terraform **1.13.4**, AWS **6.28.0**, root **5/5** and child
+**22/22** mock-plan tests, schema validate root/child, repeated exact generation and
+upstream-tamper rejection. The authenticated Linux package h1 was **added** to both
+portable locks; every existing hash/version remains. The current mock inventory is
+**69 creates** (previous 62 plus seven logging resources); no AWS resources/IDs or
+native acceptance are inferred. Tests use a deliberately inert mock ZIP, not a
+new qualification of the existing executable artifact. Root and child tests are
+rendered by the generator, then run with `terraform test -filter=tests/portable.tftest.hcl`
+and child `terraform test -filter=tests/security.tftest.hcl` after offline
+`init -backend=false -lockfile=readonly` / `validate`. No GitHub Actions or AWS calls.
+
+Next is a newly authorized network PLAN-ONLY under the
+[native DEV procedure](../../../terraform/docs/native-dev-lifecycle.md), separate
+from deployment. The [E16 admission](PLAN-ONLY-E16.md) is historical only.
+Earlier 62-resource, security-pending and retirement-toggle checkpoints
+below and in the dated proposals are historical. The cumulative certification logs
+and unapplied draft patch remain untouched; they must not be replayed over this code.
+
+## Portable cohost package - current local qualification
+
+The explicit portable mode now ships in a source-bound cohost tar, retaining inert
+timers, observer/producer separation and legacy mode. Actual bootstrap/package/ELF
+fixtures and original SQS handler/readable-SNS flow pass locally with double ports.
+See [artifact hashes, tests, IAM scope and native limits](PORTABLE-COHOST-QUALIFICATION.md).
+No installed authority, current IAM or cloud acceptance is implied. Earlier dated
+checkpoints describing an unconnected API remain historical.
+
+
+## Executable package and prior mock-plan checkpoint
+
+The source-bound Lambda ZIP from `25f037e` is 3,783,279 bytes, SHA256
+`4e89587b2760b5ec6d4a37a4bc6327ed6f770d0316d2e1f3fba32d4b1d54cca7`.
+Four actual handlers/serializer/factory load from that ZIP: 136 package checks pass;
+22 actual upstream SNS/factory checks pass with pinned SDK/transport doubles.
+Three mock-provider plans pass, with 62 create addresses:55 upstream +4 boundaries
++3 consumer SNS. No AWS plan or execution. The final consumer profile caps notice
+attempts at 3 and disables alarm actions independently of runtime activation.
+
+See [the full proposed scope, lifecycle, cost and limits](NATIVE-TRIAL-PROPOSAL.md),
+[package descriptor](trial/lambda-package.json) and
+[mock address inventory](trial/mock-plan-inventory.json).
+`prepare_module.py --trial-root --config ... --zip ... --package-manifest ...`
+reproduces the root/child/templates using one isolated 6.28 lock and fmt only;
+test placeholders are rendered by that helper. Use the explicit source-cleared
+NuGet config for the BCL package probe, run build from its project directory, and
+invoke its DLL with `archive.zip descriptor.json`. This creates only a disposable
+package extraction/child CLR process. `package_lambda.py --published ... --config ...
+--output new.zip` refuses an existing ZIP or uncommitted source and never publishes.
+
+Earlier wording about two extensions is superseded: the third is the narrow durable
+three-attempt profile. SQL-host portable publication/installer is still separate;
+this Lambda ZIP does not silently update the existing cohost tar or timers.
+No approvals, SDK/global provider locks, cloud resources or upstream originals changed.
+
+
+## Verified isolated dependencies/runtime - supersedes the prior hash blocker
+
+The prior AWSSDK.Core cache-integrity block was a bug in our check: a signed package's
+raw archive SHA512 differs from NuGet's canonical signed contentHash. The new official
+Core4.0.102.10 download is byte-identical to the original cache. `dotnet nuget verify
+--all` confirms the NuGet repository signature and exactly the unchanged ECS lock hash.
+The corrected verifier rejects a tampered package and rejects raw archive hash as a
+replacement for the lock hash. No lock was altered to make a package pass. Earlier
+failed probe/receipts remain preserved; they do not prove a corrupt package.
+Reference: NuGet.Client PackageArchiveReader.GetContentHash uses the signed-package
+content hash separately from GetArchiveHashAsync.
+https://github.com/NuGet/NuGet.Client/blob/dev/src/NuGet.Core/NuGet.Packaging/PackageArchiveReader.cs
+
+The runtime's exact AWS dependencies restored successfully in locked mode in a fresh
+isolated cache from official NuGet. Signature validation is required, with the official
+repository certificate pinned in that config; no machine/global trust changes. All115
+original source files remain exact apart from the two reviewed SNS-format extensions;
+upstream locks remain byte-identical. SDK10.0.402 existing on the laptop builds the
+full consumer runtime, with no SDK install or upstream global.json alteration.
+
+Ecs.Backup.Portable.Host delegates all four handlers to the original portable runtime
+and supplies only the readable SNS renderer. It verifies the exact two-expectation
+manifest/hash, upstream pin and explicit synthetic trial metadata. The internal notice
+remains schema2; state, journal, reducer, IDs and webhook JSON are unchanged.22 checks
+now execute the original Notifications implementation with its pinned SDK, anonymous
+SNS transport double and network-rejecting HTTP factory. No SNS or other AWS request,
+subscription, email or inbox acceptance is claimed.
+
+AWS provider6.28.0 was installed once in the isolated module root from the official
+registry, signed by HashiCorp; its archive checksum matches the new isolated lock.
+Both the original upstream module and the consumer adaptation pass real provider
+schema validation with0 errors/warnings. The adaptation factors the unchanged runtime
+policies into one map and uses that same value for four boundaries/inline policies,
+adds only own-role tags, and changes the four handler strings to the consumer host.
+The module has59 addresses; the consumer SNS topic/policy/subscription would add3.
+No global5.100, legacy6.27 or upstream6.70 lock was replaced. No AWS plan was run.
+
+prepare_runtime_source.py and prepare_module.py reproduce the fixed-source extensions;
+the latter copies only the isolated6.28 lock and invokes fmt, never init/plan/apply.
+Any executable package, test/provider mocks and hashes are local qualification only.
+Fresh cloud scope/budget, SNS confirmation, effective IAM/backend concurrency and
+teardown admission remain required. This does not resolve historical SSM denial or
+qualify Linux, real SQL, actual timers, AWS persistence, public ECS recovery or inbox.
+
+The following724bd12 checkpoint is preserved as history; its cache-hash/SNS/provider
+blockers are superseded by the evidence above, not silently removed from prior receipts.
+
+
+## Current delivery increment - local checkpoint
+
+The durable publisher is now implemented as a local API, still not installed or
+selected by cohost timers. One atomic journal debits each attempted EventBridge
+entry before transport (POSIX directory fsync included), caps20 globally/3 per entry,
+preserves unknown outcomes, retries only failed entries, refuses changed binding,
+keeps pending work at exhaustion and blocks automatic retries after AccessDenied.
+It collects no newer observation while old pending work exists. EventBridge delivery
+itself may be unordered/duplicated. A stale owner lock requires review, never PID
+cleanup or automatic takeover. New host/recreated state is not permission to reset
+the admitted budget. Do not enable old SQS and portable publishers together.
+
+19 Windows publisher scenarios pass;18 were also run in Linux, including real fsync
+on disposable state. The added19th checks the final global slot.36 checks now cover
+real upstream core/ingress with actual publisher payloads, partial retry, reversed
+arrival and redelivery. Storage is still the upstream memory fake, not native DynamoDB.
+
+ReadableNotice renders schema2 with prominent synthetic label, understandable status,
+reasons/resource, revision/time and all operational identities, retaining the structured
+notice internally.21 formatter checks pass against the exact upstream source enum/record.
+notice-extension.json defines an optional SNS renderer with original JSON as its default;
+source contexts match. That full SNS implementation/factory was NOT executed or wired.
+
+The attempted cached-SDK probe stopped before restore/build: AWSSDK.Core4.0.102.10 cache
+SHA512 differs from the existing ECS managed lock. No package was used, hash changed,
+alternate cache tried, dependency installed or source version relaxed. The probe sources
+are preserved outside the checkout. The BCL formatter test uses source-only contracts,
+not fabricated SDK types or a substitute claim of SNS execution. Exact upstream SNS
+4.0.100.16/Backup4.0.101.6/RDS4.0.106.5 are also absent in the inspected cache.
+
+wiring-proposal.json pins the original module, keeps enabled=false and explicitly
+rejects provider5.100: upstream requires>=6.28 and locks6.70. A dedicated isolated root
+is proposed; no global provider/locks changed, no init/schema/plan executed. Four
+proposal coherence checks pass. Source expansion55 +4 required boundaries +3 consumer
+SNS objects suggests62 addresses, not an actual plan or new cloud consent. Upstream
+does not provide the boundaries; that extension and role-specific policy contents
+must be closed before deployment. The old102/USD6 proposal is inapplicable.
+
+Next: resolve pinned AWS dependency integrity/availability under explicit authority,
+qualify the real Lambda/SNS factory, complete the reviewed boundary/module adaptation
+and isolated provider schema qualification, then package the executable cohost opt-in.
+The following first-increment text is historical to cc68350; its pending publisher
+paragraph is superseded by this checkpoint. No AWS/SSM/SSH/IAM/state/Actions/push occurred.
+
+
+This is a tested adapter, not an installed/published runtime. Legacy upstream-sources.json,
+cohost source131e87b and qualified archives stay unchanged. New upstream pin is explicit
+in portable/upstream.json; do not pass its checkout through the old source verifier.
+
+## Implemented
+
+bridge.py maps the existing strict observer candidate to two real upstream Report
+entries: backup freshness and host telemetry. Backup LastSuccessUtc becomes dataAt;
+receiving an old backup today does not make it fresh. Data identity/runId remains
+stable across fresh polls; report IDs remain stable across retry and JSON property
+reordering. Both configured resource/generation bindings are validated again by the
+real upstream ReportNormalizer. Unchanged healthy checks still produce heartbeats.
+
+Explicit full COPY_ONLY checksum policy is required. The new upstream SQL PowerShell
+reporter excludes COPY_ONLY by default and is not installed or used. Current SQL
+producer and credential-free observer remain the source. Without producer coverage,
+healthy-looking metadata becomes Unknown, not confirmed success. The current producer
+receipt FAILED_OR_UNCONFIRMED cannot establish an explicit failure: the adapter conservatively
+maps it to Unknown while still opening an actionable incident. It never invents business
+impact, RestoreTested, restore success or .bak verification.
+
+Telemetry reports assert only arrival of the observer, not SQL/backup health. Loss of
+arrival opens an external insufficient-evidence incident; return alone does not heal
+backup health. Portable worker-health watchdog is distinct from this host expectation.
+Maintenance emits no report; the external expectation must also be disabled in a future
+reviewed plan. This increment does not implement a new maintenance API or silently cancel
+monitoring. The example uses the upstream default one qualified pass for freshness;
+that is proposed monitor policy, not authority to change installed policy/recovery gates.
+
+The example deployment/consumer are local-only, notifications=false. Account metadata
+does not grant access. No arbitrary command/endpoint, credential or secret is accepted.
+The adapter only returns entries; it cannot call PutEvents, SQS, SQL or SNS.
+
+## Executed qualification
+
+14 Python projection cases and33 checks through original b3d0b3b ReportNormalizer,
+IngestionProcessor, SignalProcessor, MonitorReducer, transactions/receipts/outbox,
+MonitorBootstrap and TransactionalMemoryStore pass. Includes pending-work protection,
+terminal-chain reconciliation, loss/return, stale/failure/unknown, foreign identity,
+replay/deduplication, future data, cancellation and no NAT probes. Explicit timer-input
+evaluation exercises the real reducer, not a running cloud worker. The first test draft
+incorrectly expected bootstrap to execute pending work; it was corrected to preserve
+the actual upstream contract, and a regression now asserts that protection.
+
+Memory store and synthetic receipts are not DynamoDB persistence, native SQL, AWS
+permissions, scheduling or inbox proof. The upstream749 tests were not rerun.
+
+prepare_source.py extracts52 exact tracked files from the reviewed Git commit, seven
+package-free CLR projects, no upstream scripts. It preserves their original bytes.
+The consumer uses the already-installed ECS SDK10.0.402; original upstream global.json
+10.0.301 is deliberately excluded from this isolated compatibility slice, recorded in
+its receipt. Neither upstream nor machine/global pins are edited. Offline NuGet config
+clears sources: no dependencies/SDKs were downloaded. Release compile:0 warnings/errors.
+This proves the core slice on Windows, not the complete portable AWS/Lambda/Linux bundle.
+
+Repeat with the reviewed repo scripts, explicit source/output dirs and installed tools:
+
+```text
+python -I -B operations/integrations/portable/prepare_source.py --source <clean-pinned-checkout> --output <new-temp-source>
+python -I -B operations/integrations/portable/generate_fixtures.py --output <new-temp-fixtures>
+python -I -B -m unittest discover -s operations/integrations/portable -p test_bridge.py -v
+dotnet restore operations/integrations/Ecs.Backup.Portable.Tests/Ecs.Backup.Portable.Tests.csproj --configfile <own-source-cleared-config> --artifacts-path <temp-artifacts> -p:PortableSentinelSourceRoot=<temp-source>
+dotnet build operations/integrations/Ecs.Backup.Portable.Tests/Ecs.Backup.Portable.Tests.csproj --no-restore -c Release --artifacts-path <temp-artifacts> -p:PortableSentinelSourceRoot=<temp-source> --disable-build-servers -m:1
+dotnet <temp-artifacts>/bin/Ecs.Backup.Portable.Tests/release/Ecs.Backup.Portable.Tests.dll <temp-fixtures>
+```
+
+## Next local wiring and real external gates
+
+This first cut does not switch the cohost installer/timers/publisher from SQS. Next:
+bind manifest/bridge to the runtime opt-in; implement durable EventBridge publication,
+counting each attempted entry toward20 (not just HTTP requests), FailedEntryCount and
+unknown/partial outcomes, persistent IDs and pending data. Preserve root producer gate
+and observer independence. Do not enable both legacy and portable transports.
+
+Then wire the real upstream portable Lambda/store/journal/watchdog, and an explicit
+readable SNS rendering extension that preserves schema2 revision/evaluatedAt/deliveryId
+and immutable evidence. Do not fork a second reducer/outbox or pretend raw JSON is the
+readable mail requested. No notices sent by this increment.
+
+Portable Terraform source requires AWS>=6.28 and pins6.70.0; existing ECS roots/locks
+remain unchanged. It is not schema-qualified with the older project provider. Review
+an isolated compatible provider/tool before preparing the TG unit, without a global
+5-to-6 migration. Runtime SDK dependencies, permissions boundaries, new four-role
+footprint, SNS ownership, retentions and complete create/read/delete IAM require a
+new scoped proposal. Do not copy55 addresses blindly or reuse102/USD6 authority.
+
+No AWS/IAM/backend/state, publishing, Actions, push or SSM/SSH occurred. SSM remains
+unresolved; observing backups cannot establish fencing/SQL restore/public ECS recovery.
+New cloud trial needs separate actual plan, budget, permissions, LIVE review and retirement.

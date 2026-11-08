@@ -1,0 +1,29 @@
+{
+  "Status": "PACKAGED",
+  "Sha256": "081b62f739cd309e84abf64b5c8e327bf6b7445214f37d85069fa070f0e2f24f",
+  "SourceCommit": "0359bafa1fbb3c48ebc53ce29836acf034381108",
+  "Files": 254,
+  "Bytes": 133703680,
+  "Path": "SqlBackup-portable-0359baf.tar",
+  "PayloadFiles": 254,
+  "BinarySource": "b2bf8d82938e690561a85e45b3ab9e2a383413cf",
+  "PortableContractSha256": "005409c5bcbaabdcfe3651eee0f36f656326078717a5cc284ebbc6a689f8d97b",
+  "LambdaPackage": {
+    "schemaVersion": 1,
+    "sourceCommit": "25f037e04b0e059e868c66b0c8282d410452bfd9",
+    "upstreamCommit": "b3d0b3b595a9257bb6d4d849c899bf4e8dbc2828",
+    "runtime": "dotnet10",
+    "runtimeFactory": "Ecs.Backup.Portable.Host::Ecs.Backup.Portable.Host.Function",
+    "configSha256": "95f7c05b06abed164fc2c98d6142fa6268fb5b40065ca6853bb185b10b49fdc6",
+    "syntheticTrial": true,
+    "executionAuthorized": false,
+    "zipSha256": "4e89587b2760b5ec6d4a37a4bc6327ed6f770d0316d2e1f3fba32d4b1d54cca7",
+    "zipBytes": 3783279,
+    "path": "ecs-portable-lambda-25f037e.zip",
+    "payloadFiles": 36,
+    "includedSqlHostPublisher": false,
+    "noticeAttempts": 3
+  },
+  "Uploaded": false,
+  "DeploymentAuthorized": false
+}

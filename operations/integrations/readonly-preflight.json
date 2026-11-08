@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "utc": "2026-10-23T20:59:53.176463+00:00",
+  "status": "NO_GO_CURRENT_STORAGE_RETIREMENT_PLAN",
+  "identity": "arn:aws:iam::341936017254:user/cnp-cert-admin",
+  "account": "341936017254",
+  "region": "us-east-1",
+  "awsReadOnlyCalls": 45,
+  "awsMutations": 0,
+  "assumeRoleCalls": 0,
+  "secretValuesRead": 0,
+  "operator": {
+    "arn": "arn:aws:iam::341936017254:role/TerragruntDemoDevOperator",
+    "maxSessionSeconds": 3600,
+    "trustMentionsCurrentPrincipal": true,
+    "boundary": null,
+    "temporaryPolicy": {
+      "Name": "ecs-sentinel-r20261023b1",
+      "AlreadyExists": false,
+      "FileSha256": "f74aa44382afccba19fe8437750597b84f42cd60cd95a72ab5a354f38b3efd2d",
+      "CanonicalSha256": "769dbaa1869754a41bae4690c890edb32f653b0e7e61b1fde8726bc72b770284",
+      "ExistingInlineChars": 0,
+      "NewInlineChars": 4572,
+      "ResultingChars": 4572,
+      "Limit": 10240,
+      "FitsWithoutReplacingExisting": true
+    }
+  },
+  "quotaHeadroom": {
+    "RolesNeeded": 3,
+    "RolesAvailable": 964,
+    "ManagedPoliciesNeeded": 2,
+    "ManagedPoliciesAvailable": 1487
+  },
+  "lambdaLimits": {
+    "AccountLimit": {
+      "TotalCodeSize": 322122547200,
+      "CodeSizeUnzipped": 262144000,
+      "CodeSizeZipped": 52428800,
+      "ConcurrentExecutions": 1001,
+      "UnreservedConcurrentExecutions": 1000
+    },
+    "AccountUsage": {
+      "TotalCodeSize": 0,
+      "FunctionCount": 7
+    }
+  },
+  "names": {
+    "targetedAbsentChecks": 14,
+    "exactOwnLogNamesAvailable": 2,
+    "allConsultedNamesAvailable": true,
+    "noMappingOrSubscriptionIdentifierAllocated": true
+  },
+  "templates": {
+    "bootstrap-template.json": "PASS",
+    "trial-template.json": "PASS"
+  },
+  "runtime": {
+    "officialDotnet10Supported": true,
+    "officialSource": "https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html",
+    "localPythonSdkEnumContainsDotnet10": false,
+    "intendedCreatePath": "CloudFormation template, not local Python Lambda CreateFunction",
+    "nativeRuntimeExecutionProven": false
+  },
+  "materialBlocker": {
+    "hypotheticalAction": "s3:DeleteBucket",
+    "target": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254",
+    "principal": "arn:aws:iam::341936017254:role/TerragruntDemoDevOperator",
+    "decision": "explicitDeny",
+    "sourcePolicy": "TerragruntDemoDevOperatorPart4",
+    "actualDeleteRequested": false,
+    "attemptedOtherPrincipal": false,
+    "effect": "Current main template retains bucket; proposed native operator deletion cannot complete. Temporary Allow does not override this deny. Teardown plan must be corrected/reviewed before one execution consent."
+  },
+  "sqsDirectPricing": {
+    "pricingPage": "https://aws.amazon.com/sqs/pricing/",
+    "officialRateSource": "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AWSQueueService/current/us-east-1/index.json",
+    "publicationDate": "2026-09-11T12:46:07Z",
+    "offerVersion": "20260911124607",
+    "sku": "8RN6B8U4MERHRXP3",
+    "unit": "Requests",
+    "usdPerRequest": "0.0000004000",
+    "plannedRequests": 100000,
+    "costUsd": "0.0400000000",
+    "freeTierAssumed": false,
+    "messageGroupIdProposed": false,
+    "rawOfferSha256": "787061c859b2ed47c2249b0b54516230b9d245b76ab41d87ce11f449a27813dc"
+  },
+  "totalModelUsd": 0.147,
+  "newAllowanceProposedUsd": 1,
+  "budgetApproved": false,
+  "oldAllocationsReset": false,
+  "executionReadyForSingleConsent": false,
+  "evidenceSha256": {
+    "preflight.json": "ad61b04758c2b275c30a10b2b0750cab404fecfc4e5034b4338989307c32d4f4",
+    "delete-bucket-evaluation.json": "81ccd64c4466481fe6864e042d2bd39d5cb909be115c6e2f9baafcc8aee4d8da"
+  }
+}

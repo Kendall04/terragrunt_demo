@@ -1,0 +1,277 @@
+"""Deterministic provider-free E1 repository acceptance, never live acceptance.
+
+python -I -B scripts/tests/final_acceptance/gate.py --report-dir <outside-repo>
+Uses preinstalled Python/Git/Terraform only; no init, AWS, download or deployment.
+Each test runner installs its process/socket/credential guard. Terraform checks
+use only disposable provider-free locals/variables configurations.
+"""
+import argparse
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import shutil
+import subprocess
+import sys
+
+ROOT = Path(__file__).resolve().parents[3]
+SUITES = ('authority', 'security_root', 'control_bundles', 'controller_compute',
+          'ownership_publication', 'build_supervision', 'qualification', 'internal_release',
+          'normal_delivery', 'delivery', 'recovery', 'wp4d', 'lifecycle', 'workflows', 'final_acceptance')
+ADDITIONAL_SUITES = ("mutation", "post_switch", "owner_recovery")
+# Every criterion includes positive, negative and actual-source admission evidence;
+# WP7 composes the resulting relationships and eliminates historical overlap.
+CRITERIA = {
+    'AC1': ('authority', 'security_root', 'ownership_publication', 'lifecycle', 'final_acceptance'),
+    'AC2': ('authority', 'workflows', 'final_acceptance'),
+    'AC3': ('ownership_publication', 'wp4d', 'lifecycle', 'workflows', 'final_acceptance'),
+    'AC4': ('normal_delivery', 'delivery', 'wp4d', 'final_acceptance'),
+    'AC5': ('normal_delivery', 'delivery', 'wp4d', 'final_acceptance'),
+    'AC6': ('build_supervision', 'qualification', 'internal_release', 'delivery', 'final_acceptance'),
+    'AC7': ('security_root', 'control_bundles', 'ownership_publication', 'lifecycle', 'final_acceptance'),
+    'AC8': ('delivery', 'recovery', 'wp4d', 'lifecycle', 'final_acceptance'),
+    'AC9': ('delivery', 'recovery', 'workflows', 'final_acceptance'),
+    'AC10': ('workflows', 'final_acceptance'),
+    'AC11': ('ownership_publication', 'build_supervision', 'delivery', 'recovery', 'lifecycle', 'workflows', 'final_acceptance'),
+    'AC12': ('authority', 'qualification', 'delivery', 'recovery', 'lifecycle', 'workflows', 'final_acceptance'),
+    'AC13': ('authority', 'security_root', 'controller_compute', 'internal_release', 'wp4d', 'workflows', 'final_acceptance'),
+    'AC14': ('normal_delivery', 'delivery', 'final_acceptance'),
+    'AC15': ('ownership_publication', 'delivery', 'lifecycle', 'final_acceptance'),
+    'AC16': SUITES + ADDITIONAL_SUITES,
+}
+CHECKS = (
+    ('native_ecs', ('python', '-I', '-B', 'scripts/tests/native_ecs/run.py')),
+    ('native_backend_static', ('python', '-I', '-B', 'scripts/tests/native_ecs/check_backend.py')),
+    ('original_dev', ('python', '-I', '-B', 'scripts/tests/original_dev/run.py')),
+    ('nat_trusted_closure', ('python', '-I', '-B', 'scripts/tests/nat_closure/run.py')),
+    ('operational_teardown', ('python', '-I', '-B', 'scripts/tests/operational_teardown/run.py')),
+    ('combined_quiescence', ('python', '-I', '-B', 'scripts/tests/combined_quiescence/run.py')),
+    ('ecs_quiescence', ('python', '-I', '-B', 'scripts/tests/ecs_quiescence/run.py')),
+    ('nat_quiescence', ('python', '-I', '-B', 'scripts/tests/nat_quiescence/run.py')),
+    ('administrative_handoff', ('python', '-I', '-B', 'scripts/tests/handoff/run.py')),
+    ('exact_destroy', ('python', '-I', '-B', 'scripts/tests/exact_destroy/run.py')),
+    ('dev_down', ('python', '-I', '-B', 'scripts/tests/dev_down/run.py')),
+    ('ephemeral_plan_shape', ('python', '-I', '-B', 'scripts/tests/ephemeral/check_plan_shape.py')),
+    ('ephemeral_lifecycle', ('python', '-I', '-B', 'scripts/tests/ephemeral/run.py')),
+    ('image_retention', ('python', '-I', '-B', 'scripts/tests/retention/run.py')),
+    ('nat_reliability', ('python', '-I', '-B', 'scripts/tests/nat/run.py')),
+    ('nat_static', ('python', '-I', '-B', 'scripts/tests/nat/check_static.py')),
+    ('generated_security', ('python', '-I', '-B', 'scripts/tests/security_root/render.py')),
+    ('generated_workflows', ('python', '-I', '-B', 'scripts/workflow_requests/render.py')),
+    ('knowledge', ('python', '-I', '-B', 'scripts/tests/final_acceptance/check_knowledge.py')),
+    ('extracted_packages', ('python', '-I', '-B', 'scripts/tests/internal_release/check_packages.py')),
+    ('e2_static', ('python', '-I', '-B', 'scripts/tests/mutation/check_static.py')),
+    ('wp4d_static', ('python', '-I', '-B', 'scripts/tests/wp4d/check_static.py')),
+    ('wp5_static', ('python', '-I', '-B', 'scripts/tests/lifecycle/check_static.py')),
+    ('wp6_static', ('python', '-I', '-B', 'scripts/tests/workflows/check_static.py')),
+    ('terraform_format', ('terraform', 'fmt', '-check', '-recursive', 'terraform/')),
+    ('diff_whitespace', ('git', 'diff', '--check')),
+)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--report-dir', type=Path, required=True)
+    args = parser.parse_args()
+    directory = args.report_dir.resolve()
+    if directory == ROOT or ROOT in directory.parents:
+        raise SystemExit('Reports must be outside the repository')
+    directory.mkdir(parents=True, exist_ok=True)
+    env = {k: v for k, v in os.environ.items() if not k.upper().startswith(
+        ('AWS', 'AMAZON', 'BOTO', 'GITHUB', 'GH_', 'AZURE', 'GOOGLE', 'TF_', 'TERRAGRUNT')) and
+        'PROXY' not in k.upper() and k.upper() not in ('BASH_ENV', 'ENV', 'PYTHONPATH', 'PYTHONSTARTUP')}
+    env.update(AWS_EC2_METADATA_DISABLED='true', AWS_CONFIG_FILE=os.devnull,
+               AWS_SHARED_CREDENTIALS_FILE=os.devnull, CHECKPOINT_DISABLE='1',
+               GIT_CONFIG_NOSYSTEM='1', GIT_CONFIG_GLOBAL=os.devnull,
+               GIT_OPTIONAL_LOCKS='0', GIT_TERMINAL_PROMPT='0',
+               GIT_CONFIG_COUNT='3', GIT_CONFIG_KEY_0='core.autocrlf',
+               GIT_CONFIG_VALUE_0='true' if os.name == 'nt' else 'input',
+               GIT_CONFIG_KEY_1='safe.directory', GIT_CONFIG_VALUE_1=ROOT.as_posix(),
+               GIT_CONFIG_KEY_2='core.fsmonitor', GIT_CONFIG_VALUE_2='false')
+    git = shutil.which('git')
+    def metadata(*args):
+        return subprocess.check_output([git, '-c', 'core.fsmonitor=false', *args], cwd=ROOT, env=env, text=True).strip()
+    identity = dict(revision=metadata('rev-parse', 'HEAD'), tree=metadata('rev-parse', 'HEAD^{tree}'),
+                    branch=metadata('branch', '--show-current'), status=metadata('status', '--porcelain=v1', '--untracked-files=all'))
+    def execute(name, argv):
+        argv = [sys.executable if argv[0] == 'python' else shutil.which(argv[0]), *argv[1:]]
+        if not argv[0]:
+            return name, {'status': 'UNAVAILABLE', 'exit': None}
+        log = directory / (name + '.log')
+        try:
+            with log.open('wb') as stream:
+                process = subprocess.run(argv, cwd=ROOT, env=env, stdin=subprocess.DEVNULL,
+                                         stdout=stream, stderr=subprocess.STDOUT, timeout=2400)
+            code = process.returncode
+        except subprocess.TimeoutExpired:
+            code = -1
+        raw = log.read_bytes()
+        text = raw.decode('utf-8', errors='replace')
+        record = dict(status='PASS' if code == 0 else 'FAIL', exit=code,
+                      log_sha256=hashlib.sha256(raw).hexdigest())
+        if name in SUITES + ADDITIONAL_SUITES:
+            counts = re.findall(r'^Ran (\d+) tests?', text, re.M)
+            # unittest prints a test docstring on the following line before its
+            # outcome. The method ID still appears once on its own first line.
+            ids = re.findall(r'^test\w+ \(([^)]+)\)', text, re.M)
+            record.update(executed=int(counts[-1]) if len(counts) == 1 else 0, test_ids=ids)
+            if not record['executed'] or len(ids) != record['executed'] or not re.search(r'^OK\s*$', text, re.M):
+                record['status'] = 'FAIL'
+        print(name + ': ' + record['status'], flush=True)
+        if record['status'] == 'FAIL':
+            # Hermetic local tests run without cloud credentials. Keep failure
+            # evidence visible instead of losing it with the ephemeral runner.
+            print('--- ' + name + ' diagnostic (last 6000 chars) ---', flush=True)
+            print(text[-6000:], flush=True)
+        return name, record
+    records = {}
+    # Independent processes retain isolated hermetic guards and disposable files.
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        futures = [pool.submit(execute, name, ('python', '-I', '-B', f'scripts/tests/{name}/run.py')) for name in SUITES + ADDITIONAL_SUITES]
+        for future in as_completed(futures):
+            name, record = future.result()
+            records[name] = record
+    for name, argv in CHECKS:
+        name, record = execute(name, argv)
+        records[name] = record
+    sys.path[:0] = [str(ROOT/'scripts/tests/final_acceptance'), str(ROOT/'scripts/tests/security_root'), str(ROOT/'scripts/tests/authority')]
+    from contract import authority_inventory, closed, parse
+    from inventory import scan, verify
+    errors = verify(ROOT)
+    try:
+        closed(ROOT)
+        parsing = parse(ROOT)
+        final_authority = authority_inventory(ROOT)
+    except (ValueError, KeyError, OSError) as exc:
+        errors.append(str(exc))
+        parsing = None
+        final_authority = None
+    hashes = {name: value['sha256'] for name, value in scan(ROOT).items()}
+    for base in ('ci/authority', 'specs/iam-hardening', 'terraform/docs'):
+        for path in (ROOT/base).rglob('*'):
+            if path.is_file():
+                hashes[path.relative_to(ROOT).as_posix()] = hashlib.sha256(path.read_bytes()).hexdigest()
+    regression = sum(records[k].get('executed', 0) for k in SUITES if k != 'final_acceptance')
+    # 1050 previous + 3 portable-security + 6 DEV inhibition + 7 delivery +
+    # 8 installed-graph preservation + 2 limited-PROD security invariants.
+    # Existing assertions and UNKNOWN/failure gates remain binding; count is no pass.
+    preservation_methods = {
+        'test_allowlist_is_exact_and_separate_from_current_catalog',
+        'test_source_fingerprints_cannot_be_supplied_by_caller',
+        'test_closed_fixture_preserves_all_three_without_fabricated_history',
+        'test_approval_v1_and_delivery_inhibition_are_required',
+        'test_every_identity_dimension_rejects_drift',
+        'test_resource_bindings_names_and_dependencies_cannot_change',
+        'test_nat_prod_and_current_catalog_remain_unchanged',
+    }
+    required_ids = {'test_historical_delivery.HistoricalDelivery.' + name for name in preservation_methods}
+    if not required_ids <= set(records['wp4d'].get('test_ids', [])):
+        errors.append('Historical preservation coverage is incomplete')
+    installed_methods = {
+        'test_wp3_allowlist_covers_exact_controllers_and_workers',
+        'test_no_historical_approval_is_fabricated',
+        'test_wp3_fingerprint_covers_config_role_address_and_buildspec',
+        'test_nat_allowlist_is_dev_only_and_catalog_is_separate',
+        'test_preservation_inputs_default_inert_and_require_new_approval',
+        'test_partial_preservation_has_blocking_preconditions',
+        'test_normal_installation_receipts_remain_required',
+        'test_limited_ecr_selection_is_closed_not_caller_controlled',
+        'test_protected_dev_and_neutral_contract_stays_byte_equivalent',
+        'test_future_prod_indexing_preserves_all_security_attributes',
+    }
+    required_installed = {'test_installed_preservation.InstalledPreservation.' + name for name in installed_methods}
+    if not required_installed <= set(records['security_root'].get('test_ids', [])):
+        errors.append('Installed graph preservation coverage is incomplete')
+    shared_alert_methods = {
+        'test_generated_sources_match',
+        'test_topic_and_subscription_keep_their_addresses',
+        'test_original_fourteen_plus_three_installed_sql_alarm_names',
+        'test_publisher_grant_is_not_generic',
+        'test_key_has_retention_rotation_and_exact_administrator',
+        'test_policy_keeps_original_statements_and_rejects_duplicate_owned_sid',
+        'test_prod_does_not_gain_dev_key_or_policy',
+        'test_new_resource_surface_is_bounded',
+        'test_shared_lock_reuses_authenticated_aws_pin_without_upgrade',
+    }
+    required_shared_alerts = {'test_shared_alerts.SharedAlertsTests.' + name for name in shared_alert_methods}
+    if not required_shared_alerts <= set(records['security_root'].get('test_ids', [])):
+        errors.append('Shared notification security coverage is incomplete')
+    required_recovery_disk = {
+        'test_recovery_disk.RecoveryDiskTests.test_source_root_can_be_preserved_without_changing_resource_identity'
+    }
+    if not required_recovery_disk <= set(records['security_root'].get('test_ids', [])):
+        errors.append('Native DEV disk-retention coverage is incomplete')
+    dev_neutral_methods = {
+        'test_dev_neutral_exact_scope_and_shared_consumer',
+        'test_dev_neutral_missing_invented_and_unavailable_rejected',
+        'test_dev_neutral_prod_and_unknown_records_rejected',
+        'test_dev_neutral_authenticated_channel_and_exact_readback',
+        'test_dev_neutral_preserves_historical_receipt_and_create_only',
+        'test_dev_neutral_promotion_namespace_and_pinned_provenance',
+        'test_dev_neutral_only_shared_wiring_changes',
+    }
+    required_dev_neutral = {'test_wp2d.ClosureTests.' + name for name in dev_neutral_methods}
+    if not required_dev_neutral <= set(records['ownership_publication'].get('test_ids', [])):
+        errors.append('DEV neutral publication coverage is incomplete')
+    admin_publication_methods = {
+        'test_wrong_identity_stops_before_storage',
+        'test_prior_version_and_delete_marker_rejected',
+        'test_output_failure_scope_and_candidate_drift_rejected',
+        'test_preflight_is_read_only_and_publication_disabled',
+        'test_single_conditional_put_and_exact_version',
+        'test_ambiguous_write_only_reconciles_and_never_retries',
+        'test_failed_read_wrong_version_or_bytes_never_success',
+        'test_bucket_runtime_exposure_and_wrong_backend_rejected',
+    }
+    required_admin_publication = {'test_admin_publication.AdminPublicationTests.' + name for name in admin_publication_methods}
+    if not required_admin_publication <= set(records['security_root'].get('test_ids', [])):
+        errors.append('Administrative publication adapter coverage is incomplete')
+    dev_recipe_methods = {
+        'test_dev_recipe_is_admin_exact_source_and_standard_is_unchanged',
+        'test_dev_recipe_rejects_prod_paths_and_unbound_authority',
+        'test_dev_worker_selector_is_closed_and_never_a_buildspec_override',
+        'test_dev_worker_requires_real_buildspec_and_effective_selector',
+        'test_dev_payload_rejects_recipe_and_certificate_substitution',
+        'test_dev_selector_cannot_enter_gateway_request',
+    }
+    required_dev_recipes = {'test_adapters.Adapters.' + name for name in dev_recipe_methods}
+    if not required_dev_recipes <= set(records['internal_release'].get('test_ids', [])):
+        errors.append('DEV SQL-Lab recipe coverage is incomplete')
+    required_source_closure = {'test_source_closure.SourceClosure.' + name for name in (
+        'test_closed_source_codec_and_image_projection',
+        'test_closed_source_git_blobs_and_closed_paths',
+        'test_closed_source_rejects_extra_paths_types_and_aliases',
+        'test_closed_source_requires_root_and_project_dependencies',
+        'test_closed_source_rejects_existing_link_and_file',
+        'test_closed_source_full_seal_detects_backup_mutation')}
+    if not required_source_closure <= set(records['internal_release'].get('test_ids', [])):
+        errors.append('Closed .NET source export coverage is incomplete')
+    expected_regression = 1076 + len(required_shared_alerts) + len(required_dev_neutral) + len(required_admin_publication) + len(required_dev_recipes) + len(required_source_closure) + len(required_recovery_disk)
+    if regression != expected_regression:
+        errors.append(f'Accepted regression count changed: {regression} != {expected_regression}')
+    static_good = all(records[n]['status'] == 'PASS' for n, _ in CHECKS)
+    criteria = {key: {'status': 'PASS' if static_good and not errors and all(records[n]['status'] == 'PASS' for n in names) else 'FAIL',
+                      'evidence_suites': list(names)} for key, names in CRITERIA.items()}
+    good = not errors and all(v['status'] == 'PASS' for v in records.values())
+    identity['status'] = metadata('status', '--porcelain=v1', '--untracked-files=all')
+    report = dict(result='E1_REPOSITORY_ACCEPTANCE_PASS' if good else 'E1_REPOSITORY_ACCEPTANCE_FAIL',
+                  identity=identity, evaluated_sha256=hashes, content_digest=hashlib.sha256(json.dumps(hashes, sort_keys=True).encode()).hexdigest(),
+                  criteria=criteria, checks=records, regression_count=regression, wp7_count=records['final_acceptance'].get('executed', 0),
+                  errors=errors, parsing=parsing, final_authority_inventory=final_authority,
+                  e2_count=records['mutation'].get('executed', 0),
+                  e4_count=records['post_switch'].get('executed', 0),
+                  e2r_count=records['owner_recovery'].get('executed', 0),
+                  external_prerequisites='UNVERIFIED_NOT_DEPLOYED',
+                  native_linux_e3='SEPARATE_EVIDENCE_REQUIRED', activation={'request_identities': str(len(json.loads((ROOT/'terraform/infra/security/authority.json').read_text())['wp6']['approvals']))+'/11 source-approved; live verification separate', 'wp4d': '0/16', 'wp5': '0/8'},
+                  limitations=['WP1 historical characterization is extractor regression, not final TARGET evidence',
+                               'Provider-free Terraform does not validate AWS provider schemas',
+                               'Live IAM, installation, resource membership, GitHub governance, E3 and app DB/KMS remain separate evidence'])
+    (directory/'acceptance.json').write_text(json.dumps(report, indent=2)+'\n', encoding='utf-8')
+    print(report['result'] + f'; regression={regression}; wp7={report["wp7_count"]}')
+    return 0 if good else 1
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

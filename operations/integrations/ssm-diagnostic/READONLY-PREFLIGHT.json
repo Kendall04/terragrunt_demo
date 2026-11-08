@@ -1,0 +1,113 @@
+{
+  "Status": "PROPOSED_READS_NOT_EXECUTED",
+  "Profile": "cnp-cert-dev on Windows only",
+  "ExpectedAccount": "341936017254",
+  "Region": "us-east-1",
+  "NoAssumeRoleUntilCycleApproved": true,
+  "NeverReadCredentialsOrSecretValues": true,
+  "Reads": [
+    {
+      "Api": "sts:GetCallerIdentity",
+      "ExpectedArn": "arn:aws:iam::341936017254:user/cnp-cert-admin"
+    },
+    {
+      "Api": "iam:GetRole/ListRolePolicies/ListAttachedRolePolicies/GetRolePolicy",
+      "RoleName": "TerragruntDemoDevOperator",
+      "Checks": [
+        "same role generation",
+        "boundary/session conditions",
+        "current inline aggregate plus final bound inline<=10240",
+        "all10 existing policy/default versions/documents",
+        "no new deny or concurrent writer"
+      ]
+    },
+    {
+      "Api": "iam:GetPolicy/GetPolicyVersion/ListPolicyVersions",
+      "Names": "10 attached operator policies only",
+      "Checks": [
+        "Part4 v5 hash2dee64162063bf48daa6be793a92399fd8383104cd102078ae4bd7427a7876e2 unchanged",
+        "Part7 v3 hash01ac28532b77b0266632d5714dc909a1638b7d1d54df5d3de27e02ed5dfaad59 unchanged",
+        "other snapshots metadata consistent; no changes installed"
+      ]
+    },
+    {
+      "Api": "iam:GetAccountSummary",
+      "Checks": [
+        "role/policy/profile quota room for one each"
+      ]
+    },
+    {
+      "Api": "iam:GetRole/GetPolicy/GetInstanceProfile",
+      "Targets": [
+        "ecs-sentinel-ssmdiag-r20261024d1-node",
+        "ecs-sentinel-ssmdiag-r20261024d1-node-boundary"
+      ],
+      "Expected": "absent"
+    },
+    {
+      "Api": "ssm:GetDocument",
+      "Name": "ecs-sentinel-ssmdiag-r20261024d1-observer-control",
+      "Expected": "absent; stop if denied, do not retry previously denied operation"
+    },
+    {
+      "Api": "ssm:GetParameter",
+      "Name": "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-6.1-x86_64",
+      "WithDecryption": false,
+      "Purpose": "public selector context only; fixed trial AMI still must match approved pinned ID"
+    },
+    {
+      "Api": "ec2:DescribeImages",
+      "ImageIds": [
+        "ami-0d6e34c14757a048b"
+      ],
+      "Owners": [
+        "amazon"
+      ],
+      "Checks": [
+        "available/official x86_64/HVM/8GiB root",
+        "no Marketplace license; no image upgrade by inference"
+      ]
+    },
+    {
+      "Api": "kms:DescribeKey",
+      "KeyId": "alias/aws/ebs",
+      "Checks": [
+        "AWS managed enabled us-east-1, arn585f0833-6a1c-465d-ab40-a6c8278cae39",
+        "no policy change or decrypt"
+      ]
+    },
+    {
+      "Api": "s3:GetBucketPolicy/GetBucketVersioning/GetBucketLocation/GetEncryptionConfiguration",
+      "Bucket": "e1-lifecycle-dev-341936017254-us-east-1",
+      "Checks": [
+        "original backend canonical hash97d39b00d7b24ec3a5af437e9ac447f3a5e8e96323d8508fd9e51e275f11e529",
+        "same AES256/versioning; no concurrent access amendment"
+      ]
+    },
+    {
+      "Api": "s3:HeadObject/ListObjectsV2",
+      "Bucket": "e1-lifecycle-dev-341936017254-us-east-1",
+      "Prefix": "ssm-diagnostic/ecs-sentinel-ssmdiag-r20261024d1/",
+      "Expected": "new own prefix absent; never GET historical state content"
+    },
+    {
+      "Api": "ec2:DescribeInstances/DescribeVpcs/DescribeSubnets/DescribeInternetGateways/DescribeRouteTables/DescribeSecurityGroups/DescribeVolumes/DescribeNetworkInterfaces",
+      "Filter": "tag:Trial=ecs-sentinel-ssmdiag-r20261024d1",
+      "Expected": "no generation already exists"
+    },
+    {
+      "Api": "logs:DescribeLogGroups",
+      "Prefix": "/ecs/ssm-diagnostic/ecs-sentinel-ssmdiag-r20261024d1",
+      "Expected": "absent"
+    }
+  ],
+  "AfterApprovalBeforeOneCommand": [
+    "fresh effective operator session, no extra session policy",
+    "same expiry/start within24h; official pricing fits USD1",
+    "actual saved plan4+10, image/profile/tags/generation IDs",
+    "source/doc contents/version/nativeSHA match packet",
+    "fresh CloudWatch collector record bound to instance/role/hash; active agent, known version and agent log source0 READ",
+    "SSM Online is necessary but insufficient",
+    "no rejected Get/Send operation retry without new evidence"
+  ]
+}

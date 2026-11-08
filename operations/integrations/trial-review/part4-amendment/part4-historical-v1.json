@@ -1,0 +1,176 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:DeleteObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/global/terraform.tfstate.tflock",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/data/terraform.tfstate.tflock",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/platform/terraform.tfstate.tflock",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/apps/terraform.tfstate.tflock",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/e1/lifecycle/dev/edge/terraform.tfstate.tflock"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1"
+      ],
+      "Condition": {
+        "StringLike": {
+          "s3:prefix": [
+            "e1/lifecycle/dev/global/terraform.tfstate*",
+            "e1/lifecycle/dev/data/terraform.tfstate*",
+            "e1/lifecycle/dev/platform/terraform.tfstate*",
+            "e1/lifecycle/dev/apps/terraform.tfstate*",
+            "e1/lifecycle/dev/edge/terraform.tfstate*"
+          ]
+        },
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetBucketLocation",
+        "s3:GetBucketVersioning",
+        "s3:GetBucketPublicAccessBlock",
+        "s3:GetBucketPolicy",
+        "s3:GetEncryptionConfiguration"
+      ],
+      "Resource": [
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:GetObjectVersion"
+      ],
+      "Resource": [
+        "arn:aws:s3:::e1-wp4-dev-341936017254-us-east-1/arbitration/dev/application.json",
+        "arn:aws:s3:::e1-wp4-dev-341936017254-us-east-1/recovery/dev/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::e1-wp4-dev-341936017254-us-east-1"
+      ],
+      "Condition": {
+        "StringLike": {
+          "s3:prefix": [
+            "recovery/dev/*"
+          ]
+        },
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "lambda:ListFunctions",
+        "codebuild:ListProjects",
+        "tag:GetResources"
+      ],
+      "Resource": [
+        "*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "lambda:GetFunctionConcurrency"
+      ],
+      "Resource": [
+        "arn:aws:lambda:us-east-1:341936017254:function:e1-gateway-*-dev",
+        "arn:aws:lambda:us-east-1:341936017254:function:e1-nat-recovery-nat-dev-*",
+        "arn:aws:lambda:us-east-1:341936017254:function:e1-cleanup-recovery-cleanup-dev"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "codebuild:ListBuildsForProject",
+        "codebuild:BatchGetBuilds"
+      ],
+      "Resource": [
+        "arn:aws:codebuild:us-east-1:341936017254:project/e1-controller-*-dev",
+        "arn:aws:codebuild:us-east-1:341936017254:build/e1-controller-*-dev:*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "iam:GetRole"
+      ],
+      "Resource": [
+        "arn:aws:iam::341936017254:role/demo-dev-vpc-flow-logs-role"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Deny",
+      "Action": [
+        "iam:CreateRole",
+        "iam:PutRolePolicy",
+        "iam:AttachRolePolicy",
+        "s3:PutBucketPolicy",
+        "s3:DeleteBucket",
+        "kms:ScheduleKeyDeletion",
+        "secretsmanager:DeleteSecret"
+      ],
+      "Resource": [
+        "*"
+      ]
+    }
+  ]
+}

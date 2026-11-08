@@ -1,0 +1,141 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ObservedSqlLaunchResources",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:RunInstances"
+      ],
+      "Resource": [
+        "arn:aws:ec2:us-east-1::image/ami-062944a84867f2386",
+        "arn:aws:ec2:us-east-1:341936017254:subnet/subnet-08302f1ff29ca5338",
+        "arn:aws:ec2:us-east-1:341936017254:security-group/sg-0b1d1c8829de734e6",
+        "arn:aws:ec2:us-east-1:341936017254:network-interface/*",
+        "arn:aws:ec2:us-east-1:341936017254:volume/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Sid": "OriginalSqlInstanceSpecification",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:RunInstances"
+      ],
+      "Resource": [
+        "arn:aws:ec2:us-east-1:341936017254:instance/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1",
+          "aws:RequestTag/Environment": "dev",
+          "aws:RequestTag/Project": "demo",
+          "ec2:InstanceType": "t3a.small",
+          "ec2:MetadataHttpTokens": "required"
+        },
+        "ArnEquals": {
+          "ec2:InstanceProfile": "arn:aws:iam::341936017254:instance-profile/demo-dev-data-sql-ec2-profile"
+        }
+      }
+    },
+    {
+      "Sid": "OriginalSqlLaunchTags",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:CreateTags"
+      ],
+      "Resource": [
+        "arn:aws:ec2:us-east-1:341936017254:instance/*",
+        "arn:aws:ec2:us-east-1:341936017254:volume/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1",
+          "ec2:CreateAction": "RunInstances",
+          "aws:RequestTag/Environment": "dev",
+          "aws:RequestTag/Project": "demo"
+        }
+      }
+    },
+    {
+      "Sid": "ReadInstanceCreditSpecification",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:DescribeInstanceCreditSpecifications"
+      ],
+      "Resource": [
+        "*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Sid": "ReadOnlyOriginalDevSecretMetadata",
+      "Effect": "Allow",
+      "Action": [
+        "secretsmanager:DescribeSecret"
+      ],
+      "Resource": [
+        "arn:aws:secretsmanager:us-east-1:341936017254:secret:demo/dev/db/sql-sa-password-30fCjc",
+        "arn:aws:secretsmanager:us-east-1:341936017254:secret:demo/dev/db/sql-app-password-2Shh56",
+        "arn:aws:secretsmanager:us-east-1:341936017254:secret:demo/dev/app/db-connection-string-72ytze"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Sid": "ReadInstanceTypeForOriginalSqlLaunch",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:DescribeInstanceTypes"
+      ],
+      "Resource": [
+        "*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Sid": "TagOnlyObservedOriginalSqlRootVolume",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:CreateTags"
+      ],
+      "Resource": [
+        "arn:aws:ec2:us-east-1:341936017254:volume/vol-0206bcb0b6b243e3a"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1",
+          "aws:RequestTag/Environment": "dev",
+          "aws:RequestTag/Project": "demo",
+          "aws:RequestTag/ManagedBy": "terraform",
+          "aws:RequestTag/Owner": "kendall",
+          "aws:RequestTag/Role": "root-ebs"
+        },
+        "ForAllValues:StringEquals": {
+          "aws:TagKeys": [
+            "Environment",
+            "Project",
+            "ManagedBy",
+            "Owner",
+            "Role"
+          ]
+        }
+      }
+    }
+  ]
+}

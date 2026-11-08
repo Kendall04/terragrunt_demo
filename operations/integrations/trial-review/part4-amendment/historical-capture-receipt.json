@@ -1,0 +1,15 @@
+{
+  "Operation": "GetPolicyVersion",
+  "PolicyArn": "arn:aws:iam::341936017254:policy/TerragruntDemoDevOperatorPart4",
+  "VersionId": "v1",
+  "Utc": "2026-10-23T21:06:30.445005+00:00",
+  "Mutations": 0,
+  "Outcome": "READ_OK",
+  "FileSha256": "4a35504fb3f4b6b15028168a495759e4a09471f7ccebc7184f7cc73dbb402f37",
+  "CanonicalSha256": "38824410ef0391c7f9c1afd5a62967fa377a74a16e013b973facdba91f68fb6b",
+  "Metadata": {
+    "VersionId": "v1",
+    "IsDefaultVersion": false,
+    "CreateDate": "2026-10-13 20:47:33+00:00"
+  }
+}

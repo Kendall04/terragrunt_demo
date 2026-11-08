@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0b1017" />
+    <meta
+      name="description"
+      content="Cloud Resilience Laboratory. Una plataforma AWS ECS, sus incidentes reales y su recuperación verificada."
+    />
+    <title>ECS V2 — Cloud Resilience Laboratory</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='none' stroke='%23ffb454' stroke-width='3' d='M4 8h17l7 8-7 8H4V8Zm8 0v16m8-16v16'/%3E%3C/svg%3E"
+    />
+    <link
+      rel="preload"
+      href="/assets/fonts/sora-semibold.ttf"
+      as="font"
+      type="font/ttf"
+      crossorigin
+    />
+    <link rel="stylesheet" href="/assets/style.css" />
+    <script type="module" src="/assets/app.mjs"></script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Saltar al contenido</a>
+    <header class="top">
+      <a class="brand" href="/" data-route aria-label="ECS V2, inicio"
+        ><svg viewBox="0 0 32 32" aria-hidden="true">
+          <path d="M4 8h17l7 8-7 8H4V8Zm8 0v16m8-16v16" /></svg
+        ><span>ECS <b>V2</b><small>by Kendall Fernández</small></span></a
+      >
+      <button
+        id="menu-toggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="side-nav"
+      >
+        Menú
+      </button>
+      <nav id="side-nav" aria-label="Navegación principal">
+        <a href="/" data-route>Overview</a
+        ><a href="/demo" data-route>Product Demo</a
+        ><a href="/architecture" data-route>Architecture</a
+        ><a href="/resilience" data-route>Resilience Lab</a
+        ><a href="/evidence" data-route>Evidence</a>
+      </nav>
+      <span id="global-mode" class="badge amber">DEMO</span>
+    </header>
+    <div class="shell">
+      <div class="content">
+        <main id="main" tabindex="-1"></main>
+        <footer>
+          <div>
+            <strong>Cloud Resilience Laboratory</strong>
+            <p>Arquitectura, fallos y recuperación. Con evidencia.</p>
+          </div>
+          <div>
+            <span id="edition-badge" class="badge amber">DEMO</span>
+            <p id="edition-note"></p>
+            <span id="footer-mode"></span>
+          </div>
+          <a
+            href="https://github.com/Kendall04/terragrunt_demo"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Explorar el repositorio</a
+          >
+        </footer>
+      </div>
+    </div>
+    <div id="announcer" class="sr-only" role="status" aria-live="polite"></div>
+  </body>
+</html>

@@ -1,0 +1,25 @@
+--- part4-original.json
++++ part4-proposed.json
+@@ -164,12 +164,21 @@
+         "iam:PutRolePolicy",
+         "iam:AttachRolePolicy",
+         "s3:PutBucketPolicy",
+-        "s3:DeleteBucket",
+         "kms:ScheduleKeyDeletion",
+         "secretsmanager:DeleteSecret"
+       ],
+       "Resource": [
+         "*"
++      ]
++    },
++    {
++      "Sid": "DenyDeleteBucketExceptEcsSentinelR20261023b1",
++      "Effect": "Deny",
++      "Action": [
++        "s3:DeleteBucket"
++      ],
++      "NotResource": [
++        "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254"
+       ]
+     },
+     {

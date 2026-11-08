@@ -1,0 +1,151 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "iam:CreatePolicy",
+        "iam:GetPolicy",
+        "iam:GetPolicyVersion",
+        "iam:ListPolicyVersions",
+        "iam:DeletePolicy",
+        "iam:TagPolicy",
+        "iam:UntagPolicy",
+        "iam:ListPolicyTags",
+        "iam:CreateRole",
+        "iam:GetRole",
+        "iam:DeleteRole",
+        "iam:TagRole",
+        "iam:UntagRole",
+        "iam:ListRoleTags",
+        "iam:ListRolePolicies",
+        "iam:ListAttachedRolePolicies",
+        "iam:ListInstanceProfilesForRole",
+        "iam:PutRolePolicy",
+        "iam:GetRolePolicy",
+        "iam:DeleteRolePolicy",
+        "iam:PutRolePermissionsBoundary",
+        "iam:DeleteRolePermissionsBoundary",
+        "iam:CreateInstanceProfile",
+        "iam:GetInstanceProfile",
+        "iam:DeleteInstanceProfile",
+        "iam:AddRoleToInstanceProfile",
+        "iam:RemoveRoleFromInstanceProfile",
+        "iam:TagInstanceProfile",
+        "iam:UntagInstanceProfile",
+        "iam:ListInstanceProfileTags"
+      ],
+      "Resource": [
+        "arn:aws:iam::341936017254:role/ecs-sentinel-ssmdiag-r20261024d1-node",
+        "arn:aws:iam::341936017254:policy/ecs-sentinel-ssmdiag-r20261024d1-node-boundary",
+        "arn:aws:iam::341936017254:instance-profile/ecs-sentinel-ssmdiag-r20261024d1-node"
+      ],
+      "Condition": {
+        "DateLessThan": {
+          "aws:CurrentTime": "${var.expires_at}"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "iam:PutRolePolicy",
+        "iam:GetRolePolicy",
+        "iam:DeleteRolePolicy",
+        "iam:ListRolePolicies"
+      ],
+      "Resource": [
+        "arn:aws:iam::341936017254:role/TerragruntDemoDevOperator"
+      ],
+      "Condition": {
+        "DateLessThan": {
+          "aws:CurrentTime": "${var.expires_at}"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "iam:PassRole"
+      ],
+      "Resource": [
+        "arn:aws:iam::341936017254:role/ecs-sentinel-ssmdiag-r20261024d1-node"
+      ],
+      "Condition": {
+        "DateLessThan": {
+          "aws:CurrentTime": "${var.expires_at}"
+        },
+        "StringEquals": {
+          "iam:PassedToService": "ec2.amazonaws.com"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetBucketPolicy",
+        "s3:PutBucketPolicy",
+        "s3:GetBucketLocation",
+        "s3:GetBucketVersioning",
+        "s3:GetEncryptionConfiguration"
+      ],
+      "Resource": [
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1"
+      ],
+      "Condition": {
+        "DateLessThan": {
+          "aws:CurrentTime": "${var.expires_at}"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/ssm-diagnostic/ecs-sentinel-ssmdiag-r20261024d1/bootstrap/terraform.tfstate",
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/ssm-diagnostic/ecs-sentinel-ssmdiag-r20261024d1/bootstrap/terraform.tfstate.tflock"
+      ],
+      "Condition": {
+        "DateLessThan": {
+          "aws:CurrentTime": "${var.expires_at}"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:DeleteObject"
+      ],
+      "Resource": [
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1/ssm-diagnostic/ecs-sentinel-ssmdiag-r20261024d1/bootstrap/terraform.tfstate.tflock"
+      ],
+      "Condition": {
+        "DateLessThan": {
+          "aws:CurrentTime": "${var.expires_at}"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::e1-lifecycle-dev-341936017254-us-east-1"
+      ],
+      "Condition": {
+        "DateLessThan": {
+          "aws:CurrentTime": "${var.expires_at}"
+        },
+        "StringLike": {
+          "s3:prefix": [
+            "ssm-diagnostic/ecs-sentinel-ssmdiag-r20261024d1/bootstrap/*"
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,186 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "V1 histórica · red y egreso",
+    "locale": "es",
+    "output": "docs/interactive/v1-network.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/Kendall04/terragrunt_demo",
+      "revision": "19b1f5e538bbd8f63c882335c1dd76edffab462b",
+      "link_mode": "local-only"
+    }
+  },
+  "components": [
+    {
+      "id": "entry",
+      "type": "cloud",
+      "label": "API Gateway",
+      "sublabel": "Entrada pública",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        178,
+        72
+      ],
+      "sources": [
+        {
+          "path": "terraform/docs/architecture.md",
+          "line": 79,
+          "end_line": 91
+        }
+      ]
+    },
+    {
+      "id": "alb",
+      "type": "cloud",
+      "label": "VPC Link + ALB",
+      "sublabel": "ALB privado",
+      "pos": [
+        380,
+        40
+      ],
+      "size": [
+        178,
+        72
+      ],
+      "sources": [
+        {
+          "path": "terraform/docs/architecture.md",
+          "line": 79,
+          "end_line": 91
+        }
+      ]
+    },
+    {
+      "id": "app",
+      "type": "backend",
+      "label": "Fargate privado",
+      "sublabel": "Una API",
+      "pos": [
+        720,
+        40
+      ],
+      "size": [
+        178,
+        72
+      ],
+      "sources": [
+        {
+          "path": "terraform/docs/architecture.md",
+          "line": 79,
+          "end_line": 91
+        }
+      ]
+    },
+    {
+      "id": "sql",
+      "type": "database",
+      "label": "SQL EC2",
+      "sublabel": "Sin IP pública",
+      "pos": [
+        720,
+        300
+      ],
+      "size": [
+        178,
+        72
+      ],
+      "sources": [
+        {
+          "path": "terraform/docs/architecture.md",
+          "line": 79,
+          "end_line": 91
+        }
+      ]
+    },
+    {
+      "id": "nat",
+      "type": "cloud",
+      "label": "NAT Instances",
+      "sublabel": "ASG por AZ",
+      "pos": [
+        380,
+        300
+      ],
+      "size": [
+        178,
+        72
+      ],
+      "sources": [
+        {
+          "path": "terraform/docs/architecture.md",
+          "line": 93,
+          "end_line": 104
+        }
+      ]
+    },
+    {
+      "id": "aws",
+      "type": "external",
+      "label": "Endpoints AWS",
+      "sublabel": "Salida pública",
+      "pos": [
+        40,
+        300
+      ],
+      "size": [
+        178,
+        72
+      ],
+      "sources": [
+        {
+          "path": "terraform/docs/architecture.md",
+          "line": 79,
+          "end_line": 99
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "from": "entry",
+      "to": "alb",
+      "label": "HTTP privado",
+      "variant": "default"
+    },
+    {
+      "from": "alb",
+      "to": "app",
+      "label": "HTTP :8080",
+      "variant": "default"
+    },
+    {
+      "from": "app",
+      "to": "sql",
+      "label": "TCP :1433",
+      "variant": "default"
+    },
+    {
+      "from": "app",
+      "to": "nat",
+      "label": "egreso",
+      "variant": "default"
+    },
+    {
+      "from": "nat",
+      "to": "aws",
+      "label": "NAT",
+      "variant": "default"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "amber",
+      "title": "Alcance y estado",
+      "items": [
+        "Topología original retirada; no representa el NAT Gateway de az6.",
+        "Dos ASG NAT con reemplazo por AZ; no prueban failover entre zonas.",
+        "E13 conserva egreso no verificado y límites de salud continua."
+      ]
+    }
+  ]
+}

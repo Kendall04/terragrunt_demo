@@ -1,0 +1,472 @@
+{
+  "readAt": "2026-11-06T23:13:40.789025+00:00",
+  "scope": "Read-only topology; no invocation, state download or secret value",
+  "identity": "arn:aws:iam::341936017254:user/cnp-cert-admin",
+  "instances": [
+    {
+      "InstanceId": "i-00eeff5c609ca9f0f",
+      "InstanceType": "t3.micro",
+      "SubnetId": "subnet-0306fee9fde47cafd",
+      "VpcId": "vpc-00faf317507b09b03",
+      "PrivateIpAddress": "10.0.1.11",
+      "SourceDestCheck": false,
+      "Placement": {
+        "AvailabilityZoneId": "use1-az2",
+        "GroupName": "",
+        "Tenancy": "default",
+        "AvailabilityZone": "us-east-1b"
+      },
+      "State": {
+        "Code": 16,
+        "Name": "running"
+      }
+    },
+    {
+      "InstanceId": "i-010e3bf5edd05d11a",
+      "InstanceType": "t3a.small",
+      "SubnetId": "subnet-00ac2e41219ad7803",
+      "VpcId": "vpc-00faf317507b09b03",
+      "PrivateIpAddress": "10.0.101.160",
+      "SourceDestCheck": true,
+      "Placement": {
+        "AvailabilityZoneId": "use1-az2",
+        "GroupName": "",
+        "Tenancy": "default",
+        "AvailabilityZone": "us-east-1b"
+      },
+      "State": {
+        "Code": 16,
+        "Name": "running"
+      }
+    },
+    {
+      "InstanceId": "i-05f144bae3b8671f0",
+      "InstanceType": "t3.micro",
+      "SubnetId": "subnet-0f05b78bed53665ce",
+      "VpcId": "vpc-00faf317507b09b03",
+      "PrivateIpAddress": "10.0.0.18",
+      "SourceDestCheck": false,
+      "Placement": {
+        "AvailabilityZoneId": "use1-az1",
+        "GroupName": "",
+        "Tenancy": "default",
+        "AvailabilityZone": "us-east-1a"
+      },
+      "State": {
+        "Code": 16,
+        "Name": "running"
+      }
+    }
+  ],
+  "subnets": [
+    {
+      "SubnetId": "subnet-0f05b78bed53665ce",
+      "AvailabilityZone": "us-east-1a",
+      "CidrBlock": "10.0.0.0/24",
+      "MapPublicIpOnLaunch": true
+    },
+    {
+      "SubnetId": "subnet-0306fee9fde47cafd",
+      "AvailabilityZone": "us-east-1b",
+      "CidrBlock": "10.0.1.0/24",
+      "MapPublicIpOnLaunch": true
+    },
+    {
+      "SubnetId": "subnet-00ac2e41219ad7803",
+      "AvailabilityZone": "us-east-1b",
+      "CidrBlock": "10.0.101.0/24",
+      "MapPublicIpOnLaunch": false
+    },
+    {
+      "SubnetId": "subnet-0cc3c5f388072d13d",
+      "AvailabilityZone": "us-east-1a",
+      "CidrBlock": "10.0.100.0/24",
+      "MapPublicIpOnLaunch": false
+    }
+  ],
+  "routes": [
+    {
+      "RouteTableId": "rtb-0fe52bbc59789aa0f",
+      "Routes": [
+        {
+          "DestinationCidrBlock": "10.0.0.0/16",
+          "GatewayId": "local",
+          "Origin": "CreateRouteTable",
+          "State": "active"
+        },
+        {
+          "DestinationCidrBlock": "0.0.0.0/0",
+          "InstanceId": "i-00eeff5c609ca9f0f",
+          "InstanceOwnerId": "341936017254",
+          "NetworkInterfaceId": "eni-0b545029758c54ab4",
+          "Origin": "CreateRoute",
+          "State": "active"
+        }
+      ],
+      "Associations": [
+        {
+          "Main": false,
+          "RouteTableAssociationId": "rtbassoc-0b073bbd30fc0b8b1",
+          "RouteTableId": "rtb-0fe52bbc59789aa0f",
+          "SubnetId": "subnet-00ac2e41219ad7803",
+          "AssociationState": {
+            "State": "associated"
+          }
+        }
+      ]
+    },
+    {
+      "RouteTableId": "rtb-09dd68619f82ce761",
+      "Routes": [
+        {
+          "DestinationCidrBlock": "10.0.0.0/16",
+          "GatewayId": "local",
+          "Origin": "CreateRouteTable",
+          "State": "active"
+        },
+        {
+          "DestinationCidrBlock": "0.0.0.0/0",
+          "InstanceId": "i-05f144bae3b8671f0",
+          "InstanceOwnerId": "341936017254",
+          "NetworkInterfaceId": "eni-0d1127364cc1eabcc",
+          "Origin": "CreateRoute",
+          "State": "active"
+        }
+      ],
+      "Associations": [
+        {
+          "Main": false,
+          "RouteTableAssociationId": "rtbassoc-0a0eea748c3029a95",
+          "RouteTableId": "rtb-09dd68619f82ce761",
+          "SubnetId": "subnet-0cc3c5f388072d13d",
+          "AssociationState": {
+            "State": "associated"
+          }
+        }
+      ]
+    },
+    {
+      "RouteTableId": "rtb-09b986f963ca2d705",
+      "Routes": [
+        {
+          "DestinationCidrBlock": "10.0.0.0/16",
+          "GatewayId": "local",
+          "Origin": "CreateRouteTable",
+          "State": "active"
+        },
+        {
+          "DestinationCidrBlock": "0.0.0.0/0",
+          "GatewayId": "igw-07fe927523fa3b273",
+          "Origin": "CreateRoute",
+          "State": "active"
+        }
+      ],
+      "Associations": [
+        {
+          "Main": false,
+          "RouteTableAssociationId": "rtbassoc-0e23a005a574748a3",
+          "RouteTableId": "rtb-09b986f963ca2d705",
+          "SubnetId": "subnet-0f05b78bed53665ce",
+          "AssociationState": {
+            "State": "associated"
+          }
+        },
+        {
+          "Main": false,
+          "RouteTableAssociationId": "rtbassoc-05ee7bb453b95b8aa",
+          "RouteTableId": "rtb-09b986f963ca2d705",
+          "SubnetId": "subnet-0306fee9fde47cafd",
+          "AssociationState": {
+            "State": "associated"
+          }
+        }
+      ]
+    },
+    {
+      "RouteTableId": "rtb-0d86a9fb1f6f3e540",
+      "Routes": [
+        {
+          "DestinationCidrBlock": "10.0.0.0/16",
+          "GatewayId": "local",
+          "Origin": "CreateRouteTable",
+          "State": "active"
+        }
+      ],
+      "Associations": [
+        {
+          "Main": true,
+          "RouteTableAssociationId": "rtbassoc-03024383927ea9b8a",
+          "RouteTableId": "rtb-0d86a9fb1f6f3e540",
+          "AssociationState": {
+            "State": "associated"
+          }
+        }
+      ]
+    }
+  ],
+  "vpcEndpoints": [],
+  "asg": [
+    {
+      "AutoScalingGroupName": "demo-dev-asg-nat-a",
+      "DesiredCapacity": 1,
+      "Instances": [
+        {
+          "InstanceId": "i-05f144bae3b8671f0",
+          "InstanceType": "t3.micro",
+          "AvailabilityZone": "us-east-1a",
+          "LifecycleState": "InService",
+          "HealthStatus": "Healthy",
+          "LaunchTemplate": {
+            "LaunchTemplateId": "lt-04ab8d2ec1f975f96",
+            "LaunchTemplateName": "demo-dev-lt-nat-a",
+            "Version": "4"
+          },
+          "ProtectedFromScaleIn": false
+        }
+      ]
+    },
+    {
+      "AutoScalingGroupName": "demo-dev-asg-nat-b",
+      "DesiredCapacity": 1,
+      "Instances": [
+        {
+          "InstanceId": "i-00eeff5c609ca9f0f",
+          "InstanceType": "t3.micro",
+          "AvailabilityZone": "us-east-1b",
+          "LifecycleState": "InService",
+          "HealthStatus": "Healthy",
+          "LaunchTemplate": {
+            "LaunchTemplateId": "lt-0b3ed490a53f8dfe7",
+            "LaunchTemplateName": "demo-dev-lt-nat-b",
+            "Version": "4"
+          },
+          "ProtectedFromScaleIn": false
+        }
+      ]
+    }
+  ],
+  "ecs": [
+    {
+      "serviceName": "demo-dev-app-api-blue-svc",
+      "status": "ACTIVE",
+      "desiredCount": 1,
+      "runningCount": 1,
+      "taskDefinition": "arn:aws:ecs:us-east-1:341936017254:task-definition/demo-dev-app-api-blue:15",
+      "networkConfiguration": {
+        "awsvpcConfiguration": {
+          "subnets": [
+            "subnet-00ac2e41219ad7803",
+            "subnet-0cc3c5f388072d13d"
+          ],
+          "securityGroups": [
+            "sg-031752e9e4c4f0b68"
+          ],
+          "assignPublicIp": "DISABLED"
+        }
+      }
+    },
+    {
+      "serviceName": "demo-dev-app-api-green-svc",
+      "status": "ACTIVE",
+      "desiredCount": 0,
+      "runningCount": 0,
+      "taskDefinition": "arn:aws:ecs:us-east-1:341936017254:task-definition/demo-dev-app-api-green:9",
+      "networkConfiguration": {
+        "awsvpcConfiguration": {
+          "subnets": [
+            "subnet-00ac2e41219ad7803",
+            "subnet-0cc3c5f388072d13d"
+          ],
+          "securityGroups": [
+            "sg-031752e9e4c4f0b68"
+          ],
+          "assignPublicIp": "DISABLED"
+        }
+      }
+    }
+  ],
+  "routesApi": [
+    {
+      "ApiKeyRequired": false,
+      "AuthorizationType": "NONE",
+      "RouteId": "0rei6qs",
+      "RouteKey": "POST /text",
+      "Target": "integrations/nwd7819"
+    },
+    {
+      "ApiKeyRequired": false,
+      "AuthorizationType": "NONE",
+      "RouteId": "juwwhlc",
+      "RouteKey": "GET /text",
+      "Target": "integrations/nwd7819"
+    },
+    {
+      "ApiKeyRequired": false,
+      "AuthorizationType": "NONE",
+      "RouteId": "tjbk5to",
+      "RouteKey": "GET /{proxy+}",
+      "Target": "integrations/nwd7819"
+    },
+    {
+      "ApiKeyRequired": false,
+      "AuthorizationType": "NONE",
+      "RouteId": "z6vhtk2",
+      "RouteKey": "GET /",
+      "Target": "integrations/nwd7819"
+    }
+  ],
+  "stages": [
+    {
+      "StageName": "$default",
+      "AutoDeploy": true,
+      "AccessLogSettings": {
+        "DestinationArn": "arn:aws:logs:us-east-1:341936017254:log-group:/aws/apigw/demo-dev-edge-http-access",
+        "Format": "{\"httpMethod\":\"$context.httpMethod\",\"integration\":\"$context.integrationErrorMessage\",\"ip\":\"$context.identity.sourceIp\",\"path\":\"$context.path\",\"requestId\":\"$context.requestId\",\"requestTime\":\"$context.requestTime\",\"status\":\"$context.status\",\"userAgent\":\"$context.identity.userAgent\"}"
+      }
+    }
+  ],
+  "vpcLink": {
+    "CreatedDate": "2026-11-04 20:09:39+00:00",
+    "Name": "demo-dev-edge-vpc-link",
+    "SecurityGroupIds": [
+      "sg-0d946c6f09ecdfec2"
+    ],
+    "SubnetIds": [
+      "subnet-00ac2e41219ad7803",
+      "subnet-0cc3c5f388072d13d"
+    ],
+    "Tags": {
+      "Project": "demo",
+      "Environment": "dev",
+      "Owner": "kendall",
+      "ManagedBy": "terraform",
+      "Name": "demo-dev-edge-vpc-link"
+    },
+    "VpcLinkId": "m4uprm",
+    "VpcLinkStatus": "AVAILABLE",
+    "VpcLinkStatusMessage": "VPC link is ready to route traffic",
+    "VpcLinkVersion": "V2"
+  },
+  "sentinelRules": [
+    {
+      "Name": "ecs-portable-r20261026p1-backup-observer",
+      "State": "ENABLED",
+      "ScheduleExpression": "rate(15 minutes)"
+    },
+    {
+      "Name": "ecs-portable-r20261026p1-cleanup",
+      "State": "ENABLED",
+      "ScheduleExpression": "rate(1 minute)"
+    },
+    {
+      "Name": "ecs-portable-r20261026p1-nat-observer",
+      "State": "ENABLED",
+      "ScheduleExpression": "rate(1 minute)"
+    },
+    {
+      "Name": "ecs-portable-r20261026p1-watchdog",
+      "State": "ENABLED",
+      "ScheduleExpression": "rate(1 minute)"
+    },
+    {
+      "Name": "ecs-portable-r20261026p1-worker",
+      "State": "ENABLED",
+      "ScheduleExpression": "rate(1 minute)"
+    }
+  ],
+  "backupLifecycle": [
+    {
+      "Expiration": {
+        "Days": 2
+      },
+      "ID": "lab-two-plus-two",
+      "Filter": {
+        "Prefix": "terragrunt-demo/dev/sql-backups/lab-fa48a32dc9/"
+      },
+      "Status": "Enabled",
+      "NoncurrentVersionExpiration": {
+        "NoncurrentDays": 2
+      },
+      "AbortIncompleteMultipartUpload": {
+        "DaysAfterInitiation": 1
+      }
+    },
+    {
+      "Expiration": {
+        "Days": 2
+      },
+      "ID": "ec2-hourly-two-plus-two",
+      "Filter": {
+        "Prefix": "terragrunt-demo/dev/sql-backups/ec2-20261016/"
+      },
+      "Status": "Enabled",
+      "NoncurrentVersionExpiration": {
+        "NoncurrentDays": 2
+      },
+      "AbortIncompleteMultipartUpload": {
+        "DaysAfterInitiation": 1
+      }
+    },
+    {
+      "Expiration": {
+        "Days": 1
+      },
+      "ID": "ec2-artifact-one-day",
+      "Filter": {
+        "Prefix": "terragrunt-demo/dev/sql-backup-artifacts/ec2-20261016/a83aedcc2c955c891b984f1385fd5ca3ce81ef577c0ea67a9059796f0cbb3e40/SqlBackup.tar"
+      },
+      "Status": "Enabled",
+      "NoncurrentVersionExpiration": {
+        "NoncurrentDays": 1
+      }
+    },
+    {
+      "Expiration": {
+        "Days": 7
+      },
+      "ID": "dev-v2-20261106-verified-seven-days",
+      "Filter": {
+        "And": {
+          "Prefix": "terragrunt-demo/dev/sql-backups/v2-20261106/",
+          "Tags": [
+            {
+              "Key": "ecs-retention",
+              "Value": "verified-superseded-v1"
+            }
+          ]
+        }
+      },
+      "Status": "Enabled",
+      "NoncurrentVersionExpiration": {
+        "NoncurrentDays": 1
+      }
+    },
+    {
+      "Expiration": {
+        "ExpiredObjectDeleteMarker": true
+      },
+      "ID": "dev-v2-20261106-empty-markers",
+      "Filter": {
+        "Prefix": "terragrunt-demo/dev/sql-backups/v2-20261106/"
+      },
+      "Status": "Enabled"
+    },
+    {
+      "ID": "dev-v2-20261106-incomplete-uploads",
+      "Filter": {
+        "Prefix": "terragrunt-demo/dev/sql-backups/v2-20261106/"
+      },
+      "Status": "Enabled",
+      "AbortIncompleteMultipartUpload": {
+        "DaysAfterInitiation": 1
+      }
+    }
+  ],
+  "sourceReceiptSha256": "43be0594e1393241cfd1fd5cabc00e8549585ec39907db229a6fb8cbf791cdf3",
+  "notEvidenceOf": [
+    "New functional test",
+    "12-24 hour stability",
+    "Current SQL data query",
+    "All AWS resources inventoried"
+  ]
+}

@@ -1,0 +1,423 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "ECS V2 · aplicación, datos y observación",
+    "locale": "es",
+    "output": "docs/interactive/v2-platform.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/Kendall04/terragrunt_demo.git",
+      "revision": "5d35edef4f2ee1c0463df483d22745d13cae47cd",
+      "link_mode": "web"
+    }
+  },
+  "components": [
+    {
+      "id": "client",
+      "type": "external",
+      "label": "Cliente público",
+      "sublabel": "Sin autenticación de API",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "LÍMITE DEV",
+      "sources": [
+        {
+          "path": "docs/V2-TRUST-AND-THREATS.md",
+          "line": 39,
+          "end_line": 68
+        }
+      ]
+    },
+    {
+      "id": "gateway",
+      "type": "cloud",
+      "label": "HTTP API Gateway",
+      "sublabel": "TLS termina aquí",
+      "pos": [
+        40,
+        240
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "terraform/modules/target/dev/edge/modules/apigateway/apigw_http.tf",
+          "line": 25,
+          "end_line": 63
+        }
+      ]
+    },
+    {
+      "id": "kms",
+      "type": "security",
+      "label": "KMS de aplicación",
+      "sublabel": "Encrypt / Decrypt",
+      "pos": [
+        760,
+        40
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "demo-api/terragrunt-demo/Services/IEncryptionService.cs",
+          "line": 30,
+          "end_line": 51
+        }
+      ]
+    },
+    {
+      "id": "secrets",
+      "type": "security",
+      "label": "Secrets Manager",
+      "sublabel": "Conexión versionada",
+      "pos": [
+        760,
+        240
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "terraform/modules/target/dev/apps/modules/ecs_service/taskdef.tf",
+          "line": 1,
+          "end_line": 17
+        },
+        {
+          "path": "docs/V2-TRUST-AND-THREATS.md",
+          "line": 49,
+          "end_line": 63
+        }
+      ]
+    },
+    {
+      "id": "link",
+      "type": "cloud",
+      "label": "VPC Link",
+      "sublabel": "ENI privadas A / B",
+      "pos": [
+        40,
+        440
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "terraform/modules/target/dev/edge/modules/vpc_link/vpc_link.tf",
+          "line": 1,
+          "end_line": 6
+        }
+      ]
+    },
+    {
+      "id": "alb",
+      "type": "cloud",
+      "label": "ALB interno",
+      "sublabel": "Dos target groups",
+      "pos": [
+        400,
+        440
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "terraform/modules/target/dev/global/modules/alb/alb.tf",
+          "line": 1,
+          "end_line": 28
+        }
+      ]
+    },
+    {
+      "id": "app",
+      "type": "backend",
+      "label": "API .NET 10",
+      "sublabel": "Blue 1 · green 0",
+      "pos": [
+        760,
+        440
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "terraform/modules/target/dev/apps/modules/ecs_service/service.tf",
+          "line": 13,
+          "end_line": 38
+        }
+      ]
+    },
+    {
+      "id": "sql",
+      "type": "database",
+      "label": "SQL Express 2022",
+      "sublabel": "Un escritor · AZ B",
+      "pos": [
+        760,
+        660
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "docs/V2-RECOVERY-SECURITY-20261105.md",
+          "line": 293,
+          "end_line": 320
+        }
+      ]
+    },
+    {
+      "id": "backup",
+      "type": "database",
+      "label": "Backups en S3",
+      "sublabel": "VersionId + SHA256",
+      "pos": [
+        400,
+        660
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "operations/integrations/portable/storage_observer.py",
+          "line": 35,
+          "end_line": 102
+        }
+      ]
+    },
+    {
+      "id": "observer",
+      "type": "backend",
+      "label": "Observador externo",
+      "sublabel": "Backups cada 15 min",
+      "pos": [
+        40,
+        660
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "operations/integrations/portable/trial/storage-observer.tf",
+          "line": 68,
+          "end_line": 124
+        }
+      ]
+    },
+    {
+      "id": "sentinel",
+      "type": "backend",
+      "label": "Reliability Sentinel",
+      "sublabel": "Journal + evaluación",
+      "pos": [
+        40,
+        880
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "operations/integrations/Ecs.Backup.Portable.Host/Function.cs",
+          "line": 30,
+          "end_line": 64
+        }
+      ]
+    },
+    {
+      "id": "archive",
+      "type": "database",
+      "label": "Archivo de evidencia",
+      "sublabel": "S3 versionado · SSE-KMS",
+      "pos": [
+        400,
+        880
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "operations/integrations/portable/trial/runtime/security.tf",
+          "line": 49,
+          "end_line": 96
+        }
+      ]
+    },
+    {
+      "id": "email",
+      "type": "messagebus",
+      "label": "SNS → correo",
+      "sublabel": "Recepción demostrada",
+      "pos": [
+        760,
+        880
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DEMOSTRADO",
+      "sources": [
+        {
+          "path": "docs/SENTINEL-CHAOS-20261106.md",
+          "line": 142,
+          "end_line": 169
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "client-gateway",
+      "from": "client",
+      "to": "gateway",
+      "label": "HTTPS",
+      "variant": "default"
+    },
+    {
+      "id": "gateway-link",
+      "from": "gateway",
+      "to": "link",
+      "label": "HTTP privado",
+      "variant": "default"
+    },
+    {
+      "id": "link-alb",
+      "from": "link",
+      "to": "alb",
+      "label": "HTTP :8080",
+      "variant": "default"
+    },
+    {
+      "id": "alb-app",
+      "from": "alb",
+      "to": "app",
+      "label": "HTTP :8080",
+      "variant": "default"
+    },
+    {
+      "id": "app-kms",
+      "from": "app",
+      "to": "kms",
+      "label": "Task role",
+      "variant": "security"
+    },
+    {
+      "id": "secrets-app",
+      "from": "secrets",
+      "to": "app",
+      "label": "Execution role",
+      "variant": "security"
+    },
+    {
+      "id": "app-sql",
+      "from": "app",
+      "to": "sql",
+      "label": "TLS :1433",
+      "variant": "security"
+    },
+    {
+      "id": "sql-backup",
+      "from": "sql",
+      "to": "backup",
+      "label": "Backup horario",
+      "variant": "default"
+    },
+    {
+      "id": "observer-backup",
+      "from": "observer",
+      "to": "backup",
+      "label": "GET exacto",
+      "variant": "default"
+    },
+    {
+      "id": "observer-sentinel",
+      "from": "observer",
+      "to": "sentinel",
+      "label": "Evento",
+      "variant": "dashed"
+    },
+    {
+      "id": "sentinel-archive",
+      "from": "sentinel",
+      "to": "archive",
+      "label": "Archivo",
+      "variant": "security"
+    },
+    {
+      "id": "sentinel-email",
+      "from": "sentinel",
+      "to": "email",
+      "label": "Aviso",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "slate",
+      "title": "Cómo leer la evidencia",
+      "items": [
+        "IMPLEMENTADO = código; DESPLEGADO = readback AWS fechado; DEMOSTRADO = ensayo real.",
+        "Snapshot DEV: 6 nov 2026. No certifica PROD ni disponibilidad continua.",
+        "Gris: datos/control; violeta: eventos; rosa: seguridad. Respuestas implícitas."
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "Vista lógica, no mapa de subnets",
+      "items": [
+        "VPC Link, ALB, Fargate y SQL son privados. Ubicación y egreso: v2-network.",
+        "La flecha observador → Sentinel resume EventBridge/SQS/ingestión; ver v2-sentinel.",
+        "KMS de texto, clave backup/archivo y clave SNS son responsabilidades distintas."
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Disponibilidad y prueba",
+      "items": [
+        "Una tarea blue y un SQL activo: no hay HA de aplicación o base.",
+        "POST/GET + KMS y TLS demostrados; no se certificó nuevo rollback V2 A→B→A.",
+        "Red privada no equivale a TLS: ALB/app usan HTTP. Backups no son réplica SQL."
+      ]
+    }
+  ]
+}

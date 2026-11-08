@@ -1,0 +1,39 @@
+{
+  "EvaluationResults": [
+    {
+      "EvalActionName": "s3:DeleteBucket",
+      "EvalResourceName": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254",
+      "EvalDecision": "implicitDeny",
+      "MatchedStatements": [],
+      "MissingContextValues": [
+        "aws:RequestTag/Environment",
+        "s3:prefix",
+        "aws:RequestTag/Project"
+      ],
+      "EvalDecisionDetails": {},
+      "ResourceSpecificResults": [
+        {
+          "EvalResourceName": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254",
+          "EvalResourceDecision": "implicitDeny",
+          "MissingContextValues": [
+            "aws:RequestTag/Environment",
+            "s3:prefix",
+            "aws:RequestTag/Project"
+          ]
+        }
+      ]
+    }
+  ],
+  "IsTruncated": false,
+  "ResponseMetadata": {
+    "RequestId": "722b47e4-a109-49a7-a2db-0c4ec4031251",
+    "HTTPStatusCode": 200,
+    "HTTPHeaders": {
+      "date": "Fri, 23 Oct 2026 21:07:56 GMT",
+      "x-amzn-requestid": "722b47e4-a109-49a7-a2db-0c4ec4031251",
+      "content-type": "text/xml",
+      "content-length": "1369"
+    },
+    "RetryAttempts": 0
+  }
+}

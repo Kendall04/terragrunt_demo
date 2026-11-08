@@ -1,0 +1,40 @@
+{
+  "provider": "hashicorp/aws",
+  "version": "6.27.0",
+  "platform": "windows_amd64",
+  "minimumBoundary": {
+    "6.26.0": {
+      "lambdaSdk": "v1.86.2",
+      "dotnet10Enum": false
+    },
+    "6.27.0": {
+      "lambdaSdk": "v1.87.0",
+      "dotnet10Enum": true
+    }
+  },
+  "sources": [
+    "https://raw.githubusercontent.com/hashicorp/terraform-provider-aws/v6.26.0/go.mod",
+    "https://raw.githubusercontent.com/hashicorp/terraform-provider-aws/v6.27.0/go.mod",
+    "https://raw.githubusercontent.com/aws/aws-sdk-go-v2/service/lambda/v1.87.0/service/lambda/types/enums.go"
+  ],
+  "officialArchiveUrl": "https://releases.hashicorp.com/terraform-provider-aws/6.27.0/terraform-provider-aws_6.27.0_windows_amd64.zip",
+  "archiveSha256": "89d035eebf08a97c89374ff06040955ddc09f275ecca609d0c9d58d149bef5cf",
+  "binarySha256": "2f99cc27e554d4f30afaa30d8aca2b8f3455db05c9c728210a0a7dcd7b0e10e2",
+  "signatureStatus": "VALID_SIGNATURE",
+  "primaryFingerprint": "C874011F0AB405110D02105534365D9472D7468F",
+  "signingSubkeyFingerprint": "374EC75B485913604A831CC7C820C6D5CD27AB87",
+  "renewedKeyUrl": "https://www.hashicorp.com/.well-known/pgp-key.txt",
+  "lockGeneration": "Terraform providers lock -fs-mirror, Windows only; origin separately authenticated by official checksum + GPG signature. Terraform filesystem-mirror log alone reports unauthenticated.",
+  "lockSha256": "be1182b2f765f01c210a0d1327471dd5cd3cc316acd9f11edb8c959888b5fe3d",
+  "schemaSha256": "fcc170eac221ec2bf1026413bafaa9dcf01a2e2cb6fd5398d7dffce85bd2b05d",
+  "rootValidate": {
+    "format_version": "1.0",
+    "valid": true,
+    "error_count": 0,
+    "warning_count": 0,
+    "diagnostics": []
+  },
+  "singleCentralBinary": true,
+  "backendInitialized": false,
+  "awsCalls": 0
+}

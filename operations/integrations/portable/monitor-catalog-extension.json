@@ -1,0 +1,11 @@
+{
+  "upstreamCommit": "b3d0b3b595a9257bb6d4d849c899bf4e8dbc2828",
+  "file": "src/Sentinel.Portable/Installation.cs",
+  "baseSha256": "b1159bb0ad5251c06cfec38ecb78963916dbbcc2099a88a6e96e2ae843d9516e",
+  "replacements": [
+    {
+      "before": "    public ServiceCatalog Catalog() {",
+      "after": "    // Existing SQL monitor catalog remains byte-identical when the DEV NAT\n    // reporter is added. Each group retains its own content-derived catalog ID.\n    public ServiceCatalog CatalogFor(CorrelationKey key) {\n        var monitor = Monitors.Single(m => m.Key == key);\n        if (!Monitors.Any(m => m.Id == \"nat-a-egress\")) return Catalog();\n        var selected = monitor.Id == \"nat-a-egress\"\n            ? Monitors.Where(m => m.Id == \"nat-a-egress\").ToImmutableArray()\n            : Monitors.Where(m => m.Id != \"nat-a-egress\").ToImmutableArray();\n        if (selected.Any(m => !m.Dependencies.IsDefaultOrEmpty))\n            throw new ArgumentException(\"Independent catalog groups cannot acquire cross-group dependencies.\");\n        return (this with { Monitors = selected }).Catalog();\n    }\n    public ServiceCatalog Catalog() {"
+    }
+  ]
+}

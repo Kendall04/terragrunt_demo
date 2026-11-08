@@ -1,0 +1,74 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "cloudformation:CreateStack",
+        "cloudformation:DescribeStacks",
+        "cloudformation:DescribeStackEvents",
+        "cloudformation:DescribeStackResource",
+        "cloudformation:ListStackResources",
+        "cloudformation:GetTemplate",
+        "cloudformation:DeleteStack",
+        "cloudformation:CreateChangeSet",
+        "cloudformation:DescribeChangeSet",
+        "cloudformation:ExecuteChangeSet",
+        "cloudformation:DeleteChangeSet",
+        "cloudformation:TagResource",
+        "cloudformation:UntagResource"
+      ],
+      "Resource": [
+        "arn:aws:cloudformation:us-east-1:341936017254:stack/ecs-sentinel-r20261023b1-bootstrap/*",
+        "arn:aws:cloudformation:us-east-1:341936017254:changeSet/ecs-sentinel-r20261023b1-bootstrap-*/*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "iam:CreateRole",
+        "iam:GetRole",
+        "iam:TagRole",
+        "iam:UntagRole",
+        "iam:ListRolePolicies",
+        "iam:ListAttachedRolePolicies",
+        "iam:ListInstanceProfilesForRole",
+        "iam:GetRolePolicy",
+        "iam:PutRolePolicy",
+        "iam:DeleteRolePolicy",
+        "iam:DeleteRole"
+      ],
+      "Resource": "arn:aws:iam::341936017254:role/ecs-sentinel-r20261023b1-cfn"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "iam:CreatePolicy",
+        "iam:GetPolicy",
+        "iam:GetPolicyVersion",
+        "iam:ListPolicyVersions",
+        "iam:ListEntitiesForPolicy",
+        "iam:DeletePolicy"
+      ],
+      "Resource": [
+        "arn:aws:iam::341936017254:policy/ecs-sentinel-r20261023b1-ingest-boundary",
+        "arn:aws:iam::341936017254:policy/ecs-sentinel-r20261023b1-dispatch-boundary"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "iam:GetRole",
+        "iam:GetRolePolicy",
+        "iam:PutRolePolicy",
+        "iam:DeleteRolePolicy"
+      ],
+      "Resource": "arn:aws:iam::341936017254:role/TerragruntDemoDevOperator"
+    }
+  ]
+}

@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "generator": "Archify 3.1.0",
+  "tool": {
+    "official_repository": "https://github.com/tt-a1i/archify",
+    "tag": "v3.1.0",
+    "commit": "1c2b42d660e4a7571813fb43839c79e3e9ca7720",
+    "artifact_url": "https://raw.githubusercontent.com/tt-a1i/archify/1c2b42d660e4a7571813fb43839c79e3e9ca7720/archify.zip",
+    "zip_sha256": "ffedc53390c9da6e859f41e432c5d2d0615a23cf00a503181f07efbba88a7ce8",
+    "bytes": 5017500,
+    "global_install": false,
+    "dependencies_installed": false,
+    "source": "Official pinned ZIP authenticated against the existing docs/interactive/GENERATION.json provenance; isolated local execution."
+  },
+  "sourceCommit": "5d35edef4f2ee1c0463df483d22745d13cae47cd",
+  "scope": "Documentation only; no AWS mutations; frozen evidence, not live health",
+  "diagrams": [
+    {
+      "id": "v2-delivery",
+      "type": "architecture",
+      "source": "docs/interactive/source/v2-delivery.json",
+      "output": "docs/interactive/v2-delivery.html",
+      "sourceSha256": "271bf14988293919ab27145daa797f07e16500dc6fc5e3660c3774565025769b",
+      "htmlSha256": "ca8f79e09dc842ee394a8e70928a43745325e716076e966a7587889463392990",
+      "finalizerSummarySha256": "b660095276c8781dbda3059a9e04b807b31d47b1c1207b2dac0876168afd096b",
+      "gates": {
+        "validate": "pass",
+        "deliver": "pass",
+        "check": "pass",
+        "browser-check": "pass"
+      }
+    },
+    {
+      "id": "v2-nat-incident",
+      "type": "timeline",
+      "source": "docs/interactive/source/v2-nat-incident.json",
+      "output": "docs/interactive/v2-nat-incident.html",
+      "sourceSha256": "1f68b058dff98b5a75bda15452fd5168d8df7b5541ef9759ac6175fe3cb65417",
+      "htmlSha256": "9c870a1b2b920d560d48e421cb0cbae3f35e27ce914b3b51126bc45e97528043",
+      "finalizerSummarySha256": "f476f1bd7dddc6cc3f39cf49b72755568703f273b73ac7c9472e437c36689127",
+      "gates": {
+        "validate": "pass",
+        "deliver": "pass",
+        "check": "pass",
+        "browser-check": "pass"
+      }
+    },
+    {
+      "id": "v2-network",
+      "type": "architecture",
+      "source": "docs/interactive/source/v2-network.json",
+      "output": "docs/interactive/v2-network.html",
+      "sourceSha256": "f4c669bf7c8dbfe07fb64e2a6615909040a3fbf494f4790f8096f43b1220102d",
+      "htmlSha256": "d2de73b9de6dbb756630e3faa8f2a7135cbceb08b155c91e24275506e8038f8e",
+      "finalizerSummarySha256": "044b983e37df841a8d6fb633a6e8150e915fc20a7aa3f14979ee62eb2e8c4049",
+      "gates": {
+        "validate": "pass",
+        "deliver": "pass",
+        "check": "pass",
+        "browser-check": "pass"
+      }
+    },
+    {
+      "id": "v2-platform",
+      "type": "architecture",
+      "source": "docs/interactive/source/v2-platform.json",
+      "output": "docs/interactive/v2-platform.html",
+      "sourceSha256": "33656628d3dca58fea4665d3b7fc6a7d9beaeda1462ac1182e1f7fa107b5343e",
+      "htmlSha256": "e466b8f007ec064649d20b0c550560d1a7cb9497dc847003e7c73b013a5c570f",
+      "finalizerSummarySha256": "0167f74d115571b0447533559cdc74afe4b8feb28f043467b3d2088c80d03376",
+      "gates": {
+        "validate": "pass",
+        "deliver": "pass",
+        "check": "pass",
+        "browser-check": "pass"
+      }
+    },
+    {
+      "id": "v2-sentinel",
+      "type": "architecture",
+      "source": "docs/interactive/source/v2-sentinel.json",
+      "output": "docs/interactive/v2-sentinel.html",
+      "sourceSha256": "1470ca61815760c4037790db9b15d01e6b4b80675e3ce71c1afaab339064d3c9",
+      "htmlSha256": "b482a69897e68d6aa2746bb228ef4bc5a985efc2d1af329a517baae9c4dd5b42",
+      "finalizerSummarySha256": "5c6ea864d088f5a4b79b3d636142bf5bff048a8877b0c7f440a114d582a7ac95",
+      "gates": {
+        "validate": "pass",
+        "deliver": "pass",
+        "check": "pass",
+        "browser-check": "pass"
+      }
+    },
+    {
+      "id": "v2-sql-recovery",
+      "type": "architecture",
+      "source": "docs/interactive/source/v2-sql-recovery.json",
+      "output": "docs/interactive/v2-sql-recovery.html",
+      "sourceSha256": "0b845b957b582252a18b9ea16b75dcb7dfd1eb850d04dee0f8dfb30f846b04f9",
+      "htmlSha256": "ce41963a80dae4ce03e984cdaaf5d0c892f36b447de4c3a8e6615e1e84a0c76d",
+      "finalizerSummarySha256": "8cb1fcef1fb2209a4be6c4249402e130501376c7b00aa6a7ee67a5c6ab9ead58",
+      "gates": {
+        "validate": "pass",
+        "deliver": "pass",
+        "check": "pass",
+        "browser-check": "pass"
+      }
+    },
+    {
+      "id": "v2-trust",
+      "type": "architecture",
+      "source": "docs/interactive/source/v2-trust.json",
+      "output": "docs/interactive/v2-trust.html",
+      "sourceSha256": "501a6ac567e740b262f3390539eacf56fe9082a3232bea8523022211fb09e25f",
+      "htmlSha256": "96be2d6bf52f40cae47a22394bd59260726ce2f08a4554652eb9c5c8496fc430",
+      "finalizerSummarySha256": "dd498cdb5ac2b0da18a02eeb7ca69c29dce99247e31a35cf20b27a112c48f14e",
+      "gates": {
+        "validate": "pass",
+        "deliver": "pass",
+        "check": "pass",
+        "browser-check": "pass"
+      }
+    }
+  ],
+  "legacyHtmlSha256": {
+    "v1-platform": "8638dadb59b8cc5ef26d0f0fdfb063010f05d63be43b3278488d2e5bbb9b40dd",
+    "v1-network": "c2a3f7973b625f665324c309eef523168a9928b7ad7d576914ca553cc67b7624",
+    "az6-recovery": "9499e2f87b99200d9b7fd0b9196caf82964a8e7b9a42aefd2113a48289f474d1",
+    "backup-signals": "0508e9897fd8326cecf4ecf632ec5e702b8f429d51c25ae2ae6747c7551d842f",
+    "future-integrations": "a8b33fbc3675ba9dc09c4301b35bc9e17aff30bb5e6e1641c67c78777896e0d9"
+  },
+  "legacyRasterSha256": {
+    "terraform/docs/diagrams/architecture.png": "2d3845ab7d9234291231ffea8fd1124709bf375fda645ad0f66b28867bf5f479",
+    "terraform/docs/diagrams/cd-pipelines.png": "72aad83fb38c723a49d87d2a1f01e6528e07e0930af5ff8ad08ce6e08dec925b"
+  }
+}

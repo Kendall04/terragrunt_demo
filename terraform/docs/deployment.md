@@ -1,290 +1,838 @@
-# Deployment Runbook
+# Deployment and release contract
 
-## CD safety validation
+## Current deployment status
 
-[CI - CD Safety](../../.github/workflows/ci-cd-safety.yml) provides the independent
-`CD Safety Validation` job on PRs targeting develop/main and pushes to develop.
-It runs offline selector/result self-tests and, for relevant changes, the three
-scope/layer/gate suites. See [validation](validation.md) for selection, local
-entry points, revision attribution, and pending develop integration evidence.
+V2 is deployed through supervised native administration; the public static DEMO
+has its own [hosting owner](../../portfolio/product/HOSTING.md). Automatic CD is
+disabled and current main release/deploy wrappers fail closed. The
+[CI/CD review](../../docs/CI-CD-REVIEW.md) inventories all 27 workflows, actual
+GitHub settings and their current limitations. The V1 A→B→A runs below remain
+genuine historical evidence, not proof of main-based V2 CD. The October offline
+checkpoint and earlier pending-installation paragraphs are dated history.
 
-The check does not change deployment ordering or gate existing CD jobs. For the
-bounded safety helper/workflow and documentation integration, CI selects repo
-hygiene without app or infrastructure checks. A develop push starts CD scope
-detection and the infrastructure notice, with no apply layers or app changes;
-AWS-backed plan/apply, readiness, release and deployment jobs should be skipped.
-Verify the complete diff and actual job outcomes before claiming that evidence.
-Broader changes require a fresh scope assessment. External branch protection
-and merge-queue compatibility are not established by this integration.
+> **Current DEV operations (2026-10-28):** use the [native Terraform lifecycle](native-dev-lifecycle.md). E16 execution/session requirements below are historical; independent security and delivery contracts remain.
 
-## Deployment operations
+> **Closure status — 2026-10-16:** later dated evidence in [real qualification and
+> distinct-digest
+> rollback](#real-sourcetransport-qualification-and-distinct-digest-dev-rollback) supersedes
+> the early pending-installation/rollback checkpoints. The October V1 DEV DOWN
+> completed and its API was offline; November V2 was subsequently deployed.
+> [Portfolio operations](portfolio-operations.md) records current retained resources;
+> the [CI/CD review](../../docs/CI-CD-REVIEW.md) records exact branch-bound OIDC limits.
+> A main-based deployment route is not demonstrated.
 
-Use the repository scripts for bootstrap and full dev deploy operations. They set
-the Terragrunt backend environment, call the staged bootstrap commands in the
-right order, and avoid direct `terragrunt run --all apply` for this lab.
+Read [architecture](architecture.md) for ownership and [validation](validation.md)
+for command effects. This describes checked-in behavior, not proven deployment
+results. The owner reconciliation on 2026-09-18 preceded all AWS resources.
+The [first real DEV deployment record](first-real-dev-deployment.md) distinguishes
+authenticated runtime evidence from uninstalled protected GitHub/WP3/WP4 delivery.
+The [historical CI/CD preflight](https://github.com/Kendall04/terragrunt_demo/blob/24cd87c0a780fe398d46553ee8c539bdd32eafa5/terraform/docs/final-github-actions-cicd.md) records the public
+GitHub/history audit, authentic OIDC-provider installation and the still-pending
+publication, protected WP3/WP4 installation and actual Actions execution.
 
-GitHub Actions Terragrunt CD is intentionally narrower: the `CD - Terragrunt
-Layer` workflow is manually dispatched for normal infrastructure changes and
-runs `plan` or `apply` for one selected layer only. It does not perform
-bootstrap, write secret values, deploy application code, or run full-environment
-`run --all apply`.
+[E4 recovery/runbook](e4-post-switch-recovery.md) adds one bounded same-invocation
+continuation after a listener switch with failed evidence persistence. Fresh
+operation-linked readback and current authorization are mandatory; blocked
+partial deployments remain UNCERTAIN with E2 ownership retained. Later publication
+failures and interrupted workers still require separately authorized diagnosis.
+[E2-R](e2r-owner-recovery.md) adds read-only ownership diagnostics while retaining
+ACTIVE holds. Administrative release remains blocked without verified exact
+executor termination and settlement of all potentially issued effects.
 
-The recommended full dev deployment command is `scripts/deploy.sh
-full-dev-deploy`. It runs base infrastructure reconciliation first, then builds
-and deploys the app. This matters because state files existing in S3 only proves
-Terraform has managed those modules before; it does not prove the current live
-AWS resources still match Terraform desired state. If someone manually changes a
-resource in AWS, such as scaling NAT ASGs to `0`, the base apply/plan phase must
-run so Terraform/Terragrunt can detect and correct the drift before ECS tasks are
-deployed.
+## CURRENT CONTRACT â€” final E1 protected workflows
 
-## Prerequisites
+[E15 preparation/runbook](e15-ephemeral-lifecycle.md) reuses WP5/WP6 per-layer
+lifecycle and WP3/WP4 delivery. It adds no direct execution path; complete DEV
+shutdown remains partial pending approved quiescence/preview/settlement gates.
 
-- AWS CLI access through either an EC2 instance role/default credential chain or
-  an explicit local profile.
-- Terraform, Terragrunt, jq, and ripgrep.
-- Docker installed and the Docker daemon running for `deploy-app`; the app
-  deploy builds and pushes `demo-api/Dockerfile`.
-- Backend naming:
-  - State bucket: `tfstate-demo-<env>-<account-id>`
-  - Lock table: `tfstate-locks-<account-id>`
+[E8 retention](e8-rollback-image-retention.md) removes automatic application-image
+expiration and tightens exact account/repository/digest availability reads used
+by rollback/restoration. Current eligibility and independent prod approval remain
+mandatory; no bounded historical horizon or live retention proof is claimed.
 
-Do not put real account IDs, bucket names, state object keys, ARNs, or full state
-contents in tickets, docs, PR comments, or chat output.
+[WP6 protected workflows](e1-protected-workflows.md) connects the accepted
+WP2-WP5 contracts through eleven dedicated reusable entries and exact OIDC
+request identities. The owner-authorized first Actions trial permits source
+approval records only for `release` and `deploy-dev`, account `341936017254`,
+region `us-east-1`, exact ref `refs/heads/codex/final-github-actions-cicd`.
+Each still requires the existing separately authenticated G1â€“G9 observation,
+source hashes, immutable reusable-workflow SHA and observed numeric gateway
+version. The remaining nine entries retain their inactive source contract.
+Source approval is distinct from IAM installation, an STS exchange, qualification
+and deployment; none of those is proved by a source record alone.
 
-## GitHub OIDC/IAM Model
+| Entry point | Protected request path |
+| --- | --- |
+| ci.yml / ci-terragrunt.yml | Static PR/source diagnostics without AWS credentials |
+| ci-terragrunt-plan.yml / ci-terragrunt-manual.yml | Approved immutable-source read-only plan-dev / plan-prod |
+| cd.yml / cd-scope.yml | Existing conservative classification; ordered lifecycle requests; read-only infra-ready before dev release/delivery |
+| cd-terragrunt.yml | Fixed ordinary or approved high-risk dev/prod lifecycle gateway |
+| release-build.yml | Approved develop source; finalizer-qualified release ID |
+| cd-demo-api.yml / deploy-dev.yml | Dev qualified delivery through deploy-dev |
+| promote-prod.yml | Independent manual main promotion of an existing qualified release |
+| rollback-manifest.yml | Same environment's normal gateway, protected history UUID |
+| cd-rollback.yml | Separate manual existing-content emergency gateway |
+| ci-cd-safety.yml | Existing independent no-AWS safety validation/check identity |
 
-GitHub Actions uses OIDC only; do not create long-lived AWS access keys for the
-pipelines. The shared IAM module supports one account-level GitHub OIDC provider
-owner and adopted consumers:
+All mutation paths use protected endpoint requests. Callers cannot choose an IAM
+role, resource ARN, backend, image, task definition, approval override or security
+configuration. Dedicated entries hardcode their environment; protected source,
+installation and G1-G9 observations gate immutable caller pins. Public operation
+inputs and sanitized completion are documented in the WP6 contract. Dev success
+never grants prod credentials or substitutes for independent production approval.
 
-- `dev/shared` owns creation of `token.actions.githubusercontent.com`.
-- `prod/shared` adopts the existing provider by URL lookup unless an explicit
-  `github_oidc_provider_arn` is supplied.
-- GitHub jobs must declare the matching GitHub environment (`dev` or `prod`) so
-  the OIDC `sub` claim is `repo:<owner>/<repo>:environment:<env>`.
-- CI, CD, app deploy, and rollback roles all use environment-shaped subjects
-  only. Branch and pull-request OIDC subjects are intentionally not trusted.
+The existing scope classifier remains conservative: root/unmapped changes block
+application delivery. High-risk lifecycle needs the exact WP5 operation-ID/hash
+approval as well as its GitHub environment approval. Required GitHub checks,
+branch/ruleset/reviewer restrictions and bypass exceptions remain externally
+unverified. No merge-queue or live governance enforcement is claimed.
 
-Protect the `prod` GitHub environment before using the prod CD or rollback
-roles. The AWS trust policies now scope CD, app deploy, and rollback roles to
-the environment-shaped subject rather than a repo-wide wildcard. With GitHub's
-default AWS OIDC subject format, a job that declares an environment emits
-`repo:<owner>/<repo>:environment:<env>` rather than a branch-shaped subject, so
-main/prod branch enforcement must be configured as GitHub environment protection
-rules.
+Legacy role-secret acquisition, app-CD/TG_CD fallback and direct workflow mutation
+are removed. WP7 retires the frozen broad Terraform roles/live roots and composite
+actions. Local bootstrap/deploy wrappers and the standalone blue/green main reject
+before AWS. Legitimate operations use the protected endpoints or explicit separately
+authenticated security administration. See [final acceptance](e1-final-acceptance.md).
 
-Required GitHub environments:
+[E11 CI selection and enforcement](validation.md#current-contract--e11-ci-selection-and-enforcement)
+starts validation on PRs and branch pushes, selects gates from complete event
+history and requires actual selected job success. CD Safety covers PRs and
+develop/main pushes independently. External required-check settings remain
+unverified. No CI result grants deployment authority.
 
-- `dev`: used by dev CI, Terragrunt CD, app deploy, and rollback jobs. It can
-  remain unprotected for demo velocity, but keep dev AWS role secrets scoped to
-  this environment rather than repository-wide secrets.
-- `prod`: used by prod CI, Terragrunt CD, app deploy, and rollback jobs. Require
-  reviewers, prevent self-review if available, and restrict deployment branches
-  to `main`. Store prod AWS role secrets only in this environment.
+## Historical helper observations â€” not operational authority
 
-Environment-scoped GitHub secrets:
+The details below preserve accepted E3 behavior and historical artifact semantics.
+They do not authorize the retired standalone deploy path or optimistic quality
+defaults. The operational contracts are [qualified release](e1-internal-release.md),
+[normal delivery](e1-wp4b-normal-delivery.md), [bounded recovery](e1-wp4c-bounded-recovery.md)
+and [lifecycle](e1-protected-environment-lifecycle.md). Current eligibility, closed
+runtime/role authorization before startup, protected dev activation and independent
+prod approval are mandatory. No historical manifest alone qualifies content.
 
-- `AWS_ROLE_TG_CI`
-- `AWS_ROLE_TG_CD`
-- `AWS_ROLE_TG_CD_HIGH_RISK` in the `dev-infra-approval` environment
-- `AWS_ROLE_RELEASE_BUILD` in `dev`
-- `AWS_ROLE_DEV_DEPLOY` in `dev`
-- `AWS_ROLE_PROD_PROMOTE` in `prod`
-- `AWS_ROLE_APP_ROLLBACK`
-- `INFRACOST_API_KEY` if cost comments are enabled
+## Historical helper artifact and traffic lifecycle
 
-Environment-scoped GitHub variables for app deploy and rollback:
+1. Release build publishes an ECR image and resolves its immutable digest.
+2. The manifest records source SHA/run identity, image fields and quality fields.
+3. S3 indexes address manifests by digest, commit/run and develop candidate.
+4. Dev/prod/manifest rollback consume an existing image digest.
+5. The common deployment script discovers active color from the ALB, requires the
+   candidate rule to point at the other color, stops that inactive service,
+   registers a rendered task definition and starts the requested replicas.
+6. Each task's non-essential one-shot probe polls its application's loopback
+   `/ready` endpoint under finite request/response/total bounds and requires three
+   consecutive healthy responses. The controller freezes the full cohort and
+   repeatedly validates exact service, revision, digest, container, ENI and healthy
+   target identities. Missing, stale, replaced, ambiguous or inconsistent evidence
+   fails closed. A final complete revalidation occurs immediately before switching.
+7. It changes the listener default action, then the candidate action, and schedules
+   delayed scale-down. Those operations are not atomic.
+8. Workflow smoke checks and deployment/current/history records follow the switch.
 
-- `ALB_LISTENER_<ENV>`
-- `ALB_CANDIDATE_RULE_<ENV>`
-- `TG_BLUE_<ENV>`
-- `TG_GREEN_<ENV>`
-- `SCALE_DOWN_LAMBDA_<ENV>`
-- `DB_SECRET_ARN_<ENV>`
+The readiness controller uses existing ListTasks/DescribeTasks, service, listener,
+rule and target-health reads; it adds no ECS Exec, secret read, public candidate
+route or target-group mutation. It exhausts AWS CLI pagination and batches task
+descriptions at 100. Evidence is invocation-local and bounded by the scale-up
+attempt deadline. Older image digests without the packaged `readiness-probe`
+command fail before promotion and are not rebuilt or downgraded to liveness.
 
-Optional environment-scoped GitHub variable for the app deploy public smoke test:
+Startup observations retain service/deployment and task identities even before
+the cohort is complete. PROVISIONING/PENDING/ACTIVATING may progress to RUNNING;
+runtime metadata may fill in before probe completion. Previously populated
+identity must remain unchanged, lifecycle cannot regress, and a stopped probe
+requires complete task/container/network identity. Missing metadata never grants
+promotion and cannot extend the original deadline.
 
-- `SMOKE_TEST_URL_<ENV>`: public base URL for the deployed API, for example the
-  edge `api_endpoint` output. Configure `SMOKE_TEST_URL_DEV` in the GitHub
-  `dev` environment to enable the hosted-runner smoke test after dev deploys.
-  If the value is a base URL, CD calls `/ready`; if the value already includes a
-  readiness path such as `/ready`, `/health`, `/health/live`, or
-  `/health/ready`, CD uses it as-is. When unset, GitHub app CD still waits for
-  the new ALB target group to become healthy before switching traffic, but emits
-  a warning and skips the hosted-runner HTTP smoke test.
+Listener and candidate-rule reads use one forwarding normalizer: a direct ARN,
+a single positive-weight target, or agreeing copies of both resolve to one target.
+Conflicting, multi-target and unsupported shapes fail closed. Every service read,
+including both reads in final revalidation, validates the complete response and
+the retained deployment identity.
 
-Keep these values in the matching `dev` or `prod` GitHub environment. Do not
-store prod role ARNs or prod resource ARNs as repository-wide secrets or vars.
+Captured authorization JSON is checked as exactly one object with the expected
+endpoint envelope before filtering or semantic interpretation. The shared
+`scripts/aws-response-boundary.sh` validator covers routing discovery and gate
+observations (definitions, services, task lists and target health), plus preparatory
+service/definition reads. DescribeTasks retains its independent per-batch boundary
+before aggregation. A malformed prefix, suffix or additional JSON document cannot
+be discarded to salvage an otherwise acceptable observation.
 
-Terragrunt CD no longer attaches the AWS-managed full administrator policy and
-is explicitly denied from mutating the GitHub CI/CD roles or their managed
-policies. Workload IAM permissions are scoped to demo workload role and policy
-prefixes; `iam:AttachRolePolicy` is limited by `iam:PolicyARN` to approved demo
-managed policies plus the narrow AWS-managed service baseline policies required
-by this lab. `iam:PassRole` is limited to demo service roles and the AWS
-services that consume them.
+Each DescribeTasks batch also validates the nested evidence before aggregation:
+attachments, attachment details, containers and container network interfaces must
+be arrays of correctly shaped objects when present. Missing collections and
+runtime fields may populate during startup; explicit null, wrong types and
+malformed entries are rejected even when a later filter would ignore them.
+Completion still requires the existing full runtime/network identity. This same
+boundary applies to startup, complete observations and final revalidation.
 
-Normal GitHub CD should not be used to create the account-level GitHub OIDC
-provider from nothing. Bootstrap the singleton `token.actions.githubusercontent.com`
-provider with an operator/bootstrap role first, then let `dev/shared` manage the
-provider resource and `prod/shared` adopt it. Existing provider management in
-the pipeline remains scoped to `token.actions.githubusercontent.com`.
+Registered definitions must retain the image entrypoint (entryPoint absent), the
+normal application command (command absent), and the exact probe command
+`["readiness-probe"]`. App/probe essential flags remain true/false respectively.
+Both restart policies must be absent or objects with boolean enabled=false and
+valid optional policy fields; null, scalar values and enabled policies fail.
+Neither container may add a health check or nonempty dependency list. The probe
+also rejects workingDirectory/user overrides, nonempty mounts/volumesFrom, and
+environment-file injection. Probe environment, secrets and port mappings must
+be absent or empty arrays, as must its dependency/mount/environment-file lists;
+explicit null is not an alternative spelling of absence. Logging/resource fields
+that do not replace the probe execution remain outside this narrow validator.
 
-GitHub CI/CD roles explicitly deny Secrets Manager value reads and writes, SSM
-parameter reads, and `kms:Decrypt`. ECS task/runtime roles are separate and keep
-their own secret access where the application requires it. Some create/list/
-describe operations remain `Resource = "*"` because those AWS APIs do not
-support complete resource-level scoping.
+Readiness scale-up, the gate and its AWS observations require Python 3 on the
+Linux runner. The process supervisor reserves a graceful termination interval
+inside the remaining budget, then sends SIGKILL to the private process group,
+including surviving children. It cleans descendants even when their leader exits
+first; nested observer supervisors clean their own groups on outer cancellation.
+Output pipes are inherited rather than drained with an unbounded read. Cleanup
+reaping has a further 250 ms cap, subject to normal OS scheduling tolerance.
+These are implementation properties; exact-candidate deterministic and remote
+validation evidence is tracked separately in [validation](validation.md).
 
-Workflow logging intentionally avoids printing AWS account IDs, backend bucket
-names, DynamoDB lock table names, listener ARNs, target group ARNs, task
-definition ARNs, and full image URIs. The CI plan job publishes only a safe
-per-unit plan summary to the job summary. It also uploads the full text
-Terraform/Terragrunt plan log as a short-lived GitHub Actions artifact for
-review by users with access to the workflow run.
+The renderer defaults dotnetTests/dockerBuild to passed; the release-build job
+does not bind a real exact-source test result to that default. Validation checks
+shape/consistency but permits failed/skipped quality values. A prior PR check is
+not proven evidence of the exact released artifact without a binding contract.
 
-Manual rollback uses the selected GitHub environment (`dev` or `prod`) and the
-matching environment-scoped rollback role. Production rollback therefore goes
-through the same `prod` environment protection rules as production deploy.
+S3 objects are versioned but publication uses overwrite-capable copies. They are
+not immutable/write-once records. ECR immutable tags are enabled, despite an old
+code comment saying otherwise. Its lifecycle expires images beyond 15 with
+tagStatus=any; retained manifests can point to expired images.
 
-## GitHub Terragrunt CD
+Evidence: [release renderer](../../scripts/render-release-manifest.sh),
+[validator](../../scripts/validate-release-manifest.sh),
+[publisher](../../scripts/publish-release-manifest-s3.sh),
+[record writer](../../scripts/write-deployment-record-s3.sh),
+[schemas](../../ci/schemas), [ECR lifecycle](../../ci/authority/retired/terraform/infra/shared/modules/ecr/main.tf.txt),
+[deployment script](../../scripts/ecs-blue-green-deploy.sh).
 
-The normal GitHub Terragrunt CD workflow is manual and layer-scoped. Use
-`CD - Terragrunt Layer` from the Actions UI with:
+## CURRENT CONTRACT â€” E2 mutation ownership
 
-- `environment`: `dev` or `prod`
-- `layer`: `shared`, `secrets`, `global`, `data`, `platform`, `edge`, or `apps/fargate`
-- `action`: `plan` or `apply`
-- `confirm_prod`: exact value `prod` when running `apply` against `prod`
+[Environment mutation arbitration](e2-environment-mutation.md) now coordinates
+protected normal delivery/promotion/rollback, emergency, cleanup and conflicting
+WP5 lifecycle operations. The later concurrency/cleanup paragraphs describe
+historical pre-E1 algorithms, not current mutation authority. S3 ownership spans
+all mutation calls and history publication; cleanup needs its originating schedule
+generation. Interruption/uncertainty retains a non-expiring hold. This is offline
+repository evidence; no infrastructure is deployed.
 
-The workflow runs from `terraform/live/<environment>/<layer>` and uses plain
-`terragrunt plan` or `terragrunt apply`; it does not use `--all` for apply.
-Production applies also rely on the `prod` GitHub environment protection rules.
+## Accepted E3 health and failure boundaries
 
-`apps/fargate` is now a Terraform-managed ECS skeleton layer: it creates the
-blue/green services, roles, logs, alarms, and scale-down Lambda with both service
-colors stopped by default. Application deployment remains in the app CD workflow
-and local `scripts/deploy.sh deploy-app` path, which build or select an image,
-resolve the ECR digest, render `demo-api/deploy/task-definition.template.json`,
-register a new task definition, and use the blue/green deployment flow.
+ALB checks /health, which remains liveness only. Dependency checks live at /ready
+(and /health/ready); KMS readiness tests Encrypt only. Task-local `/ready` evidence
+is required before promotion, but it is historical one-shot evidence rather than
+continuous dependency-health enforcement. Hosted-runner smoke checks
+are optional and occur after the switch. Dev smoke URL handling also accepts
+/health and /health/live, so its label does not guarantee readiness validation.
+Local deploy --smoke-test calls /ready after active target health is observed.
 
-Pushes to `develop` can automatically plan and apply only safe dev layers:
-`shared`, `secrets`, `global`, `platform`, and `edge`. The `data` and
-`apps/fargate` layers, shared Terraform modules, and all prod infrastructure
-remain manual via the `CD - Terragrunt Layer` workflow.
+The final ECS/target/routing observation and ALB ModifyListener have no shared
+conditional-write boundary. The script minimizes this accepted residual race by
+performing no unrelated work between them. Concurrent authorized workflows or the
+cleanup Lambda can still change state; any observed mapping, count, revision, task
+or target change aborts without a stale compensating write. A failed pre-switch
+gate leaves active routing and the active service untouched, but candidate tasks
+and the newly registered revision can remain for diagnosis. Startup migrations
+may already have affected the shared database.
 
-## EC2/Codex Instance-Role Flow
+A failed post-switch smoke/record write does not automatically restore traffic.
+Listener/rule failure can leave inconsistent color mappings. current.json can
+lag runtime. Read [operations](bootstrap.md) before interpreting pipeline failure
+as proof the old release is still active.
 
-Do not use a named AWS profile on the EC2/Codex box. Clear any inherited profile
-and use `--use-instance-role`.
+Normal dev delivery and emergency flip share cd-demo-api-<env>, but manifest
+rollback and prod promotion have different concurrency groups. They can overlap.
+The cleanup Lambda independently reads current listener state and stops the
+inactive service if the active service has running/desired tasks. It does not
+prove dependency health or bind the action to the originating release generation.
 
-Recommended complete deploy:
+Evidence: [ALB health](../../ci/authority/retired/terraform/infra/global/modules/alb/variables.tf.txt),
+[health implementation](../../demo-api/terragrunt-demo/Program.cs),
+[dev deploy](../../.github/workflows/deploy-dev.yml),
+[cleanup Lambda](../infra/apps/fargate/lambda/scale_down_old_color.py).
 
-```bash
-unset AWS_PROFILE
-scripts/deploy.sh full-dev-deploy --env dev --region us-east-1 --use-instance-role --include-edge --smoke-test --yes
-```
+## UNRESOLVED / TARGET â€” rollback and evidence
 
-Manual split flow, useful when you want an explicit checkpoint between base and
-app deployment:
+The [dated DEV trial below](#real-sourcetransport-qualification-and-distinct-digest-dev-rollback)
+proves one protected application rollback between distinct qualified digests,
+including traffic, SQL/KMS and automatic cleanup. It does not prove PROD recovery,
+database restore, incompatible migration rollback or the separate emergency flip.
+Future recovery scenarios still require their own artifact/history, compatibility,
+traffic, cleanup and evidence checks.
 
-```bash
-unset AWS_PROFILE
-scripts/bootstrap.sh full-dev-bootstrap --env dev --region us-east-1 --use-instance-role --yes
-scripts/deploy.sh deploy-app --env dev --region us-east-1 --use-instance-role --include-edge --smoke-test --yes
-```
+Production should retain robust blue/green; development may become simpler.
+Strict provenance and production-like governance are targets, not present
+guarantees. See [decision register](decisions-and-limitations.md).
+The old [pipeline diagram](diagrams/cd-pipelines.png) and
+[phase plan](https://github.com/Kendall04/terragrunt_demo/blob/24cd87c0a780fe398d46553ee8c539bdd32eafa5/terraform/docs/ci-cd-target-architecture.md) are historical, not instructions.
 
-`full-dev-bootstrap` reconciles base infrastructure only: shared/ECR, secrets,
-global networking/NAT/ALB, data, DB connection secret value, and platform. It
-intentionally stops before `apps/fargate` and `edge`.
+## E15-E/F combined DEV quiescence boundary
 
-`deploy-app` is the app-only fast path. It builds the Docker image, pushes a
-unique immutable ECR tag, resolves the image digest, runs
-`scripts/bootstrap.sh apply-apps` to reconcile the ECS skeleton, renders the
-versioned task definition template with `repo@sha256:...`, registers it, and
-promotes the inactive ECS color. It does not reconcile base infrastructure first.
-Use it directly only when base infrastructure has already been reconciled. It
-does not apply edge by default.
-`--include-edge` runs `scripts/bootstrap.sh apply-edge` after `apps/fargate`;
-`--smoke-test` reads the edge `api_endpoint` output, waits for the active ECS
-service to become stable, waits for the active ALB target group to have at least
-one healthy target, and then calls `/health`. This avoids false HTTP 503
-failures immediately after base drift correction or service replacement while
-still failing correctly if the service never becomes healthy within the target
-health timeout.
+[Combined contract and remaining decisions](e15ef-combined-quiescence.md) wires
+separate ECS/NAT guards into protected WP5/E15-D, with immutable UNKNOWN evidence
+and the original E2 hold. Whole-operation ownership/stage order, terminal ECS
+cluster handoff, installed authenticated adapters and issued-effect settlement
+remain unavailable. Complete DOWN stays denied; no IAM or activation is added.
 
-GitHub app CD also waits for the newly promoted target group to report healthy
-targets before moving ALB production traffic. If `SMOKE_TEST_URL_<ENV>` is
-configured, it additionally calls the resolved readiness URL after the switch.
+## E15-G operational component follow-up
 
-Release handoff between reusable workflows intentionally avoids exposing S3
-manifest URIs, ECR registries, or digest image URIs as job outputs. GitHub masks
-some of those values and can omit them from reusable workflow outputs. The
-durable source of truth remains the S3 release manifest, and deploy jobs rebuild
-the by-digest manifest URI from the validated image digest when a masked URI
-output is unavailable.
+[E15-G](e15g-operational-teardown.md) adds original-E2-owner composition, bounded
+ECS drain, sealed terminal cohort handoff and residual completion checks.
+Complete installed DOWN remains PARTIALLY_READY and denied: NAT executor/effect
+closure, authentic ECS closure, whole-operation preparation and exhaustive
+residual installation remain required. No IAM/activation or live AWS evidence.
 
-## Local Named-Profile Flow
+## Original complete DEV lifecycle (2026-10-13)
 
-Use an explicit profile when working from a local machine:
+The owner restored the original full architecture. E15-S was explicitly reverted;
+E15-S2 is not integrated. The [first-session procedure](original-full-lifecycle.md)
+records the complete resource/state graph, existing WP5/WP6 commands, thin DEV
+entry and separate UP installation versus DOWN finality blockers. No reduced
+lab, authority bypass, activation or AWS operation is introduced.
 
-```bash
-scripts/deploy.sh full-dev-deploy --env dev --region us-east-1 --profile terraform-lab --include-edge --smoke-test --yes
-```
+## Historical E16 supervised mode (retired 2026-10-28)
 
-## Dry-Run Checks
+The [historical E16 operator record](e16-practical-dev-lifecycle.md) implements
+per-layer original DEV saved-plan review/apply and observed shutdown under an
+explicitly authorized, exclusive existing-human state-writer transfer. Default
+mode remains inert; PROD/shared/security-root ownership is retained. Existing
+WP3/WP4 delivery and E13 recovery remain. E15-G/H advanced finality contracts are
+not weakened or activated. Source readiness is distinct from genuine installation
+and live AWS validation; no AWS operations occurred.
 
-Before a real full deploy, confirm the planned sequence:
 
-```bash
-unset AWS_PROFILE
-scripts/deploy.sh full-dev-deploy --env dev --region us-east-1 --use-instance-role --include-edge --smoke-test --yes --dry-run
-```
+## First protected DEV CI/CD installation
 
-The dry-run should show `bootstrap.sh full-dev-bootstrap` first, then Docker
-build/tag/push or skip-build behavior, ECR digest resolution, `bootstrap.sh
-apply-apps`, the ECS blue/green deploy script, optional `bootstrap.sh
-apply-edge`, and optional smoke test readiness and curl commands. It must not
-include a named profile in EC2/Codex/default-chain mode.
+The explicitly selected `dev_cicd_installation_only=true` administration mode
+limits controller reservations, bucket creation and request-role creation to
+WP3 neutral and the three existing WP4 DEV responsibilities. Its default remains
+false; it does not activate WP5 or PROD. Runtime inline policies explicitly depend
+on their role resources: a literal name alone does not establish Terraform order.
+The first IAM apply exposed that defect; its partial state was read back and a
+new four-policy plan completed it without repeating the failed binary plan.
 
-## State Verification And Audit
+Live readbacks confirmed four published Lambda versions, five CodeBuild projects
+and the approved two existing S3 policy changes. Bundle readers gained only the
+six runtime identities; WP4 DEV gained its three runtime identities. Existing
+NAT/E16, TLS, conditional writes and deletion restrictions were preserved.
+The neutral application repository is `demo-shared-demo-ms`; runtime installation
+images are not qualified application releases. `demo-dev-shared-demo-ms` and its
+manual application history do not establish WP3 qualification.
 
-After the first successful app plus edge deploy, run the redacted state audit:
+These runtime resources add ECR/S3/log storage and Lambda/build usage. Builds are
+on demand. The original DEV infrastructure stays running and continues charging.
+No Terraform state writer transfer, infrastructure deployment, DOWN, NAT failover
+or PROD activation belongs to this CI/CD installation.
 
-```bash
-scripts/audit-terraform-state-secrets.sh --env dev --region us-east-1 --use-instance-role --historical
-```
+When WP3 becomes active, DEV NAT keeps its existing `e1-evidence-<account>-<region>`
+administrative bucket. It must not inherit the neutral release-artifacts bucket
+from the WP3 selection. The coexistence fixture tests both configurations, and
+an installation plan containing NAT function updates must be rejected here.
 
-Expected safe state content includes secret ARNs or names, IAM policies that
-allow `secretsmanager:GetSecretValue`, ECS `secrets` entries with `valueFrom`,
-API IDs/endpoints/ARNs, ECR image digests, subnet/security group/VPC IDs, log
-group names, and IAM role ARNs.
+Request-role activation follows gateway creation. Terraform independently reads
+the exact installed numeric Lambda version named by the administrator's WP6
+record. This preserves the endpoint comparison without making request IAM depend
+on all compute instances; pending NAT publication metadata is outside this stage.
+Third-party action pins remain in the toolchain manifest. Same-repository reusable
+pins are checked against the exact WP6 source approvals instead of invented tags.
 
-Do not print full state contents in tickets or chat. If state is inspected
-outside the scripts, keep output redacted and classify findings before sharing.
 
-## Raw Terragrunt Warning
+### Approved DEV eligibility and ECS-readback correction
 
-Direct Terragrunt commands require the same backend environment variables that
-the scripts export:
+Only new `normal-delivery/deploy-dev` and `cleanup-recovery/cleanup-dev` bundles
+select `E1_ELIGIBILITY_DEV_V2`: exact schema, administrator writer, qualified
+release ID and ELIGIBLE/REVOKED state. The object body does not predict its own
+S3 VersionId. The protected CURRENT read supplies the actual VersionId; the
+runtime intent retains that version and the exact body hash. Caller evidence,
+historical reads and revoked/foreign releases remain rejected. PROD V1 source,
+all NAT packages and immutable previous versions remain unchanged.
 
-```bash
-export TG_ENV=dev
-export AWS_REGION=us-east-1
-export TF_STATE_BUCKET=tfstate-demo-dev-<account-id>
-export TF_STATE_TABLE=tfstate-locks-<account-id>
-```
+The same two DEV bundles recognize only explicitly inert ECS API defaults:
+circuit breaker `{enable:false,rollback:false}`, `strategy:ROLLING` and integer
+`bakeTimeInMinutes:0`. Active/unknown variants stop the operation. `LATEST` is not
+converted to a false numeric platform pin. The candidate must be configured and
+read back with a supported numeric platform before normal delivery. Authentic
+CloudTrail CreateService records confirm current-cycle skeleton revision `:5`
+was created at desired count zero; the currently running revision `:4` is a
+later workload and is not misrepresented as an inert bootstrap.
 
-Prefer the repository scripts unless you are doing read-only troubleshooting.
-With modern Terragrunt, use:
+The two DEV bundles also accept the exact derived ECS response capabilities seen
+on the live, closed two-container task, while retaining `requiresCompatibilities`
+exactly FARGATE. Unknown capabilities, nonempty system controls and nonzero
+container CPU defaults reject; these normalizations grant no new task feature.
+AWS's inferred EC2/FARGATE/MANAGED_INSTANCES metadata is not launch authorization.
 
-```bash
-terragrunt run --all -- plan
-```
+Live candidate replacement demonstrated more than 30 seconds of ECS/ALB drain.
+The DEV normal runtime can continue read-only effect observation for up to 600
+seconds, bounded by the original immutable operation deadline, only for its own
+current invocation's persisted ACK. It never resends a mutation. Missing ACK,
+interrupted invocation and unresolved/deadline outcomes remain UNKNOWN and retain
+E2. This preserves supervised reconciliation instead of treating normal async
+settlement as an instantly final API acknowledgement.
 
-Do not use the legacy spelling:
+ECS can omit the empty capacity-provider strategy for explicit FARGATE. Only that
+absence is normalized to []; nonempty strategies or other launch types reject.
 
-```bash
-terragrunt run-all plan
-```
+
+### Fresh DEV namespace absence
+
+The first WP4 Actions attempt stopped before creating a gateway intention,
+CodeBuild build or E2 generation: GetObject on a missing S3 key returned 403.
+The owner-approved DEV-only correction checks absence with a complete exact-prefix
+listing. A denied, truncated, foreign, historical-version or present-key read
+cannot become absence. It adds only ListBucket scoped to each existing readable
+prefix for gateway/normal/cleanup DEV; it adds no write, delete, state or PROD
+permission. Existing NAT and common source implementations remain unchanged.
+The owner explicitly approved these own-prefix reads and immutable DEV versions.
+After CI 38683396476 passed, a reviewed seven-update plan installed gateway 2,
+cleanup 3 and the normal controller bundle. Native IAM/configuration reads and
+the existing G1-G9 administrative channel verified the new gateway. The source
+request approval names gateway 2. After CI 38684045312 passed the complete E1
+gate, the reviewed one-policy plan and GitHub DEV variable were cut over and
+read back; release remains gateway 1 with the same immutable workflow pin.
+The first failed request created no intention, CodeBuild build or E2 owner;
+its request is not resent. A new request may use the same qualified release.
+
+
+### First authentic Actions / OIDC / WP3 / WP4 DEV result (2026-10-14)
+
+[WP3 Actions 38681029373](https://github.com/Kendall04/terragrunt_demo/actions/runs/38681029373)
+and [WP4 Actions 38685068331](https://github.com/Kendall04/terragrunt_demo/actions/runs/38685068331)
+completed successfully. CloudTrail independently confirms the two restricted OIDC
+request roles. WP3's controller and three isolated workers succeeded, including
+103 .NET tests, image build/publication and probe capability checks. The neutral
+repository is `demo-shared-demo-ms`, distinct from the prior manually deployed
+DEV repository. Its qualified application digest is
+`sha256:ca7d92532de8cfeee7a7a59a80f78714a26083ff323019d512d8be20f83ebfb8`.
+
+WP4 registered green revision 6, passed the real E3 gate, switched the internal
+ALB listener and published its protected SUCCESS and DEV activation records.
+Independent ECS/target-group reads confirm that digest on active green, readiness
+HTTP 200 and successful SQL/KMS POST/GET round-trip. Blue subsequently reached
+zero tasks and zero targets. These are live observations, not fixture readiness.
+The legacy WP3 manifest's `sourceBranch=develop` and run-number defaults are not
+real provenance: qualification source commit and actual Actions/CodeBuild/OIDC
+observations establish this first trial's origin. Raw evidence remains private.
+
+The automatic inactive-color cleanup separately returned FAILURE after its
+acknowledged/observed scale-to-zero: an ALB target was still draining when the
+next strict target-membership guard ran. No RemoveTargets call was attempted.
+It retained E2 as designed. With separate explicit owner approval, the operator
+disabled only that cleanup rule, waited for authenticated empty blue tasks and
+targets, verified active green, removed the exact cleanup target/rule and closed
+the exact generation-3 E2 record using its unchanged ETag. Owner/generation,
+original FAILURE journals and earlier versions were preserved; no automatic
+cleanup SUCCESS or generic recovery capability is claimed. E2 is RELEASED and
+the cancelled schedule is cleared. Before another delivery, fix and test the DEV
+cleanup's observation of target deregistration within its original deadline;
+do not replay the failed operation or introduce automatic owner release.
+
+The original DEV architecture, exclusive E16 state writer and remote main/develop
+refs are unchanged. No DOWN, NAT failover, PROD installation or WP5 activation
+occurred. DEV remains running and billable. Additional CI/CD costs are on-demand
+CodeBuild/Lambda, ECR images and S3/CloudWatch evidence; there is no always-running
+CodeBuild worker. This successful first delivery does not establish production,
+rollback or unattended cleanup readiness.
+
+
+### DEV cleanup drain settlement correction
+
+The original cleanup did not exhaust its 600-second operation budget. Its
+scale-zero effect checked ECS task counts only and returned APPLIED; the next
+strict observation then rejected the old ALB target still in `draining`.
+The invocation ended after approximately 14 seconds. STOPPED tasks are not
+included in the RUNNING desired-status cohort, but ALB deregistration outlives
+that cohort. Treating those two observations as simultaneous caused the failure.
+
+Only the new cleanup DEV bundle selects `dev_cleanup.application`. Its existing
+scale-zero ACK remains provenance; completion additionally requires stable zero
+ECS desired/running/pending counts, no tasks and a complete empty target-health
+response. Read errors, absent response fields and draining targets cannot prove
+completion. Only the still-running invocation with its own ACK continues polling
+within the original mutation/operation deadline; no new deadline, resend or
+owner release is added. Retry uses the existing journal/readback path. E2 CAS,
+FAILURE retention, PROD/NAT and all other immutable bundles remain unchanged.
+Deterministic subcases cover active tasks, stopped/draining, empty terminal state,
+transient/malformed/failed reads, deadline, idempotent reconciliation and CAS
+failure. Live installation and automatic success must be recorded separately.
+
+### DEV startup settlement and bounded E3 diagnostics
+
+The next authentic WP4 trial (Actions 38689162523) failed before traffic changed
+or cleanup was attempted. Green revision 6 remained active. All four issued
+candidate effects were observed APPLIED, but the protected delivery outcome was
+FAILURE; CodeBuild exit zero was not delivery success. Startup evidence preceded
+ECS rollout completion. Native CloudTrail shows E3's service observations across
+that transition and no API access errors. The old process port discarded stderr,
+so its exact rejection code is unavailable; a service-fingerprint transition is
+an inference, not a recovered error message.
+
+Only the normal DEV bundle selects `dev_startup.delivery`: settling the existing
+start effect additionally requires the observer's ECS steady-state predicate,
+within its original deadline. Strict E3 identity/fingerprint checks are preserved.
+A rejected E3 process emits only an allowlisted fixed diagnostic code; arbitrary
+child output, SDK values and credentials are not printed. Other environment and
+recovery bundles retain their existing implementation. This source correction
+and its deterministic tests do not establish live delivery or cleanup success.
+The failed generation 5 requires its separately owner-approved reconciliation;
+prior FAILURE evidence must remain intact and no old invocation may be replayed.
+
+The subsequent Actions trial 38692781756 reached ECS steady state but failed with
+the authentic fixed E3 diagnostic `COMPLETE_E3_EVIDENCE_CHANGED`, before switch or
+cleanup. Green revision 6 stayed active, blue revision 7 remained a candidate,
+and generation 6 retained FAILURE/ACTIVE. The original four effects were APPLIED;
+no cleanup invocation or automatic success is inferred. Its cancellation and
+exact FAILURE CAS require the separately approved generation-6 reconciliation.
+
+Only the normal DEV package now restarts the consecutive-stability window when
+two independently complete observations have different full fingerprints. It
+keeps the complete fingerprints (no fields removed), frozen service/deployment
+and task cohort identities, image/probe/network/lifecycle validation, read-error
+rejection, original deadline, and immediate final equality check. Continuous
+changes time out; changed final evidence still fails. The exact changing AWS
+fingerprint component was not retained by the failed invocation and is unknown.
+This bounded waiting correction does not classify an identity contradiction as
+settled or fabricate the lost snapshots. PROD and the common E3 source retain
+existing behavior. `test-dev-e3-stable-window.sh` exercises the actual extracted
+DEV loop with deterministic observation ports: settling/incomplete observations,
+continuous drift to deadline, final drift, identity rejection and read failure.
+
+### Verified DEV automatic cleanup — 2026-10-15
+
+Authentic GitHub Actions deliveries
+[38696034872](https://github.com/Kendall04/terragrunt_demo/actions/runs/38696034872)
+and [38697168833](https://github.com/Kendall04/terragrunt_demo/actions/runs/38697168833)
+completed SUCCESS through the existing pinned WP4 request workflow. Protected
+receipts independently confirm blue revision 8 (operation
+`1e55ec37-7628-4351-96bc-7898241f8f65`) and green revision 7 (operation
+`6471310a-0a3a-489a-81dd-42213a00ad80`). Both used the existing WP3-qualified
+release `sha256-b22f33f93bdac5608da1dcd1e17f372f638dcaa766c1e758f34ee6f396673f44`
+and digest `sha256:ca7d92532de8cfeee7a7a59a80f78714a26083ff323019d512d8be20f83ebfb8`.
+These trials demonstrate delivery/runtime corrections with the same application
+binary, not a new application release or independent WP3 build.
+
+Automatic cleanup Lambda version 4 completed both directions without manual
+reconciliation: green cleanup `09da0422-c6c1-584b-aadd-e8412294a923` and blue
+cleanup `56e539b3-04b1-5d3b-9c7b-739cc3061c2e`. Each has protected SUCCESS outcome
+and receipt plus APPLIED observations for scale-zero, remove-target and delete-rule.
+During each drain, native ECS showed zero tasks while ALB still retained a target;
+the journal retained its scale-zero ACK without prematurely recording APPLIED.
+Native Lambda durations were approximately 325 and 326 seconds, below the
+unchanged 600-second deadline. The existing ALB deregistration delay was 300 seconds.
+No timeout increase, IAM action expansion or new compute service was needed.
+
+Independent final reads confirmed green revision 7 desired/running 1, pending 0,
+healthy target and active listener; blue revision 8 desired/running/pending 0,
+no tasks and no targets; temporary cleanup rule absent. E2 generation 10 is
+RELEASED with schedule null, through normal automatic completion. `/ready`
+returned Healthy and a unique POST/GET roundtrip verified SQL persistence and
+KMS encryption/decryption through the active API, all HTTP 200. Earlier generation
+3/5/6 FAILURE journals and object versions remain unchanged. Separately authorized
+manual reconciliations of the two failed pre-promotion trials are not automatic
+cleanup evidence. Queued duplicate invocations did not create a new E2 owner.
+
+Validation: the final executable-source revision `f0bf1ffe6a6a21732ad858e5377768a3bea68ad0`
+passed the complete local E1 gate (959 regressions + 24 WP7, AC1–AC16), generated
+packages/inventory, affected safety suites and Terraform format checks. The six
+extracted DEV loop cases and ShellCheck also passed. Existing static findings
+remain 24 TFLint / 46 tfsec by identity/multiplicity; no IaC topology changed.
+Application source was unchanged; this increment did not rerun .NET/Docker builds.
+Live proof and local gate results remain distinct. Private runtime evidence was
+kept outside Git. No commits were published automatically.
+
+Rollback is prepared, not executed. Both successful histories now exist, but
+the DEV `rollback-manifest.yml` caller still requires `develop` while its approved
+OIDC entry allows only `codex/final-github-actions-cicd`. The smallest proposed
+fix selects the already approved `source_ref(deploy-dev)` for that DEV caller;
+PROD stays on main. Protected renderer-source/governance reconciliation and
+explicit publication authorization remain required; a normal feature push would
+also publish the earlier local documentary commit that the owner excluded from
+automatic publication. Do not bypass the caller by direct Lambda/ECS/listener
+writes. A qualified rollback recreates a revision from the selected SUCCESS
+history and current eligibility; removed tasks are not themselves recoverable.
+The two current histories share a digest, so such a test would prove rollback
+mechanics rather than behavior between two different application binaries.
+
+DEV remains running and billable. This work added only versioned S3 bundles and
+on-demand CodeBuild/Lambda/log activity; no additional persistent compute or
+network topology. No DOWN, NAT failover, PROD/shared mutation or Terraform DEV
+state operation occurred.
+
+### Pending distinct-image DEV rollback trial
+
+The live baseline remains green revision 7, blue revision 8 stopped, E2 generation
+10 RELEASED, with the two automatic cleanup SUCCESS receipts above. Native
+preflight confirmed both protected histories refer to the same qualified image;
+the neutral ECR repository contained only that image. They are not evidence of
+restoring a different application version.
+
+The prepared source change aligns only the DEV rollback caller with
+`source_ref(deploy-dev)`, the already authorized exact feature ref. PROD remains
+restricted to main, workflow_dispatch remains mandatory, and existing Environment,
+OIDC audience/repository/subject, numeric gateway and immutable reusable workflow
+requirements remain in force. No direct ECS/Lambda/listener rollback route is added.
+Tests assert exact DEV and PROD caller conditions and existing identity rejection.
+
+Because the authoritative renderer is source-bound, its old release/deploy-dev
+source approval records cannot attest this changed source. This preparation
+explicitly removes those source activations and regenerates callers as inactive;
+it does not apply their removal to AWS. Never apply the whole security root to
+install this intermediate preparation. The current live identities remain on the
+previous authenticated pin. After explicit public-publication approval, publish
+only the feature branch, verify its actual CI and immutable sources plus G1–G9,
+then use the existing approval procedure to admit only release/deploy-dev against
+the new exact commit and observed numeric gateways. Reconcile the generated
+caller pins, exact request-role trust and Environment variables through reviewed
+installation/readbacks before WP3/WP4 dispatch. No approval may be fabricated from
+local JSON. No PROD/shared activation, new IAM actions or wildcard refs are needed.
+
+A single fixed startup message, `Application revision: rollback-proof-v2.`, is
+prepared in the application binary. It changes no HTTP payload, database schema,
+SQL/KMS contract or dependency. Its sole purpose is a traceable, harmless second
+binary. The digest must be measured from a genuine new WP3 qualification; it is
+unknown before build. Do not publish a manual image or reuse an old qualification
+as the new version.
+
+Supervised trial after authorization: preserve the old qualified release and
+SUCCESS receipt for green operation `6471310a-0a3a-489a-81dd-42213a00ad80`; qualify
+the new source once via WP3; deploy its distinct measured digest to inactive blue
+via WP4; verify health/SQL/KMS, promotion and automatic cleanup; then use
+`rollback-manifest.yml` with environment dev, that exact old green history and
+replicas 1. Refresh only the legitimate inactive-color binding from actual
+readbacks. WP4 must reauthorize the history and current eligibility, register a
+new task revision, prove its old digest, promote, and complete automatic cleanup
+and E2 release. Never restart deleted tasks or rewrite history/FAILURE receipts.
+Stop and reconcile any ambiguous result before another request.
+
+Publication and execution have not occurred for this preparation. A normal push
+also includes the unpublished documentary/cleanup commits after remote d016fc5;
+the exact final range, files, secret/history audit and automatic workflows must
+be presented for explicit owner approval first. The second digest, release ID,
+new task revision and rollback outcome remain unknown until genuine execution.
+
+#### Authentic new-pin admission prepared, not activated
+
+The first owner-approved feature publication ended at immutable commit
+`f0ba8ad1d6528d362693c8de932f935c8084529d`. Its real GitHub CI
+[38702309795](https://github.com/Kendall04/terragrunt_demo/actions/runs/38702309795)
+completed SUCCESS, including E1, .NET/Docker, hygiene, static infrastructure and
+aggregate validation. No release or deployment workflow was triggered.
+
+The existing administrator readback procedure independently verified every WP6
+source hash at that published commit, current subject customization, branch and
+Environment restrictions, isolated entries/runners, secret-name exposure limits,
+project bundle versions, runtime trust/inline/resource policies and the two
+existing numeric gateways (release 1, deploy-dev 2). Only release/deploy-dev
+received new source-bound admission records from those authentic observations;
+no PROD entry, IAM action, ref wildcard or lifecycle authority was added. The
+new generated callers pin that exact immutable commit. Private readbacks remain
+outside Git; the checked-in admission is not a substitute for live installation.
+
+This second local revision requires its own exact publication authorization.
+Before dispatch, its CI must pass; review/apply only the two existing request-role
+trust replacements from the old immutable pin to the new pin, without modifying
+permissions, and update/read back only the two existing Environment configuration
+variables. Do not apply the intermediate inactive root or a graph-wide plan.
+Until those installation readbacks succeed, the live request route retains its
+old configuration and no new WP3/WP4/rollback request is permitted.
+
+### Rollback trial: authentic admission and source transport (2026-10-15)
+
+The authorized feature publication reached `8317c604ee4c86fa05ec261256fc3eebc5cfe744`.
+[CI 38704428485](https://github.com/Kendall04/terragrunt_demo/actions/runs/38704428485)
+passed E1, hygiene and infrastructure; app CI was correctly skipped for that
+metadata-only delta. The preceding
+[CI 38702309795](https://github.com/Kendall04/terragrunt_demo/actions/runs/38702309795)
+had passed app/Docker checks. Both existing request-role trusts and Environment
+configurations now pin `f0ba8ad1d6528d362693c8de932f935c8084529d`, without new actions,
+refs or gateways. CloudTrail independently observed successful GitHub OIDC for
+the exact release subject, audience and new immutable pin.
+
+[WP3 38705672347](https://github.com/Kendall04/terragrunt_demo/actions/runs/38705672347)
+was rejected before creating a build: the published source lacked its existing
+source-admission record. The administrator admitted only that exact published,
+CI-successful commit with create-only/version readback. Later genuine requests
+38706006545, 38706580283, 38712621736 and 38800776556 produced protected terminal
+source failures: all seven checks NOT_RUN, without workers or image publication.
+Their polling jobs were cancelled only after terminal readback; failures remain.
+No delivery/rollback was dispatched and no E2 owner/generation changed.
+
+A read-only diagnostic in the existing immutable controller image reproduced
+HTTP 403 and anonymous GitHub REST quota zero. After the announced reset, a
+separate complete read-only acquisition passed all 42 REST reads and source
+integrity checks. Diagnostic CodeBuild successes are not qualifications. Each
+business attempt suppresses its transport exception, so the observed quota
+failure is not a proven explanation for every later failure.
+
+The local, not-installed Source patch retains commit/tree REST reads and obtains
+file bytes through fixed-repository raw URLs at that exact commit. Every body
+must match its selected tree's Git blob SHA before materialization; portable
+paths, modes, source-size bounds and sealed execution checks remain enforced.
+This application needs two REST reads plus 40 raw-content reads, rather than
+42 REST reads. HTTP failures remain fail-closed; diagnostics log only a fixed
+transport category and integer status, never URLs, headers or error bodies.
+No token, IAM action, archive extraction, branch/latest fallback or retry is added.
+Two metadata reads still require REST availability; this cannot promise success.
+
+Focused tests exercise production URL construction/encoding, SHA mismatches,
+wrong source, links/traversal, oversize bodies and metadata/raw rejection without
+private diagnostics. New subcases preserve the accepted regression methods.
+The executable pin and derived package IDs are reconciled; historical fixture
+normalization verifies the exact inverse of 49 content-ID fields while retaining
+original digest/security assertions. Derived inactive PROD/WP5 hashes do not
+activate or install those paths. WP4 cleanup, E2, workflow, app and IAM behavior
+are unchanged by this patch.
+
+Fresh AWS observations: green revision 7 healthy, blue revision 8 at zero, E2
+generation 10 RELEASED, original histories preserved, /ready and POST/GET SQL/KMS
+passed. DEV remains running and billable. No second qualified digest or real
+rollback is claimed. The changed Source also passed actual public reads of all
+40 files and source integrity from the local host; that is not AWS qualification.
+
+Next: review/authorize the additional public source commit, verify its actual CI,
+then rebuild/review the existing WP3 immutable runtime installation, including
+its shared support identity and exact bundle/version/permission readbacks.
+Prepare the concrete affected-resource plan before installing; never apply a
+whole security-root graph with stale installation inputs. Keep current WP4 DEV
+runtime/gateway versions and evidence readable; no PROD/WP5 activation or writes
+to the five E16 states. Only genuine distinct-digest WP3 success enables the
+already-described protected delivery/rollback trial. Remote main/develop stay
+unchanged. Private plans, logs and native evidence remain outside Git.
+
+
+### SourceTransport runtime activation and exact DEV endpoints (2026-10-15)
+
+Owner-authorized artifact staging published runtime digest
+`sha256:2643aa2efb14db3672959194451e6b361223be9517029083435cb3e0b4744860`
+from source `f55f52f501bbec6138d3eed994ab08e19510ef8a`, whose
+[CI 38806508256](https://github.com/Kendall04/terragrunt_demo/actions/runs/38806508256)
+passed. The existing operator then reconciled only five reviewed installation
+records with ETag-conditional writes and created the exact new gateway consumer
+publication. Old versions remain; the temporary five-key CreateOnly exception
+was immediately removed, the exact original bucket policy read back, and five
+safe negative writes returned 403 without creating versions. This was an explicit
+administrative exception, not a general replacement API or atomic five-key update.
+
+A first runtime plan was rejected without apply because an old derived gateway
+approval hash would deactivate DEV delivery. Revalidating only that hash against
+the unchanged gateway executables/image produced a saved plan with exactly six
+in-place updates, no creation/destruction: one existing CodeBuild controller,
+three existing Lambdas and the two gateway bundle-read policies. The operator
+applied that reviewed binary once, using the neutral security backend; the five
+E16 DEV states, application infrastructure and restored CreateOnly were excluded.
+Native readbacks verified the new runtime/support identity, bundle versions,
+request gateway release:2, qualification finalizer:2 and request gateway DEV:3.
+Workers, normal delivery, cleanup and NAT remained unchanged. No new WP3 release,
+WP4 delivery or rollback was dispatched. Local image/source checks and installed
+configuration readbacks are not a successful AWS qualification or rollback.
+
+The two source admissions now bind only those exact numeric request endpoints,
+from genuine G1-G9/source/installation observations. Immutable workflow pin
+`f0ba8ad1d6528d362693c8de932f935c8084529d`, repository, exact trial branch,
+Environment separation, audience and OIDC trusts remain unchanged. Only the
+existing request policies' numeric InvokeFunction resources and matching existing
+Environment variables may follow these admissions after protected acceptance
+and native readbacks. No wildcard, alias, $LATEST or extra action is authorized.
+Checked-in admissions alone do not prove those external settings are installed;
+retain their authentic operator readbacks. Any additional public publication
+requires separate owner approval. A first WP3 execution with SourceTransport
+still requires its own authorization; there is no second qualified app digest
+or completed rollback from this installation alone. DEV remains billable.
+
+
+## Real SourceTransport qualification and distinct-digest DEV rollback
+
+Verified on 2026-10-15 in Costa Rica (the rollback Actions run is dated October
+16 UTC). Only account `341936017254`, region `us-east-1`, profile `cnp-cert-dev`
+and `codex/final-github-actions-cicd` were used. No PROD/shared changes, IAM
+expansion, CreateOnly exception, Terraform-state operation, NAT failover or DOWN
+was part of this trial. The existing controller, workers, publisher, WP4 and
+cleanup were used; no direct ECS/listener replacement for WP4 was performed.
+
+### SourceTransport and the HTTP failure
+
+The installed controller used OCI digest
+`sha256:2643aa2efb14db3672959194451e6b361223be9517029083435cb3e0b4744860`.
+Its metadata request is an unauthenticated HTTPS GET to the fixed public
+repository's `/git/commits/<exact SHA>` followed by `/git/trees/<tree SHA>?recursive=1`.
+The failed [38824573732 run](https://github.com/Kendall04/terragrunt_demo/actions/runs/38824573732)
+left authentic source FAILED evidence and seven NOT_RUN checks; only its waiting
+Actions job was cancelled after native terminal reconciliation. No worker/image
+or qualification came from that failure. Its bounded diagnostic recorded HTTP
+403 but no response headers/body, so its precise rejection reason cannot be
+retroactively asserted. Earlier independent quota-zero observations are not
+proof of the cause of this particular 403.
+
+New native CodeBuild diagnostics used the installed Source implementation and
+its original Git checks. Equivalent metadata requests returned 200 with anonymous
+limit 60 and available quota; Windows anonymous and authenticated controls also
+returned 200. A complete native acquisition passed **2 REST metadata requests
+plus 40 immutable raw downloads**, verified every Git blob SHA-1 and obtained
+source seal `fb2ba65d5d44231300b0de8cdae103cf2be9b70ffa0be2d6da962a0fe7fa7378`.
+It did not launch workers or count as a qualification. This verified the already
+installed reduction from 42 REST requests before another business request.
+[GitHub documents](https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api)
+the anonymous quota by originating IP. Two metadata reads still require GitHub
+availability; neither IAM expansion, token transfer, blind retry nor guaranteed
+immunity from future HTTP denials is claimed.
+
+### Genuine qualification and version difference
+
+[WP3 38825575655](https://github.com/Kendall04/terragrunt_demo/actions/runs/38825575655)
+completed SUCCESS for published source
+`f55f52f501bbec6138d3eed994ab08e19510ef8a`. Native controller and all three worker
+builds completed SUCCEEDED. All seven protected checks passed; the .NET worker
+reported 103 passed tests. The authorized publisher published the image into
+neutral `demo-shared-demo-ms`, not the manual DEV registry. Qualification,
+manifest VersionId/hash, actual ECR digest and DEV eligibility were read back.
+
+| Identity | Original A | Qualified B |
+| --- | --- | --- |
+| Source | `b1e59975c0dae7cd4baf0d897f77d04192744ccc` | `f55f52f501bbec6138d3eed994ab08e19510ef8a` |
+| Release | `sha256-b22f33f93bdac5608da1dcd1e17f372f638dcaa766c1e758f34ee6f396673f44` | `sha256-279f48b8311d9c5dfaa8f93f7ae060e0598cece03ec0f35817398eeba8976f53` |
+| Image | `sha256:ca7d92532de8cfeee7a7a59a80f78714a26083ff323019d512d8be20f83ebfb8` | `sha256:7aa96288aa4449de35864d87a86fd9a89024fba13b95c88a1027c1b11cbcd654` |
+
+B includes the harmless fixed startup message `Application revision: rollback-proof-v2.`;
+HTTP, SQL schema and KMS contracts are unchanged. The real blue task's CloudWatch
+startup log contained that marker with digest B, so this was not merely a changed
+build timestamp/label. Controller digest `2643aa2e...` is not an application digest.
+
+### Protected delivery, rollback and automatic cleanup
+
+| Phase | Actions result | Real traffic/digest | Automatic cleanup |
+| --- | --- | --- | --- |
+| Deliver B | [38825984998 SUCCESS](https://github.com/Kendall04/terragrunt_demo/actions/runs/38825984998) | blue:9, B | green tasks/targets empty; temporary rule absent; E2 generation 12 RELEASED |
+| Roll back A | [38827037528 SUCCESS](https://github.com/Kendall04/terragrunt_demo/actions/runs/38827037528) | green:8, A | blue tasks/targets empty; temporary rule absent; E2 generation 14 RELEASED |
+
+The published DEV `rollback-manifest.yml` caller already allowed exactly the
+trial branch, workflow_dispatch and pinned `e1-dev-deploy.yml@f0ba8ad1d6528d362693c8de932f935c8084529d`.
+No new caller publication or trust weakening was needed. Its PROD job was skipped.
+CloudTrail independently confirmed actual AssumeRoleWithWebIdentity, exact
+Environment subjects/audience and the existing request roles for WP3 and both
+WP4 requests. Numeric gateways were release:2 and deploy-dev:3; pins/trusts stayed
+unchanged.
+
+Rollback consumed original protected SUCCESS history
+`6471310a-0a3a-489a-81dd-42213a00ad80`. It recreated green revision 8 from the
+qualified original digest; it did not restart deleted green:7 tasks or relabel B.
+The old SUCCESS receipt/version remained unchanged. Both promotions and cleanups
+have native protected SUCCESS receipts. No manual drain, rule deletion, E2 CAS
+reconciliation, history rewrite or forced settlement was needed. A draining ALB
+target was kept nonterminal until AWS reported actual absence.
+
+Both served versions passed `/ready` and POST/GET `/text` SQL/KMS round trips.
+After rollback, A also read/decrypted the text written by B. This is live
+application/database/key compatibility for this unchanged schema, not database
+backup/restore evidence. Final native observations show green:8 healthy, blue:9
+at zero with no tasks/targets, listener on green, no temporary rule and E2 released
+with no schedule. API Gateway/VPC Link and the original full topology remain.
+
+Focused hermetic validation passed 33 internal-release and 33 WP4D tests, no
+failures/errors/skips. The 103 .NET tests and Docker/probe checks above ran in the
+real qualified workers. The local documentation follow-up did not rerun the
+full offline gate or assert new Terraform provider validation/lint comparison;
+the prior activation's acceptance is recorded above, and normal CI enforces the
+repository gate when this branch is published.
+
+DEV remains running and billable. The trial added one qualified application image,
+short CodeBuild executions, logs and protected S3 versions; no new permanent
+infrastructure or IAM authority. ECR images, evidence and backends remain retained.
+A destructive NAT replacement experiment and the final DOWN/data-loss decisions
+are separate gates; no completion of either is implied by application rollback.

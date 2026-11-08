@@ -1,0 +1,67 @@
+{
+  "Status": "BLOCKED_BEFORE_PAID_CREATION",
+  "ObservedUtc": "2026-10-24T17:51:42.111130+00:00",
+  "CodeCommit": "c884930b44c7181476f6309b2420924bb1aa82c8",
+  "DeliveryDirectory": "C:\\Users\\PC-2024-01\\Documents\\Codex\\2026-10-22\\task-3\\cold-c884930-preflight",
+  "Posix": {
+    "Environment": "Existing Ubuntu-24.04 WSL, Python3, root private-path fixtures",
+    "Tests": 4,
+    "Pass": 4,
+    "Skip": 0,
+    "NativeSql": false,
+    "AwsCalls": 0
+  },
+  "HelperZipSha256": "c5cb8ddecd2439192399da8eca73ba112298a74bcfc7313164d9caf6a1fe5db3",
+  "VerifiedApiFiles": 383,
+  "VerifiedBackupFiles": 237,
+  "ArtifactLockSha256": "7f55d47ee561424a9e91824c2a8c5d3e8c444142f55d129bce2b539d30a54ca8",
+  "AccessReviewSha256": "d8877d0b5b12570a7fed0470117190b1efa97222f9e562cb76a7a34775c31f08",
+  "SnapshotOriginals": {
+    "backend.original.json": {
+      "CanonicalSha256": "c95441da84a0ffc4242308d16d34641299592ef94acdde9ea542130f0c98adc5",
+      "Path": "C:\\Users\\PC-2024-01\\Documents\\Codex\\2026-10-22\\task-3\\observer-host-work\\access-delta\\backend.original.json",
+      "RawSha256": "4ed1aaa85678e56871907ed08654b736d8887a2e59fe16fc514f610961afe36c"
+    },
+    "backup-key.original.json": {
+      "CanonicalSha256": "4eab460760d5ddde61a0a1879a2639deb434ecb299670363c35538e7fc31e732",
+      "Path": "C:\\Users\\PC-2024-01\\Documents\\Codex\\2026-10-22\\task-3\\observer-host-work\\access-delta\\backup-key.original.json",
+      "RawSha256": "9683e29625f771f4aeb96b25837d2b98e51f2ae1ccc5eaf0bf0a5199cedde665"
+    },
+    "part4.original-v5.json": {
+      "CanonicalSha256": "817dc0e9528d7e0497f10232c4fa03b397c9731448acd025e68a653c299d22d3",
+      "Path": "C:\\Users\\PC-2024-01\\Documents\\Codex\\2026-10-22\\task-3\\observer-host-work\\access-delta\\part4.original-v5.json",
+      "RawSha256": "817dc0e9528d7e0497f10232c4fa03b397c9731448acd025e68a653c299d22d3"
+    },
+    "part7.original-v3.json": {
+      "CanonicalSha256": "ac40ad6abcae3c427c54a4d79b6fcc78147a0e082003e740fb19871d4861d5bc",
+      "Path": "C:\\Users\\PC-2024-01\\Documents\\Codex\\2026-10-22\\task-3\\observer-host-work\\access-delta\\part7.original-v3.json",
+      "RawSha256": "ac40ad6abcae3c427c54a4d79b6fcc78147a0e082003e740fb19871d4861d5bc"
+    }
+  },
+  "LocalProposedPolicyHashes": {
+    "backend.proposed.NOT-INSTALLABLE.json": "ffb2c2f163b5fe28ba50b9b8ca8c158e396aade69764bbe0bc267fe20b821ffd",
+    "backup-key.proposed.NOT-INSTALLABLE.json": "0f9047e8262704bf40cfa4bac8f4138fdcddb6f1346ba37321eb2b9a9c1abf5b",
+    "sql-role-read-addition.NOT-INSTALLABLE.json": "371a63e6cf9c0ca993d86cd8d557f94a76e0ab9d6ee091182b0093f6924c8eeb"
+  },
+  "Part4ChangeProposed": false,
+  "Part7ChangeProposed": false,
+  "CloudOriginalsFresh": false,
+  "InstallablePolicies": false,
+  "BlockingGate": "Exact SSM per-target asynchronous authorization decision unavailable; API/session/document bindings and installed supplement now native-confirmed. No retry or alternate path.",
+  "Scenario": "Two sequential 15-object source/target phases, ONE chosen AZ mode; disposable synthetic source only",
+  "WholeEcsLiveProven": false,
+  "FullFargateLiveIncludedInUsd4": false,
+  "AwsExecuted": false,
+  "SsmDiagnosis": "operations/integrations/SSM-B2-DIAGNOSIS-20261024.md",
+  "SsmNativeEvidence": "operations/integrations/fixtures/ssm-b2-native-investigation.json",
+  "SsmInvestigationMutations": 0,
+  "ObservedOperatorFields": {
+    "ReadAtUtc": "2026-10-24T17:57:51.103864+00:00",
+    "Part4Default": "v5",
+    "Part7Default": "v3",
+    "BothEqualSavedOriginals": true,
+    "InlineNames": [],
+    "Boundary": null,
+    "AllOtherEffectivePolicyState": "NOT_INFERRED"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "ObservedUtc": "2026-10-24T19:38:45.175961+00:00",
+  "Source": "Existing user Chrome AWS console session; visible Support Center",
+  "Account": "341936017254",
+  "VerifiedAccount": true,
+  "VisiblePlan": "Basic Support",
+  "TechnicalPlanIncluded": false,
+  "PriorSupportApi": "SubscriptionRequiredException",
+  "CaseOpened": false,
+  "CaseTextEntered": false,
+  "LogsUploaded": false,
+  "SubscriptionChanged": false,
+  "PromotionTrialAccepted": false,
+  "AgentCreatedSupportTabClosed": true,
+  "UserEc2TabPreserved": true
+}

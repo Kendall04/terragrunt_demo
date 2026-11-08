@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net10.0": {
+      "ServiceIdentity.Pki.Integration.AspNetCore": {
+        "type": "Direct",
+        "requested": "[0.1.0-alpha.1, )",
+        "resolved": "0.1.0-alpha.1",
+        "contentHash": "N1Em3zxccLyzidBqcM+WYQjMoCP5xII65Td4GYTfkRIy1WLyZbuo2KvtzvA2HeBXQjD60XauEWQQ67IShLyhSA==",
+        "dependencies": {
+          "ServiceIdentity.Pki.Core": "0.1.0-alpha.1"
+        }
+      },
+      "ServiceIdentity.Pki.Core": {
+        "type": "Transitive",
+        "resolved": "0.1.0-alpha.1",
+        "contentHash": "ESJzsW2ldYU56Zkv7pyzlbe2+Cu2BS2surKRVjSS+vt1czQCdMYrDVPYhdIbhlCpTN80Y773ssUfvthxr7aN9A=="
+      }
+    }
+  }
+}

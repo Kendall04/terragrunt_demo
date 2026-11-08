@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "status": "LOCAL_PREPARATION_ONLY_NOT_CLOUD_RELEASE",
+  "authoredAgainstCommit": "ae6807630284ac37d83f7fdbf40a4fab7cffa7a2",
+  "qualifiedUtc": "2026-10-23T19:43:23.405412+00:00",
+  "sources": {
+    "operations/integrations/Ecs.Backup.Sentinel/ObserverNormalizer.cs": {
+      "sha256": "5b8d097e3222ca54e6a8300dc5015a0520dc7a077471946676f9af718d0317c9",
+      "bytes": 9647,
+      "normalization": "UTF8-LF"
+    },
+    "operations/integrations/Ecs.Backup.Sentinel/BackupIncidentPolicy.cs": {
+      "sha256": "f9d8f842a370396577ccdce37e7ff1fe55c472a90f308027f98d14b41bd1f404",
+      "bytes": 4662,
+      "normalization": "UTF8-LF"
+    },
+    "operations/integrations/Ecs.Backup.Sentinel.Tests/Program.cs": {
+      "sha256": "f3f201fe533e1a7a20975e32c2e74549a5730f810e1b0264e92d2c01763c852c",
+      "bytes": 14882,
+      "normalization": "UTF8-LF"
+    },
+    "operations/integrations/OPERATIONAL-TRIAL.md": {
+      "sha256": "f5e4d00010bf0903950059659c2679ee624a93e00bd4fe26ce0cbbc2de9b5ecc",
+      "bytes": 20335,
+      "normalization": "UTF8-LF"
+    },
+    "operations/integrations/OPERATIONAL-SCOPE-PROPOSAL.json": {
+      "sha256": "81e1e0b790944eddfe1050e42d758e48f25a27c7c65782d8848ebbab1f0185e7",
+      "bytes": 8098,
+      "normalization": "UTF8-LF"
+    },
+    "operations/integrations/README.md": {
+      "sha256": "c5e7aa5cd60c2fb4ec12f7ee8f058b66f045b40d4076888475f13201ea617794",
+      "bytes": 10549,
+      "normalization": "UTF8-LF"
+    },
+    "operations/integrations/upstream-sources.json": {
+      "sha256": "2ad1704d6ab989a9cbbd195cb58acc5e8a511bc0c191c18b0681b389576b7fac",
+      "bytes": 353,
+      "normalization": "UTF8-LF"
+    },
+    "portfolio/ACCEPTANCE.md": {
+      "sha256": "67a7ee20ffd36de63042be109d395f9a1c6d7d20e0d2fd07b41eb13a3fd0c51b",
+      "bytes": 8713,
+      "normalization": "UTF8-LF"
+    }
+  },
+  "upstream": {
+    "origin": "https://github.com/Kendall04/reliability-sentinel.git",
+    "commit": "0e8fc55333ddde3b9816885915310a7e69f3de45",
+    "reviewedFiles": {
+      "src/Sentinel.Worker.Lambda/Function.cs": "2c45b9cbe6b46b5f299763b58f9641fe37a0a801cc71c60473e3d9a8f73f172e",
+      "src/Sentinel.Worker.Lambda/RuntimeComposition.cs": "958bb339a3f647f0ccac9dd9f59b2030738ae3d90e7e63fbfa48d254a5bc27ff",
+      "src/Sentinel.Persistence.DynamoDb/PhysicalLayout.cs": "87e4d9624ff5241a666f4bf559d76f475bb865b6249444e55f652df069a24ce6",
+      "src/Sentinel.Persistence.DynamoDb/DynamoStore.cs": "21c5686bf940c05d64c96ea42abf301cf7481700c71819dddbd3e56e1e91859b",
+      "src/Sentinel.Persistence.DynamoDb/DynamoQueries.cs": "6c340f245794eb43cf193f3569935476a8b4afa1a84a827dd76f62078e19b566",
+      "src/Sentinel.Persistence.DynamoDb/CommitValidation.cs": "ec09937f1758ab15b60ba7cc23c7f6e42286a3d36cb1a284ff7022b4edab5f28",
+      "src/Sentinel.Persistence.S3/S3ArchiveAdapter.cs": "6a0406286f590329e73f45c7fb67241c798c093f6c2a1b872466eef4383fe98b",
+      "src/Sentinel.Application/OutboxDispatcher.cs": "8212787cd433d2914f65689d3883dfb251bf7befc04c821df989bb2acf429559",
+      "src/Sentinel.Application/DeferredCheckAdapter.cs": "7fd6f6a350d4a7eaf4b9a58cddd082ed4c9f0c9fa3b833e2c087a0b4a30cde03",
+      "src/Sentinel.Operations.Aws/CloudConfiguration.cs": "9ce2ddd804fd21e94e6e3e0837446baa2f76ed845de3e82a7e0452b150c3f27d",
+      "src/Sentinel.OperationalWorker.Lambda/Function.cs": "43cdfc7a3fa296f5398da6cf3ed1b1faebef86aaf020e34bc9f33dde406d4fe5",
+      "src/Sentinel.Observability/ServiceCatalog.cs": "2ff85ae4e48462b5a2e697eb4b0a383686102ba3cd9a34e163348233b968e31b",
+      "tools/phase5_iac.py": "8017161afa41aae926319007a4968e6eeaeb17bb81346f936187dcb21c0937be",
+      "tools/continuous_iac.py": "b9f9d1b101b50ada2046ae5de52702392bcde1faf3f3c134d855963a374113b3",
+      "docs/58-shadow-installation-runbook.md": "1fffa56fe2eeadc45c9525d7052de0b5912639646e95dae740defb1e6ae626cc"
+    },
+    "reviewedFilesNormalization": "UTF8-LF"
+  },
+  "qualification": {
+    "tests": 61,
+    "buildWarnings": 0,
+    "buildErrors": 0,
+    "persistence": "UPSTREAM_MEMORY_FAKE",
+    "transport": "IN_PROCESS",
+    "awsCalls": 0,
+    "effectsExecuted": 0,
+    "emailSent": false,
+    "newPackagesRestored": false,
+    "timersInstalled": false,
+    "proofSha256": "440d777ad98510abcfc64b0634ec45b004a90e3f2d5eab28e83f890a7080c6e7",
+    "buildLogSha256": "8993da56358119d966a54f80a998f59c1d7e911f3a4d8cd022efca87824616ea",
+    "testLogSha256": "96f8f33f1942ea934e4bcf566f6a2d82b7d0beb0aa012ae445f2674fc2fdda1c",
+    "initialTestClockFailurePreserved": true
+  },
+  "priorFullRegression": {
+    "commit": "ae6807630284ac37d83f7fdbf40a4fab7cffa7a2",
+    "manifest": "operations/integrations/local-regression-manifest.json",
+    "sha256": "2abf6832b11241cce2181af53834aefcd96044ceb4b121aeac5b4404bdc1af8f",
+    "unchangedHistoricalReceipt": true,
+    "notRerun": [
+      "observer",
+      "signals",
+      "portfolioNode",
+      "Chrome"
+    ]
+  },
+  "proposalAuthorization": {
+    "awsExecution": false,
+    "accessChanges": false,
+    "newSpend": false,
+    "newAllowanceProposedUsd": 1,
+    "modeledEnvelopeUsd": 0.121141,
+    "oldCapsNotBalance": true
+  },
+  "notQualified": [
+    "SDK managed persistence on real DynamoDB/S3",
+    "backup-aware Lambda batch/config/region composition",
+    "real email transport and consent",
+    "independent remote backup observer installation",
+    "exact installable provisioner and retirement policy/change set",
+    "whole ECS recovery"
+  ]
+}

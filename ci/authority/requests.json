@@ -1,0 +1,155 @@
+{
+  "classification": "TARGET_REQUIREMENT",
+  "enforced_on_deployment": false,
+  "dispatch_rule": "Schemas are capability-specific. No public mode/env/role selection. Endpoint policy selects schema, active revision and layer/operation allowlist; schemas do not authorize a request.",
+  "schemas": {
+    "build": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "source_commit": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "[0-9a-f]{40}"
+        }
+      },
+      "required": [
+        "source_commit"
+      ]
+    },
+    "deploy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "qualification_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "[A-Za-z0-9][A-Za-z0-9_-]{0,127}"
+        },
+        "replicas": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10,
+          "description": "Synthetic contract ceiling for schema tests; installed operator policy must choose actual bounded capacity before WP4."
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "qualification_id",
+        "replicas"
+      ]
+    },
+    "rollback-release": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "history_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "[A-Za-z0-9][A-Za-z0-9_-]{0,127}"
+        },
+        "replicas": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10,
+          "description": "Synthetic contract ceiling for schema tests; installed operator policy must choose actual bounded capacity before WP4."
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "history_id",
+        "replicas"
+      ]
+    },
+    "emergency": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "color": {
+          "type": "string",
+          "enum": [
+            "blue",
+            "green"
+          ]
+        },
+        "replicas": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10,
+          "description": "Synthetic contract ceiling for schema tests; installed operator policy must choose actual bounded capacity before WP4."
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "color",
+        "replicas",
+        "reason"
+      ]
+    },
+    "lifecycle": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "installed_revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "[0-9a-f]{40}"
+        },
+        "layer": {
+          "type": "string",
+          "enum": [
+            "global",
+            "platform",
+            "edge",
+            "data",
+            "apps"
+          ]
+        },
+        "operation": {
+          "type": "string",
+          "enum": [
+            "plan",
+            "reconcile",
+            "teardown"
+          ]
+        }
+      },
+      "required": [
+        "installed_revision",
+        "layer",
+        "operation"
+      ]
+    },
+    "status": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "operation_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "[A-Za-z0-9][A-Za-z0-9_-]{0,127}"
+        }
+      },
+      "required": [
+        "operation_id"
+      ]
+    }
+  }
+}

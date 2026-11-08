@@ -11,16 +11,22 @@ IMAGE_URI=""
 DB_SECRET_ID=""
 KMS_KEY_ID=""
 OUTPUT_FILE=""
+RECOVERY_MODE=false
+DATABASE_SECURITY_PLAN=""
+DATABASE_SECURITY_ENV="[]"
 TEMPLATE_FILE="$ROOT_DIR/demo-api/deploy/task-definition.template.json"
 
 usage() {
   cat <<'EOF'
 Usage:
   scripts/render-demo-api-taskdef.sh --env ENV --region REGION --account-id ACCOUNT \
-    --color blue|green --image-uri ECR_URI@sha256:... --db-secret-id ARN --output FILE
+    --color blue|green --image-uri ECR_URI@sha256:... --db-secret-id ARN --output FILE [--recovery]
 
 Renders the versioned Demo API ECS task definition template. The rendered output
 is suitable for aws ecs register-task-definition --cli-input-json file://FILE.
+--recovery is an offline dev profile: it requires a pinned connection-secret
+version and exact KMS key ARN, and disables startup migrations only on the app.
+It neither selects an installed WP4 binding nor registers or switches anything.
 EOF
 }
 
@@ -68,6 +74,14 @@ parse_args() {
         TEMPLATE_FILE="${2:-}"
         shift 2
         ;;
+      --database-security-plan)
+        DATABASE_SECURITY_PLAN="${2:-}"
+        shift 2
+        ;;
+      --recovery)
+        RECOVERY_MODE=true
+        shift
+        ;;
       --output)
         OUTPUT_FILE="${2:-}"
         shift 2
@@ -106,6 +120,38 @@ validate_args() {
     die "--db-secret-id must be a full Secrets Manager ARN."
   fi
 
+  if [ "$RECOVERY_MODE" = true ]; then
+    [ "$ENV_NAME" = dev ] || die "Recovery profile is currently reviewed for dev only."
+    [[ "$AWS_REGION_NAME" =~ ^[a-z]{2}-[a-z]+-[0-9]$ ]] || die "Invalid recovery region."
+    [[ "$DB_SECRET_ID" =~ ^arn:aws:secretsmanager:${AWS_REGION_NAME}:${ACCOUNT_ID}:secret:[A-Za-z0-9/_+=.@-]+:::[A-Za-z0-9-]{32,64}$ ]] || die "Recovery requires an exact same-account/region secret version."
+    [[ "$IMAGE_URI" =~ ^${ACCOUNT_ID}\.dkr\.ecr\.${AWS_REGION_NAME}\.amazonaws\.com/[a-z0-9][a-z0-9._/-]*@sha256:[a-f0-9]{64}$ ]] || die "Recovery image must belong to this account and region."
+    [[ "$KMS_KEY_ID" =~ ^arn:aws:kms:${AWS_REGION_NAME}:${ACCOUNT_ID}:key/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$ ]] || die "Recovery requires an explicit same-account/region KMS key ARN."
+  fi
+
+  if [ -n "$DATABASE_SECURITY_PLAN" ]; then
+    [ "$RECOVERY_MODE" = true ] || die "Strict database plan requires --recovery."
+    [ -f "$DATABASE_SECURITY_PLAN" ] || die "Strict database plan is missing."
+    DATABASE_SECURITY_ENV="$(jq -ce --arg secret "$DB_SECRET_ID" --arg image "$IMAGE_URI" '
+      . as $p | .DatabaseSecurity as $s |
+      if ($s | type) == "object" and
+        ($s | keys) == ["CertificateHostName","MigrationSecretArn","MigrationUser","Profile","RuntimeUser"] and
+        $s.Profile == "validated-v2" and $s.RuntimeUser == "recovery_app" and
+        $s.MigrationUser == "recovery_migrator" and $s.CertificateHostName == "sql.demo.internal" and
+        ($s.MigrationSecretArn | test("^arn:aws:secretsmanager:us-east-1:341936017254:secret:demo/dev/db/sql-migrator-password-[A-Za-z0-9]{6}$")) and
+        ($p.Connection.SecretArn + ":::" + $p.Connection.VersionId) == $secret and
+        $p.Release.image_uri == $image and $p.Network.DbPrivateIp == $p.Connection.Endpoint and
+        ($p.Connection.Endpoint | test("^(10\\.[0-9.]+|172\\.[0-9.]+|192\\.168\\.[0-9.]+)$")) and
+        $p.Connection.Database == ("recoverydb_restore_" + $p.Trial) and
+        ($p.Trial | test("^r[0-9]{8}[a-z0-9]{1,8}$"))
+      then [
+        {name:"Database__SecurityProfile",value:$s.Profile},
+        {name:"Database__ExpectedRuntimeUser",value:$s.RuntimeUser},
+        {name:"Database__ExpectedSqlEndpoint",value:("tcp:"+$p.Connection.Endpoint+",1433")},
+        {name:"Database__ExpectedDatabase",value:$p.Connection.Database},
+        {name:"Database__ExpectedCertificateHostName",value:$s.CertificateHostName}]
+      else error("STRICT_DATABASE_PLAN_MISMATCH") end' "$DATABASE_SECURITY_PLAN")" || die "Strict database plan refused."
+  fi
+
   [ -f "$TEMPLATE_FILE" ] || die "Template file not found: $TEMPLATE_FILE"
   [ -n "$OUTPUT_FILE" ] || die "--output is required."
 
@@ -116,12 +162,14 @@ validate_args() {
 
 render_task_definition() {
   local app_name
+  local probe_name
   local execution_role_arn
   local task_role_arn
   local log_group
   local output_dir
 
   app_name="demo-${ENV_NAME}-app-api-${COLOR}"
+  probe_name="${app_name}-readiness-probe"
   execution_role_arn="arn:aws:iam::${ACCOUNT_ID}:role/${app_name}-exec-role"
   task_role_arn="arn:aws:iam::${ACCOUNT_ID}:role/${app_name}-task-role"
   log_group="/aws/ecs/${app_name}"
@@ -130,8 +178,11 @@ render_task_definition() {
   mkdir -p "$output_dir"
 
   jq \
+    --argjson recovery_mode "$RECOVERY_MODE" \
+    --argjson database_security_env "$DATABASE_SECURITY_ENV" \
     --arg family "$app_name" \
     --arg container_name "$app_name" \
+    --arg probe_name "$probe_name" \
     --arg image_uri "$IMAGE_URI" \
     --arg execution_role_arn "$execution_role_arn" \
     --arg task_role_arn "$task_role_arn" \
@@ -152,14 +203,24 @@ render_task_definition() {
       | .taskRoleArn = $task_role_arn
       | .containerDefinitions[0].name = $container_name
       | .containerDefinitions[0].image = $image_uri
+      | .containerDefinitions[1].name = $probe_name
+      | .containerDefinitions[1].image = $image_uri
       | set_env("AWS_REGION"; $aws_region)
       | set_env("APP_ENV"; $app_env)
       | set_env("DEPLOYMENT"; $deployment)
       | set_env("KMS_KEY_ID"; $kms_key_id)
+      | if $recovery_mode then
+          .containerDefinitions[0].environment |=
+            (map(select(.name != "Database__RunMigrationsOnStartup"))
+             + [{"name":"Database__RunMigrationsOnStartup","value":"false"}] + $database_security_env)
+        else . end
       | .containerDefinitions[0].secrets[0].valueFrom = $db_secret_id
       | .containerDefinitions[0].logConfiguration.options["awslogs-group"] = $log_group
       | .containerDefinitions[0].logConfiguration.options["awslogs-region"] = $aws_region
       | .containerDefinitions[0].logConfiguration.options["awslogs-stream-prefix"] = $container_name
+      | .containerDefinitions[1].logConfiguration.options["awslogs-group"] = $log_group
+      | .containerDefinitions[1].logConfiguration.options["awslogs-region"] = $aws_region
+      | .containerDefinitions[1].logConfiguration.options["awslogs-stream-prefix"] = $probe_name
     ' "$TEMPLATE_FILE" > "$OUTPUT_FILE"
 }
 
@@ -170,4 +231,6 @@ main() {
   render_task_definition
 }
 
-main "$@"
+if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
+  main "$@"
+fi

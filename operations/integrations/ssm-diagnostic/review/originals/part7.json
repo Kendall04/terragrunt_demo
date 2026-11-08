@@ -1,0 +1,65 @@
+{
+  "Statement": [
+    {
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:TagResource"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestTag/Environment": "dev",
+          "aws:RequestTag/Project": "demo",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": [
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/ecs/demo-dev-app-api-blue",
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/ecs/demo-dev-app-api-blue:*",
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/ecs/demo-dev-app-api-green",
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/ecs/demo-dev-app-api-green:*",
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/apigw/demo-dev-edge-http-access",
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/apigw/demo-dev-edge-http-access:*"
+      ],
+      "Sid": "CreateTwoOriginalDevEcsLogGroups"
+    },
+    {
+      "Action": [
+        "logs:PutRetentionPolicy",
+        "logs:DeleteLogGroup",
+        "logs:ListTagsForResource"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": [
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/ecs/demo-dev-app-api-blue",
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/ecs/demo-dev-app-api-blue:*",
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/ecs/demo-dev-app-api-green",
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/ecs/demo-dev-app-api-green:*",
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/apigw/demo-dev-edge-http-access",
+        "arn:aws:logs:us-east-1:341936017254:log-group:/aws/apigw/demo-dev-edge-http-access:*"
+      ],
+      "Sid": "ManageTwoOriginalDevEcsLogGroups"
+    },
+    {
+      "Action": [
+        "logs:ListLogDeliveries"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      },
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ],
+      "Sid": "ReadRegionalLogDeliveriesForOriginalStageDeletion"
+    }
+  ],
+  "Version": "2012-10-17"
+}

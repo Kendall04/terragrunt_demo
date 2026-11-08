@@ -1,8 +1,10 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using terragrunt_demo.Dtos;
+using terragrunt_demo.Features.Texts;
 using terragrunt_demo.Features.Texts.Commands;
 using terragrunt_demo.Features.Texts.Queries;
+using terragrunt_demo.Services;
 
 namespace terragrunt_demo.Controllers
 {
@@ -32,9 +34,15 @@ namespace terragrunt_demo.Controllers
                 return BadRequest("Text cannot be empty.1234");
 
             var command = new InsertTextCommand(request.Text);
-            var result = await _mediator.Send(command, cancellationToken);
-
-            return Ok(result);
+            try
+            {
+                var result = await _mediator.Send(command, cancellationToken);
+                return Ok(result);
+            }
+            catch (PlaintextTooLargeException ex)
+            {
+                return BadRequest($"Text must not exceed {ex.MaxPlaintextBytes} UTF-8 bytes.");
+            }
         }
 
         // GET /text
@@ -49,6 +57,9 @@ namespace terragrunt_demo.Controllers
                 return BadRequest("Page must be greater than 0.");
             if (pageSize < 1 || pageSize > maxPageSize)
                 return BadRequest($"PageSize must be between 1 and {maxPageSize}.");
+
+            if (!TextPagination.TryGetOffset(page, pageSize, out _))
+                return BadRequest(TextPagination.OffsetError);
 
             var query = new GetAllTextsQuery(page, pageSize);
             var result = await _mediator.Send(query, cancellationToken);

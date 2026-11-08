@@ -1,0 +1,186 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "az6 histórica · SQL/API entre zonas",
+    "locale": "es",
+    "output": "docs/interactive/az6-recovery.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/Kendall04/terragrunt_demo",
+      "revision": "19b1f5e538bbd8f63c882335c1dd76edffab462b",
+      "link_mode": "local-only"
+    }
+  },
+  "components": [
+    {
+      "id": "source",
+      "type": "database",
+      "label": "SQL origen · AZ A",
+      "sublabel": "EC2 privada",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        178,
+        72
+      ],
+      "sources": [
+        {
+          "path": "operations/sql-backup/recovery/RUNBOOK.md",
+          "line": 22,
+          "end_line": 34
+        }
+      ]
+    },
+    {
+      "id": "backup",
+      "type": "database",
+      "label": "S3 + KMS",
+      "sublabel": "Versiones y checksum",
+      "pos": [
+        400,
+        40
+      ],
+      "size": [
+        178,
+        72
+      ],
+      "sources": [
+        {
+          "path": "operations/sql-backup/recovery/RUNBOOK.md",
+          "line": 36,
+          "end_line": 59
+        }
+      ]
+    },
+    {
+      "id": "target",
+      "type": "database",
+      "label": "SQL destino · AZ B",
+      "sublabel": "EC2 ya preparada",
+      "pos": [
+        760,
+        40
+      ],
+      "size": [
+        178,
+        72
+      ],
+      "sources": [
+        {
+          "path": "terraform/docs/v2-local-completion.md",
+          "line": 15,
+          "end_line": 18
+        }
+      ]
+    },
+    {
+      "id": "nat",
+      "type": "cloud",
+      "label": "NAT Gateway",
+      "sublabel": "Bootstrap y SSM",
+      "pos": [
+        40,
+        310
+      ],
+      "size": [
+        178,
+        72
+      ],
+      "sources": [
+        {
+          "path": "operations/sql-backup/recovery/RUNBOOK.md",
+          "line": 25,
+          "end_line": 34
+        }
+      ]
+    },
+    {
+      "id": "kms",
+      "type": "security",
+      "label": "KMS de texto",
+      "sublabel": "Descifrado de prueba",
+      "pos": [
+        400,
+        310
+      ],
+      "size": [
+        178,
+        72
+      ],
+      "sources": [
+        {
+          "path": "operations/sql-backup/recovery/RUNBOOK.md",
+          "line": 49,
+          "end_line": 55
+        }
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "API co-localizada",
+      "sublabel": "Lectura y escritura",
+      "pos": [
+        760,
+        310
+      ],
+      "size": [
+        178,
+        72
+      ],
+      "sources": [
+        {
+          "path": "terraform/docs/v2-local-completion.md",
+          "line": 15,
+          "end_line": 18
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "from": "source",
+      "to": "backup",
+      "label": "backup",
+      "variant": "default"
+    },
+    {
+      "from": "backup",
+      "to": "target",
+      "label": "restore exacto",
+      "variant": "default"
+    },
+    {
+      "from": "source",
+      "to": "nat",
+      "label": "bootstrap",
+      "variant": "default"
+    },
+    {
+      "from": "api",
+      "to": "target",
+      "label": "TCP :1433",
+      "variant": "default"
+    },
+    {
+      "from": "api",
+      "to": "kms",
+      "label": "cifrar / descifrar",
+      "variant": "security"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "amber",
+      "title": "Alcance y estado",
+      "items": [
+        "Ensayo retirado con dos reparaciones; RTO preparado observado: 142,630783 s.",
+        "No creó ECS, ALB ni API Gateway. Una pérdida completa de AZ no fue probada.",
+        "NAT se retiró primero; datos de prueba y permisos temporales cerrados."
+      ]
+    }
+  ]
+}

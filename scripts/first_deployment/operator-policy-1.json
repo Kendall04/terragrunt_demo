@@ -1,0 +1,316 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "elasticloadbalancing:AddTags"
+      ],
+      "Resource": [
+        "arn:aws:elasticloadbalancing:us-east-1:341936017254:listener/app/demo-dev-*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "elasticloadbalancing:CreateAction": [
+            "CreateListener"
+          ],
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "elasticloadbalancing:AddTags"
+      ],
+      "Resource": [
+        "arn:aws:elasticloadbalancing:us-east-1:341936017254:listener-rule/app/demo-dev-*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "elasticloadbalancing:CreateAction": [
+            "CreateRule"
+          ],
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "autoscaling:CreateAutoScalingGroup"
+      ],
+      "Resource": [
+        "arn:aws:autoscaling:us-east-1:341936017254:autoScalingGroup:*:autoScalingGroupName/demo-dev-asg-nat-a",
+        "arn:aws:autoscaling:us-east-1:341936017254:autoScalingGroup:*:autoScalingGroupName/demo-dev-asg-nat-b"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestTag/Environment": "dev",
+          "aws:RequestedRegion": "us-east-1"
+        },
+        "Bool": {
+          "autoscaling:LaunchTemplateVersionSpecified": "true"
+        },
+        "NumericEquals": {
+          "autoscaling:MinSize": "1",
+          "autoscaling:MaxSize": "1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "autoscaling:CreateOrUpdateTags"
+      ],
+      "Resource": [
+        "arn:aws:autoscaling:us-east-1:341936017254:autoScalingGroup:*:autoScalingGroupName/demo-dev-asg-nat-a",
+        "arn:aws:autoscaling:us-east-1:341936017254:autoScalingGroup:*:autoScalingGroupName/demo-dev-asg-nat-b"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestTag/Environment": "dev",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "autoscaling:DisableMetricsCollection",
+        "autoscaling:EnableMetricsCollection"
+      ],
+      "Resource": [
+        "arn:aws:autoscaling:us-east-1:341936017254:autoScalingGroup:*:autoScalingGroupName/demo-dev-asg-nat-a",
+        "arn:aws:autoscaling:us-east-1:341936017254:autoScalingGroup:*:autoScalingGroupName/demo-dev-asg-nat-b"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "autoscaling:ResourceTag/Environment": "dev",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ecs:CreateCluster"
+      ],
+      "Resource": [
+        "arn:aws:ecs:us-east-1:341936017254:cluster/demo-dev-platform-main-cluster"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestTag/Environment": "dev",
+          "aws:RequestTag/Project": "demo",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ecs:TagResource"
+      ],
+      "Resource": [
+        "arn:aws:ecs:us-east-1:341936017254:cluster/demo-dev-platform-main-cluster"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "ecs:CreateAction": [
+            "CreateCluster"
+          ],
+          "aws:RequestTag/Environment": "dev",
+          "aws:RequestTag/Project": "demo",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ecs:CreateService"
+      ],
+      "Resource": [
+        "arn:aws:ecs:us-east-1:341936017254:service/demo-dev-platform-main-cluster/demo-dev-app-api-blue-svc",
+        "arn:aws:ecs:us-east-1:341936017254:service/demo-dev-platform-main-cluster/demo-dev-app-api-green-svc"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestTag/Environment": "dev",
+          "aws:RequestTag/Project": "demo",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ecs:TagResource"
+      ],
+      "Resource": [
+        "arn:aws:ecs:us-east-1:341936017254:service/demo-dev-platform-main-cluster/demo-dev-app-api-blue-svc",
+        "arn:aws:ecs:us-east-1:341936017254:service/demo-dev-platform-main-cluster/demo-dev-app-api-green-svc"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "ecs:CreateAction": [
+            "CreateService"
+          ],
+          "aws:RequestTag/Environment": "dev",
+          "aws:RequestTag/Project": "demo",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ecs:RegisterTaskDefinition"
+      ],
+      "Resource": [
+        "arn:aws:ecs:us-east-1:341936017254:task-definition/demo-dev-app-api-blue:*",
+        "arn:aws:ecs:us-east-1:341936017254:task-definition/demo-dev-app-api-green:*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestTag/Environment": "dev",
+          "aws:RequestTag/Project": "demo",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ecs:TagResource"
+      ],
+      "Resource": [
+        "arn:aws:ecs:us-east-1:341936017254:task-definition/demo-dev-app-api-blue:*",
+        "arn:aws:ecs:us-east-1:341936017254:task-definition/demo-dev-app-api-green:*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "ecs:CreateAction": [
+            "RegisterTaskDefinition"
+          ],
+          "aws:RequestTag/Environment": "dev",
+          "aws:RequestTag/Project": "demo",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "cloudwatch:PutMetricAlarm"
+      ],
+      "Resource": [
+        "arn:aws:cloudwatch:us-east-1:341936017254:alarm:demo-dev-*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestTag/Environment": "dev",
+          "aws:RequestTag/Project": "demo",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "cloudwatch:TagResource"
+      ],
+      "Resource": [
+        "arn:aws:cloudwatch:us-east-1:341936017254:alarm:demo-dev-*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestTag/Environment": "dev",
+          "aws:RequestTag/Project": "demo",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "logs:DeleteLogGroup",
+        "logs:ListTagsForResource",
+        "logs:PutRetentionPolicy"
+      ],
+      "Resource": [
+        "arn:aws:logs:us-east-1:341936017254:log-group:demo-dev-*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "logs:DeleteLogGroup",
+        "logs:ListTagsForResource",
+        "logs:PutRetentionPolicy"
+      ],
+      "Resource": [
+        "arn:aws:logs:us-east-1:341936017254:log-group:demo-dev-*:*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup"
+      ],
+      "Resource": [
+        "arn:aws:logs:us-east-1:341936017254:log-group:demo-dev-*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestTag/Environment": "dev",
+          "aws:RequestTag/Project": "demo",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "logs:TagResource"
+      ],
+      "Resource": [
+        "arn:aws:logs:us-east-1:341936017254:log-group:demo-dev-*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestTag/Environment": "dev",
+          "aws:RequestTag/Project": "demo",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup"
+      ],
+      "Resource": [
+        "arn:aws:logs:us-east-1:341936017254:log-group:demo-dev-*:*"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestTag/Environment": "dev",
+          "aws:RequestTag/Project": "demo",
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    }
+  ]
+}

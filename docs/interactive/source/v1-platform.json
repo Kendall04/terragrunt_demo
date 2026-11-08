@@ -1,0 +1,186 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "V1 histórica · aplicación retirada",
+    "locale": "es",
+    "output": "docs/interactive/v1-platform.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/Kendall04/terragrunt_demo",
+      "revision": "19b1f5e538bbd8f63c882335c1dd76edffab462b",
+      "link_mode": "local-only"
+    }
+  },
+  "components": [
+    {
+      "id": "gateway",
+      "type": "cloud",
+      "label": "API Gateway",
+      "sublabel": "Entrada HTTPS",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        178,
+        72
+      ],
+      "sources": [
+        {
+          "path": "terraform/docs/architecture.md",
+          "line": 79,
+          "end_line": 91
+        }
+      ]
+    },
+    {
+      "id": "link",
+      "type": "cloud",
+      "label": "VPC Link",
+      "sublabel": "Conexión privada",
+      "pos": [
+        370,
+        40
+      ],
+      "size": [
+        178,
+        72
+      ],
+      "sources": [
+        {
+          "path": "terraform/docs/architecture.md",
+          "line": 79,
+          "end_line": 91
+        }
+      ]
+    },
+    {
+      "id": "alb",
+      "type": "cloud",
+      "label": "ALB interno",
+      "sublabel": "HTTP :8080",
+      "pos": [
+        700,
+        40
+      ],
+      "size": [
+        178,
+        72
+      ],
+      "sources": [
+        {
+          "path": "terraform/docs/architecture.md",
+          "line": 79,
+          "end_line": 91
+        }
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "API en Fargate",
+      "sublabel": "Un color activo",
+      "pos": [
+        700,
+        280
+      ],
+      "size": [
+        178,
+        72
+      ],
+      "sources": [
+        {
+          "path": "terraform/docs/architecture.md",
+          "line": 108,
+          "end_line": 129
+        }
+      ]
+    },
+    {
+      "id": "sql",
+      "type": "database",
+      "label": "SQL Server EC2",
+      "sublabel": "Privado · TCP :1433",
+      "pos": [
+        1030,
+        280
+      ],
+      "size": [
+        178,
+        72
+      ],
+      "sources": [
+        {
+          "path": "terraform/docs/architecture.md",
+          "line": 79,
+          "end_line": 91
+        }
+      ]
+    },
+    {
+      "id": "kms",
+      "type": "security",
+      "label": "AWS KMS",
+      "sublabel": "Cifrado en backend",
+      "pos": [
+        700,
+        510
+      ],
+      "size": [
+        178,
+        72
+      ],
+      "sources": [
+        {
+          "path": "terraform/docs/architecture.md",
+          "line": 79,
+          "end_line": 81
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "from": "gateway",
+      "to": "link",
+      "label": "HTTP",
+      "variant": "default"
+    },
+    {
+      "from": "link",
+      "to": "alb",
+      "label": "privado",
+      "variant": "default"
+    },
+    {
+      "from": "alb",
+      "to": "api",
+      "label": "HTTP :8080",
+      "variant": "default"
+    },
+    {
+      "from": "api",
+      "to": "sql",
+      "label": "TCP :1433",
+      "variant": "default"
+    },
+    {
+      "from": "api",
+      "to": "kms",
+      "label": "cifrar / descifrar",
+      "variant": "security"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "amber",
+      "title": "Alcance y estado",
+      "items": [
+        "Histórica V1: desplegada, probada y retirada; no es estado live.",
+        "Blue y green son slots de una API, no dos servicios.",
+        "Sin PKI/mTLS ni Sentinel implementados."
+      ]
+    }
+  ]
+}

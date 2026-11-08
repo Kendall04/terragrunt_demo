@@ -1,0 +1,48 @@
+{
+  "SchemaVersion": 1,
+  "BaseCommit": "bb7d88e5d3100a0a65aba5c00f34caf1ecb48f65",
+  "Status": "LOCAL_SOURCE_REVIEW_ONLY",
+  "CloudApproved": false,
+  "NativeFenceQualified": false,
+  "FullEcsRecoveryQualified": false,
+  "PriorArtifactsModified": false,
+  "Files": {
+    "prepare.py": "db8abb2db54f2359b82ee7194d2bfc6c557b73c7ce0d8bbc5451741d576811ee",
+    "host.py": "db068c11d3c530580027f4a740209e31247110eae589a47a3bba8cc7c6a38e47",
+    "test_cold_execution.py": "b82b95c40666b44b030a2e97b21cc735e6d0d18f8b11bd7d1302bbdd70b83960",
+    "test_cold_path.py": "88c7394a75ee0cba619eb0607f32ab300e957a3ca3edef5e8500aa219969e9e3",
+    "bootstrap.sh": "31f0839749dbf7169d2b11dc91a20f08f5cd4df15298d11c7a5d170579c18dc1",
+    "COLD-TRIAL-PROPOSAL.md": "56ddbbb8c35d40a91ddac72281598ab2efbe4d1645a507d4fc3548d12ea2e3e2"
+  },
+  "Tests": {
+    "ColdExecution": {
+      "Pass": 3,
+      "Kind": "synthetic"
+    },
+    "ColdPath": {
+      "Pass": 7,
+      "Kind": "synthetic"
+    },
+    "ExistingRecovery": {
+      "Pass": 30,
+      "Kind": "synthetic"
+    },
+    "PosixEntrypointOnWindows": {
+      "Skip": 4
+    },
+    "PosixEntrypointWsl": {
+      "Pass": 4,
+      "Skip": 0,
+      "Kind": "POSIX filesystem with doubles"
+    }
+  },
+  "Proposal": {
+    "TotalCreations": 30,
+    "Roots": 2,
+    "ResourcesPerRoot": 15,
+    "NewBudgetUsd": 4,
+    "Approved": false
+  },
+  "SubsequentCodeCommit": "c884930b44c7181476f6309b2420924bb1aa82c8",
+  "ReadinessReceiptSha256": "fe4c1c09d7c33a7e8c94324cd5a30d87869ed6857ca74dc4c9e17752068eca4e"
+}

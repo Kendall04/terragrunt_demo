@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "scope": "LOCAL_BACKUP_NOTICE_INTENT_STATE_BOUNDARY",
+  "sourceBaseCommit": "17cb9d4fb4c66c77fc524341f0161e3ddf4be2e8",
+  "upstreamCommit": "0e8fc55333ddde3b9816885915310a7e69f3de45",
+  "sourceSha256Lf": {
+    "operations/integrations/Ecs.Backup.Managed/SnsNoticeAdapter.cs": "7da50495bfbcdb770db7fb995501dacebd1d1f0681748cbd054b0184f4e7ad9f",
+    "operations/integrations/Ecs.Backup.Managed.Tests/Program.cs": "3d269c0db0e830f48875381adb184d21de528405d6125c6c5a07278d919ab360"
+  },
+  "reproducedFailureBeforeFix": "contradictory ResolveIncident/FAILED rejected before SNS",
+  "managedChecks": 111,
+  "newNegativeCases": [
+    "ResolveIncident/FAILED",
+    "ResolveIncident/MISSING",
+    "ResolveIncident/STALE",
+    "ResolveIncident/UNKNOWN",
+    "EscalateIncident/HEALTHY"
+  ],
+  "fixedLogSha256": "d53e715b2d358cecbe8a4b0b9e35c53ccbdf635cf5521e3b92f4737494091411",
+  "transport": "UPSTREAM_DYNAMOSTORE_S3_AND_SNS_SDK_DOUBLES_ONLY",
+  "awsCalls": 0,
+  "emailSent": false,
+  "newRuntimePackageQualified": false,
+  "priorSealedArtifactsUnchanged": true
+}

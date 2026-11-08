@@ -1,0 +1,78 @@
+{
+  "SchemaVersion": 1,
+  "LambdaPackage": {
+    "schemaVersion": 1,
+    "sourceCommit": "25f037e04b0e059e868c66b0c8282d410452bfd9",
+    "upstreamCommit": "b3d0b3b595a9257bb6d4d849c899bf4e8dbc2828",
+    "runtime": "dotnet10",
+    "runtimeFactory": "Ecs.Backup.Portable.Host::Ecs.Backup.Portable.Host.Function",
+    "configSha256": "95f7c05b06abed164fc2c98d6142fa6268fb5b40065ca6853bb185b10b49fdc6",
+    "syntheticTrial": true,
+    "executionAuthorized": false,
+    "zipSha256": "4e89587b2760b5ec6d4a37a4bc6327ed6f770d0316d2e1f3fba32d4b1d54cca7",
+    "zipBytes": 3783279,
+    "path": "ecs-portable-lambda-25f037e.zip",
+    "payloadFiles": 36,
+    "includedSqlHostPublisher": false,
+    "noticeAttempts": 3
+  },
+  "Bridge": {
+    "schemaVersion": 1,
+    "subject": "dev-sql-backups",
+    "producer": "sql-observer",
+    "backupMonitor": "sql-backup",
+    "telemetryMonitor": "sql-telemetry",
+    "includeCopyOnly": true,
+    "backupPolicy": "FULL_COPY_ONLY_CHECKSUM",
+    "executionAuthorized": false
+  },
+  "Installation": {
+    "schemaVersion": 1,
+    "deployment": "ecs-portable-r20261026p1",
+    "account": "341936017254",
+    "region": "us-east-1",
+    "project": "ecs-demo",
+    "environment": "dev",
+    "consumer": "backup-portable-r20261026p1",
+    "notificationsEnabled": true,
+    "maxJobs": 4,
+    "maxRequests": 64,
+    "auditRetentionDays": 7,
+    "monitors": [
+      {
+        "id": "sql-backup",
+        "kind": "sql-backup",
+        "resource": "sqlserver/dev-sql/sql-backup",
+        "generation": "cohost-split-local-v1",
+        "owner": "Kendall",
+        "model": "Freshness",
+        "requiredAssurance": "Artifact",
+        "sources": [
+          "sql-observer"
+        ],
+        "checkInterval": "00:05:00",
+        "maxAge": "02:00:00",
+        "startupGrace": "00:10:00",
+        "failureGrace": "00:02:00",
+        "selector": "full"
+      },
+      {
+        "id": "sql-telemetry",
+        "kind": "report",
+        "resource": "sqlserver/dev-sql/sql-telemetry",
+        "generation": "cohost-split-local-v1",
+        "owner": "Kendall",
+        "model": "Freshness",
+        "requiredAssurance": "Reported",
+        "sources": [
+          "sql-observer"
+        ],
+        "checkInterval": "00:05:00",
+        "maxAge": "00:20:00",
+        "startupGrace": "00:10:00",
+        "failureGrace": "00:02:00"
+      }
+    ],
+    "topicArn": "arn:aws:sns:us-east-1:341936017254:ecs-portable-r20261026p1-notices"
+  }
+}

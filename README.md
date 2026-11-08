@@ -1,181 +1,155 @@
-# terragrunt_demo - Production-Inspired AWS Platform
+# AWS Cloud Resilience Laboratory · ECS V2
 
-![Terraform](https://img.shields.io/badge/IaC-Terraform_%7C_Terragrunt-623CE4)
-![AWS](https://img.shields.io/badge/Cloud-AWS-232F3E)
-![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub_Actions-2088FF)
-![Auth](<https://img.shields.io/badge/Auth-AWS_OIDC_(No_Static_Keys)-success>)
-![Deploy](<https://img.shields.io/badge/Deploy-Blue%2FGreen_(ALB_Rule_Switch)-informational>)
+A working .NET 10 application on ECS Fargate, backed by SQL Server Express and
+AWS KMS, with measured recovery experiments and an independent reliability monitor.
+The project explores how a small, cost-conscious platform can recover from failures
+without a permanently running standby database.
 
-> A realistic AWS platform demo showcasing production-grade patterns: modular IaC, GitOps delivery, zero-downtime ECS blue/green deployments, immutable release manifests, and audited rollback.
+**[Open the public DEMO](https://d20ioz705caon7.cloudfront.net/)** ·
+[Architecture Explorer](https://d20ioz705caon7.cloudfront.net/architecture) ·
+[Resilience Lab](https://d20ioz705caon7.cloudfront.net/resilience) ·
+[Engineering documentation](docs/README.md)
 
-This repository is intentionally built beyond a toy example. It models the kind
-of platform foundation a small team could grow from: reproducible environments,
-clear deployment ownership, no static AWS credentials in CI, and operator
-control over risky changes.
+The public site uses synthetic data and historical evidence. It runs independently
+of the temporary AWS laboratory and makes no requests to its backend.
 
-## Key Highlights
+## What the platform does
 
-- **Zero-downtime app releases:** ECS Fargate blue/green deployments using ALB listener rule switching.
-- **GitOps delivery model:** PR validation, branch/environment gates, GitHub Actions logs, and Git history as the review trail.
-- **No static AWS credentials:** GitHub Actions authenticates to AWS through OIDC and assumes scoped IAM roles.
-- **Layered Terraform/Terragrunt:** reusable modules with environment-aware live roots and explicit dependency boundaries.
-- **Artifact-based promotion:** release builds publish immutable image digests and S3 release manifests; deploy/promotion jobs consume those artifacts.
-- **Cost-aware platform choices:** NAT instances and an EC2 database keep the demo affordable while documenting the production upgrade path.
+The API accepts text, encrypts it with KMS, stores the ciphertext in SQL and
+decrypts it on retrieval. Private workloads use two NAT instances, one per AZ.
+Hourly verified backups support supervised recovery into a newly provisioned SQL
+host. Reliability Sentinel observes backups and private HTTPS egress, persists
+incident progress, archives evidence and delivers notifications through separate
+durable effects.
 
-## Why This Exists
-
-Many AWS projects start with ClickOps: console-created infrastructure, manual
-ECS updates, ad hoc rollbacks, and no reliable way to recreate an environment.
-
-This lab shows how that same class of system can be operated through code:
-infrastructure is versioned, deployments are repeatable, rollbacks are explicit,
-and CI/CD access is controlled without long-lived cloud keys.
-
-The focus is platform engineering and delivery architecture, not business logic.
-
-## High-Level Architecture
-
-The demo API runs on **ECS Fargate** in private subnets behind an **internal
-Application Load Balancer**. Public ingress goes through **API Gateway + VPC
-Link**, so ECS tasks and the ALB are not exposed directly to the internet.
-
-![High-level AWS architecture](terraform/docs/diagrams/architecture.png)
-
-Core platform characteristics:
-
-- ECS tasks run in private subnets.
-- API Gateway connects privately to the internal ALB through VPC Link.
-- Blue/green traffic is controlled by ALB listener rules.
-- Outbound access uses multi-AZ NAT instances with EventBridge/Lambda recovery.
-- Secrets are stored in AWS Secrets Manager and encrypted with KMS.
-- CloudWatch alarms cover the most important health signals.
-
-## CI/CD And GitOps Model
-
-All delivery paths are driven by GitHub Actions:
-
-1. `ci.yml` routes working-branch pushes to fast local checks and PRs to `develop` / `main` to the full review gate.
-2. Infra CI runs formatting, static analysis, and remote Terragrunt plan only for environment-bound PRs or manual runs.
-3. Safe dev infra layers can auto-apply after merges to `develop`; stateful/runtime-sensitive layers stay manual.
-4. App release builds publish an immutable image digest plus an S3 release manifest.
-5. Dev deploy, prod promotion, and manifest rollback consume existing manifests instead of rebuilding.
-
-![CI/CD pipelines overview](terraform/docs/diagrams/cd-pipelines.png)
-
-The delivery boundary is deliberate: Terraform owns durable infrastructure
-skeletons, while GitHub Actions and scripts own fast release movement such as
-task definition revisions, desired counts, and ALB blue/green switches.
-
-## Blue/Green Deployment Strategy
-
-- Two ECS services exist: `blue` and `green`.
-- Two ALB target groups exist: one active, one inactive.
-- Deployments update the inactive color and wait for health checks.
-- Traffic switches by updating ALB listener rules.
-- The previous color remains alive for a configurable window to support fast rollback.
-
-This keeps the deployment model deterministic without requiring CodeDeploy,
-service mesh infrastructure, or custom traffic controllers. It can evolve toward
-weighted/canary releases later.
-
-## Operational Evidence
-
-The repo includes architecture and delivery diagrams plus redacted examples of
-the release/deployment audit contracts:
-
-- [Architecture diagram](terraform/docs/diagrams/architecture.png)
-- [CI/CD pipeline diagram](terraform/docs/diagrams/cd-pipelines.png)
-- [Redacted release manifest](terraform/docs/evidence/release-manifest.redacted.json)
-- [Redacted deployment record](terraform/docs/evidence/deployment-record.redacted.json)
-
-When publishing the portfolio version, add a real GitHub Actions run screenshot
-under `terraform/docs/evidence/` after redacting account IDs, ARNs, bucket names,
-image URIs, and any environment-specific identifiers.
-
-## What I Would Change For Real Production
-
-This lab intentionally optimizes for learning value and demo cost. For a real
-production workload, I would prioritize:
-
-- **Managed data layer:** replace the EC2 SQL Server host with RDS Multi-AZ or Aurora, plus tested backup/restore.
-- **Egress strategy:** use NAT Gateway, VPC endpoints, or a workload-specific hybrid based on traffic and reliability needs.
-- **Edge protection:** add WAF, stricter throttling, and a clearer public API abuse model.
-- **Progressive delivery:** introduce canary or weighted target group shifts before full traffic movement.
-- **Observability:** add OpenTelemetry tracing, structured logs, dashboards, SLOs, and alert runbooks.
-- **Secrets lifecycle:** formalize rotation, break-glass access, audit review, and incident response.
-- **Production operations:** add disaster recovery drills, load tests, cost budgets, and release readiness checks.
-
-## Repository Structure
-
-```text
-terraform/
-├── infra/         # Reusable Terraform modules and layer implementations
-├── live/          # Terragrunt live roots for dev/prod
-└── docs/          # Architecture, deployment, bootstrap and security docs
-
-.github/
-├── actions/       # Reusable composite actions
-├── scripts/       # CI/CD helper scripts and tests
-└── workflows/     # CI, infra CD, app deploy, promotion and rollback workflows
-
-demo-api/          # .NET 8 demo service and tests
-scripts/           # Local bootstrap, deploy, manifest and audit helpers
-ci/schemas/        # JSON schemas for release manifests and deployment records
+```mermaid
+flowchart LR
+  Visitor[Public visitor] --> CF[CloudFront DEMO]
+  CF --> Static[Private S3 · static assets]
+  Client[DEV API client] -->|HTTPS · no user authentication| Gateway[API Gateway]
+  Gateway --> Link[VPC Link]
+  Link -->|HTTP| ALB[Internal ALB]
+  ALB -->|HTTP| ECS[ECS Fargate · .NET 10]
+  ECS -->|TLS verified| SQL[One SQL Express writer]
+  ECS --> KMS[AWS KMS]
+  SQL -->|Hourly backup · SSE-KMS| Backup[Versioned S3]
+  Observe[Backup / NAT observers] --> Sentinel[Reliability Sentinel]
+  Backup -->|Verified evidence| Observe
+  Sentinel --> Archive[Encrypted archive]
+  Sentinel --> SNS[SNS · email]
 ```
 
-## Documentation Map
+The [seven-view V2 atlas](docs/interactive/V2-INDEX.md) explains networking, NAT
+recovery, Sentinel internals, SQL recovery, trust boundaries and deployment
+ownership. It distinguishes implementation, installed resources, demonstrated
+behavior and historical capabilities. The five older Archify views remain a
+separate historical collection.
 
-- [Architecture case study](terraform/docs/case-study.md): design decisions, trade-offs, failure modes, and future production improvements.
-- [Interview guide](terraform/docs/interview-guide.md): 10 discussion-ready decisions with trade-offs.
-- [Deployment runbook](terraform/docs/deployment.md): GitHub Actions roles, environment variables, deploy paths, and audit notes.
-- [CI/CD target architecture](terraform/docs/ci-cd-target-architecture.md): artifact promotion, S3 manifests, deployment records, and rollback model.
-- [Bootstrap guide](terraform/docs/bootstrap.md): staged local environment creation and recovery steps.
-- [Secrets strategy](terraform/docs/secrets-strategy.md): how secret metadata stays in Terraform while secret values stay out of state.
+## Demonstrated in AWS DEV
 
-## Quick Local Deploy
+| Capability | Result and evidence |
+| --- | --- |
+| Application | Real browser → API Gateway → Fargate → SQL/KMS, POST/GET and liveness/readiness. [Application evidence](docs/DEV-V2-20261105.md), [browser evidence](portfolio/product/VALIDATION-PR36.md). |
+| Cold SQL recovery | New EC2 in another AZ: **41m31.5s**; new EC2 in the same AZ: **24m42.6s**. Includes source fencing, provisioning, restore, CHECKDB, handoff and API read/write/decrypt. [Measured trials](docs/V2-RECOVERY-SECURITY-20261105.md#cold-recovery-execution--6-november-utc). |
+| NAT recovery | Final NAT A trial: failure persisted after **59.115s**, HTTPS restored after **2m29.191s**. ASG replaced the instance; E13 restored EIP, route and SDC. [Incident timeline](docs/SENTINEL-CHAOS-20261106.md#installed-correction-and-third-separately-authorized-trial). |
+| Backup monitoring | A genuine producer fault caused freshness breach, escalation and resolution after recovery. Exact-version S3 verification, encrypted archives and inbox receipt were correlated. [Sentinel evidence](docs/SENTINEL-CHAOS-20261106.md). |
+| Remote retention | Seven-day Lifecycle admission for verified superseded backup pairs; two newest valid pairs and historical prefixes preserved. Rules/admission verified; future expiration is not a completed deletion test. |
+| Public portfolio | HTTPS DEMO with twelve isolated diagrams, mobile/desktop browser tests, reproducible assets and private S3/OAC. [Hosting and validation](portfolio/product/VALIDATION.md). |
 
-Recommended complete EC2/Codex dev deployment:
+These are dated, supervised DEV results, **not SLAs**. Cold SQL recovery is not
+automatic failover. Planned final backups do not establish zero RPO for abrupt
+failure. There is one SQL writer and one active application task; two AZs do not
+make the entire service highly available.
 
-```bash
-unset AWS_PROFILE
-scripts/deploy.sh full-dev-deploy --env dev --region us-east-1 --use-instance-role --include-edge --smoke-test --yes
+## Reliability Sentinel
+
+Regional observers verify backup objects and NAT control-plane/HTTPS evidence.
+EventBridge and SQS feed ingestion; DynamoDB holds observations, incidents and
+the journal. A bounded worker evaluates work, checkpoints progress, archives
+evidence with SSE-KMS and publishes SNS notifications. The watchdog independently
+checks progress and exposes delivery/backlog failures.
+
+The profile remains **64 requests / four jobs**. Four historical permanent
+failures and their verified compensations remain visible. Sentinel observes and
+notifies; ASG/E13 repairs NAT, and an operator supervises SQL recovery.
+[Runtime implementation](operations/integrations/portable/README.md) ·
+[Current audit and monitoring boundary](docs/ENGINEERING-REVIEW.md).
+
+## Repository map
+
+| Location | Responsibility |
+| --- | --- |
+| `demo-api/` | .NET API, tests, strict SQL profile and image recipes |
+| `terraform/modules/target/dev/` | Native Terraform owners: network, SQL, ECS skeletons and edge |
+| `terraform/live/security/` | Protected IAM, keys, secret metadata and administrative resources |
+| `operations/sql-backup/` | Producer, verification, host installation and supervised recovery |
+| `operations/integrations/portable/` | Sentinel runtime, observers, retention and isolated Terraform owner |
+| `portfolio/product/` | Dependency-free web product, supervised local AWS adapter and static hosting |
+| `docs/interactive/` | Editable sources, pinned Archify output, provenance and reading sheets |
+| `.github/`, `scripts/`, `ci/authority/` | CI, deployment contracts and executable authority controls |
+
+Terraform owns infrastructure skeletons. Delivery owns task revisions/counts and
+ALB forwarding. NAT handlers own private default-route repair. Secret values are
+written confidentially outside Terraform; checked-in configuration contains metadata.
+
+## Run locally
+
+The DEMO needs Node 22+ and no AWS account or dependency installation:
+
+```sh
+node portfolio/product/server.mjs
+# Open http://127.0.0.1:4182/
+node --test portfolio/test-contract.mjs
 ```
 
-Recommended complete local named-profile deployment:
+For application development, use the SDK pinned in `global.json` (10.0.402):
 
-```bash
-scripts/deploy.sh full-dev-deploy --env dev --region us-east-1 --profile terraform-lab --include-edge --smoke-test --yes
+```sh
+dotnet restore demo-api/terragrunt-demo.sln --locked-mode
+dotnet build demo-api/terragrunt-demo.sln -c Release --no-restore
+dotnet test demo-api/terragrunt-demo.sln -c Release --no-build
 ```
 
-The bootstrap is staged because Terraform creates Secrets Manager metadata only;
-actual DB password and connection-string values are written outside Terraform by
-the bootstrap scripts. Full details are in the
-[Bootstrap Guide](terraform/docs/bootstrap.md).
+Tests use isolated dependencies; they do not establish live SQL/KMS health. To
+run the real HTTP application, provide private `DB_CONN_STRING` and `KMS_KEY_ID`,
+the strict SQL certificate trust and runtime AWS credentials. Follow the
+[SQL security contract](terraform/docs/sql-runtime-security.md) and
+[application guidance](demo-api/AGENTS.md). Never place migration credentials in
+the HTTP process. Startup migrations default off. The
+[local AWS Edition](portfolio/product/README.md#aws-edition-uso-autorizado-y-temporal)
+is an explicit, expiring loopback session, not public backend authentication.
 
-## Tech Stack
+## Operation, validation and limits
 
-- **Cloud:** AWS ECS Fargate, ALB, API Gateway, VPC, IAM, EC2, Lambda, EventBridge, CloudWatch, ECR, KMS, Secrets Manager
-- **IaC:** Terraform, Terragrunt
-- **CI/CD:** GitHub Actions, AWS OIDC
-- **Runtime:** .NET 8
-- **Containers:** Docker
-- **Database (demo):** SQL Server on EC2, single-AZ and cost-optimized
+- [Native DEV lifecycle](terraform/docs/native-dev-lifecycle.md): authoritative
+  runtime procedure; E16 is retired. Plans and destructive operations have real
+  effects and require current identity, inputs, locks, retention and authorization.
+- [Cold recovery runbook](operations/sql-backup/recovery/NATIVE-RECOVERY.md):
+  positive source fencing, one active writer and retained encrypted disks.
+- [CI/CD review](docs/CI-CD-REVIEW.md): CI and CD Safety are required to merge into
+  main/develop; automatic CD is disabled.
+  V2 used supervised native delivery. Historical V1 A→B→A proves that earlier
+  bound deployment, not a working main-based V2 delivery pipeline. The
+  [single DEV delivery design](docs/DEV-DELIVERY-DESIGN.md) awaits review.
+- [Technical audit](docs/ENGINEERING-REVIEW.md): security findings, current readbacks,
+  recovery guarantees, costs and closure. [Validation guide](terraform/docs/validation.md)
+  separates offline checks from AWS effects.
 
-## Disclaimer
+The DEV API is public and unauthenticated, internal ALB hops use HTTP, and SQL is
+a recoverable single node. There is no PITR chain, region-wide recovery proof or
+production security certification. Auxiliary image vulnerabilities and incomplete
+object-access auditing remain material debt. Public examples contain synthetic data.
 
-This is a demo platform with production-inspired patterns. Some components are
-intentionally simplified or cost-optimized so the repo can demonstrate platform
-architecture without requiring an expensive always-on production footprint.
+Laboratory retirement is reserved for **9 November 2026, 02:30–04:00 UTC**;
+permission expiry does not stop billing. The independent CloudFront DEMO has a
+separate USD 1/month reserve. Models are not AWS spending caps. Retained disks,
+backups, keys, secrets and evidence require explicit disposition after compute stops.
 
-## Author / Hiring
+## Credits
 
-This repository represents how I approach AWS platform work: modular IaC,
-GitOps delivery, explicit deployment ownership, and practical trade-off
-management.
-
-If you are hiring for **Cloud / DevOps / Platform Engineering** contract roles,
-this project reflects the level of ownership and rigor I bring to real systems.
-
-- **LinkedIn:** [Kendall Fernandez](https://www.linkedin.com/in/kendall-fernandez-fernandez-b4930b174)
-- **Email:** [kendallffernandez@gmail.com](mailto:kendallffernandez@gmail.com)
-- **Location:** Costa Rica (CST Timezone - US Aligned, Remote-first)
+Created by **Kendall Fernandez**, Costa Rica · [LinkedIn](https://www.linkedin.com/in/kendall-fernandez-fernandez-b4930b174) ·
+[Contact](mailto:kendallffernandez@gmail.com).
+No repository-wide software license is currently declared. Third-party licenses
+remain attached to their assets. Diagram provenance, Archify 3.1.0
+pins and historical sources are retained in the [atlas documentation](docs/interactive/README.md).
+Font licenses and reviewed design-tool provenance remain with the [web product](portfolio/product/README.md).

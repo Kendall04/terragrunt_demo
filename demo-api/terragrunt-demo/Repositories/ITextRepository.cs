@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using terragrunt_demo.Data;
+using terragrunt_demo.Features.Texts;
 
 namespace terragrunt_demo.Repositories
 {
@@ -34,11 +35,12 @@ namespace terragrunt_demo.Repositories
         {
             var safePageNumber = pageNumber < 1 ? 1 : pageNumber;
             var safePageSize = pageSize < 1 ? 1 : pageSize;
-            var skip = (safePageNumber - 1) * safePageSize;
+            var skip = TextPagination.GetOffset(safePageNumber, safePageSize);
 
             return await _dbContext
                 .DemoTexts
                 .OrderByDescending(x => x.CreatedAt)
+                .ThenByDescending(x => x.Id)
                 .Skip(skip)
                 .Take(safePageSize)
                 .ToListAsync(cancellationToken);

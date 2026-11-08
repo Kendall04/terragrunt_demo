@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable><TreatWarningsAsErrors>true</TreatWarningsAsErrors></PropertyGroup>
+  <ItemGroup><ProjectReference Include="$(SentinelSourceRoot)/src/Sentinel.Ingestion/Sentinel.Ingestion.csproj" /></ItemGroup>
+  <Target Name="RequirePinnedSource" BeforeTargets="PrepareForBuild"><Error Condition="'$(SentinelSourceRoot)' == ''" Text="Run the pinned-source verifier and provide SentinelSourceRoot explicitly." /></Target>
+</Project>

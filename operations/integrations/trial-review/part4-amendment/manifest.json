@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "status": "LOCAL_AMENDMENT_READY_FOR_GROUPED_CONSENT_NOT_INSTALLED",
+  "createdUtc": "2026-10-23T21:11:36.710810+00:00",
+  "runId": "ecs-sentinel-r20261023b1",
+  "account": "341936017254",
+  "region": "us-east-1",
+  "policyArn": "arn:aws:iam::341936017254:policy/TerragruntDemoDevOperatorPart4",
+  "originalDefaultVersion": "v5",
+  "originalCanonicalSha256": "2dee64162063bf48daa6be793a92399fd8383104cd102078ae4bd7427a7876e2",
+  "proposedCanonicalSha256": "7e267edd726cbc087841d46dacd98530d26f6811583c2887b69e36030f84a077",
+  "originalFileSha256": "f494b2d1915b9659c013ef955e83eb85f02ef2d02248ef142022ce42f8aaac8d",
+  "proposedFileSha256": "c185647fdcd4a9b77bd8c4c6d1a83d45ce18f7638ea904763baa87052ade8fe1",
+  "exactBucketArn": "arn:aws:s3:::ecs-sentinel-r20261023b1-341936017254",
+  "historicalVersionCapacity": {
+    "used": 5,
+    "limit": 5,
+    "preservedVersion": "v1",
+    "originalDefaultNeverDeleted": "v5",
+    "requiredAdditionalConsent": "Temporarily delete archived nondefault v1; restore its exact content at closure under a new VersionId/CreateDate. Original metadata cannot be restored exactly.",
+    "effectivePolicyRollback": "Select preserved original v5; remove trial version and restore archived v1 content as nondefault; v2-v4 unchanged."
+  },
+  "affectedAttachedRoles": [
+    "TerragruntDemoDevOperator"
+  ],
+  "affectedAttachedUsers": [],
+  "affectedAttachedGroups": [],
+  "operatorTemporaryAllowFileSha256": "f74aa44382afccba19fe8437750597b84f42cd60cd95a72ab5a354f38b3efd2d",
+  "unchangedCodeArtifactSha256": "2e0035796d753cd8f72304fa7946a6da9ca99549516984cd25a1933c0f557c99",
+  "newProposedBudgetUsd": 1,
+  "oldBudgetsClosed": true,
+  "maxHours": 24,
+  "targetHours": 2,
+  "offlineTestsPassed": 15,
+  "iamCustomSimulationCalls": 4,
+  "applicableSimulationCasesPassed": 16,
+  "invalidCrossProductsExcluded": 18,
+  "cloudMutations": 0,
+  "realDeleteBucketRequests": 0,
+  "assumeRoleCalls": 0,
+  "remainingConsent": [
+    "original create/test/retire scope and new USD1",
+    "this managed-policy amendment and historical v1 substitution",
+    "owner-supplied email, SNS confirmation and bounded notice attempts",
+    "explicit trial timing/retention recommendations"
+  ],
+  "filesSha256": {
+    "AMENDMENT.md": "b049df146e11c899af6b015bf705f945d5fbd8be47d476dd5792f23bf439fa06",
+    "capture-receipt.json": "b25d5e6a145bd5da8bccd9f2d0ec64b54117fdceb3cbacccf41e250fd327a4bb",
+    "historical-capture-receipt.json": "46be1c6e9dc5d90a0e2406a4c6ed85c665060b1f9041ff2e77c18f57d270f115",
+    "part4-historical-v1.json": "4a35504fb3f4b6b15028168a495759e4a09471f7ccebc7184f7cc73dbb402f37",
+    "part4-original.json": "f494b2d1915b9659c013ef955e83eb85f02ef2d02248ef142022ce42f8aaac8d",
+    "part4-proposed.json": "c185647fdcd4a9b77bd8c4c6d1a83d45ce18f7638ea904763baa87052ade8fe1",
+    "part4.diff": "61461150185a8214384b1d7d37c3d25f5871e13f2afb411612e33756ec85a33d",
+    "part4_exception.py": "1ba7364ec7ebcc7d39f224f4f6ff88db8a8d46a43322555a57e93cf4b7ae0a69",
+    "simulation-complete-03/original-plus-temporary-allow.json": "e45eb59e3fd48b37a68ea3a1266fd7e3629d078d4902b8dcbaac2f33ad094c1b",
+    "simulation-complete-03/proposal-alone.json": "325b9677aa3abd1268abf8190698e66024ea966c7410e75e21f78268a89ac438",
+    "simulation-complete-03/proposal-other-denies-retained.json": "3a48cc5196b275106a7f5e6265660340691c456a3d9d88477451dd84b35d09cc",
+    "simulation-complete-03/proposal-plus-temporary-allow-bucket-matrix.json": "77053ad446b8195f18ff67ed10026ceac840cfe7dc5d436826bcb841acab9896",
+    "simulation-complete-03/simulation-receipt.json": "9ba78352a1ebdb073512ac67bf6fe810a39da70eef6ae54db43690768b1dd58f",
+    "simulation-summary.json": "97316a9e9d729d3dd2cbd79e333127c62b41a463f0e34131633377c8c2761928",
+    "test_part4_exception.py": "bc726f7999448e1e47d48b4653101006ca3d888d911a517b252899465aa17a4b",
+    "verify_simulation.py": "1ab03f55958ddf4544265fe523223887cc2fff87f893a102548d0d53253eb3a4"
+  },
+  "reviewContentSha256": "0cbb8c23c8ad035e9d269df473212a7efc7c01f5978b89ca829cdfa011b6e408",
+  "notClaimed": [
+    "native deletion",
+    "full future effective authority/SCP proof",
+    "exact historical IAM VersionId/CreateDate rollback",
+    "AWS deployment or new trial approval"
+  ],
+  "unchangedTrialReviewAnchorsSha256": {
+    "trial-template.json": "f295d5f26534f61292bfc64aa8009c94977ca524b564f3ff0719f44ccd3546b3",
+    "bootstrap-template.json": "63f7a4f6f527d919525753b7b5e446f02d4b5d00047facd0f5097f2613000c27",
+    "operator-temporary-policy.json": "f74aa44382afccba19fe8437750597b84f42cd60cd95a72ab5a354f38b3efd2d",
+    "bootstrap-admin-scope.json": "8516f01285e84af0e322c9759a00a10cc5dc76c95b11d264b50bdd9b1a209b05",
+    "runtime-policies.json": "47285cbdb654fba81ec1fcadf44b1402a2d6c58b6efff638582faf7cf5912a46",
+    "required-decisions.json": "3e489c83f45d5b9854a4266fd5d32f308e836470c6e88571b9a343cf4f8789e6",
+    "scope-summary.json": "79235901a38db937d5534a03505bb8fe5d2d8f2c909608f81ceb6ad2708fb45e"
+  }
+}

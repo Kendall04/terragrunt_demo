@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "subject": "dev-sql-backups",
+  "producer": "sql-observer",
+  "backupMonitor": "sql-backup",
+  "telemetryMonitor": "sql-telemetry",
+  "includeCopyOnly": true,
+  "backupPolicy": "FULL_COPY_ONLY_CHECKSUM",
+  "executionAuthorized": false
+}

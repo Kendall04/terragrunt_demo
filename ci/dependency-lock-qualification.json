@@ -1,0 +1,89 @@
+{
+  "Status": "LOCAL_DEPENDENCY_LOCK_QUALIFIED_NOT_DEPLOYED",
+  "AtUtc": "2026-10-24T19:31:14.521916+00:00",
+  "BaseCommit": "87ad877a4ffc8ea7f9feadd4ddde2c2b973a305e",
+  "Sdk": "10.0.402",
+  "SdkPlatform": "Windows installed",
+  "NoPackageDownloads": true,
+  "Restore": "Four projects; empty source config plus existing central cache; locked-mode PASS",
+  "Build": "Release, no-restore, maxcpucount1; 0 warnings and errors",
+  "NegativeRestore": {
+    "ChangedDependency": "MediatR12.4.1 ->12.4.0 in temporary copy only",
+    "ExpectedAndObserved": "NU1004",
+    "ExitCode": 1,
+    "LogSha256": "67111e4a9a6bf4634d858304390fb9f0e846c7e5efda4d693a8c942bac7c8694"
+  },
+  "PriorPublishedResolvedVersionDrift": {
+    "Api": [],
+    "Backup": []
+  },
+  "NativeSqlTestsSkipped": 1,
+  "NativeSqlExecuted": false,
+  "WslPythonContractTests": {
+    "DependencyLocks": 3,
+    "ObserverHostIncludingRootStatusNegatives": 29
+  },
+  "ManagedResults": [
+    {
+      "File": "ecs-lock-final_net10.0_20261024132831.trx",
+      "Sha256": "d859bacc9b43daac02f23a530ee193f620b4304d58825619eff5132640f1bb5a",
+      "Counters": {
+        "total": "107",
+        "executed": "107",
+        "passed": "107",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    },
+    {
+      "File": "ecs-lock-final_net10.0_20261024132835.trx",
+      "Sha256": "c93ed5863c1b260d7cda014b78ed9bab465c774d7d0144797d8505a8582c1128",
+      "Counters": {
+        "total": "63",
+        "executed": "62",
+        "passed": "62",
+        "failed": "0",
+        "error": "0",
+        "timeout": "0",
+        "aborted": "0",
+        "inconclusive": "0",
+        "passedButRunAborted": "0",
+        "notRunnable": "0",
+        "notExecuted": "0",
+        "disconnected": "0",
+        "warning": "0",
+        "completed": "0",
+        "inProgress": "0",
+        "pending": "0"
+      }
+    }
+  ],
+  "Files": {
+    "demo-api/terragrunt-demo/packages.lock.json": "8419582dad779eb978ceea9b0d30bf101c1b83e966dc3f330aaf70ce20d2cfd8",
+    "demo-api/terragrunt-demo.Tests/packages.lock.json": "99864bf733acfc3f9e8b62f02a75577181950b1c8e0b7d691b8b5c480b2165a1",
+    "operations/sql-backup/SqlBackup/packages.lock.json": "5034c5705d69d7294a448bbd7028510b03b68e823e54d5839e01b83b85d963f9",
+    "operations/sql-backup/SqlBackup.Tests/packages.lock.json": "515e106a03f14632dd6ba2a5361daf7f8ef7d29c5702c85c1d8b213eb2873fbb",
+    ".github/workflows/ci-dotnet.yml": "d98477b15282978557df590b29209d1223da3874042c98bf27e408597ca95e33",
+    "demo-api/Dockerfile": "7285c0a0c96828520f38313a44f3b12ce8dda83a096b9fd7d33505ebd111d4f0",
+    "demo-api/terragrunt-demo.Tests/ContainerContractTests.cs": "1fc9f5d60f853007a3a6db33e7793dfa3f0d2c0cf09d9a39121c01ac713a9bb4",
+    ".github/scripts/ci/tests/test_dotnet_locks.py": "4d8ffa8083d37306fe9b9c32e66221730dfdd494b9358179887d28a106930deb",
+    "operations/integrations/test_observer_host.py": "644020768a5a8fb522111c43b043fac42c31a809d3b1bcf06abe20c23b81769f"
+  },
+  "LocalAudit": "Disabled only for offline validation/fixture; NOT disabled in CI/Docker; no new vulnerability claim",
+  "ContainerBuildExecuted": false,
+  "RemoteCiExecuted": false,
+  "AwsExecuted": false,
+  "Pushed": false,
+  "AutomaticReview": "Raw shared NuGet.Config read rejected; not retried/read. New empty config used instead."
+}

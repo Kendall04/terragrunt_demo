@@ -29,6 +29,8 @@ namespace terragrunt_demo.Features.Texts.Queries
                 _ => request.PageSize
             };
 
+            TextPagination.GetOffset(safePageNumber, safePageSize);
+
             var entities = await _repository.GetPageAsync(
                 safePageNumber,
                 safePageSize,

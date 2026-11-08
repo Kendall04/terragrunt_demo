@@ -1,0 +1,13 @@
+{
+  "SourceReceiptSha256": "7e21d3abae0d4a9a705bfb0ad0119493a6f7bc9c9d0c22fd625472a1f7b19bdb",
+  "ObservedSqlReportedProcessId": 380,
+  "ObservedMainPid": 16,
+  "ObservedMainStartTicks": 4579,
+  "ObservedListenerPid": 18,
+  "ObservedListenerStartTicks": 4686,
+  "ObservedHostMainPid": 677,
+  "ObservedHostListenerPid": 693,
+  "ObservedQueryEndpoint": "127.0.0.1|1433",
+  "SyntheticSocketInode": 700,
+  "Provenance": "PID/start/query values from actual pinned SQL Express diagnostic. Socket inode, proc-row layout and other fixture metadata are synthetic test inputs. This fixture is not native execution of the replacement binding."
+}
