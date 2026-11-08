@@ -108,3 +108,24 @@ histórica permanecen intactos. Los JSON de diagramas, HTML/SVG oficiales, hojas
 capturas y recibos de generación conservan exactamente sus bytes. No se regeneran
 ni se atribuye a Archify esta revisión de gobernanza. El verificador sigue
 rechazando cualquier otro cambio de implementación no revisado.
+
+## Revisión de dependencia CI — 8 noviembre, PR #42
+
+`bc03997aaf764896bfa273672e14fc03c0bbac5e` separa por rama y SHA la concurrencia
+de los pushes CI a main/develop. Un push documental posterior ya no cancela la
+cualificación de la aplicación pendiente. La concurrencia de PR, sus triggers,
+jobs, selector, agregadores, permisos `contents: read` y ausencia de OIDC/AWS en
+CI no cambian. El nuevo CD está implementado en archivos separados y permanece
+sin activar; este atlas sigue mostrando la operación acreditada, no ese despliegue
+futuro. El diseño nuevo se describe en [la especificación de entrega](../DEV-DELIVERY-DESIGN.md).
+
+Se revisaron el nodo `git` («GitHub · source + CI»), `git-operator` («Commit
+revisado») y las referencias del límite de autoridad en `v2-delivery`: ninguna
+afirma una política concreta de cancelación CI, ni atribuye despliegues actuales
+a la nueva vía. Por eso se conserva la representación y se actualiza únicamente
+el hash de implementación vigente de `ci.yml`, de `db161541…` a
+`c274214b15386c81cdaa35ae324a09cfd8b00245b461058088012dee878627f3` (LF).
+El fragmento 1–28 ahora difiere de main/develop propuestos y permanece identificado
+por su commit histórico original, sin reescribirlo. Fuentes de diagramas,
+HTML/SVG, hojas, capturas y recibos Archify no se modifican ni regeneran. La prueba
+de procedencia continúa exigiendo coincidencia exacta con el nuevo archivo revisado.
