@@ -20,9 +20,13 @@ from scripts import environment_mutation as e2
 
 
 def record(letter='b', env='dev', source='2'):
-    return dict(schema='API_RELEASE_V1', repository=m.REPOSITORY, status='HEALTHY', environment=env,
+    value = dict(schema='API_RELEASE_V1', repository=m.REPOSITORY, status='HEALTHY', environment=env,
                 source=source*40, application=letter*64, image=ACCOUNT+'.dkr.ecr.us-east-1.amazonaws.com/api@sha256:'+letter*64,
-                compatibility='f'*64, profile='validated-v2', per_task_ready=True, client_ready=True, run_id=22, run_attempt=1)
+                compatibility='f'*64, profile='validated-v2', per_task_ready=True, client_ready=True, run_id=22, run_attempt=1,
+                revision=f'arn:aws:ecs:{REGION}:{ACCOUNT}:task-definition/demo-{env}-app-api-blue:2',color='blue')
+    value['manifest_ref'] = dict(bucket='protected-'+env, key='api-delivery/'+env+'/operations/11111111-1111-1111-1111-111111111111/release.json',
+                                version='s3-version-B',sha256=m.sha(m.canonical(value)))
+    return value
 
 
 def pr():
@@ -38,7 +42,9 @@ def config(env='dev'):
                 evidence_bucket='protected-'+env, client_url='https://example.test', replicas=1,
                 drain_seconds=30, compatibility='f'*64,
                 evidence_kms_key=f'arn:aws:kms:{REGION}:{ACCOUNT}:key/11111111-1111-1111-1111-111111111111',
-                binding_kms_key=f'arn:aws:kms:{REGION}:{ACCOUNT}:key/22222222-2222-2222-2222-222222222222')
+                binding_kms_key=f'arn:aws:kms:{REGION}:{ACCOUNT}:key/22222222-2222-2222-2222-222222222222',
+                native_baseline=None, dev_evidence=None if env=='dev' else dict(bucket='protected-dev',account=ACCOUNT,
+                region=REGION,environment='dev',kms_key=f'arn:aws:kms:{REGION}:{ACCOUNT}:key/11111111-1111-1111-1111-111111111111'))
 
 
 class PromotionTests(unittest.TestCase):

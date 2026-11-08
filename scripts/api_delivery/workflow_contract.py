@@ -55,8 +55,35 @@ EXPECTED = json.loads(r'''
       "contents": "read"
     },
     "jobs": {
-      "delivery": {
+      "scope": {
         "if": "${{ vars.API_DELIVERY_ENABLED == 'true' && github.repository == 'Kendall04/terragrunt_demo' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && (github.ref_name == 'develop' || github.ref_name == 'main') }}",
+        "runs-on": "ubuntu-latest",
+        "permissions": {
+          "contents": "read"
+        },
+        "timeout-minutes": 5,
+        "outputs": {
+          "deploy": "${{ steps.scope.outputs.deploy }}"
+        },
+        "steps": [
+          {
+            "name": "Checkout trusted event revision",
+            "uses": "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+            "with": {
+              "ref": "${{ github.sha }}",
+              "fetch-depth": 0,
+              "persist-credentials": false
+            }
+          },
+          {
+            "id": "scope",
+            "name": "Exclude docs before environment concurrency",
+            "run": "python3 -B -m scripts.api_delivery.cli classify"
+          }
+        ]
+      },
+      "delivery": {
+        "if": "${{ vars.API_DELIVERY_ENABLED == 'true' && github.repository == 'Kendall04/terragrunt_demo' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && (github.ref_name == 'develop' || github.ref_name == 'main') && needs.scope.outputs.deploy == 'true' }}",
         "runs-on": "ubuntu-latest",
         "timeout-minutes": 100,
         "environment": "${{ github.event_name == 'workflow_dispatch' && format('api-{0}', github.event.inputs.environment) || (github.ref_name == 'develop' && 'api-dev' || 'api-prod') }}",
@@ -112,11 +139,12 @@ EXPECTED = json.loads(r'''
           {
             "name": "Build once in DEV or deploy approved digest in PROD",
             "if": "steps.prepare.outputs.deploy == 'true'",
-            "run": "python3 -B -m scripts.api_delivery.cli execute --input request.json --output evidence/result.json"
+            "run": "python3 -B -m scripts.api_delivery.cli execute --input request.json --output evidence/result.json",
+            "id": "execute"
           },
           {
             "name": "Retain authenticated successful deployment",
-            "if": "steps.prepare.outputs.deploy == 'true'",
+            "if": "steps.execute.outputs.deployed == 'true'",
             "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
             "with": {
               "name": "release-record",
@@ -125,7 +153,8 @@ EXPECTED = json.loads(r'''
               "retention-days": 90
             }
           }
-        ]
+        ],
+        "needs": "scope"
       }
     }
   },
@@ -191,7 +220,7 @@ EXPECTED = json.loads(r'''
             "if": "hashFiles('evidence/result.json') != ''",
             "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
             "with": {
-              "name": "promotion-record",
+              "name": "promotion-record-${{ github.run_attempt }}",
               "path": "evidence/result.json",
               "if-no-files-found": "error",
               "retention-days": 90
@@ -202,7 +231,9 @@ EXPECTED = json.loads(r'''
             "if": "always()",
             "env": {
               "GATE_OUTCOME": "${{ steps.gate.outcome }}",
-              "RECEIPT_OUTCOME": "${{ steps.receipt.outcome }}"
+              "RECEIPT_OUTCOME": "${{ steps.receipt.outcome }}",
+              "PROMOTION_ARTIFACT_ID": "${{ steps.receipt.outputs.artifact-id }}",
+              "PROMOTION_ARTIFACT_DIGEST": "${{ steps.receipt.outputs.artifact-digest }}"
             },
             "run": "if [ \"$GATE_OUTCOME\" = success ] && [ \"$RECEIPT_OUTCOME\" = success ]; then\n  python3 -B -m scripts.api_delivery.cli finish-promotion --success\nelse\n  python3 -B -m scripts.api_delivery.cli finish-promotion\nfi"
           }

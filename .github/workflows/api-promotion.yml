@@ -60,7 +60,7 @@
           "if": "hashFiles('evidence/result.json') != ''",
           "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
           "with": {
-            "name": "promotion-record",
+            "name": "promotion-record-${{ github.run_attempt }}",
             "path": "evidence/result.json",
             "if-no-files-found": "error",
             "retention-days": 90
@@ -71,7 +71,9 @@
           "if": "always()",
           "env": {
             "GATE_OUTCOME": "${{ steps.gate.outcome }}",
-            "RECEIPT_OUTCOME": "${{ steps.receipt.outcome }}"
+            "RECEIPT_OUTCOME": "${{ steps.receipt.outcome }}",
+            "PROMOTION_ARTIFACT_ID": "${{ steps.receipt.outputs.artifact-id }}",
+            "PROMOTION_ARTIFACT_DIGEST": "${{ steps.receipt.outputs.artifact-digest }}"
           },
           "run": "if [ \"$GATE_OUTCOME\" = success ] && [ \"$RECEIPT_OUTCOME\" = success ]; then\n  python3 -B -m scripts.api_delivery.cli finish-promotion --success\nelse\n  python3 -B -m scripts.api_delivery.cli finish-promotion\nfi"
         }

@@ -17,7 +17,7 @@ import uuid
 from scripts import environment_mutation as e2
 from scripts.normal_delivery import authorization
 from scripts.wp4d.aws_runtime import Observer, json_readback
-from .model import canonical, sha, require
+from .model import canonical, sha, require, manifest_reference, recovery_target
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -47,7 +47,8 @@ def binding(reference, environment, aws):
 def validate_binding(value, environment, account, region):
     require(set(value) == {'schema', 'environment', 'account', 'region', 'colors', 'database', 'trust',
                           'secret_version', 'repository', 'evidence_bucket', 'client_url', 'replicas',
-                          'drain_seconds', 'compatibility', 'evidence_kms_key', 'binding_kms_key'}, 'closed installation contract')
+                          'drain_seconds', 'compatibility', 'evidence_kms_key', 'binding_kms_key',
+                          'native_baseline', 'dev_evidence'}, 'closed installation contract')
     require(value['schema'] == 'API_INSTALLATION_V1' and value['environment'] == environment and
             value['account'] == account and value['region'] == region, 'environment binding mismatch')
     require(set(value['colors']) == {'blue', 'green'}, 'two independent color bindings required')
@@ -69,6 +70,17 @@ def validate_binding(value, environment, account, region):
     for key in ('evidence_kms_key', 'binding_kms_key'):
         require(re.fullmatch(f'arn:aws:kms:{region}:{account}:key/[0-9a-f-]{{36}}', value[key]), 'exact storage CMK required')
     require(re.fullmatch(re.escape(account + '.dkr.ecr.' + region + '.amazonaws.com/') + '[a-z0-9._/-]+', value['repository']), 'same-account approved repository')
+    if value['native_baseline'] is not None:
+        recovery_target(value['native_baseline'], environment, value['compatibility'])
+        require(value['native_baseline']['kind'] == 'native-admission', 'bootstrap is not a fabricated automatic release')
+    if environment == 'prod':
+        evidence = value['dev_evidence']
+        require(set(evidence) == {'bucket', 'account', 'region', 'kms_key', 'environment'} and
+                evidence['environment'] == 'dev' and evidence['account'] == account and evidence['region'] == region and
+                re.fullmatch(f'arn:aws:kms:{region}:{account}:key/[0-9a-f-]{{36}}', evidence['kms_key']),
+                'reviewed same-account DEV manifest scope required')
+    else:
+        require(value['dev_evidence'] is None, 'DEV does not consume cross-environment evidence')
     parsed = urllib.parse.urlsplit(value['client_url'])
     require(parsed.scheme == 'https' and parsed.hostname and not parsed.username and not parsed.query and
             parsed.path in ('', '/') and not parsed.fragment, 'fixed HTTPS client route required')
@@ -87,7 +99,17 @@ def task_readback(expected, actual, account, region):
             'task identity mismatch')
     for field in authorization.MODEL['task_return_only']:
         if field in result:
-            authorization.validate_metadata(field, result.pop(field), account, region)
+            value = result.pop(field)
+            if field == 'compatibilities':
+                require(type(value) is list and 'FARGATE' in value and len(value) == len(set(value)) and
+                        set(value) <= {'EC2', 'FARGATE'}, 'invalid compatibility metadata')
+            elif field == 'requiresAttributes':
+                require(type(value) is list and len(value) <= 100 and all(
+                    type(a) is dict and set(a) == {'name'} and isinstance(a['name'], str) and
+                    0 < len(a['name']) <= 256 and a['name'].startswith(('ecs.', 'com.amazonaws.ecs.')) for a in value),
+                    'invalid capability metadata')
+            else:
+                authorization.validate_metadata(field, value, account, region)
     authorization.defaults(result, authorization.MODEL['task_defaults'], 'task')
     for container in result['containerDefinitions']:
         original = next(c for c in wanted['containerDefinitions'] if c['name'] == container['name'])
@@ -119,15 +141,21 @@ class Runtime:
 
     def journal(self, stage, value):
         self.sequence += 1
-        key = f'api-delivery/{self.config["environment"]}/operations/{self.operation}/{self.sequence:03}-{stage}.json'
+        suffix = 'release.json' if stage == 'release' else f'{self.sequence:03}-{stage}.json'
+        key = f'api-delivery/{self.config["environment"]}/operations/{self.operation}/{suffix}'
         raw = canonical(value)
         s3 = self.aws['s3']; bucket = self.config['evidence_bucket']
         # Conditional create and exact readback. No overwrite, delete or blind retry.
-        s3.put_object(Bucket=bucket, Key=key, Body=raw, IfNoneMatch='*', ContentType='application/json')
-        observed = s3.get_object(Bucket=bucket, Key=key)
+        stored = s3.put_object(Bucket=bucket, Key=key, Body=raw, IfNoneMatch='*', ContentType='application/json',
+                               ServerSideEncryption='aws:kms', SSEKMSKeyId=self.config['evidence_kms_key'],
+                               ExpectedBucketOwner=self.config['account'], BucketKeyEnabled=False)
+        require(stored.get('VersionId') not in (None, '', 'null'), 'S3 did not return an immutable version')
+        observed = s3.get_object(Bucket=bucket, Key=key, VersionId=stored['VersionId'], ExpectedBucketOwner=self.config['account'])
         require(observed['Body'].read(len(raw) + 1) == raw and observed.get('VersionId') not in (None, 'null') and
                 observed.get('ServerSideEncryption') == 'aws:kms' and observed.get('SSEKMSKeyId') == self.config['evidence_kms_key'],
                 'journal not persisted with the approved CMK')
+        require(observed['VersionId'] == stored['VersionId'], 'journal version readback mismatch')
+        return dict(bucket=bucket, key=key, version=stored['VersionId'], sha256=sha(raw))
 
     def mutate(self, service, method, **kwargs):
         self.journal('attempt-' + method, kwargs)
@@ -167,7 +195,7 @@ class Runtime:
                     active_count=a['desiredCount'], inactive_count=max(b['desiredCount'], b['runningCount']),
                     pending=a['pendingCount'] + b['pendingCount'])
 
-    def register(self, color, image):
+    def render(self, color, image):
         cfg = self.config; spec = self.color(color)
         files = {'binding': spec, 'database': cfg['database'], 'trust': cfg['trust']}
         for name, value in files.items():
@@ -182,6 +210,10 @@ class Runtime:
         subprocess.run(args, check=True, timeout=60)
         task = json.loads(output.read_bytes())
         require(len(task['containerDefinitions']) == 2, 'two-container contract')
+        return task
+
+    def register(self, color, image):
+        cfg = self.config; task = self.render(color, image)
         result = self.mutate('ecs', 'register_task_definition', **task)['taskDefinition']
         revision = result['taskDefinitionArn']
         readback = self.aws['ecs'].describe_task_definition(taskDefinition=revision)['taskDefinition']
@@ -210,14 +242,15 @@ class Runtime:
         self.journal('readiness', dict(transcript_sha256=sha(result.stdout), revision=revision, image=image))
         self.cohort = self.tasks(color, revision, image)
 
-    def tasks(self, color, revision, image=None):
+    def tasks(self, color, revision, image=None, count=None):
+        count = self.replicas if count is None else count
         svc = self.service(color); spec = self.color(color)['service']
-        require(svc['taskDefinition'] == revision and svc['runningCount'] == svc['desiredCount'] and
+        require(svc['taskDefinition'] == revision and svc['runningCount'] == svc['desiredCount'] == count and
                 svc['pendingCount'] == 0, 'service not stable')
         ids = self.aws['ecs'].list_tasks(cluster=spec['cluster'], serviceName=spec['service'], desiredStatus='RUNNING')
-        require(not ids.get('nextToken') and len(ids['taskArns']) == self.replicas, 'task cohort cardinality')
+        require(not ids.get('nextToken') and len(ids['taskArns']) == count, 'task cohort cardinality')
         result = self.aws['ecs'].describe_tasks(cluster=spec['cluster'], tasks=ids['taskArns'])
-        require(not result.get('failures') and len(result['tasks']) == self.replicas, 'incomplete task readback')
+        require(not result.get('failures') and len(result['tasks']) == count, 'incomplete task readback')
         for task in result['tasks']:
             require(task['taskDefinitionArn'] == revision and task['lastStatus'] == 'RUNNING', 'task revision drift')
             containers = task['containers']; require(len(containers) == 2, 'task container count')
@@ -228,7 +261,7 @@ class Runtime:
             if image:
                 require(all(c.get('imageDigest') == image.split('@')[1] for c in containers), 'task image drift')
         targets = self.aws['elbv2'].describe_target_health(TargetGroupArn=self.target(color))['TargetHealthDescriptions']
-        require(len(targets) == self.replicas and all(t['TargetHealth']['State'] == 'healthy' for t in targets), 'targets not healthy')
+        require(len(targets) == count and all(t['TargetHealth']['State'] == 'healthy' for t in targets), 'targets not healthy')
         self.observer.targets(color, result['tasks'])  # exact task ENIs, not merely N healthy targets
         return sorted(ids['taskArns'])
 
@@ -236,8 +269,42 @@ class Runtime:
         require(self.tasks(color, revision, image) == self.cohort, 'task cohort changed')
 
     def old_ready(self, color, revision, count):
-        require(count == self.replicas, 'rollback capacity differs')
-        self.tasks(color, revision)
+        require(count > 0, 'no old capacity')
+        self.tasks(color, revision, count=count)
+
+    def admit_current(self, history, binding_sha256):
+        initial = self.snapshot()
+        require(initial['routes'] == (initial['active'], initial['inactive']) and
+                initial['inactive_count'] == 0 and initial['pending'] == 0, 'initial service not quiescent')
+        if initial['active_count'] == 0:
+            require(not history and self.config['native_baseline'] is None, 'empty runtime conflicts with retained identity')
+            # desired=0 alone is not proof of an empty environment.
+            require(all(self.service(c)['runningCount'] == 0 for c in ('blue', 'green')), 'tasks still draining')
+            return None
+        cfg = self.config
+        if history:
+            latest = history[0]
+            verify_manifest(self.aws, dict(bucket=cfg['evidence_bucket'], account=cfg['account'], region=cfg['region'],
+                                          kms_key=cfg['evidence_kms_key'], environment=cfg['environment']), latest)
+            target = dict(schema='API_RECOVERY_TARGET_V1', kind='automatic',
+                          **{k:latest[k] for k in ('environment','source','application','image','compatibility','profile','revision','color')},
+                          evidence=latest['manifest_ref'])
+        else:
+            target = copy.deepcopy(cfg['native_baseline'])
+            require(target is not None, 'native blue requires reviewed baseline before traffic')
+            target['evidence'] = dict(binding_sha256=binding_sha256)
+        recovery_target(target, cfg['environment'], cfg['compatibility'])
+        require(target['revision'] == initial['active_revision'] and target['color'] == initial['active'] and
+                target['image'].startswith(cfg['repository'] + '@sha256:'), 'current recovery identity drift')
+        verify_image(self.aws, cfg, target['image'])
+        expected = self.render(initial['active'], target['image'])
+        task = self.aws['ecs'].describe_task_definition(taskDefinition=initial['active_revision'])['taskDefinition']
+        task_readback(expected, task, cfg['account'], cfg['region'])
+        self.tasks(initial['active'], initial['active_revision'], target['image'], count=initial['active_count'])
+        self.client_ready()
+        # A new admission attests current observations, never a historical CI run.
+        self.journal('current-recovery-admission', dict(target=target, count=initial['active_count']))
+        return target
 
     def listener(self, color):
         self.mutate('elbv2', 'modify_listener', ListenerArn=self.color(color)['listener_arn'],
@@ -278,8 +345,61 @@ class Runtime:
 
 def owner(aws, cfg, operation, request):
     endpoint = 'deploy-dev' if cfg['environment'] == 'dev' else 'promote-prod'
-    return e2.Authority(e2.Store(aws['s3'], cfg['evidence_bucket'], cfg['environment']),
+    client = TerminalS3(aws['s3'], cfg, 'normal-delivery/' + endpoint)
+    return e2.Authority(e2.Store(client, cfg['evidence_bucket'], cfg['environment']),
                         'normal-delivery/' + endpoint, operation, request)
+
+
+class TerminalS3:
+    """Exact-key existence protocol; no 403-to-absence conversion."""
+    def __init__(self, client, cfg, endpoint):
+        self.client, self.cfg = client, cfg
+        self.prefix = f'arbitration/{cfg["environment"]}/terminals/{endpoint}/'
+
+    def __getattr__(self, name):
+        return getattr(self.client, name)
+
+    def get_object(self, **kwargs):
+        if kwargs['Key'].startswith(self.prefix):
+            require(kwargs['Bucket'] == self.cfg['evidence_bucket'], 'terminal bucket mismatch')
+            listing = self.client.list_objects_v2(Bucket=kwargs['Bucket'], Prefix=kwargs['Key'], MaxKeys=1,
+                                                  ExpectedBucketOwner=self.cfg['account'])
+            if not any(row['Key'] == kwargs['Key'] for row in listing.get('Contents', [])):
+                error = FileNotFoundError('terminal absent in authorized exact-key listing')
+                error.response = {'Error': {'Code': 'NoSuchKey'}}
+                raise error
+        return self.client.get_object(**kwargs)
+
+
+def verify_manifest(aws, scope, record):
+    reference = manifest_reference(record['manifest_ref'])
+    import re
+    require(record['environment'] == scope['environment'] and reference['bucket'] == scope['bucket'] and
+            re.fullmatch('api-delivery/' + scope['environment'] + r'/operations/[0-9a-f-]{36}/release.json', reference['key']),
+            'manifest outside admitted environment')
+    response = aws['s3'].get_object(Bucket=scope['bucket'], Key=reference['key'], VersionId=reference['version'],
+                                     ExpectedBucketOwner=scope['account'])
+    raw = response['Body'].read(262145)
+    require(len(raw) <= 262144 and sha(raw) == reference['sha256'] and response['VersionId'] == reference['version'] and
+            response.get('ServerSideEncryption') == 'aws:kms' and response.get('SSEKMSKeyId') == scope['kms_key'] and
+            not response.get('BucketKeyEnabled', False),
+            'manifest bytes/version/encryption mismatch')
+    require(json.loads(raw) == {k:v for k,v in record.items() if k != 'manifest_ref'}, 'GitHub and S3 deployment differ')
+    return json.loads(raw)
+
+
+def verify_image(aws, cfg, image):
+    require(image.startswith(cfg['repository'] + '@sha256:'), 'shared ECR repository not admitted')
+    digest = image.split('@')[1]; name = cfg['repository'].split('/', 1)[1]
+    result = aws['ecr'].batch_get_image(registryId=cfg['account'], repositoryName=name, imageIds=[{'imageDigest': digest}])
+    require(not result.get('failures') and len(result['images']) == 1, 'ECR manifest unavailable')
+    item = result['images'][0]
+    require(item['registryId'] == cfg['account'] and item['repositoryName'] == name and
+            item['imageId']['imageDigest'] == digest and 'sha256:' + sha(item['imageManifest'].encode('utf-8')) == digest and
+            item['imageManifestMediaType'] in ('application/vnd.oci.image.manifest.v1+json',
+                'application/vnd.oci.image.index.v1+json', 'application/vnd.docker.distribution.manifest.v2+json',
+                'application/vnd.docker.distribution.manifest.list.v2+json'), 'ECR manifest identity differs')
+    return digest
 
 
 def publish(aws, config, source, run_id, attempt):

@@ -75,6 +75,7 @@ def release(record, environment=None):
 def approval(pr, app, dev):
     eligible_pr(pr)
     release(dev, 'dev')
+    manifest_reference(dev['manifest_ref'])
     require(dev['application'] == app, 'DEV version differs')
     return dict(schema='API_PROMOTION_V1', repository=REPOSITORY, pr=pr['number'],
                 head=pr['head']['sha'], base=pr['base']['sha'], application=app,
@@ -100,3 +101,24 @@ def rollback(current, previous, environment, compatibility):
             'rollback requires current schema/TLS/runtime compatibility')
     require(current['image'] != previous['image'], 'no distinct previous image')
     return previous
+
+
+def manifest_reference(value):
+    require(type(value) is dict and set(value) == {'bucket', 'key', 'version', 'sha256'}, 'manifest reference fields')
+    require(all(type(v) is str and v for v in value.values()) and
+            value['version'].lower() not in ('null', 'latest') and
+            re.fullmatch('[0-9a-f]{64}', value['sha256']), 'exact manifest version/hash required')
+    return value
+
+
+def recovery_target(value, environment, compatibility):
+    require(type(value) is dict and value['schema'] == 'API_RECOVERY_TARGET_V1' and
+            value['environment'] == environment and value['compatibility'] == compatibility and
+            value['profile'] == 'validated-v2' and value['kind'] in ('native-admission', 'automatic'),
+            'compatible recovery target missing')
+    require(re.fullmatch('[0-9a-f]{40}', value['source']) and re.fullmatch('[0-9a-f]{64}', value['application']) and
+            re.fullmatch(r'[0-9]{12}\.dkr\.ecr\.[a-z0-9-]+\.amazonaws\.com/[a-z0-9._/-]+@sha256:[a-f0-9]{64}', value['image']),
+            'recovery target identity')
+    require(type(value['revision']) is str and value['revision'].startswith('arn:aws:ecs:') and
+            value['color'] in ('blue', 'green'), 'recovery task identity')
+    return value

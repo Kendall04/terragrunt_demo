@@ -57,11 +57,17 @@ def deploy(port, image):
                 require(routes in ((new, new), (new, old), (old, new), (old, old)), 'foreign route')
                 port.old_ready(old, initial['active_revision'], initial['active_count'])
                 if routes[0] != old:
-                    port.listener(old)
+                    try:
+                        port.listener(old)
+                    except Exception:
+                        pass  # An absent ACK is settled only by the read below.
                 routes = port.snapshot()['routes']
                 require(routes[0] == old and routes[1] in (old, new), 'rollback listener unproved')
                 if routes[1] != new:
-                    port.candidate(new)
+                    try:
+                        port.candidate(new)
+                    except Exception:
+                        pass
                 require(port.snapshot()['routes'] == (old, new), 'rollback routes unproved')
                 port.client_ready()
                 # No stopping of the candidate here: an uncertain service call

@@ -20,7 +20,7 @@
     "contents": "read"
   },
   "concurrency": {
-    "group": "ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}",
+    "group": "ci-${{ github.workflow }}-${{ github.event.pull_request.number || ((github.event_name == 'push' && (github.ref_name == 'develop' || github.ref_name == 'main')) && format('{0}-{1}', github.ref, github.sha)) || github.ref }}",
     "cancel-in-progress": true
   },
   "jobs": {

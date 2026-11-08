@@ -35,7 +35,12 @@ def definitions(config, role_arn, binding_ref):
     head = obj + f'arbitration/{env}/application.json'
     terminals = obj + f'arbitration/{env}/terminals/normal-delivery/' + ('deploy-dev' if env == 'dev' else 'promote-prod') + '/*'
     records = obj + f'api-delivery/{env}/operations/*'
-    allow(['s3:GetObject'], [head, terminals, records])
+    allow(['s3:GetObject'], [head, terminals])
+    allow(['s3:GetObjectVersion'], [records])
+    # The adapter first lists the exact terminal key (one item). An absent key
+    # is proven by the allowed list, never inferred from GetObject AccessDenied.
+    allow(['s3:ListBucket'], ['arn:aws:s3:::' + bucket],
+          {'StringLike': {'s3:prefix': terminals.split(obj, 1)[1]}, 'NumericEquals': {'s3:max-keys': 1}})
     allow(['s3:PutObject'], [head], {'Null': {'s3:if-match': 'false'}})
     allow(['s3:PutObject'], [terminals, records], {'StringEquals': {'s3:if-none-match': '*'}})
     allow(['kms:Decrypt', 'kms:GenerateDataKey'], [config['evidence_kms_key']],
@@ -47,10 +52,10 @@ def definitions(config, role_arn, binding_ref):
                         'arn:aws:s3:::' + binding_ref['bucket'] + '/' + binding_ref['key']]}})
     allow(['ecs:DescribeServices', 'ecs:UpdateService'], services, {'ArnEquals': {'ecs:cluster': cluster}})
     allow(['ecs:DescribeTasks'], [tasks])
-    allow(['ecs:DescribeTaskDefinition'], families)
-    # APIs without resource-level authorization; exact rendering/readback and
-    # restricted PassRole/UpdateService constrain the registered definitions.
-    allow(['ecs:RegisterTaskDefinition', 'ecs:ListTasks'], ['*'],
+    # ECS authorization table: DescribeTaskDefinition has no resource type;
+    # RegisterTaskDefinition supports the task-definition ARN (including family).
+    allow(['ecs:RegisterTaskDefinition'], families, {'StringEquals': {'aws:RequestedRegion': region}})
+    allow(['ecs:DescribeTaskDefinition', 'ecs:ListTasks'], ['*'],
           {'StringEquals': {'aws:RequestedRegion': region}})
     allow(['elasticloadbalancing:DescribeListeners', 'elasticloadbalancing:DescribeRules',
            'elasticloadbalancing:DescribeTargetHealth'], ['*'], {'StringEquals': {'aws:RequestedRegion': region}})
@@ -63,6 +68,13 @@ def definitions(config, role_arn, binding_ref):
         allow(['ecr:GetAuthorizationToken'], ['*'])
         allow(['ecr:BatchCheckLayerAvailability', 'ecr:InitiateLayerUpload', 'ecr:UploadLayerPart',
                'ecr:CompleteLayerUpload', 'ecr:PutImage'], [repository])
+    else:
+        scope = config['dev_evidence']
+        dev_objects = 'arn:aws:s3:::' + scope['bucket'] + '/api-delivery/dev/operations/*/release.json'
+        allow(['s3:GetObjectVersion'], [dev_objects])
+        allow(['kms:Decrypt'], [scope['kms_key']], {'StringEquals': {
+            'kms:ViaService': f's3.{region}.amazonaws.com', 'kms:CallerAccount': account},
+            'StringLike': {'kms:EncryptionContext:aws:s3:arn': [dev_objects]}})
     return dict(trust=trust, permissions=dict(Version='2012-10-17', Statement=statements),
                 environment=dict(name='api-' + env, protected_branch=branch, reviewers=[]),
                 unresolved=['Exact CMK key policies must admit these S3-only role permissions',
@@ -78,3 +90,12 @@ PROMOTION_RULE = {
 }
 # A MAIN-ONLY additional rule; never append this to the joint main/develop rule.
 # Keep existing CI/CD Safety checks, no bypass and branch-update requirements.
+
+
+def merge_only_rule(existing_pull_request_rule):
+    """Main-only overlay: preserve every reviewed PR parameter except methods."""
+    import copy
+    require(existing_pull_request_rule['type'] == 'pull_request', 'PR rule required')
+    result = copy.deepcopy(existing_pull_request_rule)
+    result['parameters']['allowed_merge_methods'] = ['merge']
+    return result

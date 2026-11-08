@@ -48,8 +48,10 @@ class GitHubTests(unittest.TestCase):
         stream=io.BytesIO()
         with zipfile.ZipFile(stream,'w') as archive:archive.writestr('result.json',json.dumps(raw_record))
         raw=stream.getvalue()
-        metadata=dict(name='release-record',expired=False,id=9,size_in_bytes=len(raw),digest='sha256:'+hashlib.sha256(raw).hexdigest())
+        metadata=dict(name='release-record',expired=False,id=9,size_in_bytes=len(raw),digest='sha256:'+hashlib.sha256(raw).hexdigest(),
+                      workflow_run={'id':22,'repository_id':99,'head_repository_id':99})
         gh=GitHub();gh.pages=lambda *args:iter([metadata]);gh.raw=lambda p:raw
+        gh.get=lambda p: metadata if '/artifacts/' in p else {'id':99}
         self.assertEqual(gh.artifact(run(),'release-record'),raw_record)
         with self.assertRaises(ValueError):gh.artifact(dict(run(),run_attempt=2),'release-record')
         metadata['digest']='sha256:'+'0'*64
@@ -81,8 +83,7 @@ class CliTests(unittest.TestCase):
             def get(self,path):
                 if '/commits/' in path:return [dict(pull,merge_commit_sha='4'*40)]
                 return pull
-            def promotion_receipts(self):return iter([receipt])
-            def require_promotion_check(self, value):assert value==receipt
+            def promotion_receipt(self, pull):return receipt,dict(artifact=9)
             def deployments(self,env):
                 raise AssertionError('PROD must never resolve latest DEV')
         with tempfile.TemporaryDirectory() as tmp:
@@ -116,7 +117,7 @@ class CliTests(unittest.TestCase):
         class Facts:
             def wait_checks(self,*args):pass
             def get(self,path):return [dict(pull,merge_commit_sha='4'*40)] if '/commits/' in path else pull
-            def promotion_receipts(self):return iter([])
+            def promotion_receipt(self, pull):raise ValueError('missing/expired')
         with tempfile.TemporaryDirectory() as tmp:
             event=Path(tmp)/'event';event.write_text(json.dumps({'before':'1'*40}))
             env=dict(GITHUB_EVENT_PATH=str(event),GITHUB_EVENT_NAME='push',GITHUB_REF_NAME='main',GITHUB_SHA='4'*40,
