@@ -100,6 +100,8 @@ def prepare(gh, output):
         if m.application(ROOT, before) == app:
             outputs(deploy='false', environment=env)
             return
+        if env == 'dev':
+            gh.require_app_validation(source, branch)
         if env == 'prod':
             prs = gh.get(f'repos/{m.REPOSITORY}/commits/{source}/pulls')
             prs = [p for p in prs if p['merge_commit_sha'] == source and p['base']['ref'] == 'main']

@@ -95,6 +95,15 @@ class GitHub:
                         'DEV source is not the built push')
                 yield release(record, environment)
 
+    def require_app_validation(self, sha, branch):
+        runs = [r for r in self.runs('ci.yml', branch, sha) if r['head_sha'] == sha and r['event'] == 'push']
+        require(bool(runs), 'application validation run missing')
+        run = max(runs, key=lambda r:(r['id'], r['run_attempt']))
+        self.trusted(run, '.github/workflows/ci.yml', 'push', branch)
+        jobs = list(self.pages(f'repos/{REPOSITORY}/actions/runs/{run["id"]}/attempts/{run["run_attempt"]}/jobs', 'jobs'))
+        app = [j for j in jobs if j['name'] == 'App CI / .NET Restore • Build • Test • Docker Validate']
+        require(len(app) == 1 and app[0]['conclusion'] == 'success', 'application qualification skipped or unsuccessful')
+
     def promotion_receipts(self):
         for run in self.runs(PROMOTION):
             if run['conclusion'] != 'success' or run['event'] not in ('pull_request_target', 'workflow_run'):

@@ -14127,26 +14127,26 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/api_delivery/cli.py": {
-      "sha256": "d890b950cf7b3a396c11be37241e3a2339707c7e55c5cddde283923a9b7079da",
+      "sha256": "f74214630473b7e7bba57a1c51b625c6c15c01c41e830929c35fc4301c95614f",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          121,
-          127,
-          130,
-          148,
-          152,
-          156
+          123,
+          129,
+          132,
+          150,
+          154,
+          158
         ],
         "executable-dependency": [
           87,
           91,
-          141,
-          142,
+          143,
           144,
           146,
-          156,
-          168
+          148,
+          158,
+          170
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -14162,7 +14162,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/api_delivery/github.py": {
-      "sha256": "bc13a68118934ed8fcec1694c7f1ab7f1a31d17c884bc9555690a112f2db72e7",
+      "sha256": "a940dbc1e37150494a46e13bd01eb89122dde4d153f0b25aa9a9c79251d3f05b",
       "declarations": [],
       "signals": {},
       "semantic_status": "UNVERIFIED"
@@ -14261,7 +14261,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/api_delivery/test_provenance.py": {
-      "sha256": "c97e713e7651d2aabf03d8c0a6fe568f98f50a25f1104aa2121fb6e2b39594f2",
+      "sha256": "00f6a4a1d10972610d3aa513cc74932fa81699611c41d8b7e4bc80bfaa721c08",
       "declarations": [],
       "signals": {},
       "semantic_status": "UNVERIFIED"
@@ -14270,5 +14270,5 @@
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",
   "review_revision": "e25600f60fc88f4479aef35a9e9ea5c2ba5a4b36",
   "review_note": "Reviewed automatic API delivery implementation, exact workflow admission and offline tests. Semantics UNVERIFIED until reviewed activation; no installed IAM, ruleset, AWS or historical-controller changes.",
-  "review_delta_sha256": "fd89a1093fb1d29b36f8e502b8e75c56e236ecfafff467e53bfd65f34fd936d4"
+  "review_delta_sha256": "22834ef362fd7e3d0dcc0548a4a5ee98fce5ccd1a8c17e35b70588b944d933b9"
 }

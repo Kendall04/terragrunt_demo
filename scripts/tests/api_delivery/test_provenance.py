@@ -24,6 +24,15 @@ def run(workflow=m.DELIVERY, event='push', branch='develop', sha='2'*40):
 
 
 class GitHubTests(unittest.TestCase):
+    def test_release_requires_actual_App_CI_not_a_skipped_job(self):
+        gh=GitHub();gh.runs=lambda *args:iter([run(workflow='.github/workflows/ci.yml')]);gh.get=lambda p:{'id':7}
+        name='App CI / .NET Restore • Build • Test • Docker Validate'
+        for status in ('skipped','failure','cancelled',None):
+            gh.pages=lambda *args:iter([{'name':name,'conclusion':status}])
+            with self.subTest(status=status),self.assertRaisesRegex(ValueError,'qualification'):
+                gh.require_app_validation('2'*40,'develop')
+        gh.pages=lambda *args:iter([{'name':name,'conclusion':'success'}])
+        gh.require_app_validation('2'*40,'develop')
     def test_forged_failed_canceled_foreign_workflow_and_fork_rejected(self):
         gh=GitHub();gh.get=lambda p:{'id':7}
         gh.trusted(run(),m.DELIVERY,'push','develop')
