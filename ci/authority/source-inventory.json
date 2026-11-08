@@ -684,23 +684,27 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/scripts/ci/toolchain.json": {
-      "sha256": "1f144c2a89c459cb3e9ecc1e090dbe18ba8419e61de8658dc7adb3c60078385c",
+      "sha256": "b8539133a5d69066869ee32462d84799b7d6421097ff0c3bb0538d76b2043cc0",
       "declarations": [],
       "signals": {
+        "credential-acquisition": [
+          70
+        ],
         "launch-or-mutation": [
           7,
           9,
-          11,
-          13,
-          15,
-          17,
-          20,
-          24,
-          28,
-          58,
-          73,
-          75,
-          81
+          12,
+          14,
+          16,
+          18,
+          22,
+          26,
+          31,
+          64,
+          70,
+          81,
+          83,
+          89
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -14266,5 +14270,5 @@
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",
   "review_revision": "e25600f60fc88f4479aef35a9e9ea5c2ba5a4b36",
   "review_note": "Reviewed automatic API delivery implementation, exact workflow admission and offline tests. Semantics UNVERIFIED until reviewed activation; no installed IAM, ruleset, AWS or historical-controller changes.",
-  "review_delta_sha256": "043925ef3b6439ff5d7bdb5d181fc52353879bb077bfff948dac9df34aa2fd30"
+  "review_delta_sha256": "fd89a1093fb1d29b36f8e502b8e75c56e236ecfafff467e53bfd65f34fd936d4"
 }
