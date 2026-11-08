@@ -61,18 +61,21 @@ while [ "$i" -lt "$count" ]; do
   openssl x509 -inform DER -in "$dir/anchor.der" -outform DER -out "$dir/roundtrip.der" 2>/dev/null || refuse SQL_TRUST_CERTIFICATE_REFUSED
   cmp -s "$dir/anchor.der" "$dir/roundtrip.der" || refuse SQL_TRUST_CERTIFICATE_REFUSED
   openssl x509 -inform DER -in "$dir/anchor.der" -out "$dir/anchor.pem"
-  openssl x509 -in "$dir/anchor.pem" -text -noout > "$dir/public-fields.txt"
+  # Inspect only the requested X.509 extensions. Subject/issuer strings are
+  # attacker controlled and must never satisfy CA or key-usage assertions.
+  openssl x509 -in "$dir/anchor.pem" -noout -ext basicConstraints > "$dir/constraints.txt"
+  openssl x509 -in "$dir/anchor.pem" -noout -ext keyUsage > "$dir/key-usage.txt"
   kind=$(jq -r --argjson i "$i" '.anchors[$i].kind' "$dir/manifest.json")
   if [ "$kind" = ca ]; then
-    grep -q 'CA:TRUE' "$dir/public-fields.txt" || refuse SQL_TRUST_CA_REQUIRED
-    grep -q 'Certificate Sign' "$dir/public-fields.txt" || refuse SQL_TRUST_CA_REQUIRED
+    grep -Eq '^[[:space:]]*CA:TRUE(, pathlen:[0-9]+)?[[:space:]]*$' "$dir/constraints.txt" || refuse SQL_TRUST_CA_REQUIRED
+    grep -Eq '(^|,[[:space:]]*|^[[:space:]]*)Certificate Sign(,|[[:space:]]*$)' "$dir/key-usage.txt" || refuse SQL_TRUST_CA_REQUIRED
     subject=$(openssl x509 -in "$dir/anchor.pem" -noout -subject -nameopt RFC2253 | cut -d= -f2-)
     issuer=$(openssl x509 -in "$dir/anchor.pem" -noout -issuer -nameopt RFC2253 | cut -d= -f2-)
     test "$subject" = "$issuer" || refuse SQL_TRUST_ROOT_REQUIRED
     openssl verify -CAfile "$dir/anchor.pem" -no-CApath -no-CAstore -check_ss_sig "$dir/anchor.pem" >/dev/null 2>&1 || refuse SQL_TRUST_CERTIFICATE_REFUSED
   else
     test "$actual" = 206095fa0ba9e17a84c80eff5021db93d05e2dc377e982a64d517696ed21a1e7 || refuse SQL_TRUST_LEAF_PIN_REFUSED
-    grep -q 'CA:FALSE' "$dir/public-fields.txt" || refuse SQL_TRUST_LEAF_PIN_REFUSED
+    grep -Eq '^[[:space:]]*CA:FALSE[[:space:]]*$' "$dir/constraints.txt" || refuse SQL_TRUST_LEAF_PIN_REFUSED
     openssl verify -CAfile "$dir/anchor.pem" -no-CApath -no-CAstore -check_ss_sig -purpose sslserver -verify_hostname sql.demo.internal "$dir/anchor.pem" >/dev/null 2>&1 || refuse SQL_TRUST_CERTIFICATE_REFUSED
   fi
   cat "$dir/anchor.pem" >> "$dir/bundle.pem"

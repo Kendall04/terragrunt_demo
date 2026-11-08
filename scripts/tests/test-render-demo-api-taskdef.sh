@@ -7,6 +7,8 @@ SENTINEL_FILE="$(mktemp)"
 FAKE_BIN="$(mktemp -d)"
 CONFIG_DIR="$(mktemp -d)"
 SECRET='arn:aws:secretsmanager:us-east-1:123456789012:secret:demo/dev/app/db-connection-string-AbCdEf:::00000000-0000-4000-8000-000000000001'
+DEV_SECRET="$SECRET"
+PROD_SECRET='arn:aws:secretsmanager:us-east-1:123456789012:secret:demo/prod/app/db-connection-string-XyZ123:::00000000-0000-4000-8000-000000000003'
 KMS='arn:aws:kms:us-east-1:123456789012:key/00000000-0000-4000-8000-000000000002'
 IMAGE="123456789012.dkr.ecr.us-east-1.amazonaws.com/demo-dev-shared-demo-ms@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
 
@@ -32,6 +34,15 @@ openssl req -x509 -newkey rsa:2048 -nodes -days 1 -subj /CN=Renderer-test \
   -addext basicConstraints=critical,CA:TRUE -keyout "$CONFIG_DIR/key" -out "$CONFIG_DIR/ca" 2>/dev/null
 openssl x509 -in "$CONFIG_DIR/ca" -outform DER -out "$CONFIG_DIR/ca.der"
 for env in dev prod; do
+  # Independent administrative fixture, never derived from the candidate SECRET.
+  python3 - "$ROOT_DIR" "$env" > "$CONFIG_DIR/$env-binding.json" <<'PY'
+import sys, json
+sys.path.insert(0,sys.argv[1])
+from scripts.tests.normal_delivery.test_authorization import make_binding
+binding=json.loads(json.dumps(make_binding(sys.argv[2])).replace('111122223333','123456789012'))
+binding['secret_arn']='arn:aws:secretsmanager:us-east-1:123456789012:secret:demo/'+sys.argv[2]+'/app/db-connection-string-'+('AbCdEf' if sys.argv[2]=='dev' else 'XyZ123')
+print(json.dumps(binding))
+PY
   jq -n --arg env "$env" '{schema:"SQL_RUNTIME_IDENTITY_V1",environment:$env,profile:"validated-v2",endpoint:"tcp:sql.example.test,1433",database:"demodb",runtime_user:"app_runtime",certificate_hostname:"sql.example.test"}' > "$CONFIG_DIR/$env.json"
   jq -n --arg env "$env" --arg der "$(base64 -w0 "$CONFIG_DIR/ca.der")" --arg pin "$(sha256sum "$CONFIG_DIR/ca.der" | cut -d" " -f1)" '{schema:"SQL_TLS_TRUST_V1",environment:$env,hostname:"sql.example.test",version:"test-v1",anchors:[{kind:"ca",sha256:$pin,der_base64:$der}]}' > "$CONFIG_DIR/$env-trust.json"
 done
@@ -42,14 +53,16 @@ render() {
   --account-id 123456789012 \
   --color blue \
   --image-uri "$IMAGE" \
-  --db-secret-id "$SECRET" --kms-key-id "$KMS" \
+  --db-secret-id "$SECRET" --kms-key-id "$KMS" --environment-binding "$CONFIG_DIR/$1-binding.json" \
   --output "$TASKDEF_FILE" "${@:2}"
 }
 for env in dev prod; do
+  if [ "$env" = dev ]; then SECRET="$DEV_SECRET"; else SECRET="$PROD_SECRET"; fi
   render "$env" --database-config "$CONFIG_DIR/$env.json" --sql-trust-manifest "$CONFIG_DIR/$env-trust.json"
-  jq -e --arg env "$env" --arg image "$IMAGE" '
+  jq -e --arg env "$env" --arg image "$IMAGE" --arg secret "$SECRET" '
     (.containerDefinitions | length == 2) and
     ([.containerDefinitions[].image] | all(. == $image)) and
+    (.containerDefinitions[0].secrets[0].valueFrom == $secret) and
     ([.containerDefinitions[0].environment[] | select(.name == "Database__SecurityProfile") | .value] == ["validated-v2"]) and
     ([.containerDefinitions[0].environment[] | select(.name == "APP_ENV") | .value] == [$env]) and
     ([.containerDefinitions[0].environment[] | select(.name == "Database__RunMigrationsOnStartup") | .value] == ["false"]) and
@@ -58,6 +71,19 @@ for env in dev prod; do
     (.containerDefinitions[1].environment // [] | length == 0) and
     (.containerDefinitions[1].secrets // [] | length == 0)' "$TASKDEF_FILE" >/dev/null
 done
+# Same account/region is not authorization; test both cross-environment inputs.
+for env in dev prod; do
+  if [ "$env" = dev ]; then SECRET="$PROD_SECRET"; else SECRET="$DEV_SECRET"; fi
+  ! render "$env" --database-config "$CONFIG_DIR/$env.json" --sql-trust-manifest "$CONFIG_DIR/$env-trust.json" 2>/dev/null || exit 1
+done
+SECRET="$PROD_SECRET"
+! render prod --environment-binding "$CONFIG_DIR/missing-prod-binding.json" --database-config "$CONFIG_DIR/prod.json" --sql-trust-manifest "$CONFIG_DIR/prod-trust.json" 2>/dev/null || exit 1
+for SECRET in "${DEV_SECRET/AbCdEf/Other1}" "${DEV_SECRET%:::*}" "${DEV_SECRET%:::*}:::AWSCURRENT"; do
+  ! render dev --database-config "$CONFIG_DIR/dev.json" --sql-trust-manifest "$CONFIG_DIR/dev-trust.json" 2>/dev/null || exit 1
+done
+SECRET="$DEV_SECRET"
+jq --arg secret "${DEV_SECRET%:::*}" '.secret_arn=$secret' "$CONFIG_DIR/prod-binding.json" > "$CONFIG_DIR/forged-binding.json"
+! render prod --environment-binding "$CONFIG_DIR/forged-binding.json" --database-config "$CONFIG_DIR/prod.json" --sql-trust-manifest "$CONFIG_DIR/prod-trust.json" 2>/dev/null || exit 1
 ! render dev 2>/dev/null || exit 1
 jq '.profile="legacy-v1"' "$CONFIG_DIR/dev.json" > "$CONFIG_DIR/invalid.json"
 ! render dev --database-config "$CONFIG_DIR/invalid.json" --sql-trust-manifest "$CONFIG_DIR/dev-trust.json" 2>/dev/null || exit 1

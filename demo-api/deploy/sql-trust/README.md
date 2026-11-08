@@ -60,6 +60,7 @@ Example **local rendering only**, using separately reviewed public files:
 scripts/render-demo-api-taskdef.sh --env dev --region us-east-1 \
   --account-id "$ACCOUNT" --color green --image-uri "$IMAGE_BY_DIGEST" \
   --db-secret-id "$VERSIONED_RUNTIME_SECRET_ARN" --kms-key-id "$KMS_KEY_ARN" \
+  --environment-binding /private/authenticated-current-environment-binding.json \
   --database-config /private/reviewed-identity.json \
   --sql-trust-manifest /private/reviewed-public-trust.json --output /tmp/task.json
 ```
@@ -67,6 +68,18 @@ scripts/render-demo-api-taskdef.sh --env dev --region us-east-1 \
 There are still exactly two containers, the same image on both, empty
 `dependsOn`, and no SQL environment variables/secrets on the probe. Ordinary
 configuration requires an exact Secrets Manager version reference and key ARN.
+It also requires an independent current administrative `E1_DELIVERY_BINDING_V1`
+readback via `--environment-binding`, validated with the existing
+`scripts/normal_delivery/authorization.py` contract. The unversioned secret ARN
+must equal that binding's `secret_arn`, including its exact generated suffix,
+destination environment, account and region; the candidate retains its explicit
+version selector. Neither a DEV ARN in PROD nor another same-env ARN is admitted.
+The binding must come from the protected administrative configuration, not from
+`--db-secret-id` or the public database identity document. This offline renderer
+cannot authenticate a file's transport: a caller able to replace the binding can
+change authority. Admission/provenance remains the administrative owner's job.
+No real PROD binding is supplied here; without its authenticated publication,
+ordinary PROD rendering remains blocked. Test fixtures are not deployment approval.
 The historical `--recovery` plan format remains available for historical images;
 it does not supply the new common image's required manifest and cannot bypass
 its startup checks. Existing pipelines are unchanged and need a later explicit
@@ -126,7 +139,8 @@ Future supervised transition, **not executed by these changes**:
    CA needs no image rebuild. CA rotation uses a bounded overlap of reviewed
    roots, new connections, and removal of the old root through new task config.
 
-Local tests admit the exact public bridge material and reject it in PROD. They
+Deterministic bootstrap tests admit the exact public bridge material one second
+before the fixed deadline and reject it at/after the deadline and in PROD. They
 do not use its real private key or prove B against the active AWS SQL instance.
 
 ## Reproduce the opt-in real SQL test
@@ -147,12 +161,29 @@ SQL Express runs on disposable tmpfs with two test issuers, each issuing the
 uses the real ENTRYPOINT, a fresh container and `Pooling=False`. Positive cases
 execute the actual permission SELECT using SqlClient 6.1.7. Negative issuer/name
 cases require its inner `AuthenticationException`, not a generic connection error.
+The positive migrator case invokes the real entrypoint with
+`database-migrate --confirm-schema-change`, a separate synthetic login/password
+and no runtime connection variable. Exit zero plus exactly the two expected EF
+history rows, `Text=nvarchar(max)` and zero data rows verify the schema effect.
 The administrator's local `sqlcmd -C` is confined to synthetic fixture setup;
 it does not establish API TLS acceptance. Test containers, network, passwords
 and disposable private keys are removed on completion. No backup/recovery or
 business data operation occurs. Evidence contains only public hashes/statuses.
 
+The wall-clock SQL matrix does not expect the historical bridge to remain valid.
+`scripts/tests/sql_tls/test_bootstrap.py` uses disposable external PATH shims for
+the date, certificate verification time, UID and .NET boundary; it proves shell
+admission only. The xUnit lifetime tests use a test-only `TimeProvider`. These
+controls are outside the Docker context/artifact and cannot enable a production
+clock override. Ordinary C has no transition deadline and remains covered by
+real SQL positives as well as deterministic before/at/after-boundary tests.
+
 The historical SQL-Lab Dockerfile, public leaf and E1 recipe hash remain unchanged.
 Tests verify that frozen identity independently of the common Dockerfile, while
 mutation tests still reject changed trust pins, bypasses and weakened runtime
 instructions. Local results are in [LOCAL-VALIDATION.json](LOCAL-VALIDATION.json).
+The follow-up findings, regression results and final image identity are in
+[REVIEW-VALIDATION.json](REVIEW-VALIDATION.json). xUnit checks historical recipe
+bytes inside the restricted E1 projection; the repository-level Python adapter
+test owns the comparison with `e1_contract.py`, which is intentionally not
+distributed to the .NET worker.

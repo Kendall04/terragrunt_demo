@@ -33,3 +33,6 @@ done
 
 /usr/bin/env -i HOME="${HOME:-/tmp}" PATH="$SYSTEM_PATH" \
   python3 "$ROOT_DIR/scripts/tests/test-bounded-process.py"
+
+/usr/bin/env -i HOME="${HOME:-/tmp}" PATH="$SYSTEM_PATH" \
+  python3 -I -B -m unittest discover -s "$ROOT_DIR/scripts/tests/sql_tls" -p test_bootstrap.py -v

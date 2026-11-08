@@ -16,6 +16,7 @@ DATABASE_SECURITY_PLAN=""
 DATABASE_SECURITY_ENV="[]"
 DATABASE_CONFIG=""
 SQL_TRUST_MANIFEST=""
+ENVIRONMENT_BINDING=""
 TEMPLATE_FILE="$ROOT_DIR/demo-api/deploy/task-definition.template.json"
 
 usage() {
@@ -23,9 +24,12 @@ usage() {
 Usage:
   scripts/render-demo-api-taskdef.sh --env ENV --region REGION --account-id ACCOUNT \
     --color blue|green --image-uri ECR_URI@sha256:... --db-secret-id ARN:::VERSION \
-    --kms-key-id KEY_ARN --database-config PUBLIC_JSON --sql-trust-manifest PUBLIC_JSON --output FILE
+    --kms-key-id KEY_ARN --database-config PUBLIC_JSON --sql-trust-manifest PUBLIC_JSON \
+    --environment-binding ADMIN_BINDING_JSON --output FILE
 
 Ordinary DEV and PROD require explicit validated-v2 identity and public trust.
+The binding is an independently authenticated current E1_DELIVERY_BINDING_V1
+administrative readback. It cannot be constructed from the candidate secret ARN.
 Only the API receives configuration; the same-image probe remains independent.
 Renders the versioned Demo API ECS task definition template. The rendered output
 is suitable for aws ecs register-task-definition --cli-input-json file://FILE.
@@ -88,6 +92,8 @@ parse_args() {
         DATABASE_CONFIG="${2:-}"; shift 2 ;;
       --sql-trust-manifest)
         SQL_TRUST_MANIFEST="${2:-}"; shift 2 ;;
+      --environment-binding)
+        ENVIRONMENT_BINDING="${2:-}"; shift 2 ;;
       --recovery)
         RECOVERY_MODE=true
         shift
@@ -142,6 +148,12 @@ validate_args() {
 
   if [ -n "$DATABASE_CONFIG" ]; then
     [ -z "$DATABASE_SECURITY_PLAN" ] || die "Ordinary configuration and historical recovery plan cannot be mixed."
+    [ -n "$ENVIRONMENT_BINDING" ] && [ -f "$ENVIRONMENT_BINDING" ] || die "Independent administrative environment binding required (including PROD)."
+    require_command python3
+    python3 "$ROOT_DIR/scripts/validate-sql-secret-binding.py" \
+      --binding "$ENVIRONMENT_BINDING" --environment "$ENV_NAME" \
+      --account "$ACCOUNT_ID" --region "$AWS_REGION_NAME" --color "$COLOR" \
+      --secret "$DB_SECRET_ID" || die "SQL secret is not authorized by the destination binding."
     [ -f "$DATABASE_CONFIG" ] && [ -f "$SQL_TRUST_MANIFEST" ] || die "Database configuration and public trust manifest are required."
     local document
     for document in "$DATABASE_CONFIG" "$SQL_TRUST_MANIFEST"; do

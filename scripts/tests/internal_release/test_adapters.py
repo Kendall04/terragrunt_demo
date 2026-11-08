@@ -141,6 +141,12 @@ class Adapters(unittest.TestCase):
             dotnet_runtime={'uri':DEV_SDK_IMAGE,'support_sha256':'e'*64,'sdk':c.DEV_DOTNET_SDK,'approval':'ADMIN_VERIFIED'})
 
     def test_dev_recipe_is_admin_exact_source_and_standard_is_unchanged(self):
+        # This repository-level suite owns the cross-language comparison. The
+        # xUnit worker deliberately receives no scripts/ tree.
+        historical = (a.ROOT/'demo-api/deploy/sql-lab/Dockerfile').read_bytes().replace(b'\r\n', b'\n')
+        pin = '7efd26f2be7a80fc26d54fc3e5be44e2dcd58b4fe28b739cbd8b6adfdae8c17e'
+        self.assertEqual(hashlib.sha256(historical).hexdigest(), pin)
+        self.assertEqual(c.SQL_RECIPE_SHA256, pin)
         auth=self.dev_authorization()
         self.assertEqual(c.select_recipe(None,'a'*40,ACCOUNT,REGION),c.STANDARD_RECIPE)
         self.assertEqual(c.select_recipe(auth,'a'*40,ACCOUNT,REGION),c.DEV_SQL_LAB_RECIPE)

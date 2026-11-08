@@ -113,14 +113,12 @@ public class LabSqlCertificateTests
         const string pin="7efd26f2be7a80fc26d54fc3e5be44e2dcd58b4fe28b739cbd8b6adfdae8c17e";
         var normalized=actual.Replace("\r\n","\n");
         Assert.Equal(pin,Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(normalized))).ToLowerInvariant());
-        var contract=File.ReadAllText(Path.Combine(Root,"..","scripts","internal_release","e1_contract.py"));
-        Assert.Contains("SQL_RECIPE_SHA256 = '"+pin+"'",contract);
         using var json=Metadata();
         Assert.Contains(SecurityFragment(),normalized);
         Assert.Contains(TrustFragment(json.RootElement.GetProperty("CertificateDerSha256").GetString()!),normalized);
     }
 
-    [Fact] public void Historical_lab_recipe_preserves_its_exact_admitted_bytes_and_selector()
+    [Fact] public void Historical_lab_recipe_preserves_its_exact_admitted_bytes()
         => ValidateLabRecipe(File.ReadAllText(Path.Combine(Root,"deploy","sql-lab","Dockerfile")));
 
     [Theory]

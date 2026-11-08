@@ -89,7 +89,16 @@ def main():
                 roots[env] = dict(kind='ca', sha256=hashlib.sha256(raw).hexdigest(), der_base64=base64.b64encode(raw).decode())
                 (folder/'mssql.conf').write_text('[network]\ntlscert = /var/opt/mssql/server.crt\ntlskey = /var/opt/mssql/server.key\ntlsprotocols = 1.2\nforceencryption = 1\n')
 
+            # Subject strings must not impersonate X.509 extensions (finding 1).
+            run([openssl,'req','-x509','-newkey','rsa:2048','-nodes','-days','2',
+                 '-subj','/CN=CA:TRUE Certificate Sign','-addext','basicConstraints=critical,CA:FALSE',
+                 '-addext','keyUsage=critical,digitalSignature,keyEncipherment',
+                 '-keyout',str(work/'spoof.key'),'-out',str(work/'spoof.crt')])
+            run([openssl,'x509','-in',str(work/'spoof.crt'),'-outform','DER','-out',str(work/'spoof.der')])
+            raw=(work/'spoof.der').read_bytes()
+            spoof=dict(kind='ca',sha256=hashlib.sha256(raw).hexdigest(),der_base64=base64.b64encode(raw).decode())
             password = 'Local!' + secrets.token_hex(16)
+            migration_password = 'Local!' + secrets.token_hex(16)
             sa = 'Local!' + secrets.token_hex(16)
             sqlenv = work/'sql.env'
             sqlenv.write_text('ACCEPT_EULA=Y\nMSSQL_PID=Express\nMSSQL_MEMORY_LIMIT_MB=1024\nMSSQL_SA_PASSWORD='+sa+'\n')
@@ -106,9 +115,9 @@ def main():
                     run([openssl, 'x509', '-in', str(pub), '-outform', 'DER', '-out', str(der)])
                     raw = der.read_bytes()
                     trust['anchors'].append(dict(kind='dev-leaf-transition', sha256=hashlib.sha256(raw).hexdigest(), der_base64=base64.b64encode(raw).decode()))
-                    now = dt.datetime.now(dt.timezone.utc)
-                    stamp = lambda t: t.strftime('%Y-%m-%dT%H:%M:%SZ')
-                    trust['transition'] = dict(not_before=stamp(now-dt.timedelta(minutes=1)), not_after=stamp(now+dt.timedelta(minutes=30)))
+                    # Historical branch is never expected to pass with wall time.
+                    # Before/at/after cap are deterministic bootstrap-only tests.
+                    trust['transition'] = dict(not_before='2026-11-01T00:00:00Z', not_after='2026-11-02T00:00:00Z')
                 if trust_edit: trust_edit(trust)
                 raw = json.dumps(trust, separators=(',', ':')).encode()
                 settings = {
@@ -139,7 +148,7 @@ def main():
                 # final stderr before classifying a refusal or timed shutdown.
                 captured = d('logs', container)
                 logs = captured.stdout + captured.stderr
-                forbidden = [password, sa, 'BEGIN PRIVATE KEY']
+                forbidden = [password, migration_password, sa, 'BEGIN PRIVATE KEY']
                 if any(x in logs for x in forbidden): raise RuntimeError('Sensitive output suppressed')
                 (output/(name+'.log')).write_text(logs)
                 image = d('inspect', container, '--format', '{{.Image}}').stdout.strip()
@@ -151,7 +160,14 @@ def main():
                     d('wait', container, timeout=10)
                 if expected == 'DATABASE_TLS_HANDSHAKE_REFUSED':
                     passed = passed and 'System.Security.Authentication.AuthenticationException' in logs
+                exit_code = None
+                if expected == 'DATABASE_MIGRATION_COMPLETED':
+                    exit_code = int(d('wait',container,timeout=10).stdout.strip())
+                    passed = passed and exit_code == 0 and 'DB_CONN_STRING' not in settings
+                if expected.startswith('SQL_TRUST_') or expected == 'DATABASE_VALIDATED_PROFILE_REQUIRED':
+                    passed = passed and 'SQL_TRUST_PREPARED' not in logs
                 results.append(dict(case=name, environment=env, expected=expected, passed=passed,
+                                    exit_code=exit_code,
                                     image=image, fresh_process=True, pooling=False,
                                     server_issuer=issuer, hostname=hostname,
                                     trust_roots=[x['sha256'] for x in trust['anchors']],
@@ -186,6 +202,7 @@ def main():
                 opposite='dev' if issuer=='prod' else 'prod'
                 test(opposite+'_rejects_'+issuer,opposite,'DATABASE_TLS_HANDSHAKE_REFUSED')
                 if issuer=='prod':
+                    test('prod_rejects_subject_spoof_ca','prod','SQL_TRUST_CA_REQUIRED',trust_edit=lambda x:x.update(anchors=[spoof]))
                     test('wrong_hostname','prod','DATABASE_TLS_HANDSHAKE_REFUSED',hostname='wrong.example.test')
                     test('missing_manifest','prod','SQL_TRUST_MANIFEST_REQUIRED',edit=lambda x:x.pop('SQL_TRUST_MANIFEST_B64'))
                     test('altered_manifest','prod','SQL_TRUST_MANIFEST_HASH_REFUSED',edit=lambda x:x.update(SQL_TRUST_MANIFEST_SHA256='0'*64))
@@ -197,15 +214,26 @@ def main():
                     test('migrator_requires_confirmation','prod','SQL_TRUST_COMMAND_REFUSED',command=('database-migrate',))
                     test('migrator_no_runtime_fallback','prod','DATABASE_MIGRATION_REFUSED_OR_FAILED',command=('database-migrate','--confirm-schema-change'))
                     test('migrator_rejects_runtime_identity','prod','DATABASE_MIGRATION_REFUSED_OR_FAILED',command=('database-migrate','--confirm-schema-change'),edit=lambda x:x.update(DB_MIGRATION_CONN_STRING=x['DB_CONN_STRING']))
+                    # Fresh synthetic database, distinct login/password, and the real
+                    # command/entrypoint. No runtime credential supplied to migrator.
+                    before=d(*sqlcmd,stdin="CREATE DATABASE migrationdb;\nGO\nCREATE LOGIN test_migrator WITH PASSWORD='"+migration_password+"';\nGO\nUSE migrationdb;\nCREATE USER test_migrator FOR LOGIN test_migrator;\nALTER ROLE db_ddladmin ADD MEMBER test_migrator;\nGRANT SELECT, INSERT, UPDATE ON SCHEMA::dbo TO test_migrator;\nSELECT 'HISTORY_ABSENT' WHERE OBJECT_ID('dbo.__EFMigrationsHistory') IS NULL;\nGO\n").stdout
+                    if 'HISTORY_ABSENT' not in before:
+                        raise RuntimeError('Fresh synthetic migration database required')
+                    def migration_settings(x):
+                        x.pop('DB_CONN_STRING')
+                        x['Database__ExpectedDatabase']='migrationdb'
+                        x['DB_MIGRATION_CONN_STRING']='Server=tcp:sql-server,1433;Database=migrationdb;User Id=test_migrator;Password='+migration_password+';Encrypt=True;TrustServerCertificate=False;HostNameInCertificate='+HOST+';Pooling=False;Connect Timeout=5;ConnectRetryCount=0'
+                    test('migrator_positive_strict_tls','prod','DATABASE_MIGRATION_COMPLETED',
+                         command=('database-migrate','--confirm-schema-change'),edit=migration_settings)
+                    history=d(*sqlcmd,stdin="USE migrationdb;\nSELECT 'HISTORY='+STRING_AGG(CONVERT(nvarchar(max),MigrationId),',') WITHIN GROUP (ORDER BY MigrationId) FROM dbo.__EFMigrationsHistory;\nSELECT 'TEXT_MAX='+CONVERT(varchar(10),max_length) FROM sys.columns WHERE object_id=OBJECT_ID('dbo.DemoTexts') AND name='Text';\nSELECT 'ROWS='+CONVERT(varchar(10),COUNT(*)) FROM dbo.DemoTexts;\nGO\n").stdout
+                    (output/'migration-history.txt').write_text(history)
+                    expected_history='HISTORY=20251123201248_InitialMigration,20260305033500_ExpandCipherTextColumn'
+                    results[-1]['history_verified']=expected_history in history and 'TEXT_MAX=-1' in history and 'ROWS=0' in history
+                    results[-1]['history_absent_before']=True
+                    results[-1]['passed'] &= results[-1]['history_verified']
+                    results[-1]['history_sha256']=hashlib.sha256(history.encode()).hexdigest()
                 else:
-                    test('dev_bridge_accepts','dev','DATABASE_RUNTIME_ADMITTED',bridge=True)
                     test('bridge_expired','dev','SQL_TRUST_TRANSITION_REFUSED',bridge=True,trust_edit=lambda x:x['transition'].update(not_after='2026-01-01T00:00:00Z'))
-                    test('bridge_too_long','dev','SQL_TRUST_TRANSITION_REFUSED',bridge=True,trust_edit=lambda x:x['transition'].update(not_before='2026-10-01T00:00:00Z'))
-                    def replace_leaf(trust):
-                        fake = roots['prod'].copy(); fake['kind']='dev-leaf-transition'; trust['anchors'][1]=fake
-                    test('bridge_wrong_pin','dev','SQL_TRUST_LEAF_PIN_REFUSED',bridge=True,trust_edit=replace_leaf)
-                    test('bridge_running_expiry','dev','SQL_TRUST_TRANSITION_EXPIRED',bridge=True,
-                         trust_edit=lambda x:x['transition'].update(not_after=(dt.datetime.now(dt.timezone.utc)+dt.timedelta(seconds=8)).strftime('%Y-%m-%dT%H:%M:%SZ')))
                 d('rm','-f','-v',server);containers.remove(server)
 
             capability=d('run','--rm','--pull','never','--network','none',a.image,'readiness-probe','--check-capability').stdout.strip()
