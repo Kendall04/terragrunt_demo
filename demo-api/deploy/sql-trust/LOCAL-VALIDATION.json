@@ -1,0 +1,174 @@
+{
+  "schema": "LOCAL_SQL_ENVIRONMENT_TRUST_V1",
+  "baseline_commit": "d98dec617ebd6b9079d68cc667da9c67902dbfc8",
+  "started_utc": "2026-11-08T18:06:02.209276+00:00",
+  "ended_utc": "2026-11-08T18:07:16.653419+00:00",
+  "image": {
+    "oci_manifest_digest": "sha256:40cbac779e194b0fdb213319b1d92af23a16ce6d372d9f05606804c76f1ed54f",
+    "config_digest": "sha256:efbcc745c68e961255346732a4e7b2b7d0ca3524a567d0a28df20108c15c0260",
+    "layers": 11,
+    "all_blob_digests_verified": true,
+    "source": "Unchanged OCI manifest emitted by docker save",
+    "registry_published": false
+  },
+  "platform": "linux/amd64",
+  "uid": "1654",
+  "sqlclient": "6.1.7",
+  "sql_image": "mcr.microsoft.com/mssql/server@sha256:cf8f0ab2ebe61feec2eed2629061a07d247f791c2a8ddda74a4ac9f06a291718",
+  "same_image_in_all_cases": true,
+  "test_hostname": "sql.demo.internal (disposable test leaves, both issuers)",
+  "connection": "Encrypt=True;TrustServerCertificate=False;Pooling=False;new process per case",
+  "tests": [
+    {
+      "case": "prod_accepts_own",
+      "passed": true,
+      "log_sha256": "c66d89a52f705472f77d82cc69dfad97a4ac9cc3e4c4e2e60ad994e819c69f07"
+    },
+    {
+      "case": "dev_rejects_prod",
+      "passed": true,
+      "log_sha256": "e2087bb1d7956ddf93895f0c658c881e56b98cb3bce4e8089e884ff3ed99230c"
+    },
+    {
+      "case": "wrong_hostname",
+      "passed": true,
+      "log_sha256": "dc4b358bdb857858682f937796e178c54fbc1db2681372952a913314d04184df"
+    },
+    {
+      "case": "missing_manifest",
+      "passed": true,
+      "log_sha256": "19a54e6851a9575b09cc62af1d60d90fe6fc2f177d4a3310edb9e6a749f1c39b"
+    },
+    {
+      "case": "altered_manifest",
+      "passed": true,
+      "log_sha256": "64830c507624841d0604306ccb264c98592d76558bafee510460cbc0c2984896"
+    },
+    {
+      "case": "missing_profile",
+      "passed": true,
+      "log_sha256": "1ca3a415ce2c95d427980000880f60f559fc7a8f9d395b903c55c712600f6f16"
+    },
+    {
+      "case": "legacy_profile",
+      "passed": true,
+      "log_sha256": "1ca3a415ce2c95d427980000880f60f559fc7a8f9d395b903c55c712600f6f16"
+    },
+    {
+      "case": "prod_rejects_bridge",
+      "passed": true,
+      "log_sha256": "4178003db4ebcd4606dc26995a7708ddcbf6ca8eddccc494f18d896353ff8ad8"
+    },
+    {
+      "case": "anchor_bytes_changed",
+      "passed": true,
+      "log_sha256": "a31a61813b6b5bb8a8021050506b2b56f3d5597e54d62930ab0ff8ca3f2cab8f"
+    },
+    {
+      "case": "runtime_with_migration_credential",
+      "passed": true,
+      "log_sha256": "ff01943ea720781c2727f89875f127c5cc7039d99a2aacbb54a5adc24ba53465"
+    },
+    {
+      "case": "migrator_requires_confirmation",
+      "passed": true,
+      "log_sha256": "409e82f2097e2f0edff849a46c719812583da43a7fb1250fba252ca376e312dd"
+    },
+    {
+      "case": "migrator_no_runtime_fallback",
+      "passed": true,
+      "log_sha256": "2a4f5a6b71d4c0e5d6d1766dd764a2530ee82cbf00ca06210addd052d1fb91e4"
+    },
+    {
+      "case": "migrator_rejects_runtime_identity",
+      "passed": true,
+      "log_sha256": "2a4f5a6b71d4c0e5d6d1766dd764a2530ee82cbf00ca06210addd052d1fb91e4"
+    },
+    {
+      "case": "dev_accepts_own",
+      "passed": true,
+      "log_sha256": "8d0ac4ef1be3c112dc7575919396a6eb4ac3ac6fe5891e7e17bb51abf4d17100"
+    },
+    {
+      "case": "prod_rejects_dev",
+      "passed": true,
+      "log_sha256": "bd84fa3b4433ba7478397c1b9e4ad6e0ca152472a93f4c52d5152f70504ff737"
+    },
+    {
+      "case": "dev_bridge_accepts",
+      "passed": true,
+      "log_sha256": "f5e4dd5ea96c274c885cda0918e7b6cd883f1cade7d1609ae8f31773672f7183"
+    },
+    {
+      "case": "bridge_expired",
+      "passed": true,
+      "log_sha256": "f67704047ca9edad17206a0f4956e7eab5235b410ddc4656f06a0b5d11cb4107"
+    },
+    {
+      "case": "bridge_too_long",
+      "passed": true,
+      "log_sha256": "f67704047ca9edad17206a0f4956e7eab5235b410ddc4656f06a0b5d11cb4107"
+    },
+    {
+      "case": "bridge_wrong_pin",
+      "passed": true,
+      "log_sha256": "cef18cd74e9a2c082427229540bfb74872d2ce2ab79e93ded750447a01a6b7fb"
+    },
+    {
+      "case": "bridge_running_expiry",
+      "passed": true,
+      "log_sha256": "ec95ee0645d637b2c3a923a74bd11ee3d2a5045b34deb0887078e8e494471a25"
+    },
+    {
+      "case": "probe_capability_without_trust_or_secrets",
+      "passed": true
+    },
+    {
+      "case": "probe_loopback_unavailable_without_sql_configuration",
+      "passed": true
+    }
+  ],
+  "source_sha256_lf": {
+    "demo-api/Dockerfile": "0d68f60d366d39c1d88cc4984a634a4f5709895f021f289e25a79fe203ac39ed",
+    "demo-api/deploy/sql-trust/entrypoint.sh": "f8a8b26abead88d9a195a0c6f7df7db0159d22ac5461514c6df81076afd87465",
+    "demo-api/terragrunt-demo/Controllers/DemoTextController.cs": "cb62dc53a1ac30e8dc5f2304f984ef89cc683767d808d3c91d509042e84c22b5",
+    "demo-api/terragrunt-demo/Data/AppDbContext.cs": "61ce97e227d520e89469462e05e586bfdd0aa12084d3f30260e58f1dee29c0e7",
+    "demo-api/terragrunt-demo/Data/DatabaseSecurityPolicy.cs": "b80ec2ce58392b38ce3a4736f06137c2d0fb639f47f39d460362a198630ebdbf",
+    "demo-api/terragrunt-demo/Data/DemoText.cs": "546c9e22cd9db17bc232e216ff216a6ffa402eacade70b112f2b236bf5fa769e",
+    "demo-api/terragrunt-demo/Data/RuntimeDatabasePermissions.cs": "4f1a7213490ce1acd05edef4971d7eb724cfc678319f065cb5b682d1d6733e98",
+    "demo-api/terragrunt-demo/Data/RuntimeDatabaseVerifier.cs": "d7d0b261e5c3b819f158fd37c50cafad7a4d53e6564b3d443170b2c7e2090d55",
+    "demo-api/terragrunt-demo/Data/TrustTransitionLifetime.cs": "69019dca100645143fa5e7541cd7361978316604a7b99d7b90c138a8a3e4c100",
+    "demo-api/terragrunt-demo/Dtos/DemoTextDto.cs": "1e8b8c516bd49d61af9f563ece4c2465caddceddd31c7d45db979dca4f42e15a",
+    "demo-api/terragrunt-demo/Features/Texts/Commands/InsertTextCommand.cs": "eff19257e1cbe5e7d4d65a96f9c8e19f825936c3e6bcd352689112855f0cf897",
+    "demo-api/terragrunt-demo/Features/Texts/Commands/InsertTextCommandHandler.cs": "a6ea62927f7205642faad7e23996dca42d52356075e3fc05dddbd06c066dfbcd",
+    "demo-api/terragrunt-demo/Features/Texts/Queries/GetAllTextsQuery.cs": "c2f6483cf69e806553e2b37574d37c0d544f31315453eb94240a27394d321bd4",
+    "demo-api/terragrunt-demo/Features/Texts/Queries/GetAllTextsQueryHandler.cs": "e1b0c1224d7b62d7f5419b1c19bbbf3cbeaf2601e8fd7e6caf089d9392c1120e",
+    "demo-api/terragrunt-demo/Features/Texts/TextPagination.cs": "5545537e93aadf6ca0bac3786fa8a71f7ee015dfc46e48c7b9c9edbd19d4a284",
+    "demo-api/terragrunt-demo/Health/DatabaseConnectivityHealthCheck.cs": "4a3380cc867fa4ceb9da2795df6139fdb2718cce9e05a7b406c97f719604a116",
+    "demo-api/terragrunt-demo/Health/KmsEncryptionHealthCheck.cs": "cbc4ec7654320af5e026cc9842ddfd9173364cf106a49f742db30956db17064b",
+    "demo-api/terragrunt-demo/Migrations/20251123201248_InitialMigration.Designer.cs": "ffb01934ee21e910c0897990f378e598dd06c77d04ec32b0534bc3e15b2bc960",
+    "demo-api/terragrunt-demo/Migrations/20251123201248_InitialMigration.cs": "531b8a543b4a2677c075a0e9bdaa15dfd52dbc6f3bebd064986487ffdbef43ce",
+    "demo-api/terragrunt-demo/Migrations/20260305033500_ExpandCipherTextColumn.cs": "2991710129a16e1c9bac60f912f913adc42e9389bfdcd837356a853e84b6fae7",
+    "demo-api/terragrunt-demo/Migrations/AppDbContextModelSnapshot.cs": "ab02163313a8896ba0018faeede268e835c785f0aa9de91d52e602509086362e",
+    "demo-api/terragrunt-demo/Program.cs": "2882ea5a88a93effc4091afb5dda874221a9f262eefca26bcb0ba5a2f79a3ac5",
+    "demo-api/terragrunt-demo/Properties/launchSettings.json": "4bd7fc68c8170d56cfc78ed54da14cffcc9c0f90559e1e66b036f5153ce81db4",
+    "demo-api/terragrunt-demo/ReadinessProbe.cs": "a2fe838d1467f0648d324ca3fbd085cea6225e62d0ae8db58c66872a6b03a123",
+    "demo-api/terragrunt-demo/Repositories/ITextRepository.cs": "0b86287fb012d1e86721cbaf7c7d6c4fe05c27fdc2a8fd9f355e289fa26a572e",
+    "demo-api/terragrunt-demo/Services/IEncryptionService.cs": "1feae266154f97bba436cb75ab543831c99857a0514bf7747669fd10d45adb18",
+    "demo-api/terragrunt-demo/Services/PlaintextTooLargeException.cs": "a2ef8bc5f37f6cc9200496d0bba5ec0c99b2cd1d148a2e9d19d2beaa849c6e46",
+    "demo-api/terragrunt-demo/appsettings.Development.json": "817db0bf2ecca78364c41dbaf7949bf2504cf47a1c3d0d54f3be8178fefc030b",
+    "demo-api/terragrunt-demo/appsettings.json": "13f3b46b1320d63a86662c65188fc20809f0ee02c5d8d918abc54344bf9e9738",
+    "demo-api/terragrunt-demo/packages.lock.json": "26854fbfc60ebbc465a755594800a446c39afb56838009e8b681e9c98ec9826e",
+    "demo-api/terragrunt-demo/terragrunt-demo.csproj": "de16743845bb7079db882ebdf24f80f228125a5d5c4cc8eb825fffdd2925b433"
+  },
+  "proof": "Actual entrypoint and API runtime permission SELECT; SqlClient AuthenticationException for TLS negatives",
+  "not_proven": [
+    "Fargate",
+    "KMS",
+    "AWS IAM",
+    "production PKI",
+    "server certificate rotation or rollback",
+    "Historical DEV private key or server leaf handshake",
+    "Exclusive private CA trust (public HTTPS roots remain)"
+  ]
+}

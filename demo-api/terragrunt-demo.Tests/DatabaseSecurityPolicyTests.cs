@@ -66,8 +66,10 @@ public class DatabaseSecurityPolicyTests
     public void Strict_runtime_rejects_missing_contract_or_unsafe_config(string key,string? value)
         => Assert.Throws<InvalidOperationException>(() => DatabaseSecurityPolicy.RuntimeConnection(Config((key,value)),Runtime));
 
-    [Fact] public void Legacy_compatibility_is_explicit_and_not_rewritten()
-        => Assert.Equal("old-test-value", DatabaseSecurityPolicy.RuntimeConnection(Config(("Database:SecurityProfile","legacy-v1")),"old-test-value"));
+    [Theory]
+    [InlineData(null)] [InlineData("")] [InlineData("legacy-v1")]
+    public void Ordinary_runtime_refuses_missing_or_legacy_profile(string? profile)
+        => Assert.Throws<InvalidOperationException>(() => DatabaseSecurityPolicy.RuntimeConnection(Config(("Database:SecurityProfile",profile)),Runtime));
 
     [Fact] public void Migration_uses_distinct_connection_and_exact_confirmation()
         => Assert.Equal(Migrator,DatabaseSecurityPolicy.MigrationConnection(Config(("DB_MIGRATION_CONN_STRING",Migrator)),new[]{"database-migrate","--confirm-schema-change"}));

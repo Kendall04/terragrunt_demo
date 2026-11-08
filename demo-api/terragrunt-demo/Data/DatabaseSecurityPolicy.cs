@@ -9,12 +9,11 @@ public static class DatabaseSecurityPolicy
     public const string ValidatedProfile = "validated-v2";
     public static bool IsValidated(IConfiguration config)
     {
-        var profile = config["Database:SecurityProfile"] ?? "legacy-v1";
+        var profile = config["Database:SecurityProfile"];
         return profile switch
         {
-            "legacy-v1" => false,
             ValidatedProfile => true,
-            _ => throw Refuse("DATABASE_SECURITY_PROFILE_UNKNOWN")
+            _ => throw Refuse("DATABASE_VALIDATED_PROFILE_REQUIRED")
         };
     }
 
@@ -27,7 +26,6 @@ public static class DatabaseSecurityPolicy
     public static string RuntimeConnection(IConfiguration config, string connection)
     {
         ValidateStartup(config);
-        if (!IsValidated(config)) return connection;
         if (!string.IsNullOrWhiteSpace(config["DB_MIGRATION_CONN_STRING"]))
             throw Refuse("DATABASE_RUNTIME_HAS_MIGRATION_CREDENTIAL");
         var sql = ValidateConnection(config, connection);
