@@ -185,7 +185,9 @@ def execute(gh, request_path, output):
                 aws.verify_manifest(clients, cfg['dev_evidence'], request['approved'])
                 image = m.release(request['approved'], 'dev')['image']
                 aws.verify_image(clients, cfg, image)
-            history = list(itertools.islice(gh.deployments(env), 30))
+            # Admission needs the current release only; rollback is sealed in
+            # its previous field. Do not read unrelated expired older artifacts.
+            history = list(itertools.islice(gh.deployments(env), 1))
             previous = port.admit_current(history, reference['sha256'])
             if request['operation'] == 'rollback':
                 m.require(history and previous is not None, 'verified current release required')

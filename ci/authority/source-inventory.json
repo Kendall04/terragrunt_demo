@@ -14146,7 +14146,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/api_delivery/cli.py": {
-      "sha256": "7b23a191a669568341093234122d1d72ddce679839010bc51c1be86c5ab19132",
+      "sha256": "93d900a1c37d946659b8fcc823c4cfd4d66fc6cfa3423184248927049fcbfb9a",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -14157,19 +14157,19 @@
           170,
           185,
           187,
-          198,
-          200
+          200,
+          202
         ],
         "executable-dependency": [
           117,
           121,
           179,
           186,
-          194,
-          195,
-          198,
-          203,
-          205
+          196,
+          197,
+          200,
+          205,
+          207
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -14405,7 +14405,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/api_delivery/test_release_history.py": {
-      "sha256": "dd81e6ca5802ad1e140e0f9dcaddc2d9ee5dd14fc16e3b64a5d7d48e948dc523",
+      "sha256": "291636b231100a08ec86c387bc169f19d72f1969b1f94cf4dba996de692990da",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -14426,14 +14426,16 @@
           164,
           165,
           220,
-          241
+          241,
+          260,
+          279
         ]
       },
       "semantic_status": "UNVERIFIED"
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",
-  "review_revision": "e4c1f24835481476880cd0b365ae41046f093aaa",
-  "review_note": "Reviewed retained release producer attempt and upload provenance after failed/cancelled reruns. E2, immutable S3 admission, workflows and permissions unchanged. Offline regressions only; cloud semantics remain UNVERIFIED.",
-  "review_delta_sha256": "3213c07979040d1f0ab30a4b40a4713755aef8cb2f36bde4ea13cc2e4aa4941d"
+  "review_revision": "61377cbb6f7cd8bb2ce7f3161e8c751834279723",
+  "review_note": "Reviewed execute consumption limited to the current authenticated release and regressions for unrelated expired history and corrupt current evidence. Promotion search, E2, AWS validation, workflows and permissions unchanged. Cloud retention trial remains a pending activation prerequisite.",
+  "review_delta_sha256": "767462fdd562f9a7b04586346e0ef4f52326abc260db9a9ee13f900d52f2c951"
 }

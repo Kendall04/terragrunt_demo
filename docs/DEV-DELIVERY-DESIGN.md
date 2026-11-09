@@ -254,7 +254,8 @@ blind retry or early drain. Unknown effects retain E2 for explicit reconciliatio
 5. Keep historical `cd.yml` and `cd-terragrunt.yml` disabled. Their generated
    request jobs remain byte-identical/fail-closed. The new path verifies those
    settings before mutation and does not invoke gateways or E1 workers.
-6. Set the separately reviewed environment variables and
+6. Complete the isolated artifact-retention trial below, then set the separately
+   reviewed environment variables and
    `API_DELIVERY_ENABLED=true`. No setting was changed in this implementation.
    A first genuine application merge to develop starts DEV automatically; enabling
    a variable alone is not a deployment or approval of an arbitrary old commit.
@@ -265,6 +266,30 @@ blind retry or early drain. Unknown effects retain E2 for explicit reconciliatio
 No permission, ruleset, environment, AWS resource or traffic mutation is included
 in the implementation PR. The native lab's earlier success is not evidence that
 this new automatic route has executed.
+
+### Required isolated Actions retention trial — pending
+
+Before activation, use a disposable GitHub Actions workflow isolated from delivery,
+with no AWS credentials, OIDC authority or deployment environment. Use the same
+pinned upload action and artifact name as [the executor](../.github/workflows/api-execute.yml).
+Attempt 1 uploads a clearly fictitious `release-record` and finishes successfully.
+Retain the run/attempt, original artifact ID, metadata, ZIP SHA-256 and workflow SHA
+outside the rerun's artifact lifecycle. Rerun the **same run**: attempt 2 must end
+before uploading (for example, a deliberate failure), without overwrite or deletion.
+
+After both attempts, inspect the run's artifact listing and independently download
+by the **original artifact ID**. Record HTTP results, listing membership, original
+producer attempt, upload-step timestamps and byte/digest equality. PASS requires
+the original artifact to remain discoverable and downloadable unchanged after the
+rerun; local REST fixtures do not establish GitHub's actual retention behavior.
+
+If listing membership or the original download is lost, retain the failed evidence
+and keep activation blocked. Review how to preserve an independently authenticated
+exact S3 bucket/key/VersionId/SHA-256 reference for the promotion evaluator without
+AWS credentials. Download-by-ID surviving while discovery fails is a distinct
+result, not PASS of the current reader. Do not infer the S3 reference, select a
+different green attempt or add PR cloud authority. That recovery design is a later
+decision; this change neither implements it nor runs the isolated trial.
 
 ## Validation and limits
 
@@ -297,8 +322,9 @@ The history walk is bounded to 1001 commits and fails closed if it cannot find t
 source. PROD compares against main, never develop.
 
 Deployment history authenticates the **producer attempt** of the unique retained
-`release-record`, not the latest conclusion of that run. A failed/cancelled rerun
-cannot erase a completed healthy deployment. The reader verifies the artifact ID,
+`release-record`, not the latest conclusion of that run. A failed/cancelled rerun's
+conclusion does not discard a healthy deployment whose artifact remains available.
+The reader verifies the artifact ID,
 ZIP digest, repository and run, then the exact successful attempt, workflow, event,
 branch and source. Its creation timestamp must fall within that attempt's successful
 upload step (GitHub job times have second precision). Missing, expired, ambiguous
@@ -309,6 +335,11 @@ evaluator; it grants no AWS authority.
 The executor still rejects a repeated run's immutable E2 terminal before build,
 publication or ECS mutation. Current admission still verifies the original S3
 VersionId/hash and the live revision, configuration, compatibility and health.
+It consumes only the first authenticated release; rollback uses that record's
+sealed `previous` target. An unrelated older expired artifact cannot prevent
+admission of the current release. The promotion evaluator retains its historical
+search for the requested application identity. A corrupt current receipt still
+blocks before build; there is no fallback to an older record on validation failure.
 An uncertain E2 owner or different active revision requires reconciliation; a
 historical successful artifact alone does not prove current runtime health.
 The [retained-history regression](../scripts/tests/api_delivery/test_release_history.py)

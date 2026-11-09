@@ -243,5 +243,45 @@ class ReleaseHistoryTests(unittest.TestCase):
                 build.assert_not_called();self.assertNotIn('register',port.calls)
                 self.assertEqual(port.counts,{'blue':1,'green':0})
 
+    @staticmethod
+    def add_expired_older_run(wire):
+        older=dict(wire.producer,id=21,head_sha='1'*40)
+        expired=dict(wire.metadata,id=900,expired=True,
+                     workflow_run=dict(id=21,repository_id=99,head_repository_id=99,head_sha='1'*40))
+        wire.responses[PREFIX+'/actions/workflows/api-delivery.yml/runs?per_page=100&page=1']['workflow_runs'].append(older)
+        wire.responses[PREFIX+'/actions/runs/21/artifacts?per_page=100&page=1']={'artifacts':[expired]}
+        wire.responses[PREFIX+'/actions/artifacts/900']=expired
+
+    def test_C_consumes_current_B_only_without_reading_older_expired_artifact(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            h,request,wire,admission,actual,manifest,store,owner,port,build,ecr,execute=self.scenario(tmp,'failure')
+            self.add_expired_older_run(wire)
+            c=h.commit('C','C');wire.responses[PREFIX+'/git/ref/heads/develop']={'object':{'sha':c}}
+            req=dict(request,source=c,event_source=c,application=m.application(h.root,c))
+            try:
+                result=execute(23,req,1)
+            except ValueError as error:
+                raise AssertionError('C rejected valid current B; REST calls: '+repr(wire.calls)) from error
+            self.assertEqual(result['previous']['evidence'],wire.value['manifest_ref'])
+            self.assertEqual(result['previous']['revision'],wire.value['revision'])
+            self.assertEqual(manifest.requests[0]['VersionId'],'s3-version-B')
+            self.assertEqual(port.calls.count('register'),1);build.assert_called_once()
+            self.assertEqual(port.routes,('green','blue'))
+            self.assertEqual(store.read()[0]['state'],'RELEASED')
+            self.assertIn(PREFIX+'/actions/artifacts/901/zip',wire.calls)
+            self.assertFalse(any('/runs/21/' in p or '/artifacts/900' in p for p in wire.calls))
+
+    def test_corrupt_current_B_blocks_C_before_build_without_falling_back(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            h,request,wire,admission,actual,manifest,store,owner,port,build,ecr,execute=self.scenario(tmp,'failure')
+            self.add_expired_older_run(wire);wire.raw+=b'changed'
+            c=h.commit('C','C');wire.responses[PREFIX+'/git/ref/heads/develop']={'object':{'sha':c}}
+            req=dict(request,source=c,event_source=c,application=m.application(h.root,c))
+            with self.assertRaisesRegex(ValueError,'artifact digest mismatch'):execute(23,req,1)
+            build.assert_not_called();ecr.assert_not_called()
+            self.assertEqual(port.calls,[]);self.assertEqual(port.counts,{'blue':1,'green':0})
+            self.assertIn(PREFIX+'/actions/artifacts/901/zip',wire.calls)
+            self.assertFalse(any('/runs/21/' in p or '/artifacts/900' in p for p in wire.calls))
+
 
 if __name__ == '__main__': unittest.main(verbosity=2)
