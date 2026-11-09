@@ -57,6 +57,29 @@ def compact(locator):
     assert len(canonical(value)) <= 255, "GitHub external_id limit"
     return value
 
+def reconcile_fixture(original, manifest, terminal, versions):
+    """Protocol proof with fixture S3 versions/E2 only; never an AWS call.
+
+    Production derives the exact operation key from original repo/env/run and
+    enumerates all versions of that ONE key. It never selects IsLatest.
+    """
+    operation = original["operation"]
+    assert terminal == {"operation": operation, "environment": "dev", "status": "SUCCESS",
+                        "producer_run": original["publisher"]["run"]}, "E2 operation not settled"
+    exact_key = "operations/" + operation + "/release.json"
+    assert len(versions) == 1, "Missing, overwritten or deleted operation evidence"
+    version = versions[0]
+    assert version["key"] == exact_key and not version.get("delete_marker", False)
+    assert version["VersionId"] and version["VersionId"] != "null"
+    raw = canonical(version["manifest"])
+    assert version["manifest"] == manifest
+    assert manifest["operation"] == operation and manifest["producer"] == original["publisher"]
+    ref = {"bucket": "fictitious-not-an-aws-resource", "key": exact_key,
+           "VersionId": version["VersionId"], "sha256": sha(raw)}
+    assert ref == original["manifest_ref"], "Exact version/hash differs"
+    return {"manifest_ref": ref, "builds": 0, "ecr_writes": 0, "ecs_mutations": 0,
+            "publication_only": True}
+
 def bundles(subject):
     # A single-operation slot, never the latest image or latest release.
     values = []
@@ -284,6 +307,27 @@ def consume(_):
     else:
         raise AssertionError("Self-claimed attempt accepted")
 
+    # Failure between the fixture S3 write and GitHub publication. The saved
+    # source is the exact-operation S3 manifest, not a GitHub ZIP or latest key.
+    s3_manifest = cfg["reconciliation_manifest"]
+    terminal = {"operation": dev["operation"], "environment": "dev", "status": "SUCCESS",
+                "producer_run": dev["publisher"]["run"]}
+    version = {"key": dev["manifest_ref"]["key"], "VersionId": dev["manifest_ref"]["VersionId"],
+               "manifest": s3_manifest}
+    reconciliation = reconcile_fixture(dev, s3_manifest, terminal, [version])
+    for name, bad_terminal, bad_versions in (
+        ("missing", terminal, []),
+        ("multiple_versions", terminal, [version, dict(version, VersionId="other")]),
+        ("uncertain_e2", dict(terminal, status="UNCERTAIN"), [version]),
+        ("altered_s3", terminal, [dict(version, manifest=dict(s3_manifest, image=later["image"]))]),
+    ):
+        try:
+            reconcile_fixture(dev, s3_manifest, bad_terminal, bad_versions)
+        except AssertionError:
+            negatives["reconciliation_" + name] = "REJECTED"
+        else:
+            raise AssertionError("Ambiguous reconciliation accepted: " + name)
+
     result = {"fictitious": True, "observed_in": "GitHub Actions",
               "approval_check_id": check["id"], "approval_attestation": locator["attestation_id"],
               "dev_attestation": approval["dev"]["attestation_id"],
@@ -292,6 +336,7 @@ def consume(_):
               "selected_image": dev["image"], "later_C_image": later["image"],
               "manifest_ref": dev["manifest_ref"], "ecs_revision": dev["ecs_revision"],
               "consumer_followed_C": False, "artifact_downloads_required": 0,
+              "reconciliation_fixture": reconciliation,
               "negatives": negatives, "consumption_requests": consumption_requests,
               "simulated_merge": merge, "result": "PASS"}
     write(OUT / "consumer-result.json", result)
