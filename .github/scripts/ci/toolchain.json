@@ -8,7 +8,8 @@
       "version": "1.13.4",
       "url": "https://releases.hashicorp.com/terraform/1.13.4/terraform_1.13.4_linux_amd64.zip",
       "sha256": "98aa516201e948306698efd9954ab4cc0d1227c2578ba56245898b5f679e590b",
-      "format": "zip", "member": "terraform",
+      "format": "zip",
+      "member": "terraform",
       "verification": "UPSTREAM_CHECKSUM_MANIFEST",
       "evidence_url": "https://releases.hashicorp.com/terraform/1.13.4/terraform_1.13.4_SHA256SUMS"
     },
@@ -16,14 +17,16 @@
       "version": "0.93.3",
       "url": "https://github.com/gruntwork-io/terragrunt/releases/download/v0.93.3/terragrunt_linux_amd64",
       "sha256": "017c0417dd6d4bedac830766cc16ea52d8a02d02ca2452bc80b581ed0a993775",
-      "format": "binary", "verification": "UPSTREAM_CHECKSUM_MANIFEST",
+      "format": "binary",
+      "verification": "UPSTREAM_CHECKSUM_MANIFEST",
       "evidence_url": "https://github.com/gruntwork-io/terragrunt/releases/download/v0.93.3/SHA256SUMS"
     },
     "tflint": {
       "version": "0.64.0",
       "url": "https://github.com/terraform-linters/tflint/releases/download/v0.64.0/tflint_linux_amd64.zip",
       "sha256": "cca9d13e2e1d7a2c627af60ff899a3c9b74212899416aeb96ec764d2ef954537",
-      "format": "zip", "member": "tflint",
+      "format": "zip",
+      "member": "tflint",
       "verification": "UPSTREAM_CHECKSUM_MANIFEST",
       "evidence_url": "https://github.com/terraform-linters/tflint/releases/download/v0.64.0/checksums.txt"
     },
@@ -31,7 +34,8 @@
       "version": "1.28.14",
       "url": "https://github.com/aquasecurity/tfsec/releases/download/v1.28.14/tfsec_1.28.14_linux_amd64.tar.gz",
       "sha256": "329ae7f67f2f1813ebe08de498719ea7003c75d3ca24bb0b038369062508008e",
-      "format": "tar.gz", "member": "tfsec",
+      "format": "tar.gz",
+      "member": "tfsec",
       "verification": "UPSTREAM_CHECKSUM_MANIFEST",
       "evidence_url": "https://github.com/aquasecurity/tfsec/releases/download/v1.28.14/tfsec_1.28.14_checksums.txt"
     },
@@ -39,7 +43,8 @@
       "version": "1.7.12",
       "url": "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz",
       "sha256": "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8",
-      "format": "tar.gz", "member": "actionlint",
+      "format": "tar.gz",
+      "member": "actionlint",
       "verification": "UPSTREAM_CHECKSUM_MANIFEST",
       "evidence_url": "https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_checksums.txt"
     },
@@ -47,7 +52,8 @@
       "version": "0.11.0",
       "url": "https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.linux.x86_64.tar.gz",
       "sha256": "b7af85e41cc99489dcc21d66c6d5f3685138f06d34651e6d34b42ec6d54fe6f6",
-      "format": "tar.gz", "member": "shellcheck-v0.11.0/shellcheck",
+      "format": "tar.gz",
+      "member": "shellcheck-v0.11.0/shellcheck",
       "verification": "UPSTREAM_RELEASE_ASSET_DIGEST",
       "evidence_url": "https://api.github.com/repos/koalaman/shellcheck/releases/tags/v0.11.0"
     }
@@ -59,7 +65,9 @@
     "actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9": "v4",
     "actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830": "v4",
     "docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f": "v3",
-    "docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25": "v5"
+    "docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25": "v5",
+    "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02": "v4",
+    "aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708": "v5"
   },
   "action_verification_method": "GET https://api.github.com/repos/{owner}/{repo}/git/ref/tags/{tag}; dereference annotated tag objects to commit. All recorded references resolved to commit objects.",
   "deferred_actions": {

@@ -1,0 +1,83 @@
+{
+  "name": "API promotion admission",
+  "on": {
+    "pull_request_target": {
+      "branches": [
+        "main"
+      ],
+      "types": [
+        "opened",
+        "synchronize",
+        "reopened",
+        "edited",
+        "ready_for_review"
+      ]
+    },
+    "workflow_run": {
+      "workflows": [
+        "API automatic delivery"
+      ],
+      "types": [
+        "completed"
+      ],
+      "branches": [
+        "develop"
+      ]
+    }
+  },
+  "permissions": {
+    "contents": "read",
+    "actions": "read",
+    "pull-requests": "read",
+    "checks": "write"
+  },
+  "jobs": {
+    "promotion": {
+      "runs-on": "ubuntu-latest",
+      "timeout-minutes": 15,
+      "if": "${{ github.event_name == 'pull_request_target' || (github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success') }}",
+      "env": {
+        "GH_TOKEN": "${{ github.token }}"
+      },
+      "steps": [
+        {
+          "name": "Checkout trusted event revision",
+          "uses": "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+          "with": {
+            "ref": "${{ github.sha }}",
+            "fetch-depth": 0,
+            "persist-credentials": false
+          }
+        },
+        {
+          "name": "Evaluate exact PR with trusted base code",
+          "id": "gate",
+          "run": "python3 -B -m scripts.api_delivery.cli promotion --output evidence/result.json"
+        },
+        {
+          "name": "Retain sealed PR approval",
+          "id": "receipt",
+          "if": "hashFiles('evidence/result.json') != ''",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "promotion-record-${{ github.run_attempt }}",
+            "path": "evidence/result.json",
+            "if-no-files-found": "error",
+            "retention-days": 90
+          }
+        },
+        {
+          "name": "Publish required check on exact PR head",
+          "if": "always()",
+          "env": {
+            "GATE_OUTCOME": "${{ steps.gate.outcome }}",
+            "RECEIPT_OUTCOME": "${{ steps.receipt.outcome }}",
+            "PROMOTION_ARTIFACT_ID": "${{ steps.receipt.outputs.artifact-id }}",
+            "PROMOTION_ARTIFACT_DIGEST": "${{ steps.receipt.outputs.artifact-digest }}"
+          },
+          "run": "if [ \"$GATE_OUTCOME\" = success ] && [ \"$RECEIPT_OUTCOME\" = success ]; then\n  python3 -B -m scripts.api_delivery.cli finish-promotion --success\nelse\n  python3 -B -m scripts.api_delivery.cli finish-promotion\nfi"
+        }
+      ]
+    }
+  }
+}
