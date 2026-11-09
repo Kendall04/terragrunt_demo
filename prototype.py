@@ -30,10 +30,10 @@ def write(path, value):
 def read(path):
     return json.loads(Path(path).read_bytes())
 
-def api(path, body=None):
+def api(path, body=None, method="POST"):
     command = ["gh", "api", "-H", "Accept: application/vnd.github+json", "repos/" + REPO + "/" + path]
     if body is not None:
-        command += ["--method", "POST", "--input", "-"]
+        command += ["--method", method, "--input", "-"]
     raw = subprocess.check_output(command, input=canonical(body) if body is not None else None, timeout=90)
     return json.loads(raw)
 
@@ -99,8 +99,24 @@ def verify_bundle(bundle, locator, label):
     assert len(verified) == 1
     verified_statement = verified[0]["verificationResult"]["statement"]
     cert = verified[0]["verificationResult"]["signature"]["certificate"]
-    # Exact signed execution URI/event are checked after inspecting the real
-    # verifier schema. Never authenticate these fields only from the predicate.
+    # These fields come from Fulcio's verified certificate, not the predicate.
+    expected = {
+        "buildConfigURI": "https://github.com/" + authority["workflow_ref"],
+        "buildConfigDigest": authority["workflow_sha"],
+        "buildSignerURI": "https://github.com/" + signer + "@" + authority["ref"],
+        "buildSignerDigest": authority["workflow_sha"],
+        "buildTrigger": authority["event"],
+        "runInvocationURI": "https://github.com/" + REPO + "/actions/runs/" + str(authority["run"]) + "/attempts/" + str(authority["attempt"]),
+        "sourceRepositoryIdentifier": "1143067989",
+        "sourceRepositoryOwnerIdentifier": "66651825",
+        "sourceRepositoryDigest": authority["source_sha"],
+        "sourceRepositoryRef": authority["ref"],
+        "sourceRepositoryURI": "https://github.com/" + REPO,
+        "issuer": "https://token.actions.githubusercontent.com",
+        "runnerEnvironment": "github-hosted",
+    }
+    for key, value in expected.items():
+        assert cert.get(key) == value, "Signed identity mismatch: " + key
     write(OUT / (label + "-certificate.json"), cert)
     receipt = verified_statement["predicate"]
     assert receipt["publisher"] == authority, "Publisher mismatch"
@@ -120,6 +136,13 @@ def resolve(locator, label):
             errors.append(str(error))
     if len(matching) != 1:
         raise ValueError("Expected exactly one authenticated sealed receipt: " + str(errors))
+    authority = locator["authority"]
+    run = api("actions/runs/" + str(authority["run"]) + "/attempts/" + str(authority["attempt"]))
+    assert run["id"] == authority["run"] and run["run_attempt"] == authority["attempt"]
+    assert run["status"] == "completed" and run["conclusion"] == "success", "Producer attempt not successful"
+    assert run["repository"]["id"] == 1143067989 and run["head_repository"]["id"] == 1143067989
+    assert run["head_sha"] == authority["source_sha"] and run["event"] == authority["event"]
+    assert run["path"] == authority["workflow_ref"].split(REPO + "/")[1].split("@")[0]
     return matching[0]
 
 def prepare(mode):
@@ -141,10 +164,14 @@ def prepare(mode):
         write(OUT / "fictitious-s3-manifest.json", manifest)
     elif mode == "approval":
         dev, _ = resolve(cfg["dev"], "approved-dev")
+        check = api("check-runs", {"name": "Receipt prototype approval (NOT deployment)",
+                    "head_sha": os.environ["GITHUB_SHA"], "status": "in_progress",
+                    "details_url": "https://github.com/" + REPO + "/actions/runs/" + str(pub["run"])})
         receipt = {"schema": "promotion-receipt-prototype/v1", "fictitious": True,
                    "repository": REPO, "pr": cfg["pr"], "head": cfg["head"], "base": cfg["base"],
                    "application": dev["application"], "image": dev["image"],
-                   "dev": cfg["dev"], "manifest_ref": dev["manifest_ref"], "publisher": pub}
+                   "dev": cfg["dev"], "manifest_ref": dev["manifest_ref"], "publisher": pub,
+                   "check_id": check["id"], "check_head_sha": os.environ["GITHUB_SHA"]}
         assert cfg["head"] == dev["commit"]
     elif mode == "forgery":
         # Sign a counterfeit with the OTHER workflow's real identity, while its
@@ -171,14 +198,14 @@ def finish(mode):
     if mode == "approval":
         # A separate check name on the disposable branch only: no ruleset changes,
         # no real PR and never the production required-check name.
-        check = api("check-runs", {"name": "Receipt prototype approval (NOT deployment)",
-                    "head_sha": os.environ["GITHUB_SHA"], "status": "completed", "conclusion": "success",
+        sealed = read(OUT / "receipt.json")
+        check = api("check-runs/" + str(sealed["check_id"]), {"name": "Receipt prototype approval (NOT deployment)",
+                    "status": "completed", "conclusion": "success",
                     "external_id": json.dumps(locator, separators=(",", ":")),
                     "details_url": "https://github.com/" + REPO + "/attestations/" + locator["attestation_id"],
-                    "output": {"title": "Fictitious B approval", "summary": "No real PR, image, AWS resource or deployment."}})
+                    "output": {"title": "Fictitious B approval", "summary": "No real PR, image, AWS resource or deployment."}}, method="PATCH")
         write(OUT / "check.json", check)
     print("RECEIPT_LOCATOR=" + json.dumps(locator, separators=(",", ":")))
 
 if __name__ == "__main__":
     {"prepare": prepare, "finish": finish}[sys.argv[1]](sys.argv[2])
-
