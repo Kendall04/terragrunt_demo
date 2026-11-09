@@ -1,15 +1,17 @@
-"""Read-only GitHub evidence adapter: exact workflow/run/attempt and immutable artifact."""
+"""GitHub evidence adapter: signed receipts plus diagnostic-only artifact helpers."""
 import hashlib
 import io
 import json
 import subprocess
 import time
 import zipfile
-from datetime import datetime, timedelta
 from .model import REPOSITORY, DELIVERY, PROMOTION, require, release, manifest_reference
 
 
 class GitHub:
+    def verify_signature(self, command):
+        return subprocess.check_output(command, timeout=120)
+
     def get(self, path):
         return json.loads(self.raw(path))
 
@@ -98,51 +100,25 @@ class GitHub:
             time.sleep(20)
         raise ValueError('exact-SHA validations did not finish')
 
-    def deployments(self, environment):
+    def deployments(self, environment, exclude_run=None):
+        from . import receipts as r
         branch = 'develop' if environment == 'dev' else 'main'
         for run in self.runs(DELIVERY):
-            if run['head_branch'] != branch or run['event'] not in ('push', 'workflow_dispatch'):
+            if run['id'] == exclude_run or run['head_branch'] != branch or run['event'] not in ('push', 'workflow_dispatch'):
                 continue
-            # Runs report the latest attempt, not necessarily the deployment's
-            # producer. Discover the unique immutable artifact, never "last green".
-            names = [a for a in self.pages(f'repos/{REPOSITORY}/actions/runs/{run["id"]}/artifacts', 'artifacts')
-                     if a['name'] == 'release-record']
-            if not names:  # No-op runs intentionally have no release artifact.
+            descriptor = r.slot('deployment',run['id'],environment)
+            if not r.bundles(self,descriptor):
+                r.proven_no_execution(self,run)
                 continue
-            require(len(names) == 1, 'ambiguous deployment artifacts; reconciliation required')
-            record, item = self.artifact_document(run, 'release-record', names[0]['id'], names[0]['digest'])
-            attempt = record['run_attempt']
-            require(type(attempt) is int and 0 < attempt <= run['run_attempt'], 'invalid producer attempt')
-            producer = self.get(f'repos/{REPOSITORY}/actions/runs/{run["id"]}/attempts/{attempt}')
-            self.trusted(producer, DELIVERY, run['event'], branch)
-            require(producer['id'] == run['id'] and producer['run_attempt'] == attempt and
-                    producer['head_sha'] == run['head_sha'] == item['workflow_run']['head_sha'] == record['event_source'],
-                    'deployment producer identity mismatch')
-            # Artifact REST metadata has no run_attempt. Bind its server-side
-            # creation time to the successful upload step of the claimed attempt,
-            # so a later upload cannot impersonate attempt 1 by editing result.json.
-            jobs = list(self.pages(f'repos/{REPOSITORY}/actions/runs/{run["id"]}/attempts/{attempt}/jobs', 'jobs'))
-            uploads = [(job, step) for job in jobs for step in job['steps']
-                       if step['name'] == 'Retain authenticated successful deployment']
-            require(len(uploads) == 1, 'deployment upload evidence missing or ambiguous')
-            job, upload = uploads[0]
-            executions = [s for s in job['steps'] if s['name'] == 'Build once in DEV or deploy approved digest in PROD']
-            require(job['run_id'] == run['id'] and job['head_sha'] == producer['head_sha'] and
-                    len(executions) == 1 and all(s['status'] == 'completed' and s['conclusion'] == 'success'
-                    for s in (job, upload, executions[0])), 'deployment producer did not complete')
-            def stamp(value):
-                result = datetime.fromisoformat(value.replace('Z', '+00:00'))
-                require(result.tzinfo is not None, 'timestamp timezone missing')
-                return result
-            created, started, completed = (stamp(v) for v in (item['created_at'], upload['started_at'], upload['completed_at']))
-            # Jobs use second precision; artifacts may include fractional seconds.
-            require(started <= created < completed + timedelta(seconds=1) and
-                    stamp(executions[0]['completed_at']) <= started <= completed,
-                    'artifact outside producer upload; reconciliation required')
-            require(record['source'] == producer['head_sha'] or producer['event'] == 'workflow_dispatch',
-                    'release source is not the built or merged push')
-            manifest_reference(record['manifest_ref'])
-            yield release(record, environment)
+            record, _ = r.resolve(self,descriptor)
+            if record['schema'] != 'API_NO_DEPLOYMENT_V1':
+                yield record
+
+    def deployment_receipt(self, record):
+        from . import receipts as r
+        observed, locator = r.resolve(self,r.slot('deployment',record['run_id'],record['environment']))
+        require(observed == record, 'deployment changed during approval')
+        return locator
 
     def require_app_validation(self, sha, branch):
         runs = [r for r in self.runs('ci.yml', branch, sha) if r['head_sha'] == sha and r['event'] == 'push']
@@ -175,48 +151,15 @@ class GitHub:
             for c in r['required_status_checks']) for r in required), 'main promotion rule not installed')
 
     def promotion_artifact(self, locator, completed=True):
-        require(set(locator) == {'v', 'artifact', 'run', 'attempt', 'digest'} and locator['v'] == 1 and
-                all(type(locator[k]) is int and locator[k] > 0 for k in ('artifact', 'run', 'attempt')),
-                'invalid promotion artifact locator')
-        path = f'repos/{REPOSITORY}/actions/runs/{locator["run"]}'
-        if completed:
-            path += f'/attempts/{locator["attempt"]}'
-        run = self.get(path)
-        require(run['id'] == locator['run'] and run['run_attempt'] == locator['attempt'] and
-                run['event'] in ('pull_request_target', 'workflow_run'),
-                'stale promotion attempt or event')
-        if completed:
-            self.trusted(run, PROMOTION, run['event'], None)
-        else:
-            # Finalizer runs before its own workflow completes. Still authenticate
-            # the repository/workflow, then demand completion when PROD consumes it.
-            require(run['status'] == 'in_progress', 'publisher no longer executing')
-            self.trusted(dict(run, status='completed', conclusion='success'), PROMOTION, run['event'], None)
-        receipt = self.artifact_id(run, 'promotion-record-' + str(locator['attempt']),
-                                   locator['artifact'], locator['digest'])
-        execution = receipt['execution']
-        require(execution['event'] == run['event'] and execution['workflow_sha'] == receipt['base'] and
-                execution['workflow_ref'] == REPOSITORY + '/' + PROMOTION + '@refs/heads/main',
-                'untrusted evaluator revision')
-        if run['event'] == 'pull_request_target':
-            # REST head_sha can describe the PR, not the GITHUB_SHA checked out by
-            # the trusted base workflow. Verify both identities independently.
-            require(run['head_sha'] in (receipt['head'], receipt['base']) and any(
-                p['number'] == receipt['pr'] and p['head']['sha'] == receipt['head'] and
-                p['head']['ref'] == 'develop' and p['base']['sha'] == receipt['base'] and
-                p['base']['ref'] == 'main' for p in run['pull_requests']), 'PR event identity differs')
-        else:
-            trigger = execution['trigger']
-            producer = self.get(f'repos/{REPOSITORY}/actions/runs/{trigger["id"]}/attempts/{trigger["attempt"]}')
-            self.trusted(producer, DELIVERY, 'push', 'develop')
-            require(producer['head_sha'] == trigger['sha'], 'workflow_run trigger differs')
-            require((run['head_sha'], run['head_branch']) in ((receipt['base'], 'main'), (trigger['sha'], 'develop')),
-                    'workflow_run associated source differs')
+        # Kept as the adapter API name for callers; no artifact/ZIP lookup remains.
+        from . import receipts as r
+        r.locator(locator)
+        receipt, _ = r.resolve(self,r.slot('promotion',locator['r'],attempt=locator['a']),locator,completed)
         return receipt
 
     @staticmethod
     def approval_url(locator):
-        return f'https://github.com/{REPOSITORY}/actions/runs/{locator["run"]}/artifacts/{locator["artifact"]}'
+        return f'https://github.com/{REPOSITORY}/actions/runs/{locator["r"]}/attempts/{locator["a"]}'
 
     def promotion_receipt(self, pr):
         self.require_promotion_rule()
@@ -231,9 +174,8 @@ class GitHub:
         require(check['conclusion'] == 'success' and check['completed_at'] and
                 check['completed_at'] <= pr['merged_at'], 'promotion was not approved before merge')
         locator = json.loads(check['external_id'])
-        require(check['details_url'] == self.approval_url(locator), 'check artifact link differs')
         receipt = self.promotion_artifact(locator)
-        require(receipt['pr'] == pr['number'] and receipt['head'] == pr['head']['sha'], 'approval belongs to another PR')
+        require(receipt['pr'] == pr['number'] and receipt['head'] == pr['head']['sha'] and receipt['check_id'] == check['id'], 'approval belongs to another PR')
         return receipt, dict(check_id=check['id'], **locator)
 
     def check(self, head, status, check_id=None, locator=None):

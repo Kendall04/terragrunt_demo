@@ -23,6 +23,8 @@ from scripts.api_delivery.github import GitHub
 from scripts import environment_mutation as e2
 from test_delivery import config, record, pr, MemoryS3, Port, REGION
 from test_provenance import run
+from receipt_fixture import Signatures, enrich
+from scripts.api_delivery import receipts as r
 from test_review_regressions import ObjectS3
 import test_followup_regressions as followup
 
@@ -35,7 +37,7 @@ class ReleaseWire:
     """Replace only gh's subprocess; real Git commands still run."""
     def __init__(self, value=None, conclusion='failure'):
         self.value = copy.deepcopy(value or record())
-        self.value.setdefault('event_source', self.value['source'])
+        enrich(self.value)
         self.value['manifest_ref']['sha256'] = m.sha(m.canonical(
             {k:v for k,v in self.value.items() if k != 'manifest_ref'}))
         branch = 'develop' if self.value['environment'] == 'dev' else 'main'
@@ -71,10 +73,14 @@ class ReleaseWire:
         with zipfile.ZipFile(stream, 'w') as archive:
             archive.writestr('result.json', m.canonical(self.value))
         self.raw = stream.getvalue()
+        self.signatures=Signatures()
+        self.bundle,self.locator=self.signatures.deployment(self.value)
+        self.responses.update({k:v for k,v in self.signatures.responses.items() if '/attestations/' in k})
         self.metadata.update(size_in_bytes=len(self.raw), digest='sha256:'+m.sha(self.raw))
 
     def __call__(self, argv, **kwargs):
         if argv[0] != 'gh': return self.external(argv, **kwargs)
+        if argv[:2] == ['gh','attestation']: return self.signatures.verify(argv)
         path = argv[-1]; self.calls.append(path)
         if path == PREFIX+'/actions/artifacts/901/zip': return self.raw
         if path in self.responses: return m.canonical(self.responses[path])
@@ -89,48 +95,45 @@ class ReleaseHistoryTests(unittest.TestCase):
                 found = list(GitHub().deployments('dev'))
             self.assertEqual(found, [wire.value])
             self.assertEqual((found[0]['run_id'],found[0]['run_attempt']), (22,1))
-            self.assertIn(PREFIX+'/actions/artifacts/901/zip', wire.calls)
+            self.assertIn(PREFIX+'/attestations/sha256:'+wire.locator['s']+'?per_page=100', wire.calls)
             self.assertIn(PREFIX+'/actions/runs/22/attempts/1', wire.calls)
             self.assertNotIn(PREFIX+'/actions/runs/22/attempts/2', wire.calls)
 
     def test_bad_artifact_or_insufficient_producer_evidence_blocks_not_falls_back(self):
-        faults = ('expired','other-run','foreign-repo','workflow','producer-failed','branch','event',
-                  'source','attempt','zip','digest','another-attempt-upload','missing-upload',
-                  'failed-upload','duplicate','manifest-ref')
+        faults = ('deleted','other-run','foreign-repo','workflow','producer-failed','branch','event',
+                  'source','attempt','signature','missing-execution','failed-execution','contradiction','manifest-ref','private-field')
         for fault in faults:
             wire = ReleaseWire()
-            if fault == 'expired': wire.metadata['expired'] = True
-            if fault == 'other-run': wire.metadata['workflow_run']['id'] = 23
-            if fault == 'foreign-repo': wire.metadata['workflow_run']['repository_id'] = 100
+            if fault == 'deleted': wire.responses[PREFIX+'/attestations/sha256:'+wire.locator['s']+'?per_page=100']['attestations'].clear()
+            if fault == 'other-run': wire.producer['id'] = 23
+            if fault == 'foreign-repo': wire.producer['head_repository']['full_name'] = 'other/repo'
             if fault == 'workflow': wire.producer['workflow_id'] = 8
             if fault == 'producer-failed': wire.producer['conclusion'] = 'failure'
             if fault == 'branch': wire.producer['head_branch'] = 'main'
             if fault == 'event': wire.producer['event'] = 'pull_request'
             if fault == 'source': wire.value['source'] = '9'*40; wire.pack()
             if fault == 'attempt': wire.value['run_attempt'] = 2; wire.pack()
-            if fault == 'zip': wire.raw += b'changed'
-            if fault == 'digest': wire.metadata['digest'] = 'sha256:'+'0'*64
-            # An artifact from attempt 2 cannot claim attempt 1 in its JSON.
-            if fault == 'another-attempt-upload': wire.metadata['created_at'] = '2026-11-08T21:01:01Z'
-            if fault == 'missing-upload': wire.job['steps'].pop()
-            if fault == 'failed-upload': wire.job['steps'][-1]['conclusion'] = 'failure'
-            if fault == 'duplicate':
-                wire.responses[PREFIX+'/actions/runs/22/artifacts?per_page=100&page=1']['artifacts'].append(
-                    dict(wire.metadata,id=902))
+            if fault == 'signature': wire.bundle['dsseEnvelope']['signatures'][0]['sig']='altered'
+            if fault == 'missing-execution': wire.job['steps'].pop(0)
+            if fault == 'failed-execution': wire.job['steps'][0]['conclusion']='failure'
+            if fault == 'contradiction':
+                other=copy.deepcopy(wire.value);other['image']=record('c')['image']
+                wire.signatures.deployment(other)
             if fault == 'manifest-ref': wire.value['manifest_ref']['version'] = 'latest'; wire.pack()
+            if fault == 'private-field': wire.value['password'] = 'not-a-real-secret'; wire.pack()
             with self.subTest(fault=fault), patch('subprocess.check_output', side_effect=wire):
                 with self.assertRaises(ValueError): list(GitHub().deployments('dev'))
 
-    def test_noop_has_no_artifact_and_dispatch_keeps_its_event_identity(self):
-        wire = ReleaseWire()
-        wire.responses[PREFIX+'/actions/runs/22/artifacts?per_page=100&page=1']['artifacts'].clear()
-        with patch('subprocess.check_output', side_effect=wire):
-            self.assertEqual(list(GitHub().deployments('dev')), [])
-        wire = ReleaseWire(record(env='prod'))
-        wire.producer['event'] = wire.latest['event'] = 'workflow_dispatch'
-        wire.value['source'] = '9'*40; wire.pack()  # rollback source != caller commit
-        with patch('subprocess.check_output', side_effect=wire):
-            self.assertEqual(list(GitHub().deployments('prod')), [wire.value])
+    def test_missing_publication_is_not_a_noop_and_dispatch_keeps_identity(self):
+        wire=ReleaseWire()
+        wire.responses[PREFIX+'/attestations/sha256:'+wire.locator['s']+'?per_page=100']['attestations'].clear()
+        with patch('subprocess.check_output',side_effect=wire), self.assertRaises(ValueError):
+            list(GitHub().deployments('dev'))
+        wire=ReleaseWire(record(env='prod'))
+        wire.producer['event']=wire.latest['event']=wire.value['producer']['event']='workflow_dispatch'
+        wire.value['source']='9'*40;wire.pack()
+        with patch('subprocess.check_output',side_effect=wire):
+            self.assertEqual(list(GitHub().deployments('prod')),[wire.value])
 
     def test_promotion_remains_evaluable_after_failed_or_cancelled_rerun(self):
         for outcome in ('failure','cancelled'):
@@ -186,7 +189,7 @@ class ReleaseHistoryTests(unittest.TestCase):
             folder=h.root/str(run_id);folder.mkdir(exist_ok=True)
             (folder/'request').write_bytes(m.canonical(req))
             env=dict(API_CD_ENABLED='true',API_BINDING_REF=json.dumps({'region':REGION,'sha256':'a'*64}),
-                GITHUB_EVENT_NAME='push',GITHUB_RUN_ID=str(run_id),GITHUB_RUN_ATTEMPT=str(attempt),
+                GITHUB_SHA=req['event_source'],GITHUB_WORKFLOW_SHA=req['event_source'],GITHUB_REF='refs/heads/develop',GITHUB_EVENT_NAME='push',GITHUB_RUN_ID=str(run_id),GITHUB_RUN_ATTEMPT=str(attempt),
                 GITHUB_OUTPUT=str(folder/'outputs'))
             with patch.dict(os.environ,env),patch.object(cli,'ROOT',h.root), \
                  patch('subprocess.check_output',side_effect=wire),patch.object(aws,'clients',return_value={}), \
@@ -204,7 +207,7 @@ class ReleaseHistoryTests(unittest.TestCase):
                 h,request,wire,admission,actual,manifest,store,owner,port,build,ecr,execute=self.scenario(tmp,outcome)
                 # E2's immutable terminal exists before retry; no effect can repeat.
                 if outcome == 'failure':
-                    with self.assertRaisesRegex(ValueError,'operation already completed'):
+                    with patch.object(aws,'recover_release',side_effect=ValueError('publication requires exact S3 recovery')), self.assertRaisesRegex(ValueError,'publication requires'):
                         execute(22,request,2)
                 else:
                     # Cancellation before ownership/mutation, with the original
@@ -225,7 +228,7 @@ class ReleaseHistoryTests(unittest.TestCase):
                 self.assertEqual(port.calls.count('register'),1)
                 self.assertEqual(port.routes,('green','blue'))
                 self.assertEqual(manifest.requests[0]['VersionId'],'s3-version-B')
-                self.assertIn(PREFIX+'/actions/artifacts/901/zip',wire.calls)
+                self.assertIn(PREFIX+'/attestations/sha256:'+wire.locator['s']+'?per_page=100',wire.calls)
                 self.assertEqual(store.read()[0]['state'],'RELEASED')
 
     def test_uncertain_later_effect_or_active_drift_blocks_C_before_build(self):
@@ -268,19 +271,19 @@ class ReleaseHistoryTests(unittest.TestCase):
             self.assertEqual(port.calls.count('register'),1);build.assert_called_once()
             self.assertEqual(port.routes,('green','blue'))
             self.assertEqual(store.read()[0]['state'],'RELEASED')
-            self.assertIn(PREFIX+'/actions/artifacts/901/zip',wire.calls)
+            self.assertIn(PREFIX+'/attestations/sha256:'+wire.locator['s']+'?per_page=100',wire.calls)
             self.assertFalse(any('/runs/21/' in p or '/artifacts/900' in p for p in wire.calls))
 
     def test_corrupt_current_B_blocks_C_before_build_without_falling_back(self):
         with tempfile.TemporaryDirectory() as tmp:
             h,request,wire,admission,actual,manifest,store,owner,port,build,ecr,execute=self.scenario(tmp,'failure')
-            self.add_expired_older_run(wire);wire.raw+=b'changed'
+            self.add_expired_older_run(wire);wire.bundle['dsseEnvelope']['signatures'][0]['sig']='altered'
             c=h.commit('C','C');wire.responses[PREFIX+'/git/ref/heads/develop']={'object':{'sha':c}}
             req=dict(request,source=c,event_source=c,application=m.application(h.root,c))
-            with self.assertRaisesRegex(ValueError,'artifact digest mismatch'):execute(23,req,1)
+            with self.assertRaisesRegex(ValueError,'missing/untrusted'):execute(23,req,1)
             build.assert_not_called();ecr.assert_not_called()
             self.assertEqual(port.calls,[]);self.assertEqual(port.counts,{'blue':1,'green':0})
-            self.assertIn(PREFIX+'/actions/artifacts/901/zip',wire.calls)
+            self.assertIn(PREFIX+'/attestations/sha256:'+wire.locator['s']+'?per_page=100',wire.calls)
             self.assertFalse(any('/runs/21/' in p or '/artifacts/900' in p for p in wire.calls))
 
 

@@ -23,6 +23,8 @@ from scripts.api_delivery.executor import deploy, DeliveryFailure
 from scripts import environment_mutation as e2
 from test_delivery import config, record, pr, Port, MemoryS3, authorization_task, ACCOUNT, REGION
 from test_provenance import run
+from receipt_fixture import Signatures, enrich, origin
+from scripts.api_delivery import receipts as r
 
 PREFIX = 'repos/' + m.REPOSITORY
 
@@ -36,14 +38,15 @@ def failure(code):
 class Rest(GitHub):
     """Only transport is doubled. No mocked artifact/receipt/provenance methods."""
     def __init__(self, event='pull_request_target', letter='b', source='2', oci=None):
-        self.calls = []; self.responses = {}; self.binary = {}
+        self.calls = []; self.responses = {}; self.binary = {}; self.signatures = Signatures()
         pull = pr(); pull.update(state='closed', draft=False, merged_at='2026-11-08T20:10:00Z', merge_commit_sha='4'*40)
         pull['head']['sha'] = source*40
         dev = record(letter, source=source)
         if oci is not None:
             dev['image']=config()['repository']+'@sha256:'+m.sha(oci.encode())
             dev['manifest_ref']['sha256']=m.sha(m.canonical({k:v for k,v in dev.items() if k!='manifest_ref'}))
-        receipt = dict(m.approval(pull, letter*64, dev), run_id=80, run_attempt=2,
+        dev_bundle, dev_locator = self.signatures.deployment(dev)
+        receipt = dict(m.approval(pull, letter*64, dev), run_id=80, run_attempt=2, check_id=700, dev_receipt=dev_locator,
                        execution=dict(event=event, workflow_sha='1'*40,
                        workflow_ref=m.REPOSITORY+'/'+m.PROMOTION+'@refs/heads/main'))
         producer = dict(run(m.PROMOTION,event,'develop',source*40),id=80,run_attempt=2,
@@ -57,7 +60,8 @@ class Rest(GitHub):
         stream = io.BytesIO()
         with zipfile.ZipFile(stream,'w') as z: z.writestr('result.json',m.canonical(receipt))
         raw = stream.getvalue(); digest = 'sha256:'+m.sha(raw)
-        self.locator = dict(v=1,artifact=901,run=80,attempt=2,digest=digest)
+        self.bundle,self.locator = self.signatures.sign(r.slot('promotion',80,attempt=2),receipt,origin('1'*40,80,2,event,'prod'))
+        self.responses.update(self.signatures.responses)
         self.check_record = dict(id=700,name='API Promotion Validation',app={'id':15368},head_sha=source*40,
             status='completed',conclusion='success',started_at='2026-11-08T20:00:00Z',completed_at='2026-11-08T20:01:00Z',
             external_id=json.dumps(self.locator),details_url=self.approval_url(self.locator))
@@ -71,6 +75,8 @@ class Rest(GitHub):
             PREFIX+'/commits/'+source*40+'/check-runs?filter=all&per_page=100&page=1':{'check_runs':[self.check_record]},
             PREFIX+'/commits/'+'4'*40+'/pulls':[pull], PREFIX+'/pulls/42':pull})
         self.binary[PREFIX+'/actions/artifacts/901/zip'] = raw
+
+    def verify_signature(self,command): return self.signatures.verify(command)
 
     def get(self,path):
         self.calls.append(path)
@@ -88,7 +94,7 @@ class DirectReceiptTests(unittest.TestCase):
             gh=Rest(event)
             result,locator=gh.promotion_receipt(gh.pull)
             self.assertEqual(result,gh.receipt)
-            self.assertEqual(locator['artifact'],901)
+            self.assertEqual(locator['r'],80)
             self.assertFalse(any('/workflows/' in p and '/runs' in p for p in gh.calls))
             if event=='pull_request_target': self.assertNotEqual(gh.producer['head_sha'],result['base'])
             else:
@@ -111,7 +117,7 @@ class DirectReceiptTests(unittest.TestCase):
         self.assertEqual(selected['approved']['image'],record()['image'])
         self.assertEqual(selected['source'],'4'*40)
         self.assertEqual(selected['approved']['source'],'2'*40)
-        self.assertEqual(selected['approval']['artifact'],901)
+        self.assertEqual(selected['approval']['r'],80)
 
     def test_C_before_merge_invalidates_old_check_and_requires_new_receipt(self):
         gh=Rest(); changed=copy.deepcopy(gh.pull); changed['head']['sha']='3'*40
@@ -125,13 +131,13 @@ class DirectReceiptTests(unittest.TestCase):
     def test_expiry_wrong_attempt_producer_digest_PR_and_postmerge_approval_block(self):
         for defect in ('expired','attempt','workflow','event','digest','archive','foreign','pr','after-merge','failed-check','base'):
             gh=Rest()
-            if defect=='expired': gh.metadata['expired']=True
+            if defect=='expired': gh.responses[PREFIX+'/attestations/sha256:'+gh.locator['s']+'?per_page=100']['attestations'].clear()
             if defect=='attempt': gh.producer['run_attempt']=3
             if defect=='workflow': gh.producer['workflow_id']=900
             if defect=='event': gh.producer['event']='pull_request'
-            if defect=='digest': gh.metadata['digest']='sha256:'+'0'*64
-            if defect=='archive': gh.binary[PREFIX+'/actions/artifacts/901/zip']+=b'tampered'
-            if defect=='foreign': gh.metadata['workflow_run']['head_repository_id']=100
+            if defect=='digest': gh.check_record['external_id']=json.dumps(dict(gh.locator,h='0'*64))
+            if defect=='archive': gh.bundle['dsseEnvelope']['signatures'][0]['sig']='altered'
+            if defect=='foreign': gh.producer['head_repository']['full_name']='other/repo'
             if defect=='pr': gh.pull['number']=43
             if defect=='after-merge': gh.check_record['completed_at']='2026-11-08T20:11:00Z'
             if defect=='failed-check': gh.check_record['conclusion']='failure'
@@ -141,12 +147,15 @@ class DirectReceiptTests(unittest.TestCase):
     def test_green_is_not_written_until_the_exact_uploaded_artifact_is_retrievable(self):
         for missing in (False,True):
             gh=Rest(); gh.producer['status']='in_progress';gh.pull['state']='open';gh.check=Mock()
-            if missing: gh.metadata['expired']=True
+            if missing: gh.responses[PREFIX+'/attestations/sha256:'+gh.locator['s']+'?per_page=100']['attestations'].clear()
             with tempfile.TemporaryDirectory() as tmp:
                 path=Path(tmp); (path/'evidence').mkdir()
                 (path/'promotion-check.json').write_text(json.dumps(dict(id=700,head='2'*40,base='1'*40,pr=42)))
                 (path/'evidence/result.json').write_bytes(m.canonical(gh.receipt))
-                env=dict(PROMOTION_ARTIFACT_ID='901',PROMOTION_ARTIFACT_DIGEST=gh.locator['digest'][7:],GITHUB_RUN_ID='80',GITHUB_RUN_ATTEMPT='2')
+                (path/'bundle.json').write_bytes(m.canonical(gh.bundle))
+                (path/'evidence/slot.json').write_bytes(m.canonical(r.slot('promotion',80,attempt=2)))
+                gh.responses[PREFIX+'/check-runs/700']=dict(gh.check_record,status='in_progress')
+                env=dict(RECEIPT_BUNDLE=str(path/'bundle.json'),GITHUB_RUN_ID='80',GITHUB_RUN_ATTEMPT='2',GITHUB_WORKFLOW_SHA='1'*40,GITHUB_SHA='1'*40,GITHUB_EVENT_NAME='pull_request_target',GITHUB_REF='refs/heads/main')
                 previous=Path.cwd()
                 try:
                     os.chdir(path)
@@ -287,12 +296,12 @@ class OrderingTests(unittest.TestCase):
             path=Path(tmp);request=dict(environment='dev',source='2'*40,event_source='2'*40,application='b'*64,operation='deploy')
             (path/'request').write_bytes(m.canonical(request))
             env=dict(API_CD_ENABLED='true',API_BINDING_REF=json.dumps({'region':REGION,'sha256':'a'*64}),
-                     GITHUB_EVENT_NAME='push',GITHUB_RUN_ID='22',GITHUB_RUN_ATTEMPT='2',GITHUB_OUTPUT=str(path/'outputs'))
+                     GITHUB_SHA='2'*40,GITHUB_WORKFLOW_SHA='2'*40,GITHUB_REF='refs/heads/develop',GITHUB_EVENT_NAME='push',GITHUB_RUN_ID='22',GITHUB_RUN_ATTEMPT='2',GITHUB_OUTPUT=str(path/'outputs'))
             with patch.dict(os.environ,env),patch.object(aws,'clients',return_value={}),patch.object(aws,'binding',return_value=cfg),\
                  patch.object(aws,'owner',return_value=owner),patch.object(aws,'Runtime') as runtime,patch.object(aws,'publish') as publish,\
                  patch.object(m,'git',return_value=b''),patch.object(m,'application',return_value='c'*64):
                 cli.execute(Facts(),path/'request',path/'result')
-            self.assertFalse((path/'result').exists());self.assertIn('deployed=false',(path/'outputs').read_text())
+            self.assertEqual(json.loads((path/'result').read_bytes())['reason'],'superseded');self.assertIn('deployed=false',(path/'outputs').read_text())
             publish.assert_not_called();runtime.return_value.admit_current.assert_not_called()
         self.assertEqual(store.read()[0]['state'],'RELEASED')
 
@@ -377,7 +386,7 @@ class ExecutionChainTests(unittest.TestCase):
             clients=dict(s3=s3,ecr=SimpleNamespace(batch_get_image=Mock(return_value={'images':[item]})))
             gh.responses[PREFIX+'/git/ref/heads/main']={'object':{'sha':'4'*40}}
             for name in ('cd.yml','cd-terragrunt.yml'):gh.responses[PREFIX+'/actions/workflows/'+name]={'state':'disabled_manually'}
-            gh.deployments=lambda env:iter([])
+            gh.deployments=lambda env, **kwargs:iter([])
             storage=MemoryS3();store=e2.Store(storage,'coordination','prod');store.initialize()
             owner=e2.Authority(store,'normal-delivery/promote-prod','11111111-1111-1111-1111-111111111111',request)
             port=Port();port.counts['blue']=0;port.admit_current=Mock(return_value=None)
@@ -389,7 +398,7 @@ class ExecutionChainTests(unittest.TestCase):
             with tempfile.TemporaryDirectory() as tmp:
                 path=Path(tmp);(path/'request').write_bytes(m.canonical(request))
                 env=dict(API_CD_ENABLED='true',API_BINDING_REF=json.dumps({'region':REGION,'sha256':'a'*64}),
-                         GITHUB_EVENT_NAME='push',GITHUB_RUN_ID='100',GITHUB_RUN_ATTEMPT='1',GITHUB_OUTPUT=str(path/'outputs'))
+                         GITHUB_SHA='2'*40,GITHUB_WORKFLOW_SHA='2'*40,GITHUB_REF='refs/heads/develop',GITHUB_EVENT_NAME='push',GITHUB_RUN_ID='100',GITHUB_RUN_ATTEMPT='1',GITHUB_OUTPUT=str(path/'outputs'))
                 with patch.dict(os.environ,env),patch.object(aws,'clients',return_value=clients),patch.object(aws,'binding',return_value=cfg),\
                      patch.object(aws,'owner',return_value=owner),patch.object(aws,'Runtime',return_value=port),\
                      patch.object(m,'git',return_value=b''),patch.object(m,'application',return_value='b'*64),patch.object(aws,'publish') as publish:
@@ -410,7 +419,7 @@ class ExecutionChainTests(unittest.TestCase):
                     **{k:record('a',source='1')[k] for k in ('environment','source','application','image','compatibility','profile','revision','color')})
         current=record();current['previous']=native
         active=dict(native,kind='automatic',image=current['image'],source=current['source'],application=current['application'])
-        gh=SimpleNamespace(get=lambda p:{'state':'disabled_manually'},deployments=lambda env:iter([current]))
+        gh=SimpleNamespace(get=lambda p:{'state':'disabled_manually'},deployments=lambda env, **kwargs:iter([current]))
         request=dict(environment='dev',source='4'*40,event_source='4'*40,application='b'*64,operation='rollback')
         store=e2.Store(MemoryS3(),'coordination','dev');store.initialize()
         owner=e2.Authority(store,'normal-delivery/deploy-dev','11111111-1111-1111-1111-111111111111',request)
@@ -418,13 +427,14 @@ class ExecutionChainTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             path=Path(tmp);(path/'request').write_bytes(m.canonical(request))
             env=dict(API_CD_ENABLED='true',API_BINDING_REF=json.dumps({'region':REGION,'sha256':'a'*64}),
-                     GITHUB_EVENT_NAME='workflow_dispatch',GITHUB_RUN_ID='100',GITHUB_RUN_ATTEMPT='1',GITHUB_OUTPUT=str(path/'outputs'))
+                     GITHUB_SHA='4'*40,GITHUB_WORKFLOW_SHA='4'*40,GITHUB_REF='refs/heads/develop',GITHUB_EVENT_NAME='workflow_dispatch',GITHUB_RUN_ID='100',GITHUB_RUN_ATTEMPT='1',GITHUB_OUTPUT=str(path/'outputs'))
             with patch.dict(os.environ,env),patch.object(aws,'clients',return_value={}),patch.object(aws,'binding',return_value=config()),\
                  patch.object(aws,'owner',return_value=owner),patch.object(aws,'Runtime',return_value=port),\
                  patch.object(aws,'verify_image') as image,patch.object(aws,'publish') as publish:
                 cli.execute(gh,path/'request',path/'result')
             result=json.loads((path/'result').read_bytes())
         self.assertEqual(result['source'],'1'*40);self.assertEqual(result['event_source'],'4'*40)
+        self.assertEqual(result['request_sha256'],owner.request_sha256)
         self.assertEqual(result['image'],native['image']);self.assertNotIn('run_id',native)
         image.assert_called_once_with({},config(),native['image']);publish.assert_not_called()
 

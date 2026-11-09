@@ -1,0 +1,70 @@
+{
+  "name": "Trusted API receipt evaluator",
+  "on": {
+    "workflow_call": {}
+  },
+  "permissions": {
+    "contents": "read"
+  },
+  "jobs": {
+    "promotion": {
+      "runs-on": "ubuntu-latest",
+      "timeout-minutes": 15,
+      "env": {
+        "GH_TOKEN": "${{ github.token }}"
+      },
+      "steps": [
+        {
+          "name": "Checkout trusted event revision",
+          "uses": "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+          "with": {
+            "ref": "${{ github.sha }}",
+            "fetch-depth": 0,
+            "persist-credentials": false
+          }
+        },
+        {
+          "name": "Evaluate exact PR with trusted base code",
+          "id": "gate",
+          "run": "python3 -B -m scripts.api_delivery.cli promotion --output evidence/result.json"
+        },
+        {
+          "name": "Prepare public approval predicate",
+          "if": "hashFiles('evidence/result.json') != ''",
+          "run": "python3 -B -m scripts.api_delivery.cli receipt-files --kind promotion --input evidence/result.json"
+        },
+        {
+          "name": "Publish durable receipt",
+          "id": "receipt",
+          "if": "hashFiles('evidence/result.json') != ''",
+          "uses": "actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6",
+          "with": {
+            "subject-path": "evidence/slot.json",
+            "predicate-type": "https://github.com/Kendall04/terragrunt_demo/api-delivery/receipt/v1",
+            "predicate-path": "evidence/predicate.json",
+            "push-to-registry": false,
+            "create-storage-record": false
+          }
+        },
+        {
+          "name": "Publish required check on exact PR head",
+          "if": "always()",
+          "env": {
+            "GATE_OUTCOME": "${{ steps.gate.outcome }}",
+            "RECEIPT_OUTCOME": "${{ steps.receipt.outcome }}",
+            "RECEIPT_BUNDLE": "${{ steps.receipt.outputs.bundle-path }}"
+          },
+          "run": "if [ \"$GATE_OUTCOME\" = success ] && [ \"$RECEIPT_OUTCOME\" = success ]; then\n  python3 -B -m scripts.api_delivery.cli finish-promotion --success\nelse\n  python3 -B -m scripts.api_delivery.cli finish-promotion\nfi"
+        }
+      ],
+      "permissions": {
+        "contents": "read",
+        "actions": "read",
+        "pull-requests": "read",
+        "checks": "write",
+        "attestations": "write",
+        "id-token": "write"
+      }
+    }
+  }
+}

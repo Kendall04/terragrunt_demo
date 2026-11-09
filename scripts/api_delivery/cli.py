@@ -9,6 +9,7 @@ import tempfile
 import uuid
 from . import model as m
 from .github import GitHub
+from . import receipts
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -77,6 +78,7 @@ def promotion(gh, output):
         m.require(dev is not None, 'exact application has no successful DEV deployment')
         m.git(ROOT, 'merge-base', '--is-ancestor', dev['source'], head)
         result = m.approval(pr, app, dev)
+        result['dev_receipt'] = gh.deployment_receipt(dev)
     current = gh.get(f'repos/{m.REPOSITORY}/pulls/{number}')
     m.require(current['head']['sha'] == head and current['base']['sha'] == base, 'PR changed during validation')
     execution = dict(event=os.environ['GITHUB_EVENT_NAME'], workflow_ref=os.environ['GITHUB_WORKFLOW_REF'],
@@ -84,7 +86,7 @@ def promotion(gh, output):
     if execution['event'] == 'workflow_run':
         execution['trigger'] = dict(id=ev['workflow_run']['id'], attempt=ev['workflow_run']['run_attempt'],
                                     sha=ev['workflow_run']['head_sha'])
-    write(output, dict(result, execution=execution, **run_metadata()))
+    write(output, dict(result, execution=execution, check_id=check['id'], **run_metadata()))
 
 
 def finish_promotion(gh, success):
@@ -97,10 +99,19 @@ def finish_promotion(gh, success):
     locator = None
     if success:
         try:
-            locator = dict(v=1, artifact=int(os.environ['PROMOTION_ARTIFACT_ID']), run=int(os.environ['GITHUB_RUN_ID']),
-                           attempt=int(os.environ['GITHUB_RUN_ATTEMPT']), digest='sha256:' + os.environ['PROMOTION_ARTIFACT_DIGEST'])
+            bundle = json.loads(Path(os.environ['RECEIPT_BUNDLE']).read_bytes())
+            descriptor = json.loads(Path('evidence/slot.json').read_bytes())
+            locator = receipts.compact(descriptor,bundle,receipts.publisher())
+            # GitHub may truncate external_id. Read it back before success; the
+            # source of approval is the published attestation, never this file.
+            gh.check(check['head'], 'in_progress',check['id'],locator=locator)
+            observed = gh.get(f'repos/{m.REPOSITORY}/check-runs/{check["id"]}')
+            m.require(observed['head_sha'] == check['head'] and observed['app']['id'] == 15368 and
+                      observed['status'] == 'in_progress' and json.loads(observed['external_id']) == locator,
+                      'compact check locator readback differs')
             receipt = gh.promotion_artifact(locator, completed=False)
-            m.require(receipt == json.loads(Path('evidence/result.json').read_bytes()), 'uploaded receipt differs')
+            m.require(receipt == json.loads(Path('evidence/result.json').read_bytes()) and
+                      receipt['check_id'] == check['id'], 'published receipt differs')
             gh.require_merge_policy()
         except Exception:
             gh.check(check['head'], 'failure', check['id'])
@@ -164,7 +175,14 @@ def execute(gh, request_path, output):
         gh.require_promotion_rule()
     operation = str(uuid.uuid5(uuid.NAMESPACE_URL, f'{m.REPOSITORY}/{env}/{os.environ["GITHUB_RUN_ID"]}'))
     owner = aws.owner(clients, cfg, operation, request)
-    m.require(owner.retained() is None, 'operation already completed; rerun must not redeploy')
+    terminal = owner.retained()
+    if terminal is not None:
+        # Publication-only recovery, before acquire/build/ECR/ECS. A SUCCESS
+        # terminal with no real release is not sufficient evidence.
+        recovered = aws.recover_release(gh, clients, cfg, owner, operation, request)
+        write(output,recovered)
+        outputs(deployed='true',recovered='true')
+        return
     owner.acquire()
     with tempfile.TemporaryDirectory() as directory:
         port = aws.Runtime(clients, cfg, owner, operation, directory)
@@ -174,7 +192,9 @@ def execute(gh, request_path, output):
             # descendant with identical application identity does not obsolete B.
             if request['operation'] == 'deploy' and not current_request(gh, request):
                 owner.finish(True, 'SUCCESS')
-                outputs(deployed='false', reason='superseded')
+                write(output,dict(schema='API_NO_DEPLOYMENT_V1',reason='superseded',environment=env,
+                                  event_source=request['event_source'],**run_metadata()))
+                outputs(deployed='false', receipt='true', reason='superseded')
                 return
             image = None
             if env == 'prod' and request['operation'] == 'deploy':
@@ -187,7 +207,7 @@ def execute(gh, request_path, output):
                 aws.verify_image(clients, cfg, image)
             # Admission needs the current release only; rollback is sealed in
             # its previous field. Do not read unrelated expired older artifacts.
-            history = list(itertools.islice(gh.deployments(env), 1))
+            history = list(itertools.islice(gh.deployments(env, exclude_run=int(os.environ["GITHUB_RUN_ID"])), 1))
             previous = port.admit_current(history, reference['sha256'])
             if request['operation'] == 'rollback':
                 m.require(history and previous is not None, 'verified current release required')
@@ -206,7 +226,8 @@ def execute(gh, request_path, output):
                           profile='validated-v2', compatibility=cfg['compatibility'], operation=operation,
                           binding_sha256=reference['sha256'], event_source=request['event_source'], previous=previous,
                           configuration_ref=port.configuration_ref,
-                          approval=request.get('approval'), **result, **run_metadata())
+                          approval=request.get('approval'), producer=receipts.publisher(),
+                          request_sha256=owner.request_sha256, **result, **run_metadata())
             m.release(record, env)
             record['manifest_ref'] = port.journal('release', record)
             owner.finish(True, 'SUCCESS')
@@ -229,15 +250,24 @@ def current_request(gh, request):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('operation', choices=('classify', 'prepare', 'promotion', 'finish-promotion', 'execute'))
+    parser.add_argument('operation', choices=('classify', 'prepare', 'promotion', 'finish-promotion', 'execute', 'receipt-files', 'verify-receipt'))
     parser.add_argument('--input', default='request.json')
     parser.add_argument('--output', default='evidence/result.json')
     parser.add_argument('--success', action='store_true')
+    parser.add_argument('--kind', choices=('deployment','promotion'))
+    parser.add_argument('--recovered', action='store_true')
     args = parser.parse_args(); gh = GitHub()
     if args.operation == 'classify': classify()
     elif args.operation == 'prepare': prepare(gh, args.output)
     elif args.operation == 'promotion': promotion(gh, args.output)
     elif args.operation == 'finish-promotion': finish_promotion(gh, args.success)
+    elif args.operation == 'receipt-files': receipts.prepare_files(args.input,args.kind,args.recovered)
+    elif args.operation == 'verify-receipt':
+        descriptor = json.loads(Path('evidence/slot.json').read_bytes())
+        bundle = json.loads(Path(os.environ['RECEIPT_BUNDLE']).read_bytes())
+        sealed = receipts.compact(descriptor,bundle,receipts.publisher())
+        record, _ = receipts.resolve(gh,descriptor,sealed,completed=False)
+        m.require(record == json.loads(Path(args.input).read_bytes()), 'published deployment differs')
     else: execute(gh, args.input, args.output)
 
 

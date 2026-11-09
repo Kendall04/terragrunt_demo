@@ -48,7 +48,8 @@
         "contents": "read",
         "actions": "read",
         "pull-requests": "read",
-        "id-token": "write"
+        "id-token": "write",
+        "attestations": "write"
       },
       "env": {
         "GH_TOKEN": "${{ github.token }}",
@@ -96,11 +97,40 @@
           "id": "execute"
         },
         {
-          "name": "Retain authenticated successful deployment",
+          "name": "Prepare public receipt predicate",
+          "if": "steps.execute.outputs.deployed == 'true' || steps.execute.outputs.receipt == 'true'",
+          "env": {
+            "RECOVERED": "${{ steps.execute.outputs.recovered }}"
+          },
+          "run": "if [ \"$RECOVERED\" = true ]; then\n  python3 -B -m scripts.api_delivery.cli receipt-files --kind deployment --input evidence/result.json --recovered\nelse\n  python3 -B -m scripts.api_delivery.cli receipt-files --kind deployment --input evidence/result.json\nfi"
+        },
+        {
+          "name": "Publish durable receipt",
+          "id": "signed",
+          "if": "steps.execute.outputs.deployed == 'true' || steps.execute.outputs.receipt == 'true'",
+          "uses": "actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6",
+          "with": {
+            "subject-path": "evidence/slot.json",
+            "predicate-type": "https://github.com/Kendall04/terragrunt_demo/api-delivery/receipt/v1",
+            "predicate-path": "evidence/predicate.json",
+            "push-to-registry": false,
+            "create-storage-record": false
+          }
+        },
+        {
+          "name": "Verify published receipt from GitHub",
+          "if": "steps.execute.outputs.deployed == 'true' || steps.execute.outputs.receipt == 'true'",
+          "run": "python3 -B -m scripts.api_delivery.cli verify-receipt --input evidence/result.json",
+          "env": {
+            "RECEIPT_BUNDLE": "${{ steps.signed.outputs.bundle-path }}"
+          }
+        },
+        {
+          "name": "Retain deployment diagnostics (not authority)",
           "if": "steps.execute.outputs.deployed == 'true'",
           "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
           "with": {
-            "name": "release-record",
+            "name": "release-diagnostics-${{ github.run_attempt }}",
             "path": "evidence/result.json",
             "if-no-files-found": "error",
             "retention-days": 90
