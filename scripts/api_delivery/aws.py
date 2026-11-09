@@ -102,7 +102,7 @@ def task_readback(expected, actual, account, region):
             value = result.pop(field)
             if field == 'compatibilities':
                 require(type(value) is list and 'FARGATE' in value and len(value) == len(set(value)) and
-                        set(value) <= {'EC2', 'FARGATE'}, 'invalid compatibility metadata')
+                        set(value) <= {'EC2', 'FARGATE', 'EXTERNAL', 'MANAGED_INSTANCES'}, 'invalid compatibility metadata')
             elif field == 'requiresAttributes':
                 require(type(value) is list and len(value) <= 100 and all(
                     type(a) is dict and set(a) == {'name'} and isinstance(a['name'], str) and
@@ -113,7 +113,7 @@ def task_readback(expected, actual, account, region):
     authorization.defaults(result, authorization.MODEL['task_defaults'], 'task')
     for container in result['containerDefinitions']:
         original = next(c for c in wanted['containerDefinitions'] if c['name'] == container['name'])
-        defaults = dict(authorization.MODEL['container_defaults'], cpu=[0])
+        defaults = dict(authorization.MODEL['container_defaults'], cpu=[0], systemControls=[[]])
         authorization.defaults(container, {k:v for k,v in defaults.items() if k not in original}, 'container')
         for port in container.get('portMappings', []):
             if 'hostPort' in port: require(port.pop('hostPort') == 8080, 'host port mismatch')
