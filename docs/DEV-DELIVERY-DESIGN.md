@@ -157,6 +157,13 @@ history stops recovery. A cancelled run
 is recoverable only when its exact deployment step completed successfully;
 cancelled/failed deployment steps in a cancelled run remain blocked.
 
+A promotion seals one exact DEV signature. Its producer and original attempt
+must still validate; a later attempt publishing identical record bytes and then
+failing cannot revoke that approval or replace its locator. All authenticated
+signed content in the deployment slot is still checked for contradictions.
+Unsealed discovery retains the reconciliation requirement for failed publishers;
+the sealed-read rule is not permission to select an arbitrary earlier green run.
+
 Receipt discovery precedes E2 acquisition. Thus C finding B's publication gap
 does not replace B's released head or consume C's operation with a FAILURE
 terminal: B can republish its original evidence, then C can retry once. Source

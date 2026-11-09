@@ -29,6 +29,69 @@ from receipt_fixture import Signatures, enrich, origin
 
 
 class SignedDiscovery(unittest.TestCase):
+    @staticmethod
+    def sealed_promotion(event='pull_request_target'):
+        # Only gh REST/Sigstore transports are replaced. promotion_receipt,
+        # get/raw and recursive receipt resolution remain the real code.
+        approval=Rest(event);wire=ReleaseWire()
+        wire.responses.update(approval.responses);wire.signatures=approval.signatures
+        return wire,approval
+
+    @staticmethod
+    def resign_deployment(wire,approval,attempt,conclusion,record=None):
+        original=approval.receipt['dev'];pub=origin(original['event_source'],22,attempt)
+        wire.signatures.sign(r.slot('deployment',22,'dev'),copy.deepcopy(record or original),pub,recovered=True)
+        previous=wire.responses[PREFIX+'/actions/runs/22/attempts/1']
+        wire.responses[PREFIX+f'/actions/runs/22/attempts/{attempt}']=dict(previous,run_attempt=attempt,conclusion=conclusion)
+
+    def test_sealed_promotion_keeps_attempt_one_after_failed_and_successful_resigning(self):
+        for event in ('pull_request_target','workflow_run'):
+            wire,approval=self.sealed_promotion(event)
+            expected=copy.deepcopy(approval.receipt)
+            with patch('subprocess.check_output',side_effect=wire):
+                for attempt in (1,2,3):
+                    if attempt>1:self.resign_deployment(wire,approval,attempt,'failure' if attempt==2 else 'success')
+                    with self.subTest(event=event,stage=attempt):
+                        observed,loc=GitHub().promotion_receipt(approval.pull)
+                        self.assertEqual(observed,expected)
+                        self.assertEqual(observed['dev_receipt'],expected['dev_receipt'])
+                        self.assertEqual(observed['dev_receipt']['a'],1)
+                        self.assertEqual(loc,dict(check_id=700,**approval.locator))
+                self.assertIn(PREFIX+'/actions/runs/22/attempts/1',wire.calls)
+                self.assertNotIn(PREFIX+'/actions/runs/22',wire.calls)
+                self.assertFalse(any('/artifacts' in path for path in wire.calls))
+
+    def test_unsealed_discovery_still_needs_valid_reconciliation_of_failed_publication(self):
+        wire,approval=self.sealed_promotion()
+        self.resign_deployment(wire,approval,2,'failure')
+        with patch('subprocess.check_output',side_effect=wire):
+            with self.assertRaisesRegex(ValueError,'requires authenticated reconciliation'):
+                list(GitHub().deployments('dev'))
+            self.resign_deployment(wire,approval,3,'success')
+            self.assertEqual(list(GitHub().deployments('dev')),[approval.receipt['dev']])
+
+    def test_sealed_promotion_rejects_selected_identity_failure_and_signed_contradiction(self):
+        for fault in ('producer','attempt','selected-failed','signature','failed-contradiction','successful-contradiction'):
+            with self.subTest(fault=fault):
+                wire,approval=self.sealed_promotion()
+                self.resign_deployment(wire,approval,2,'failure')
+                self.resign_deployment(wire,approval,3,'success')
+                original=wire.responses[PREFIX+'/actions/runs/22/attempts/1']
+                if fault=='producer':original['workflow_id']=999
+                if fault=='attempt':original['run_attempt']=3
+                if fault=='selected-failed':original['conclusion']='failure'
+                if fault=='signature':
+                    path=PREFIX+'/attestations/sha256:'+approval.receipt['dev_receipt']['s']+'?per_page=100'
+                    wire.responses[path]['attestations'][0]['bundle']['dsseEnvelope']['signatures'][0]['sig']='altered'
+                if fault.endswith('contradiction'):
+                    changed=copy.deepcopy(approval.receipt['dev']);changed['image']=record('c')['image']
+                    enrich(changed)
+                    self.resign_deployment(wire,approval,2 if fault.startswith('failed') else 3,
+                                           'failure' if fault.startswith('failed') else 'success',changed)
+                with patch('subprocess.check_output',side_effect=wire):
+                    with self.assertRaisesRegex(ValueError,'contradictory' if fault.endswith('contradiction') else '.*'):
+                        GitHub().promotion_receipt(approval.pull)
+
     def test_discovery_needs_no_id_attempt_or_hash_and_never_downloads_ZIP(self):
         wire=ReleaseWire()
         # GitHub has already removed every Actions artifact after rerun.

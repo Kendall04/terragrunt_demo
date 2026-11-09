@@ -308,7 +308,11 @@ def resolve(gh, descriptor, sealed=None, completed=True):
         if selected: found.append((record,loc,value['recovered']))
     m.require(bool(found), 'durable receipt missing/untrusted; publication pending or deleted')
     m.require(all(record_identity(record) == record_identity(found[0][0]) for record in signed_records), 'contradictory signed receipts')
-    m.require(not incomplete or any(recovered for _,_,recovered in found), 'failed publisher requires authenticated reconciliation')
+    # A sealed approval already selects an independently validated publication.
+    # Later identical signatures cannot revoke it; signed contradictions above
+    # still block. Unsealed discovery must settle incomplete publishers first.
+    m.require(sealed is not None or not incomplete or any(recovered for _,_,recovered in found),
+              'failed publisher requires authenticated reconciliation')
     return found[0][:2]
 
 

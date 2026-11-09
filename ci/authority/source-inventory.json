@@ -14481,13 +14481,13 @@
       "semantic_status": "CURRENT_FACT"
     },
     "scripts/api_delivery/receipts.py": {
-      "sha256": "2d7d04d01aadc497e022e354f14ac8da5f589dc62f5bf75b2470cf8d43218d6b",
+      "sha256": "cc9a34d39129ccf81b886508fb04d3f338e6f48ebc92e6d324002bab584daed1",
       "declarations": [],
       "signals": {
         "executable-dependency": [
           149,
           153,
-          349
+          353
         ]
       },
       "semantic_status": "CURRENT_FACT"
@@ -14506,23 +14506,23 @@
       "semantic_status": "CURRENT_FACT"
     },
     "scripts/tests/api_delivery/test_signed_receipts.py": {
-      "sha256": "0fc094f309eaa24a5ef348114942977e17c0d480e8e4486ffa988c612df5681d",
+      "sha256": "5465be6f2e0d780254962e9e369c0c0beeb97e4850107562d6ec2535d2700226",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           21,
-          163,
-          179,
-          197,
-          198,
-          199,
-          230,
-          232
+          226,
+          242,
+          260,
+          261,
+          262,
+          293,
+          295
         ],
         "executable-dependency": [
-          129,
-          140,
-          174
+          192,
+          203,
+          237
         ]
       },
       "semantic_status": "CURRENT_FACT"
@@ -14573,7 +14573,7 @@
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",
-  "review_revision": "22d76db9d30dbeb092e7629860305fff5fed1a98",
-  "review_note": "Reviewed attempt-authenticated equivalent omission signatures, sealed-slot conflict rejection, and immutable positive supersession decisions recovered through existing E2 and exact S3 versions. Offline regression transports exercise real CLI/E2/S3/receipt and blue-green logic; no AWS qualification. No workflow, permission or effective resource changes. review_delta_sha256 hashes compact sorted JSON of changed source paths to their normalized source hashes.",
-  "review_delta_sha256": "479a1ad1088603672e4ac75b626e8baeed4f5fb940587338bc718e461e45853b"
+  "review_revision": "c3daa2313e5062d1cde6d5100002dd24c630d7bb",
+  "review_note": "Reviewed exact sealed DEV publication selection through promotion_receipt after later failed and successful identical signatures. Selected producer/attempt validation and all signed-content contradiction checks remain required; unsealed discovery still requires reconciliation. Offline REST/Sigstore transport regressions; no workflow, permission or effective AWS changes. review_delta_sha256 hashes compact sorted JSON of changed source paths to their normalized source hashes.",
+  "review_delta_sha256": "a4b9f32e37f866b7e7fd5c80bb4017de979226ce40bd50dd67540cfefde1cbbb"
 }
