@@ -222,7 +222,15 @@ def record_identity(record):
     return m.canonical(omission_identity(record) if record.get('schema') == 'API_NO_DEPLOYMENT_V1' else record)
 
 
-def validate_predicate(gh, value, descriptor, completed):
+def pr_association(pr, number):
+    """Stable association only: GitHub updates nested PR SHAs in old attempts."""
+    return pr.get('number') == number and all(
+        pr.get(side, {}).get('ref') == ref and
+        pr.get(side, {}).get('repo', {}).get('id') == int(POLICY['repository_id'])
+        for side, ref in (('head', 'develop'), ('base', 'main')))
+
+
+def validate_predicate(gh, value, descriptor, completed, publication):
     m.require(set(value) == {'schema','slot','publisher','record','recovered'} and
               value['schema'] == 'API_SIGNED_RECEIPT_V1' and value['slot'] == descriptor and
               type(value['recovered']) is bool, 'receipt envelope')
@@ -264,8 +272,17 @@ def validate_predicate(gh, value, descriptor, completed):
                   execution['workflow_ref'] == m.REPOSITORY+'/'+POLICY['promotion']['caller']+'@refs/heads/main', 'trusted base identity')
         if pub['event'] == 'pull_request_target':
             m.require(run['head_sha'] in (record['head'],record['base']) and any(
-                p['number'] == record['pr'] and p['head']['sha'] == record['head'] and p['head']['ref'] == 'develop' and
-                p['base']['sha'] == record['base'] and p['base']['ref'] == 'main' for p in run['pull_requests']), 'PR event identity differs')
+                pr_association(p,record['pr']) for p in run['pull_requests']), 'PR event identity differs')
+            # The certificate already binds the sealed base to trusted code.
+            # Bind the head independently even when REST run.head_sha is base;
+            # nested pull_requests[].head/base.sha are NOT historical evidence.
+            m.require(type(record['check_id']) is int and record['check_id'] > 0, 'promotion check ID')
+            check = gh.get(f'repos/{m.REPOSITORY}/check-runs/{record["check_id"]}')
+            m.require(check['id'] == record['check_id'] and check['name'] == 'API Promotion Validation' and
+                      check['app']['id'] == 15368 and check['head_sha'] == record['head'] and
+                      json.loads(check['external_id']) == publication, 'promotion check identity differs')
+            m.require((check['status'],check['conclusion']) ==
+                      (('completed','success') if completed else ('in_progress',None)), 'promotion check state differs')
         else:
             trigger = execution['trigger']
             m.require(set(trigger) == {'id','attempt','sha'} and all(type(trigger[k]) is int and trigger[k] > 0
@@ -300,7 +317,7 @@ def resolve(gh, descriptor, sealed=None, completed=True):
         if sealed and selected: m.require(loc == sealed, 'receipt locator authority differs')
         signed_records.append(value['record'])
         try:
-            record = validate_predicate(gh,value,descriptor,completed if selected else True)
+            record = validate_predicate(gh,value,descriptor,completed if selected else True,loc)
         except PublisherIncomplete:
             if (sealed and selected) or descriptor['kind'] != 'deployment': raise
             incomplete = True

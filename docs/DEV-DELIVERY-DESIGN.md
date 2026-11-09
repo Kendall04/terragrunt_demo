@@ -126,6 +126,28 @@ not an authorized signature. Runtime checks remain active under `python -O`.
 base source in the signing certificate. For `workflow_run`, the triggering DEV
 attempt and default-branch evaluator are verified separately.
 
+Historical `pull_request_target` association uses the PR number, `develop → main`
+branches and both repository IDs. GitHub can update the nested PR head/base SHAs
+even in the REST response for an old exact attempt. Those nested SHAs are not an
+immutable event snapshot: the signing certificate binds the approved base, and
+the exact signed check ID binds the approved head. Its name, GitHub Actions app,
+compact attestation locator and state must match; finalization permits only
+`in_progress`, while completed consumption requires `success`. `run.head_sha`
+must still equal the sealed head or base, never another commit.
+
+Issuance separately checks the original event head/base against the current PR;
+finalization rechecks its current association and SHAs before green. This does
+not authorize a changed PR: PROD still requires the successful check completed
+before merge and exact parents `[approved base, approved head]`.
+
+The [real identity trial](https://github.com/Kendall04/ecs-receipt-event-identities-20261109/pull/1)
+reproduced nested-head drift in attempt `42574195759/1`. The corrected reader
+reuses its original [attestation 65232570](https://github.com/Kendall04/ecs-receipt-event-identities-20261109/attestations/65232570)
+and check `129018147893`; no new signature is needed. The distinct
+[`workflow_run` attestation](https://github.com/Kendall04/ecs-receipt-event-identities-20261109/attestations/65233203)
+is the unchanged positive control. These documentary receipts have
+`deployment=false`; they qualify GitHub identities, not AWS delivery.
+
 Public predicates allow release identities, hashes, ARNs, readiness booleans,
 versioned evidence/configuration references, the bounded previous recovery target
 and promotion/check metadata. They exclude task definitions, configuration

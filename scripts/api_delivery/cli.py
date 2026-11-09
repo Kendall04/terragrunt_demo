@@ -59,6 +59,11 @@ def promotion(gh, output):
         number = prs[0]['number']
     pr = gh.get(f'repos/{m.REPOSITORY}/pulls/{number}')
     head, base = pr['head']['sha'], pr['base']['sha']
+    if os.environ['GITHUB_EVENT_NAME'] == 'pull_request_target':
+        original = ev['pull_request']
+        m.require(receipts.pr_association(original,number) and receipts.pr_association(pr,number) and
+                  original['head']['sha'] == head and original['base']['sha'] == base,
+                  'PR event changed before evaluation')
     check = gh.check(head, 'in_progress')
     write('promotion-check.json', dict(id=check['id'], head=head, pr=number, base=base))
     m.eligible_pr(pr)
@@ -95,7 +100,8 @@ def finish_promotion(gh, success):
         return
     check = json.loads(path.read_bytes())
     current = gh.get(f'repos/{m.REPOSITORY}/pulls/{check["pr"]}')
-    success = success and current['state'] == 'open' and current['head']['sha'] == check['head'] and current['base']['sha'] == check['base']
+    success = (success and current['state'] == 'open' and receipts.pr_association(current,check['pr']) and
+               current['head']['sha'] == check['head'] and current['base']['sha'] == check['base'])
     locator = None
     if success:
         try:

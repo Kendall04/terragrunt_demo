@@ -14155,33 +14155,33 @@
       "semantic_status": "CURRENT_FACT"
     },
     "scripts/api_delivery/cli.py": {
-      "sha256": "b0eb0f54d47e4288e79821e258f651e29fd43863c2e69d520c1e70c2b7b81f98",
+      "sha256": "d22dacc8b3c354b077dd2ed148e88d4f323709d9bab6e64c3bf047644d5a67e8",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          167,
           173,
-          176,
-          183,
-          188,
-          214,
-          236,
-          238,
-          250,
-          252
+          179,
+          182,
+          189,
+          194,
+          220,
+          242,
+          244,
+          256,
+          258
         ],
         "executable-dependency": [
-          128,
-          132,
-          162,
-          225,
-          230,
-          237,
-          246,
-          247,
-          250,
-          255,
-          257
+          134,
+          138,
+          168,
+          231,
+          236,
+          243,
+          252,
+          253,
+          256,
+          261,
+          263
         ]
       },
       "semantic_status": "CURRENT_FACT"
@@ -14283,7 +14283,7 @@
       "semantic_status": "CURRENT_FACT"
     },
     "scripts/tests/api_delivery/test_delivery.py": {
-      "sha256": "9a179afcaf5a15a382a5e864be0d02cb266fd65afd2b844264610639bee7cf82",
+      "sha256": "4e437c5b39938a03868f150493df20cc1434efa2ff36387705e60f373a00afba",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -14323,59 +14323,59 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/api_delivery/test_review_regressions.py": {
-      "sha256": "ff7262cd05d4d903f9a742062f618d5ca6b957717482d0158482c04386819223",
+      "sha256": "1f66d350928ca290523de6a264329b9fff0f94563193aaf8f6547ea42fb3c700",
       "declarations": [],
       "signals": {
         "role-input": [
-          350
+          352
         ],
         "launch-or-mutation": [
           20,
-          185,
-          192,
-          203,
-          209,
+          187,
+          194,
+          205,
           211,
-          214,
-          217,
-          218,
-          234,
-          245,
-          254,
-          301,
-          302,
-          315,
-          323,
-          346,
-          349,
-          354,
-          357,
-          363,
-          366,
-          392,
-          406,
-          407,
+          213,
+          216,
+          219,
+          220,
+          236,
+          247,
+          256,
+          303,
+          304,
+          317,
+          325,
+          348,
+          351,
+          356,
+          359,
+          365,
+          368,
+          394,
           408,
-          435,
-          436,
-          437
+          409,
+          410,
+          437,
+          438,
+          439
         ],
         "executable-dependency": [
           40,
           44,
-          79,
-          127,
-          129,
-          205,
-          208,
-          297,
-          351,
-          383,
-          387,
-          390,
-          423,
+          80,
+          128,
+          130,
+          207,
+          210,
+          299,
+          353,
+          385,
+          389,
+          392,
           425,
-          427
+          427,
+          429
         ]
       },
       "semantic_status": "CURRENT_FACT"
@@ -14387,50 +14387,50 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/api_delivery/test_followup_regressions.py": {
-      "sha256": "d249e1db252aee2581a76c4075f7cdd75dc21e2de28554308bc69bd6b0dc613d",
+      "sha256": "9229732c6460b9f4bc992b24aaf81ac4ac982fde3c37f62c9feb98cd0e6521cd",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           24,
           60,
           61,
-          208,
           209,
           210,
           211,
-          280,
-          311,
-          323,
-          354,
-          368,
-          371,
-          377,
-          395,
-          400,
-          405,
-          408,
-          417,
-          424,
-          436
+          212,
+          282,
+          313,
+          325,
+          356,
+          370,
+          373,
+          379,
+          397,
+          402,
+          407,
+          410,
+          419,
+          426,
+          438
         ],
         "executable-dependency": [
-          146,
-          178,
+          147,
           179,
-          237,
-          266,
-          291,
-          342,
-          449
+          180,
+          238,
+          267,
+          293,
+          344,
+          451
         ],
         "security-control": [
-          180
+          181
         ]
       },
       "semantic_status": "CURRENT_FACT"
     },
     "scripts/tests/api_delivery/test_release_history.py": {
-      "sha256": "7fe5add91976074a398a0f6cf8240c98ff731b3452793b2a765830193fd680ff",
+      "sha256": "d44d321693016059db53f868f91a87d853c7b5d679d401382482d45c63fc4872",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -14481,13 +14481,13 @@
       "semantic_status": "CURRENT_FACT"
     },
     "scripts/api_delivery/receipts.py": {
-      "sha256": "cc9a34d39129ccf81b886508fb04d3f338e6f48ebc92e6d324002bab584daed1",
+      "sha256": "5778490c74a5531cb3a3b2e81622f3e864c0875124c38e485696541bbbca88f4",
       "declarations": [],
       "signals": {
         "executable-dependency": [
           149,
           153,
-          353
+          370
         ]
       },
       "semantic_status": "CURRENT_FACT"
@@ -14506,7 +14506,7 @@
       "semantic_status": "CURRENT_FACT"
     },
     "scripts/tests/api_delivery/test_signed_receipts.py": {
-      "sha256": "5465be6f2e0d780254962e9e369c0c0beeb97e4850107562d6ec2535d2700226",
+      "sha256": "055324449489907d214c7106d0c7d4b6086873f793df8ecc28f2fb81d26b6df5",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -14585,6 +14585,12 @@
         ]
       },
       "semantic_status": "CURRENT_FACT"
+    },
+    "scripts/tests/api_delivery/test_pr_target_history.py": {
+      "semantic_status": "CURRENT_FACT",
+      "sha256": "c45c51b3334f579fd329028abb19fbe024793c7259824239edac40d06914a90c",
+      "declarations": [],
+      "signals": {}
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",

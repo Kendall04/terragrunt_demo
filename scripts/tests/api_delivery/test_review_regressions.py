@@ -71,6 +71,7 @@ class Rest(GitHub):
             PREFIX+'/rules/branches/main':[permissions.PROMOTION_RULE,{'type':'pull_request','parameters':{'allowed_merge_methods':['merge']}}],
             PREFIX+'/actions/workflows/api-promotion.yml':{'id':7},
             PREFIX+'/actions/runs/80':producer,PREFIX+'/actions/runs/80/attempts/2':producer,
+            PREFIX+'/check-runs/700':self.check_record,
             PREFIX+'/actions/artifacts/901':self.metadata,
             PREFIX+'/commits/'+source*40+'/check-runs?filter=all&per_page=100&page=1':{'check_runs':[self.check_record]},
             PREFIX+'/commits/'+'4'*40+'/pulls':[pull], PREFIX+'/pulls/42':pull})
@@ -129,7 +130,7 @@ class DirectReceiptTests(unittest.TestCase):
         self.assertEqual(m.promoted(revalidated.pull,['1'*40,'3'*40],'c'*64,receipt)['image'],record('c',source='3')['image'])
 
     def test_expiry_wrong_attempt_producer_digest_PR_and_postmerge_approval_block(self):
-        for defect in ('expired','attempt','workflow','event','digest','archive','foreign','pr','after-merge','failed-check','base'):
+        for defect in ('expired','attempt','workflow','event','digest','archive','foreign','pr','after-merge','failed-check','signed-base'):
             gh=Rest()
             if defect=='expired': gh.responses[PREFIX+'/attestations/sha256:'+gh.locator['s']+'?per_page=100']['attestations'].clear()
             if defect=='attempt': gh.producer['run_attempt']=3
@@ -141,7 +142,8 @@ class DirectReceiptTests(unittest.TestCase):
             if defect=='pr': gh.pull['number']=43
             if defect=='after-merge': gh.check_record['completed_at']='2026-11-08T20:11:00Z'
             if defect=='failed-check': gh.check_record['conclusion']='failure'
-            if defect=='base': gh.producer['pull_requests'][0]['base']['sha']='9'*40
+            if defect=='signed-base':
+                gh.signatures.valid[m.sha(m.canonical(gh.bundle))]['verificationResult']['signature']['certificate']['sourceRepositoryDigest']='9'*40
             with self.subTest(defect=defect),self.assertRaises(ValueError): gh.promotion_receipt(gh.pull)
 
     def test_green_is_not_written_until_the_exact_uploaded_artifact_is_retrievable(self):
@@ -154,7 +156,7 @@ class DirectReceiptTests(unittest.TestCase):
                 (path/'evidence/result.json').write_bytes(m.canonical(gh.receipt))
                 (path/'bundle.json').write_bytes(m.canonical(gh.bundle))
                 (path/'evidence/slot.json').write_bytes(m.canonical(r.slot('promotion',80,attempt=2)))
-                gh.responses[PREFIX+'/check-runs/700']=dict(gh.check_record,status='in_progress')
+                gh.responses[PREFIX+'/check-runs/700']=dict(gh.check_record,status='in_progress',conclusion=None)
                 env=dict(RECEIPT_BUNDLE=str(path/'bundle.json'),GITHUB_RUN_ID='80',GITHUB_RUN_ATTEMPT='2',GITHUB_WORKFLOW_SHA='1'*40,GITHUB_SHA='1'*40,GITHUB_EVENT_NAME='pull_request_target',GITHUB_REF='refs/heads/main')
                 previous=Path.cwd()
                 try:
