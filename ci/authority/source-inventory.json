@@ -14090,7 +14090,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/api_delivery/aws.py": {
-      "sha256": "06a45d109f70f4a6e36c60190a320a672073743e09f89ebd339073e7e91d06e0",
+      "sha256": "a1a8e2828293dbf4af24bb51d9baa2467545a2bfc0970e7d2e095ae43ee089e4",
       "declarations": [],
       "signals": {
         "role-input": [
@@ -14323,11 +14323,11 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/api_delivery/test_review_regressions.py": {
-      "sha256": "66d41d2f19ab7ddb46310eb14167fd2630be8c4dd4bf181cd137198cb3b27c0f",
+      "sha256": "b739e5b1cecfbad0c0f098dd49c92c4579df414ab64fc56f8d379b2c42a0a0bf",
       "declarations": [],
       "signals": {
         "role-input": [
-          359
+          382
         ],
         "launch-or-mutation": [
           20,
@@ -14344,23 +14344,24 @@
           256,
           303,
           304,
-          317,
-          325,
+          331,
+          340,
           348,
-          352,
-          354,
-          358,
-          364,
-          367,
-          373,
-          376,
-          402,
-          416,
-          417,
-          418,
-          445,
-          446,
-          447
+          371,
+          375,
+          377,
+          381,
+          387,
+          390,
+          396,
+          399,
+          425,
+          439,
+          440,
+          441,
+          468,
+          469,
+          470
         ],
         "executable-dependency": [
           40,
@@ -14371,13 +14372,13 @@
           207,
           210,
           299,
-          360,
-          393,
-          397,
-          400,
-          433,
-          435,
-          437
+          383,
+          416,
+          420,
+          423,
+          456,
+          458,
+          460
         ]
       },
       "semantic_status": "CURRENT_FACT"

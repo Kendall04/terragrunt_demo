@@ -313,6 +313,29 @@ class OrderingTests(unittest.TestCase):
 
 
 class RuntimeTests(unittest.TestCase):
+    def test_update_service_keeps_service_keyword_journal_and_E2(self):
+        cfg=config();store=e2.Store(MemoryS3(),'coordination','dev');store.initialize()
+        owner=e2.Authority(store,'normal-delivery/deploy-dev','11111111-1111-1111-1111-111111111111',{})
+        owner.acquire();events=[]
+        expected=dict(cluster=cfg['colors']['green']['service']['cluster'],
+                      service=cfg['colors']['green']['service']['service'],
+                      taskDefinition=record()['revision'],desiredCount=cfg['replicas'])
+        def update(**kwargs):
+            self.assertEqual(kwargs,expected)
+            self.assertEqual(events,[('attempt-update_service',expected)])
+            self.assertEqual(store.read()[0]['state'],'ACTIVE')
+            self.assertTrue(owner.touched)
+            events.append('update')
+        ecs=SimpleNamespace(update_service=Mock(side_effect=update))
+        with tempfile.TemporaryDirectory() as directory:
+            port=aws.Runtime({'ecs':ecs,'elbv2':Mock()},cfg,owner,owner.operation,directory)
+            port.journal=Mock(side_effect=lambda stage,value:events.append((stage,value)))
+            port.start('green',record()['revision'])
+        ecs.update_service.assert_called_once_with(**expected)
+        port.journal.assert_called_once_with('attempt-update_service',expected)
+        owner.finish(True,'SUCCESS')
+        self.assertEqual(store.read()[0]['state'],'RELEASED')
+
     def real_old_runtime(self):
         cfg=config();port=aws.Runtime.__new__(aws.Runtime);port.config=cfg;port.replicas=2
         port.color=lambda c:cfg['colors'][c];port.target=lambda c:'target-'+c
