@@ -684,7 +684,7 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/scripts/ci/toolchain.json": {
-      "sha256": "1f144c2a89c459cb3e9ecc1e090dbe18ba8419e61de8658dc7adb3c60078385c",
+      "sha256": "c57ebd959771ee5351aab88cc0ed8c899b5ca99c988806177ab29729ab82bb42",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -698,9 +698,9 @@
           24,
           28,
           58,
-          73,
-          75,
-          81
+          74,
+          76,
+          82
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -840,23 +840,23 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/workflows/ci-repo-hygiene.yml": {
-      "sha256": "095a57438c4161d0e57cc4b4e4a7431755016cdd3acc2466ae69bae3f8f0e769",
+      "sha256": "438f74cb4e3e3f6bcdf05e19a9ad6bda20a437c75fed96da6b2e5afead5c1ea4",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           32,
-          44,
-          56,
-          59,
-          86,
-          131,
-          132,
-          133,
-          149,
-          150,
-          151,
-          179,
-          182
+          49,
+          61,
+          64,
+          91,
+          136,
+          137,
+          138,
+          154,
+          155,
+          156,
+          184,
+          187
         ],
         "executable-dependency": [
           16,
@@ -867,20 +867,20 @@
           33,
           34,
           38,
-          44,
-          53,
-          59,
-          66,
-          85,
-          97,
-          98,
-          100,
-          114,
-          120,
-          136,
-          138,
-          160,
-          162
+          49,
+          58,
+          64,
+          71,
+          90,
+          102,
+          103,
+          105,
+          119,
+          125,
+          141,
+          143,
+          165,
+          167
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -4931,32 +4931,32 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/final_acceptance/contract.py": {
-      "sha256": "359fbe068bfa5530628428ffb68d7d4094cff468fc5ad2a24a62972e2fd4ee43",
+      "sha256": "ecbc69213c6d98040bd64bef576fccd2c930712f332d4cc8d4986bfb3eb70ad6",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
-          58
+          75
         ],
         "role-input": [
-          58
+          75
         ],
         "launch-or-mutation": [
           36,
-          58
+          75
         ],
         "executable-dependency": [
           24,
           33,
           37,
-          58,
-          60,
-          61,
-          105,
-          109,
-          110
+          75,
+          77,
+          78,
+          122,
+          126,
+          127
         ],
         "security-control": [
-          86
+          103
         ]
       },
       "semantic_status": "UNVERIFIED"
@@ -13891,6 +13891,200 @@
         ]
       },
       "semantic_status": "UNVERIFIED"
+    },
+    ".github/scripts/ci/tests/test_promotion_bootstrap.py": {
+      "semantic_status": "CURRENT_FACT",
+      "sha256": "6d03c58d1f737b1e9a3307744bd4f471987cbe7af990ef273a346c79015d494a",
+      "declarations": [],
+      "signals": {
+        "credential-acquisition": [
+          25
+        ],
+        "role-input": [
+          25
+        ],
+        "launch-or-mutation": [
+          25
+        ],
+        "executable-dependency": [
+          7,
+          17
+        ]
+      }
+    },
+    ".github/workflows/api-evaluate.yml": {
+      "semantic_status": "CURRENT_FACT",
+      "sha256": "707de5206594c3bb3e1fe5992502dc21d8bb03e8c72d3b4d9f280656fe0d5382",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          43
+        ]
+      }
+    },
+    ".github/workflows/api-promotion.yml": {
+      "semantic_status": "CURRENT_FACT",
+      "sha256": "1b64c61fe186120c6cc2019862528ddad4317eed0cf115b1556794206b5d6072",
+      "declarations": [],
+      "signals": {}
+    },
+    "scripts/api_delivery/__init__.py": {
+      "semantic_status": "CURRENT_FACT",
+      "sha256": "9f93c0c5479fa8627c209cb43b32c4931f4eea4ce198acd74afddcf7ca648614",
+      "declarations": [],
+      "signals": {}
+    },
+    "scripts/api_delivery/cli.py": {
+      "semantic_status": "CURRENT_FACT",
+      "sha256": "d22dacc8b3c354b077dd2ed148e88d4f323709d9bab6e64c3bf047644d5a67e8",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          173,
+          179,
+          182,
+          189,
+          194,
+          220,
+          242,
+          244,
+          256,
+          258
+        ],
+        "executable-dependency": [
+          134,
+          138,
+          168,
+          231,
+          236,
+          243,
+          252,
+          253,
+          256,
+          261,
+          263
+        ]
+      }
+    },
+    "scripts/api_delivery/github.py": {
+      "semantic_status": "CURRENT_FACT",
+      "sha256": "8f39a55f277286a2204215e1147801da25f30e903c2560af48a764b57f94aba1",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          12,
+          13
+        ]
+      }
+    },
+    "scripts/api_delivery/model.py": {
+      "semantic_status": "CURRENT_FACT",
+      "sha256": "92d5122317f18c2aee75d01e7cbfe3f3aec02de65ce56e218315bf894793b873",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          7,
+          139
+        ],
+        "executable-dependency": [
+          1,
+          63
+        ]
+      }
+    },
+    "scripts/api_delivery/receipt-policy.json": {
+      "semantic_status": "CURRENT_FACT",
+      "sha256": "2cdda2110b54aea82629dfa10d00c20c0632d8959bc2bb4701e5f6e663cbd827",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          3,
+          6
+        ]
+      }
+    },
+    "scripts/api_delivery/receipts.py": {
+      "semantic_status": "CURRENT_FACT",
+      "sha256": "5778490c74a5531cb3a3b2e81622f3e864c0875124c38e485696541bbbca88f4",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          149,
+          153,
+          370
+        ]
+      }
+    },
+    "scripts/api_delivery/workflow_contract.py": {
+      "semantic_status": "CURRENT_FACT",
+      "sha256": "01ab3f17bfad4491e58b28aea1e6a699b2c5c67d554c06af55a27e6fd57da9dd",
+      "declarations": [],
+      "signals": {
+        "credential-acquisition": [
+          132
+        ],
+        "role-input": [
+          134
+        ],
+        "launch-or-mutation": [
+          38,
+          60,
+          87,
+          132,
+          135,
+          163,
+          280
+        ]
+      }
+    },
+    "scripts/tests/api_promotion/evaluator_fixture.py": {
+      "semantic_status": "CURRENT_FACT",
+      "sha256": "bae1dd1c0e2ad4d1bfa2a7a483a61977676542ae8f20f4f75df9e969d5e9f28d",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          30
+        ],
+        "executable-dependency": [
+          26,
+          28,
+          49,
+          53,
+          89
+        ]
+      }
+    },
+    "scripts/tests/api_promotion/receipt_fixture.py": {
+      "semantic_status": "CURRENT_FACT",
+      "sha256": "0ce0ac079fdb174679561ecbab3cf319a87512d022f2b2bde9c9ce522a4584d5",
+      "declarations": [],
+      "signals": {
+        "executable-dependency": [
+          50,
+          51,
+          52,
+          54
+        ]
+      }
+    },
+    "scripts/tests/api_promotion/test_evaluator.py": {
+      "semantic_status": "CURRENT_FACT",
+      "sha256": "3ac6baea71a6e6911b8c745bab288664d407153bb99a8aff8017cc5b2dae6248",
+      "declarations": [],
+      "signals": {
+        "role-input": [
+          146
+        ],
+        "executable-dependency": [
+          18
+        ]
+      }
+    },
+    "scripts/tests/api_promotion/test_pr_target_history.py": {
+      "semantic_status": "CURRENT_FACT",
+      "sha256": "9a902910f116b497f0048a26554947c03bf479d34c456143a20ecc667bc3e32d",
+      "declarations": [],
+      "signals": {}
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",

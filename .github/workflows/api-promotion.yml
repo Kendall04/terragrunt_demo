@@ -1,0 +1,45 @@
+{
+  "name": "API promotion admission",
+  "on": {
+    "pull_request_target": {
+      "branches": [
+        "main"
+      ],
+      "types": [
+        "opened",
+        "synchronize",
+        "reopened",
+        "edited",
+        "ready_for_review"
+      ]
+    },
+    "workflow_run": {
+      "workflows": [
+        "API automatic delivery"
+      ],
+      "types": [
+        "completed"
+      ],
+      "branches": [
+        "develop"
+      ]
+    }
+  },
+  "permissions": {
+    "contents": "read"
+  },
+  "jobs": {
+    "promotion": {
+      "if": "${{ github.event_name == 'pull_request_target' || (github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success') }}",
+      "uses": "./.github/workflows/api-evaluate.yml",
+      "permissions": {
+        "contents": "read",
+        "actions": "read",
+        "pull-requests": "read",
+        "checks": "write",
+        "attestations": "write",
+        "id-token": "write"
+      }
+    }
+  }
+}

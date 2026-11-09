@@ -42,6 +42,20 @@ def retirement(root):
     return catalog
 
 
+def promotion_workflows(root):
+    """Bootstrap admits only the two reviewed non-AWS evaluator workflows.
+
+    The full template catalog is also used to authenticate queued DEV runs;
+    its deployment entries do not grant an exemption in this main-only install.
+    """
+    from scripts.api_delivery.workflow_contract import EXPECTED
+    names = {'api-promotion.yml', 'api-evaluate.yml'}
+    for name in names:
+        actual = json.loads((Path(root) / '.github/workflows' / name).read_text())
+        require(actual == EXPECTED[name], 'promotion workflow invocation drift: ' + name)
+    return names
+
+
 def closed(root):
     import model
     from scripts.workflow_requests import render
@@ -50,7 +64,10 @@ def closed(root):
     for name, expected in render.render(root, doc['wp6']['approvals']).items():
         require((Path(root) / name).read_text() == expected, 'workflow invocation drift: ' + name)
     generated = set(render.render(root, doc['wp6']['approvals']))
+    promotion = promotion_workflows(root)
     for path in (Path(root) / '.github/workflows').glob('*.yml'):
+        if path.name in promotion:
+            continue  # Complete equality above, not a generic OIDC exception.
         if path.relative_to(root).as_posix() in generated:
             json.loads(path.read_text()) # Generated YAML is the JSON subset.
             continue
