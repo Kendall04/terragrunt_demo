@@ -450,7 +450,7 @@
       "semantic_status": "UNVERIFIED"
     },
     ".github/scripts/ci/install-tools.py": {
-      "sha256": "e094108000fa3f6124b7b1be18498a8f607c866b4ecbee4e516369981d2a2978",
+      "sha256": "cccd885d63f466562d946010828f7b5c58883d8d480ecd4a9596439a2be90dd0",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -14570,10 +14570,25 @@
         ]
       },
       "semantic_status": "CURRENT_FACT"
+    },
+    "scripts/tests/reproducibility/test_tool_download.py": {
+      "sha256": "8b773ee28fbb08dcca8133e10efc1534f86833baafab503824f1b5c01977a494",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          82
+        ],
+        "executable-dependency": [
+          42,
+          43,
+          44
+        ]
+      },
+      "semantic_status": "CURRENT_FACT"
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",
-  "review_revision": "c3daa2313e5062d1cde6d5100002dd24c630d7bb",
-  "review_note": "Reviewed exact sealed DEV publication selection through promotion_receipt after later failed and successful identical signatures. Selected producer/attempt validation and all signed-content contradiction checks remain required; unsealed discovery still requires reconciliation. Offline REST/Sigstore transport regressions; no workflow, permission or effective AWS changes. review_delta_sha256 hashes compact sorted JSON of changed source paths to their normalized source hashes.",
-  "review_delta_sha256": "a4b9f32e37f866b7e7fd5c80bb4017de979226ce40bd50dd67540cfefde1cbbb"
+  "review_revision": "f22fd24edc44967bf18a35f38962d2346327b196",
+  "review_note": "Reviewed official GitHub Releases API fallback only after HTTP 504 for the same exact tagged asset. Existing checked-in SHA-256 verification remains mandatory before archive parsing/install; no changed pins, tokens or permissions. Offline transport tests cover identity, ambiguity, checksum mismatch and non-504/API failures. review_delta_sha256 hashes compact sorted JSON of changed source paths to their normalized source hashes.",
+  "review_delta_sha256": "3f575d37605e59ee5a157b9ccf7e202240c60675bca4d9af2858702edf2c467d"
 }
