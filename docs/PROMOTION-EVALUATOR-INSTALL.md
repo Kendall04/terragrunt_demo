@@ -16,7 +16,7 @@ this installation.
 | [api-evaluate.yml](../.github/workflows/api-evaluate.yml) | Evaluates with base code, publishes a signed predicate and rereads the published attestation and check locator before success. |
 | [cli.py](../scripts/api_delivery/cli.py), [github.py](../scripts/api_delivery/github.py), [model.py](../scripts/api_delivery/model.py) | Existing command orchestration, scoped GitHub transport and application/source/merge contracts. |
 | [receipts.py](../scripts/api_delivery/receipts.py), [receipt-policy.json](../scripts/api_delivery/receipt-policy.json) | Discover and authenticate signed deployment and promotion receipts, including exact producer attempts, stable PR association, certificate base and exact-check head. |
-| [workflow_contract.py](../scripts/api_delivery/workflow_contract.py) | Reviewed templates also needed to authenticate a DEV run waiting on its scope dependency. Templates are data, not installed delivery workflows. |
+| [workflow_contract.py](../scripts/api_delivery/workflow_contract.py) | E1 uses the two evaluator entries from the unchanged reviewed catalog. The shared reader also retains its optional queued-DEV template checks. These templates do not install delivery workflows. |
 | [api_promotion tests](../scripts/tests/api_promotion/) | Promotion-only fixtures and regressions; normal and optimized Python run in Repo Hygiene. |
 
 All seven implementation/policy files and both workflows retain the reviewed
@@ -70,12 +70,14 @@ file, SQL/TLS runtime file, Terraform declaration or IAM definition is changed.
    CD Safety Validation protections. Do not require API Promotion Validation
    before its producer is present on main. This PR leaves that rule uninstalled.
 2. Verify the installed caller/reusable workflow and main signing revision.
-   Qualify real pull_request_target and workflow_run events on the installed
-   default-branch code, including published attestation/check readback.
-3. In a separately approved governance change, enforce merge-only promotions
-   and require API Promotion Validation only on main. Current main allows merge,
+   A separately approved governance change must enforce merge-only promotions
+   before a successful evaluator qualification. Current main allows merge,
    squash and rebase; the reviewed evaluator intentionally fails closed under
-   that policy. Do not weaken its preflight to manufacture a green check.
+   that policy. Keep the new promotion check optional during this qualification.
+3. Qualify real pull_request_target and workflow_run events on the installed
+   default-branch code, including published attestation/check readback. Only
+   after those checks pass should the separately approved main-only required
+   API Promotion Validation rule be installed. Do not weaken the preflight.
 4. Keep main as an ancestor of develop before opening a promotion. A bootstrap
    feature branch cannot impersonate develop; later feature-to-main PRs are
    rejected by the evaluator's branch/repository contract.
