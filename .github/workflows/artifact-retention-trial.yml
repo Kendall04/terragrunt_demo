@@ -1,0 +1,53 @@
+{
+  "name": "Isolated release-record retention trial",
+  "on": {
+    "push": {
+      "branches": [
+        "codex/artifact-retention-trial-20261109"
+      ]
+    }
+  },
+  "permissions": {},
+  "jobs": {
+    "retention": {
+      "if": "${{ github.repository == 'Kendall04/terragrunt_demo' && github.ref == 'refs/heads/codex/artifact-retention-trial-20261109' && github.event_name == 'push' }}",
+      "runs-on": "ubuntu-latest",
+      "timeout-minutes": 5,
+      "permissions": {},
+      "steps": [
+        {
+          "name": "Create unmistakably fictitious receipt",
+          "shell": "bash",
+          "run": "python3 - <<'PY'\nimport datetime, json, os\nfrom pathlib import Path\nvalue = {\n    \"schema\": \"isolated-artifact-retention-trial/v1\",\n    \"fictitious\": True,\n    \"deployment\": False,\n    \"purpose\": \"Artifact retention only; no AWS, image, task or release is represented.\",\n    \"contract_commit\": \"0c9770a5ae5a6c59856b127791241c82397a7bfb\",\n    \"repository\": os.environ[\"GITHUB_REPOSITORY\"],\n    \"run_id\": int(os.environ[\"GITHUB_RUN_ID\"]),\n    \"run_attempt\": int(os.environ[\"GITHUB_RUN_ATTEMPT\"]),\n    \"workflow_sha\": os.environ[\"GITHUB_WORKFLOW_SHA\"],\n    \"workflow_ref\": os.environ[\"GITHUB_WORKFLOW_REF\"],\n    \"head_sha\": os.environ[\"GITHUB_SHA\"],\n    \"created_at\": datetime.datetime.now(datetime.timezone.utc).isoformat(),\n}\nPath(\"evidence\").mkdir()\nPath(\"evidence/result.json\").write_text(json.dumps(value, indent=2) + \"\\n\")\nprint(json.dumps(value))\nPY"
+        },
+        {
+          "name": "Intentionally fail rerun before upload",
+          "if": "${{ github.run_attempt != '1' }}",
+          "shell": "bash",
+          "run": "echo 'Expected experiment failure: attempt 2 must not upload, delete or overwrite any artifact.'\nexit 42"
+        },
+        {
+          "name": "Upload fictitious release-record",
+          "id": "receipt",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "release-record",
+            "path": "evidence/result.json",
+            "retention-days": 90,
+            "if-no-files-found": "error",
+            "overwrite": false
+          }
+        },
+        {
+          "name": "Record upload locator",
+          "shell": "bash",
+          "env": {
+            "ARTIFACT_ID": "${{ steps.receipt.outputs.artifact-id }}",
+            "ARTIFACT_DIGEST": "${{ steps.receipt.outputs.artifact-digest }}"
+          },
+          "run": "printf 'artifact_id=%s\\nartifact_digest=%s\\n' \"$ARTIFACT_ID\" \"$ARTIFACT_DIGEST\""
+        }
+      ]
+    }
+  }
+}
