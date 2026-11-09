@@ -32,7 +32,8 @@
         "contents": "read",
         "actions": "read",
         "pull-requests": "read",
-        "id-token": "write"
+        "id-token": "write",
+        "attestations": "write"
       }
     }
   }

@@ -242,12 +242,17 @@ class BoundaryTests(unittest.TestCase):
                     with self.assertRaises(ValueError):port.client_ready()
             self.assertEqual(opener.urls,['https://example.test/health/live','https://example.test/ready'])
 
-    def test_workflows_closed_and_no_PR_oidc(self):
+    def test_workflows_closed_and_PR_signing_has_no_AWS_authority(self):
         workflow_contract.validate(ROOT)
         promo=workflow_contract.EXPECTED['api-promotion.yml']
         self.assertNotIn('id-token',promo['permissions'])
-        self.assertIn('checks',promo['permissions'])
-        self.assertEqual(promo['jobs']['promotion']['steps'][0]['with']['ref'],'${{ github.sha }}')
+        evaluate=workflow_contract.EXPECTED['api-evaluate.yml']['jobs']['promotion']
+        self.assertEqual(evaluate['permissions']['id-token'],'write')
+        self.assertEqual(evaluate['permissions']['attestations'],'write')
+        self.assertNotIn('environment',evaluate)
+        self.assertNotIn('configure-aws-credentials',json.dumps(evaluate))
+        self.assertEqual(evaluate['steps'][0]['with']['ref'],'${{ github.sha }}')
+        self.assertEqual(promo['jobs']['promotion']['uses'],'./.github/workflows/api-evaluate.yml')
         caller=workflow_contract.EXPECTED['api-delivery.yml']
         self.assertNotIn('pull_request',caller['on']);self.assertNotIn('pull_request_target',caller['on'])
         self.assertEqual(caller['jobs']['delivery']['uses'],'./.github/workflows/api-execute.yml')

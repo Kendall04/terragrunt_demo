@@ -41,7 +41,8 @@ EXPECTED = json.loads(r'''
           "contents": "read",
           "actions": "read",
           "pull-requests": "read",
-          "id-token": "write"
+          "id-token": "write",
+          "attestations": "write"
         }
       }
     }
@@ -96,7 +97,8 @@ EXPECTED = json.loads(r'''
           "contents": "read",
           "actions": "read",
           "pull-requests": "read",
-          "id-token": "write"
+          "id-token": "write",
+          "attestations": "write"
         },
         "env": {
           "GH_TOKEN": "${{ github.token }}",
@@ -144,11 +146,40 @@ EXPECTED = json.loads(r'''
             "id": "execute"
           },
           {
-            "name": "Retain authenticated successful deployment",
+            "name": "Prepare public receipt predicate",
+            "if": "steps.execute.outputs.deployed == 'true' || steps.execute.outputs.receipt == 'true'",
+            "env": {
+              "RECOVERED": "${{ steps.execute.outputs.recovered }}"
+            },
+            "run": "if [ \"$RECOVERED\" = true ]; then\n  python3 -B -m scripts.api_delivery.cli receipt-files --kind deployment --input evidence/result.json --recovered\nelse\n  python3 -B -m scripts.api_delivery.cli receipt-files --kind deployment --input evidence/result.json\nfi"
+          },
+          {
+            "name": "Publish durable receipt",
+            "id": "signed",
+            "if": "steps.execute.outputs.deployed == 'true' || steps.execute.outputs.receipt == 'true'",
+            "uses": "actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6",
+            "with": {
+              "subject-path": "evidence/slot.json",
+              "predicate-type": "https://github.com/Kendall04/terragrunt_demo/api-delivery/receipt/v1",
+              "predicate-path": "evidence/predicate.json",
+              "push-to-registry": false,
+              "create-storage-record": false
+            }
+          },
+          {
+            "name": "Verify published receipt from GitHub",
+            "if": "steps.execute.outputs.deployed == 'true' || steps.execute.outputs.receipt == 'true'",
+            "run": "python3 -B -m scripts.api_delivery.cli verify-receipt --input evidence/result.json",
+            "env": {
+              "RECEIPT_BUNDLE": "${{ steps.signed.outputs.bundle-path }}"
+            }
+          },
+          {
+            "name": "Retain deployment diagnostics (not authority)",
             "if": "steps.execute.outputs.deployed == 'true'",
             "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
             "with": {
-              "name": "release-record",
+              "name": "release-diagnostics-${{ github.run_attempt }}",
               "path": "evidence/result.json",
               "if-no-files-found": "error",
               "retention-days": 90
@@ -187,16 +218,35 @@ EXPECTED = json.loads(r'''
       }
     },
     "permissions": {
-      "contents": "read",
-      "actions": "read",
-      "pull-requests": "read",
-      "checks": "write"
+      "contents": "read"
+    },
+    "jobs": {
+      "promotion": {
+        "if": "${{ github.event_name == 'pull_request_target' || (github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success') }}",
+        "uses": "./.github/workflows/api-evaluate.yml",
+        "permissions": {
+          "contents": "read",
+          "actions": "read",
+          "pull-requests": "read",
+          "checks": "write",
+          "attestations": "write",
+          "id-token": "write"
+        }
+      }
+    }
+  },
+  "api-evaluate.yml": {
+    "name": "Trusted API receipt evaluator",
+    "on": {
+      "workflow_call": {}
+    },
+    "permissions": {
+      "contents": "read"
     },
     "jobs": {
       "promotion": {
         "runs-on": "ubuntu-latest",
         "timeout-minutes": 15,
-        "if": "${{ github.event_name == 'pull_request_target' || (github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success') }}",
         "env": {
           "GH_TOKEN": "${{ github.token }}"
         },
@@ -216,15 +266,21 @@ EXPECTED = json.loads(r'''
             "run": "python3 -B -m scripts.api_delivery.cli promotion --output evidence/result.json"
           },
           {
-            "name": "Retain sealed PR approval",
+            "name": "Prepare public approval predicate",
+            "if": "hashFiles('evidence/result.json') != ''",
+            "run": "python3 -B -m scripts.api_delivery.cli receipt-files --kind promotion --input evidence/result.json"
+          },
+          {
+            "name": "Publish durable receipt",
             "id": "receipt",
             "if": "hashFiles('evidence/result.json') != ''",
-            "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+            "uses": "actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6",
             "with": {
-              "name": "promotion-record-${{ github.run_attempt }}",
-              "path": "evidence/result.json",
-              "if-no-files-found": "error",
-              "retention-days": 90
+              "subject-path": "evidence/slot.json",
+              "predicate-type": "https://github.com/Kendall04/terragrunt_demo/api-delivery/receipt/v1",
+              "predicate-path": "evidence/predicate.json",
+              "push-to-registry": false,
+              "create-storage-record": false
             }
           },
           {
@@ -233,12 +289,19 @@ EXPECTED = json.loads(r'''
             "env": {
               "GATE_OUTCOME": "${{ steps.gate.outcome }}",
               "RECEIPT_OUTCOME": "${{ steps.receipt.outcome }}",
-              "PROMOTION_ARTIFACT_ID": "${{ steps.receipt.outputs.artifact-id }}",
-              "PROMOTION_ARTIFACT_DIGEST": "${{ steps.receipt.outputs.artifact-digest }}"
+              "RECEIPT_BUNDLE": "${{ steps.receipt.outputs.bundle-path }}"
             },
             "run": "if [ \"$GATE_OUTCOME\" = success ] && [ \"$RECEIPT_OUTCOME\" = success ]; then\n  python3 -B -m scripts.api_delivery.cli finish-promotion --success\nelse\n  python3 -B -m scripts.api_delivery.cli finish-promotion\nfi"
           }
-        ]
+        ],
+        "permissions": {
+          "contents": "read",
+          "actions": "read",
+          "pull-requests": "read",
+          "checks": "write",
+          "attestations": "write",
+          "id-token": "write"
+        }
       }
     }
   }

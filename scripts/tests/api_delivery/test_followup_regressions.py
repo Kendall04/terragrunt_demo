@@ -26,6 +26,8 @@ from scripts.api_delivery.github import GitHub
 from scripts.api_delivery.executor import deploy, DeliveryFailure
 from test_delivery import config, record, Port, authorization_task, ACCOUNT, REGION, MemoryS3
 from test_review_regressions import Rest, PREFIX, ObjectS3
+from receipt_fixture import origin
+from scripts.api_delivery import receipts as r
 import test_review_regressions as review
 from scripts import environment_mutation as e2
 
@@ -37,6 +39,7 @@ class Wire:
         fixture.responses[PREFIX+'/actions/runs/80/attempts/2'] = copy.deepcopy(fixture.producer)
 
     def __call__(self, argv, **kwargs):
+        if argv[:2] == ['gh','attestation']: return self.fixture.signatures.verify(argv)
         assert argv[:2] == ['gh', 'api'], argv
         path = argv[-1]
         self.calls.append(path)
@@ -67,11 +70,11 @@ class GitHubTransportTests(unittest.TestCase):
             f.producer.update(run_attempt=3,status='in_progress',conclusion=None)
             with patch('scripts.api_delivery.github.subprocess.check_output',side_effect=wire):
                 receipt,locator=GitHub().promotion_receipt(f.pull)
-            self.assertEqual((locator['artifact'],locator['run'],locator['attempt']),(901,80,2))
+            self.assertEqual((locator['r'],locator['a']),(80,2))
             self.assertEqual(receipt['dev']['image'],record()['image'])
             self.assertIn(PREFIX+'/actions/runs/80/attempts/2',wire.calls)
             self.assertNotIn(PREFIX+'/actions/runs/80',wire.calls)
-            self.assertIn(PREFIX+'/actions/artifacts/901/zip',wire.calls)
+            self.assertIn(PREFIX+'/attestations/sha256:'+f.locator['s']+'?per_page=100',wire.calls)
 
     def test_missing_repository_setting_is_optional_for_job_but_required_for_admin(self):
         f=Rest();del f.responses[PREFIX]['allow_merge_commit'];wire=Wire(f)
@@ -89,30 +92,24 @@ class GitHubTransportTests(unittest.TestCase):
     def test_sealed_attempt_refuses_substitution_expiry_wrong_attempt_and_producer(self):
         for fault in ('substitute','expired','other-attempt','other-run','other-workflow','other-repo','zip-bytes'):
             f=Rest();wire=Wire(f)
-            if fault=='substitute':f.metadata['id']=902
-            if fault=='expired':f.metadata['expired']=True
-            if fault=='other-run':f.metadata['workflow_run']['id']=81
+            if fault=='substitute':f.check_record['external_id']=json.dumps(dict(f.locator,h='0'*64))
+            if fault=='expired':f.responses[PREFIX+'/attestations/sha256:'+f.locator['s']+'?per_page=100']['attestations'].clear()
+            if fault=='other-run':wire.fixture.responses[PREFIX+'/actions/runs/80/attempts/2']['id']=81
             if fault=='other-workflow':wire.fixture.responses[PREFIX+'/actions/runs/80/attempts/2']['workflow_id']=900
-            if fault=='other-repo':f.metadata['workflow_run']['head_repository_id']=100
-            if fault=='zip-bytes':f.binary[PREFIX+'/actions/artifacts/901/zip']+=b'changed'
-            if fault=='other-attempt':
-                f.receipt['run_attempt']=3
-                stream=io.BytesIO()
-                with zipfile.ZipFile(stream,'w') as z:z.writestr('result.json',m.canonical(f.receipt))
-                raw=stream.getvalue();f.binary[PREFIX+'/actions/artifacts/901/zip']=raw
-                f.metadata['digest']=f.locator['digest']='sha256:'+m.sha(raw)
-                f.check_record['external_id']=json.dumps(f.locator)
+            if fault=='other-repo':wire.fixture.responses[PREFIX+'/actions/runs/80/attempts/2']['head_repository']['full_name']='other/repo'
+            if fault=='zip-bytes':f.bundle['dsseEnvelope']['signatures'][0]['sig']='altered'
+            if fault=='other-attempt':f.check_record['external_id']=json.dumps(dict(f.locator,a=3))
             with patch('scripts.api_delivery.github.subprocess.check_output',side_effect=wire):
                 with self.subTest(fault=fault),self.assertRaises(ValueError):GitHub().promotion_receipt(f.pull)
 
     def test_later_green_run_does_not_replace_check_that_authorized_merge(self):
         f=Rest();wire=Wire(f)
         other=dict(f.check_record,id=701,started_at='2026-11-08T20:11:00Z',completed_at='2026-11-08T20:12:00Z',
-                   external_id=json.dumps(dict(f.locator,artifact=902,run=81)))
+                   external_id=json.dumps(dict(f.locator,r=81)))
         f.responses[PREFIX+'/commits/'+'2'*40+'/check-runs?filter=all&per_page=100&page=1']['check_runs'].append(other)
         with patch('scripts.api_delivery.github.subprocess.check_output',side_effect=wire):
             receipt,locator=GitHub().promotion_receipt(f.pull)
-        self.assertEqual((locator['check_id'],locator['artifact'],locator['run'],locator['attempt']),(700,901,80,2))
+        self.assertEqual((locator['check_id'],locator['r'],locator['a']),(700,80,2))
         self.assertEqual(receipt,f.receipt)
         self.assertFalse(any('/81' in p or '/902' in p for p in wire.calls))
 
@@ -180,7 +177,7 @@ class FreshnessTests(unittest.TestCase):
             pull.update(state='open',merged=False);pull['head']['sha']=bp;pull['base']['sha']=base
             old=record('b');old.update(source=b,application=app)
             new=record('d');new.update(source=bp,application=app)
-            gh=SimpleNamespace(get=lambda p:pull,check=Mock(return_value={'id':700}),require_merge_policy=Mock())
+            gh=SimpleNamespace(get=lambda p:pull,check=Mock(return_value={'id':700}),require_merge_policy=Mock(),deployment_receipt=lambda record:{'fixture':record['source']})
             (h.root/'event').write_bytes(m.canonical({'pull_request':{'number':42}}))
             env=dict(GITHUB_EVENT_PATH=str(h.root/'event'),GITHUB_EVENT_NAME='pull_request_target',GITHUB_SHA=base,
                      GITHUB_WORKFLOW_SHA=base,GITHUB_WORKFLOW_REF=m.REPOSITORY+'/'+m.PROMOTION+'@refs/heads/main',
@@ -189,9 +186,9 @@ class FreshnessTests(unittest.TestCase):
             try:
                 os.chdir(h.root)
                 with patch.dict(os.environ,env),patch.object(cli,'ROOT',h.root):
-                    gh.deployments=lambda env:iter([old])
+                    gh.deployments=lambda env, **kwargs:iter([old])
                     with self.assertRaisesRegex(ValueError,'no successful DEV'):cli.promotion(gh,h.root/'result')
-                    gh.deployments=lambda env:iter([old,new])
+                    gh.deployments=lambda env, **kwargs:iter([old,new])
                     cli.promotion(gh,h.root/'result')
             finally:os.chdir(previous)
             receipt=json.loads((h.root/'result').read_bytes())
@@ -207,13 +204,14 @@ class FreshnessTests(unittest.TestCase):
         path=h.root/('execution-'+str(run_id));path.mkdir()
         (path/'request').write_bytes(m.canonical(request))
         env=dict(API_CD_ENABLED='true',API_BINDING_REF=json.dumps({'region':REGION,'sha256':'a'*64}),
-                 GITHUB_EVENT_NAME='push',GITHUB_RUN_ID=str(run_id),GITHUB_RUN_ATTEMPT='2',GITHUB_OUTPUT=str(path/'outputs'))
+                 GITHUB_SHA='2'*40,GITHUB_WORKFLOW_SHA='2'*40,GITHUB_REF='refs/heads/develop',GITHUB_EVENT_NAME='push',GITHUB_RUN_ID=str(run_id),GITHUB_RUN_ATTEMPT='2',GITHUB_OUTPUT=str(path/'outputs'))
         with patch.dict(os.environ,env),patch.object(cli,'ROOT',h.root),patch.object(aws,'clients',return_value={}),\
              patch.object(aws,'binding',return_value=cfg),patch.object(aws,'owner',return_value=owner),\
              patch.object(aws,'Runtime',return_value=port),patch.object(aws,'publish',return_value=image) as build,\
              patch.object(aws,'verify_image'),patch.object(aws,'verify_manifest'):
             cli.execute(gh,path/'request',path/'result')
         result=json.loads((path/'result').read_bytes()) if (path/'result').exists() else None
+        if result and result['schema']=='API_NO_DEPLOYMENT_V1': result=None
         return result,port,build
 
     def test_A_running_C_pending_old_B_retry_C_deploys_once_under_real_E2(self):
@@ -228,11 +226,12 @@ class FreshnessTests(unittest.TestCase):
                 if concurrency.get('queue','single')=='single':pending=[]
                 pending.append(source)
             active.finish(True,'SUCCESS')
+            freshness_states=[]
             def get(path):
                 if '/workflows/' in path:return {'state':'disabled_manually'}
-                self.assertEqual(store.read()[0]['state'],'ACTIVE')
+                freshness_states.append(store.read()[0]['state'])
                 return {'object':{'sha':c}}
-            gh=SimpleNamespace(get=get,deployments=lambda env:iter([]))
+            gh=SimpleNamespace(get=get,deployments=lambda env, **kwargs:iter([]))
             deployed=[];registrations=0
             for index,source in enumerate(pending):
                 request=dict(environment='dev',source=source,event_source=source,
@@ -242,6 +241,8 @@ class FreshnessTests(unittest.TestCase):
                 if result:deployed.append(result['source']);self.assertEqual(build.call_count,1)
                 else:build.assert_not_called();self.assertNotIn('register',port.calls)
             self.assertEqual(deployed,[c]);self.assertEqual(registrations,1)
+            # Current C is checked under E2; stale B exits without acquiring.
+            self.assertEqual(freshness_states,['RELEASED','ACTIVE','RELEASED'])
             self.assertEqual(store.read()[0]['state'],'RELEASED')
 
     def test_real_merge_B_C_Bprime_distinct_receipts_old_B_cannot_replace_Bprime(self):
@@ -264,28 +265,25 @@ class FreshnessTests(unittest.TestCase):
                 f.pull['head']['sha']=head;f.pull['base']['sha']=base
                 dev=record(digest);dev.update(source=head,application=app)
                 dev['manifest_ref']['sha256']=m.sha(m.canonical({k:v for k,v in dev.items() if k!='manifest_ref'}))
-                receipt=dict(m.approval(f.pull,app,dev),run_id=81-index,run_attempt=2,
+                dev['run_id']=100+index
+                _,dev_locator=f.signatures.deployment(dev)
+                receipt=dict(m.approval(f.pull,app,dev),run_id=81-index,run_attempt=2,check_id=700,dev_receipt=dev_locator,
                              execution=dict(event='pull_request_target',workflow_sha=base,
                              workflow_ref=m.REPOSITORY+'/'+m.PROMOTION+'@refs/heads/main'))
                 producer=dict(f.producer,id=81-index,head_sha=head,pull_requests=[copy.deepcopy(f.pull)])
-                stream=io.BytesIO()
-                with zipfile.ZipFile(stream,'w') as z:z.writestr('result.json',m.canonical(receipt))
-                raw=stream.getvalue();locator=dict(v=1,run=81-index,attempt=2,artifact=902-index,digest='sha256:'+m.sha(raw))
+                _,locator=f.signatures.sign(r.slot('promotion',81-index,attempt=2),receipt,origin(base,81-index,2,'pull_request_target','prod'))
                 check=dict(f.check_record,head_sha=head,external_id=json.dumps(locator),details_url=GitHub.approval_url(locator))
-                metadata=dict(f.metadata,id=locator['artifact'],digest=locator['digest'],size_in_bytes=len(raw),
-                              workflow_run=dict(id=locator['run'],repository_id=99,head_repository_id=99))
-                f.responses.update({PREFIX+'/actions/runs/'+str(locator['run'])+'/attempts/2':producer,
-                    PREFIX+'/actions/artifacts/'+str(locator['artifact']):metadata,
+                f.responses.update(f.signatures.responses)
+                f.responses.update({PREFIX+'/actions/runs/'+str(locator['r'])+'/attempts/2':producer,
                     PREFIX+'/commits/'+head+'/check-runs?filter=all&per_page=100&page=1':{'check_runs':[check]},
                     PREFIX+'/git/ref/heads/main':{'object':{'sha':last[2]}}})
-                f.binary[PREFIX+'/actions/artifacts/'+str(locator['artifact'])+'/zip']=raw
                 for workflow in ('cd.yml','cd-terragrunt.yml'):f.responses[PREFIX+'/actions/workflows/'+workflow]={'state':'disabled_manually'}
                 wire=Wire(f)
                 # Wire's default run-80 snapshot is only relevant to the base fixture.
-                f.responses[PREFIX+'/actions/runs/'+str(locator['run'])+'/attempts/2']=producer
+                f.responses[PREFIX+'/actions/runs/'+str(locator['r'])+'/attempts/2']=producer
                 def transport(argv,**kw):
                     return wire(argv,**kw) if argv[0]=='gh' else real_output(argv,**kw)
-                gh=GitHub();gh.deployments=lambda env:iter([])
+                gh=GitHub();gh.deployments=lambda env, **kwargs:iter([])
                 with patch('scripts.api_delivery.github.subprocess.check_output',side_effect=transport):
                     approved,link=gh.promotion_receipt(f.pull)
                     parents=h.git('show','-s','--format=%P',merged).split()
@@ -299,7 +297,7 @@ class FreshnessTests(unittest.TestCase):
                 else:self.assertNotIn('register',port.calls)
             self.assertEqual(len(results),1);self.assertEqual(results[0]['source'],last[2])
             self.assertEqual(results[0]['image'],record('d')['image'])
-            self.assertEqual((results[0]['approval']['artifact'],results[0]['approval']['run']),(902,81))
+            self.assertEqual((results[0]['approval']['r'],results[0]['approval']['a']),(81,2))
 
 
 class DrainHealthTests(unittest.TestCase):

@@ -41,6 +41,10 @@ def definitions(config, role_arn, binding_ref):
     # is proven by the allowed list, never inferred from GetObject AccessDenied.
     allow(['s3:ListBucket'], ['arn:aws:s3:::' + bucket],
           {'StringLike': {'s3:prefix': terminals.split(obj, 1)[1]}, 'NumericEquals': {'s3:max-keys': 1}})
+    # Publication-only recovery enumerates every version of ONE exact release key.
+    allow(['s3:ListBucketVersions'], ['arn:aws:s3:::' + bucket],
+          {'StringLike': {'s3:prefix': f'api-delivery/{env}/operations/*/release.json'},
+           'NumericLessThanEquals': {'s3:max-keys': 100}})
     allow(['s3:PutObject'], [head], {'Null': {'s3:if-match': 'false'}})
     allow(['s3:PutObject'], [terminals, records], {'StringEquals': {'s3:if-none-match': '*'}})
     allow(['kms:Decrypt', 'kms:GenerateDataKey'], [config['evidence_kms_key']],

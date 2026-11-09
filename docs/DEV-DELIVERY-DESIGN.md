@@ -33,8 +33,9 @@ the environment; the executor resolves its previous healthy compatible release.
   job; environment-specific configuration and OIDC. Both environments execute
   [the same algorithm](../scripts/api_delivery/executor.py).
 - [api-promotion.yml](../.github/workflows/api-promotion.yml): trusted default
-  branch code on PR-to-main events and after a successful DEV run. No OIDC or
-  AWS credentials. It fetches PR objects but never checks out or executes PR code.
+  branch caller on PR-to-main events and after a successful DEV run. Its reusable
+  [api-evaluate.yml](../.github/workflows/api-evaluate.yml) signs with Sigstore OIDC,
+  with no AWS role or deployment environment. It fetches PR objects but never checks out or executes PR code.
   It publishes `API Promotion Validation` on the exact PR head; incomplete,
   cancelled or failed evaluation cannot supply a successful check.
 
@@ -48,8 +49,9 @@ fresh DEV success. Docs-only pushes do not acquire AWS credentials,
 build or move traffic.
 
 The PR receipt includes PR number, head SHA, base SHA, application identity and
-the complete successful DEV receipt. The successful check links directly to its
-artifact ID, producing run, attempt and ZIP digest. PROD reads **that artifact**,
+the complete successful DEV receipt and its exact signed attestation locator. The
+successful check carries a compact subject/statement hash and producer identity.
+PROD reads **that attestation from GitHub**,
 not a scan of promotion runs. It checks the actual merge's two parents against
 the receipt and the resulting application identity. It never asks for the newest
 DEV image. Thus B remains B if DEV subsequently publishes C.
@@ -80,7 +82,7 @@ conclusion. Both push aggregators must pass on the integrated SHA. During source
 qualification, an older green CI attempt cannot replace a newer failed/cancelled
 run. A completed promotion approval is different: its sealed attempt is fetched
 with `/actions/runs/<run>/attempts/<attempt>`, not the latest run endpoint. Thus
-run 80/attempt 3 cannot invalidate or replace the approved artifact from attempt 2.
+run 80/attempt 3 cannot invalidate or replace the approved attestation from attempt 2.
 The finalizer still reads its current in-progress run and demands its own attempt.
 `pull_request_target`
 REST `head_sha` may identify the PR head, while `GITHUB_SHA` and
@@ -89,30 +91,130 @@ association and evaluator identity separately. For `workflow_run`, the triggerin
 DEV execution/attempt is a separate identity from the default-branch evaluator;
 it is not the version implicitly selected for promotion.
 
-Artifacts use pinned upload-artifact v4, unique immutable names, a verified ZIP
-SHA256 and bounded contents; no arbitrary extraction. Retention is 90 days.
-Expired/deleted/missing artifacts block promotion and rollback; there is no
-`latest` fallback. These receipts are evidence of trusted GitHub runs, not a
-claim that repository administrators cannot delete them. A successful deployment
-also archives its receipt in the existing versioned SSE-KMS evidence bucket:
+Receipts use GitHub repository attestations with a custom in-toto predicate,
+following the [isolated prototype](https://github.com/Kendall04/terragrunt_demo/commit/6c2fe3fed15d932ae090a1922976dc15542ddc78).
+Actions artifacts remain optional diagnostics; their deletion cannot change the
+approved release. Attestations can also be deleted by repository administrators:
+missing or contradictory evidence blocks delivery, never selects a substitute.
 
-1. DEV writes `api-delivery/dev/operations/<operation>/release.json` with
-   `If-None-Match:*`. The returned S3 `VersionId` is reread explicitly. The GitHub
-   release artifact carries bucket/key/version/SHA256, source, application,
-   OCI digest, ECS revision and per-task/client SQL+KMS health results. It also
-   carries `configuration_ref`, the exact version/hash of the task configuration
-   verified after registration, archived in the same environment's journal.
-2. The PR evaluator uploads `promotion-record-<attempt>` and downloads it by ID
-   before setting the check green. `external_id` encodes the artifact locator;
-   `details_url` opens that artifact. A changed PR or missing upload fails the gate.
-3. PROD follows the check completed before the merge. It verifies artifact
-   metadata, ZIP bytes, producing workflow/event/attempt, PR and actual parents.
-   With its own role it reads the exact DEV S3 version, compares the full manifest
-   and its hash, and retrieves the ECR OCI manifest to verify its digest. No ECS
-   registration or traffic mutation precedes those checks. E2 acquisition is
-   coordination only; a failed preflight releases an untouched owner as FAILURE.
-4. PROD records the final main SHA, deployment result and the originating
-   check/artifact/run/attempt/digest locator in its own versioned manifest.
+1. DEV writes `api-delivery/dev/operations/<operation>/release.json` conditionally
+   with SSE-KMS and rereads its returned VersionId. It contains the original
+   producer, E2 request hash, exact source/application, OCI digest, ECS revision,
+   per-task and client SQL/KMS health and a version/hash `configuration_ref`.
+2. `actions/attest` signs a closed public predicate carrying that record and
+   `bucket/key/version/sha256`. A deterministic slot derived from repository,
+   environment and run ID locates it. History discovery needs no prior receipt
+   ID, attempt, VersionId or hash. The verified signing certificate identifies
+   the attempt; REST checks independently bind it to the original execution.
+3. The evaluator seals the DEV statement hash in a promotion attestation on a
+   separate run/attempt slot. The predicate binds its check ID, PR/head/base and
+   application. `external_id` has only `v,s,h,r,a,w` (under GitHub's 255-byte
+   limit). Before green it rereads that field and verifies the **published**
+   attestation from GitHub. `details_url` is informational; GitHub rewrites it.
+4. PROD follows the check completed before merge, validates the exact attempt,
+   trusted caller/reusable signer, PR, parents and application. With its own role
+   it verifies the exact DEV S3 version/bytes and ECR manifest digest before ECS.
+   It records the final main SHA and the approval locator in its own manifest.
+
+The [repository signer policy](../scripts/api_delivery/receipt-policy.json) fixes
+repository/owner numeric IDs, caller paths, reusable signer paths, events and
+protected refs. The [verifier](../scripts/api_delivery/receipts.py) uses `gh
+attestation verify` for Sigstore cryptography and explicit checks of certificate
+claims, including invocation run/attempt. Another workflow's valid signature is
+not an authorized signature. Runtime checks remain active under `python -O`.
+`pull_request_target` REST head is the PR identity, not necessarily the trusted
+base source in the signing certificate. For `workflow_run`, the triggering DEV
+attempt and default-branch evaluator are verified separately.
+
+Public predicates allow release identities, hashes, ARNs, readiness booleans,
+versioned evidence/configuration references, the bounded previous recovery target
+and promotion/check metadata. They exclude task definitions, configuration
+contents, secret values, credentials, logs, database records and arbitrary extra
+fields. GitHub attestations for this public repository are public: inspect this
+metadata policy before installation. The protected checkout supplies the signer
+policy, never PR-controlled code.
+
+### Publication-only reconciliation
+
+A rerun of an already terminal operation cannot build or redeploy. It derives
+its operation UUID and exact S3 release key from the same original run. Without
+any prior receipt, VersionId or hash, it enumerates **all versions of that exact
+key**, rejects delete markers/multiple versions, reads the sole version and
+verifies encryption, canonical bytes, original producer and E2 request hash.
+The real E2 terminal must be SUCCESS and its matching head RELEASED; ACTIVE,
+displaced, uncertain or contradictory state requires separate reconciliation.
+SUCCESS with no outcome manifest is neither deployment nor omission proof.
+For a healthy release, current ECS revision/configuration, task health and client readiness are
+also reread before publication. This path has no build, ECR write, ECS mutation,
+S3 write or E2 acquisition/release.
+
+The recovering attempt signs as **itself**, preserving the original deployment
+producer inside the record. A failed original publisher cannot be silently
+replaced by a green attempt: only an authenticated recovery with identical
+record bytes can settle that gap. Original run/attempt execution evidence is
+required even if it failed after persisting the manifest. Missing execution
+history stops recovery. A cancelled run
+is recoverable only when its exact deployment step completed successfully;
+cancelled/failed deployment steps in a cancelled run remain blocked.
+
+A promotion seals one exact DEV signature. Its producer and original attempt
+must still validate; a later attempt publishing identical record bytes and then
+failing cannot revoke that approval or replace its locator. All authenticated
+signed content in the deployment slot is still checked for contradictions.
+Unsealed discovery retains the reconciliation requirement for failed publishers;
+the sealed-read rule is not permission to select an arbitrary earlier green run.
+
+Receipt discovery precedes E2 acquisition. Thus C finding B's publication gap
+does not replace B's released head or consume C's operation with a FAILURE
+terminal: B can republish its original evidence, then C can retry once. Source
+eligibility is checked before discovery and again under E2; current ECS and its
+immutable configuration are still admitted under E2 before any build or mutation.
+If C is already superseded by D at preflight, C emits its signed no-deployment
+result without acquiring E2 or discovering D's pending receipt. It requires a
+released E2 head and no incomplete terminal for its own operation. B's released
+head is preserved for publication recovery; D can then admit B and deploy once.
+A request that becomes stale only after admission is still stopped under E2.
+
+Superseded decisions are idempotent across signing attempts. Each signature and
+its exact run/attempt, workflow/source identity, successful execute and successful
+signing steps are verified independently, including when a later step failed.
+Only `run_attempt` is excluded when comparing two valid no-deployment records;
+environment, run, source and reason must agree. Deployment records remain byte
+identical, and mixing a deployment with an omission blocks the slot, even when
+the consumer selected a specific signature. Failed/incomplete execution evidence
+does not acquire legitimacy merely by being signed.
+
+For supersession discovered **after acquiring E2**, the executor first proves it
+has issued no application effects, then conditionally journals an explicit
+`API_SUPERSEDED_DECISION_V1` outcome before closing E2. The existing deterministic
+`operations/<operation>/release.json` key now holds either that closed decision
+schema or `API_RELEASE_V1`; a no-op can never become a healthy release. The decision
+binds the request hash, E2 generation, source and original producer attempt.
+A retry reads its unique encrypted S3 version and verifies those fields, the
+matching released E2 terminal/head and original successful execute step. It then
+signs the omission as its own attempt, with no S3/E2 writes, build or ECR/ECS effects.
+Missing/altered decisions, multiple versions, deletion markers, unverified
+producers, held ownership and uncertain effects remain blocked. No additional
+S3 prefixes, IAM permissions or workflows are introduced.
+
+The environment role needs reviewed `s3:ListBucketVersions` limited to its own
+operation release keys and max-keys <=100, in addition to existing exact-version
+reads. [Permission definitions](../scripts/api_delivery/permissions.py) describe
+this change; they do not install it. PROD does not gain listing of DEV evidence.
+
+Missing publication is fail-closed. A no-receipt run can be skipped only when
+all its attempts are independently proven to have skipped the delivery runner
+(inhibition or scope classification), or every failed attempt proves `prepare`
+failed while both credentials and deployment steps were explicitly skipped.
+Missing, duplicate, contradictory or potentially effectful steps block admission.
+The executor can also pass a queued run whose jobs have no delivery runner,
+checking every earlier attempt; the promotion evaluator keeps its stricter pending
+policy. When scope is still running, delivery must be queued with no steps, and
+the exact run SHA's reusable workflow must match the reviewed contract (including
+`needs: scope` and scope's lack of AWS authority). Missing/contradictory job or
+workflow evidence blocks. A queued retry cannot hide an earlier deployment.
+An operation superseded emits an authenticated no-deployment outcome. A failed/cancelled execution with missing
+receipt is not treated as a documentation change.
 
 This installation contract requires a **shared immutable ECR repository in the
 same account/region**. DEV may push; PROD and its execution role may only pull/read.
@@ -123,7 +225,10 @@ or inspect unrelated prefixes. Release manifests disable S3 Bucket Keys so their
 KMS encryption context remains object-scoped. Bucket/key policies must match.
 
 PRs retain existing CI authority only. The promotion evaluator can write checks
-and artifacts but has no AWS identity. It cannot deploy. The required promotion
+and attestations but has no AWS identity. Its minimal permissions are
+contents/actions/pull-requests read, checks/attestations/id-token write. The
+execution signer needs attestations write plus its existing deployment permissions.
+The promotion evaluator cannot deploy. The required promotion
 rule must be installed **only on main**, in addition to CI Validation and CD Safety
 Validation, without a bypass or extra human approval requirement.
 
@@ -254,7 +359,7 @@ blind retry or early drain. Unknown effects retain E2 for explicit reconciliatio
 5. Keep historical `cd.yml` and `cd-terragrunt.yml` disabled. Their generated
    request jobs remain byte-identical/fail-closed. The new path verifies those
    settings before mutation and does not invoke gateways or E1 workers.
-6. Complete the isolated artifact-retention trial below, then set the separately
+6. Validate the signed-receipt installation boundaries below, then set the separately
    reviewed environment variables and
    `API_DELIVERY_ENABLED=true`. No setting was changed in this implementation.
    A first genuine application merge to develop starts DEV automatically; enabling
@@ -267,29 +372,23 @@ No permission, ruleset, environment, AWS resource or traffic mutation is include
 in the implementation PR. The native lab's earlier success is not evidence that
 this new automatic route has executed.
 
-### Required isolated Actions retention trial — pending
+### Platform evidence and activation boundary
 
-Before activation, use a disposable GitHub Actions workflow isolated from delivery,
-with no AWS credentials, OIDC authority or deployment environment. Use the same
-pinned upload action and artifact name as [the executor](../.github/workflows/api-execute.yml).
-Attempt 1 uploads a clearly fictitious `release-record` and finishes successfully.
-Retain the run/attempt, original artifact ID, metadata, ZIP SHA-256 and workflow SHA
-outside the rerun's artifact lifecycle. Rerun the **same run**: attempt 2 must end
-before uploading (for example, a deliberate failure), without overwrite or deletion.
+[Run 42550509226](https://github.com/Kendall04/terragrunt_demo/actions/runs/42550509226)
+closed the artifact-retention diagnosis: rerunning lost the original artifact.
+The signed-receipt prototype subsequently verified original DEV and approval
+attestations after independent failed reruns, B preserved after simulated merge
+and later C, and rejection of an authentic foreign signer and altered content.
+[Consumer result](https://github.com/Kendall04/terragrunt_demo/actions/runs/42553286137)
+used fictitious payloads; it did not deploy or read AWS.
 
-After both attempts, inspect the run's artifact listing and independently download
-by the **original artifact ID**. Record HTTP results, listing membership, original
-producer attempt, upload-step timestamps and byte/digest equality. PASS requires
-the original artifact to remain discoverable and downloadable unchanged after the
-rerun; local REST fixtures do not establish GitHub's actual retention behavior.
-
-If listing membership or the original download is lost, retain the failed evidence
-and keep activation blocked. Review how to preserve an independently authenticated
-exact S3 bucket/key/VersionId/SHA-256 reference for the promotion evaluator without
-AWS credentials. Download-by-ID surviving while discovery fails is a distinct
-result, not PASS of the current reader. Do not infer the S3 reference, select a
-different green attempt or add PR cloud authority. That recovery design is a later
-decision; this change neither implements it nor runs the isolated trial.
+Before activation, install the trusted evaluator on main, then configure the
+main-only required check and merge policy. Verify GitHub's actual certificates
+for both PR-target and workflow-run callers with the new reusable evaluator;
+the isolated prototype exercised push identities, not those events. Verify the
+new scoped version-list permission and real E2/S3 publication recovery in an
+isolated AWS installation. No ruleset, role, environment or activation variable
+is changed by this PR. Existing bootstrap and rollback requirements remain.
 
 ## Validation and limits
 
@@ -321,37 +420,24 @@ promotion admission must also belong to that uninterrupted application history.
 The history walk is bounded to 1001 commits and fails closed if it cannot find the
 source. PROD compares against main, never develop.
 
-Deployment history authenticates the **producer attempt** of the unique retained
-`release-record`, not the latest conclusion of that run. A failed/cancelled rerun's
-conclusion does not discard a healthy deployment whose artifact remains available.
-The reader verifies the artifact ID,
-ZIP digest, repository and run, then the exact successful attempt, workflow, event,
-branch and source. Its creation timestamp must fall within that attempt's successful
-upload step (GitHub job times have second precision). Missing, expired, ambiguous
-or contradictory evidence fails closed; the reader never searches for a substitute
-green attempt. This uses existing Actions read permission, including in the PR
-evaluator; it grants no AWS authority.
+Deployment history now authenticates the original signed producer, even after
+failed/cancelled reruns and disappearance of every diagnostic ZIP. Active
+admission still reads the original S3 VersionId/hash and live revision,
+configuration, compatibility and health. The executor consumes only its first
+authenticated current release; rollback uses its sealed `previous` target. It
+does not inspect unrelated old runs after finding the current release. The PR
+evaluator retains the history search and first-parent lineage check.
 
-The executor still rejects a repeated run's immutable E2 terminal before build,
-publication or ECS mutation. Current admission still verifies the original S3
-VersionId/hash and the live revision, configuration, compatibility and health.
-It consumes only the first authenticated release; rollback uses that record's
-sealed `previous` target. An unrelated older expired artifact cannot prevent
-admission of the current release. The promotion evaluator retains its historical
-search for the requested application identity. A corrupt current receipt still
-blocks before build; there is no fallback to an older record on validation failure.
-An uncertain E2 owner or different active revision requires reconciliation; a
-historical successful artifact alone does not prove current runtime health.
-The [retained-history regression](../scripts/tests/api_delivery/test_release_history.py)
-reproduces the omission at `e4c1f248`, then exercises B attempt 1 → failed/cancelled
-attempt 2 → C through real `get/raw`, ZIP verification, CLI, E2 and active admission.
-Offline fixtures identify artifact 901/run 22/attempt 1, zero retry build/ECR/ECS
-effects, successful C admission and continued PR eligibility for B. AWS transports
-and deployment effects are fixtures; this is not a real cloud deployment.
+[Signed-receipt regressions](../scripts/tests/api_delivery/test_signed_receipts.py)
+exercise automatic discovery, published-attestation readback, compact check
+readback, real Git B/C/B-prime histories, optimized Python, actual E2 terminal and
+S3 journal formats, and recovery with zero prior receipt/version/hash inputs.
+Transport fixtures are explicitly separate from the real prototype evidence.
 
 The native queue preserves pending runs rather than coalescing them. This remains
 latest-desired-version delivery, not a promise to deploy every intermediate commit:
-obsolete queued runs exit under E2 without replacing the current desired version.
+obsolete queued runs exit read-only without replacing the current desired version
+or consuming a predecessor's E2 publication-recovery evidence.
 Runs beyond GitHub's 100-entry queue limit are canceled by GitHub and require
 operator investigation; this is not an unbounded delivery guarantee.
 A skipped/cancelled version cannot promote without its own healthy DEV evidence.
@@ -367,7 +453,7 @@ effective main rules allowed merge/squash/rebase. These are reproduced and cover
 by [wire/algorithm regressions](../scripts/tests/api_delivery/test_review_regressions.py).
 The direct-reader tests keep B after a later DEV C, require revalidation if C enters
 before merge, and use a main merge SHA distinct from the DEV source. No test replaces
-the artifact reader with a preselected receipt. The additional scope test uses a
+the signed-receipt reader with a preselected receipt. The additional scope test uses a
 real temporary Git history; AWS and REST transports remain offline fixtures.
 
 The follow-up at `50261ef` reproduced root-path rejection in `GitHub.raw`, loss of
