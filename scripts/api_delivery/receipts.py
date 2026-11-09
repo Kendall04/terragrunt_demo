@@ -19,6 +19,8 @@ from . import model as m
 POLICY = json.loads(Path(__file__).with_name('receipt-policy.json').read_bytes())
 EXECUTE = 'Build once in DEV or deploy approved digest in PROD'
 SIGN = 'Publish durable receipt'
+PREPARE = 'Require exact-SHA CI and resolve immutable promotion'
+CREDENTIALS = 'Acquire environment-only deployment identity'
 
 
 class PublisherIncomplete(ValueError):
@@ -174,7 +176,7 @@ def producer(gh, pub, kind, environment, completed=True, recovered=False):
     m.require(run['id'] == pub['run'] and run['run_attempt'] == pub['attempt'] and
               run['event'] == pub['event'], 'producer run/attempt/event differs')
     if recovered:
-        m.require(run['status'] == 'completed' and run['conclusion'] in ('success','failure'), 'original deployment unfinished')
+        m.require(run['status'] == 'completed' and run['conclusion'] in ('success','failure','cancelled'), 'original deployment unfinished')
     elif completed:
         if run['status'] != 'completed' or run['conclusion'] != 'success':
             raise PublisherIncomplete('receipt publisher unsuccessful or pending')
@@ -194,7 +196,7 @@ def original_deployment(gh, record, recovered=False):
     jobs = list(gh.pages(f'repos/{m.REPOSITORY}/actions/runs/{run["id"]}/attempts/{run["run_attempt"]}/jobs','jobs'))
     steps = [s for j in jobs for s in j['steps'] if s['name'] == EXECUTE]
     m.require(len(steps) == 1 and steps[0]['status'] == 'completed' and
-              steps[0]['conclusion'] in (('success','failure') if recovered else ('success',)),
+              steps[0]['conclusion'] in (('success','failure') if recovered and run['conclusion'] != 'cancelled' else ('success',)),
               'original execution not evidenced')
 
 
@@ -282,8 +284,8 @@ def resolve(gh, descriptor, sealed=None, completed=True):
     return found[0][:2]
 
 
-def proven_no_execution(gh, run):
-    """Only the closed scope job may prove a docs/no-authority no-op.
+def proven_no_execution(gh, run, allow_queued=False):
+    """Prove scope skip, pre-credentials prepare failure, or no delivery runner.
 
     Missing receipts after any execution step are pending, never silently skipped.
     Inspect every attempt; a rerun cannot erase a successful predecessor.
@@ -291,13 +293,41 @@ def proven_no_execution(gh, run):
     m.require(type(run['run_attempt']) is int and 1 <= run['run_attempt'] <= 20, 'attempt history bound')
     for number in range(1,run['run_attempt']+1):
         original = gh.get(f'repos/{m.REPOSITORY}/actions/runs/{run["id"]}/attempts/{number}')
-        m.require(original['status'] == 'completed' and original['conclusion'] in ('success','skipped'), 'unsettled receipt-free attempt')
-        gh.trusted(dict(original,conclusion='success'),m.DELIVERY,run['event'],run['head_branch'])
+        m.require((original['id'],original['run_attempt'],original['head_sha']) ==
+                  (run['id'],number,run['head_sha']), 'receipt-free attempt identity differs')
+        gh.trusted(dict(original,status='completed',conclusion='success'),m.DELIVERY,run['event'],run['head_branch'])
         jobs = list(gh.pages(f'repos/{m.REPOSITORY}/actions/runs/{run["id"]}/attempts/{number}/jobs','jobs'))
-        if jobs and all(j['conclusion'] == 'skipped' and not j.get('steps') for j in jobs):
-            continue  # disabled caller, no runner and no authority
         scopes = [j for j in jobs if j.get('name','').endswith('/ scope')]
         deliveries = [j for j in jobs if j.get('name','').endswith('/ delivery')]
+        queued = ('queued','waiting','pending')
+        if allow_queued and original['conclusion'] is None:
+            # A later run may already exist while this executor owns the
+            # environment concurrency slot. Inspect jobs, not just run status;
+            # all preceding attempts must independently pass this same proof.
+            if original['status'] in queued and not jobs:
+                continue
+            if original['status'] in (*queued,'in_progress') and len(jobs) == 2 and len(scopes) == len(deliveries) == 1:
+                scope, delivery = scopes[0], deliveries[0]
+                if scope.get('status') == 'completed' and scope['conclusion'] == 'success' and \
+                        delivery.get('status') in queued and delivery['conclusion'] is None and delivery.get('steps') == []:
+                    continue
+        m.require(original['status'] == 'completed' and original['conclusion'] in ('success','skipped','failure'),
+                  'unsettled receipt-free attempt')
+        if original['conclusion'] == 'failure':
+            m.require(len(jobs) == 2 and len(scopes) == len(deliveries) == 1 and
+                      scopes[0].get('status') == deliveries[0].get('status') == 'completed' and
+                      scopes[0]['conclusion'] == 'success' and deliveries[0]['conclusion'] == 'failure',
+                      'incomplete pre-authority failure evidence')
+            steps = deliveries[0]['steps']
+            selected = [[(i,s) for i,s in enumerate(steps) if s['name'] == name] for name in (PREPARE,CREDENTIALS,EXECUTE)]
+            m.require(all(len(matches) == 1 for matches in selected), 'missing/duplicate authority-boundary step')
+            m.require(selected[0][0][0] < selected[1][0][0] < selected[2][0][0] and all(
+                matches[0][1]['status'] == 'completed' and matches[0][1]['conclusion'] == expected
+                for matches,expected in zip(selected,('failure','skipped','skipped'))),
+                'failed attempt may have AWS effects; receipt required')
+            continue
+        if jobs and all(j['conclusion'] == 'skipped' and not j.get('steps') for j in jobs):
+            continue  # disabled caller, no runner and no authority
         m.require(len(scopes) == len(deliveries) == 1 and scopes[0]['conclusion'] == 'success' and
                   deliveries[0]['conclusion'] == 'skipped' and not deliveries[0].get('steps'),
                   'deployment receipt pending; execution cannot be excluded')

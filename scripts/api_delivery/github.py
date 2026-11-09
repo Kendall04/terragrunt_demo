@@ -100,7 +100,7 @@ class GitHub:
             time.sleep(20)
         raise ValueError('exact-SHA validations did not finish')
 
-    def deployments(self, environment, exclude_run=None):
+    def deployments(self, environment, exclude_run=None, allow_queued=False):
         from . import receipts as r
         branch = 'develop' if environment == 'dev' else 'main'
         for run in self.runs(DELIVERY):
@@ -108,7 +108,7 @@ class GitHub:
                 continue
             descriptor = r.slot('deployment',run['id'],environment)
             if not r.bundles(self,descriptor):
-                r.proven_no_execution(self,run)
+                r.proven_no_execution(self,run,allow_queued=allow_queued)
                 continue
             record, _ = r.resolve(self,descriptor)
             if record['schema'] != 'API_NO_DEPLOYMENT_V1':

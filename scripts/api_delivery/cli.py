@@ -183,6 +183,13 @@ def execute(gh, request_path, output):
         write(output,recovered)
         outputs(deployed='true',recovered='true')
         return
+    # Resolve missing publication BEFORE taking E2. Otherwise this read-only
+    # failure displaces B's released head and consumes C's operation as FAILURE,
+    # preventing either rerun from recovering. Immutable evidence is still
+    # admitted against current ECS/configuration under E2 below.
+    eligible = request['operation'] != 'deploy' or current_request(gh, request)
+    history = list(itertools.islice(gh.deployments(
+        env, exclude_run=int(os.environ['GITHUB_RUN_ID']), allow_queued=True), 1)) if eligible else []
     owner.acquire()
     with tempfile.TemporaryDirectory() as directory:
         port = aws.Runtime(clients, cfg, owner, operation, directory)
@@ -196,6 +203,7 @@ def execute(gh, request_path, output):
                                   event_source=request['event_source'],**run_metadata()))
                 outputs(deployed='false', receipt='true', reason='superseded')
                 return
+            m.require(eligible, 'branch changed after history preflight; retry with current evidence')
             image = None
             if env == 'prod' and request['operation'] == 'deploy':
                 # Recheck exact GitHub approval and exact DEV S3 version using the
@@ -207,7 +215,6 @@ def execute(gh, request_path, output):
                 aws.verify_image(clients, cfg, image)
             # Admission needs the current release only; rollback is sealed in
             # its previous field. Do not read unrelated expired older artifacts.
-            history = list(itertools.islice(gh.deployments(env, exclude_run=int(os.environ["GITHUB_RUN_ID"])), 1))
             previous = port.admit_current(history, reference['sha256'])
             if request['operation'] == 'rollback':
                 m.require(history and previous is not None, 'verified current release required')

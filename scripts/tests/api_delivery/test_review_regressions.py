@@ -284,11 +284,12 @@ class OrderingTests(unittest.TestCase):
     def test_old_B_retry_after_C_is_checked_under_E2_and_never_builds(self):
         cfg=config();s3=MemoryS3();store=e2.Store(s3,cfg['evidence_bucket'],'dev');store.initialize()
         owner=e2.Authority(store,'normal-delivery/deploy-dev','11111111-1111-1111-1111-111111111111',{})
+        freshness_states=[]
         class Facts:
             def get(self,path):
                 if '/workflows/' in path:return {'state':'disabled_manually'}
                 if '/git/ref/' in path:
-                    assert store.read()[0]['state']=='ACTIVE'
+                    freshness_states.append(store.read()[0]['state'])
                     return {'object':{'sha':'3'*40}}
                 raise AssertionError(path)
             def deployments(self,*args):raise AssertionError('superseded run must not reach deployment')
@@ -304,6 +305,7 @@ class OrderingTests(unittest.TestCase):
             self.assertEqual(json.loads((path/'result').read_bytes())['reason'],'superseded');self.assertIn('deployed=false',(path/'outputs').read_text())
             publish.assert_not_called();runtime.return_value.admit_current.assert_not_called()
         self.assertEqual(store.read()[0]['state'],'RELEASED')
+        self.assertEqual(freshness_states,['RELEASED','ACTIVE'])
 
 
 class RuntimeTests(unittest.TestCase):

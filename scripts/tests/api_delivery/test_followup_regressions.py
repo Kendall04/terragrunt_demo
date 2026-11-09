@@ -226,9 +226,10 @@ class FreshnessTests(unittest.TestCase):
                 if concurrency.get('queue','single')=='single':pending=[]
                 pending.append(source)
             active.finish(True,'SUCCESS')
+            freshness_states=[]
             def get(path):
                 if '/workflows/' in path:return {'state':'disabled_manually'}
-                self.assertEqual(store.read()[0]['state'],'ACTIVE')
+                freshness_states.append(store.read()[0]['state'])
                 return {'object':{'sha':c}}
             gh=SimpleNamespace(get=get,deployments=lambda env, **kwargs:iter([]))
             deployed=[];registrations=0
@@ -240,6 +241,7 @@ class FreshnessTests(unittest.TestCase):
                 if result:deployed.append(result['source']);self.assertEqual(build.call_count,1)
                 else:build.assert_not_called();self.assertNotIn('register',port.calls)
             self.assertEqual(deployed,[c]);self.assertEqual(registrations,1)
+            self.assertEqual(freshness_states,['RELEASED','ACTIVE','RELEASED','ACTIVE'])
             self.assertEqual(store.read()[0]['state'],'RELEASED')
 
     def test_real_merge_B_C_Bprime_distinct_receipts_old_B_cannot_replace_Bprime(self):

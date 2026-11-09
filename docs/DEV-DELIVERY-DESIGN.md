@@ -152,8 +152,16 @@ The recovering attempt signs as **itself**, preserving the original deployment
 producer inside the record. A failed original publisher cannot be silently
 replaced by a green attempt: only an authenticated recovery with identical
 record bytes can settle that gap. Original run/attempt execution evidence is
-required even if it failed after persisting the manifest. If a cancellation or
-missing history prevents proving the boundary, recovery stops.
+required even if it failed after persisting the manifest. Missing execution
+history stops recovery. A cancelled run
+is recoverable only when its exact deployment step completed successfully;
+cancelled/failed deployment steps in a cancelled run remain blocked.
+
+Receipt discovery precedes E2 acquisition. Thus C finding B's publication gap
+does not replace B's released head or consume C's operation with a FAILURE
+terminal: B can republish its original evidence, then C can retry once. Source
+eligibility is checked before discovery and again under E2; current ECS and its
+immutable configuration are still admitted under E2 before any build or mutation.
 
 The environment role needs reviewed `s3:ListBucketVersions` limited to its own
 operation release keys and max-keys <=100, in addition to existing exact-version
@@ -162,8 +170,13 @@ this change; they do not install it. PROD does not gain listing of DEV evidence.
 
 Missing publication is fail-closed. A no-receipt run can be skipped only when
 all its attempts are independently proven to have skipped the delivery runner
-(inhibition or scope classification). An operation superseded under E2 emits an
-authenticated no-deployment outcome. A failed/cancelled execution with missing
+(inhibition or scope classification), or every failed attempt proves `prepare`
+failed while both credentials and deployment steps were explicitly skipped.
+Missing, duplicate, contradictory or potentially effectful steps block admission.
+The executor can also pass a queued run whose jobs have no delivery runner,
+checking every earlier attempt; the promotion evaluator keeps its stricter pending
+policy. A queued retry cannot hide an earlier deployment. An operation superseded
+under E2 emits an authenticated no-deployment outcome. A failed/cancelled execution with missing
 receipt is not treated as a documentation change.
 
 This installation contract requires a **shared immutable ECR repository in the
