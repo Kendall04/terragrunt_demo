@@ -15,6 +15,7 @@ REPO = "Kendall04/terragrunt_demo"
 BRANCH = "codex/receipt-attestations-trial-20261109"
 TYPE = "https://github.com/Kendall04/terragrunt_demo/receipt-prototype/v1"
 OUT = Path("out")
+REQUESTS = []
 
 def canonical(value):
     return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode()
@@ -31,6 +32,7 @@ def read(path):
     return json.loads(Path(path).read_bytes())
 
 def api(path, body=None, method="POST"):
+    REQUESTS.append(path)
     command = ["gh", "api", "-H", "Accept: application/vnd.github+json", "repos/" + REPO + "/" + path]
     if body is not None:
         command += ["--method", method, "--input", "-"]
@@ -47,6 +49,13 @@ def context():
 def slot(kind, operation):
     return {"schema": "github-receipt-slot-prototype/v1", "repository": REPO,
             "kind": kind, "operation": operation}
+
+def compact(locator):
+    value = {"v": 1, "s": locator["subject_sha256"], "h": locator["statement_sha256"],
+             "r": locator["authority"]["run"], "a": locator["authority"]["attempt"],
+             "w": locator["authority"]["workflow_sha"]}
+    assert len(canonical(value)) <= 255, "GitHub external_id limit"
+    return value
 
 def bundles(subject):
     # A single-operation slot, never the latest image or latest release.
@@ -199,13 +208,94 @@ def finish(mode):
         # A separate check name on the disposable branch only: no ruleset changes,
         # no real PR and never the production required-check name.
         sealed = read(OUT / "receipt.json")
-        check = api("check-runs/" + str(sealed["check_id"]), {"name": "Receipt prototype approval (NOT deployment)",
-                    "status": "completed", "conclusion": "success",
-                    "external_id": json.dumps(locator, separators=(",", ":")),
+        check_path = "check-runs/" + str(sealed["check_id"])
+        check = api(check_path, {"name": "Receipt prototype approval (NOT deployment)",
+                    "status": "in_progress",
+                    "external_id": canonical(compact(locator)).decode(),
                     "details_url": "https://github.com/" + REPO + "/attestations/" + locator["attestation_id"],
                     "output": {"title": "Fictitious B approval", "summary": "No real PR, image, AWS resource or deployment."}}, method="PATCH")
+        check = api(check_path)
+        assert json.loads(check["external_id"]) == compact(locator), "GitHub locator readback differs"
+        check = api(check_path, {"status": "completed", "conclusion": "success"}, method="PATCH")
+        assert json.loads(check["external_id"]) == compact(locator)
         write(OUT / "check.json", check)
     print("RECEIPT_LOCATOR=" + json.dumps(locator, separators=(",", ":")))
 
+def consume(_):
+    cfg = read("inputs/consume.json")
+    merge = cfg["simulated_merge"]
+    check = api("check-runs/" + str(merge["check_id"]))
+    assert check["app"]["id"] == 15368 and check["name"] == "Receipt prototype approval (NOT deployment)"
+    assert check["head_sha"] == merge["check_head_sha"]
+    assert check["conclusion"] == "success" and check["completed_at"] <= merge["merged_at"]
+    sealed_locator = json.loads(check["external_id"])
+    # Public authority policy + compact check locator reconstruct the lookup;
+    # cfg.approval is the fixture's independent expected value, not discovery.
+    authority = {"repository": REPO, "run": sealed_locator["r"], "attempt": sealed_locator["a"],
+                 "workflow_sha": sealed_locator["w"], "source_sha": sealed_locator["w"],
+                 "signer": ".github/workflows/approval-signer.yml", "event": "push",
+                 "ref": "refs/heads/" + BRANCH,
+                 "workflow_ref": REPO + "/.github/workflows/trial-approval.yml@refs/heads/" + BRANCH}
+    locator = {"v": 1, "slot": slot("approval", str(sealed_locator["r"])),
+               "subject_sha256": sealed_locator["s"], "statement_sha256": sealed_locator["h"],
+               "authority": authority, "attestation_id": cfg["approval"]["attestation_id"]}
+    assert compact(locator) == compact(cfg["approval"]), "Check locator substituted"
+    approval, approval_bundle = resolve(locator, "approval-consumer")
+    assert approval["check_id"] == check["id"] and approval["check_head_sha"] == check["head_sha"]
+    assert approval["pr"] == merge["pr"] and approval["head"] == merge["head"] and approval["base"] == merge["base"]
+    assert merge["parents"] == [approval["base"], approval["head"]]
+    assert merge["application"] == approval["application"]
+    dev, dev_bundle = resolve(approval["dev"], "sealed-dev-consumer")
+    assert dev["commit"] == approval["head"] and dev["application"] == approval["application"]
+    assert dev["image"] == approval["image"] and dev["manifest_ref"] == approval["manifest_ref"]
+    consumption_requests = list(REQUESTS)
+    assert not any(cfg["c"]["subject_sha256"] in path for path in consumption_requests), "Consumer followed latest C"
+    assert not any("/artifacts" in path for path in consumption_requests), "Artifact lifecycle dependency"
+    later, _ = resolve(cfg["c"], "later-c-independent-proof")
+    assert later["image"] != dev["image"] and later["commit"] != dev["commit"]
+    later_run = api("actions/runs/" + str(cfg["c"]["authority"]["run"]) + "/attempts/1")
+    assert later_run["created_at"] > merge["merged_at"]
+
+    negatives = {}
+    tampered = copy.deepcopy(dev_bundle)
+    payload = statement(tampered)
+    payload["predicate"]["image"] = later["image"]
+    tampered["dsseEnvelope"]["payload"] = base64.b64encode(canonical(payload)).decode()
+    try:
+        verify_bundle(tampered, approval["dev"], "tampered-signature")
+    except (AssertionError, ValueError):
+        negatives["altered_content"] = "REJECTED"
+    else:
+        raise AssertionError("Altered signed content accepted")
+    wrong = [b for b in bundles(approval["dev"]["subject_sha256"]) if canonical(b) != canonical(dev_bundle)]
+    assert len(wrong) == 1, "Expected one real other-workflow attestation"
+    try:
+        verify_bundle(wrong[0], approval["dev"], "wrong-producer")
+    except (AssertionError, ValueError):
+        negatives["other_real_workflow"] = "REJECTED"
+    else:
+        raise AssertionError("Other workflow producer accepted")
+    shifted = copy.deepcopy(approval["dev"])
+    shifted["authority"]["attempt"] = 2
+    try:
+        verify_bundle(dev_bundle, shifted, "wrong-attempt")
+    except (AssertionError, ValueError):
+        negatives["claimed_other_attempt"] = "REJECTED"
+    else:
+        raise AssertionError("Self-claimed attempt accepted")
+
+    result = {"fictitious": True, "observed_in": "GitHub Actions",
+              "approval_check_id": check["id"], "approval_attestation": locator["attestation_id"],
+              "dev_attestation": approval["dev"]["attestation_id"],
+              "dev_original_producer": approval["dev"]["authority"],
+              "approval_original_producer": locator["authority"],
+              "selected_image": dev["image"], "later_C_image": later["image"],
+              "manifest_ref": dev["manifest_ref"], "ecs_revision": dev["ecs_revision"],
+              "consumer_followed_C": False, "artifact_downloads_required": 0,
+              "negatives": negatives, "consumption_requests": consumption_requests,
+              "simulated_merge": merge, "result": "PASS"}
+    write(OUT / "consumer-result.json", result)
+    print(json.dumps(result, indent=2))
+
 if __name__ == "__main__":
-    {"prepare": prepare, "finish": finish}[sys.argv[1]](sys.argv[2])
+    {"prepare": prepare, "finish": finish, "consume": consume}[sys.argv[1]](sys.argv[2])
