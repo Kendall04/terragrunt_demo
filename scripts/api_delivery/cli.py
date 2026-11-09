@@ -72,7 +72,8 @@ def promotion(gh, output):
         result = dict(schema='API_PROMOTION_V1', repository=m.REPOSITORY, pr=number, head=head,
                       base=base, application=app, deployment=False)
     else:
-        dev = next((r for r in gh.deployments('dev') if r['application'] == app), None)
+        dev = next((r for r in gh.deployments('dev') if r['application'] == app and
+                    m.same_application_lineage(ROOT, r['source'], head, app)), None)
         m.require(dev is not None, 'exact application has no successful DEV deployment')
         m.git(ROOT, 'merge-base', '--is-ancestor', dev['source'], head)
         result = m.approval(pr, app, dev)
@@ -202,6 +203,7 @@ def execute(gh, request_path, output):
                           source=request['source'], application=request['application'], image=image,
                           profile='validated-v2', compatibility=cfg['compatibility'], operation=operation,
                           binding_sha256=reference['sha256'], event_source=request['event_source'], previous=previous,
+                          configuration_ref=port.configuration_ref,
                           approval=request.get('approval'), **result, **run_metadata())
             m.release(record, env)
             record['manifest_ref'] = port.journal('release', record)
@@ -220,7 +222,7 @@ def current_request(gh, request):
     tip = gh.get(f'repos/{m.REPOSITORY}/git/ref/heads/{branch}')['object']['sha']
     m.git(ROOT, 'fetch', '--no-tags', 'origin', tip)
     m.git(ROOT, 'merge-base', '--is-ancestor', request['event_source'], tip)
-    return m.application(ROOT, tip) == request['application']
+    return m.same_application_lineage(ROOT, request['event_source'], tip, request['application'])
 
 
 def main():

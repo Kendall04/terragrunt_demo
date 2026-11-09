@@ -41,8 +41,10 @@ the environment; the executor resolves its previous healthy compatible release.
 [Application identity](../scripts/api_delivery/model.py) hashes Git modes,
 paths and blobs of the build context, API/tests, SqlBackup projects and build
 configuration. Documentation is excluded. Different merge SHAs with identical
-application inputs identify the same version; changed runtime/tests/Dockerfile
-inputs require fresh DEV success. Docs-only pushes do not acquire AWS credentials,
+application inputs identify the same content. A release also belongs to a
+continuous first-parent application history: B → C → B′ is a new promotion even
+when B and B′ have identical files. Changed runtime/tests/Dockerfile inputs require
+fresh DEV success. Docs-only pushes do not acquire AWS credentials,
 build or move traffic.
 
 The PR receipt includes PR number, head SHA, base SHA, application identity and
@@ -58,6 +60,13 @@ will approve a PR. Repository merge commits must also be enabled, with no linear
 history or merge-queue rule incompatible with this executor. Squash/rebase is
 rejected **before merge**, not discovered only after the operator merges.
 
+The repository's optional `allow_merge_commit` field is not assumed visible to
+the read-only job token. The job requires effective merge-only branch rules and
+rejects an explicitly false setting. Installation separately requires an owner
+readback with `GitHub().require_merge_policy(administrator=True)`; a missing field
+fails that administrative check. CI reports field visibility using its existing
+`contents:read` token; no administration permission is added to any job.
+
 Keep strict up-to-date branches. After each promotion merge, merge main back into
 develop through its normal PR path before the next promotion. This preserves
 both histories and makes main an ancestor of the next develop head. A sync with
@@ -67,8 +76,13 @@ unchanged application inputs does not deploy.
 
 The [GitHub adapter](../scripts/api_delivery/github.py) checks repository, workflow
 ID/path, event, source branch, exact source SHA, run attempt and successful
-conclusion. Both push aggregators must pass on the integrated SHA. An older green
-attempt cannot override a newer failed/cancelled run. `pull_request_target`
+conclusion. Both push aggregators must pass on the integrated SHA. During source
+qualification, an older green CI attempt cannot replace a newer failed/cancelled
+run. A completed promotion approval is different: its sealed attempt is fetched
+with `/actions/runs/<run>/attempts/<attempt>`, not the latest run endpoint. Thus
+run 80/attempt 3 cannot invalidate or replace the approved artifact from attempt 2.
+The finalizer still reads its current in-progress run and demands its own attempt.
+`pull_request_target`
 REST `head_sha` may identify the PR head, while `GITHUB_SHA` and
 `GITHUB_WORKFLOW_SHA` identify the trusted base code. The reader checks the PR
 association and evaluator identity separately. For `workflow_run`, the triggering
@@ -85,7 +99,9 @@ also archives its receipt in the existing versioned SSE-KMS evidence bucket:
 1. DEV writes `api-delivery/dev/operations/<operation>/release.json` with
    `If-None-Match:*`. The returned S3 `VersionId` is reread explicitly. The GitHub
    release artifact carries bucket/key/version/SHA256, source, application,
-   OCI digest, ECS revision and per-task/client SQL+KMS health results.
+   OCI digest, ECS revision and per-task/client SQL+KMS health results. It also
+   carries `configuration_ref`, the exact version/hash of the task configuration
+   verified after registration, archived in the same environment's journal.
 2. The PR evaluator uploads `promotion-record-<attempt>` and downloads it by ID
    before setting the check green. `external_id` encodes the artifact locator;
    `details_url` opens that artifact. A changed PR or missing upload fails the gate.
@@ -144,7 +160,9 @@ reviewed schema/TLS compatibility identity. A protected GitHub environment pins
 the S3 bucket/key/VersionId/SHA256/account/region. This is not caller-supplied
 authorization. Missing PROD bindings fail closed; fixtures are not deployed ARNs.
 
-GitHub concurrency uses the existing per-environment application group. The
+GitHub concurrency uses the existing per-environment application group with
+`queue: max` and `cancel-in-progress: false`. Up to 100 pending jobs wait in arrival
+order; a later old retry cannot replace the current pending deployment. The
 executor additionally acquires the existing non-expiring E2 application head:
 delivery, rollback and lifecycle must share that same head. No new lock service,
 lease takeover or forced unlock is introduced. Manual/native mutation tools must
@@ -154,8 +172,10 @@ Before traffic: inactive color must be quiescent; exact task definition readback
 frozen cohort, digest, ENIs, healthy targets and successful per-task probe are
 required. The client `/ready` route proves its database and KMS health checks.
 After switching, both listener and candidate rule are reread, then the client
-route is checked. After the bounded drain delay the routes/cohort/targets are
-verified again before reducing old capacity. No recurring cleanup timer is used.
+route is checked. After the bounded drain delay the routes/cohort/targets and the
+real client `/ready` SQL+KMS response are verified again, followed by another route
+readback, before reducing old capacity. Loss of SQL/KMS during the wait therefore
+enters compensation while blue remains available. No recurring cleanup timer is used.
 
 | Failure | Behavior |
 | --- | --- |
@@ -175,8 +195,12 @@ The first automatic release cannot silently drain an unqualified native blue.
 The version-pinned installation binding must include `native_baseline`: a reviewed
 `API_RECOVERY_TARGET_V1` with `kind=native-admission`, environment, source/application,
 OCI digest, exact ECS revision/color, `validated-v2` and the current SQL/TLS
-compatibility identifier. Before any switch, the executor verifies ECR, renders
-and compares the complete task definition, checks the existing task cohort and
+compatibility identifier and `configuration_ref`. That reference identifies a
+create-only `API_TASK_CONFIGURATION_V1` object with environment, color, image,
+revision and exact verified task JSON at
+`api-delivery/<env>/operations/<id>/<sequence>-task-configuration.json`.
+Before any switch, the executor verifies ECR, reads the exact configuration
+version/hash/CMK and compares the complete task definition, checks the existing task cohort and
 client SQL/KMS readiness. An incompatible legacy native definition blocks until
 a compatible baseline has been qualified in a separately authorized operation.
 This creates a **new admission of observed state**, not a fabricated historical
@@ -184,6 +208,18 @@ workflow receipt. Its reference is saved as `previous` in the first automatic
 release, so that release's manual rollback can recover it. After a rollback, the
 same readiness gates must pass again with new tasks. A truly empty environment
 requires both colors at zero desired/running/pending and no conflicting history.
+
+Automatic releases seal their configuration reference in the immutable release
+manifest; native admission requires an independently reviewed reference in the
+installation binding. Missing historical configuration blocks admission rather
+than falling back to today's renderer. Blue may still use secret v1 and trust
+manifest v1 while green is rendered with v2. The archived task contains only
+secret references and public trust, never secret values. Its roles, environment,
+digest, strict profile and full AWS readback must match, and current health plus
+the reviewed compatibility identity remain mandatory. A snapshot alone does not
+prove old credentials or CA trust still work. Existing environment-scoped journal
+read permission covers these objects; PROD receives no additional access to DEV
+configuration objects.
 
 Compensation uses the old observed revision and replica count, not the new desired
 count. Blue=1 can therefore recover from a failed green=2 promotion. Lost ACKs on
@@ -201,7 +237,8 @@ blind retry or early drain. Unknown effects retain E2 for explicit reconciliatio
    PR parameter, existing strict rules and develop's rules. The evaluator's own
    installation merge must precede the new required check; no bypass is needed.
    Verify rejection of wrong-source, pending, failed and changed PRs. Check the
-   effective merge methods permit only normal merge on main. Read back both rules
+   effective merge methods permit only normal merge on main, and run the owner
+   preflight above to confirm repository merge commits are enabled. Read back both rules
    and test their behavior before enabling automatic delivery.
 3. Authenticate actual DEV and PROD SQL/TLS, secret metadata/version, ECS roles,
    services, listener/candidate rules, client route and repository. PROD SQL/DNS,
@@ -251,12 +288,19 @@ enters that group, cannot cancel B and cannot build. Protected-branch CI push
 groups include the SHA, so C does not cancel B's mandatory qualification either;
 PR CI still supersedes obsolete PR runs. Under E2, before publishing/registering,
 the executor verifies that the request's application identity is still desired on
-the protected branch. A retry of old B after C changed/deployed the application
+the protected branch and that every subsequent first-parent commit preserved it.
+A retry of old B after C changed/deployed the application
 returns `superseded` without mutating ECS or publishing a new image. A docs-only
-descendant of B does not make B stale. PROD compares against main, never develop.
+descendant of B does not make B stale; B → C → B′ does. The DEV receipt used by
+promotion admission must also belong to that uninterrupted application history.
+The history walk is bounded to 1001 commits and fails closed if it cannot find the
+source. PROD compares against main, never develop.
 
-GitHub still may coalesce multiple pending **application-changing** runs. This is
-latest-desired-version delivery, not a promise to deploy every intermediate commit.
+The native queue preserves pending runs rather than coalescing them. This remains
+latest-desired-version delivery, not a promise to deploy every intermediate commit:
+obsolete queued runs exit under E2 without replacing the current desired version.
+Runs beyond GitHub's 100-entry queue limit are canceled by GitHub and require
+operator investigation; this is not an unbounded delivery guarantee.
 A skipped/cancelled version cannot promote without its own healthy DEV evidence.
 The evidence window is bounded, AWS route changes are not transactional, and an
 uncertain owner may need supervised reconciliation.
@@ -273,10 +317,26 @@ before merge, and use a main merge SHA distinct from the DEV source. No test rep
 the artifact reader with a preselected receipt. The additional scope test uses a
 real temporary Git history; AWS and REST transports remain offline fixtures.
 
+The follow-up at `50261ef` reproduced root-path rejection in `GitHub.raw`, loss of
+a sealed attempt after a rerun, pending C displaced by an old B retry, B → C → B′
+accepted as old B, SQL failure detected only after draining blue, and v1 rejected
+against the new v2 binding. [Follow-up regressions](../scripts/tests/api_delivery/test_followup_regressions.py)
+use real `get/raw` with only the gh subprocess doubled, real Git merge histories,
+the real E2/executor and HTTP/S3 response fixtures. No cloud failure is injected.
+
+Pinned actionlint 1.7.12 does not parse GitHub's documented `concurrency.queue`.
+[The narrow compatibility bridge](../.github/scripts/ci/lint-actions.py) validates
+exactly `queue:max` plus cancellation disabled in the closed executor, removes
+only that key in a temporary copy, then runs all unchanged actionlint checks on
+every workflow. Other fields and diagnostics are preserved. No tool pin or
+security check is relaxed; remove the bridge when an admitted upstream version
+supports the key. Scheduler behavior still needs a controlled activation trial.
+
 Primary platform contracts:
 [trusted PR events](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows),
 [immutable workflow artifacts](https://github.com/actions/upload-artifact),
 [custom OIDC subjects](https://docs.github.com/en/actions/reference/security/oidc),
 [GitHub concurrency](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency),
+[attempt-specific run API](https://docs.github.com/en/rest/actions/workflow-runs#get-a-workflow-run-attempt),
 [S3 absence versus denial](https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html),
 [ECS authorization table](https://docs.aws.amazon.com/service-authorization/latest/reference/list_ecs.html).

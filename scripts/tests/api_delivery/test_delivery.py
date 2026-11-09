@@ -106,6 +106,7 @@ class Port:
     replicas = 1
     def __init__(self, fail=None):
         self.routes = ('blue', 'green'); self.counts = {'blue':1,'green':0}
+        self.configuration_ref = dict(bucket='fixture',key='configuration',version='configuration-v1',sha256='a'*64)
         self.calls=[]; self.fail=fail; self.revisions={'blue':'old','green':'empty'}
     def mark(self, name):
         self.calls.append(name)

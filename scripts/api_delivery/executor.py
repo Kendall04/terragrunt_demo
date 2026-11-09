@@ -38,6 +38,10 @@ def deploy(port, image):
         # Both routes and the exact task cohort are re-read after the delay.
         require(port.snapshot()['routes'] == (new, old), 'routing changed before drain')
         port.still_ready(new, revision, image)
+        # Target health and the one-shot task probe do not prove SQL/KMS stayed
+        # available during the drain delay. Keep old capacity until this passes.
+        port.client_ready()
+        require(port.snapshot()['routes'] == (new, old), 'routing changed during final health check')
         port.journal('healthy-before-drain', dict(image=image, revision=revision, routes=[new, old]))
         draining = True
         port.stop(old)

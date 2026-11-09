@@ -66,7 +66,8 @@ class Rest(GitHub):
         self.responses.update({PREFIX:dict(id=99,allow_merge_commit=True),
             PREFIX+'/rules/branches/main':[permissions.PROMOTION_RULE,{'type':'pull_request','parameters':{'allowed_merge_methods':['merge']}}],
             PREFIX+'/actions/workflows/api-promotion.yml':{'id':7},
-            PREFIX+'/actions/runs/80':producer,PREFIX+'/actions/artifacts/901':self.metadata,
+            PREFIX+'/actions/runs/80':producer,PREFIX+'/actions/runs/80/attempts/2':producer,
+            PREFIX+'/actions/artifacts/901':self.metadata,
             PREFIX+'/commits/'+source*40+'/check-runs?filter=all&per_page=100&page=1':{'check_runs':[self.check_record]},
             PREFIX+'/commits/'+'4'*40+'/pulls':[pull], PREFIX+'/pulls/42':pull})
         self.binary[PREFIX+'/actions/artifacts/901/zip'] = raw
@@ -346,7 +347,7 @@ class RuntimeTests(unittest.TestCase):
         initial=dict(routes=('blue','green'),active='blue',inactive='green',active_revision=target['revision'],active_count=1,inactive_count=0,pending=0)
         port.snapshot=lambda:initial;port.journal=Mock();port.client_ready=Mock();port.tasks=Mock()
         expected=authorization_task(cfg['colors']['blue']);actual=dict(copy.deepcopy(expected),revision=2,status='ACTIVE',taskDefinitionArn=target['revision'])
-        port.render=Mock(return_value=expected);port.aws={'ecs':SimpleNamespace(describe_task_definition=Mock(return_value={'taskDefinition':actual}))}
+        port.current_configuration=Mock(return_value=expected);port.aws={'ecs':SimpleNamespace(describe_task_definition=Mock(return_value={'taskDefinition':actual}))}
         with self.assertRaisesRegex(ValueError,'baseline'):port.admit_current([], 'a'*64)
         cfg['native_baseline']=target
         with patch.object(aws,'verify_image'):

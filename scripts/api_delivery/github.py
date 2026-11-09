@@ -13,7 +13,8 @@ class GitHub:
         return json.loads(self.raw(path))
 
     def raw(self, path):
-        require(path.startswith('repos/' + REPOSITORY + '/'), 'repository scope')
+        root = 'repos/' + REPOSITORY
+        require(path == root or path.startswith(root + '/'), 'repository scope')
         return subprocess.check_output(['gh', 'api', '-H', 'Accept: application/vnd.github+json', path], timeout=90)
 
     def pages(self, path, key):
@@ -115,13 +116,18 @@ class GitHub:
         app = [j for j in jobs if j['name'] == 'App CI / .NET Restore • Build • Test • Docker Validate']
         require(len(app) == 1 and app[0]['conclusion'] == 'success', 'application qualification skipped or unsuccessful')
 
-    def require_merge_policy(self):
+    def require_merge_policy(self, administrator=False):
         rules = self.get(f'repos/{REPOSITORY}/rules/branches/main')
         methods = [set(r['parameters']['allowed_merge_methods']) for r in rules if r['type'] == 'pull_request']
         require(bool(methods) and set.intersection(*methods) == {'merge'}, 'main must enforce merge-only promotions')
         require(not any(r['type'] in ('required_linear_history', 'merge_queue') for r in rules),
                 'main history/queue policy incompatible with two-parent promotion')
-        require(self.get(f'repos/{REPOSITORY}')['allow_merge_commit'] is True, 'merge commits disabled')
+        repository = self.get(f'repos/{REPOSITORY}')
+        # This optional setting is not exposed to every read-only job token.
+        # Effective branch rules above are the runtime contract; installation
+        # must additionally check the repository setting with the owner's token.
+        if administrator or 'allow_merge_commit' in repository:
+            require(repository.get('allow_merge_commit') is True, 'merge commits disabled or not observable')
 
     def require_promotion_rule(self):
         self.require_merge_policy()
@@ -135,8 +141,12 @@ class GitHub:
         require(set(locator) == {'v', 'artifact', 'run', 'attempt', 'digest'} and locator['v'] == 1 and
                 all(type(locator[k]) is int and locator[k] > 0 for k in ('artifact', 'run', 'attempt')),
                 'invalid promotion artifact locator')
-        run = self.get(f'repos/{REPOSITORY}/actions/runs/{locator["run"]}')
-        require(run['run_attempt'] == locator['attempt'] and run['event'] in ('pull_request_target', 'workflow_run'),
+        path = f'repos/{REPOSITORY}/actions/runs/{locator["run"]}'
+        if completed:
+            path += f'/attempts/{locator["attempt"]}'
+        run = self.get(path)
+        require(run['id'] == locator['run'] and run['run_attempt'] == locator['attempt'] and
+                run['event'] in ('pull_request_target', 'workflow_run'),
                 'stale promotion attempt or event')
         if completed:
             self.trusted(run, PROMOTION, run['event'], None)

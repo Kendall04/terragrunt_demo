@@ -218,6 +218,8 @@ class Runtime:
         revision = result['taskDefinitionArn']
         readback = self.aws['ecs'].describe_task_definition(taskDefinition=revision)['taskDefinition']
         task_readback(task, readback, cfg['account'], cfg['region'])
+        self.configuration_ref = self.journal('task-configuration', dict(schema='API_TASK_CONFIGURATION_V1',
+            environment=cfg['environment'], color=color, image=image, revision=revision, task=task))
         return revision
 
     def start(self, color, revision):
@@ -288,7 +290,7 @@ class Runtime:
                                           kms_key=cfg['evidence_kms_key'], environment=cfg['environment']), latest)
             target = dict(schema='API_RECOVERY_TARGET_V1', kind='automatic',
                           **{k:latest[k] for k in ('environment','source','application','image','compatibility','profile','revision','color')},
-                          evidence=latest['manifest_ref'])
+                          evidence=latest['manifest_ref'], configuration_ref=latest.get('configuration_ref'))
         else:
             target = copy.deepcopy(cfg['native_baseline'])
             require(target is not None, 'native blue requires reviewed baseline before traffic')
@@ -297,7 +299,10 @@ class Runtime:
         require(target['revision'] == initial['active_revision'] and target['color'] == initial['active'] and
                 target['image'].startswith(cfg['repository'] + '@sha256:'), 'current recovery identity drift')
         verify_image(self.aws, cfg, target['image'])
-        expected = self.render(initial['active'], target['image'])
+        # Blue is authenticated against the exact task configuration that was
+        # verified for blue, never reconstructed using green's new credentials
+        # or trust manifest. The S3 reference is sealed by the release/admission.
+        expected = self.current_configuration(target)
         task = self.aws['ecs'].describe_task_definition(taskDefinition=initial['active_revision'])['taskDefinition']
         task_readback(expected, task, cfg['account'], cfg['region'])
         self.tasks(initial['active'], initial['active_revision'], target['image'], count=initial['active_count'])
@@ -305,6 +310,46 @@ class Runtime:
         # A new admission attests current observations, never a historical CI run.
         self.journal('current-recovery-admission', dict(target=target, count=initial['active_count']))
         return target
+
+    def current_configuration(self, target):
+        import re
+        cfg = self.config
+        reference = manifest_reference(target.get('configuration_ref'))
+        require(reference['bucket'] == cfg['evidence_bucket'] and re.fullmatch(
+            'api-delivery/' + cfg['environment'] + r'/operations/[0-9a-f-]{36}/[0-9]{3}-task-configuration.json',
+            reference['key']), 'historical configuration outside environment')
+        response = self.aws['s3'].get_object(Bucket=reference['bucket'], Key=reference['key'],
+            VersionId=reference['version'], ExpectedBucketOwner=cfg['account'])
+        raw = response['Body'].read(262145)
+        require(len(raw) <= 262144 and sha(raw) == reference['sha256'] and
+                response['VersionId'] == reference['version'] and response.get('ServerSideEncryption') == 'aws:kms' and
+                response.get('SSEKMSKeyId') == cfg['evidence_kms_key'] and not response.get('BucketKeyEnabled', False),
+                'historical configuration provenance mismatch')
+        value = json.loads(raw)
+        require(set(value) == {'schema','environment','color','image','revision','task'} and
+                value['schema'] == 'API_TASK_CONFIGURATION_V1' and all(
+                    value[k] == target[k] for k in ('environment','color','image','revision')),
+                'historical configuration identity mismatch')
+        task = value['task']; spec = self.color(target['color'])
+        name = spec['service']['loadBalancers'][0]['containerName']
+        require(task['family'] == name and task['requiresCompatibilities'] == ['FARGATE'] and
+                task['taskRoleArn'] == spec['roles']['task'] and task['executionRoleArn'] == spec['roles']['execution'] and
+                len(task['containerDefinitions']) == 2 and
+                {c['name'] for c in task['containerDefinitions']} == {name, name+'-readiness-probe'} and
+                all(c['image'] == target['image'] for c in task['containerDefinitions']), 'historical task binding mismatch')
+        app = next(c for c in task['containerDefinitions'] if c['name'] == name)
+        environment = {v['name']:v['value'] for v in app['environment']}
+        require(environment.get('Database__SecurityProfile') == 'validated-v2' and
+                environment.get('APP_ENV') == cfg['environment'] and
+                environment.get('Database__RunMigrationsOnStartup') == 'false', 'historical task is not strict runtime')
+        require(re.fullmatch('[0-9a-f]{64}', environment.get('SQL_TRUST_MANIFEST_SHA256', '')) and
+                sha(base64.b64decode(environment.get('SQL_TRUST_MANIFEST_B64', ''), validate=True)) ==
+                environment['SQL_TRUST_MANIFEST_SHA256'], 'historical trust material differs')
+        secrets = app['secrets']
+        require(len(secrets) == 1 and secrets[0]['name'] == 'DB_CONN_STRING' and re.fullmatch(
+            re.escape(spec['secret_arn']) + r':::[A-Za-z0-9-]{32,64}', secrets[0]['valueFrom']),
+            'historical versioned runtime secret differs')
+        return task
 
     def listener(self, color):
         self.mutate('elbv2', 'modify_listener', ListenerArn=self.color(color)['listener_arn'],

@@ -51,6 +51,23 @@ def application(root, commit):
     return sha(canonical(sorted(rows)))
 
 
+def same_application_lineage(root, source, tip, identity):
+    """Only documentation/configuration-neutral descendants preserve a release.
+
+    A revert to the same tree is a different promotion. Follow the protected
+    branch's first-parent history, not just tree equality or reachability through
+    a merged side branch. A bounded missing history fails closed.
+    """
+    if application(root, tip) != identity:
+        return False
+    if source == tip:
+        return True
+    commits = git(root, 'rev-list', '--first-parent', '--max-count=1001', tip).decode().split()
+    if source not in commits:
+        return False
+    return all(application(root, commit) == identity for commit in commits[:commits.index(source) + 1])
+
+
 def eligible_pr(pr):
     require(pr['base']['ref'] == 'main' and pr['head']['ref'] == 'develop' and
             pr['head']['repo']['full_name'] == REPOSITORY and

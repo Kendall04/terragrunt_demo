@@ -89,7 +89,8 @@ EXPECTED = json.loads(r'''
         "environment": "${{ github.event_name == 'workflow_dispatch' && format('api-{0}', github.event.inputs.environment) || (github.ref_name == 'develop' && 'api-dev' || 'api-prod') }}",
         "concurrency": {
           "group": "e1-application-delivery-${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || (github.ref_name == 'develop' && 'dev' || 'prod') }}",
-          "cancel-in-progress": false
+          "cancel-in-progress": false,
+          "queue": "max"
         },
         "permissions": {
           "contents": "read",
