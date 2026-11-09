@@ -14185,7 +14185,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/api_delivery/github.py": {
-      "sha256": "ec1d3f20ee54ca865718736531952641d789276ac867d3da13871a39148b6502",
+      "sha256": "807ea6913844fd0b723d8b10b8ca06e3a4e7142d6189d734e43540e9b1a540ec",
       "declarations": [],
       "signals": {},
       "semantic_status": "UNVERIFIED"
@@ -14403,10 +14403,37 @@
         ]
       },
       "semantic_status": "UNVERIFIED"
+    },
+    "scripts/tests/api_delivery/test_release_history.py": {
+      "sha256": "dd81e6ca5802ad1e140e0f9dcaddc2d9ee5dd14fc16e3b64a5d7d48e948dc523",
+      "declarations": [],
+      "signals": {
+        "launch-or-mutation": [
+          21,
+          65,
+          170,
+          174,
+          192,
+          193,
+          194,
+          195,
+          196,
+          237
+        ],
+        "executable-dependency": [
+          35,
+          139,
+          164,
+          165,
+          220,
+          241
+        ]
+      },
+      "semantic_status": "UNVERIFIED"
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",
-  "review_revision": "50261efe59008d2baac9e7e7b617856b35f99356",
-  "review_note": "Reviewed exact-attempt GitHub transport, native bounded queue with narrow lint compatibility, first-parent release freshness, pre-drain SQL/KMS health and immutable task-configuration admission. No job authority widened; semantics UNVERIFIED until reviewed cloud activation.",
-  "review_delta_sha256": "18af682ea72b02003eae1565fe26ca4a15510782d2e3f79c3a1dc627ab9d839d"
+  "review_revision": "e4c1f24835481476880cd0b365ae41046f093aaa",
+  "review_note": "Reviewed retained release producer attempt and upload provenance after failed/cancelled reruns. E2, immutable S3 admission, workflows and permissions unchanged. Offline regressions only; cloud semantics remain UNVERIFIED.",
+  "review_delta_sha256": "3213c07979040d1f0ab30a4b40a4713755aef8cb2f36bde4ea13cc2e4aa4941d"
 }

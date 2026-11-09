@@ -5,7 +5,8 @@ import json
 import subprocess
 import time
 import zipfile
-from .model import REPOSITORY, DELIVERY, PROMOTION, require, release
+from datetime import datetime, timedelta
+from .model import REPOSITORY, DELIVERY, PROMOTION, require, release, manifest_reference
 
 
 class GitHub:
@@ -50,6 +51,12 @@ class GitHub:
         return self.artifact_id(run, name, item['id'])
 
     def artifact_id(self, run, name, artifact_id, digest=None):
+        result, _ = self.artifact_document(run, name, artifact_id, digest)
+        require(result['run_attempt'] == run['run_attempt'], 'stale attempt artifact')
+        return result
+
+    def artifact_document(self, run, name, artifact_id, digest=None):
+        """Authenticate bytes/producer run; the caller must authenticate the attempt."""
         item = self.get(f'repos/{REPOSITORY}/actions/artifacts/{artifact_id}')
         require(item['id'] == artifact_id and item['name'] == name and not item['expired'] and
                 item['workflow_run']['id'] == run['id'], 'artifact producer or identity mismatch')
@@ -65,8 +72,8 @@ class GitHub:
             require(archive.namelist() == ['result.json'] and archive.infolist()[0].file_size <= 262144,
                     'unexpected artifact contents')
             result = json.loads(archive.read('result.json'))
-        require(result['run_id'] == run['id'] and result['run_attempt'] == run['run_attempt'], 'stale attempt artifact')
-        return result
+        require(result['run_id'] == run['id'], 'artifact run mismatch')
+        return result, item
 
     def wait_checks(self, sha, branch, timeout=3600):
         expected = {'ci.yml': 'CI Push Validation', 'ci-cd-safety.yml': 'CD Safety Push Validation'}
@@ -94,18 +101,48 @@ class GitHub:
     def deployments(self, environment):
         branch = 'develop' if environment == 'dev' else 'main'
         for run in self.runs(DELIVERY):
-            if run['head_branch'] != branch or run['event'] not in ('push', 'workflow_dispatch') or run['conclusion'] != 'success':
+            if run['head_branch'] != branch or run['event'] not in ('push', 'workflow_dispatch'):
                 continue
-            self.trusted(run, DELIVERY, run['event'], branch)
-            # No-op runs intentionally have no release artifact.
-            names = self.get(f'repos/{REPOSITORY}/actions/runs/{run["id"]}/artifacts')['artifacts']
-            if not any(a['name'] == 'release-record' and not a['expired'] for a in names):
+            # Runs report the latest attempt, not necessarily the deployment's
+            # producer. Discover the unique immutable artifact, never "last green".
+            names = [a for a in self.pages(f'repos/{REPOSITORY}/actions/runs/{run["id"]}/artifacts', 'artifacts')
+                     if a['name'] == 'release-record']
+            if not names:  # No-op runs intentionally have no release artifact.
                 continue
-            record = self.artifact(run, 'release-record')
-            if record['environment'] == environment:
-                require(record['source'] == run['head_sha'] or run['event'] == 'workflow_dispatch' or environment == 'prod',
-                        'DEV source is not the built push')
-                yield release(record, environment)
+            require(len(names) == 1, 'ambiguous deployment artifacts; reconciliation required')
+            record, item = self.artifact_document(run, 'release-record', names[0]['id'], names[0]['digest'])
+            attempt = record['run_attempt']
+            require(type(attempt) is int and 0 < attempt <= run['run_attempt'], 'invalid producer attempt')
+            producer = self.get(f'repos/{REPOSITORY}/actions/runs/{run["id"]}/attempts/{attempt}')
+            self.trusted(producer, DELIVERY, run['event'], branch)
+            require(producer['id'] == run['id'] and producer['run_attempt'] == attempt and
+                    producer['head_sha'] == run['head_sha'] == item['workflow_run']['head_sha'] == record['event_source'],
+                    'deployment producer identity mismatch')
+            # Artifact REST metadata has no run_attempt. Bind its server-side
+            # creation time to the successful upload step of the claimed attempt,
+            # so a later upload cannot impersonate attempt 1 by editing result.json.
+            jobs = list(self.pages(f'repos/{REPOSITORY}/actions/runs/{run["id"]}/attempts/{attempt}/jobs', 'jobs'))
+            uploads = [(job, step) for job in jobs for step in job['steps']
+                       if step['name'] == 'Retain authenticated successful deployment']
+            require(len(uploads) == 1, 'deployment upload evidence missing or ambiguous')
+            job, upload = uploads[0]
+            executions = [s for s in job['steps'] if s['name'] == 'Build once in DEV or deploy approved digest in PROD']
+            require(job['run_id'] == run['id'] and job['head_sha'] == producer['head_sha'] and
+                    len(executions) == 1 and all(s['status'] == 'completed' and s['conclusion'] == 'success'
+                    for s in (job, upload, executions[0])), 'deployment producer did not complete')
+            def stamp(value):
+                result = datetime.fromisoformat(value.replace('Z', '+00:00'))
+                require(result.tzinfo is not None, 'timestamp timezone missing')
+                return result
+            created, started, completed = (stamp(v) for v in (item['created_at'], upload['started_at'], upload['completed_at']))
+            # Jobs use second precision; artifacts may include fractional seconds.
+            require(started <= created < completed + timedelta(seconds=1) and
+                    stamp(executions[0]['completed_at']) <= started <= completed,
+                    'artifact outside producer upload; reconciliation required')
+            require(record['source'] == producer['head_sha'] or producer['event'] == 'workflow_dispatch',
+                    'release source is not the built or merged push')
+            manifest_reference(record['manifest_ref'])
+            yield release(record, environment)
 
     def require_app_validation(self, sha, branch):
         runs = [r for r in self.runs('ci.yml', branch, sha) if r['head_sha'] == sha and r['event'] == 'push']

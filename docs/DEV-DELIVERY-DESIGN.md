@@ -296,6 +296,28 @@ promotion admission must also belong to that uninterrupted application history.
 The history walk is bounded to 1001 commits and fails closed if it cannot find the
 source. PROD compares against main, never develop.
 
+Deployment history authenticates the **producer attempt** of the unique retained
+`release-record`, not the latest conclusion of that run. A failed/cancelled rerun
+cannot erase a completed healthy deployment. The reader verifies the artifact ID,
+ZIP digest, repository and run, then the exact successful attempt, workflow, event,
+branch and source. Its creation timestamp must fall within that attempt's successful
+upload step (GitHub job times have second precision). Missing, expired, ambiguous
+or contradictory evidence fails closed; the reader never searches for a substitute
+green attempt. This uses existing Actions read permission, including in the PR
+evaluator; it grants no AWS authority.
+
+The executor still rejects a repeated run's immutable E2 terminal before build,
+publication or ECS mutation. Current admission still verifies the original S3
+VersionId/hash and the live revision, configuration, compatibility and health.
+An uncertain E2 owner or different active revision requires reconciliation; a
+historical successful artifact alone does not prove current runtime health.
+The [retained-history regression](../scripts/tests/api_delivery/test_release_history.py)
+reproduces the omission at `e4c1f248`, then exercises B attempt 1 → failed/cancelled
+attempt 2 → C through real `get/raw`, ZIP verification, CLI, E2 and active admission.
+Offline fixtures identify artifact 901/run 22/attempt 1, zero retry build/ECR/ECS
+effects, successful C admission and continued PR eligibility for B. AWS transports
+and deployment effects are fixtures; this is not a real cloud deployment.
+
 The native queue preserves pending runs rather than coalescing them. This remains
 latest-desired-version delivery, not a promise to deploy every intermediate commit:
 obsolete queued runs exit under E2 without replacing the current desired version.
