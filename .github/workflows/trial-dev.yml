@@ -1,0 +1,31 @@
+{
+  "name": "Receipt prototype dev",
+  "on": {
+    "push": {
+      "branches": [
+        "codex/receipt-attestations-trial-20261109"
+      ],
+      "paths": [
+        "inputs/dev.json"
+      ]
+    }
+  },
+  "permissions": {
+    "contents": "read",
+    "actions": "read",
+    "attestations": "write",
+    "id-token": "write"
+  },
+  "jobs": {
+    "trial": {
+      "if": "${{ github.repository == 'Kendall04/terragrunt_demo' && github.ref == 'refs/heads/codex/receipt-attestations-trial-20261109' }}",
+      "uses": "./.github/workflows/dev-signer.yml",
+      "permissions": {
+        "contents": "read",
+        "actions": "read",
+        "attestations": "write",
+        "id-token": "write"
+      }
+    }
+  }
+}

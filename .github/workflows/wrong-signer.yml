@@ -1,0 +1,70 @@
+{
+  "name": "Receipt signer forgery",
+  "on": {
+    "workflow_call": {}
+  },
+  "permissions": {
+    "contents": "read",
+    "actions": "read",
+    "attestations": "write",
+    "id-token": "write"
+  },
+  "jobs": {
+    "publish": {
+      "runs-on": "ubuntu-latest",
+      "timeout-minutes": 8,
+      "env": {
+        "GH_TOKEN": "${{ github.token }}",
+        "PROTOTYPE_SIGNER": "wrong-signer",
+        "PROTOTYPE_MODE": "forgery"
+      },
+      "steps": [
+        {
+          "name": "Fail rerun before receipt publication",
+          "if": "${{ github.run_attempt != '1' }}",
+          "run": "echo 'Intentional rerun failure: no attestation, check, build or deployment.'\nexit 42"
+        },
+        {
+          "name": "Checkout isolated prototype",
+          "uses": "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+          "with": {
+            "persist-credentials": false
+          }
+        },
+        {
+          "name": "Prepare fictitious receipt",
+          "run": "python3 prototype.py prepare forgery"
+        },
+        {
+          "name": "Publish signed durable receipt",
+          "id": "receipt",
+          "uses": "actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6",
+          "with": {
+            "subject-path": "out/slot.json",
+            "predicate-type": "https://github.com/Kendall04/terragrunt_demo/receipt-prototype/v1",
+            "predicate-path": "out/receipt.json",
+            "push-to-registry": false,
+            "create-storage-record": false
+          }
+        },
+        {
+          "name": "Seal and verify published receipt",
+          "env": {
+            "ATTESTATION_ID": "${{ steps.receipt.outputs.attestation-id }}",
+            "BUNDLE_PATH": "${{ steps.receipt.outputs.bundle-path }}"
+          },
+          "run": "python3 prototype.py finish forgery"
+        },
+        {
+          "name": "Diagnostic download only",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "prototype-forgery-diagnostics",
+            "path": "out/",
+            "retention-days": 90
+          }
+        }
+      ]
+    }
+  }
+}
