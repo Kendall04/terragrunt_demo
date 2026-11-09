@@ -192,7 +192,7 @@ with patch('subprocess.check_output',side_effect=w):
             wire=ReleaseWire();wire.value.update(source=b,event_source=b,application=m.application(history.root,b),producer=origin(b));wire.producer['head_sha']=wire.latest['head_sha']=b;wire.pack()
             pull=Rest().pull;pull.update(state='open',draft=False);pull['head']['sha']=bp;pull['base']['sha']=base
             wire.responses.update({PREFIX+'/pulls/42':pull,PREFIX+'/rules/branches/main':[{'type':'pull_request','parameters':{'allowed_merge_methods':['merge']}}]})
-            path=Path(temp);(path/'event').write_bytes(m.canonical({'pull_request':{'number':42}}))
+            path=Path(temp);(path/'event').write_bytes(m.canonical({'pull_request':copy.deepcopy(pull)}))
             env=dict(GITHUB_EVENT_PATH=str(path/'event'),GITHUB_EVENT_NAME='pull_request_target',GITHUB_SHA=base,
                      GITHUB_WORKFLOW_SHA=base,GITHUB_WORKFLOW_REF=m.REPOSITORY+'/'+m.PROMOTION+'@refs/heads/main',GITHUB_RUN_ID='80',GITHUB_RUN_ATTEMPT='1')
             previous=Path.cwd()

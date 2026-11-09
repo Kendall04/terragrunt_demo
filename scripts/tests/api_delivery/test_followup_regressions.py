@@ -115,6 +115,7 @@ class GitHubTransportTests(unittest.TestCase):
 
     def test_finalizer_authenticates_current_in_progress_attempt_not_completed_endpoint(self):
         f=Rest();wire=Wire(f);f.producer['status']='in_progress';f.producer['conclusion']=None
+        f.check_record.update(status='in_progress',conclusion=None)
         with patch('scripts.api_delivery.github.subprocess.check_output',side_effect=wire):
             self.assertEqual(GitHub().promotion_artifact(f.locator,completed=False),f.receipt)
             f.producer['run_attempt']=3
@@ -178,7 +179,7 @@ class FreshnessTests(unittest.TestCase):
             old=record('b');old.update(source=b,application=app)
             new=record('d');new.update(source=bp,application=app)
             gh=SimpleNamespace(get=lambda p:pull,check=Mock(return_value={'id':700}),require_merge_policy=Mock(),deployment_receipt=lambda record:{'fixture':record['source']})
-            (h.root/'event').write_bytes(m.canonical({'pull_request':{'number':42}}))
+            (h.root/'event').write_bytes(m.canonical({'pull_request':copy.deepcopy(pull)}))
             env=dict(GITHUB_EVENT_PATH=str(h.root/'event'),GITHUB_EVENT_NAME='pull_request_target',GITHUB_SHA=base,
                      GITHUB_WORKFLOW_SHA=base,GITHUB_WORKFLOW_REF=m.REPOSITORY+'/'+m.PROMOTION+'@refs/heads/main',
                      GITHUB_RUN_ID='80',GITHUB_RUN_ATTEMPT='2')
@@ -275,6 +276,7 @@ class FreshnessTests(unittest.TestCase):
                 check=dict(f.check_record,head_sha=head,external_id=json.dumps(locator),details_url=GitHub.approval_url(locator))
                 f.responses.update(f.signatures.responses)
                 f.responses.update({PREFIX+'/actions/runs/'+str(locator['r'])+'/attempts/2':producer,
+                    PREFIX+'/check-runs/700':check,
                     PREFIX+'/commits/'+head+'/check-runs?filter=all&per_page=100&page=1':{'check_runs':[check]},
                     PREFIX+'/git/ref/heads/main':{'object':{'sha':last[2]}}})
                 for workflow in ('cd.yml','cd-terragrunt.yml'):f.responses[PREFIX+'/actions/workflows/'+workflow]={'state':'disabled_manually'}

@@ -30,8 +30,8 @@ def record(letter='b', env='dev', source='2'):
 
 
 def pr():
-    return dict(number=42, merged=True, head=dict(ref='develop', sha='2'*40, repo={'full_name': m.REPOSITORY}),
-                base=dict(ref='main', sha='1'*40, repo={'full_name': m.REPOSITORY}))
+    return dict(number=42, merged=True, head=dict(ref='develop', sha='2'*40, repo={'full_name': m.REPOSITORY,'id':1143067989}),
+                base=dict(ref='main', sha='1'*40, repo={'full_name': m.REPOSITORY,'id':1143067989}))
 
 
 def config(env='dev'):

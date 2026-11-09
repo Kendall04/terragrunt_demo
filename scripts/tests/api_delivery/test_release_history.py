@@ -144,7 +144,7 @@ class ReleaseHistoryTests(unittest.TestCase):
                 pull.update(state='open',draft=False); pull['head']['sha']=b; pull['base']['sha']=base
                 wire.responses.update({PREFIX+'/pulls/42':pull,
                     PREFIX+'/rules/branches/main':[{'type':'pull_request','parameters':{'allowed_merge_methods':['merge']}}]})
-                (h.root/'event').write_bytes(m.canonical({'pull_request':{'number':42}}))
+                (h.root/'event').write_bytes(m.canonical({'pull_request':copy.deepcopy(pull)}))
                 env=dict(GITHUB_EVENT_PATH=str(h.root/'event'),GITHUB_EVENT_NAME='pull_request_target',
                     GITHUB_SHA=base,GITHUB_WORKFLOW_SHA=base,GITHUB_RUN_ID='80',GITHUB_RUN_ATTEMPT='1',
                     GITHUB_WORKFLOW_REF=m.REPOSITORY+'/'+m.PROMOTION+'@refs/heads/main')
