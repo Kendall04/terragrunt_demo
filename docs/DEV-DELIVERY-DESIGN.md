@@ -177,7 +177,8 @@ KMS encryption context remains object-scoped. Bucket/key policies must match.
 PRs retain existing CI authority only. The promotion evaluator can write checks
 and attestations but has no AWS identity. Its minimal permissions are
 contents/actions/pull-requests read, checks/attestations/id-token write. The
-execution signer needs attestations write plus its existing deployment permissions. It cannot deploy. The required promotion
+execution signer needs attestations write plus its existing deployment permissions.
+The promotion evaluator cannot deploy. The required promotion
 rule must be installed **only on main**, in addition to CI Validation and CD Safety
 Validation, without a bypass or extra human approval requirement.
 
