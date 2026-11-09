@@ -143,8 +143,8 @@ key**, rejects delete markers/multiple versions, reads the sole version and
 verifies encryption, canonical bytes, original producer and E2 request hash.
 The real E2 terminal must be SUCCESS and its matching head RELEASED; ACTIVE,
 displaced, uncertain or contradictory state requires separate reconciliation.
-SUCCESS with no release manifest (the superseded no-op path) is not deployment
-proof. Current ECS revision/configuration, task health and client readiness are
+SUCCESS with no outcome manifest is neither deployment nor omission proof.
+For a healthy release, current ECS revision/configuration, task health and client readiness are
 also reread before publication. This path has no build, ECR write, ECS mutation,
 S3 write or E2 acquisition/release.
 
@@ -167,6 +167,28 @@ result without acquiring E2 or discovering D's pending receipt. It requires a
 released E2 head and no incomplete terminal for its own operation. B's released
 head is preserved for publication recovery; D can then admit B and deploy once.
 A request that becomes stale only after admission is still stopped under E2.
+
+Superseded decisions are idempotent across signing attempts. Each signature and
+its exact run/attempt, workflow/source identity, successful execute and successful
+signing steps are verified independently, including when a later step failed.
+Only `run_attempt` is excluded when comparing two valid no-deployment records;
+environment, run, source and reason must agree. Deployment records remain byte
+identical, and mixing a deployment with an omission blocks the slot, even when
+the consumer selected a specific signature. Failed/incomplete execution evidence
+does not acquire legitimacy merely by being signed.
+
+For supersession discovered **after acquiring E2**, the executor first proves it
+has issued no application effects, then conditionally journals an explicit
+`API_SUPERSEDED_DECISION_V1` outcome before closing E2. The existing deterministic
+`operations/<operation>/release.json` key now holds either that closed decision
+schema or `API_RELEASE_V1`; a no-op can never become a healthy release. The decision
+binds the request hash, E2 generation, source and original producer attempt.
+A retry reads its unique encrypted S3 version and verifies those fields, the
+matching released E2 terminal/head and original successful execute step. It then
+signs the omission as its own attempt, with no S3/E2 writes, build or ECR/ECS effects.
+Missing/altered decisions, multiple versions, deletion markers, unverified
+producers, held ownership and uncertain effects remain blocked. No additional
+S3 prefixes, IAM permissions or workflows are introduced.
 
 The environment role needs reviewed `s3:ListBucketVersions` limited to its own
 operation release keys and max-keys <=100, in addition to existing exact-version

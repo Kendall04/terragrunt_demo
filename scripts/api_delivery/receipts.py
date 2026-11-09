@@ -200,20 +200,47 @@ def original_deployment(gh, record, recovered=False):
               'original execution not evidenced')
 
 
+def completed_steps(gh, run, names):
+    jobs = list(gh.pages(f'repos/{m.REPOSITORY}/actions/runs/{run["id"]}/attempts/{run["run_attempt"]}/jobs','jobs'))
+    for name in names:
+        steps = [s for job in jobs for s in job.get('steps',[]) if s.get('name') == name]
+        m.require(len(steps) == 1 and steps[0].get('status') == 'completed' and
+                  steps[0].get('conclusion') == 'success', 'omission execution/signature not evidenced')
+
+
+def omission_identity(record):
+    """One decision per operation; each signature still authenticates its attempt."""
+    m.require(set(record) == {'schema','reason','run_id','run_attempt','event_source','environment'} and
+              record['schema'] == 'API_NO_DEPLOYMENT_V1' and record['reason'] == 'superseded' and
+              record['environment'] in ('dev','prod') and hexstr(record['event_source'],40) and
+              all(type(record[k]) is int and record[k] > 0 for k in ('run_id','run_attempt')),
+              'invalid no-deployment receipt')
+    return {k:v for k,v in record.items() if k != 'run_attempt'}
+
+
+def record_identity(record):
+    return m.canonical(omission_identity(record) if record.get('schema') == 'API_NO_DEPLOYMENT_V1' else record)
+
+
 def validate_predicate(gh, value, descriptor, completed):
     m.require(set(value) == {'schema','slot','publisher','record','recovered'} and
               value['schema'] == 'API_SIGNED_RECEIPT_V1' and value['slot'] == descriptor and
               type(value['recovered']) is bool, 'receipt envelope')
     pub, record = value['publisher'], value['record']
     env = descriptor.get('environment','prod'); kind = descriptor['kind']
-    run = producer(gh,pub,kind,env,completed)
+    omission = kind == 'deployment' and record.get('schema') == 'API_NO_DEPLOYMENT_V1'
+    # A later failing step cannot undo an already authenticated no-effects
+    # decision. Unlike deployment recovery, both execute and signing must have
+    # completed successfully in EACH exact producer attempt.
+    run = producer(gh,pub,kind,env,completed,recovered=omission and completed)
     m.require(pub['run'] == descriptor['run'], 'foreign slot producer')
     if kind == 'deployment':
-        if record.get('schema') == 'API_NO_DEPLOYMENT_V1':
-            m.require(not value['recovered'] and set(record) == {'schema','reason','run_id','run_attempt','event_source','environment'} and
-                      record['reason'] == 'superseded' and record['environment'] == env and
+        if omission:
+            omission_identity(record)
+            m.require(not value['recovered'] and record['environment'] == env and
                       (record['run_id'],record['run_attempt'],record['event_source']) ==
                       (pub['run'],pub['attempt'],pub['source_sha']), 'invalid no-deployment receipt')
+            completed_steps(gh,run,(EXECUTE,SIGN))
         else:
             public_record(record)
             m.require(record['run_id'] == descriptor['run'] and record['environment'] == env, 'deployment slot mismatch')
@@ -260,7 +287,8 @@ def resolve(gh, descriptor, sealed=None, completed=True):
         m.require(sealed['s'] == m.sha(m.canonical(descriptor)), 'receipt locator subject mismatch')
     found = []; signed_records = []; incomplete = False
     for bundle in bundles(gh,descriptor):
-        if sealed and m.sha(payload(bundle)) != sealed['h']: continue
+        selected = not sealed or m.sha(payload(bundle)) == sealed['h']
+        if not selected and descriptor['kind'] != 'deployment': continue
         try:
             untrusted = json.loads(payload(bundle))['predicate']
             pub = untrusted['publisher']
@@ -269,17 +297,17 @@ def resolve(gh, descriptor, sealed=None, completed=True):
             # A foreign workflow can post at this slot. It cannot authorize it.
             continue
         loc = compact(descriptor,bundle,pub)
-        if sealed: m.require(loc == sealed, 'receipt locator authority differs')
+        if sealed and selected: m.require(loc == sealed, 'receipt locator authority differs')
         signed_records.append(value['record'])
         try:
-            record = validate_predicate(gh,value,descriptor,completed)
+            record = validate_predicate(gh,value,descriptor,completed if selected else True)
         except PublisherIncomplete:
-            if sealed or descriptor['kind'] != 'deployment': raise
+            if (sealed and selected) or descriptor['kind'] != 'deployment': raise
             incomplete = True
             continue
-        found.append((record,loc,value['recovered']))
+        if selected: found.append((record,loc,value['recovered']))
     m.require(bool(found), 'durable receipt missing/untrusted; publication pending or deleted')
-    m.require(all(m.canonical(record) == m.canonical(found[0][0]) for record in signed_records), 'contradictory signed receipts')
+    m.require(all(record_identity(record) == record_identity(found[0][0]) for record in signed_records), 'contradictory signed receipts')
     m.require(not incomplete or any(recovered for _,_,recovered in found), 'failed publisher requires authenticated reconciliation')
     return found[0][:2]
 

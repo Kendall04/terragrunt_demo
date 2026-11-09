@@ -399,7 +399,8 @@ def recover_release(gh, aws, cfg, authority, operation, request):
     """Read-only publication recovery from the deterministic operation key.
 
     Uses real E2 terminal validation/CAS head and S3 versions. No known receipt,
-    VersionId or hash is an input. Never accepts SUCCESS for a superseded no-op.
+    VersionId or hash is an input. A no-op requires its own positive decision;
+    it can never become a healthy release by inference from SUCCESS/absence.
     Does not acquire/release E2, build, publish ECR, register or update ECS.
     """
     from . import receipts
@@ -434,6 +435,19 @@ def recover_release(gh, aws, cfg, authority, operation, request):
             record['environment'] == cfg['environment'] and record['request_sha256'] == terminal['request_sha256'] and
             record['event_source'] == request['event_source'] and record['run_id'] == int(os.environ['GITHUB_RUN_ID']) and
             record['run_attempt'] < int(os.environ['GITHUB_RUN_ATTEMPT']), 'recovered deployment/request differs')
+    if record.get('schema') == 'API_SUPERSEDED_DECISION_V1':
+        require(set(record) == {'schema','reason','phase','environment','operation','request_sha256','event_source',
+                                'generation','producer','run_id','run_attempt'} and request['operation'] == 'deploy' and
+                record['reason'] == 'superseded' and record['phase'] == 'before-application-effects' and
+                type(record['generation']) is int and record['generation'] == terminal['generation'],
+                'invalid durable omission decision')
+        pub = record['producer']
+        require((pub['run'],pub['attempt'],pub['source_sha']) ==
+                (record['run_id'],record['run_attempt'],record['event_source']), 'omission producer differs')
+        original = receipts.producer(gh,pub,'deployment',cfg['environment'],recovered=True)
+        receipts.completed_steps(gh,original,(receipts.EXECUTE,))
+        require(authority.store.read() == (head,etag), 'E2 changed during omission recovery')
+        return record
     record['manifest_ref'] = dict(bucket=cfg['evidence_bucket'],key=key,version=version,sha256=sha(raw))
     receipts.original_deployment(gh,record,recovered=True)
     verify_manifest(aws,dict(bucket=cfg['evidence_bucket'],account=cfg['account'],region=cfg['region'],

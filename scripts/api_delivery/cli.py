@@ -186,6 +186,9 @@ def execute(gh, request_path, output):
         # Publication-only recovery, before acquire/build/ECR/ECS. A SUCCESS
         # terminal with no real release is not sufficient evidence.
         recovered = aws.recover_release(gh, clients, cfg, owner, operation, request)
+        if recovered['schema'] == 'API_SUPERSEDED_DECISION_V1':
+            superseded(request, output)
+            return
         write(output,recovered)
         outputs(deployed='true',recovered='true')
         return
@@ -214,6 +217,13 @@ def execute(gh, request_path, output):
             # an old source cannot roll back a newer branch application. A docs
             # descendant with identical application identity does not obsolete B.
             if request['operation'] == 'deploy' and not current_request(gh, request):
+                # Positive, immutable evidence BEFORE settling E2. SUCCESS or
+                # absence of a healthy release alone cannot recover an omission.
+                m.require(not owner.touched, 'superseded after possible effects')
+                port.journal('release',dict(schema='API_SUPERSEDED_DECISION_V1',reason='superseded',
+                    phase='before-application-effects',environment=env,operation=operation,
+                    request_sha256=owner.request_sha256,event_source=request['event_source'],
+                    generation=owner.value['generation'],producer=receipts.publisher(),**run_metadata()))
                 owner.finish(True, 'SUCCESS')
                 superseded(request, output)
                 return

@@ -157,6 +157,8 @@ class ReceiptRecoveryFlow(unittest.TestCase):
             # Complete the real signed no-deployment path; D must skip C's
             # authenticated result, never wait for a release C cannot produce.
             c.update(status='completed',conclusion='success')
+            f.wire.responses[PREFIX+'/actions/runs/23/attempts/1/jobs?per_page=100&page=1']={'jobs':[
+                dict(name='delivery / delivery',steps=[step(r.EXECUTE,'success'),step(r.SIGN,'success')])]}
             descriptor=r.slot('deployment',23,'dev')
             _,locator=f.wire.signatures.sign(descriptor,skipped,origin(c['head_sha'],23,1))
             f.wire.responses[f.slot_path(23)]=f.wire.signatures.responses[f.slot_path(23)]
