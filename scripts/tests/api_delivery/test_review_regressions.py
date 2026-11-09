@@ -281,7 +281,7 @@ class OrderingTests(unittest.TestCase):
         self.assertIn('github.sha',ci['concurrency']['group'])
         self.assertIn("github.event_name == 'push'",ci['concurrency']['group'])
 
-    def test_old_B_retry_after_C_is_checked_under_E2_and_never_builds(self):
+    def test_old_B_retry_after_C_is_read_only_and_never_builds(self):
         cfg=config();s3=MemoryS3();store=e2.Store(s3,cfg['evidence_bucket'],'dev');store.initialize()
         owner=e2.Authority(store,'normal-delivery/deploy-dev','11111111-1111-1111-1111-111111111111',{})
         freshness_states=[]
@@ -305,7 +305,9 @@ class OrderingTests(unittest.TestCase):
             self.assertEqual(json.loads((path/'result').read_bytes())['reason'],'superseded');self.assertIn('deployed=false',(path/'outputs').read_text())
             publish.assert_not_called();runtime.return_value.admit_current.assert_not_called()
         self.assertEqual(store.read()[0]['state'],'RELEASED')
-        self.assertEqual(freshness_states,['RELEASED','ACTIVE'])
+        self.assertEqual(freshness_states,['RELEASED'])
+        self.assertEqual(store.read()[0]['generation'],0)
+        self.assertIsNone(owner.retained())
 
 
 class RuntimeTests(unittest.TestCase):

@@ -157,6 +157,12 @@ def prepare(gh, output):
     outputs(deploy='true', environment=env)
 
 
+def superseded(request, output):
+    write(output,dict(schema='API_NO_DEPLOYMENT_V1',reason='superseded',environment=request['environment'],
+                      event_source=request['event_source'],**run_metadata()))
+    outputs(deployed='false', receipt='true', reason='superseded')
+
+
 def execute(gh, request_path, output):
     from . import aws
     from .executor import deploy
@@ -188,8 +194,18 @@ def execute(gh, request_path, output):
     # preventing either rerun from recovering. Immutable evidence is still
     # admitted against current ECS/configuration under E2 below.
     eligible = request['operation'] != 'deploy' or current_request(gh, request)
+    if not eligible:
+        # A stale request needs no mutation authority. Acquiring just to record
+        # a no-op would displace B's released head while B awaits publication.
+        # Do not bless a retained/uncertain owner or an operation missing its
+        # own terminal. This read-only disposition creates no E2 terminal.
+        head, _ = owner.store.read()
+        m.require(head['state'] == 'RELEASED' and head['operation'] != operation,
+                  'superseded request cannot settle retained or incomplete ownership')
+        superseded(request, output)
+        return
     history = list(itertools.islice(gh.deployments(
-        env, exclude_run=int(os.environ['GITHUB_RUN_ID']), allow_queued=True), 1)) if eligible else []
+        env, exclude_run=int(os.environ['GITHUB_RUN_ID']), allow_queued=True), 1))
     owner.acquire()
     with tempfile.TemporaryDirectory() as directory:
         port = aws.Runtime(clients, cfg, owner, operation, directory)
@@ -199,11 +215,8 @@ def execute(gh, request_path, output):
             # descendant with identical application identity does not obsolete B.
             if request['operation'] == 'deploy' and not current_request(gh, request):
                 owner.finish(True, 'SUCCESS')
-                write(output,dict(schema='API_NO_DEPLOYMENT_V1',reason='superseded',environment=env,
-                                  event_source=request['event_source'],**run_metadata()))
-                outputs(deployed='false', receipt='true', reason='superseded')
+                superseded(request, output)
                 return
-            m.require(eligible, 'branch changed after history preflight; retry with current evidence')
             image = None
             if env == 'prod' and request['operation'] == 'deploy':
                 # Recheck exact GitHub approval and exact DEV S3 version using the

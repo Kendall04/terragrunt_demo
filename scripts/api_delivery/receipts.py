@@ -308,9 +308,25 @@ def proven_no_execution(gh, run, allow_queued=False):
                 continue
             if original['status'] in (*queued,'in_progress') and len(jobs) == 2 and len(scopes) == len(deliveries) == 1:
                 scope, delivery = scopes[0], deliveries[0]
-                if scope.get('status') == 'completed' and scope['conclusion'] == 'success' and \
-                        delivery.get('status') in queued and delivery['conclusion'] is None and delivery.get('steps') == []:
-                    continue
+                if delivery.get('status') in queued and delivery['conclusion'] is None and delivery.get('steps') == []:
+                    if scope.get('status') == 'completed' and scope['conclusion'] == 'success':
+                        continue
+                    if scope.get('status') == 'in_progress' and scope['conclusion'] is None:
+                        # Jobs REST has no `needs`. Authenticate the dependency
+                        # and scope's lack of AWS authority from this run's exact
+                        # workflow source, not from the reader's current checkout.
+                        from .workflow_contract import EXPECTED
+                        for name in ('api-delivery.yml','api-execute.yml'):
+                            path = '.github/workflows/'+name
+                            source = gh.get(f'repos/{m.REPOSITORY}/contents/{path}?ref={original["head_sha"]}')
+                            m.require(source.get('type') == 'file' and source.get('path') == path and
+                                      source.get('encoding') == 'base64' and type(source.get('content')) is str,
+                                      'queued dependency source unavailable')
+                            raw = base64.b64decode(''.join(source['content'].split()),validate=True)
+                            m.require(len(raw) <= 65536 and source.get('size') == len(raw) and
+                                      json.loads(raw) == EXPECTED[name],
+                                      'queued dependency/authority differs from reviewed workflow')
+                        continue
         m.require(original['status'] == 'completed' and original['conclusion'] in ('success','skipped','failure'),
                   'unsettled receipt-free attempt')
         if original['conclusion'] == 'failure':

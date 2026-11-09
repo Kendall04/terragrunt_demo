@@ -162,6 +162,11 @@ does not replace B's released head or consume C's operation with a FAILURE
 terminal: B can republish its original evidence, then C can retry once. Source
 eligibility is checked before discovery and again under E2; current ECS and its
 immutable configuration are still admitted under E2 before any build or mutation.
+If C is already superseded by D at preflight, C emits its signed no-deployment
+result without acquiring E2 or discovering D's pending receipt. It requires a
+released E2 head and no incomplete terminal for its own operation. B's released
+head is preserved for publication recovery; D can then admit B and deploy once.
+A request that becomes stale only after admission is still stopped under E2.
 
 The environment role needs reviewed `s3:ListBucketVersions` limited to its own
 operation release keys and max-keys <=100, in addition to existing exact-version
@@ -175,8 +180,11 @@ failed while both credentials and deployment steps were explicitly skipped.
 Missing, duplicate, contradictory or potentially effectful steps block admission.
 The executor can also pass a queued run whose jobs have no delivery runner,
 checking every earlier attempt; the promotion evaluator keeps its stricter pending
-policy. A queued retry cannot hide an earlier deployment. An operation superseded
-under E2 emits an authenticated no-deployment outcome. A failed/cancelled execution with missing
+policy. When scope is still running, delivery must be queued with no steps, and
+the exact run SHA's reusable workflow must match the reviewed contract (including
+`needs: scope` and scope's lack of AWS authority). Missing/contradictory job or
+workflow evidence blocks. A queued retry cannot hide an earlier deployment.
+An operation superseded emits an authenticated no-deployment outcome. A failed/cancelled execution with missing
 receipt is not treated as a documentation change.
 
 This installation contract requires a **shared immutable ECR repository in the
@@ -399,7 +407,8 @@ Transport fixtures are explicitly separate from the real prototype evidence.
 
 The native queue preserves pending runs rather than coalescing them. This remains
 latest-desired-version delivery, not a promise to deploy every intermediate commit:
-obsolete queued runs exit under E2 without replacing the current desired version.
+obsolete queued runs exit read-only without replacing the current desired version
+or consuming a predecessor's E2 publication-recovery evidence.
 Runs beyond GitHub's 100-entry queue limit are canceled by GitHub and require
 operator investigation; this is not an unbounded delivery guarantee.
 A skipped/cancelled version cannot promote without its own healthy DEV evidence.

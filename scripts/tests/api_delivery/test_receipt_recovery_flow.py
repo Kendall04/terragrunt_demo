@@ -4,6 +4,7 @@ Real CLI, receipt reader, E2 store, S3 journal/admission and blue/green executor
 only external service/build/signature transports use offline fixtures.
 """
 import copy
+import base64
 import json
 import os
 from pathlib import Path
@@ -106,7 +107,7 @@ class Flow:
 
     def publish(self, *args):
         self.effects['build'] += 1; self.effects['ecr_write'] += 1
-        return record('c')['image']
+        return getattr(self, 'publish_image', record('c')['image'])
 
     def counters(self):
         return dict(self.effects, ecs=sum(self.port.calls.count(k) for k in ('register','start','stop-before-blue','stop-before-green')))
@@ -141,6 +142,134 @@ class Flow:
 
 
 class ReceiptRecoveryFlow(unittest.TestCase):
+    def test_B_unsigned_C_superseded_B_reconciles_D_deploys_once(self):
+        with tempfile.TemporaryDirectory() as temp:
+            f=Flow(temp); bhead=copy.deepcopy(f.store.read()); c=f.c()
+            d=f.git.commit('D','D'); f.requests[24]=dict(f.requests[23],source=d,event_source=d,
+                                                      application=m.application(f.root,d))
+            f.wire.responses[PREFIX+'/git/ref/heads/develop']={'object':{'sha':d}}
+            later=f.add_run(24,'queued',source=d)
+            skipped=f.execute(23,1)
+            self.assertEqual(skipped['reason'],'superseded')
+            self.assertEqual(f.store.read(),bhead)
+            self.assertIsNone(f.owner(23).retained())
+            self.assertEqual(f.counters(),dict(build=0,ecr_write=0,ecs=0))
+            # Complete the real signed no-deployment path; D must skip C's
+            # authenticated result, never wait for a release C cannot produce.
+            c.update(status='completed',conclusion='success')
+            descriptor=r.slot('deployment',23,'dev')
+            _,locator=f.wire.signatures.sign(descriptor,skipped,origin(c['head_sha'],23,1))
+            f.wire.responses[f.slot_path(23)]=f.wire.signatures.responses[f.slot_path(23)]
+            with patch('subprocess.check_output',side_effect=f.wire):
+                self.assertEqual(r.resolve(GitHub(),descriptor,locator)[0],skipped)
+            # D waits only for B, without consuming either operation. B's
+            # publication recovery does not consult queued/failed successors.
+            with self.assertRaises(ValueError):f.execute(24,1)
+            self.assertEqual(f.store.read(),bhead)
+            self.assertIsNone(f.owner(24).retained())
+            later.update(status='completed',conclusion='failure')
+            f.sign_recovery(f.execute(22,2))
+            self.assertEqual(f.counters(),dict(build=0,ecr_write=0,ecs=0))
+            self.assertEqual(f.store.read(),bhead)
+            f.publish_image=record('d')['image']
+            result=f.execute(24,2)
+            self.assertEqual((result['source'],result['image']),(d,record('d')['image']))
+            self.assertEqual(result['previous']['evidence'],f.wire.value['manifest_ref'])
+            self.assertEqual(f.port.calls.count('register'),1)
+            self.assertEqual(f.counters(),dict(build=1,ecr_write=1,ecs=3))
+            head=f.store.read()[0]
+            self.assertEqual((head['state'],head['generation'],head['operation']),('RELEASED',2,f.owner(24).operation))
+            self.assertEqual(f.owner(24).retained()['status'],'SUCCESS')
+            self.assertIsNone(f.owner(23).retained())
+            self.assertEqual(f.port.revisions[f.port.routes[0]],result['revision'])
+            self.assertEqual(f.port.counts,dict(blue=0,green=1))
+            print('SUPERSEDED_RECEIPT_FLOW '+json.dumps(dict(
+                C=dict(build=0,ecr_write=0,ecs=0),B_reconciliation=dict(build=0,ecr_write=0,ecs=0),
+                D=f.counters(),E2=dict(state=head['state'],generation=head['generation'],operation=head['operation'],
+                                     run=24,terminal='SUCCESS'),served_source=d,served_revision=result['revision'],
+                served_image=result['image'],replicas=f.port.counts),sort_keys=True))
+
+    def test_superseded_path_preserves_held_uncertain_and_active_drift_blocks(self):
+        for fault in ('held','uncertain','revision'):
+            with self.subTest(fault=fault),tempfile.TemporaryDirectory() as temp:
+                f=Flow(temp);f.c();d=f.git.commit('D','D')
+                f.wire.responses[PREFIX+'/git/ref/heads/develop']={'object':{'sha':d}}
+                if fault=='revision':f.port.revisions['blue']='unexpected'
+                else:
+                    f.requests[25]=f.requests[22];other=f.owner(25);other.acquire()
+                    if fault=='uncertain':other.call(lambda:None);other.finish(False,'UNCERTAIN')
+                head=copy.deepcopy(f.store.read())
+                if fault=='revision':
+                    self.assertEqual(f.execute(23,1)['reason'],'superseded')
+                else:
+                    with self.assertRaises((ValueError,e2.CoordinationError)):f.execute(23,1)
+                with self.assertRaises((ValueError,e2.CoordinationError)):f.execute(22,2)
+                self.assertEqual(f.store.read(),head)
+                self.assertEqual(f.counters(),dict(build=0,ecr_write=0,ecs=0))
+
+    def test_source_becoming_stale_after_preflight_is_still_checked_under_E2(self):
+        with tempfile.TemporaryDirectory() as temp:
+            f=Flow(temp);f.sign_recovery(f.execute(22,2));f.c()
+            current=cli.current_request;states=[]
+            def advance(gh,request):
+                states.append(f.store.read()[0]['state'])
+                if states[-1]=='ACTIVE':
+                    d=f.git.commit('D','D')
+                    f.wire.responses[PREFIX+'/git/ref/heads/develop']={'object':{'sha':d}}
+                return current(gh,request)
+            with patch.object(cli,'current_request',side_effect=advance):result=f.execute(23,1)
+            self.assertEqual(states,['RELEASED','ACTIVE'])
+            self.assertEqual(result['reason'],'superseded')
+            self.assertEqual(f.counters(),dict(build=0,ecr_write=0,ecs=0))
+            self.assertEqual(f.port.revisions['blue'],f.wire.value['revision'])
+
+    def test_docs_scope_in_progress_without_delivery_steps_allows_C(self):
+        for fault in ('none','prior-effects','scope-conclusion','delivery-steps','delivery-running','dependency','caller'):
+            with self.subTest(fault=fault),tempfile.TemporaryDirectory() as temp:
+                f=Flow(temp);f.sign_recovery(f.execute(22,2));f.c()
+                docs=f.git.commit('docs-after-C')
+                f.wire.responses[PREFIX+'/git/ref/heads/develop']={'object':{'sha':docs}}
+                later=f.add_run(24,'in_progress',source=docs)
+                jobs=[dict(name='delivery / scope',status='in_progress',conclusion=None,
+                           steps=[dict(name='Exclude docs before environment concurrency',status='in_progress',conclusion=None)]),
+                      dict(name='delivery / delivery',status='queued',conclusion=None,steps=[])]
+                workflow=json.loads((ROOT/'.github/workflows/api-execute.yml').read_bytes())
+                self.assertEqual(workflow['jobs']['delivery']['needs'],'scope')
+                content_path=PREFIX+'/contents/.github/workflows/api-execute.yml?ref='+docs
+                if fault=='dependency':workflow['jobs']['delivery'].pop('needs')
+                raw=m.canonical(workflow)
+                f.wire.responses[content_path]=dict(type='file',path='.github/workflows/api-execute.yml',
+                    encoding='base64',size=len(raw),content=base64.b64encode(raw).decode())
+                caller=json.loads((ROOT/'.github/workflows/api-delivery.yml').read_bytes())
+                if fault=='caller':caller['jobs']['delivery']['uses']='./.github/workflows/other.yml'
+                raw=m.canonical(caller)
+                f.wire.responses[PREFIX+'/contents/.github/workflows/api-delivery.yml?ref='+docs]=dict(
+                    type='file',path='.github/workflows/api-delivery.yml',encoding='base64',size=len(raw),
+                    content=base64.b64encode(raw).decode())
+                if fault=='scope-conclusion':jobs[0]['conclusion']='success'
+                if fault=='delivery-steps':jobs[1]['steps']=[step(CREDENTIALS,'success')]
+                if fault=='delivery-running':jobs[1]['status']='in_progress'
+                attempt=1
+                if fault=='prior-effects':
+                    first=dict(later,status='completed',conclusion='failure')
+                    f.wire.responses[PREFIX+'/actions/runs/24/attempts/1']=first
+                    f.wire.responses[PREFIX+'/actions/runs/24/attempts/1/jobs?per_page=100&page=1']={'jobs':[
+                        dict(name='delivery / delivery',status='completed',conclusion='failure',
+                             steps=[step(CREDENTIALS,'success'),step(r.EXECUTE,'failure')])]}
+                    attempt=2;later['run_attempt']=2
+                    f.wire.responses[PREFIX+'/actions/runs/24/attempts/2']=later
+                f.wire.responses[f'{PREFIX}/actions/runs/24/attempts/{attempt}/jobs?per_page=100&page=1']={'jobs':jobs}
+                head=copy.deepcopy(f.store.read())
+                if fault=='none':
+                    result=f.execute(23,1)
+                    self.assertEqual(result['source'],f.requests[23]['source'])
+                    self.assertEqual(f.counters(),dict(build=1,ecr_write=1,ecs=3))
+                    self.assertIn(content_path,f.wire.calls)
+                else:
+                    with self.assertRaises(ValueError):f.execute(23,1)
+                    self.assertEqual(f.store.read(),head)
+                    self.assertEqual(f.counters(),dict(build=0,ecr_write=0,ecs=0))
+
     def test_B_publication_failure_C_arrives_B_reconciles_C_retries_once(self):
         with tempfile.TemporaryDirectory() as temp:
             f=Flow(temp); bhead=copy.deepcopy(f.store.read()); c=f.c()

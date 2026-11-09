@@ -14155,32 +14155,32 @@
       "semantic_status": "CURRENT_FACT"
     },
     "scripts/api_delivery/cli.py": {
-      "sha256": "20a984f29d4d0782ddb24d5b1f7dedd4913af19cc364aa3cf090b335752b949b",
+      "sha256": "db0b793a1244620c75a2679a7d9163f53e3b096389659f2d0ef4be36baff3b7c",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          161,
           167,
-          170,
-          177,
-          182,
-          195,
-          213,
-          215,
-          227,
-          229
+          173,
+          176,
+          183,
+          188,
+          211,
+          226,
+          228,
+          240,
+          242
         ],
         "executable-dependency": [
           128,
           132,
-          203,
-          207,
-          214,
-          223,
-          224,
+          162,
+          220,
           227,
-          232,
-          234
+          236,
+          237,
+          240,
+          245,
+          247
         ]
       },
       "semantic_status": "CURRENT_FACT"
@@ -14322,11 +14322,11 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/api_delivery/test_review_regressions.py": {
-      "sha256": "060ecd0714fe3c6c37657e28708f13945701b2780b0b2b9735d09421281b5dfd",
+      "sha256": "ff7262cd05d4d903f9a742062f618d5ca6b957717482d0158482c04386819223",
       "declarations": [],
       "signals": {
         "role-input": [
-          348
+          350
         ],
         "launch-or-mutation": [
           20,
@@ -14343,21 +14343,21 @@
           254,
           301,
           302,
-          313,
-          321,
-          344,
-          347,
-          352,
-          355,
-          361,
-          364,
-          390,
-          404,
-          405,
+          315,
+          323,
+          346,
+          349,
+          354,
+          357,
+          363,
+          366,
+          392,
           406,
-          433,
-          434,
-          435
+          407,
+          408,
+          435,
+          436,
+          437
         ],
         "executable-dependency": [
           40,
@@ -14368,13 +14368,13 @@
           205,
           208,
           297,
-          349,
-          381,
-          385,
-          388,
-          421,
+          351,
+          383,
+          387,
+          390,
           423,
-          425
+          425,
+          427
         ]
       },
       "semantic_status": "CURRENT_FACT"
@@ -14386,7 +14386,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/api_delivery/test_followup_regressions.py": {
-      "sha256": "78ae5b2d4f1aaba6c0b4b0cb82fd4e9ea2dc43003b69f89fbaba73f0dd29bc7d",
+      "sha256": "d249e1db252aee2581a76c4075f7cdd75dc21e2de28554308bc69bd6b0dc613d",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -14397,30 +14397,30 @@
           209,
           210,
           211,
-          279,
-          310,
-          322,
-          353,
-          367,
-          370,
-          376,
-          394,
-          399,
-          404,
-          407,
-          416,
-          423,
-          435
+          280,
+          311,
+          323,
+          354,
+          368,
+          371,
+          377,
+          395,
+          400,
+          405,
+          408,
+          417,
+          424,
+          436
         ],
         "executable-dependency": [
           146,
           178,
           179,
           237,
-          265,
-          290,
-          341,
-          448
+          266,
+          291,
+          342,
+          449
         ],
         "security-control": [
           180
@@ -14480,12 +14480,13 @@
       "semantic_status": "CURRENT_FACT"
     },
     "scripts/api_delivery/receipts.py": {
-      "sha256": "2d1fc254c40b62a71c2a030fc458c4499561523c526a5b9c3dee58262f64c193",
+      "sha256": "041b26af6e0466139bc97d336d5ea8c457ba38adfb000c8dfdb489d4748b19df",
       "declarations": [],
       "signals": {
         "executable-dependency": [
           149,
-          153
+          153,
+          321
         ]
       },
       "semantic_status": "CURRENT_FACT"
@@ -14526,32 +14527,38 @@
       "semantic_status": "CURRENT_FACT"
     },
     "scripts/tests/api_delivery/test_receipt_recovery_flow.py": {
-      "sha256": "084380543f9e6367458e9b11e6064e02f2dfa3ca63874e6e44a97a309a5af401",
+      "sha256": "aefc9f935d2f3ba3b30c76e8ffa0d250f881cd383d181bf2d442ea299740d65e",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
-          19,
-          50,
-          65,
-          73,
-          125,
+          20,
+          51,
+          66,
+          74,
           126,
-          127
+          127,
+          128
         ],
         "executable-dependency": [
-          43,
-          45,
-          83,
-          94,
-          96,
-          101
+          44,
+          46,
+          84,
+          95,
+          97,
+          102,
+          148,
+          151,
+          174,
+          189,
+          190,
+          232
         ]
       },
       "semantic_status": "CURRENT_FACT"
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",
-  "review_revision": "69869b540e5575f39b96256d0c42a6cd6e549e78",
-  "review_note": "Reviewed receipt-history preflight before E2 acquisition, under-E2 freshness/admission retained, all-attempt pre-credentials/queued evidence, and cancelled producer recovery only after a successful execute step. Offline regression transports exercise real CLI/E2/S3/receipt and blue-green logic; no AWS qualification. No workflow, permission or effective resource changes. review_delta_sha256 hashes compact sorted JSON of changed source paths to their normalized source hashes.",
-  "review_delta_sha256": "40a653d8628f9a875b8de6d6bb4ee0ea2d875686101ac093c7001d847d155b78"
+  "review_revision": "c7e1385d258492632b42302eabcd4487e196ffd7",
+  "review_note": "Reviewed read-only supersession preserving predecessor E2 and under-E2 freshness/admission, all-attempt queued evidence with exact caller/reusable workflow proof while scope is running. Offline regression transports exercise real CLI/E2/S3/receipt and blue-green logic; no AWS qualification. No workflow, permission or effective resource changes. review_delta_sha256 hashes compact sorted JSON of changed source paths to their normalized source hashes.",
+  "review_delta_sha256": "fb4867ad831b787196328cab12c028d0f0ff06d4182b452ca703138ccef56249"
 }
