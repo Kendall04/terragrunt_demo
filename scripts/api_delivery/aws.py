@@ -157,11 +157,11 @@ class Runtime:
         require(observed['VersionId'] == stored['VersionId'], 'journal version readback mismatch')
         return dict(bucket=bucket, key=key, version=stored['VersionId'], sha256=sha(raw))
 
-    def mutate(self, service, method, **kwargs):
+    def mutate(self, client_name, method, **kwargs):
         self.journal('attempt-' + method, kwargs)
         def send():
             require(time.time() < self.deadline, 'operation deadline')
-            return getattr(self.aws[service], method)(**kwargs)
+            return getattr(self.aws[client_name], method)(**kwargs)
         return self.owner.call(send)
 
     def color(self, color):
