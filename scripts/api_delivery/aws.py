@@ -102,7 +102,7 @@ def task_readback(expected, actual, account, region):
             value = result.pop(field)
             if field == 'compatibilities':
                 require(type(value) is list and 'FARGATE' in value and len(value) == len(set(value)) and
-                        set(value) <= {'EC2', 'FARGATE'}, 'invalid compatibility metadata')
+                        set(value) <= {'EC2', 'FARGATE', 'EXTERNAL', 'MANAGED_INSTANCES'}, 'invalid compatibility metadata')
             elif field == 'requiresAttributes':
                 require(type(value) is list and len(value) <= 100 and all(
                     type(a) is dict and set(a) == {'name'} and isinstance(a['name'], str) and
