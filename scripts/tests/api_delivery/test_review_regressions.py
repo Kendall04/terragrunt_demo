@@ -348,6 +348,7 @@ class RuntimeTests(unittest.TestCase):
         actual.update(taskDefinitionArn=f'arn:aws:ecs:{REGION}:{ACCOUNT}:task-definition/{expected["family"]}:2',revision=2,status='ACTIVE',
                       compatibilities=['EC2','FARGATE','MANAGED_INSTANCES'],requiresAttributes=[{'name':'ecs.capability.execution-role-ecr-pull'},
                       {'name':'com.amazonaws.ecs.capability.docker-remote-api.1.25'}])
+        for container in actual['containerDefinitions']:container['systemControls']=[]
         aws.task_readback(expected,actual,ACCOUNT,REGION)
         external=copy.deepcopy(actual);external['compatibilities'].append('EXTERNAL')
         aws.task_readback(expected,external,ACCOUNT,REGION)
@@ -357,7 +358,8 @@ class RuntimeTests(unittest.TestCase):
                 aws.task_readback(expected,bad,ACCOUNT,REGION)
         for mutate in (lambda x:x.update(requiresCompatibilities=['EC2']),lambda x:x.update(taskRoleArn='other'),
                        lambda x:x['containerDefinitions'][0].update(image='changed'),
-                       lambda x:x['containerDefinitions'][0].update(secrets=[{'name':'SQL','valueFrom':'foreign'}])):
+                       lambda x:x['containerDefinitions'][0].update(secrets=[{'name':'SQL','valueFrom':'foreign'}]),
+                       lambda x:x['containerDefinitions'][0].update(systemControls=[{'namespace':'net.core.somaxconn','value':'1024'}])):
             bad=copy.deepcopy(actual);mutate(bad)
             with self.assertRaises(ValueError):aws.task_readback(expected,bad,ACCOUNT,REGION)
 
