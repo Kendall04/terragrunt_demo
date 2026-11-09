@@ -292,6 +292,24 @@ def consume(_):
         raise AssertionError("Altered signed content accepted")
     wrong = [b for b in bundles(approval["dev"]["subject_sha256"]) if canonical(b) != canonical(dev_bundle)]
     assert len(wrong) == 1, "Expected one real other-workflow attestation"
+    # Prove the counterfeit has a valid signature for its REAL signer, then
+    # change ONLY the expected signer path. A transport failure is not a
+    # successful negative test.
+    write(OUT / "other-real-signer.json", wrong[0])
+    write(OUT / "other-real-slot.json", approval["dev"]["slot"])
+    other = cfg["wrong"]["authority"]
+    verify_other = ["gh", "attestation", "verify", str(OUT / "other-real-slot.json"),
+                    "--bundle", str(OUT / "other-real-signer.json"), "--repo", REPO,
+                    "--predicate-type", TYPE, "--signer-workflow", REPO + "/" + other["signer"],
+                    "--signer-digest", other["workflow_sha"], "--source-digest", other["source_sha"],
+                    "--source-ref", other["ref"], "--format", "json"]
+    valid_other = subprocess.run(verify_other, capture_output=True, timeout=120)
+    assert valid_other.returncode == 0, "Other-signer signature validity unproven"
+    write(OUT / "other-signer-valid.json", json.loads(valid_other.stdout))
+    verify_other[verify_other.index("--signer-workflow") + 1] = REPO + "/.github/workflows/dev-signer.yml"
+    wrong_path = subprocess.run(verify_other, capture_output=True, timeout=120)
+    assert wrong_path.returncode != 0, "Wrong signer path accepted"
+    negatives["valid_signature_wrong_workflow_path_only"] = "REJECTED"
     try:
         verify_bundle(wrong[0], approval["dev"], "wrong-producer")
     except (AssertionError, ValueError):
@@ -306,6 +324,8 @@ def consume(_):
         negatives["claimed_other_attempt"] = "REJECTED"
     else:
         raise AssertionError("Self-claimed attempt accepted")
+    verify_bundle(dev_bundle, approval["dev"], "positive-control-after-negatives")
+    negatives["positive_control_after_rejections"] = "ACCEPTED"
 
     # Failure between the fixture S3 write and GitHub publication. The saved
     # source is the exact-operation S3 manifest, not a GitHub ZIP or latest key.
