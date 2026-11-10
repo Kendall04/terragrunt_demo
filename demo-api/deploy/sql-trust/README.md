@@ -188,7 +188,7 @@ bytes inside the restricted E1 projection; the repository-level Python adapter
 test owns the comparison with `e1_contract.py`, which is intentionally not
 distributed to the .NET worker.
 
-## DEV CA transition — 10 November 2026
+## DEV CA transition â€” 10 November 2026
 
 The installed SQL server still presents the historical self-signed leaf before
 rotation. The public [DEV root](dev-root-20261110.crt) has DER SHA-256
