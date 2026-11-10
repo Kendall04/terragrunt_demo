@@ -124,8 +124,8 @@ de una arquitectura completa a 390 px. Las categorías IMPLEMENTADO/DESPLEGADO/
 DEMOSTRADO/HISTÓRICO/NO VALIDADO son estados fechados, no salud actual.
 
 Sentinel ya no es una capacidad operativa de ECS. Sus ensayos se conservan
-como historia; [la retirada AWS](../../docs/SENTINEL-RETIREMENT.md) requiere
-autorización separada y no se ha ejecutado.
+como historia; el runtime Sentinel fue retirado. Sus archivos históricos se
+conservan de forma independiente; véase [el registro de separación](../../docs/history/SENTINEL-SEPARATION.md).
 
 ## Paquete estático independiente
 
@@ -156,7 +156,7 @@ node portfolio/product/test-browser.mjs
 ```
 
 El runner de navegador usa DEMO y dobles HTTP explícitos; bloquea toda red
-externa. Prueba responsive, foco, XSS literal, 12 diagramas, zoom/fit, aislamiento,
+externa. Prueba responsive, foco, XSS literal, cinco diagramas actuales y doce históricos, zoom/fit, aislamiento,
 paquete estático, errores/timeout/offline y ausencia de fallback. No es una
 certificación WCAG ni prueba de todos los navegadores; revisar capturas.
 

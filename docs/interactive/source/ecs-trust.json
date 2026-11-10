@@ -8,7 +8,7 @@
     "quality_profile": "showcase",
     "repository": {
       "url": "https://github.com/Kendall04/terragrunt_demo.git",
-      "revision": "528a583d4f74ccd0368cf00929b7315d582cdb35",
+      "revision": "33a32d44351810ab9a815af1da2d1f32d4b968ad",
       "link_mode": "web"
     }
   },
@@ -16,15 +16,15 @@
     {
       "id": "public",
       "type": "external",
-      "label": "Cliente no autenticado",
-      "sublabel": "Solo datos sintéticos DEV",
+      "label": "Internet → API Gateway",
+      "sublabel": "HTTPS · API sin autenticación",
       "pos": [
         40,
-        40
+        70
       ],
       "size": [
-        210,
-        82
+        220,
+        86
       ],
       "tag": "LÍMITE",
       "sources": [
@@ -38,15 +38,15 @@
     {
       "id": "network",
       "type": "cloud",
-      "label": "API / Link / ALB",
-      "sublabel": "HTTPS → HTTP privado",
+      "label": "VPC Link → ALB interno",
+      "sublabel": "HTTP :8080 · SG restringidos",
       "pos": [
-        400,
-        40
+        365,
+        70
       ],
       "size": [
-        210,
-        82
+        220,
+        86
       ],
       "tag": "DESPLEGADO",
       "sources": [
@@ -60,15 +60,15 @@
     {
       "id": "task",
       "type": "security",
-      "label": "Aplicación · task role",
-      "sublabel": "KMS texto · sin credenciales backup",
+      "label": "API · task role",
+      "sublabel": "Permiso KMS de texto",
       "pos": [
-        760,
-        40
+        690,
+        70
       ],
       "size": [
-        210,
-        82
+        220,
+        86
       ],
       "tag": "DESPLEGADO",
       "sources": [
@@ -80,17 +80,48 @@
       ]
     },
     {
+      "id": "sql",
+      "type": "database",
+      "label": "SQL · login runtime",
+      "sublabel": "CA DEV · SELECT / INSERT",
+      "pos": [
+        1015,
+        70
+      ],
+      "size": [
+        220,
+        86
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "demo-api/deploy/sql-trust/README.md",
+          "line": 215,
+          "end_line": 236
+        },
+        {
+          "path": "demo-api/deploy/sql-trust/dev-ca-manifest.json",
+          "line": 1
+        },
+        {
+          "path": "demo-api/terragrunt-demo/Data/RuntimeDatabasePermissions.cs",
+          "line": 1,
+          "end_line": 54
+        }
+      ]
+    },
+    {
       "id": "exec",
       "type": "security",
       "label": "ECS execution role",
       "sublabel": "Pull / logs / secret",
       "pos": [
-        400,
-        280
+        690,
+        300
       ],
       "size": [
-        210,
-        82
+        220,
+        86
       ],
       "tag": "DESPLEGADO",
       "sources": [
@@ -105,14 +136,14 @@
       "id": "secret",
       "type": "security",
       "label": "Secrets Manager",
-      "sublabel": "Valor fuera de Terraform",
+      "sublabel": "Inyección de versión exacta",
       "pos": [
-        40,
-        280
+        365,
+        300
       ],
       "size": [
-        210,
-        82
+        220,
+        86
       ],
       "tag": "DESPLEGADO",
       "sources": [
@@ -126,15 +157,15 @@
     {
       "id": "kms",
       "type": "security",
-      "label": "KMS texto",
-      "sublabel": "Encrypt / Decrypt autorizados",
+      "label": "KMS de aplicación",
+      "sublabel": "Encrypt / Decrypt",
       "pos": [
-        760,
-        280
+        1015,
+        300
       ],
       "size": [
-        210,
-        82
+        220,
+        86
       ],
       "tag": "DESPLEGADO",
       "sources": [
@@ -146,32 +177,24 @@
       ]
     },
     {
-      "id": "sql",
-      "type": "database",
-      "label": "SQL · login runtime",
-      "sublabel": "SELECT/INSERT · TLS validado",
+      "id": "admin",
+      "type": "external",
+      "label": "Administrador humano",
+      "sublabel": "Identidad separada del runtime",
       "pos": [
-        760,
-        520
+        40,
+        530
       ],
       "size": [
-        210,
-        82
+        220,
+        86
       ],
       "tag": "DESPLEGADO",
       "sources": [
         {
-          "path": "demo-api/terragrunt-demo/Data/RuntimeDatabasePermissions.cs",
-          "line": 1,
-          "end_line": 54
-        },
-        {
-          "path": "demo-api/deploy/sql-trust/dev-ca-manifest.json",
-          "line": 1
-        },
-        {
-          "path": "demo-api/deploy/sql-trust/entrypoint.sh",
-          "line": 1
+          "path": "docs/V2-TRUST-AND-THREATS.md",
+          "line": 39,
+          "end_line": 68
         }
       ]
     },
@@ -179,14 +202,14 @@
       "id": "host",
       "type": "security",
       "label": "Host SQL · instance role",
-      "sublabel": "SSM / backup / TLS secret",
+      "sublabel": "SSM · acceso backup acotado",
       "pos": [
-        400,
-        520
+        365,
+        530
       ],
       "size": [
-        210,
-        82
+        220,
+        86
       ],
       "tag": "DESPLEGADO",
       "sources": [
@@ -198,24 +221,46 @@
       ]
     },
     {
-      "id": "admin",
-      "type": "external",
-      "label": "Administrador humano",
-      "sublabel": "Administración separada del CD",
+      "id": "backup",
+      "type": "backend",
+      "label": "Productor backup SQL",
+      "sublabel": "Login backup / verificador propios",
       "pos": [
-        40,
-        520
+        690,
+        530
       ],
       "size": [
-        210,
-        82
+        220,
+        86
       ],
       "tag": "DESPLEGADO",
       "sources": [
         {
-          "path": "docs/V2-TRUST-AND-THREATS.md",
-          "line": 39,
-          "end_line": 68
+          "path": "operations/sql-backup/SqlBackup/CloudPreview.cs",
+          "line": 1,
+          "end_line": 35
+        }
+      ]
+    },
+    {
+      "id": "archive",
+      "type": "database",
+      "label": "S3 backups · CMK propia",
+      "sublabel": "Versionado · SSE-KMS",
+      "pos": [
+        1015,
+        530
+      ],
+      "size": [
+        220,
+        86
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "operations/sql-backup/SqlBackup/S3Store.cs",
+          "line": 20,
+          "end_line": 58
         }
       ]
     }
@@ -225,7 +270,7 @@
       "id": "public-network",
       "from": "public",
       "to": "network",
-      "label": "HTTPS",
+      "label": "HTTP privado",
       "variant": "default"
     },
     {
@@ -236,17 +281,24 @@
       "variant": "default"
     },
     {
+      "id": "task-sql",
+      "from": "task",
+      "to": "sql",
+      "label": "TLS :1433",
+      "variant": "security"
+    },
+    {
       "id": "exec-secret",
       "from": "exec",
       "to": "secret",
-      "label": "GetSecretValue",
+      "label": "Leer versión",
       "variant": "security"
     },
     {
       "id": "exec-task",
       "from": "exec",
       "to": "task",
-      "label": "Inyección inicial",
+      "label": "Inyectar",
       "variant": "security"
     },
     {
@@ -257,13 +309,6 @@
       "variant": "security"
     },
     {
-      "id": "task-sql",
-      "from": "task",
-      "to": "sql",
-      "label": "SQL TLS",
-      "variant": "security"
-    },
-    {
       "id": "admin-host",
       "from": "admin",
       "to": "host",
@@ -271,31 +316,71 @@
       "variant": "security"
     },
     {
-      "id": "host-sql",
+      "id": "host-backup",
       "from": "host",
-      "to": "sql",
-      "label": "SO / bootstrap",
+      "to": "backup",
+      "label": "SO / credenciales",
+      "variant": "security"
+    },
+    {
+      "id": "backup-archive",
+      "from": "backup",
+      "to": "archive",
+      "label": "Rol EC2",
       "variant": "security"
     }
   ],
   "cards": [
     {
       "dot": "slate",
-      "title": "Estado y lectura",
+      "title": "Fronteras y permisos",
       "items": [
-        "Implementación y evidencia DEV al 10 nov 2026. PROD no está instalado ni validado.",
-        "Datos/control en gris; seguridad en rosa. Las respuestas son implícitas.",
-        "Sentinel se separó: sus recursos AWS pendientes de retiro no participan en este flujo."
+        "HTTPS público termina en API Gateway. Los SG restringen Link → ALB → API → SQL; los saltos HTTP privados no ofrecen cifrado extremo a extremo.",
+        "El execution role lee la versión aprobada del secreto y la inyecta al inicio; no es el task role que utiliza KMS durante las peticiones.",
+        "SQL valida su identidad con la CA DEV definitiva y sql.demo.internal: validated-v2, Encrypt=True, TrustServerCertificate=False. La raíz pública llega por configuración, no dentro de la imagen.",
+        "GitHub Actions usa OIDC y api-dev limitado a develop para delivery; ese rol no es runtime ni administrador. El detalle de ownership está en CD DEV."
       ]
     },
     {
       "dot": "amber",
-      "title": "Límites reales",
+      "title": "Límites de confianza",
       "items": [
-        "API DEV pública sin autenticación: solo datos sintéticos; no certificada para producción.",
-        "SQL confía en la CA DEV definitiva; validated-v2, Encrypt=True y TrustServerCertificate=False.",
-        "Task/execution, runtime/migrador, backup y administrador tienen responsabilidades separadas."
+        "La API DEV no autentica al visitante y devuelve texto descifrado: usar datos sintéticos. KMS no reemplaza autorización de aplicación.",
+        "Runtime SQL y migrador tienen credenciales separadas. El migrador no se ejecuta al arrancar HTTP. Backup/verificador usan identidades propias y permisos restringidos.",
+        "El administrador del host conserva autoridad sobre SO y SQL; no se presenta ese acceso como aislamiento de un administrador comprometido. PROD no está instalado ni validado."
       ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Acceso privado · SG Link → ALB → API → SQL",
+      "wraps": [
+        "network",
+        "task",
+        "sql"
+      ],
+      "pad": 24
+    },
+    {
+      "kind": "region",
+      "label": "Identidad de lanzamiento y servicios AWS",
+      "wraps": [
+        "secret",
+        "exec",
+        "kms"
+      ],
+      "pad": 24
+    },
+    {
+      "kind": "region",
+      "label": "Administración y backup · fuera de la identidad API",
+      "wraps": [
+        "host",
+        "backup",
+        "archive"
+      ],
+      "pad": 24
     }
   ]
 }

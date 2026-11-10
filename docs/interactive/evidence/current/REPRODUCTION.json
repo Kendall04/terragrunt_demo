@@ -1,0 +1,62 @@
+[
+  {
+    "id": "ecs-platform",
+    "byteIdentical": true,
+    "sourceSha256": "28ad5723127fb241d7e7bb77a2062668c74ed1b876a4a44ab426e7ac09e56832",
+    "htmlSha256": "3cb01c8ab4590a49a76d33c1ee596a91bf4b5ccb8ec5e61f8741df58910fc265",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    }
+  },
+  {
+    "id": "ecs-network",
+    "byteIdentical": true,
+    "sourceSha256": "09eca01392aa04366195faf09196b930d373bb3c905fd6a2c916c10023a3dbba",
+    "htmlSha256": "b5766ed360cbada8042462255c2cb8ca0c97dfbd8d5df6a123e981a8446fe73e",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    }
+  },
+  {
+    "id": "ecs-sql-recovery",
+    "byteIdentical": true,
+    "sourceSha256": "aeb05a72562b5ae53fc63a958bc9b87bc7cf7719168af180838d5aff2b437fec",
+    "htmlSha256": "d6100177aad5dab77bc5244ad418a5e7b10c59f84f65c879b2459415cdc99599",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    }
+  },
+  {
+    "id": "ecs-trust",
+    "byteIdentical": true,
+    "sourceSha256": "cdc3667666c77599ee8ed11999ee5b2ac3addc2a601863e41aa0bc829df687a0",
+    "htmlSha256": "a7c3e65d5ed1452aa73df316d698980f3131f5bc0df45d15257210fa7ac18a17",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    }
+  },
+  {
+    "id": "ecs-delivery",
+    "byteIdentical": true,
+    "sourceSha256": "ab13264262b753bc36a06a8702e5bc2b70dfbaf575a90360376c66c632c84eb7",
+    "htmlSha256": "1b47f94226cba65bc3108cbc371cc77d870fdbbd5b0fe9993b2d6b1d708f40f7",
+    "gates": {
+      "validate": "pass",
+      "deliver": "pass",
+      "check": "pass",
+      "browser-check": "pass"
+    }
+  }
+]

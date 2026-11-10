@@ -41,11 +41,18 @@ test('Current ECS atlas has five authenticated sources, no operational Sentinel 
   for(const d of current.diagrams){
     const src=await readFile(root+'/docs/interactive/'+d.source);assert.equal(hash(src),d.sourceSha256);
     const spec=JSON.parse(src);validateGraph(spec);
+    assert.equal(spec.meta.repository.revision,current.sourceRevision);
+    assert.equal(await readFile(root+'/docs/interactive/readable/'+d.id+'.html','utf8'),readingSheet(spec,await readFile(root+'/docs/interactive/'+d.output,'utf8')),'Reproducible current reader');
+    assert(!/tarea blue actuales|recursos AWS pendientes de retiro/.test(src.toString()),'No transient or retired runtime claims');
     assert(!spec.components.some(n=>/sentinel|observer/i.test(n.id)));
     assert.equal(hash(await readFile(root+'/docs/interactive/'+d.output)),d.htmlSha256);
     assert.equal(hash(await readFile(root+'/docs/interactive/readable/'+d.id+'.html')),d.readingSha256);
     assert.deepEqual(Object.values(d.gates),['pass','pass','pass','pass']);
   }
+  const qa=JSON.parse(await readFile(root+'/docs/interactive/evidence/current/BROWSER-QA.json','utf8'));
+  assert.equal(qa.status,'PASS');
+  for(const d of current.diagrams)assert.equal(qa.diagrams[d.id],d.htmlSha256,'Visual review describes current output');
+  for(const c of [...qa.captures,...qa.before])assert.equal(hash(await readFile(root+'/docs/interactive/evidence/current/'+c.file)),c.sha256,'Visual evidence bytes');
   for(const [p,expected] of Object.entries(trace.filesLfSha256)){
     const text=(await readFile(root+'/'+p,'utf8')).replace(/^\uFEFF/,'').replaceAll('\r\n','\n');
     assert.equal(hash(text),expected,'Current source changed: '+p);

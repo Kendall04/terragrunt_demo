@@ -8,7 +8,7 @@
     "quality_profile": "showcase",
     "repository": {
       "url": "https://github.com/Kendall04/terragrunt_demo.git",
-      "revision": "528a583d4f74ccd0368cf00929b7315d582cdb35",
+      "revision": "33a32d44351810ab9a815af1da2d1f32d4b968ad",
       "link_mode": "web"
     }
   },
@@ -16,14 +16,14 @@
     {
       "id": "merge",
       "type": "external",
-      "label": "Merge a develop",
+      "label": "1 · Merge a develop",
       "sublabel": "PR protegida · CI obligatoria",
       "pos": [
-        60,
-        60
+        40,
+        70
       ],
       "size": [
-        245,
+        220,
         86
       ],
       "tag": "DEMOSTRADO",
@@ -37,56 +37,80 @@
     {
       "id": "ci",
       "type": "cloud",
-      "label": "CI del SHA integrado",
-      "sublabel": "Solo cambios de aplicación",
+      "label": "2 · CI del SHA integrado",
+      "sublabel": "El CD espera su resultado",
       "pos": [
-        420,
-        60
+        365,
+        70
       ],
       "size": [
-        245,
+        220,
         86
       ],
       "tag": "IMPLEMENTADO",
       "sources": [
         {
           "path": "scripts/api_delivery/cli.py",
-          "line": 1
+          "line": 99,
+          "end_line": 165
         }
       ]
     },
     {
       "id": "image",
       "type": "cloud",
-      "label": "Build → ECR",
-      "sublabel": "Una imagen · digest inmutable",
+      "label": "3 · Build Docker",
+      "sublabel": "Una imagen Linux de la API",
       "pos": [
-        780,
-        60
+        690,
+        70
       ],
       "size": [
-        245,
+        220,
         86
       ],
       "tag": "DEMOSTRADO",
       "sources": [
         {
-          "path": "scripts/api_delivery/executor.py",
-          "line": 1
+          "path": "scripts/api_delivery/aws.py",
+          "line": 431,
+          "end_line": 446
+        }
+      ]
+    },
+    {
+      "id": "ecr",
+      "type": "cloud",
+      "label": "4 · Publicar en ECR",
+      "sublabel": "URI inmutable @sha256",
+      "pos": [
+        1015,
+        70
+      ],
+      "size": [
+        220,
+        86
+      ],
+      "tag": "DEMOSTRADO",
+      "sources": [
+        {
+          "path": "scripts/api_delivery/aws.py",
+          "line": 431,
+          "end_line": 455
         }
       ]
     },
     {
       "id": "candidate",
       "type": "backend",
-      "label": "Color inactivo ECS",
-      "sublabel": "validated-v2 · roles DEV OIDC",
+      "label": "5 · ECS color inactivo",
+      "sublabel": "validated-v2 · sin tráfico público",
       "pos": [
-        780,
-        280
+        1015,
+        300
       ],
       "size": [
-        245,
+        220,
         86
       ],
       "tag": "DEMOSTRADO",
@@ -100,14 +124,14 @@
     {
       "id": "ready",
       "type": "backend",
-      "label": "Readiness real",
-      "sublabel": "Por tarea · SQL/KMS · ruta cliente",
+      "label": "6 · Readiness por tarea",
+      "sublabel": "SQL + KMS · probe exit 0",
       "pos": [
-        420,
-        280
+        690,
+        300
       ],
       "size": [
-        245,
+        220,
         86
       ],
       "tag": "DEMOSTRADO",
@@ -121,14 +145,14 @@
     {
       "id": "traffic",
       "type": "cloud",
-      "label": "Promover ALB",
-      "sublabel": "Releer rutas · comprobar salud",
+      "label": "7 · Conmutar ALB",
+      "sublabel": "Listener + regla candidata",
       "pos": [
-        60,
-        280
+        365,
+        300
       ],
       "size": [
-        245,
+        220,
         86
       ],
       "tag": "DEMOSTRADO",
@@ -142,63 +166,27 @@
     {
       "id": "record",
       "type": "database",
-      "label": "Drain + release S3",
-      "sublabel": "Estado versionado · rollback explícito",
+      "label": "8 · Verificar, drenar, registrar",
+      "sublabel": "S3 versionado + índice GitHub",
       "pos": [
-        60,
-        500
+        40,
+        300
       ],
       "size": [
-        245,
+        220,
         86
       ],
       "tag": "DEMOSTRADO",
       "sources": [
         {
-          "path": "scripts/api_delivery/state.py",
-          "line": 1
-        }
-      ]
-    },
-    {
-      "id": "infra",
-      "type": "cloud",
-      "label": "Terraform separado",
-      "sublabel": "Skeletons; CD posee count y forwarding",
-      "pos": [
-        420,
-        500
-      ],
-      "size": [
-        245,
-        86
-      ],
-      "tag": "IMPLEMENTADO",
-      "sources": [
+          "path": "scripts/api_delivery/executor.py",
+          "line": 35,
+          "end_line": 56
+        },
         {
-          "path": "terraform/modules/target/dev/apps/modules/ecs_service/service.tf",
-          "line": 1
-        }
-      ]
-    },
-    {
-      "id": "prod",
-      "type": "security",
-      "label": "PROD no activado",
-      "sublabel": "Promoción mismo digest: implementada",
-      "pos": [
-        780,
-        500
-      ],
-      "size": [
-        245,
-        86
-      ],
-      "tag": "NO VALIDADO",
-      "sources": [
-        {
-          "path": ".github/workflows/api-promotion.yml",
-          "line": 1
+          "path": "scripts/api_delivery/cli.py",
+          "line": 160,
+          "end_line": 181
         }
       ]
     }
@@ -208,63 +196,84 @@
       "id": "merge-ci",
       "from": "merge",
       "to": "ci",
-      "label": "Push protegido",
+      "label": "Push",
       "variant": "default"
     },
     {
       "id": "ci-image",
       "from": "ci",
       "to": "image",
-      "label": "CI success",
+      "label": "CI verde",
       "variant": "default"
     },
     {
-      "id": "image-candidate",
+      "id": "image-ecr",
       "from": "image",
+      "to": "ecr",
+      "label": "Push imagen",
+      "variant": "default"
+    },
+    {
+      "id": "ecr-candidate",
+      "from": "ecr",
       "to": "candidate",
-      "label": "URI @sha256",
+      "label": "Digest fijo",
       "variant": "default"
     },
     {
       "id": "candidate-ready",
       "from": "candidate",
       "to": "ready",
-      "label": "Tareas nuevas",
+      "label": "Cohorte",
       "variant": "default"
     },
     {
       "id": "ready-traffic",
       "from": "ready",
       "to": "traffic",
-      "label": "Salud PASS",
+      "label": "PASS",
       "variant": "default"
     },
     {
       "id": "traffic-record",
       "from": "traffic",
       "to": "record",
-      "label": "Salud posterior + espera",
+      "label": "Salud cliente",
       "variant": "default"
     }
   ],
   "cards": [
     {
       "dot": "slate",
-      "title": "Seguridad esencial",
+      "title": "Ownership y autoridad",
       "items": [
-        "OIDC y environment api-dev limitado a develop. Sin autoridad AWS de despliegue en la PR.",
-        "Exclusión por ambiente y handover administrativo de escritores antiguos; E2 histórico permanece intacto.",
-        "Registro S3 versionado y estado operativo. Sin dependencia de Sentinel ni attestations encadenadas."
+        "Terraform/Terragrunt conserva los skeletons, red y recursos; ignora task_definition, desired_count y las acciones de forwarding gestionadas por delivery.",
+        "PR sin autoridad AWS. El workflow integrado usa OIDC y api-dev restringido a develop; exclusión GitHub por ambiente y handover administrativo de escritores externos.",
+        "Cambios solo documentales: scope omite build/publicación/despliegue. PROD implementado, deshabilitado, no instalado ni validado."
       ]
     },
     {
       "dot": "amber",
-      "title": "Prueba y límites",
+      "title": "Salud y recuperación",
       "items": [
-        "DEV automático demostrado: runs 42751096835 y 42761946295. PROD sigue deshabilitado.",
-        "Cambio documental no construye ni mueve tráfico. Rollback usa una versión compatible del mismo ambiente.",
-        "Antes de drenar se conserva el color anterior. No se promete rollback de esquema SQL incompatible."
+        "Antes de promover: la cohorte exacta pasa /ready con SQL/KMS. Tras promover: se prueba /ready por la ruta real API Gateway → ALB.",
+        "Se espera, se releen ambas rutas y la cohorte y se repite la salud de cliente antes de drenar el color anterior.",
+        "Si falla antes del drenaje, se restaura tráfico al color previo sano. Después, rollback explícito con imagen compatible y configuración TLS vigente.",
+        "Release y estado versionados en S3; índice de releases en GitHub. DEV demostrado en runs 42751096835 y 42761946295; los artifacts son diagnóstico."
       ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Delivery DEV · revisiones, capacidad y forwarding ALB",
+      "wraps": [
+        "candidate",
+        "ready",
+        "traffic",
+        "record"
+      ],
+      "pad": 24
     }
   ]
 }
