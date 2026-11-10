@@ -50,13 +50,13 @@ def closed(root):
     for name, expected in render.render(root, doc['wp6']['approvals']).items():
         require((Path(root) / name).read_text() == expected, 'workflow invocation drift: ' + name)
     generated = set(render.render(root, doc['wp6']['approvals']))
-    # Owner-approved replacement path: exact closed workflows, separate from
+    # Owner-approved replacement path: closed executable surfaces, separate from
     # retired request controllers. This admits code, not installed AWS authority.
-    from scripts.api_delivery.workflow_contract import EXPECTED, validate
+    from scripts.api_delivery.workflow_contract import WORKFLOWS, validate
     validate(root)
     for path in (Path(root) / '.github/workflows').glob('*.yml'):
-        if path.name in EXPECTED:
-            continue  # Complete equality was checked above; no generic exception.
+        if path.name in WORKFLOWS:
+            continue  # Jobs, commands, identities and authority checked above.
         if path.relative_to(root).as_posix() in generated:
             json.loads(path.read_text()) # Generated YAML is the JSON subset.
             continue

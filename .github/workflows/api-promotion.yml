@@ -37,8 +37,7 @@
         "actions": "read",
         "pull-requests": "read",
         "checks": "write",
-        "attestations": "write",
-        "id-token": "write"
+        "deployments": "read"
       }
     }
   }

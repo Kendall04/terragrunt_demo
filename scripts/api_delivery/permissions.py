@@ -7,7 +7,7 @@ from .aws import validate_binding
 from .model import REPOSITORY, require
 
 
-def definitions(config, role_arn, binding_ref):
+def definitions(config, role_arn, binding_ref, handover_ref):
     env = config['environment']; account = config['account']; region = config['region']
     validate_binding(config, env, account, region)
     require(role_arn == f'arn:aws:iam::{account}:role/api-delivery-{env}', 'dedicated environment role')
@@ -32,21 +32,15 @@ def definitions(config, role_arn, binding_ref):
         statements.append(record)
     allow(['s3:GetObjectVersion'], ['arn:aws:s3:::' + binding_ref['bucket'] + '/' + binding_ref['key']],
           {'StringEquals': {'s3:VersionId': binding_ref['version']}})
-    head = obj + f'arbitration/{env}/application.json'
-    terminals = obj + f'arbitration/{env}/terminals/normal-delivery/' + ('deploy-dev' if env == 'dev' else 'promote-prod') + '/*'
+    allow(['s3:GetObjectVersion'], ['arn:aws:s3:::' + handover_ref['bucket'] + '/' + handover_ref['key']],
+          {'StringEquals': {'s3:VersionId': handover_ref['version']}})
     records = obj + f'api-delivery/{env}/operations/*'
-    allow(['s3:GetObject'], [head, terminals])
+    # The retained E2 head is read-only migration evidence, never a new grant.
+    state = obj + f'api-delivery/{env}/state.json'
+    allow(['s3:GetObject'], [obj + f'arbitration/{env}/application.json', state])
     allow(['s3:GetObjectVersion'], [records])
-    # The adapter first lists the exact terminal key (one item). An absent key
-    # is proven by the allowed list, never inferred from GetObject AccessDenied.
-    allow(['s3:ListBucket'], ['arn:aws:s3:::' + bucket],
-          {'StringLike': {'s3:prefix': terminals.split(obj, 1)[1]}, 'NumericEquals': {'s3:max-keys': 1}})
-    # Publication-only recovery enumerates every version of ONE exact release key.
-    allow(['s3:ListBucketVersions'], ['arn:aws:s3:::' + bucket],
-          {'StringLike': {'s3:prefix': f'api-delivery/{env}/operations/*/release.json'},
-           'NumericLessThanEquals': {'s3:max-keys': 100}})
-    allow(['s3:PutObject'], [head], {'Null': {'s3:if-match': 'false'}})
-    allow(['s3:PutObject'], [terminals, records], {'StringEquals': {'s3:if-none-match': '*'}})
+    allow(['s3:PutObject'], [state], {'Null': {'s3:if-match': 'false'}})
+    allow(['s3:PutObject'], [records], {'StringEquals': {'s3:if-none-match': '*'}})
     allow(['kms:Decrypt', 'kms:GenerateDataKey'], [config['evidence_kms_key']],
           {'StringEquals': {'kms:ViaService': f's3.{region}.amazonaws.com', 'kms:CallerAccount': account},
            'StringLike': {'kms:EncryptionContext:aws:s3:arn': ['arn:aws:s3:::' + bucket, obj + '*']}})
@@ -82,7 +76,8 @@ def definitions(config, role_arn, binding_ref):
     return dict(trust=trust, permissions=dict(Version='2012-10-17', Statement=statements),
                 environment=dict(name='api-' + env, protected_branch=branch, reviewers=[]),
                 unresolved=['Exact CMK key policies must admit these S3-only role permissions',
-                            'Versioned public binding, initialized existing E2 head and bucket conditional-write barriers',
+                            'Versioned binding/handover, initialized API_STATE_V2 and bucket conditional-write barriers',
+                            'Old writers fenced and their pending effects settled before publishing handover',
                             'Readiness Describe/List permissions must be simulated against the installed graph'])
 
 

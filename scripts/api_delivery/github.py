@@ -1,193 +1,133 @@
-"""GitHub evidence adapter: signed receipts plus diagnostic-only artifact helpers."""
-import hashlib
-import io
+"""Durable GitHub deployment index; S3 remains the deployment authority.
+
+Protected workflows publish task=api-release. PROD verifies exact S3 bytes
+with its own role. No artifacts, attestations or historical attempt enumeration.
+"""
 import json
+import os
 import subprocess
 import time
-import zipfile
-from .model import REPOSITORY, DELIVERY, PROMOTION, require, release, manifest_reference
+from . import model as m
+
+PREFIX = 'repos/' + m.REPOSITORY
+BOT = 'github-actions[bot]'
+CHECK = 'API Promotion Validation'
 
 
 class GitHub:
-    def verify_signature(self, command):
-        return subprocess.check_output(command, timeout=120)
+    def request(self, path, method='GET', body=None):
+        m.require(path == PREFIX or path.startswith(PREFIX + '/'), 'repository scope')
+        args = ['gh', 'api', '-X', method, path]
+        if body is not None: args += ['--input', '-']
+        raw = subprocess.check_output(args, input=None if body is None else m.canonical(body), timeout=90)
+        return json.loads(raw) if raw.strip() else None
 
     def get(self, path):
-        return json.loads(self.raw(path))
+        return self.request(path)
 
-    def raw(self, path):
-        root = 'repos/' + REPOSITORY
-        require(path == root or path.startswith(root + '/'), 'repository scope')
-        return subprocess.check_output(['gh', 'api', '-H', 'Accept: application/vnd.github+json', path], timeout=90)
-
-    def pages(self, path, key):
-        separator = '&' if '?' in path else '?'
+    def pages(self, path, key=None):
         for page in range(1, 21):
-            value = self.get(path + separator + 'per_page=100&page=' + str(page))
+            value = self.get(path + ('&' if '?' in path else '?') + f'per_page=100&page={page}')
             rows = value[key] if key else value
             yield from rows
-            if len(rows) < 100:
-                return
-        raise ValueError('GitHub evidence pagination bound exceeded')
+            if len(rows) < 100: return
+        raise ValueError('GitHub pagination bound exceeded')
 
-    def runs(self, workflow, branch=None, sha=None):
-        query = []
-        if branch: query.append('branch=' + branch)
-        if sha: query.append('head_sha=' + sha)
-        suffix = '?' + '&'.join(query) if query else ''
-        return self.pages(f'repos/{REPOSITORY}/actions/workflows/{workflow.split("/")[-1]}/runs' + suffix, 'workflow_runs')
-
-    def trusted(self, run, workflow, event, branch):
-        expected = self.get(f'repos/{REPOSITORY}/actions/workflows/{workflow.split("/")[-1]}')
-        require(run['repository']['full_name'] == REPOSITORY and
-                run['head_repository']['full_name'] == REPOSITORY and
-                run['workflow_id'] == expected['id'] and run['path'] == workflow and
-                run['event'] == event and (branch is None or run['head_branch'] == branch) and
-                run['status'] == 'completed' and run['conclusion'] == 'success', 'untrusted workflow result')
-
-    def artifact(self, run, name):
-        artifacts = list(self.pages(f'repos/{REPOSITORY}/actions/runs/{run["id"]}/artifacts', 'artifacts'))
-        found = [x for x in artifacts if x['name'] == name and not x['expired']]
-        require(len(found) == 1, 'unique retained artifact required')
-        item = found[0]
-        return self.artifact_id(run, name, item['id'])
-
-    def artifact_id(self, run, name, artifact_id, digest=None):
-        result, _ = self.artifact_document(run, name, artifact_id, digest)
-        require(result['run_attempt'] == run['run_attempt'], 'stale attempt artifact')
-        return result
-
-    def artifact_document(self, run, name, artifact_id, digest=None):
-        """Authenticate bytes/producer run; the caller must authenticate the attempt."""
-        item = self.get(f'repos/{REPOSITORY}/actions/artifacts/{artifact_id}')
-        require(item['id'] == artifact_id and item['name'] == name and not item['expired'] and
-                item['workflow_run']['id'] == run['id'], 'artifact producer or identity mismatch')
-        repository = self.get(f'repos/{REPOSITORY}')
-        require(item['workflow_run']['repository_id'] == repository['id'] and
-                item['workflow_run']['head_repository_id'] == repository['id'], 'foreign artifact repository')
-        if digest is not None:
-            require(item['digest'] == digest, 'linked artifact digest mismatch')
-        require(item['size_in_bytes'] <= 1048576, 'oversized evidence')
-        raw = self.raw(f'repos/{REPOSITORY}/actions/artifacts/{item["id"]}/zip')
-        require('sha256:' + hashlib.sha256(raw).hexdigest() == item['digest'], 'artifact digest mismatch')
-        with zipfile.ZipFile(io.BytesIO(raw)) as archive:
-            require(archive.namelist() == ['result.json'] and archive.infolist()[0].file_size <= 262144,
-                    'unexpected artifact contents')
-            result = json.loads(archive.read('result.json'))
-        require(result['run_id'] == run['id'], 'artifact run mismatch')
-        return result, item
+    def run(self, run_id, attempt, workflow, events, branch=None):
+        run = self.get(f'{PREFIX}/actions/runs/{run_id}/attempts/{attempt}')
+        expected = self.get(f'{PREFIX}/actions/workflows/{workflow}')
+        m.require(run['id'] == run_id and run['run_attempt'] == attempt and
+                  run['repository']['full_name'] == m.REPOSITORY and run['head_repository']['full_name'] == m.REPOSITORY and
+                  run['workflow_id'] == expected['id'] and run['path'] == '.github/workflows/' + workflow and
+                  run['event'] in events and (branch is None or run['head_branch'] == branch), 'unexpected producer')
+        return run
 
     def wait_checks(self, sha, branch, timeout=3600):
-        expected = {'ci.yml': 'CI Push Validation', 'ci-cd-safety.yml': 'CD Safety Push Validation'}
         deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
             complete = True
-            for workflow, check in expected.items():
-                runs = [r for r in self.runs(workflow, branch, sha) if r['head_sha'] == sha and r['event'] == 'push']
+            for workflow, check in [('ci.yml', 'CI Push Validation'), ('ci-cd-safety.yml', 'CD Safety Push Validation')]:
+                runs = list(self.pages(f'{PREFIX}/actions/workflows/{workflow}/runs?head_sha={sha}&branch={branch}&event=push', 'workflow_runs'))
                 if not runs:
-                    complete = False
-                    continue
-                run = max(runs, key=lambda x: (x['id'], x['run_attempt']))
-                if run['status'] != 'completed':
-                    complete = False
-                    continue
-                self.trusted(run, '.github/workflows/' + workflow, 'push', branch)
-                jobs = list(self.pages(f'repos/{REPOSITORY}/actions/runs/{run["id"]}/attempts/{run["run_attempt"]}/jobs', 'jobs'))
-                require(len([j for j in jobs if j['name'] == check and j['conclusion'] == 'success']) == 1,
-                        'required exact-SHA validation failed/cancelled/missing')
-            if complete:
-                return
+                    complete = False; continue
+                latest = max(runs, key=lambda r:(r['id'], r['run_attempt']))
+                if latest['status'] != 'completed':
+                    complete = False; continue
+                run = self.run(latest['id'], latest['run_attempt'], workflow, ('push',), branch)
+                jobs = list(self.pages(f'{PREFIX}/actions/runs/{run["id"]}/attempts/{run["run_attempt"]}/jobs', 'jobs'))
+                m.require(run['head_sha'] == sha and run['conclusion'] == 'success' and
+                          any(j['name'] == check and j['conclusion'] == 'success' for j in jobs), 'exact-SHA CI failed')
+            if complete: return
             time.sleep(20)
-        raise ValueError('exact-SHA validations did not finish')
+        raise ValueError('CI did not finish')
 
-    def deployments(self, environment, exclude_run=None, allow_queued=False):
-        from . import receipts as r
-        branch = 'develop' if environment == 'dev' else 'main'
-        for run in self.runs(DELIVERY):
-            if run['id'] == exclude_run or run['head_branch'] != branch or run['event'] not in ('push', 'workflow_dispatch'):
-                continue
-            descriptor = r.slot('deployment',run['id'],environment)
-            if not r.bundles(self,descriptor):
-                r.proven_no_execution(self,run,allow_queued=allow_queued)
-                continue
-            record, _ = r.resolve(self,descriptor)
-            if record['schema'] != 'API_NO_DEPLOYMENT_V1':
-                yield record
+    def release(self, deployment_id, environment='dev'):
+        item = self.get(f'{PREFIX}/deployments/{int(deployment_id)}')
+        m.require(item['id'] == deployment_id and item['task'] == 'api-release' and
+                  item['environment'] == 'api-' + environment and item['creator']['login'] == BOT, 'unexpected deployment index')
+        envelope = item['payload']; record = m.release(envelope['release'], environment)
+        m.require(item['sha'] == record['source'] and envelope['schema'] == 'API_INDEX_V2', 'release source differs')
+        ref = m.manifest_reference(record['manifest_ref'])
+        m.require(ref['sha256'] == m.sha(m.canonical({k:v for k,v in record.items() if k != 'manifest_ref'})), 'release bytes differ')
+        producer = envelope['publisher']; branch = 'develop' if environment == 'dev' else 'main'
+        run = self.run(producer['run'], producer['attempt'], 'api-delivery.yml', ('push', 'workflow_dispatch'), branch)
+        m.require(run['head_sha'] == producer['sha'], 'publisher source differs')
+        jobs = self.pages(f'{PREFIX}/actions/runs/{run["id"]}/attempts/{producer["attempt"]}/jobs', 'jobs')
+        m.require(any(s['name'] == 'Execute release or reconcile' and s['conclusion'] == 'success'
+                      for j in jobs for s in j.get('steps', [])), 'release execution did not succeed')
+        url = f'https://github.com/{m.REPOSITORY}/actions/runs/{producer["run"]}/attempts/{producer["attempt"]}'
+        statuses = self.pages(f'{PREFIX}/deployments/{deployment_id}/statuses')
+        m.require(any(s['state'] == 'success' and s['creator']['login'] == BOT and s['log_url'] == url for s in statuses), 'healthy status missing')
+        return record
 
-    def deployment_receipt(self, record):
-        from . import receipts as r
-        observed, locator = r.resolve(self,r.slot('deployment',record['run_id'],record['environment']))
-        require(observed == record, 'deployment changed during approval')
-        return locator
+    def releases(self, environment='dev'):
+        for item in self.pages(f'{PREFIX}/deployments?task=api-release&environment=api-{environment}'):
+            statuses = list(self.pages(f'{PREFIX}/deployments/{item["id"]}/statuses'))
+            if any(s['state'] == 'success' for s in statuses):
+                yield item['id'], self.release(item['id'], environment)
 
-    def require_app_validation(self, sha, branch):
-        runs = [r for r in self.runs('ci.yml', branch, sha) if r['head_sha'] == sha and r['event'] == 'push']
-        require(bool(runs), 'application validation run missing')
-        run = max(runs, key=lambda r:(r['id'], r['run_attempt']))
-        self.trusted(run, '.github/workflows/ci.yml', 'push', branch)
-        jobs = list(self.pages(f'repos/{REPOSITORY}/actions/runs/{run["id"]}/attempts/{run["run_attempt"]}/jobs', 'jobs'))
-        app = [j for j in jobs if j['name'] == 'App CI / .NET Restore • Build • Test • Docker Validate']
-        require(len(app) == 1 and app[0]['conclusion'] == 'success', 'application qualification skipped or unsuccessful')
-
-    def require_merge_policy(self, administrator=False):
-        rules = self.get(f'repos/{REPOSITORY}/rules/branches/main')
-        methods = [set(r['parameters']['allowed_merge_methods']) for r in rules if r['type'] == 'pull_request']
-        require(bool(methods) and set.intersection(*methods) == {'merge'}, 'main must enforce merge-only promotions')
-        require(not any(r['type'] in ('required_linear_history', 'merge_queue') for r in rules),
-                'main history/queue policy incompatible with two-parent promotion')
-        repository = self.get(f'repos/{REPOSITORY}')
-        # This optional setting is not exposed to every read-only job token.
-        # Effective branch rules above are the runtime contract; installation
-        # must additionally check the repository setting with the owner's token.
-        if administrator or 'allow_merge_commit' in repository:
-            require(repository.get('allow_merge_commit') is True, 'merge commits disabled or not observable')
+    def publish(self, record):
+        m.release(record)
+        publisher = dict(run=int(os.environ['GITHUB_RUN_ID']), attempt=int(os.environ['GITHUB_RUN_ATTEMPT']), sha=os.environ['GITHUB_SHA'])
+        envelope = dict(schema='API_INDEX_V2', publisher=publisher, release=record)
+        item = self.request(PREFIX + '/deployments', 'POST', dict(ref=record['source'], task='api-release',
+            environment='api-' + record['environment'], auto_merge=False, required_contexts=[], payload=envelope,
+            transient_environment=False, production_environment=record['environment'] == 'prod', description='Healthy API release; versioned S3 manifest'))
+        self.request(f'{PREFIX}/deployments/{item["id"]}/statuses', 'POST', dict(state='success', auto_inactive=False,
+            log_url=f'https://github.com/{m.REPOSITORY}/actions/runs/{publisher["run"]}/attempts/{publisher["attempt"]}'))
+        m.require(self.release(item['id'], record['environment']) == record, 'index readback differs')
+        return item['id']
 
     def require_promotion_rule(self):
-        self.require_merge_policy()
-        rules = self.get(f'repos/{REPOSITORY}/rules/branches/main')
-        required = [r['parameters'] for r in rules if r['type'] == 'required_status_checks']
-        require(any(r['strict_required_status_checks_policy'] and any(
-            c['context'] == 'API Promotion Validation' and c.get('integration_id') == 15368
-            for c in r['required_status_checks']) for r in required), 'main promotion rule not installed')
+        rules = self.get(PREFIX + '/rules/branches/main')
+        methods = [set(r['parameters']['allowed_merge_methods']) for r in rules if r['type'] == 'pull_request']
+        m.require(methods and set.intersection(*methods) == {'merge'}, 'main must require merge commits')
+        m.require(any(r['type'] == 'required_status_checks' and r['parameters']['strict_required_status_checks_policy'] and
+                      any(c['context'] == CHECK and c.get('integration_id') == 15368 for c in r['parameters']['required_status_checks'])
+                      for r in rules), 'main promotion check not installed')
 
-    def promotion_artifact(self, locator, completed=True):
-        # Kept as the adapter API name for callers; no artifact/ZIP lookup remains.
-        from . import receipts as r
-        r.locator(locator)
-        receipt, _ = r.resolve(self,r.slot('promotion',locator['r'],attempt=locator['a']),locator,completed)
-        return receipt
+    def check(self, head, conclusion=None, check_id=None, locator=None):
+        run = int(os.environ['GITHUB_RUN_ID']); attempt = int(os.environ['GITHUB_RUN_ATTEMPT'])
+        body = dict(name=CHECK, details_url=f'https://github.com/{m.REPOSITORY}/actions/runs/{run}/attempts/{attempt}')
+        if check_id is None: body['head_sha'] = head
+        body.update(dict(status='completed', conclusion=conclusion) if conclusion else dict(status='in_progress'))
+        if locator is not None: body['external_id'] = json.dumps(locator, separators=(',', ':'))
+        return self.request(PREFIX + '/check-runs' + (f'/{check_id}' if check_id else ''), 'PATCH' if check_id else 'POST', body)
 
-    @staticmethod
-    def approval_url(locator):
-        return f'https://github.com/{REPOSITORY}/actions/runs/{locator["r"]}/attempts/{locator["a"]}'
-
-    def promotion_receipt(self, pr):
-        self.require_promotion_rule()
-        require(pr['merged'] and pr['merged_at'], 'merged PR required')
-        checks = list(self.pages(f'repos/{REPOSITORY}/commits/{pr["head"]["sha"]}/check-runs?filter=all', 'check_runs'))
-        # The latest check completed before the merge is authoritative. Never
-        # search older green runs or follow new develop deployments after merge.
-        checks = [c for c in checks if c['name'] == 'API Promotion Validation' and c['app']['id'] == 15368 and
-                  c['head_sha'] == pr['head']['sha'] and c['started_at'] <= pr['merged_at']]
-        require(bool(checks), 'merged PR approval check missing/expired')
-        check = max(checks, key=lambda c: c['id'])
-        require(check['conclusion'] == 'success' and check['completed_at'] and
-                check['completed_at'] <= pr['merged_at'], 'promotion was not approved before merge')
-        locator = json.loads(check['external_id'])
-        receipt = self.promotion_artifact(locator)
-        require(receipt['pr'] == pr['number'] and receipt['head'] == pr['head']['sha'] and receipt['check_id'] == check['id'], 'approval belongs to another PR')
-        return receipt, dict(check_id=check['id'], **locator)
-
-    def check(self, head, status, check_id=None, locator=None):
-        body = dict(name='API Promotion Validation', head_sha=head,
-                    details_url=f'https://github.com/{REPOSITORY}/actions/runs/' + __import__('os').environ['GITHUB_RUN_ID'])
-        if status == 'in_progress':
-            body['status'] = status
-        else:
-            body.update(status='completed', conclusion=status)
-        if locator is not None:
-            body.update(external_id=json.dumps(locator, separators=(',', ':')), details_url=self.approval_url(locator))
-        path = f'repos/{REPOSITORY}/check-runs' + ('/' + str(check_id) if check_id else '')
-        if check_id: body.pop('head_sha')
-        return json.loads(subprocess.check_output(['gh', 'api', '-X', 'PATCH' if check_id else 'POST', path,
-                                                   '--input', '-'], input=json.dumps(body).encode(), timeout=60))
+    def approval(self, pr, parents, application):
+        self.require_promotion_rule(); m.eligible_pr(pr)
+        m.require(pr['merged'] and len(parents) == 2 and parents[1] == pr['head']['sha'], 'two-parent promotion required')
+        checks = [c for c in self.pages(f'{PREFIX}/commits/{parents[1]}/check-runs?filter=all', 'check_runs')
+                  if c['name'] == CHECK and c['app']['id'] == 15368 and c['head_sha'] == parents[1] and c['started_at'] <= pr['merged_at']]
+        m.require(checks, 'promotion check missing'); check = max(checks, key=lambda c:c['id'])
+        m.require(check['conclusion'] == 'success' and check['completed_at'] <= pr['merged_at'], 'approval not successful before merge')
+        loc = json.loads(check['external_id'])
+        m.require(loc['v'] == 2 and loc['pr'] == pr['number'] and loc['base'] == parents[0] and loc['app'] == application, 'approval changed')
+        # GitHub can rewrite details_url. The exact producer is part of the
+        # check's read-back external_id, not inferred from a presentation URL.
+        m.require(type(loc['run']) is int and loc['run'] > 0 and type(loc['attempt']) is int and loc['attempt'] > 0, 'check producer')
+        run = self.run(loc['run'], loc['attempt'], 'api-promotion.yml', ('pull_request_target', 'workflow_run'))
+        m.require(run['head_sha'] in parents, 'check source differs from approved PR')
+        record = self.release(loc['release']) if loc['release'] else None
+        if record: m.require(record['application'] == application, 'approved release changed')
+        return record, dict(check=check['id'], **loc)

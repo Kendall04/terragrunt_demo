@@ -16,7 +16,6 @@ from scripts.api_delivery import model as m, cli, aws, permissions, workflow_con
 from scripts.api_delivery.executor import deploy, DeliveryFailure
 from scripts.api_delivery.github import GitHub
 from scripts.tests.normal_delivery.test_authorization import make_binding, ACCOUNT, REGION
-from scripts import environment_mutation as e2
 
 
 def record(letter='b', env='dev', source='2'):
@@ -151,7 +150,7 @@ class ExecutorTests(unittest.TestCase):
     def test_listener_changed_candidate_write_failed_restores_both_routes(self):
         for failure in ('listener-after-green','candidate-before-blue','candidate-after-blue','client-green','healthy-before-drain'):
             p=Port(failure)
-            with self.subTest(failure=failure), self.assertRaisesRegex(DeliveryFailure,'RESTORED_HOLD_RETAINED'):
+            with self.subTest(failure=failure), self.assertRaisesRegex(DeliveryFailure,'RESTORED_RECONCILIATION_REQUIRED'):
                 deploy(p,record()['image'])
             self.assertEqual(p.routes,('blue','green'))
             self.assertEqual(p.counts,dict(blue=1,green=1))
@@ -211,7 +210,8 @@ class BoundaryTests(unittest.TestCase):
     def test_IAM_separates_oidc_environment_AND_branch_and_prod_cannot_publish(self):
         for env in ('dev','prod'):
             result=permissions.definitions(config(env),f'arn:aws:iam::{ACCOUNT}:role/api-delivery-{env}',
-                                           dict(bucket='public-config',key=env+'.json',version='exact-version'))
+                                           dict(bucket='public-config',key=env+'.json',version='exact-version'),
+                                           dict(bucket='public-config',key=env+'-handover.json',version='handover-version'))
             subject=result['trust']['Statement'][0]['Condition']['StringEquals']['token.actions.githubusercontent.com:sub']
             self.assertIn('environment:api-'+env,subject)
             self.assertIn('job_workflow_ref:'+m.REPOSITORY+'/.github/workflows/api-execute.yml@refs/heads/'+('develop' if env=='dev' else 'main'),subject)
@@ -242,27 +242,6 @@ class BoundaryTests(unittest.TestCase):
                     with self.assertRaises(ValueError):port.client_ready()
             self.assertEqual(opener.urls,['https://example.test/health/live','https://example.test/ready'])
 
-    def test_workflows_closed_and_PR_signing_has_no_AWS_authority(self):
-        workflow_contract.validate(ROOT)
-        promo=workflow_contract.EXPECTED['api-promotion.yml']
-        self.assertNotIn('id-token',promo['permissions'])
-        evaluate=workflow_contract.EXPECTED['api-evaluate.yml']['jobs']['promotion']
-        self.assertEqual(evaluate['permissions']['id-token'],'write')
-        self.assertEqual(evaluate['permissions']['attestations'],'write')
-        self.assertNotIn('environment',evaluate)
-        self.assertNotIn('configure-aws-credentials',json.dumps(evaluate))
-        self.assertEqual(evaluate['steps'][0]['with']['ref'],'${{ github.sha }}')
-        self.assertEqual(promo['jobs']['promotion']['uses'],'./.github/workflows/api-evaluate.yml')
-        caller=workflow_contract.EXPECTED['api-delivery.yml']
-        self.assertNotIn('pull_request',caller['on']);self.assertNotIn('pull_request_target',caller['on'])
-        self.assertEqual(caller['jobs']['delivery']['uses'],'./.github/workflows/api-execute.yml')
-        self.assertEqual(set(caller['on']['workflow_dispatch']['inputs']),{'environment'})
-        with tempfile.TemporaryDirectory() as temp:
-            path=Path(temp)/'.github/workflows';path.mkdir(parents=True)
-            for name,value in workflow_contract.EXPECTED.items(): (path/name).write_text(json.dumps(value))
-            altered=copy.deepcopy(caller); altered['on']['pull_request']={}
-            (path/'api-delivery.yml').write_text(json.dumps(altered))
-            with self.assertRaisesRegex(ValueError,'WORKFLOW_DRIFT'):workflow_contract.validate(temp)
 
     def test_preserved_historical_callers_remain_inert(self):
         from scripts.workflow_requests import render
@@ -271,18 +250,6 @@ class BoundaryTests(unittest.TestCase):
             self.assertEqual(json.loads((ROOT/'.github/workflows'/name).read_bytes()),original[name])
 
 
-class MemoryS3:
-    def __init__(self): self.objects={};self.generation=0
-    def get_object(self, Bucket, Key):
-        if Key not in self.objects:
-            error=RuntimeError();error.response={'Error':{'Code':'NoSuchKey'}};raise error
-        raw,version=self.objects[Key]
-        return dict(Body=io.BytesIO(raw),VersionId=str(version),ETag=str(version))
-    def put_object(self, Bucket,Key,Body,ContentType,**conditions):
-        if 'IfMatch' in conditions:
-            if Key not in self.objects or str(self.objects[Key][1])!=conditions['IfMatch']:raise RuntimeError('CAS')
-        elif Key in self.objects:raise RuntimeError('exists')
-        self.generation+=1;self.objects[Key]=(Body,self.generation)
 
 
 def authorization_task(cfg):
@@ -291,16 +258,6 @@ def authorization_task(cfg):
     return task
 
 
-class ExclusionTests(unittest.TestCase):
-    def test_existing_E2_fences_delivery_rollback_and_lifecycle_without_expiry(self):
-        s3=MemoryS3();store=e2.Store(s3,'fixture','dev');store.initialize()
-        first=e2.Authority(store,'normal-delivery/deploy-dev','11111111-1111-1111-1111-111111111111',{})
-        first.acquire();first.call(lambda:None)
-        first.finish(False,'UNCERTAIN')
-        for binding,layer in [('normal-delivery/deploy-dev',None),('environment-lifecycle/infra-dev','apps')]:
-            other=e2.Authority(store,binding,'22222222-2222-2222-2222-222222222222',{},layer=layer)
-            with self.assertRaises(e2.CoordinationError):other.acquire()
-        self.assertEqual(store.read()[0]['state'],'ACTIVE')
 
 
 if __name__=='__main__':unittest.main(verbosity=2)

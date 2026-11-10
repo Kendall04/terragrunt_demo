@@ -1,7 +1,7 @@
 """AWS adapter, instantiated only in an admitted push/rollback job.
 
 Bindings are versioned public admin objects; runtime secret values are never read.
-All application mutations share the existing E2 application head with lifecycle.
+GitHub environment concurrency serializes jobs; a reviewed administrative handover fences external writers.
 """
 import base64
 import copy
@@ -13,8 +13,6 @@ import tempfile
 import time
 import urllib.request
 import urllib.parse
-import uuid
-from scripts import environment_mutation as e2
 from scripts.normal_delivery import authorization
 from scripts.wp4d.aws_runtime import Observer, json_readback
 from .model import canonical, sha, require, manifest_reference, recovery_target
@@ -126,8 +124,8 @@ def task_readback(expected, actual, account, region):
 
 
 class Runtime:
-    def __init__(self, aws, config, owner, operation, directory):
-        self.aws, self.config, self.owner, self.operation = aws, config, owner, operation
+    def __init__(self, aws, config, operation, directory):
+        self.aws, self.config, self.operation = aws, config, operation
         self.directory = Path(directory)
         self.replicas = config['replicas']
         self.deadline = time.time() + 1800
@@ -162,7 +160,7 @@ class Runtime:
         def send():
             require(time.time() < self.deadline, 'operation deadline')
             return getattr(self.aws[client_name], method)(**kwargs)
-        return self.owner.call(send)
+        return send()
 
     def color(self, color):
         return self.config['colors'][color]
@@ -365,7 +363,9 @@ class Runtime:
         while time.time() < self.deadline:
             actual = self.service(color)
             if actual['runningCount'] == actual['pendingCount'] == actual['desiredCount'] == 0:
-                return
+                targets = self.aws['elbv2'].describe_target_health(TargetGroupArn=self.target(color))['TargetHealthDescriptions']
+                if not targets:
+                    return
             time.sleep(5)
         raise TimeoutError('drain incomplete')
 
@@ -386,108 +386,6 @@ class Runtime:
                             {v['name'] for v in value['checks']} == {'database', 'kms'} and
                             all(v['status'] == 'Healthy' for v in value['checks']),
                             'SQL/KMS client readiness unproved')
-
-
-def owner(aws, cfg, operation, request):
-    endpoint = 'deploy-dev' if cfg['environment'] == 'dev' else 'promote-prod'
-    client = TerminalS3(aws['s3'], cfg, 'normal-delivery/' + endpoint)
-    return e2.Authority(e2.Store(client, cfg['evidence_bucket'], cfg['environment']),
-                        'normal-delivery/' + endpoint, operation, request)
-
-
-def recover_release(gh, aws, cfg, authority, operation, request):
-    """Read-only publication recovery from the deterministic operation key.
-
-    Uses real E2 terminal validation/CAS head and S3 versions. No known receipt,
-    VersionId or hash is an input. A no-op requires its own positive decision;
-    it can never become a healthy release by inference from SUCCESS/absence.
-    Does not acquire/release E2, build, publish ECR, register or update ECS.
-    """
-    from . import receipts
-    terminal = authority.retained()
-    require(terminal is not None and terminal['status'] == 'SUCCESS', 'operation not successfully settled')
-    head, etag = authority.store.read()
-    require(head['state'] == 'RELEASED' and all(head[k] == terminal[k] for k in
-            ('environment','domain','binding','operation','request_sha256','generation')),
-            'operation held or displaced; reconcile before publishing')
-    key = f'api-delivery/{cfg["environment"]}/operations/{operation}/release.json'
-    versions = []; markers = []; continuation = {}
-    for _ in range(20):
-        page = aws['s3'].list_object_versions(Bucket=cfg['evidence_bucket'], Prefix=key,
-            ExpectedBucketOwner=cfg['account'], MaxKeys=100, **continuation)
-        versions += [v for v in page.get('Versions',[]) if v['Key'] == key]
-        markers += [v for v in page.get('DeleteMarkers',[]) if v['Key'] == key]
-        if not page.get('IsTruncated'): break
-        next_page = dict(KeyMarker=page['NextKeyMarker'],VersionIdMarker=page['NextVersionIdMarker'])
-        require(next_page != continuation, 'S3 version cursor did not advance')
-        continuation = next_page
-    else: raise ValueError('S3 operation version bound exceeded')
-    require(len(versions) == 1 and not markers, 'unique undeleted release version required; no-op is not a deployment')
-    version = versions[0]['VersionId']
-    require(type(version) is str and version.lower() not in ('','null','latest'), 'exact recovered version required')
-    response = aws['s3'].get_object(Bucket=cfg['evidence_bucket'],Key=key,VersionId=version,ExpectedBucketOwner=cfg['account'])
-    raw = response['Body'].read(262145)
-    require(len(raw) <= 262144 and response['VersionId'] == version and
-            response.get('ServerSideEncryption') == 'aws:kms' and response.get('SSEKMSKeyId') == cfg['evidence_kms_key'] and
-            not response.get('BucketKeyEnabled',False), 'recovery object provenance')
-    record = json.loads(raw)
-    require(canonical(record) == raw and 'manifest_ref' not in record and record['operation'] == operation and
-            record['environment'] == cfg['environment'] and record['request_sha256'] == terminal['request_sha256'] and
-            record['event_source'] == request['event_source'] and record['run_id'] == int(os.environ['GITHUB_RUN_ID']) and
-            record['run_attempt'] < int(os.environ['GITHUB_RUN_ATTEMPT']), 'recovered deployment/request differs')
-    if record.get('schema') == 'API_SUPERSEDED_DECISION_V1':
-        require(set(record) == {'schema','reason','phase','environment','operation','request_sha256','event_source',
-                                'generation','producer','run_id','run_attempt'} and request['operation'] == 'deploy' and
-                record['reason'] == 'superseded' and record['phase'] == 'before-application-effects' and
-                type(record['generation']) is int and record['generation'] == terminal['generation'],
-                'invalid durable omission decision')
-        pub = record['producer']
-        require((pub['run'],pub['attempt'],pub['source_sha']) ==
-                (record['run_id'],record['run_attempt'],record['event_source']), 'omission producer differs')
-        original = receipts.producer(gh,pub,'deployment',cfg['environment'],recovered=True)
-        receipts.completed_steps(gh,original,(receipts.EXECUTE,))
-        require(authority.store.read() == (head,etag), 'E2 changed during omission recovery')
-        return record
-    record['manifest_ref'] = dict(bucket=cfg['evidence_bucket'],key=key,version=version,sha256=sha(raw))
-    receipts.original_deployment(gh,record,recovered=True)
-    verify_manifest(aws,dict(bucket=cfg['evidence_bucket'],account=cfg['account'],region=cfg['region'],
-                            kms_key=cfg['evidence_kms_key'],environment=cfg['environment']),record)
-    verify_image(aws,cfg,record['image'])
-    with tempfile.TemporaryDirectory() as directory:
-        runtime = Runtime(aws,cfg,authority,operation,directory)
-        snapshot = runtime.snapshot()
-        require(snapshot['active_revision'] == record['revision'] and snapshot['active'] == record['color'] and
-                snapshot['routes'] == (record['color'],'green' if record['color'] == 'blue' else 'blue') and
-                snapshot['active_count'] > 0 and snapshot['inactive_count'] == snapshot['pending'] == 0,
-                'recovery no longer matches active ECS')
-        expected = runtime.current_configuration(record)
-        actual = aws['ecs'].describe_task_definition(taskDefinition=record['revision'])['taskDefinition']
-        task_readback(expected,actual,cfg['account'],cfg['region'])
-        runtime.tasks(record['color'],record['revision'],record['image'],count=snapshot['active_count'])
-        runtime.client_ready()
-    require(authority.store.read() == (head,etag), 'E2 changed during publication recovery')
-    return record
-
-
-class TerminalS3:
-    """Exact-key existence protocol; no 403-to-absence conversion."""
-    def __init__(self, client, cfg, endpoint):
-        self.client, self.cfg = client, cfg
-        self.prefix = f'arbitration/{cfg["environment"]}/terminals/{endpoint}/'
-
-    def __getattr__(self, name):
-        return getattr(self.client, name)
-
-    def get_object(self, **kwargs):
-        if kwargs['Key'].startswith(self.prefix):
-            require(kwargs['Bucket'] == self.cfg['evidence_bucket'], 'terminal bucket mismatch')
-            listing = self.client.list_objects_v2(Bucket=kwargs['Bucket'], Prefix=kwargs['Key'], MaxKeys=1,
-                                                  ExpectedBucketOwner=self.cfg['account'])
-            if not any(row['Key'] == kwargs['Key'] for row in listing.get('Contents', [])):
-                error = FileNotFoundError('terminal absent in authorized exact-key listing')
-                error.response = {'Error': {'Code': 'NoSuchKey'}}
-                raise error
-        return self.client.get_object(**kwargs)
 
 
 def verify_manifest(aws, scope, record):

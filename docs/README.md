@@ -15,7 +15,7 @@ the AWS runtime is a temporary laboratory.
 | How do backups/recovery work? | [Backup tooling](../operations/sql-backup/README.md), [native cold recovery](../operations/sql-backup/recovery/NATIVE-RECOVERY.md) | [Measured SAME/CROSS-AZ trials](V2-RECOVERY-SECURITY-20261105.md#cold-recovery-execution--6-november-utc) |
 | What does Sentinel do? | [Portable runtime](../operations/integrations/portable/README.md) | [Real incidents and monitoring](SENTINEL-CHAOS-20261106.md) |
 | What is automated? | [CI/CD engineering review](CI-CD-REVIEW.md) | [Protected deployment contracts and V1 evidence](../terraform/docs/deployment.md) |
-| What is proposed for DEV delivery? | [Single manual release and rollback design](DEV-DELIVERY-DESIGN.md) | Proposal only; no new workflow, environment or AWS authority installed |
+| How will API delivery operate? | [Automatic DEV/PROD delivery and recovery](DEV-DELIVERY-DESIGN.md) | Implemented; activation requires a verified writer handover. E2 remains untouched. |
 | What is secure, and what is not? | [Technical audit](ENGINEERING-REVIEW.md), [trust boundaries](V2-TRUST-AND-THREATS.md) | [Secret lifecycle](../terraform/docs/secrets-strategy.md), [strict SQL profile](../terraform/docs/sql-runtime-security.md) |
 | What was tested? | [Guarantee matrix](ENGINEERING-REVIEW.md#recovery-and-resilience) | [DEV execution](DEV-V2-20261105.md), [frontend validation](../portfolio/product/VALIDATION.md) |
 | How is the site published? | [Independent hosting and rollback](../portfolio/product/HOSTING.md) | [Public HTTPS receipt](../portfolio/product/evidence/public/PUBLIC-HTTPS-QA.json) |
