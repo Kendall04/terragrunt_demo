@@ -158,6 +158,10 @@ app.Use(async (context, next) =>
         context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
         return;
     }
+    if (context.Request.Path == "/health/live")
+    {
+        context.Response.Headers["X-Demo-Release"] = "cd-1";
+    }
     await next(context);
 });
 if (app.Environment.IsDevelopment())
