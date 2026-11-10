@@ -13961,7 +13961,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "demo-api/deploy/sql-trust/README.md": {
-      "sha256": "bf30428ba3242bfcdd093f91dbe897d35f201fad71504b6736a0943a00bd3a54",
+      "sha256": "cb13d474033591aa34346474fa5d994f9622aae6624b964612d3291540ade320",
       "declarations": [],
       "signals": {
         "executable-dependency": [
@@ -14418,6 +14418,12 @@
     },
     "demo-api/deploy/sql-trust/dev-root-20261110.crt": {
       "sha256": "0e431c2b8cdbb3808b31447fba79ee22154053131877bc7ef8adf77f0249eef2",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "CURRENT_FACT"
+    },
+    "demo-api/deploy/sql-trust/dev-ca-manifest.json": {
+      "sha256": "9f04ea49171987408ee8823936973c6f985b25e108f697836361b6c21b9a3391",
       "declarations": [],
       "signals": {},
       "semantic_status": "CURRENT_FACT"
