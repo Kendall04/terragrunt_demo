@@ -160,7 +160,7 @@ app.Use(async (context, next) =>
     }
     if (context.Request.Path == "/health/live")
     {
-        context.Response.Headers["X-Demo-Release"] = "cd-2";
+        context.Response.Headers["X-Demo-Release"] = "cd-3";
     }
     await next(context);
 });

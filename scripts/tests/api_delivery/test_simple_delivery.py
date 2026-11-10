@@ -124,6 +124,17 @@ class RuntimeTests(unittest.TestCase):
                 self.assertEqual(kwargs['cluster'],config()['colors']['green']['service']['cluster'])
                 self.assertLessEqual(kwargs['WaiterConfig']['MaxAttempts']*5,1800)
 
+    def test_gate_rejection_preserves_its_redacted_diagnostic(self):
+        from unittest.mock import Mock
+        port = aws.Runtime({'ecs':Mock(),'elbv2':Mock()},config(),'operation',Path('.'))
+        port.started = int(port.deadline - 1800)
+        port.journal = Mock(); port.tasks = Mock()
+        error = b'[READINESS ERROR] Candidate task, container, image, network, or startup identity is invalid.'
+        with patch('subprocess.run', return_value=subprocess.CompletedProcess([],1,b'',error)):
+            with self.assertRaisesRegex(ValueError, 'startup identity is invalid'):
+                port.ready('green','revision',record()['image'],'blue')
+        port.tasks.assert_not_called(); port.journal.assert_not_called()
+
     def test_metadata_and_UpdateService_keyword_remain_valid(self):
         expected=authorization_task(config()['colors']['blue']);actual=copy.deepcopy(expected)
         actual.update(taskDefinitionArn=f'arn:aws:ecs:{REGION}:{ACCOUNT}:task-definition/{expected["family"]}:2',revision=2,status='ACTIVE',
@@ -154,11 +165,11 @@ class RuntimeTests(unittest.TestCase):
 
     def test_workflow_security_invariants_and_substitutions(self):
         workflow_contract.validate(ROOT)
-        for change in ('cancel','aws-on-pr','checkout','global','extra-step','extra-job','env-injection','scope-bypass'):
+        for change in ('cancel','aws-on-pr','checkout','global','extra-step','extra-job','env-injection','scope-bypass','wire-timestamps'):
             with tempfile.TemporaryDirectory() as tmp:
                 folder=Path(tmp)/'.github/workflows';folder.mkdir(parents=True)
                 for p in (ROOT/'.github/workflows').glob('api-*.yml'):shutil.copy(p,folder/p.name)
-                name='api-execute.yml' if change in ('cancel','scope-bypass') else 'api-delivery.yml' if change=='global' else 'api-evaluate.yml'
+                name='api-execute.yml' if change in ('cancel','scope-bypass','wire-timestamps') else 'api-delivery.yml' if change=='global' else 'api-evaluate.yml'
                 path=folder/name;value=json.loads(path.read_text())
                 if change=='cancel':value['jobs']['delivery']['concurrency']['cancel-in-progress']=True
                 if change=='aws-on-pr':value['jobs']['promotion']['permissions']['id-token']='write'
@@ -168,6 +179,9 @@ class RuntimeTests(unittest.TestCase):
                 if change=='extra-job':value['jobs']['other']={'runs-on':'ubuntu-latest','steps':[{'run':'false'}]}
                 if change=='env-injection':value['jobs']['promotion']['env']['BASH_ENV']='untrusted.sh'
                 if change=='scope-bypass':value['jobs']['delivery']['if']="${{ true || needs.scope.outputs.deploy == 'true' }}"
+                if change=='wire-timestamps':
+                    step=value['jobs']['delivery']['steps'][2]
+                    step['run']=step['run'].replace('iso8601','wire')
                 path.write_text(json.dumps(value))
                 with self.subTest(change=change),self.assertRaises(ValueError):workflow_contract.validate(tmp)
 

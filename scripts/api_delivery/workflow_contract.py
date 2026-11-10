@@ -72,7 +72,7 @@ def validate(root):
     executable_steps(evaluator,[CHECKOUT,{'run':'python3 -B -m scripts.api_delivery.cli promotion'}])
     executable_steps(job,[CHECKOUT,
         {'run':'python3 -B -m scripts.api_delivery.cli preflight'},
-        {'run':'python3 -m pip install --require-hashes -r scripts/wp4d/requirements-codebuild.lock'},
+        {'run':'python3 -m pip install --require-hashes -r scripts/wp4d/requirements-codebuild.lock\naws configure set cli_timestamp_format iso8601'},
         {'uses':'aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708','with':{
             'role-to-assume':'${{ vars.API_DELIVERY_ROLE_ARN }}','aws-region':'${{ vars.API_REGION }}',
             'allowed-account-ids':'${{ vars.API_ACCOUNT_ID }}','role-session-name':'api-${{ github.run_id }}-${{ github.run_attempt }}',
