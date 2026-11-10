@@ -227,6 +227,14 @@ class Runtime:
 
     def ready(self, color, revision, image, active):
         cfg = self.config; spec = self.color(color); service = spec['service']
+        # ECS retains the empty previous deployment while the candidate starts.
+        # The unchanged gate requires a settled single deployment before it
+        # authenticates the cohort and its task-local SQL/KMS probe.
+        remaining = self.deadline - time.time()
+        require(remaining > 0, 'candidate stabilization deadline')
+        self.aws['ecs'].get_waiter('services_stable').wait(
+            cluster=service['cluster'], services=[service['service']],
+            WaiterConfig={'Delay': 5, 'MaxAttempts': max(1, int(remaining / 5))})
         args = ['bash', str(ROOT/'scripts/ecs-readiness-gate.sh'), '--use-instance-role']
         values = dict(region=cfg['region'], cluster=service['cluster'], service=service['service'],
                       **{'task-definition-arn': revision, 'image-uri': image,
