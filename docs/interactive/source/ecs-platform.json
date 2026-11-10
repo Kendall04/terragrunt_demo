@@ -8,7 +8,7 @@
     "quality_profile": "showcase",
     "repository": {
       "url": "https://github.com/Kendall04/terragrunt_demo.git",
-      "revision": "528a583d4f74ccd0368cf00929b7315d582cdb35",
+      "revision": "33a32d44351810ab9a815af1da2d1f32d4b968ad",
       "link_mode": "web"
     }
   },
@@ -17,13 +17,13 @@
       "id": "client",
       "type": "external",
       "label": "Cliente público",
-      "sublabel": "Sin autenticación de API",
+      "sublabel": "API DEV sin autenticación",
       "pos": [
         40,
-        50
+        60
       ],
       "size": [
-        245,
+        220,
         86
       ],
       "tag": "LÍMITE DEV",
@@ -39,13 +39,13 @@
       "id": "gateway",
       "type": "cloud",
       "label": "HTTP API Gateway",
-      "sublabel": "TLS termina aquí",
+      "sublabel": "Terminación HTTPS",
       "pos": [
-        380,
-        50
+        365,
+        60
       ],
       "size": [
-        245,
+        220,
         86
       ],
       "tag": "DESPLEGADO",
@@ -58,65 +58,16 @@
       ]
     },
     {
-      "id": "kms",
-      "type": "security",
-      "label": "KMS de aplicación",
-      "sublabel": "Encrypt / Decrypt",
-      "pos": [
-        380,
-        430
-      ],
-      "size": [
-        245,
-        86
-      ],
-      "tag": "DESPLEGADO",
-      "sources": [
-        {
-          "path": "demo-api/terragrunt-demo/Services/IEncryptionService.cs",
-          "line": 30,
-          "end_line": 51
-        }
-      ]
-    },
-    {
-      "id": "secrets",
-      "type": "security",
-      "label": "Secrets Manager",
-      "sublabel": "Conexión versionada",
-      "pos": [
-        720,
-        430
-      ],
-      "size": [
-        245,
-        86
-      ],
-      "tag": "DESPLEGADO",
-      "sources": [
-        {
-          "path": "terraform/modules/target/dev/apps/modules/ecs_service/taskdef.tf",
-          "line": 1,
-          "end_line": 17
-        },
-        {
-          "path": "docs/V2-TRUST-AND-THREATS.md",
-          "line": 49,
-          "end_line": 63
-        }
-      ]
-    },
-    {
       "id": "link",
       "type": "cloud",
       "label": "VPC Link",
       "sublabel": "ENI privadas A / B",
       "pos": [
-        720,
-        50
+        40,
+        280
       ],
       "size": [
-        245,
+        220,
         86
       ],
       "tag": "DESPLEGADO",
@@ -132,13 +83,13 @@
       "id": "alb",
       "type": "cloud",
       "label": "ALB interno",
-      "sublabel": "Dos target groups",
+      "sublabel": "Listener HTTP :8080",
       "pos": [
-        720,
-        240
+        365,
+        280
       ],
       "size": [
-        245,
+        220,
         86
       ],
       "tag": "DESPLEGADO",
@@ -151,16 +102,37 @@
       ]
     },
     {
-      "id": "app",
-      "type": "backend",
-      "label": "API .NET 10",
-      "sublabel": "Fargate · CD DEV automático",
+      "id": "targets",
+      "type": "cloud",
+      "label": "Target groups blue / green",
+      "sublabel": "El CD elige el color activo",
       "pos": [
-        380,
-        240
+        690,
+        280
       ],
       "size": [
-        245,
+        220,
+        86
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "terraform/modules/target/dev/global/modules/alb/target_group.tf",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "app",
+      "type": "backend",
+      "label": "API .NET 10 · Fargate",
+      "sublabel": "Sin IP pública · validated-v2",
+      "pos": [
+        1015,
+        280
+      ],
+      "size": [
+        220,
         86
       ],
       "tag": "DESPLEGADO",
@@ -176,13 +148,13 @@
       "id": "sql",
       "type": "database",
       "label": "SQL Express 2022",
-      "sublabel": "Un escritor · AZ B",
+      "sublabel": "Un escritor privado · AZ B",
       "pos": [
-        40,
-        240
+        1015,
+        510
       ],
       "size": [
-        245,
+        220,
         86
       ],
       "tag": "DESPLEGADO",
@@ -197,21 +169,76 @@
     {
       "id": "backup",
       "type": "database",
-      "label": "Backups en S3",
-      "sublabel": "Horario · versionado · SSE-KMS",
+      "label": "Backups SQL en S3",
+      "sublabel": "Horario · versiones · SSE-KMS",
       "pos": [
         40,
-        430
+        510
       ],
       "size": [
-        245,
+        220,
         86
       ],
       "tag": "DESPLEGADO",
       "sources": [
         {
-          "path": "operations/sql-backup/SqlBackup/Program.cs",
-          "line": 1
+          "path": "operations/sql-backup/SqlBackup/NativeSql.cs",
+          "line": 24,
+          "end_line": 48
+        },
+        {
+          "path": "operations/sql-backup/SqlBackup/S3Store.cs",
+          "line": 20,
+          "end_line": 58
+        }
+      ]
+    },
+    {
+      "id": "kms",
+      "type": "security",
+      "label": "KMS de aplicación",
+      "sublabel": "Encrypt / Decrypt · task role",
+      "pos": [
+        690,
+        510
+      ],
+      "size": [
+        220,
+        86
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "demo-api/terragrunt-demo/Services/IEncryptionService.cs",
+          "line": 30,
+          "end_line": 51
+        }
+      ]
+    },
+    {
+      "id": "secrets",
+      "type": "security",
+      "label": "Secrets Manager",
+      "sublabel": "Versión exacta · execution role",
+      "pos": [
+        365,
+        510
+      ],
+      "size": [
+        220,
+        86
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "terraform/modules/target/dev/apps/modules/ecs_service/taskdef.tf",
+          "line": 1,
+          "end_line": 17
+        },
+        {
+          "path": "docs/V2-TRUST-AND-THREATS.md",
+          "line": 49,
+          "end_line": 63
         }
       ]
     }
@@ -228,7 +255,7 @@
       "id": "gateway-link",
       "from": "gateway",
       "to": "link",
-      "label": "HTTP privado",
+      "label": "VPC_LINK",
       "variant": "default"
     },
     {
@@ -239,31 +266,38 @@
       "variant": "default"
     },
     {
-      "id": "alb-app",
+      "id": "alb-targets",
       "from": "alb",
-      "to": "app",
-      "label": "HTTP :8080",
+      "to": "targets",
+      "label": "Forward",
       "variant": "default"
     },
     {
-      "id": "app-kms",
-      "from": "app",
-      "to": "kms",
-      "label": "Task role",
-      "variant": "security"
-    },
-    {
-      "id": "secrets-app",
-      "from": "secrets",
+      "id": "targets-app",
+      "from": "targets",
       "to": "app",
-      "label": "Execution role",
-      "variant": "security"
+      "label": "HTTP :8080",
+      "variant": "default"
     },
     {
       "id": "app-sql",
       "from": "app",
       "to": "sql",
       "label": "TLS :1433",
+      "variant": "security"
+    },
+    {
+      "id": "app-kms",
+      "from": "app",
+      "to": "kms",
+      "label": "AWS SDK",
+      "variant": "security"
+    },
+    {
+      "id": "secrets-app",
+      "from": "secrets",
+      "to": "app",
+      "label": "Inyección inicial",
       "variant": "security"
     },
     {
@@ -277,21 +311,42 @@
   "cards": [
     {
       "dot": "slate",
-      "title": "Estado y lectura",
+      "title": "Cómo leer la plataforma",
       "items": [
-        "Implementación y evidencia DEV al 10 nov 2026. PROD no está instalado ni validado.",
-        "Datos/control en gris; seguridad en rosa. Las respuestas son implícitas.",
-        "Sentinel se separó: sus recursos AWS pendientes de retiro no participan en este flujo."
+        "El listener dirige al color seleccionado por el CD; blue y green son destinos intercambiables, no estados permanentes.",
+        "El execution role inyecta el secreto al arrancar. Solo el task role de la API utiliza la CMK de texto.",
+        "El productor nativo SQL realiza COPY_ONLY + CHECKSUM, verifica y publica backup/manifiesto en S3 con SSE-KMS."
       ]
     },
     {
       "dot": "amber",
-      "title": "Límites reales",
+      "title": "Alcance demostrado",
       "items": [
-        "Una tarea API y un único SQL Express: no constituyen HA de aplicación/base.",
-        "Cliente HTTPS; VPC Link/ALB/API usan HTTP privado; SQL usa TLS estricto.",
-        "NAT ASG/E13, backups y CD funcionan sin Sentinel. CloudFront DEMO es independiente."
+        "DEV al 10 nov 2026. Una tarea activa y un SQL Express: no hay alta disponibilidad de base de datos.",
+        "HTTPS termina en API Gateway; Link/ALB/API usan HTTP privado. SQL valida hostname y cadena de la CA DEV definitiva.",
+        "CloudFront DEMO es independiente del runtime; Sentinel solo permanece en Historia. PROD no está instalado ni validado."
       ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Acceso y aplicación · subnets privadas",
+      "wraps": [
+        "link",
+        "alb",
+        "targets",
+        "app"
+      ],
+      "pad": 24
+    },
+    {
+      "kind": "region",
+      "label": "Datos privados · sin HA SQL",
+      "wraps": [
+        "sql"
+      ],
+      "pad": 24
     }
   ]
 }

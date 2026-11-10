@@ -8,7 +8,7 @@
     "quality_profile": "showcase",
     "repository": {
       "url": "https://github.com/Kendall04/terragrunt_demo.git",
-      "revision": "528a583d4f74ccd0368cf00929b7315d582cdb35",
+      "revision": "33a32d44351810ab9a815af1da2d1f32d4b968ad",
       "link_mode": "web"
     }
   },
@@ -16,42 +16,63 @@
     {
       "id": "writer",
       "type": "database",
-      "label": "SQL origen único",
-      "sublabel": "Backup horario + CHECKSUM",
+      "label": "1 · SQL origen único",
+      "sublabel": "Un escritor · copias horarias",
       "pos": [
         40,
-        40
+        70
       ],
       "size": [
-        210,
-        82
+        220,
+        86
       ],
       "tag": "DEMOSTRADO",
       "sources": [
         {
-          "path": "operations/sql-backup/sql-backup.timer.in",
-          "line": 1,
-          "end_line": 8
+          "path": "operations/sql-backup/SqlBackup/NativeSql.cs",
+          "line": 24,
+          "end_line": 48
         },
         {
+          "path": "operations/sql-backup/sql-backup.timer.in",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "drain",
+      "type": "security",
+      "label": "2 · Drenar y aislar origen",
+      "sublabel": "Logins OFF · READ_ONLY",
+      "pos": [
+        365,
+        70
+      ],
+      "size": [
+        220,
+        86
+      ],
+      "tag": "DEMOSTRADO",
+      "sources": [
+        {
           "path": "operations/sql-backup/recovery/NATIVE-RECOVERY.md",
-          "line": 48,
-          "end_line": 52
+          "line": 42,
+          "end_line": 69
         }
       ]
     },
     {
       "id": "store",
       "type": "database",
-      "label": "S3 backup + manifiesto",
-      "sublabel": "Versiones / SHA / SSE-KMS",
+      "label": "3 · Backup + manifiesto S3",
+      "sublabel": "CHECKSUM · versiones · SSE-KMS",
       "pos": [
-        400,
-        40
+        690,
+        70
       ],
       "size": [
-        210,
-        82
+        220,
+        86
       ],
       "tag": "DESPLEGADO",
       "sources": [
@@ -64,15 +85,15 @@
     {
       "id": "hold",
       "type": "database",
-      "label": "Proteger entrada de restore",
-      "sublabel": "Copia fuera de Lifecycle · SQL propio",
+      "label": "4 · Proteger copia de entrada",
+      "sublabel": "VersionId / SHA · restore hold",
       "pos": [
-        760,
-        40
+        1015,
+        70
       ],
       "size": [
-        210,
-        82
+        220,
+        86
       ],
       "tag": "IMPLEMENTADO",
       "sources": [
@@ -83,39 +104,17 @@
       ]
     },
     {
-      "id": "drain",
-      "type": "security",
-      "label": "Drenar ECS + aislar",
-      "sublabel": "Logins OFF · READ_ONLY",
-      "pos": [
-        40,
-        280
-      ],
-      "size": [
-        210,
-        82
-      ],
-      "tag": "DEMOSTRADO",
-      "sources": [
-        {
-          "path": "operations/sql-backup/recovery/NATIVE-RECOVERY.md",
-          "line": 42,
-          "end_line": 69
-        }
-      ]
-    },
-    {
       "id": "fence",
       "type": "security",
-      "label": "Origen terminado",
+      "label": "5 · Verificar origen terminado",
       "sublabel": "Disco cifrado conservado",
       "pos": [
-        40,
-        520
+        1015,
+        300
       ],
       "size": [
-        210,
-        82
+        220,
+        86
       ],
       "tag": "DEMOSTRADO",
       "sources": [
@@ -129,15 +128,15 @@
     {
       "id": "new",
       "type": "cloud",
-      "label": "Nueva EC2 en A o B",
-      "sublabel": "Data + SSM + TLS estricto",
+      "label": "6 · Nueva EC2 SQL",
+      "sublabel": "SAME-AZ o CROSS-AZ",
       "pos": [
-        400,
-        520
+        690,
+        300
       ],
       "size": [
-        210,
-        82
+        220,
+        86
       ],
       "tag": "DEMOSTRADO",
       "sources": [
@@ -151,15 +150,15 @@
     {
       "id": "restore",
       "type": "database",
-      "label": "Restaurar copia nueva",
-      "sublabel": "CHECKDB / hash / EF 2/2",
+      "label": "7 · Restore + CHECKDB",
+      "sublabel": "Filas / hash / migraciones",
       "pos": [
-        760,
-        520
+        365,
+        300
       ],
       "size": [
-        210,
-        82
+        220,
+        86
       ],
       "tag": "DEMOSTRADO",
       "sources": [
@@ -173,15 +172,15 @@
     {
       "id": "handoff",
       "type": "security",
-      "label": "Handoff validado",
-      "sublabel": "Runtime mínimo; migrador OFF",
+      "label": "8 · Habilitar runtime mínimo",
+      "sublabel": "Login app · migrador OFF",
       "pos": [
-        760,
-        760
+        40,
+        300
       ],
       "size": [
-        210,
-        82
+        220,
+        86
       ],
       "tag": "DEMOSTRADO",
       "sources": [
@@ -195,15 +194,15 @@
     {
       "id": "app",
       "type": "backend",
-      "label": "ECS → nuevo SQL",
-      "sublabel": "Secret versionado / mismo digest",
+      "label": "9 · Reconectar ECS",
+      "sublabel": "Secreto versionado · TLS estricto",
       "pos": [
-        400,
-        760
+        40,
+        530
       ],
       "size": [
-        210,
-        82
+        220,
+        86
       ],
       "tag": "DEMOSTRADO",
       "sources": [
@@ -217,15 +216,15 @@
     {
       "id": "proof",
       "type": "external",
-      "label": "API real + timer",
-      "sublabel": "POST/GET/KMS + backup",
+      "label": "10 · Verificar API + backups",
+      "sublabel": "POST / GET / KMS · timer activo",
       "pos": [
-        40,
-        760
+        365,
+        530
       ],
       "size": [
-        210,
-        82
+        220,
+        86
       ],
       "tag": "DEMOSTRADO",
       "sources": [
@@ -239,20 +238,6 @@
   ],
   "connections": [
     {
-      "id": "writer-store",
-      "from": "writer",
-      "to": "store",
-      "label": "Horario",
-      "variant": "default"
-    },
-    {
-      "id": "store-hold",
-      "from": "store",
-      "to": "hold",
-      "label": "Antes de restore",
-      "variant": "default"
-    },
-    {
       "id": "writer-drain",
       "from": "writer",
       "to": "drain",
@@ -260,45 +245,45 @@
       "variant": "default"
     },
     {
-      "id": "drain-fence",
-      "from": "drain",
-      "to": "fence",
-      "label": "Fence positivo",
-      "variant": "security"
-    },
-    {
       "id": "drain-store",
       "from": "drain",
       "to": "store",
-      "label": "Backup final verificado",
+      "label": "Backup final",
+      "variant": "default"
+    },
+    {
+      "id": "store-hold",
+      "from": "store",
+      "to": "hold",
+      "label": "Fijar versión",
+      "variant": "default"
+    },
+    {
+      "id": "hold-fence",
+      "from": "hold",
+      "to": "fence",
+      "label": "Entrada segura",
       "variant": "security"
     },
     {
       "id": "fence-new",
       "from": "fence",
       "to": "new",
-      "label": "Plan revisado",
-      "variant": "default"
+      "label": "Fence positivo",
+      "variant": "security"
     },
     {
       "id": "new-restore",
       "from": "new",
       "to": "restore",
-      "label": "SSM + paquete",
+      "label": "SQL + TLS",
       "variant": "default"
-    },
-    {
-      "id": "hold-restore",
-      "from": "hold",
-      "to": "restore",
-      "label": "Versión fijada",
-      "variant": "security"
     },
     {
       "id": "restore-handoff",
       "from": "restore",
       "to": "handoff",
-      "label": "Solo si PASS",
+      "label": "PASS",
       "variant": "security"
     },
     {
@@ -319,20 +304,20 @@
   "cards": [
     {
       "dot": "slate",
-      "title": "Estado y lectura",
+      "title": "Dos momentos de una recuperación",
       "items": [
-        "Implementación y evidencia DEV al 10 nov 2026. PROD no está instalado ni validado.",
-        "Datos/control en gris; seguridad en rosa. Las respuestas son implícitas.",
-        "Sentinel se separó: sus recursos AWS pendientes de retiro no participan en este flujo."
+        "Operación normal: backup COPY_ONLY horario con CHECKSUM y RESTORE VERIFYONLY, luego publicación cifrada y versionada de la pareja backup/manifiesto.",
+        "Recuperación planificada: drenar escrituras, aislar el origen y verificar una copia final. Proteger la entrada fuera del Lifecycle antes de sustituir la instancia.",
+        "No habilitar otro escritor hasta acreditar el fence del origen. Restaurar en la nueva EC2 y comprobar CHECKDB, contenido y permisos antes de reconectar la API."
       ]
     },
     {
       "dot": "amber",
-      "title": "Límites reales",
+      "title": "Resultados medidos · 6 noviembre 2026",
       "items": [
-        "SAME-AZ: 24m42.6s; CROSS-AZ: 41m31.5s. Ensayos supervisados, no failover automático.",
-        "Backup final planificado no demuestra RPO cero ante pérdida abrupta. No hay PITR.",
-        "Lifecycle: siete días solo para versiones admitidas. Nuevas admisiones son mantenimiento explícito."
+        "SAME-AZ: 24m42,6s. CROSS-AZ: 41m31,5s. Incluyen nueva EC2, restore y validación API/KMS; ensayos supervisados, no garantías de servicio.",
+        "No hay alta disponibilidad SQL ni PITR. La copia final planificada no demuestra RPO cero ante pérdida abrupta.",
+        "Retención: siete días solo en versiones admitidas, con dos parejas recientes protegidas y restore holds. Un disco antiguo no se reactiva tras nuevas escrituras sin reconciliación."
       ]
     }
   ]

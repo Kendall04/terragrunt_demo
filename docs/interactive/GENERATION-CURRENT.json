@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "snapshot": "2026-11-10",
-  "scope": "Current independent ECS platform; Sentinel views preserved as historical snapshots",
+  "scope": "Final visual review of five current ECS views; 12 historical originals unchanged",
   "tool": {
     "official_repository": "https://github.com/tt-a1i/archify",
     "tag": "v3.1.0",
@@ -14,16 +14,16 @@
     "source": "Official pinned ZIP authenticated against the existing docs/interactive/GENERATION.json provenance; isolated local execution."
   },
   "nodeVersion": "24.22.1",
-  "sourceRevision": "528a583d4f74ccd0368cf00929b7315d582cdb35",
+  "sourceRevision": "33a32d44351810ab9a815af1da2d1f32d4b968ad",
   "command": "node <authenticated-archify>/bin/archify.mjs finalize architecture docs/interactive/source/<id>.json docs/interactive/<id>.html --repo-root . --quality showcase --out-dir <new-evidence> --json",
   "diagrams": [
     {
       "id": "ecs-platform",
       "source": "source/ecs-platform.json",
       "output": "ecs-platform.html",
-      "sourceSha256": "84c951fcef27d4cd52ac8725aed93716c64f385a820b78c635a76a96fe5b45ae",
-      "htmlSha256": "e2decc6a04a7f4695e6b4f92e92d8a6bae77a597eec7033d50012bb939c52349",
-      "readingSha256": "20224f613bb8904729e5dcf56e496e92a103dcfae7137ace54a252c112bd4828",
+      "sourceSha256": "28ad5723127fb241d7e7bb77a2062668c74ed1b876a4a44ab426e7ac09e56832",
+      "htmlSha256": "3cb01c8ab4590a49a76d33c1ee596a91bf4b5ccb8ec5e61f8741df58910fc265",
+      "readingSha256": "6079ab74b47e33f39dd98cb456251113013ef38d4bd531e3ee0c8ffa392d73bc",
       "gates": {
         "validate": "pass",
         "deliver": "pass",
@@ -35,9 +35,9 @@
       "id": "ecs-network",
       "source": "source/ecs-network.json",
       "output": "ecs-network.html",
-      "sourceSha256": "cb6dca0964701dabb1feec53dfa0dc353aa10a651aef39e3084d7c8b612e7a9c",
-      "htmlSha256": "be6a65f5f5cf140037b349ffcdde30a358f860016dec91cc2382a6ed4b2938a4",
-      "readingSha256": "78b7f23547c426c1726df9c4e855726df6b1f0e754b81a4b596f84e20fcb3f3f",
+      "sourceSha256": "09eca01392aa04366195faf09196b930d373bb3c905fd6a2c916c10023a3dbba",
+      "htmlSha256": "b5766ed360cbada8042462255c2cb8ca0c97dfbd8d5df6a123e981a8446fe73e",
+      "readingSha256": "1a9fe0e6ed48a0ebcfb91625087c277087957a667226fae75bd97758b5fbbeeb",
       "gates": {
         "validate": "pass",
         "deliver": "pass",
@@ -49,9 +49,9 @@
       "id": "ecs-sql-recovery",
       "source": "source/ecs-sql-recovery.json",
       "output": "ecs-sql-recovery.html",
-      "sourceSha256": "accd819c21eaa61eb5c1c88c37e9052b1d24fd471d4793a5d8a441b17e5f18b6",
-      "htmlSha256": "906bfc51bab0abbab68f337a4275ac0f9e3da638fb2a9e7cdaa7ad23b54cad10",
-      "readingSha256": "fbe5ed0bcd766a2e661aa608da10e43fe78ebbc575f6144418787745819891ef",
+      "sourceSha256": "aeb05a72562b5ae53fc63a958bc9b87bc7cf7719168af180838d5aff2b437fec",
+      "htmlSha256": "d6100177aad5dab77bc5244ad418a5e7b10c59f84f65c879b2459415cdc99599",
+      "readingSha256": "f90dea73fc11db7a346b2b6d1929bf6f019f27265fd9449fc6347ae8ba75643a",
       "gates": {
         "validate": "pass",
         "deliver": "pass",
@@ -63,9 +63,9 @@
       "id": "ecs-trust",
       "source": "source/ecs-trust.json",
       "output": "ecs-trust.html",
-      "sourceSha256": "5ea9b292f2993b6f08c61b3df604a73e87de612ee5bd5499a319048da7df30a8",
-      "htmlSha256": "654cea7a7c8fbf85f3ad2fc4ef514a5ab1c5e6d09a8ffa264b485c96be720633",
-      "readingSha256": "200b4740b099a018f79d5e428252cd91a635dd63a7f58ed6ec03d8c9f55980c0",
+      "sourceSha256": "cdc3667666c77599ee8ed11999ee5b2ac3addc2a601863e41aa0bc829df687a0",
+      "htmlSha256": "a7c3e65d5ed1452aa73df316d698980f3131f5bc0df45d15257210fa7ac18a17",
+      "readingSha256": "d201b94083e4849e31b9ad504bb2338e27d4faba46a8a32eb7a274a8a58f3804",
       "gates": {
         "validate": "pass",
         "deliver": "pass",
@@ -77,9 +77,9 @@
       "id": "ecs-delivery",
       "source": "source/ecs-delivery.json",
       "output": "ecs-delivery.html",
-      "sourceSha256": "03641b01c6da2a324e180d49818a5c2ff8623796d245d38936c989085440de3b",
-      "htmlSha256": "f3b94eba3807140b8d40059e66bd9e05bfeb4678e8a965c67048603c52601314",
-      "readingSha256": "0bc1782bf149cdedb56a14aaa9674f35a99007a05a3edecb406ddf54f87ac348",
+      "sourceSha256": "ab13264262b753bc36a06a8702e5bc2b70dfbaf575a90360376c66c632c84eb7",
+      "htmlSha256": "1b47f94226cba65bc3108cbc371cc77d870fdbbd5b0fe9993b2d6b1d708f40f7",
+      "readingSha256": "b6abec910b99210c1f3b109ca9b4f032084b4451597f139c80d0e3e827e42eee",
       "gates": {
         "validate": "pass",
         "deliver": "pass",

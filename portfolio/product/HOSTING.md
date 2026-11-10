@@ -158,7 +158,7 @@ node portfolio/product/test-public.mjs https://<distribucion>.cloudfront.net <pa
 ```
 
 GET/HEAD al hosting y datos sintéticos en memoria. Verifica todos los bytes públicos
-contra manifest, MIME/CSP, cinco vistas, doce diagramas, móvil, refresh y errores.
+contra manifest, MIME/CSP, cinco páginas, cinco diagramas actuales y doce históricos, móvil, refresh y errores.
 No vuelve a probar SQL/KMS ni llama a la API; esa evidencia permanece separada en
 [VALIDATION-PR36.md](VALIDATION-PR36.md). No instala herramientas automáticamente.
 

@@ -17,11 +17,11 @@ const captures = JSON.parse(
 );
 const current = JSON.parse(await readFile(new URL("GENERATION-CURRENT.json", root), "utf8"));
 const entries = [
-  ["ecs-platform", "Plataforma ECS", "Aplicación privada, datos y despliegue", "ECS V2 independiente de Sentinel. Evidencia DEV; PROD no validado."],
-  ["ecs-delivery", "CD DEV automático", "Un merge despliega DEV", "CI, OIDC, ECR por digest, ECS blue/green, salud y release S3. PROD deshabilitado."],
-  ["ecs-network", "Red y NAT / E13", "Dos zonas, recuperación independiente", "NAT por AZ; ASG/E13 repara EIP, ruta y SDC. Sin Sentinel."],
+  ["ecs-platform", "Plataforma ECS", "Del cliente al SQL privado", "API Gateway, ALB y colores intercambiables; KMS, SQL TLS y backups. Evidencia DEV; PROD no validado."],
+  ["ecs-delivery", "CD DEV automático", "Un merge despliega DEV", "Ocho etapas: CI, build, ECR por digest, ECS, salud, ALB y registro S3/GitHub. Terraform separado; PROD deshabilitado."],
+  ["ecs-network", "Red y NAT / E13", "Dos zonas, recuperación independiente", "ECS elegible en ambas AZ, SQL en B. ASG/E13 repara cada NAT; no implica failover entre zonas."],
   ["ecs-sql-recovery", "Backups y recuperación SQL", "Un escritor, copias verificables", "Backups horarios y recuperación fría SAME-AZ/CROSS-AZ supervisada."],
-  ["ecs-trust", "Identidades y TLS", "Confianza por ambiente", "TLS definitivo DEV, roles separados y límites de seguridad explícitos."],
+  ["ecs-trust", "Identidades y TLS", "Confianza por ambiente", "Fronteras de acceso privado, ejecución ECS y administración/backup. CA DEV definitiva; API pública sin autenticación."],
   [
     "v2-platform",
     "Plataforma",

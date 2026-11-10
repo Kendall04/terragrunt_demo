@@ -8,7 +8,7 @@
     "quality_profile": "showcase",
     "repository": {
       "url": "https://github.com/Kendall04/terragrunt_demo.git",
-      "revision": "528a583d4f74ccd0368cf00929b7315d582cdb35",
+      "revision": "33a32d44351810ab9a815af1da2d1f32d4b968ad",
       "link_mode": "web"
     }
   },
@@ -17,20 +17,25 @@
       "id": "privatea",
       "type": "backend",
       "label": "Privada A · 10.0.100.0/24",
-      "sublabel": "Fargate elegible · sin sonda Sentinel",
+      "sublabel": "ECS elegible · sin IP pública",
       "pos": [
-        60,
-        60
+        50,
+        110
       ],
       "size": [
-        210,
-        82
+        220,
+        86
       ],
       "tag": "DESPLEGADO",
       "sources": [
         {
           "path": "terraform/modules/target/dev/global/modules/vpc/route_tables.tf",
           "line": 1
+        },
+        {
+          "path": "terraform/modules/target/dev/apps/ordinary-demo.tf",
+          "line": 1,
+          "end_line": 60
         }
       ]
     },
@@ -40,12 +45,12 @@
       "label": "Ruta privada A",
       "sublabel": "0.0.0.0/0 → ENI NAT A",
       "pos": [
-        60,
-        300
+        380,
+        110
       ],
       "size": [
-        210,
-        82
+        220,
+        86
       ],
       "tag": "DESPLEGADO",
       "sources": [
@@ -67,12 +72,12 @@
       "label": "NAT A · pública A",
       "sublabel": "10.0.0.0/24 · ASG = 1",
       "pos": [
-        60,
-        540
+        710,
+        110
       ],
       "size": [
-        210,
-        82
+        220,
+        86
       ],
       "tag": "DESPLEGADO",
       "sources": [
@@ -87,14 +92,14 @@
       "id": "privateb",
       "type": "backend",
       "label": "Privada B · 10.0.101.0/24",
-      "sublabel": "SQL + tarea blue actuales",
+      "sublabel": "SQL en B · ECS elegible",
       "pos": [
-        470,
-        60
+        50,
+        350
       ],
       "size": [
-        210,
-        82
+        220,
+        86
       ],
       "tag": "DESPLEGADO",
       "sources": [
@@ -102,6 +107,11 @@
           "path": "docs/V2-RECOVERY-SECURITY-20261105.md",
           "line": 282,
           "end_line": 324
+        },
+        {
+          "path": "terraform/modules/target/dev/apps/ordinary-demo.tf",
+          "line": 1,
+          "end_line": 60
         }
       ]
     },
@@ -111,12 +121,12 @@
       "label": "Ruta privada B",
       "sublabel": "0.0.0.0/0 → ENI NAT B",
       "pos": [
-        470,
-        300
+        380,
+        350
       ],
       "size": [
-        210,
-        82
+        220,
+        86
       ],
       "tag": "DESPLEGADO",
       "sources": [
@@ -138,12 +148,12 @@
       "label": "NAT B · pública B",
       "sublabel": "10.0.1.0/24 · ASG = 1",
       "pos": [
-        470,
-        540
+        710,
+        350
       ],
       "size": [
-        210,
-        82
+        220,
+        86
       ],
       "tag": "DESPLEGADO",
       "sources": [
@@ -158,14 +168,14 @@
       "id": "igw",
       "type": "cloud",
       "label": "Internet Gateway",
-      "sublabel": "Ruta pública compartida",
+      "sublabel": "EIP propia de cada NAT",
       "pos": [
-        880,
-        540
+        1040,
+        350
       ],
       "size": [
-        210,
-        82
+        220,
+        86
       ],
       "tag": "DESPLEGADO",
       "sources": [
@@ -180,14 +190,14 @@
       "id": "endpoints",
       "type": "external",
       "label": "AWS APIs / Internet",
-      "sublabel": "Salida HTTPS mediante IGW",
+      "sublabel": "Salida regional HTTPS",
       "pos": [
-        880,
-        300
+        1040,
+        110
       ],
       "size": [
-        210,
-        82
+        220,
+        86
       ],
       "tag": "DESPLEGADO",
       "sources": [
@@ -200,15 +210,15 @@
     {
       "id": "e13",
       "type": "backend",
-      "label": "ASG + E13",
-      "sublabel": "EIP, ruta y SDC · independiente",
+      "label": "ASG + recuperación E13",
+      "sublabel": "Repara EIP / ruta / SDC",
       "pos": [
-        470,
-        800
+        710,
+        590
       ],
       "size": [
-        210,
-        82
+        220,
+        86
       ],
       "tag": "DESPLEGADO",
       "sources": [
@@ -293,27 +303,27 @@
   "cards": [
     {
       "dot": "slate",
-      "title": "Estado y lectura",
+      "title": "Red y elegibilidad",
       "items": [
-        "Implementación y evidencia DEV al 10 nov 2026. PROD no está instalado ni validado.",
-        "Datos/control en gris; seguridad en rosa. Las respuestas son implícitas.",
-        "Sentinel se separó: sus recursos AWS pendientes de retiro no participan en este flujo."
+        "Ambos servicios ECS reciben las subnets privadas A y B: su colocación no queda fijada a un color ni a una AZ. SQL es un único escritor en B.",
+        "Cada subnet pública tiene ruta al IGW. Cada ruta privada apunta a la ENI de su propia NAT; la EIP pertenece al egreso de esa NAT.",
+        "E13 repara EIP, ruta y source/destination checking (SDC desactivado) al reemplazar la instancia de cada ASG."
       ]
     },
     {
       "dot": "amber",
-      "title": "Límites reales",
+      "title": "Recuperación independiente",
       "items": [
-        "E13 repone ENI/ruta/EIP/SDC; Sentinel nunca creó las NAT.",
-        "Dos NAT no implican SQL multizona ni una API de varias réplicas.",
-        "El ensayo histórico recuperó HTTPS en 2m29.191s; no es un SLA."
+        "ASG/E13 es autónomo; no depende de Sentinel. No se demuestra failover automático de una AZ a la otra.",
+        "Dos NAT no implican SQL multizona ni múltiples tareas activas. DEV demostrado; PROD no instalado.",
+        "El ensayo histórico restauró HTTPS en 2m29,191s. Es una medición puntual, no un SLA."
       ]
     }
   ],
   "boundaries": [
     {
       "kind": "region",
-      "label": "DEV VPC · 10.0.0.0/16 · us-east-1",
+      "label": "DEV VPC · 10.0.0.0/16",
       "wraps": [
         "privatea",
         "routea",
@@ -322,7 +332,7 @@
         "routeb",
         "natb"
       ],
-      "pad": 55
+      "pad": 50
     },
     {
       "kind": "region",
@@ -332,7 +342,7 @@
         "routea",
         "nata"
       ],
-      "pad": 22
+      "pad": 24
     },
     {
       "kind": "region",
@@ -342,7 +352,7 @@
         "routeb",
         "natb"
       ],
-      "pad": 22
+      "pad": 24
     }
   ]
 }

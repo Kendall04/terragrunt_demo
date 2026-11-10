@@ -46,7 +46,8 @@ async function capture(page, name) {
       "**" + (await page.locator("#diagram-frame").getAttribute("src")),
     );
     await f.locator("svg [data-node-id]").first().waitFor();
-    await f.locator(".diagram-nav [data-view=reset]").click();
+    if (!(await page.locator("#diagram-frame").getAttribute("src")).startsWith("/reading/"))
+      await f.locator(".diagram-nav [data-view=reset]").click();
   }
   await page.evaluate(
     () =>
@@ -133,9 +134,9 @@ try {
   pass("Three honest historical replays, pause/step/reset");
   await navigate(p, "/architecture");
   const diagrams = await catalog();
-  for (const width of [1440, 390]) {
+  for (const width of [1920, 768, 320, 1440, 390]) {
     await p.setViewportSize({ width, height: 1000 });
-    for (const d of diagrams) {
+    for (const d of diagrams.filter(d => [1440, 390].includes(width) || !d.historical)) {
       await p.locator("#diagram-select").selectOption(d.id);
       const f = await (
         await p.locator("#diagram-frame").elementHandle()
@@ -181,9 +182,36 @@ try {
         diagram: d.id,
         width,
       });
+      if (width === 390 && !d.historical) {
+        if (d.id === "ecs-delivery") {
+          await f.locator(".fit-width").click();
+          await f.locator(".diagram-nav [data-view=in]").click();
+          await f.locator(".diagram-container.is-pannable").waitFor();
+          await p.locator("#diagram-frame").scrollIntoViewIfNeeded();
+          const svg = await f.locator(".diagram-container").boundingBox();
+          const oldX = await node.evaluate(n => n.getBoundingClientRect().x);
+          await p.mouse.move(svg.x + 20, svg.y + 100);
+          await p.mouse.down();
+          await p.mouse.move(svg.x + 80, svg.y + 130, {steps: 8});
+          await p.mouse.up();
+          await f.waitForFunction(x => Math.abs(document.querySelector("svg [data-node-id]").getBoundingClientRect().x - x) > 10, oldX);
+          const bytes = await p.locator("#diagram-frame").screenshot({path:path.join(destination,"mobile-delivery-pan.png")});
+          receipt.captures.push({file:"mobile-delivery-pan.png",sha256:createHash("sha256").update(bytes).digest("hex")});
+        }
+        await p.getByRole("button", {name: "Hoja de lectura", exact: true}).click();
+        const reader = await (await p.locator("#diagram-frame").elementHandle()).contentFrame();
+        await reader.waitForURL("**/reading/" + d.id + ".html");
+        await reader.locator("article").first().waitFor();
+        assert(await reader.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+        assert.equal(await reader.locator("a[href]").count(), 0);
+        await reader.locator("article").first().scrollIntoViewIfNeeded();
+        await capture(p, "mobile-reading-" + d.id);
+        await p.getByRole("button", {name: "Volver al visor", exact: true}).click();
+      }
     }
     await p.locator("#diagram-select").selectOption("ecs-delivery");
-    await capture(p, width === 1440 ? "desktop-explorer" : "mobile-explorer");
+    if ([1440, 390].includes(width))
+      await capture(p, width === 1440 ? "desktop-explorer" : "mobile-explorer");
   }
   await p.getByRole("button", { name: "Hoja de lectura", exact: true }).click();
   const reader = await (
