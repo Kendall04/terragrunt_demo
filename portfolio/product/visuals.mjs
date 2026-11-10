@@ -18,7 +18,7 @@ export function topology() {
     node(
       "desc",
       { id: "system-description" },
-      "Cliente HTTPS, API Gateway, VPC Link y ALB, ECS Fargate, SQL privado con TLS. ECS usa KMS. NAT proporciona salida; ASG/E13 la recupera. Sentinel observa y notifica, no ejecuta recuperación.",
+      "Cliente HTTPS, API Gateway, VPC Link y ALB, ECS Fargate, SQL privado con TLS. ECS usa KMS. NAT proporciona salida; ASG/E13 la recupera. El productor SQL publica backups horarios cifrados en S3.",
     ),
   );
   const defs = node("defs", {}),
@@ -64,8 +64,7 @@ export function topology() {
     ["M650 118V45H795", "control"],
     ["M650 188V262H520", "egress"],
     ["M865 188V230", "observe"],
-    ["M520 275H795", "observe"],
-  ];
+      ];
   for (const [d, tone] of lines)
     svg.append(
       node("path", {
@@ -82,7 +81,7 @@ export function topology() {
     [795, 118, 150, "SQL Server", "TLS estricto", "database"],
     [795, 10, 150, "KMS", "Encrypt / Decrypt", "kms"],
     [390, 230, 130, "NAT A / B", "ASG + E13", "nat"],
-    [795, 230, 150, "Sentinel", "Observa y avisa", "sentinel"],
+    [795, 230, 150, "Backups S3", "Horario · SSE-KMS", "database"],
   ];
   for (const [x, y, w, title, detail, kind] of nodes) {
     const g = node("g", { class: "map-node " + kind });
@@ -115,7 +114,7 @@ export function topology() {
     node(
       "text",
       { x: 688, y: 293, class: "map-caption", "text-anchor": "middle" },
-      "Probe HTTPS / AWS API",
+      "Egreso hacia AWS APIs",
     ),
     node("text", { x: 883, y: 223, class: "map-caption" }, "Evidencia S3"),
   );
@@ -124,7 +123,7 @@ export function topology() {
 export function incidentSystem(el, scenario, step) {
   const labels =
     scenario === "nat"
-      ? ["Subnet privada", "NAT A", "ASG / E13", "Sentinel", "Evidencia"]
+      ? ["Subnet privada", "NAT A", "ASG / E13", "Ruta / EIP", "HTTPS"]
       : scenario === "sql"
         ? [
             "Origen aislado",
@@ -133,13 +132,13 @@ export function incidentSystem(el, scenario, step) {
             "CHECKDB / TLS",
             "API recuperada",
           ]
-        : ["Productor SQL", "Backup S3", "Observador", "Sentinel", "Inbox"];
+        : ["Productor SQL", "CHECKSUM", "Backup S3", "Retención", "VERIFYONLY"];
   const states =
     scenario === "nat"
-      ? [0, 1, 3, 3, 2, 3, 4]
+      ? [1, 1, 4]
       : scenario === "sql"
         ? [0, 1, 2, 3, 3, 4]
-        : [0, 1, 3, 0, 4];
+        : [0, 1, 2, 3, 4];
   return el(
     "div",
     { class: "incident-system", "aria-label": "Relaciones del escenario" },
@@ -157,10 +156,10 @@ export function incidentSystem(el, scenario, step) {
       "p",
       { class: "system-caption" },
       scenario === "nat"
-        ? "Recuperación: ASG / E13. Detección y resolución: Sentinel."
+        ? "Recuperación independiente: ASG / E13. Medición del ensayo de noviembre."
         : scenario === "sql"
           ? "Recuperación supervisada. Una sola base activa."
-          : "El observador comprueba la evidencia real del productor.",
+          : "El productor y las herramientas SQL verifican la copia; sin Sentinel.",
     ),
   );
 }

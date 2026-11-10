@@ -91,26 +91,12 @@ resource "aws_iam_instance_profile" "node" {
         self.assertEqual(d.taints('github'),[])
         self.assertEqual(len(d.taints_for_role('arn:aws:iam::111122223333:role/name-ingestion','other/module')),2)
 
-    def test_real_portable_files_remain_all_visible_and_unsupported(self):
+    def test_retired_sentinel_sources_are_not_current_authority(self):
         d=Discovery(ROOT,names=(KNOWN,))
-        rows=[r for r in d.records if r['source'].startswith('operations/integrations/portable/')]
-        # All previous declarations plus security inputs, metadata, owned logging and
-        # outputs remain visible; applicable controls are still UNKNOWN.
-        # Two bounded admission inputs, one derived output and the second worker
-        # target add four declarations; the target remains unsupported authority.
-        self.assertEqual(len(rows),90)
-        target=[r for r in rows if r.get('declaration',{}).get('id')=='operations/integrations/portable/trial/runtime/main.tf#resource:aws_cloudwatch_event_target:worker_second']
-        self.assertEqual(len(target),1)
-        self.assertEqual(target[0]['admission'],'UNSUPPORTED_APPLICABLE')
-        receipt=[r for r in rows if r['source']=='operations/integrations/portable/trial/main.tf'
-                 and r.get('declaration',{}).get('kind')=='output'
-                 and r.get('declaration',{}).get('id')=='operations/integrations/portable/trial/main.tf#output:package_manifest_sha256:']
-        self.assertEqual(len(receipt),1)
-        self.assertEqual(receipt[0]['admission'],'NON_SECURITY_RELEVANT')
-        self.assertEqual(receipt[0]['affects'],[])
-        self.assertEqual(sum(r['admission']=='UNSUPPORTED_APPLICABLE' for r in rows),45)
-        self.assertTrue(any(r.get('mechanism_schema')=='aws_dynamodb_table' for r in rows))
-        self.assertEqual(sum(bool(r.get('policy_action_domain')) for r in rows),5)
+        self.assertFalse(any(r['source'].startswith('operations/integrations/') for r in d.records))
+        inventory=json.loads((ROOT/'ci/authority/retired-sentinel.json').read_text())
+        self.assertIn('operations/integrations/portable/trial/runtime/main.tf',inventory['files'])
+        self.assertTrue((ROOT/'operations/sql-backup/storage/backup_restore_pin.py').is_file())
 
     def test_resource_policy_action_scope_is_query_specific_not_a_grant(self):
         text='''resource "aws_sns_topic_policy" "x" {

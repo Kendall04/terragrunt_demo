@@ -27,8 +27,8 @@ class SupplementalIacTests(unittest.TestCase):
         before=json.dumps(doc['wp6']['approvals'],sort_keys=True)
         generated=model.wiring(doc)
         supplemental=model.reviewed_supplemental_iac(ROOT)
-        self.assertEqual(len(supplemental),24)
-        self.assertTrue({'terraform/infra/sentinel-backup/modules/pipeline/storage-security.tf','terraform/infra/sentinel-backup/modules/pipeline/tests/security.tftest.hcl', 'operations/integrations/portable/trial/runtime/security.tf', 'operations/integrations/portable/trial/runtime/tests/security.tftest.hcl'} <= supplemental)
+        self.assertEqual(supplemental,{'operations/sql-backup/recovery/provider.lock.hcl'})
+        self.assertFalse(any('sentinel' in n or '/integrations/' in n for n in supplemental))
         self.assertFalse(supplemental&set(generated))
         model.admit_configuration_paths(ROOT,generated)
         self.assertEqual(before,json.dumps(model.load_authority(ROOT)['wp6']['approvals'],sort_keys=True))
@@ -54,16 +54,7 @@ class SupplementalIacTests(unittest.TestCase):
 
     def test_changed_known_resource_or_provider_checksum_is_rejected(self):
         root=self.fixture()
-        for name in ('terraform/infra/sentinel-backup/modules/pipeline/main.tf.json',
-                     'terraform/infra/sentinel-backup/modules/pipeline/storage-security.tf',
-                     'terraform/infra/sentinel-backup/modules/pipeline/tests/security.tftest.hcl',
-                     'operations/sql-backup/recovery/provider.lock.hcl',
-                     'operations/integrations/portable/trial/main.tf',
-                     'operations/integrations/portable/trial/storage-observer.tf',
-                     'operations/integrations/portable/aws-6.28.lock.hcl',
-                     'operations/integrations/portable/trial/runtime/main.tf',
-                     'operations/integrations/portable/trial/runtime/security.tf',
-                     'operations/integrations/portable/trial/runtime/tests/security.tftest.hcl'):
+        for name in model.SUPPLEMENTAL_IAC_FILES:
             path=root/name;original=path.read_bytes();path.write_bytes(original+b'\n# unreviewed change\n')
             with self.subTest(path=name),self.assertRaisesRegex(Unsupported,'supplemental source drift'):
                 model.reviewed_supplemental_iac(root)
@@ -71,7 +62,7 @@ class SupplementalIacTests(unittest.TestCase):
 
     def test_missing_known_source_fails(self):
         root=self.fixture()
-        (root/'operations/integrations/portable/trial/runtime/main.tf').unlink()
+        (root/'operations/sql-backup/recovery/provider.lock.hcl').unlink()
         with self.assertRaisesRegex(Unsupported,'supplemental source'):model.reviewed_supplemental_iac(root)
 
     def test_editing_catalog_cannot_self_approve_or_replace_paths(self):
@@ -84,12 +75,12 @@ class SupplementalIacTests(unittest.TestCase):
 
     def test_hashes_accept_only_crlf_normalization_not_content_changes(self):
         root=self.fixture()
-        name='terraform/live/sentinel-backup/terragrunt.hcl'
+        name='operations/sql-backup/recovery/provider.lock.hcl'
         path=root/name;path.write_bytes(path.read_bytes().replace(b'\r\n',b'\n').replace(b'\n',b'\r\n'))
-        self.assertEqual(len(model.reviewed_supplemental_iac(root)),24)
+        self.assertEqual(len(model.reviewed_supplemental_iac(root)),1)
 
     def test_symlink_is_rejected_before_following_source_bytes(self):
-        root=self.fixture();path=root/'terraform/infra/sentinel-backup/main.tf.json'
+        root=self.fixture();path=root/'operations/sql-backup/recovery/provider.lock.hcl'
         original=path.read_bytes();path.unlink()
         harmless=root/'outside-reference.json';harmless.write_bytes(original)
         try:path.symlink_to(harmless)
@@ -127,7 +118,8 @@ class SupplementalIacTests(unittest.TestCase):
             with patch.object(os,'scandir',side_effect=denied),self.assertRaises(PermissionError):check(root)
         template='operations/integrations/portable/templates/security.tf.tftpl'
         path=root/template;path.parent.mkdir(parents=True,exist_ok=True)
-        shutil.copyfile(ROOT/template,path)
+        import history
+        path.write_text(history.retired_source(ROOT,template))
         sources=inventory.scan(root)
         self.assertIn(template,sources)
         for record in sources.values():record['semantic_status']='UNVERIFIED'

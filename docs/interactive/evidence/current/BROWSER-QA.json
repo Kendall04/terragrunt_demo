@@ -1,0 +1,41 @@
+{
+  "scope": "Five current Archify views plus preserved historical collection. Local Chrome, not live AWS telemetry",
+  "checks": [
+    "Keyboard skip link",
+    "DEMO create/read/reset and literal XSS",
+    "Three honest historical replays, pause/step/reset",
+    "17 pinned diagrams desktop/mobile, zoom/fit, opaque sandbox, sources, reader and text alternative",
+    "DEMO zero API/external calls, keyboard routes/Escape, 320/390/768/1440/1920 responsive",
+    "Reproducible static package: direct/trailing-slash routes, DEMO write/read and isolated diagram without backend",
+    "HTTP 503 / timeout / lost connection / expired in-memory capability: no synthetic fallback"
+  ],
+  "externalRequests": [],
+  "browserErrors": [],
+  "captures": [
+    {
+      "file": "1440-ecs-platform.png",
+      "sha256": "5bf82016fe68e6b19acb4ae26dc242a592fbfa71d24a0e0a056a1fd465bd5f17"
+    },
+    {
+      "file": "1440-ecs-network.png",
+      "sha256": "cf12bffc4d01f2fb0100324027a9b171c8b632d18654e01b4a5123652674ac47"
+    },
+    {
+      "file": "1440-ecs-sql-recovery.png",
+      "sha256": "dc59244dc16f99eb69b5953c4c89495fc74f50866fdd9678f5ba214871f9ebc3"
+    },
+    {
+      "file": "1440-ecs-trust.png",
+      "sha256": "f12b661354e49d66fe3f29f1d8493c2c159ae993a5c7012b81eb3b2a90bf5897"
+    },
+    {
+      "file": "1440-ecs-delivery.png",
+      "sha256": "8568780a4618dbca332a8fbb288937323ad7e2a63c7be61a187aa9f99f3f5e24"
+    },
+    {
+      "file": "390-overview.png",
+      "sha256": "0aef6e221e99797e26c2817e34c615979c84972e340058035c94a0f398e84403"
+    }
+  ],
+  "manualReview": "Inspected all five desktop views and mobile overview. Reflowed platform source after initial clipping; regenerated with official Archify. Mobile uses zoom/pan, inspector and readable text."
+}

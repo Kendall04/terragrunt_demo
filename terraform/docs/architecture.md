@@ -2,19 +2,19 @@
 
 ## Current ECS V2 deployment and reading order
 
-The [V2 atlas](../../docs/interactive/V2-INDEX.md) and
-[technical review](../../docs/ENGINEERING-REVIEW.md) reconcile source, real DEV
-execution and current readbacks. The static [CloudFront DEMO](https://d20ioz705caon7.cloudfront.net/)
-has its own private S3/OAC stack and no backend origin. V2 runs one SQL writer and
-one blue Fargate task; SAME/CROSS-AZ recovery, hourly backups and Sentinel incidents
-are demonstrated. Automatic CD is inhibited; native administration owns delivery.
+The [current atlas](../../docs/interactive/CURRENT-INDEX.md) describes the independent
+ECS platform as of 10 November. DEV automatic delivery is demonstrated through
+GitHub Actions/OIDC, ECR digests, ECS blue/green and SQL/KMS readiness. One API task
+and one SQL writer are active; SAME/CROSS-AZ cold recovery and hourly encrypted
+backups are demonstrated. SQL now uses the definitive DEV CA without a TLS bridge.
+PROD remains disabled/unqualified.
 
-The protected-controller declarations below explain retained source contracts.
-Their default inactive bindings and October closure are not today's runtime
-inventory. Portable Sentinel has an additional isolated owner under
-`operations/integrations/portable/trial`; it observes/reports and does not repair
-NAT or execute SQL recovery. Use the native lifecycle for operation, and retain
-controller contracts for authority review. Do not apply the whole source graph.
+The [CloudFront DEMO](https://d20ioz705caon7.cloudfront.net/) has its own private
+S3/OAC stack and no backend origin. [Sentinel is separated](../../docs/history/SENTINEL-SEPARATION.md);
+its installed AWS resources await authorized retirement. ASG/E13 recovery and SQL
+backups do not depend on its runtime. Older controller declarations below remain
+source contracts, not authorization to apply the whole graph. The simplified
+[delivery design](../../docs/DEV-DELIVERY-DESIGN.md) defines current task/count/ALB ownership.
 
 > **V2 diagram audit — 2026-11-06:** the [dated architecture atlas](../../docs/interactive/V2-INDEX.md)
 > reconciles source at `5d35edef` with a read-only AWS inventory. It separates current

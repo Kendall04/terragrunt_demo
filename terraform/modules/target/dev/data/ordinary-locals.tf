@@ -25,10 +25,5 @@ locals {
 }
 
 locals {
-  sql_full_user_data = var.sql_backup_cohost == null ? local.sql_base_user_data : join("\n", [
-    local.sql_base_user_data,
-    templatefile("${path.module}/../../../../infra/data/cohost-bootstrap.sh.tftpl", {
-      cohost_config = base64encode(jsonencode(var.sql_backup_cohost))
-    })
-  ])
+  sql_full_user_data = var.sql_backup_cohost == null ? local.sql_base_user_data : ""
 }

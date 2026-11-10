@@ -5,16 +5,13 @@ Use only after reviewing template/package hashes and obtaining publication autho
 """
 import argparse
 import base64
+import copy
 import datetime
 import hashlib
 import json
 import pathlib
 import re
 import uuid
-
-import boto3
-from botocore.config import Config
-from botocore.exceptions import ClientError
 
 STACK = "ecs-v2-portfolio-demo"
 ACCOUNT = "341936017254"
@@ -25,9 +22,23 @@ def digest(data):
     return hashlib.sha256(data).hexdigest()
 
 
+def require_content_update(installed, proposed):
+    """Existing hosting only: content routing may change, security/resources may not."""
+    before, after = copy.deepcopy(installed), copy.deepcopy(proposed)
+    for name in ("Routes",):
+        before["Resources"][name]["Properties"]["FunctionCode"] = "CONTENT"
+        after["Resources"][name]["Properties"]["FunctionCode"] = "CONTENT"
+    if before != after:
+        raise ValueError("Content update cannot change hosting resources or security configuration")
+
+
 def main():
+    import boto3
+    from botocore.config import Config
+    from botocore.exceptions import ClientError
+
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("action", choices=["create", "status", "upload", "enable", "verify"])
+    p.add_argument("action", choices=["create", "status", "upload", "enable", "verify", "update"])
     p.add_argument("--profile", required=True)
     p.add_argument("--template", type=pathlib.Path, required=True)
     p.add_argument("--template-sha256", required=True)
@@ -95,9 +106,15 @@ def main():
                 assert stack["StackStatus"] in ["CREATE_COMPLETE", "UPDATE_COMPLETE"]
                 installed = cf.get_template(StackName=STACK, TemplateStage="Original")["TemplateBody"]
                 if isinstance(installed, str): installed = json.loads(installed)
-                assert installed == template, "Installed template differs"
+                if args.action == "update":
+                    require_content_update(installed, template)
+                    receipt["previousRelease"] = receipt["outputs"]["Release"]
+                    receipt["previousTemplateSHA256"] = digest(json.dumps(installed, sort_keys=True).encode())
+                else:
+                    assert installed == template, "Installed template differs"
                 outputs = receipt["outputs"]
-                assert outputs["Bucket"] == BUCKET and outputs["Release"] == seal
+                assert outputs["Bucket"] == BUCKET
+                assert args.action == "update" or outputs["Release"] == seal
                 if args.pricing_mode == "free":
                     ppm = s.client("pricing-plan-manager", config=config, endpoint_url="https://pricingplanmanager.us-east-1.api.aws")
                     subscription = ppm.get_subscription(arn=outputs["Subscription"])["subscription"]
@@ -121,7 +138,7 @@ def main():
                 assert distribution_config["Origins"]["Quantity"] == 1
                 origin = distribution_config["Origins"]["Items"][0]
                 assert origin["DomainName"] == f"{BUCKET}.s3.us-east-1.amazonaws.com"
-                assert origin["OriginPath"] == f"/releases/{seal}"
+                assert origin["OriginPath"] == f"/releases/{outputs['Release']}"
                 oac = front.get_origin_access_control(Id=origin["OriginAccessControlId"])["OriginAccessControl"]["OriginAccessControlConfig"]
                 assert oac["SigningBehavior"] == "always" and oac["SigningProtocol"] == "sigv4"
                 assert oac["OriginAccessControlOriginType"] == "s3"
@@ -141,7 +158,8 @@ def main():
                     properties = template["Resources"][logical_id]["Properties"]
                     assert association["FunctionARN"] == f"arn:aws:cloudfront::{ACCOUNT}:function/{properties['Name']}"
                     code = front.get_function(Name=properties["Name"], Stage="LIVE")["FunctionCode"].read()
-                    assert code == properties["FunctionCode"].encode()
+                    expected_code = installed["Resources"][logical_id]["Properties"]["FunctionCode"]
+                    assert code == expected_code.encode()
                     receipt["functions"].append({"name": properties["Name"], "sha256": digest(code), "stage": "LIVE"})
                 policy = json.loads(s3.get_bucket_policy(Bucket=BUCKET)["Policy"])
                 assert len(policy["Statement"]) == 2
@@ -159,7 +177,7 @@ def main():
                     try:
                         head = s3.head_object(Bucket=BUCKET, Key=key, ChecksumMode="ENABLED")
                     except ClientError as e:
-                        if e.response["Error"]["Code"] != "404" or args.action != "upload": raise
+                        if e.response["Error"]["Code"] != "404" or args.action not in ("upload", "update"): raise
                         ext = pathlib.Path(name).suffix
                         mime = {".html": "text/html; charset=utf-8", ".mjs": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8",
                                 ".ttf": "font/ttf", ".txt": "text/plain; charset=utf-8", ".json": "application/json"}[ext]
@@ -169,6 +187,13 @@ def main():
                     assert head.get("ChecksumSHA256") == checksum and head["ContentLength"] == len(data)
                     assert head["ServerSideEncryption"] == "AES256"
                     receipt["objects"].append({"key": key, "sha256": digest(data), "versionId": head["VersionId"]})
+                if args.action == "update":
+                    params = {x["ParameterKey"]: x["ParameterValue"] for x in stack["Parameters"]}
+                    assert params["Enabled"] == "true", "Content update requires existing enabled hosting"
+                    receipt["result"] = cf.update_stack(StackName=STACK, TemplateBody=raw.decode(),
+                        Parameters=[{"ParameterKey": "Release", "ParameterValue": seal},
+                                    {"ParameterKey": "Enabled", "UsePreviousValue": True}],
+                        ClientRequestToken="ecs-portfolio-content-" + str(uuid.uuid4()))
                 if args.action == "enable":
                     params = {x["ParameterKey"]: x["ParameterValue"] for x in stack["Parameters"]}
                     assert params["Enabled"] == "false", "Already enabled; refuse duplicate update"

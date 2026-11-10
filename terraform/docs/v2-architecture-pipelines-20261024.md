@@ -66,7 +66,7 @@ proposed only. USD6 remains a new unapproved proposal; all prior budgets stay cl
 ## SQL-host observer placement selected - 2026-10-26
 
 Owner approved local preparation of the existing SQL host's producer+observer with
-external Sentinel/watchdog; [implementation and acceptance](../../operations/sql-backup/COHOST.md).
+external Sentinel/watchdog; [implementation and acceptance](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/sql-backup/COHOST.md).
 No dedicated observer EC2 or new service is proposed. Package opt-in stages hashed
 files/config, the two timers and a declarative target without starting them; startup
 checks reject drift/expiry and use the same sanitized local producer receipt. A recent
@@ -285,7 +285,7 @@ Esto demuestra ingeniería de entrega, durabilidad, recuperación y observabilid
 | b2 | Creación/retirada TF/TG de 43 recursos, paquete inerte, Lambda/cursor vacíos | SSM terminó AccessDenied/−1 dos veces: cero eventos y cero avisos; productor no activado |
 | Código local | Observador/publicador, integración Sentinel, empaquetado y pruebas específicas | Servicio permanente, CI remota de fuentes privadas y ensayo integrado de extremo a extremo |
 
-Fuentes: [entrega, sección A→B→A](deployment.md#real-sourcetransport-qualification-and-distinct-digest-dev-rollback), [az6, líneas 964 y 1030 en la base revisada](../../operations/sql-backup/recovery/RUNBOOK.md), [b1](../../operations/integrations/NATIVE-TRIAL-2026-10-23.md), [b2 y diagnóstico SSM](../../operations/integrations/NATIVE-TRIAL-2026-10-24.md). Son recibos históricos, no inventario vivo. Todos esos ciclos están cerrados; sus presupuestos no financian otro ensayo.
+Fuentes: [entrega, sección A→B→A](deployment.md#real-sourcetransport-qualification-and-distinct-digest-dev-rollback), [az6, líneas 964 y 1030 en la base revisada](../../operations/sql-backup/recovery/RUNBOOK.md), [b1](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/integrations/NATIVE-TRIAL-2026-10-23.md), [b2 y diagnóstico SSM](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/integrations/NATIVE-TRIAL-2026-10-24.md). Son recibos históricos, no inventario vivo. Todos esos ciclos están cerrados; sus presupuestos no financian otro ensayo.
 
 ## Arquitectura y propiedad
 
@@ -302,7 +302,7 @@ El tráfico actual recorre API Gateway HTTP → VPC Link → ALB interno → Far
 
 El host dedicado de b2 fue un instrumento de prueba, no un nuevo microservicio ni requisito permanente. Recomiendo instalar finalmente las unidades existentes en el SQL activo y conservar Sentinel fuera de ese host: así la falta de señales del host puede ser observable. Una comprobación emitida exclusivamente por el propio host no demuestra detección de su desaparición. El watchdog externo debe cualificarse con su política real antes de anunciar esa capacidad.
 
-La implementación [sentinel-backup](../infra/sentinel-backup/README.md) sigue siendo un sandbox de hasta 24 h. Para operación permanente hay que revisar cadencia, TTL, retención, dedupe y permisos; quitar una fecha de expiración no constituye esa revisión. CloudFormation fue el piloto b1 histórico; no importar sus recursos ya retirados. El diagrama final integrado de demo sigue aplazado hasta E2E; esta revisión no modifica los cinco Archify.
+La implementación [sentinel-backup](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/terraform/infra/sentinel-backup/README.md) sigue siendo un sandbox de hasta 24 h. Para operación permanente hay que revisar cadencia, TTL, retención, dedupe y permisos; quitar una fecha de expiración no constituye esa revisión. CloudFormation fue el piloto b1 histórico; no importar sus recursos ya retirados. El diagrama final integrado de demo sigue aplazado hasta E2E; esta revisión no modifica los cinco Archify.
 
 ## Recuperación SQL bajo demanda
 
@@ -342,7 +342,7 @@ Antes de retirar entradas legacy/inactivas, actualizar su generador, tests de co
 
 - `ci-dotnet.yml` restaura sin `--locked-mode`; introducir lock de dependencias y restauración bloqueada en un cambio dedicado, probar caché vacía/reutilizada y ligar SBOM/procedencia al digest cualificado. No declarar que las pruebas actuales incluyen ese control.
 - Mantener análisis IaC existente y resolver sus hallazgos por severidad/alcance. No rebajar el gate para que quede verde. La revisión de [E14-B](e14b-toolchain-reproducibility.md) sigue sin el recibo original necesario para normalizar cinco diferencias h1; copiar hashes no corrige el generador.
-- Mantener AWS5.100 en roots originales y AWS6.27 en el root Sentinel aislado mientras se cualifica una migración deliberada. Su [schema y firma](../infra/sentinel-backup/provider-qualification.json) acreditan dotnet10 local; no inferir compatibilidad por el número de .NET. Calificar Linux y fuente privada Sentinel reproducible para CI, sin tokens en artefactos.
+- Mantener AWS5.100 en roots originales y AWS6.27 en el root Sentinel aislado mientras se cualifica una migración deliberada. Su [schema y firma](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/terraform/infra/sentinel-backup/provider-qualification.json) acreditan dotnet10 local; no inferir compatibilidad por el número de .NET. Calificar Linux y fuente privada Sentinel reproducible para CI, sin tokens en artefactos.
 - Tratar SQL `TrustServerCertificate=True`, ALB HTTP interno, migraciones al arrancar con permisos amplios y acceso público sencillo como límites explícitos del laboratorio. No introducir PKI de microservicios para corregirlos: no hay llamadas de negocio HTTP internas entre dos servicios. Priorizar principal de runtime SQL separado del migrador y compatibilidad de esquema para blue/green en un cambio posterior.
 - Sentinel: probar duplicados/reintentos/UNKNOWN/recuperación y estados terminales reales de outbox. Efectos de probes no soportados deben seguir visibles o recibir una clasificación explícita sin ejecución; nunca marcar ejecutado para declarar drenaje. Ningún evento backup debe ejecutar ni encolar reparación NAT. ACK sólo según persistencia/aceptación del contrato; Publish aceptado no es entrega inbox.
 - SSM b2 tiene fallo de autorización previo a ejecución, **causa exacta no demostrada**. El suplemento probado no lo resolvió. La siguiente propuesta debe aportar trazas permitidas que identifiquen la evaluación denegada antes de otro cambio IAM. Una secuencia de arranque inmutable puede simplificar futuros ensayos, pero es un diseño nuevo revisable, no una ruta para repetir el comando denegado.

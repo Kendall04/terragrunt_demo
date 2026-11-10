@@ -6,7 +6,7 @@ El bloque Sentinel29/USD6/102 descrito abajo es histórico y no está admitido.
 El backend nuevo tiene62 direcciones mock; la suma aritmética con los otros TARGET73
 sería135, no un plan integrado ni un selector materializado. El opt-in de la unidad
 protegida nueva sigue sujeto a revisión/instalación. Preservar archivos/ZIP antiguos.
-Ver [alcance nativo actualizado y límites](../../integrations/portable/NATIVE-NEXT-GATE.md).
+Ver [alcance nativo actualizado y límites](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/integrations/portable/NATIVE-NEXT-GATE.md).
 Ninguna autoridad nueva ni ejecución AWS.
 
 
@@ -27,7 +27,7 @@ create/test/retire permission packet remain required before any fresh cloud cycl
 
 Current wiring/access addendum: [actual SQL opt-in and original external watchdog](COHOST-WIRING-REVIEW.md), including exact SQS/artifact deltas, phase guards and revised grouped-decision wording. Historical sealed ZIP is unchanged; this does not admit theUSD6 cycle. Recommended finite trial observer cadence is300s/deadline1200s; the earlier60s paragraph below is historical, not an installed setting.
 
-Placement update 2026-10-26: [cohost package/units and external UNKNOWN watchdog](../COHOST.md) now have local fixture acceptance. No separate observer EC2 is proposed; the102-address forecast already excluded it and is unchanged. This does not resolve SSM, install bootstrap or admit the cycle. The historical sealed proposal and native evidence remain immutable.
+Placement update 2026-10-26: [cohost package/units and external UNKNOWN watchdog](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/sql-backup/COHOST.md) now have local fixture acceptance. No separate observer EC2 is proposed; the102-address forecast already excluded it and is unchanged. This does not resolve SSM, install bootstrap or admit the cycle. The historical sealed proposal and native evidence remain immutable.
 
 Local implementation update: [four wiring fixes and actual .NET10 image qualification](LOCAL-WIRING-QUALIFICATION.md). The preparation gaps described below record the original planning checkpoint; the four code changes and local image smoke have now passed. Native AWS/SSM/release installation gates remain. Original sealed proposal ZIP is preserved unchanged.
 

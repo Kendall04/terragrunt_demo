@@ -4,8 +4,8 @@ export const scenarios = {
     label: "NAT A · 6 NOV 2026",
     metric: "2m 29.191s",
     metricLabel: "Despacho → primera confirmación HTTPS",
-    note: "Reproducción visual de evidencia histórica. No inicia fallos ni controla AWS. Sentinel observa; ASG/E13 recupera. No hubo correo de caída: la escalación se canceló al recuperarse.",
-    diagram: "v2-nat-incident",
+    note: "Reproducción visual de evidencia histórica. No inicia fallos ni controla AWS. ASG/E13 recupera. Las mediciones proceden del ensayo fechado; la monitorización Sentinel pertenece al archivo histórico.",
+    diagram: "ecs-network",
     steps: [
       [
         "17:01:02.357",
@@ -20,33 +20,9 @@ export const scenarios = {
         "failure",
       ],
       [
-        "17:02:01.473",
-        "Incidente persistido",
-        "Sentinel escribe la revisión 783: RECOVERING. La evidencia es duradera.",
-        "event",
-      ],
-      [
-        "17:02:53.758",
-        "Observación Unknown",
-        "Throttling de la sonda. Información insuficiente; no se declara salud ni una segunda caída.",
-        "unknown",
-      ],
-      [
         "17:03:31.549",
         "Egreso recuperado",
         "ASG/E13 repone NAT, EIP, ruta y SDC. La guardia confirma HTTPS con la misma EIP.",
-        "success",
-      ],
-      [
-        "17:03:56.771",
-        "Incidente resuelto",
-        "Sonda programada saludable; Sentinel persiste la resolución en revisión 785.",
-        "success",
-      ],
-      [
-        "17:04:30",
-        "Correo recibido",
-        "Notificación de resolución verificada en Gmail. SNS ACK por sí solo no probaría recepción.",
         "success",
       ],
     ],
@@ -57,7 +33,7 @@ export const scenarios = {
     metric: "24m 42.6s",
     metricLabel: "RTO SAME-AZ observado · incluye reboot",
     note: "CROSS-AZ: 41m31.5s incluyendo reparaciones. No es failover automático, SLA ni prueba de RPO cero ante pérdida abrupta. Se conservaron discos y backups.",
-    diagram: "v2-sql-recovery",
+    diagram: "ecs-sql-recovery",
     steps: [
       [
         "01",
@@ -98,53 +74,25 @@ export const scenarios = {
     ],
   },
   backup: {
-    title: "El silencio también es una señal.",
-    label: "BACKUPS · 6 NOV 2026",
-    metric: "31m 58s",
-    metricLabel: "Correo de escalación → correo de resolución",
-    note: "Ensayo real de productor pausado, no mensajes de fallo fabricados. Observación externa cada 15 min. Los dos correos comparten IncidentId y se verificaron en INBOX.",
-    diagram: "v2-sentinel",
+    title: "Un backup existe cuando se puede verificar.",
+    label: "SQL · PRODUCTOR HORARIO",
+    metric: "1 hora",
+    metricLabel: "Cadencia del timer nativo",
+    note: "El 10 nov 2026 se verificó una versión S3 mediante RESTORE VERIFYONLY WITH CHECKSUM. No se repitió un restore completo. No hay monitor Sentinel operativo en ECS.",
+    diagram: "ecs-sql-recovery",
     steps: [
-      [
-        "01",
-        "Productor interrumpido",
-        "Pausa controlada del servicio de backups. Los datos SQL siguen intactos.",
-        "failure",
-      ],
-      [
-        "02",
-        "Evidencia pierde frescura",
-        "Un backup existente no acredita un backup reciente. El observador evalúa edad y artefacto.",
-        "failure",
-      ],
-      [
-        "07:58:29",
-        "Escalación recibida",
-        "Sentinel evalúa, persiste, archiva mediante SSE-KMS y notifica el incidente.",
-        "event",
-      ],
-      [
-        "04",
-        "Productor recuperado",
-        "Se restaura el servicio y aparece un nuevo backup verificable.",
-        "success",
-      ],
-      [
-        "08:30:27",
-        "Resolución recibida",
-        "El observador confirma frescura; se resuelve el mismo incidente y llega el correo.",
-        "success",
-      ],
+      ["01", "Crear la copia", "sql-backup.timer ejecuta el productor local con credenciales separadas del runtime.", "event"],
+      ["02", "Comprobar SQL", "COPY_ONLY y CHECKSUM. El proceso verifica el backup antes de publicarlo.", "event"],
+      ["03", "Publicar una pareja", "database.bak y manifest.json tienen versiones S3 exactas, SHA-256 y SSE-KMS.", "success"],
+      ["04", "Proteger la retención", "Siete días para versiones admitidas; las dos parejas recientes y los restore holds se conservan. La admisión requiere mantenimiento explícito.", "event"],
+      ["05", "Verificar recuperabilidad", "VERIFYONLY WITH CHECKSUM verifica la copia. Los ensayos fríos SAME-AZ/CROSS-AZ probaron además restore y CHECKDB.", "success"],
     ],
   },
 };
 export const facts = [
   ["API real", "POST /text → SQL/KMS → GET /text", "DEMOSTRADO"],
+  ["CD DEV", "Merge → CI → ECR → ECS blue/green", "DEMOSTRADO"],
   ["SQL frío", "SAME-AZ y CROSS-AZ desde EC2 nueva", "DEMOSTRADO"],
-  ["Sentinel", "Incidente, journal, archivo SSE-KMS e inbox", "DEMOSTRADO"],
-  [
-    "Vigilancia prolongada",
-    "Seguimiento independiente; no se extrapolan 24 h",
-    "NO VALIDADO",
-  ],
+  ["TLS estricto", "CA DEV definitiva, validated-v2 sin puente temporal", "DEMOSTRADO"],
+  ["PROD", "No instalado ni validado como entrega automática", "NO VALIDADO"],
 ];

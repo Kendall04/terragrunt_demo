@@ -32,7 +32,7 @@ REVIEWED_WINDOWS_LAYERS = ('shared','global','data','platform','apps','edge')
 WINDOWS_H1 = 'h1:H3mU/7URhP0uCRGK8jeQRKxx2XFzEqLiOq/L2Bbiaxs='
 ORIGIN_RECEIPT = 'operations/sql-backup/recovery/provider-origin-verification.json'
 ORIGIN_RECEIPT_SHA256 = 'c1f2da389f1954de8cb2e9b06a9c456055bba7653b89a14f3383aecf164ad3e4'
-SENTINEL_LOCK = 'terraform/infra/sentinel-backup/.terraform.lock.hcl'
+SENTINEL_LOCK = 'scripts/tests/reproducibility/fixtures/sentinel-retired.lock.txt'
 SENTINEL_LOCK_SHA256 = 'be1182b2f765f01c210a0d1327471dd5cd3cc316acd9f11edb8c959888b5fe3d'
 
 
@@ -165,13 +165,9 @@ class ReproducibilityTests(unittest.TestCase):
         expected = {f'terraform/modules/target/{env}/{layer}/.terraform.lock.hcl'
                     for env in ('dev', 'prod') for layer in LAYERS}
         expected.add('terraform/infra/security/.terraform.lock.hcl')
-        expected.add(SENTINEL_LOCK)
         actual = {path.relative_to(ROOT).as_posix() for path in (ROOT / 'terraform').rglob('.terraform.lock.hcl')}
         self.assertEqual(actual, expected)
         for name in sorted(expected):
-            if name==SENTINEL_LOCK:
-                reviewed_sentinel_lock((ROOT/name).read_bytes())
-                continue # Exact separate root; its Windows/schema proof is not Linux init.
             text = (ROOT / name).read_text()
             blocks = re.findall(r'provider "registry.terraform.io/hashicorp/(\w+)" \{([^}]+)\}', text)
             aws_only = name == 'terraform/infra/security/.terraform.lock.hcl' or name in {

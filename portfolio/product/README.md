@@ -1,5 +1,11 @@
 # ECS V2 · Product Demo & Architecture Explorer
 
+Current collection: five ECS views plus twelve historical snapshots, including
+Sentinel. [Current atlas](../../docs/interactive/CURRENT-INDEX.md) and
+[separation record](../../docs/history/SENTINEL-SEPARATION.md) define the scope.
+The public DEMO remains independent of runtime, SQL and monitoring.
+
+
 Experiencia principal del portafolio ECS: texto cifrado, resiliencia y arquitectura.
 La DEMO pública funciona con AWS apagado. AWS Edition es una herramienta local
 supervisada, **no una web pública autenticada**.

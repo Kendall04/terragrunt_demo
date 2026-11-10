@@ -526,7 +526,7 @@ footer a {
   font-weight: 600;
   letter-spacing: -0.03em;
 }
-.sentinel-feature {
+.delivery-feature {
   display: grid;
   grid-template-columns: 1.3fr 1fr;
   gap: 9%;
@@ -541,16 +541,16 @@ footer a {
   margin: 24px 0;
   max-width: 52ch;
 }
-.sentinel-chain {
+.delivery-chain {
   align-self: center;
 }
-.sentinel-chain > div {
+.delivery-chain > div {
   display: flex;
   gap: 24px;
   align-items: flex-start;
   padding: 22px 0;
 }
-.sentinel-chain > div + div {
+.delivery-chain > div + div {
   border-top: 1px solid #3a3b55;
 }
 .chain-number {
@@ -558,11 +558,11 @@ footer a {
   font-size: 1.6rem;
   line-height: 1;
 }
-.sentinel-chain h3 {
+.delivery-chain h3 {
   font-size: 1.2rem;
   margin-bottom: 8px;
 }
-.sentinel-chain p {
+.delivery-chain p {
   font-size: 0.85rem;
 }
 .explore-stories {
@@ -1257,7 +1257,7 @@ textarea::placeholder {
     flex-wrap: wrap;
     gap: 6px;
   }
-  .sentinel-feature {
+  .delivery-feature {
     padding: 40px;
     gap: 45px;
   }
@@ -1335,11 +1335,11 @@ textarea::placeholder {
   .measurement-list {
     gap: 20px 35px;
   }
-  .sentinel-feature {
+  .delivery-feature {
     grid-template-columns: 1fr;
     gap: 30px;
   }
-  .sentinel-chain {
+  .delivery-chain {
     display: grid;
     grid-template-columns: 1fr;
     gap: 0;
@@ -1539,10 +1539,10 @@ textarea::placeholder {
   .measurement-list dt {
     font-size: 0.72rem;
   }
-  .sentinel-feature {
+  .delivery-feature {
     padding: 28px 22px;
   }
-  .sentinel-feature h2 {
+  .delivery-feature h2 {
     font-size: 1.75rem;
   }
   .feature-copy p {

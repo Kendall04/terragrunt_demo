@@ -1,5 +1,8 @@
 # ECS V2: atlas técnico de DEV
 
+> Current ECS architecture: [CURRENT-INDEX.md](CURRENT-INDEX.md). This atlas is a preserved historical snapshot; Sentinel is now independent and DEV CD is automatic.
+
+
 Revisión de implementación: `5d35edef4f2ee1c0463df483d22745d13cae47cd`.
 Inventario AWS de solo lectura: **6 noviembre 2026, 23:13:40 UTC**,
 cuenta `341936017254`, `us-east-1`. Estas vistas son fotografías fechadas,
