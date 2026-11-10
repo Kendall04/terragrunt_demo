@@ -98,6 +98,32 @@ class ReleaseTests(unittest.TestCase):
 
 
 class RuntimeTests(unittest.TestCase):
+    def test_candidate_settles_before_unchanged_sql_kms_gate(self):
+        from unittest.mock import Mock
+        for stable in (True, False):
+            with self.subTest(stable=stable):
+                ecs = Mock(); waiter = ecs.get_waiter.return_value
+                if not stable: waiter.wait.side_effect = TimeoutError('two ECS deployments remain')
+                port = aws.Runtime({'ecs':ecs,'elbv2':Mock()},config(),'operation',Path('.'))
+                port.started = int(port.deadline - 1800)
+                port.journal = Mock(); port.tasks = Mock(return_value=['candidate-task'])
+                def gate(*args, **kwargs):
+                    waiter.wait.assert_called_once()
+                    return subprocess.CompletedProcess(args, 0, b'SQL/KMS ready', b'')
+                with patch('subprocess.run', side_effect=gate) as run:
+                    if stable:
+                        port.ready('green','revision',record()['image'],'blue')
+                        run.assert_called_once()
+                        self.assertEqual(port.cohort,['candidate-task'])
+                    else:
+                        with self.assertRaises(TimeoutError):port.ready('green','revision',record()['image'],'blue')
+                        run.assert_not_called(); port.tasks.assert_not_called()
+                ecs.get_waiter.assert_called_once_with('services_stable')
+                kwargs = waiter.wait.call_args.kwargs
+                self.assertEqual(kwargs['services'],[config()['colors']['green']['service']['service']])
+                self.assertEqual(kwargs['cluster'],config()['colors']['green']['service']['cluster'])
+                self.assertLessEqual(kwargs['WaiterConfig']['MaxAttempts']*5,1800)
+
     def test_metadata_and_UpdateService_keyword_remain_valid(self):
         expected=authorization_task(config()['colors']['blue']);actual=copy.deepcopy(expected)
         actual.update(taskDefinitionArn=f'arn:aws:ecs:{REGION}:{ACCOUNT}:task-definition/{expected["family"]}:2',revision=2,status='ACTIVE',

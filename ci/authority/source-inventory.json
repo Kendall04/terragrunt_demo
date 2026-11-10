@@ -14084,11 +14084,11 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/api_delivery/aws.py": {
-      "sha256": "40e346a53f5d03d59036d95faa207d4d1d8722ebcaf5fa02c76260942236bbde",
+      "sha256": "0930c3e3703f5f34eb066c27d44c3447ac45773d5d82ef99748b10bc6a4f0a5b",
       "declarations": [],
       "signals": {
         "role-input": [
-          334
+          342
         ],
         "launch-or-mutation": [
           24,
@@ -14108,33 +14108,34 @@
           162,
           181,
           217,
-          250,
-          252,
-          263,
-          287,
-          299,
-          304,
-          319,
-          323,
-          366,
-          391,
-          397,
-          401,
-          408,
-          411,
-          422,
-          424,
-          435,
-          444
+          235,
+          258,
+          260,
+          271,
+          295,
+          307,
+          312,
+          327,
+          331,
+          374,
+          399,
+          405,
+          409,
+          416,
+          419,
+          430,
+          432,
+          443,
+          452
         ],
         "executable-dependency": [
           202,
           220,
-          230,
-          242,
-          245,
-          428,
-          432
+          238,
+          250,
+          253,
+          436,
+          440
         ]
       },
       "semantic_status": "CURRENT_FACT"
@@ -14390,22 +14391,23 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/api_delivery/test_simple_delivery.py": {
-      "sha256": "120bb82018ae1f964c6b462de86ca8049ea5ed1eb4d24ba91a1cf2602528e4a8",
+      "sha256": "04221f679aa1cb7c27f389e25009de14159dc457ffa8edb6c72bb79534d7a0f5",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           13,
-          103,
-          106,
-          109,
-          113,
-          131,
-          138,
-          141
+          107,
+          129,
+          132,
+          135,
+          139,
+          157,
+          164,
+          167
         ],
         "executable-dependency": [
           53,
-          143
+          169
         ],
         "security-control": [
           40
