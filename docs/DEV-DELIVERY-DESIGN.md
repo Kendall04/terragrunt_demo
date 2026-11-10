@@ -1,8 +1,12 @@
 # Automatic API delivery: one executor, two environments
 
-Implemented replacement, **not activated**. Terraform and CloudFront retain their
-own lifecycles. The current DEV installation was bootstrapped manually; it is not
-evidence of successful automatic delivery. PROD resources are not qualified.
+**DEV implemented and running. PROD disabled and unqualified.** First automatic
+DEV delivery: [run 42751096835](https://github.com/Kendall04/terragrunt_demo/actions/runs/42751096835).
+CA-only TLS delivery: [run 42761946295/2](https://github.com/Kendall04/terragrunt_demo/actions/runs/42761946295/attempts/2).
+Terraform and CloudFront retain separate lifecycles. The original manual bootstrap
+is not counted as an automatic deployment. The approved administrative handover
+fenced legacy writers; historical E2 remains intact and is not delivery authority.
+Sentinel is not a dependency of this executor.
 
 ## Design decision
 

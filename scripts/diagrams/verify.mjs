@@ -16,7 +16,7 @@ export function validateGraph(spec) {
     assert.ok(n.sources.length>0 && n.sources.length<=3,'Source required');
     for(const s of n.sources){
       assert.ok(!s.path.includes('..') && !path.isAbsolute(s.path) && !s.path.includes('\\'),'Repository source path');
-      assert.ok(s.line>=1 && s.end_line>=s.line,'Source range');
+      assert.ok(s.line>=1 && (s.end_line??s.line)>=s.line,'Source range');
     }
   }
   const edges=spec.connections??[];
@@ -54,7 +54,10 @@ export async function verify() {
     assert.equal(sha(f.text),f.fragmentLfSha256,key+' fragment');
     assert.equal(f.text.trimEnd().split('\n').length<=f.endLine-f.line+1,true);
   }
-  for(const [p,hash] of Object.entries(trace.implementationFiles))assert.equal(sha(lf(await read(p))),hash,'Implementation changed: review diagram claim: '+p);
+  const archived=await json('docs/interactive/evidence/HISTORICAL-IMPLEMENTATION.json');
+  assert.equal(archived.diagramSourceRevision,trace.revision);
+  assert.deepEqual(Object.keys(archived.files),Object.keys(trace.implementationFiles));
+  for(const [p,hash] of Object.entries(trace.implementationFiles))assert.equal(sha(archived.files[p]),hash,'Historical source bytes: '+p);
   for(const [id,hash] of Object.entries(manifest.legacyHtmlSha256)){
     assert.equal(sha(await read('docs/interactive/'+id+'.html')),hash,'Historical HTML must remain intact');
     const historical=await read('docs/interactive/source/'+id+'.json');

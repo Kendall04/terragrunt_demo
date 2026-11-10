@@ -71,31 +71,15 @@ variable "recovery_target_subnet_id" {
 
 variable "protected_sql_ami" { type = string }
 
-# Proposed explicit install only. Protected source/runtime admission must be renewed
-# before use; ordinary callers have no new installed authority from this declaration.
+# Compatibility tombstone: fail closed on historical Sentinel/cohost inputs.
+# SQL backups use the independent native installer, not this retired hook.
 variable "sql_backup_cohost" {
-  default = null
-  type = object({
-    artifact                           = object({ Bucket = string, Key = string, VersionId = string, Sha256 = string, BucketKeyEnabled = bool })
-    backup                             = object({ Database = string, StagingDirectory = string, RestoreDirectory = string, Bucket = string, Prefix = string, BackupKeyArn = string, TextKeyArn = string, ExpectedEc2RoleName = string, MaxBackupBytes = number, FreeReserveBytes = number, TimeoutSeconds = number, ProposedIntervalHours = number, ProposedRetentionDays = number, ProposedMaxAgeHours = number, RetainLocalVerifiedBackups = number })
-    sentinel                           = object({ SchemaVersion = number, Placement = string, Account = string, Region = string, RunId = string, Subject = string, StartsAt = string, ExpiresAt = string, CadenceSeconds = number, ReminderSeconds = number, PublishAttempts = number, WatchdogSeconds = number, ExpectedUp = bool, Portable = optional(object({ SchemaVersion = number, ContractSha256 = string })) })
-    enable_after_native_gates          = optional(bool, false)
-    enable_producer_after_native_gates = optional(bool, false)
-  })
+  description = "Retired Sentinel integration; only null is accepted."
+  type        = any
+  default     = null
   validation {
-    condition = var.sql_backup_cohost == null ? true : (
-      length(base64encode(jsonencode(var.sql_backup_cohost))) <= 4096 &&
-      (!var.sql_backup_cohost.enable_producer_after_native_gates || var.sql_backup_cohost.enable_after_native_gates) &&
-      var.sql_backup_cohost.sentinel.Account == var.account_id && var.sql_backup_cohost.sentinel.Region == var.region &&
-      var.sql_backup_cohost.sentinel.Placement == "SQL_HOST" &&
-      var.sql_backup_cohost.backup.ExpectedEc2RoleName == "demo-dev-data-sql-ec2-role" &&
-      var.sql_backup_cohost.artifact.Bucket == var.sql_backup_cohost.backup.Bucket &&
-      !var.sql_backup_cohost.artifact.BucketKeyEnabled &&
-      can(regex("^[a-f0-9]{64}$", var.sql_backup_cohost.artifact.Sha256)) &&
-      var.sql_backup_cohost.artifact.VersionId != "null" && length(var.sql_backup_cohost.artifact.VersionId) > 0 &&
-      var.sql_backup_cohost.artifact.Key == "terragrunt-demo/dev/sql-backup-artifacts/${var.sql_backup_cohost.sentinel.RunId}/${var.sql_backup_cohost.artifact.Sha256}/SqlBackup.tar"
-    )
-    error_message = "Exact SQL-host/account/region and immutable, non-bucket-key package required. Native admission remains separate."
+    condition     = var.sql_backup_cohost == null
+    error_message = "Sentinel cohost is retired. Use the independent native SQL backup installer."
   }
 }
 

@@ -34,7 +34,7 @@ export async function staticFiles() {
     for (const route of [
       "/diagrams/" + d.id + ".html",
       "/sources/" + d.id + ".json",
-      ...(!d.historical ? ["/reading/" + d.id + ".html"] : []),
+      ...(d.reading ? ["/reading/" + d.id + ".html"] : []),
     ]) {
       const asset = await diagramAsset(route);
       files.set(route.slice(1), Buffer.from(asset.body));

@@ -30,6 +30,17 @@ NON_BASELINE_REVIEW_INPUTS = {
 }
 
 
+def retired_source(root, name):
+    """Authenticated text fixture only; never an operational/accepted IaC root."""
+    root=Path(root)
+    sources=json.loads((root/'scripts/tests/authority/fixtures/retired-sentinel-sources.json').read_text())
+    manifest=json.loads((root/'ci/authority/retired-sentinel.json').read_text())
+    text=sources[name]
+    if hashlib.sha256(text.encode()).hexdigest()!=manifest['files'][name]['sha256']:
+        raise ValueError('Retired source fixture drift: '+name)
+    return text
+
+
 def historical_inputs(root):
     from inventory import scan
     for name in scan(root):

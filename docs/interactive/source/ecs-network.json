@@ -1,0 +1,348 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "ECS V2 · dos AZ, NAT ASG y recuperación E13",
+    "locale": "es",
+    "output": "docs/interactive/ecs-network.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/Kendall04/terragrunt_demo.git",
+      "revision": "528a583d4f74ccd0368cf00929b7315d582cdb35",
+      "link_mode": "web"
+    }
+  },
+  "components": [
+    {
+      "id": "privatea",
+      "type": "backend",
+      "label": "Privada A · 10.0.100.0/24",
+      "sublabel": "Fargate elegible · sin sonda Sentinel",
+      "pos": [
+        60,
+        60
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "terraform/modules/target/dev/global/modules/vpc/route_tables.tf",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "routea",
+      "type": "cloud",
+      "label": "Ruta privada A",
+      "sublabel": "0.0.0.0/0 → ENI NAT A",
+      "pos": [
+        60,
+        300
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "terraform/modules/target/dev/global/modules/vpc/route_tables.tf",
+          "line": 32,
+          "end_line": 49
+        },
+        {
+          "path": "scripts/recovery/nat.py",
+          "line": 65,
+          "end_line": 95
+        }
+      ]
+    },
+    {
+      "id": "nata",
+      "type": "cloud",
+      "label": "NAT A · pública A",
+      "sublabel": "10.0.0.0/24 · ASG = 1",
+      "pos": [
+        60,
+        540
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "terraform/modules/target/dev/global/wp5-nat.tf.json",
+          "line": 1,
+          "end_line": 28
+        }
+      ]
+    },
+    {
+      "id": "privateb",
+      "type": "backend",
+      "label": "Privada B · 10.0.101.0/24",
+      "sublabel": "SQL + tarea blue actuales",
+      "pos": [
+        470,
+        60
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "docs/V2-RECOVERY-SECURITY-20261105.md",
+          "line": 282,
+          "end_line": 324
+        }
+      ]
+    },
+    {
+      "id": "routeb",
+      "type": "cloud",
+      "label": "Ruta privada B",
+      "sublabel": "0.0.0.0/0 → ENI NAT B",
+      "pos": [
+        470,
+        300
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "terraform/modules/target/dev/global/modules/vpc/route_tables.tf",
+          "line": 32,
+          "end_line": 49
+        },
+        {
+          "path": "scripts/recovery/nat.py",
+          "line": 65,
+          "end_line": 95
+        }
+      ]
+    },
+    {
+      "id": "natb",
+      "type": "cloud",
+      "label": "NAT B · pública B",
+      "sublabel": "10.0.1.0/24 · ASG = 1",
+      "pos": [
+        470,
+        540
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "terraform/modules/target/dev/global/wp5-nat.tf.json",
+          "line": 1,
+          "end_line": 28
+        }
+      ]
+    },
+    {
+      "id": "igw",
+      "type": "cloud",
+      "label": "Internet Gateway",
+      "sublabel": "Ruta pública compartida",
+      "pos": [
+        880,
+        540
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "terraform/modules/target/dev/global/modules/vpc/route_tables.tf",
+          "line": 1,
+          "end_line": 28
+        }
+      ]
+    },
+    {
+      "id": "endpoints",
+      "type": "external",
+      "label": "AWS APIs / Internet",
+      "sublabel": "Salida HTTPS mediante IGW",
+      "pos": [
+        880,
+        300
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "terraform/modules/target/dev/global/modules/vpc/route_tables.tf",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "e13",
+      "type": "backend",
+      "label": "ASG + E13",
+      "sublabel": "EIP, ruta y SDC · independiente",
+      "pos": [
+        470,
+        800
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "scripts/tests/security_root/wp4d.py",
+          "line": 980,
+          "end_line": 1007
+        },
+        {
+          "path": "scripts/wp4d/nat_resolver.py",
+          "line": 59,
+          "end_line": 90
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "privatea-routea",
+      "from": "privatea",
+      "to": "routea",
+      "label": "Egreso A",
+      "variant": "default"
+    },
+    {
+      "id": "routea-nata",
+      "from": "routea",
+      "to": "nata",
+      "label": "ENI activa",
+      "variant": "default"
+    },
+    {
+      "id": "privateb-routeb",
+      "from": "privateb",
+      "to": "routeb",
+      "label": "Egreso B",
+      "variant": "default"
+    },
+    {
+      "id": "routeb-natb",
+      "from": "routeb",
+      "to": "natb",
+      "label": "ENI activa",
+      "variant": "default"
+    },
+    {
+      "id": "nata-igw",
+      "from": "nata",
+      "to": "igw",
+      "label": "EIP A",
+      "variant": "default"
+    },
+    {
+      "id": "natb-igw",
+      "from": "natb",
+      "to": "igw",
+      "label": "EIP B",
+      "variant": "default"
+    },
+    {
+      "id": "igw-endpoints",
+      "from": "igw",
+      "to": "endpoints",
+      "label": "HTTPS",
+      "variant": "default"
+    },
+    {
+      "id": "e13-nata",
+      "from": "e13",
+      "to": "nata",
+      "label": "Repara A",
+      "variant": "dashed"
+    },
+    {
+      "id": "e13-natb",
+      "from": "e13",
+      "to": "natb",
+      "label": "Repara B",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "slate",
+      "title": "Estado y lectura",
+      "items": [
+        "Implementación y evidencia DEV al 10 nov 2026. PROD no está instalado ni validado.",
+        "Datos/control en gris; seguridad en rosa. Las respuestas son implícitas.",
+        "Sentinel se separó: sus recursos AWS pendientes de retiro no participan en este flujo."
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Límites reales",
+      "items": [
+        "E13 repone ENI/ruta/EIP/SDC; Sentinel nunca creó las NAT.",
+        "Dos NAT no implican SQL multizona ni una API de varias réplicas.",
+        "El ensayo histórico recuperó HTTPS en 2m29.191s; no es un SLA."
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "DEV VPC · 10.0.0.0/16 · us-east-1",
+      "wraps": [
+        "privatea",
+        "routea",
+        "nata",
+        "privateb",
+        "routeb",
+        "natb"
+      ],
+      "pad": 55
+    },
+    {
+      "kind": "region",
+      "label": "AZ A · us-east-1a",
+      "wraps": [
+        "privatea",
+        "routea",
+        "nata"
+      ],
+      "pad": 22
+    },
+    {
+      "kind": "region",
+      "label": "AZ B · us-east-1b",
+      "wraps": [
+        "privateb",
+        "routeb",
+        "natb"
+      ],
+      "pad": 22
+    }
+  ]
+}

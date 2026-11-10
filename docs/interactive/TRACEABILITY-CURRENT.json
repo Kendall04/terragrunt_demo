@@ -1,0 +1,37 @@
+{
+  "revision": "528a583d4f74ccd0368cf00929b7315d582cdb35",
+  "meaning": "Current implementation freshness at separation; hashes are review anchors, not live AWS telemetry",
+  "filesLfSha256": {
+    "docs/V2-TRUST-AND-THREATS.md": "a7cd67bca2f8f0d97cda3e5de86adbfdd550786127b678488d0240adeb09651d",
+    "terraform/modules/target/dev/edge/modules/apigateway/apigw_http.tf": "d4d8455a726948d7fb289a40016ba18c1ca01a7075bea3d938ef5879796c81da",
+    "demo-api/terragrunt-demo/Services/IEncryptionService.cs": "0ee50d6d169ce89185246b4df2f5328cb3dfef827899443de6523587c54fe4b3",
+    "terraform/modules/target/dev/apps/modules/ecs_service/taskdef.tf": "6a32e787f439db8a68419b23240415f708e465b5d8dae5f991a4828a0cf7f0a7",
+    "terraform/modules/target/dev/edge/modules/vpc_link/vpc_link.tf": "bdd6975246e05cfb07b0736035fee03ce8b64f760c6c1a2755c998b7bf471e20",
+    "terraform/modules/target/dev/global/modules/alb/alb.tf": "5839265d66ded9bf4c1469d955c6ed7ea421ccb0771c86e44ff3e1745626ac43",
+    "terraform/modules/target/dev/apps/modules/ecs_service/service.tf": "d2f062a4ef41ba2437b52f6274856e9a82104e8410b9724b1d9de0e76e1b5262",
+    "docs/V2-RECOVERY-SECURITY-20261105.md": "a2377034e59873c4bb7f0343bb17617bbda8b9d8deb760996d5e6aab4d2cec3a",
+    "operations/sql-backup/SqlBackup/Program.cs": "c90b8d7485f77d26333a357639a5a83f6e79462ece2767a54d2e1973e7e9edc1",
+    "terraform/modules/target/dev/global/modules/vpc/route_tables.tf": "0236f299aa538736af886fa3d4c07c6b0cdb0b445f8ada85036f72fee4195b78",
+    "scripts/recovery/nat.py": "b0aa7fb01dd1c470925126514bc82fc2139f244368434c57eda8f1488c3efb27",
+    "terraform/modules/target/dev/global/wp5-nat.tf.json": "9a4ec0fea0b78691c8682d01cf928cb6b5e199abd3724cf767676d448da90390",
+    "scripts/tests/security_root/wp4d.py": "08277c08a806b34f496323beeb37d24e4557218eaee5a6caaf6d64e6047ad20a",
+    "scripts/wp4d/nat_resolver.py": "04c419bedf5627c5e8832dbb439f9e70340fea04d9f1fad72c25de224f1d692e",
+    "operations/sql-backup/sql-backup.timer.in": "832097e3e5a746d19bb8a8d4399d32609dedc3bdbcca95eba3ed15492514c49a",
+    "operations/sql-backup/recovery/NATIVE-RECOVERY.md": "a1d7e1259eccf5d82d058742ad8637969fecd108bfe4285e7c0b5362b285bdce",
+    "docs/SENTINEL-CHAOS-20261106.md": "45c73a73202270282f2c2ba73d62d9d71d97a400cd0bca193fabc04de47297e3",
+    "demo-api/terragrunt-demo/Data/RuntimeDatabasePermissions.cs": "4f1a7213490ce1acd05edef4971d7eb724cfc678319f065cb5b682d1d6733e98",
+    ".github/workflows/api-delivery.yml": "f1ca32d6701bf4d7d3f538b0dc863969029e33f336b144ea9a7685b6c652e469",
+    "scripts/api_delivery/cli.py": "cbe70e932f19ec026079fc6e424048788c783861e50a94c7018452af1f33f535",
+    "scripts/api_delivery/executor.py": "75cfd29f860758ef3ea8c49bbf98fb0e860d51ff88cfb15a751cfc4c76c1a722",
+    "scripts/api_delivery/aws.py": "1ed33e9550e5eb79020a68f732b0c8423136ab2b42af0f1cc4acb0f9e22c88ae",
+    "scripts/ecs-readiness-gate.sh": "e809c9c9e4e21d40859313fd880ec90e5786bd0420e81adbed46f06b64c00c3a",
+    "scripts/api_delivery/state.py": "21afae3bd47c2fac3d56e518e5347141b3a37e58f53e0880f21ed0d62f41a02e",
+    ".github/workflows/api-promotion.yml": "7d1baafcd5f8f96747d6a6f0b263e08b4d1bdfd200c17d931b3b7bced9b4da0c",
+    "demo-api/deploy/sql-trust/dev-ca-manifest.json": "9f04ea49171987408ee8823936973c6f985b25e108f697836361b6c21b9a3391",
+    "demo-api/deploy/sql-trust/entrypoint.sh": "e9b707f5ce0e6ed982ad5f6c9b6e481983614799131c351a5f5f1eb1f615f9a6"
+  },
+  "awsEvidence": [
+    "https://github.com/Kendall04/terragrunt_demo/actions/runs/42751096835",
+    "https://github.com/Kendall04/terragrunt_demo/actions/runs/42761946295/attempts/2"
+  ]
+}

@@ -92,7 +92,7 @@ Until withdrawal authority and SQL transport are genuinely viable, the full cycl
 is NOT executable and no paid creation should begin. PKI remains outside ECS.
 
 
-Observer placement update: [SQL-host package and external watchdog](../COHOST.md). Local-only opt-in staging and loss/return tests do not constitute native boot/scheduling acceptance, independent S3 checks or a fix to SSM.
+Observer placement update: [SQL-host package and external watchdog](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/sql-backup/COHOST.md). Local-only opt-in staging and loss/return tests do not constitute native boot/scheduling acceptance, independent S3 checks or a fix to SSM.
 
 Current integrated scope and recommended new budget: [local integrated proposal](INTEGRATED-TRIAL-PROPOSAL.md), based on bc57dc4. It forecasts 102 Terraform addresses under explicit reuse assumptions and USD 6 new; it is not a saved plan or authorization. SSM remains unresolved. The four wiring changes and separate .NET application image smoke are now locally qualified; their native platform behavior remains unproved. The historical coverage below is preserved.
 
@@ -118,7 +118,7 @@ image build, installation, approval publication or new budget was executed here.
   contradictory effect/audit could previously send a recovery title for FAILED.
   The SNS boundary now refuses non-HEALTHY recovery or HEALTHY escalation before
   Publish. All111 managed checks pass, including five new negative pairs, with
-  SDK doubles, no NAT provider and no email. [Qualification](../../integrations/notice-state-qualification.json).
+  SDK doubles, no NAT provider and no email. [Qualification](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/integrations/notice-state-qualification.json).
 - No new sealed runtime package was assembled; old manifests remain historical.
   The new notification guard must enter a freshly qualified immutable package
   before any approved live use.

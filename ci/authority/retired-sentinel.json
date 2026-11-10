@@ -1,0 +1,974 @@
+{
+  "sourceRepository": "https://github.com/Kendall04/terragrunt_demo",
+  "sourceCommit": "528a583d4f74ccd0368cf00929b7315d582cdb35",
+  "scope": "Sentinel consumer, runtime extensions, historical diagnostics, IaC and optional SQL cohost. SQL producer and cold recovery remain in ECS.",
+  "upstream": {
+    "origin": "https://github.com/Kendall04/reliability-sentinel.git",
+    "commit": "b3d0b3b595a9257bb6d4d849c899bf4e8dbc2828",
+    "legacyCommitUnchanged": "0e8fc55333ddde3b9816885915310a7e69f3de45",
+    "consumerSdk": "10.0.402",
+    "upstreamSdk": "10.0.301",
+    "scope": "LOCAL_CONSUMER_COMPATIBILITY_ONLY",
+    "deploymentAuthorized": false
+  },
+  "privateSourceArchive": {
+    "name": "sentinel-source-complete-528a583-v2.zip",
+    "sha256": "0f656d24471ce8e0251e145a0383a4bd7f1b96842c89367df6b75be28001db94",
+    "files": 238
+  },
+  "recovery": "git archive --format=zip --output=sentinel-source.zip 528a583d4f74ccd0368cf00929b7315d582cdb35 operations/integrations terraform/infra/sentinel-backup terraform/live/sentinel-backup operations/sql-backup/cohost.py operations/sql-backup/sentinel_publish.py operations/sql-backup/sql-backup-sentinel-producer.service.in operations/sql-backup/sql-backup-sentinel-producer.timer.in operations/sql-backup/test_cohost.py operations/sql-backup/test_portable_cohost.py operations/sql-backup/test_sentinel_publish.py operations/sql-backup/COHOST.md operations/sql-backup/RUNTIME.md terraform/infra/data/cohost-bootstrap.sh.tftpl terraform/modules/target/dev/data/ordinary-locals.tf terraform/modules/target/dev/data/ordinary-variables.tf terraform/modules/target/dev/data/ordinary-main.tf scripts/tests/security_root/ordinary.py scripts/tests/ownership_publication/test_wp2d.py",
+  "files": {
+    "operations/integrations/Ecs.Backup.Managed.Tests/Ecs.Backup.Managed.Tests.csproj": {
+      "sha256": "54705688fb5a6ea408aa8401f79829eadc06b5d2f0358fc4cdbc82eb30ec8abf",
+      "bytes": 811
+    },
+    "operations/integrations/Ecs.Backup.Managed.Tests/Program.cs": {
+      "sha256": "d8bb6c246497dee9263ee06cfded97a4a979f4101db8763b083ca5c705acbf61",
+      "bytes": 37508
+    },
+    "operations/integrations/Ecs.Backup.Managed.Tests/packages.lock.json": {
+      "sha256": "8f4e03362ad4d4e468063750142a20ad036a3e5e7749680c49b884ede28cae4a",
+      "bytes": 4542
+    },
+    "operations/integrations/Ecs.Backup.Managed/BackupComposition.cs": {
+      "sha256": "d7c58b7eb9e96999e7135f9ca1ef03050973606a36eb18ededb196ec0a3f0411",
+      "bytes": 2710
+    },
+    "operations/integrations/Ecs.Backup.Managed/BackupCursorStore.cs": {
+      "sha256": "eb0fd98317c3f41ef2f8dc728039595c4ee1c0b4c9f8614e5a9ba71fd17ce7db",
+      "bytes": 5335
+    },
+    "operations/integrations/Ecs.Backup.Managed/BackupDispatch.cs": {
+      "sha256": "2c35290343519e48875ab036176a0b3aa1b0bf00f5250eb3e8554614da401fbb",
+      "bytes": 4864
+    },
+    "operations/integrations/Ecs.Backup.Managed/BackupNoticeText.cs": {
+      "sha256": "4605831d7598732f65ec8272fc3b6f2892825101fe6b2e3f1706070b543546b4",
+      "bytes": 3847
+    },
+    "operations/integrations/Ecs.Backup.Managed/BackupObserverWatchdog.cs": {
+      "sha256": "98fea41f456c48f9ab0c119b85353938b846711476bd0cccd022dd77c52a7704",
+      "bytes": 4277
+    },
+    "operations/integrations/Ecs.Backup.Managed/BackupSettings.cs": {
+      "sha256": "86a6d89f3ec209945d8b3ce799a5d7f3b980ebdc983ef5384cd0e3da8e735162",
+      "bytes": 5680
+    },
+    "operations/integrations/Ecs.Backup.Managed/Ecs.Backup.Managed.csproj": {
+      "sha256": "a13500895a5f991f76829f79f409d2bc9004c23a91e954baf33245888abdb6f0",
+      "bytes": 1477
+    },
+    "operations/integrations/Ecs.Backup.Managed/Functions.cs": {
+      "sha256": "61361f0b10e3c361d269d64ebc0e031d0c51e104338418b98645dfdb1de8f418",
+      "bytes": 5953
+    },
+    "operations/integrations/Ecs.Backup.Managed/SnsNoticeAdapter.cs": {
+      "sha256": "357b5048ae9e1c22544912b150d5df4ab406a40e373f9ea239a456beac3b1715",
+      "bytes": 4230
+    },
+    "operations/integrations/Ecs.Backup.Managed/packages.lock.json": {
+      "sha256": "0f210529ea65062285d335950307d7987572f01690832f4d4adbb1056ad70604",
+      "bytes": 4251
+    },
+    "operations/integrations/Ecs.Backup.Portable.Aws.Tests/ArchiveCompensationChecks.cs": {
+      "sha256": "c778444da22d016450a69cb2ca16c3960730dd755a00f072176fd4032ff1cb64",
+      "bytes": 4467
+    },
+    "operations/integrations/Ecs.Backup.Portable.Aws.Tests/CheckpointChecks.cs": {
+      "sha256": "b268aaf01e8b64de9258d28b022de156fcf3e88d703e6c3e7e6dfc9be693fd59",
+      "bytes": 8780
+    },
+    "operations/integrations/Ecs.Backup.Portable.Aws.Tests/CurrentBacklogChecks.cs": {
+      "sha256": "5fe8eb06f8a8668b069078f358db059d12694775d0982fd55b0bc33948e88c94",
+      "bytes": 3457
+    },
+    "operations/integrations/Ecs.Backup.Portable.Aws.Tests/Ecs.Backup.Portable.Aws.Tests.csproj": {
+      "sha256": "1376c0b6bc86ef8e15000ad86ad858633e4f4f1ce2816dfc427697ff9150ee84",
+      "bytes": 509
+    },
+    "operations/integrations/Ecs.Backup.Portable.Aws.Tests/MonitorSupersessionChecks.cs": {
+      "sha256": "aec9f561a7a03d5fc62107e3861c20e23c2ea9b2b68f282d440900e79f50844f",
+      "bytes": 1449
+    },
+    "operations/integrations/Ecs.Backup.Portable.Aws.Tests/Program.cs": {
+      "sha256": "d8de554ef566c47c3d7b5810c635a671472b94fb47541b4289f5a87a62e6f99f",
+      "bytes": 7734
+    },
+    "operations/integrations/Ecs.Backup.Portable.Flow.Tests/Ecs.Backup.Portable.Flow.Tests.csproj": {
+      "sha256": "bda4aeb0e66226c554b718756861d766d9493721f0144f20497a88f368d0e763",
+      "bytes": 568
+    },
+    "operations/integrations/Ecs.Backup.Portable.Flow.Tests/Program.cs": {
+      "sha256": "9fe07ef45972ef342b9a3626d490e8bbfea1fb4d95312ea4b006febc720ef6a1",
+      "bytes": 10325
+    },
+    "operations/integrations/Ecs.Backup.Portable.Flow.Tests/packages.lock.json": {
+      "sha256": "a85a4834d987f02631d1f5a9c3be5291d47368391430f479baa93fe08ca5bf16",
+      "bytes": 8341
+    },
+    "operations/integrations/Ecs.Backup.Portable.Host/ArchiveCompensation.cs": {
+      "sha256": "d286f13decbc6b48b3428bd34d9808a8ae4219dad7cbbb1653ef22ace92cb81e",
+      "bytes": 8833
+    },
+    "operations/integrations/Ecs.Backup.Portable.Host/CurrentBacklog.cs": {
+      "sha256": "3500467acd687de21b0394078ff604145d4c73558bf29b563c23d78698a6d3bc",
+      "bytes": 3530
+    },
+    "operations/integrations/Ecs.Backup.Portable.Host/Ecs.Backup.Portable.Host.csproj": {
+      "sha256": "ada4cde9eb0199f9b854865d67be68e906f7dd15127c6f336df842fbbb0ba3d9",
+      "bytes": 1191
+    },
+    "operations/integrations/Ecs.Backup.Portable.Host/Function.cs": {
+      "sha256": "8f176a8fdc7e673ac8362023d6230b25b3d4c62f94f7adaba9f34c175616c893",
+      "bytes": 6068
+    },
+    "operations/integrations/Ecs.Backup.Portable.Host/packages.lock.json": {
+      "sha256": "f5f360a8257d51eb603cd863b259a126dce15c51600212ff1f3d1e3115dc3e42",
+      "bytes": 7968
+    },
+    "operations/integrations/Ecs.Backup.Portable.Notice.Tests/Ecs.Backup.Portable.Notice.Tests.csproj": {
+      "sha256": "6dee6f56214898dde891ef98ad1260da7d3dc303638cc2dc4b7516e73981b25e",
+      "bytes": 877
+    },
+    "operations/integrations/Ecs.Backup.Portable.Notice.Tests/Program.cs": {
+      "sha256": "57179d4e3a9ee6c45cabb6216a8e54bc2a03e8c2ca8b044dd5cb7d91b78211d0",
+      "bytes": 3103
+    },
+    "operations/integrations/Ecs.Backup.Portable.Notice/ReadableNotice.cs": {
+      "sha256": "7b919ec8fbf3ebffbe105c49a6b3c31d0eba1ca1f457c84b42733c7005c8d5d8",
+      "bytes": 3301
+    },
+    "operations/integrations/Ecs.Backup.Portable.Package.Tests/Ecs.Backup.Portable.Package.Tests.csproj": {
+      "sha256": "1f9d1ca4c32b33eff880778d522d88ab1544a630af46896060fa389b1bbcb870",
+      "bytes": 268
+    },
+    "operations/integrations/Ecs.Backup.Portable.Package.Tests/Program.cs": {
+      "sha256": "07d000ebdedb3b158e73274d4cbc38463e7c3940fc43628b8a1f103d88725101",
+      "bytes": 7984
+    },
+    "operations/integrations/Ecs.Backup.Portable.Tests/Ecs.Backup.Portable.Tests.csproj": {
+      "sha256": "386488b9d8ae45f6c9897b1e2d5c415a1593841763e02fbdd20265e69bee01fc",
+      "bytes": 807
+    },
+    "operations/integrations/Ecs.Backup.Portable.Tests/Program.cs": {
+      "sha256": "16e7847a5dca730cdb4d4ec91eb2ed792576f4b6e8100f996dd4d2b2744dd37e",
+      "bytes": 10888
+    },
+    "operations/integrations/Ecs.Backup.Sentinel.Tests/Ecs.Backup.Sentinel.Tests.csproj": {
+      "sha256": "d17b49fa9209e6615ea4ed7f9881f9f9b01439f88eb87213137396d954e277a5",
+      "bytes": 493
+    },
+    "operations/integrations/Ecs.Backup.Sentinel.Tests/Program.cs": {
+      "sha256": "dc365e778206f059edd0a393e11d2ea0553d4dee1f81beda8a0ac81aca9ee8a1",
+      "bytes": 15031
+    },
+    "operations/integrations/Ecs.Backup.Sentinel/BackupIncidentPolicy.cs": {
+      "sha256": "8f5c799e60747b33a2b3e6f73c9e9c201f9b330fbe8e9607891d922c362de107",
+      "bytes": 4886
+    },
+    "operations/integrations/Ecs.Backup.Sentinel/Ecs.Backup.Sentinel.csproj": {
+      "sha256": "e7ddbc08eda3d434132f2ea469f71fa064742ddda6d63370d468bb00fe113889",
+      "bytes": 581
+    },
+    "operations/integrations/Ecs.Backup.Sentinel/ObserverNormalizer.cs": {
+      "sha256": "84711ef12d03092183803b8ed91922630447160013fd178b62f1d591418fa78c",
+      "bytes": 9869
+    },
+    "operations/integrations/Ecs.Backup.Sentinel/packages.lock.json": {
+      "sha256": "c04234d064348caee89aac9bcd971eede4d7ce6f643c3e6e48c7165215817f96",
+      "bytes": 437
+    },
+    "operations/integrations/Ecs.Identity.LocalProbe/Ecs.Identity.LocalProbe.csproj": {
+      "sha256": "93caa24e00ed170e56e4fff578fcac8ded4636192d514edea5a9da465e057d34",
+      "bytes": 519
+    },
+    "operations/integrations/Ecs.Identity.LocalProbe/Program.cs": {
+      "sha256": "72a77d9372e608078fc57c3fac33920482d947845aa2c331366a326d8c40fe4b",
+      "bytes": 18592
+    },
+    "operations/integrations/Ecs.Identity.LocalProbe/packages.lock.json": {
+      "sha256": "d0fe426d6fe2b2333dbbff176fd6624d2a8c6f42d4dec0fbd576ab414a4e8c5c",
+      "bytes": 1198
+    },
+    "operations/integrations/Ecs.Identity/Ecs.Identity.csproj": {
+      "sha256": "1d4747cbd02f141960e70e55167a8f02dd010a8cb163bb662959a3f1fff6a062",
+      "bytes": 485
+    },
+    "operations/integrations/Ecs.Identity/EcsDevelopmentIdentity.cs": {
+      "sha256": "70ea1998ca01c2515fa9885c34cff3e9cf281a1e3d236ea9741ba3243e07c0b5",
+      "bytes": 1933
+    },
+    "operations/integrations/Ecs.Identity/packages.lock.json": {
+      "sha256": "95f509ad787902d092c6f27faf3b417d3d9260c85917908c9652d4f1728e9389",
+      "bytes": 684
+    },
+    "operations/integrations/LOCAL-QUALIFICATION-v3.json": {
+      "sha256": "a54683cbf5217550a3cf62da91343c049ac3df607725cd4efa2d6093a2836a32",
+      "bytes": 7071
+    },
+    "operations/integrations/NATIVE-TRIAL-2026-10-23.md": {
+      "sha256": "bd181026f76db5f16e66802e6dbc3dd9fb79016efb25c25becf76a41d3d25b5c",
+      "bytes": 8896
+    },
+    "operations/integrations/NATIVE-TRIAL-2026-10-24.md": {
+      "sha256": "0f9dcb31a8b1279bc6b43711756c6d123372b715e78d16b84fa3eb08205a3fa3",
+      "bytes": 10368
+    },
+    "operations/integrations/OPERATIONAL-SCOPE-PROPOSAL.json": {
+      "sha256": "cd4f18f12fe97478458098e7c962f6f7ff3140119035e953d23ecd327e434829",
+      "bytes": 8447
+    },
+    "operations/integrations/OPERATIONAL-TRIAL.md": {
+      "sha256": "9d4d30056d35ad2fe90887ebbd8782dcc9dcf5c874247d658dd49a866fc92c39",
+      "bytes": 18830
+    },
+    "operations/integrations/PKI-EXPERIMENT.md": {
+      "sha256": "78cf4182f7efe9cfa5bd695f3267e223bb681b17e8b1d1504bc324ad1ab9dd8e",
+      "bytes": 4198
+    },
+    "operations/integrations/README.md": {
+      "sha256": "7a0c320b72cf3995574c097c3454215867030d0627d5f3f502c397647cec710c",
+      "bytes": 16655
+    },
+    "operations/integrations/SSM-B2-DIAGNOSIS-20261024.md": {
+      "sha256": "0002e71846701d4a4afc1be42ab8a31d5cf879fe4d3d87ac1ffe8420edb97916",
+      "bytes": 22694
+    },
+    "operations/integrations/SSM-B2-SUPPORT-DRAFT.md": {
+      "sha256": "861bbd9b80445c1f978f7b5255f325908841919f574aa35cc5f7beb0e474be7c",
+      "bytes": 3271
+    },
+    "operations/integrations/SSM-DIAGNOSTIC-TRIAL-DESIGN.md": {
+      "sha256": "f5ad3a9f3eb0dced4b38525669c573ec3c221a1235e197b73c4b51bfad52cb66",
+      "bytes": 9885
+    },
+    "operations/integrations/fixtures/ssm-b2-command-metadata.json": {
+      "sha256": "97dbcedca5b23f5b915a5ac335155ee7c83cb13d40c07140eece551b91800d42",
+      "bytes": 6810
+    },
+    "operations/integrations/fixtures/ssm-b2-native-investigation.json": {
+      "sha256": "8eb3585f85d3097eccc9eb0de3fe58581b78321877599cff5a22420f98055677",
+      "bytes": 23262
+    },
+    "operations/integrations/fixtures/ssm-b2-status.json": {
+      "sha256": "1a06a2c5a2c1efc758e1f3d2c3ad3c6e8a8d79c8eb81fe978f72c719a977f937",
+      "bytes": 2658
+    },
+    "operations/integrations/fixtures/ssm-b2-support-console.json": {
+      "sha256": "2b3ab56d52ae7fa7c69bee933e177250c2dadc8e66823ccf21d8f14d42faacac",
+      "bytes": 544
+    },
+    "operations/integrations/fixtures/ssm-b2-support-readonly.json": {
+      "sha256": "0c2603a5f60bdc4217f804d36e62128df4ff977cb0c32d93be2d40a87f6fb097",
+      "bytes": 528
+    },
+    "operations/integrations/generate_fixtures.py": {
+      "sha256": "abff7fcf415b4b7efc949f4ca920fdd50407b248188e3425ff0e727150410189",
+      "bytes": 2582
+    },
+    "operations/integrations/local-regression-manifest.json": {
+      "sha256": "9cc33405c36e746895de81a966f98cd2dbb0eea4ac692b5a025209cd5d800692",
+      "bytes": 11536
+    },
+    "operations/integrations/managed-release-manifest.json": {
+      "sha256": "c6c89569647ad7fb49f7ca9a25663f8a6477313464ab7a2f8a2c860bab495fdf",
+      "bytes": 16976
+    },
+    "operations/integrations/managed-source-extension.json": {
+      "sha256": "8094d819b787b719945e199f0070d7eb45efa622d934605ca402d9054177695f",
+      "bytes": 2011
+    },
+    "operations/integrations/managed_trial_iac.py": {
+      "sha256": "6f6b00e1f4e0541447059b075bf34f6ae1278cd8a4b095c367ce12cae8fa1464",
+      "bytes": 21136
+    },
+    "operations/integrations/notice-state-qualification.json": {
+      "sha256": "4be143bd3a182905c11efb90bac68ae44a7f9083ece24f97a65b293973e7f0ca",
+      "bytes": 1106
+    },
+    "operations/integrations/observer_host.py": {
+      "sha256": "fbdc7f81f332dbd677a9d3bb2195ed31ee39dcb96256c64d11781599352769cf",
+      "bytes": 19683
+    },
+    "operations/integrations/operational-preparation-manifest.json": {
+      "sha256": "1540abeb7dac4467c5ede94a7558fd7b41486570d4bc3463fa018d6bc8392e8f",
+      "bytes": 5542
+    },
+    "operations/integrations/package_managed.py": {
+      "sha256": "58187e0f9c0762fc7bd537ce2da1744ea43801569ed3745f91439f01d62b2b8e",
+      "bytes": 4417
+    },
+    "operations/integrations/pki-local-packages.json": {
+      "sha256": "9e25b633156d5b5913aed83c27482274812d5308d4f17af6806b950038547080",
+      "bytes": 1025
+    },
+    "operations/integrations/portable/NATIVE-NEXT-GATE.md": {
+      "sha256": "8e9e0c448af54bbe22f2be0c8062b2a0fd917f2f47840683c4c93aff2563b74a",
+      "bytes": 9917
+    },
+    "operations/integrations/portable/NATIVE-TRIAL-PROPOSAL.md": {
+      "sha256": "b3e5ced04ece6562c2a1bb6d06fadf9a508eae4ed2688108e27a8cb4e67ab247",
+      "bytes": 14832
+    },
+    "operations/integrations/portable/PLAN-ONLY-E16.md": {
+      "sha256": "ab6a611a98ff8eb1bafc0d7056fa2d8b970198abb7fa9e6b023ba1c1a3079a9e",
+      "bytes": 8132
+    },
+    "operations/integrations/portable/PORTABLE-COHOST-QUALIFICATION.md": {
+      "sha256": "58856e48f2146125068ab3622a78381d7ff2239b742cf0a63e3a6c0c78796e71",
+      "bytes": 8751
+    },
+    "operations/integrations/portable/README.md": {
+      "sha256": "d1cff49c8f5b08ee436fc7ba26df964e9a94ceccf724906f783e5cc22d0080b3",
+      "bytes": 23182
+    },
+    "operations/integrations/portable/attempt-extension.json": {
+      "sha256": "28379b303c5f211445a1c67bbf26030c4dedb62688c552a6267662a491f33dc8",
+      "bytes": 534
+    },
+    "operations/integrations/portable/aws-6.28.lock.hcl": {
+      "sha256": "c9ea50a98bc193ff31ae86b8710602f13bcfd1109cff3e1f38c9351aabc5519c",
+      "bytes": 1507
+    },
+    "operations/integrations/portable/backup_restore_pin.py": {
+      "sha256": "0c9ce036e7495fe5a7ff4d4f682404ccdf1485ed96ce1425be1d0aead90d4b38",
+      "bytes": 4400
+    },
+    "operations/integrations/portable/backup_retention.py": {
+      "sha256": "4e2825daaa396e45d2c2fce17491c792e501a855b595647fbcf7e691ae175102",
+      "bytes": 9234
+    },
+    "operations/integrations/portable/bridge.local.json": {
+      "sha256": "80780d762a96e3f8988d5cd0938757657e86cc26395ee720b33a3473a113add2",
+      "bytes": 273
+    },
+    "operations/integrations/portable/bridge.py": {
+      "sha256": "36af4986692141b4a6b8f37e5fd9b5fc519bb119a290f4fee1dcff174ac408d9",
+      "bytes": 6491
+    },
+    "operations/integrations/portable/checkpoint-budget-extension.json": {
+      "sha256": "ac3b73bf08fc751c0e90ccb1df3238371ee1d6f811785817dda86cf81e9717a8",
+      "bytes": 1216
+    },
+    "operations/integrations/portable/cohost-contract.json": {
+      "sha256": "8d37c59797965698376814088bf12f34c4192038bd36060a12ea99255a4c38dd",
+      "bytes": 2516
+    },
+    "operations/integrations/portable/cohost_runtime.py": {
+      "sha256": "605464c4a82fd90912934a0109b1ea55a356b92aad9d064344dd060e5782e11b",
+      "bytes": 4366
+    },
+    "operations/integrations/portable/collect_continuity.py": {
+      "sha256": "c5c67861c46104ade8575284cecda7e076d6b78ee09ab39fcd63195429130786",
+      "bytes": 5839
+    },
+    "operations/integrations/portable/generate_fixtures.py": {
+      "sha256": "f5c89ef5c323353f9be26ae21ed72c8c2cdbd5f20efb04b145a3ac68df9915a0",
+      "bytes": 1072
+    },
+    "operations/integrations/portable/generate_publisher_fixture.py": {
+      "sha256": "a50a0c3d0f7241be2da36de07984f0ae84508b263dd1014b259bb5cd1069329e",
+      "bytes": 2114
+    },
+    "operations/integrations/portable/ingestion-catalog-extension.json": {
+      "sha256": "8675433cefff9c5854202a85f11559e7998b5ecedc4de820e1903f54a21b9eff",
+      "bytes": 1280
+    },
+    "operations/integrations/portable/monitor-catalog-extension.json": {
+      "sha256": "682d63a02e810ee03136fb508a468c7352c6e64e0b081237d9eb4942767afbf0",
+      "bytes": 1184
+    },
+    "operations/integrations/portable/monitor-supersession-extension.json": {
+      "sha256": "ebebee588e31c8be1b3834e9ef5252576193832e0700dab489e6bacb1ca507d8",
+      "bytes": 1501
+    },
+    "operations/integrations/portable/nat_observer.py": {
+      "sha256": "73274a6accfde14dc7e4af5b8207beb2a444b4bb135ee39f381a8e8bc9ad2edd",
+      "bytes": 6804
+    },
+    "operations/integrations/portable/nat_probe.py": {
+      "sha256": "87f907f1ebae2f7a05c0010aded8970599242d74e14eb14e28139cb3988c64a9",
+      "bytes": 3209
+    },
+    "operations/integrations/portable/notice-extension.json": {
+      "sha256": "cebc6d4a266956aa1c2c75ed4d66d280da88330294cc70210b3871ad05316f9a",
+      "bytes": 1150
+    },
+    "operations/integrations/portable/package_lambda.py": {
+      "sha256": "9efe0705daf35995b791ea5347e0d7b71d6ecba4e1c577baca9afc4cf0e1d892",
+      "bytes": 3529
+    },
+    "operations/integrations/portable/prepare_module.py": {
+      "sha256": "b8ea3158630fe633031b5ce4c4a974c0f33774a8d04bd1f72a3927372fe006f5",
+      "bytes": 8088
+    },
+    "operations/integrations/portable/prepare_notice_contract.py": {
+      "sha256": "162d4bdef4aaf8c8fe247c7051c9a4a7d0774e7e3ad9ab647955242a7450e3d3",
+      "bytes": 1685
+    },
+    "operations/integrations/portable/prepare_runtime_source.py": {
+      "sha256": "a8c954ca99ff93b837ecf789609474e23ca775aa650d98f33418e3c87e2d70b7",
+      "bytes": 2288
+    },
+    "operations/integrations/portable/prepare_source.py": {
+      "sha256": "788b9fbb4093df3d7aef498525b7f2666cad31e2d4ac884609c3181db5018682",
+      "bytes": 1914
+    },
+    "operations/integrations/portable/publisher.py": {
+      "sha256": "04d8a648fc66b011013146b0e6111f1e1428840d5ffd55b325e397c47931ae9b",
+      "bytes": 9327
+    },
+    "operations/integrations/portable/runtime-extension.json": {
+      "sha256": "d0f24060e29d553e9203fd14143ed179cf93c4af64b8b7ed569a0f957c3d2f70",
+      "bytes": 1985
+    },
+    "operations/integrations/portable/sentinel.local.json": {
+      "sha256": "478a8b208cbeb0d9237f6eb37676f0098019ddc9ac3ac82da424b9c3f1c29da6",
+      "bytes": 1270
+    },
+    "operations/integrations/portable/storage-budget-extension.json": {
+      "sha256": "11a06ef5b1952ad077fd8eca4dcd2ba6ec63991449ecb990306b6574b3fbc1e9",
+      "bytes": 826
+    },
+    "operations/integrations/portable/storage_observer.py": {
+      "sha256": "68f2860c043de84e93bdfbc71e310590a3d9c9bdaaee8dfcadc49f9b0c40343f",
+      "bytes": 8752
+    },
+    "operations/integrations/portable/templates/security.tf.tftpl": {
+      "sha256": "8f7d0a3211c545553b125b36a64c94e46818576da9a99f420cb38b6fb142adc6",
+      "bytes": 11710
+    },
+    "operations/integrations/portable/terraform-extension.json": {
+      "sha256": "ceffeb68a81acc7af430759fbd28dec53995c20cb5f06347b064dbb56fef9283",
+      "bytes": 4811
+    },
+    "operations/integrations/portable/test_backup_restore_pin.py": {
+      "sha256": "67178621e6613e06ca12714d4f4d526186568fccb00dc4e52c8f1312f8bebb35",
+      "bytes": 2499
+    },
+    "operations/integrations/portable/test_backup_retention.py": {
+      "sha256": "e0bce623b9d6dd8e431867810eb5b3b241ea0dc87ab04dd9c8643ba57d591452",
+      "bytes": 4717
+    },
+    "operations/integrations/portable/test_bridge.py": {
+      "sha256": "7819bfb8f843597dd168a9a07d782dc772e3a446e2b89ef3e4aa6561b2a00581",
+      "bytes": 5297
+    },
+    "operations/integrations/portable/test_continuity.py": {
+      "sha256": "28bcd8c217f688529f1e2ab0ad7c05951233d34d938545470437d7cb5999f43f",
+      "bytes": 1718
+    },
+    "operations/integrations/portable/test_nat_observer.py": {
+      "sha256": "1955c1c434e9ad76da6cbd8c01be4a62618415325a6931b0e98beda092762271",
+      "bytes": 5072
+    },
+    "operations/integrations/portable/test_nat_probe.py": {
+      "sha256": "b7bf0d0b416489ea01ee922a2d12b66154816487b4876793fb3b9914af546fc2",
+      "bytes": 4571
+    },
+    "operations/integrations/portable/test_publisher.py": {
+      "sha256": "11eb40603adf93d900a1c9665f4c8e803ae9ffbc6a6f0bc0a5df9ae65f117e4c",
+      "bytes": 9146
+    },
+    "operations/integrations/portable/test_storage_observer.py": {
+      "sha256": "70025d8e48b7140316dcebfe0d7da8ab605b062d966bb5d8a94fb1bd40b8951a",
+      "bytes": 5531
+    },
+    "operations/integrations/portable/test_wiring_proposal.py": {
+      "sha256": "2c812692fe6831b0784719e561d6b5b9b5fa15788a3814d1c10c00439d0ad86c",
+      "bytes": 1800
+    },
+    "operations/integrations/portable/trial/.terraform.lock.hcl": {
+      "sha256": "c9ea50a98bc193ff31ae86b8710602f13bcfd1109cff3e1f38c9351aabc5519c",
+      "bytes": 1507
+    },
+    "operations/integrations/portable/trial/cohost-access-proposal.json": {
+      "sha256": "5e76e564b6b7b92952063f84ce108dd0c21c55df9340ee7ce5cc2bd1fa9d2151",
+      "bytes": 2868
+    },
+    "operations/integrations/portable/trial/cohost-package.json": {
+      "sha256": "91bd2f2e720165c4b33d00fe9530a167336e638bd60298a6769fbf773c5680cf",
+      "bytes": 1201
+    },
+    "operations/integrations/portable/trial/composition-local.json": {
+      "sha256": "5cf7685e036f6f8ca70fb3cda792a862d59af6b8e3a4923852f2a10838319a2d",
+      "bytes": 2547
+    },
+    "operations/integrations/portable/trial/lambda-package.json": {
+      "sha256": "d769ff0f9ac1103d2eb78555d1fce673ea10e55a95f11fea7de83aa794e502d3",
+      "bytes": 652
+    },
+    "operations/integrations/portable/trial/main.tf": {
+      "sha256": "68ba56a0c1b2c6e3c4dbb4fa66dd93ae3670da29004cf99479ded759a7f080c3",
+      "bytes": 5555
+    },
+    "operations/integrations/portable/trial/mock-plan-inventory.json": {
+      "sha256": "9f5db960370ba460f6043a96e802c768685988c26536ae73c07c3a7896671a41",
+      "bytes": 5648
+    },
+    "operations/integrations/portable/trial/nat-observer.tf": {
+      "sha256": "4358f697fd9126598fb4b07698c8534c947f35a6cf5e1b6e4a6cb0303c1de3cc",
+      "bytes": 6626
+    },
+    "operations/integrations/portable/trial/runtime/main.tf": {
+      "sha256": "ca111cf384b9ef11e56d5da1121645b08a3e1fc7de938600011cc79669b7fdc7",
+      "bytes": 17579
+    },
+    "operations/integrations/portable/trial/runtime/outputs.tf": {
+      "sha256": "5fe00bfc6834d59dafd6d58bc1ed7e99bc9e906dcaafae352ab8cb0c62a83e23",
+      "bytes": 840
+    },
+    "operations/integrations/portable/trial/runtime/security.tf": {
+      "sha256": "8f7d0a3211c545553b125b36a64c94e46818576da9a99f420cb38b6fb142adc6",
+      "bytes": 11710
+    },
+    "operations/integrations/portable/trial/runtime/tests/security.tftest.hcl": {
+      "sha256": "c565b1e0cfade687b63d07fb067960e0ea6c1d7a8bbf782c95ab425e9154f57c",
+      "bytes": 17101
+    },
+    "operations/integrations/portable/trial/sentinel.json": {
+      "sha256": "9297f32bde247b3bda7aa24b3d848d318da3f3d3293e6dd44bce7de1c484c65f",
+      "bytes": 1367
+    },
+    "operations/integrations/portable/trial/storage-observer.tf": {
+      "sha256": "da77bfc1e308ca053c5e4df4168b29fc60dda807133cf615004713506ca18b20",
+      "bytes": 8047
+    },
+    "operations/integrations/portable/trial/tests/portable.tftest.hcl": {
+      "sha256": "b51b21fca2828158b69e951d5d770824f10e6944cced35159d04c7eb25045006",
+      "bytes": 7296
+    },
+    "operations/integrations/portable/trial/versions.tf": {
+      "sha256": "20e35d2d1c64bd2ced00584e161f6868bdc2bca1d9bb39dda226531051563b97",
+      "bytes": 107
+    },
+    "operations/integrations/portable/upstream.json": {
+      "sha256": "11f63940d81a6664e653827ecab65c3a5a04e83c780abb17e635958dd5c1e51e",
+      "bytes": 347
+    },
+    "operations/integrations/portable/verify_nuget_package.py": {
+      "sha256": "be9f9b533cc1b45a0a39334549ef5d33b16b133c31a8deee4ac676086159c402",
+      "bytes": 1114
+    },
+    "operations/integrations/portable/wiring-proposal.json": {
+      "sha256": "99d8de565c60220cca97b48a8571650b86638dfde8605bf786dc7daed66385a8",
+      "bytes": 6818
+    },
+    "operations/integrations/portable/worker-catalog-extension.json": {
+      "sha256": "90f05116f3eca692124ae6741e6dd0626678077c188b81fc2173ad5b3a9c4077",
+      "bytes": 2966
+    },
+    "operations/integrations/portable/worker-checkpoint-extension.json": {
+      "sha256": "3075f4cea896a2c12630a0574fecb1663ca512694fe367e2f5746037885bcca2",
+      "bytes": 2151
+    },
+    "operations/integrations/prepare_managed_source.py": {
+      "sha256": "12bd4f4ab0dce47952b5c78baecb15421bbe58c60d0101c9064e54059088bf40",
+      "bytes": 1915
+    },
+    "operations/integrations/readonly-preflight.json": {
+      "sha256": "7707faa02d87c2ef7b7f1ac0fe30b23738bb83c0ca6df2b862ed5fcc6ce71366",
+      "bytes": 3731
+    },
+    "operations/integrations/ssm-diagnostic/APPROVAL-REQUEST.txt": {
+      "sha256": "fa04b80dc2cb2f45866ba76f9251a3cb8f86cc8461e54dabb214799d4c1143b1",
+      "bytes": 4109
+    },
+    "operations/integrations/ssm-diagnostic/README.md": {
+      "sha256": "05e24422c5fc7f8731cc31167c69023fc3ee80a11e91ac2f45b272c5415bf2f5",
+      "bytes": 17646
+    },
+    "operations/integrations/ssm-diagnostic/READONLY-PREFLIGHT.json": {
+      "sha256": "722747dbe65a44e5be2916f948507f4fc0a4890a65b6a54c415e26e7f4e2a465",
+      "bytes": 4276
+    },
+    "operations/integrations/ssm-diagnostic/baseline/PROVENANCE.json": {
+      "sha256": "47ac6ce5d3457acb4577ee0d905cc6b84354e89ea48e7e8abeb936b5d6b0a34e",
+      "bytes": 3805
+    },
+    "operations/integrations/ssm-diagnostic/baseline/backend.json": {
+      "sha256": "80dbfb85137d1853a409657320116f37bd1236d8b235233b4b727f4227e53031",
+      "bytes": 11678
+    },
+    "operations/integrations/ssm-diagnostic/baseline/part4.json": {
+      "sha256": "74fab53f7b87ea41a16cbff6797a09dd10e0bf2708f0feb589490d7f966e76c7",
+      "bytes": 6852
+    },
+    "operations/integrations/ssm-diagnostic/baseline/part7.json": {
+      "sha256": "58fc04df516e4241498a985410f9a456069c40c98453a143b160063e774f0487",
+      "bytes": 2281
+    },
+    "operations/integrations/ssm-diagnostic/collector.py": {
+      "sha256": "852e6999220411310052fdfd01b2068c011f724268f562bbfd8ea3ba74d5f5cd",
+      "bytes": 9630
+    },
+    "operations/integrations/ssm-diagnostic/evidence_export.py": {
+      "sha256": "4fa65d4c314a00149834e6f313f693e2fdc22f68c9e0b17ea5e02f5896fc6960",
+      "bytes": 5050
+    },
+    "operations/integrations/ssm-diagnostic/harness.py": {
+      "sha256": "e68a22d32eca2cd469138bfbdba4a3456b068809fbf96ab62c3e770c49bcf504",
+      "bytes": 1407
+    },
+    "operations/integrations/ssm-diagnostic/prepare.py": {
+      "sha256": "45f11511295ef780b1e4016c6b811056a6e01a5449ab1ff9d33b3fda7bcea32c",
+      "bytes": 23679
+    },
+    "operations/integrations/ssm-diagnostic/qualification.json": {
+      "sha256": "f68501acf34d4455638c93f95f2599c4e1c4f6c549a0e007a2131610904f89a6",
+      "bytes": 4962
+    },
+    "operations/integrations/ssm-diagnostic/review/access/admin-required-scope.json": {
+      "sha256": "c0344ed0db518bd1d6a449f5f801c67df02b7a89037f350926cf80084cc971d1",
+      "bytes": 4240
+    },
+    "operations/integrations/ssm-diagnostic/review/access/backend-template.NOT-INSTALLABLE.json": {
+      "sha256": "851e32c0f1dec36d6203e8a31f1998781820b12a3a0281885fa444e590a7b516",
+      "bytes": 14022
+    },
+    "operations/integrations/ssm-diagnostic/review/access/node-runtime.json": {
+      "sha256": "fb20d04bbb5b7180dce18dc73170d3e7812eceaa82c6884ad79892bcaaa4f210",
+      "bytes": 3276
+    },
+    "operations/integrations/ssm-diagnostic/review/access/operator-template.NOT-INSTALLABLE.json": {
+      "sha256": "1d06399ef915ead4c3fce052c98981b80fc6583e32a193a72b6f1f50a7e519d7",
+      "bytes": 14687
+    },
+    "operations/integrations/ssm-diagnostic/review/bootstrap/.terraform.lock.hcl": {
+      "sha256": "eff6b3fcd6995676df888404e04fda06e3360d781d1721ed9ad35ae7de56c727",
+      "bytes": 291
+    },
+    "operations/integrations/ssm-diagnostic/review/bootstrap/backend.s3.json": {
+      "sha256": "92bfe426e3166df2d3d51686059b43fce6a4cc39c140897915725299dd892844",
+      "bytes": 320
+    },
+    "operations/integrations/ssm-diagnostic/review/bootstrap/main.tf.json": {
+      "sha256": "e5e1350423d5387e3da6ba567d531bb6c3c3f0d5a0b8daa64d486f7eab209053",
+      "bytes": 7101
+    },
+    "operations/integrations/ssm-diagnostic/review/cost.json": {
+      "sha256": "2c52f0ae88a4129121740d5097c0e34d820a42d705d962ae5e2738da49e91893",
+      "bytes": 1052
+    },
+    "operations/integrations/ssm-diagnostic/review/document.json": {
+      "sha256": "4111723f377dc56a6883083f666703b336f1c7b3acc21a13f8abc398cce91350",
+      "bytes": 614
+    },
+    "operations/integrations/ssm-diagnostic/review/inventory.json": {
+      "sha256": "4909d12b6e2d2f25326f87ce3380be969b15072aaf3065466bc890f9159e79d5",
+      "bytes": 1906
+    },
+    "operations/integrations/ssm-diagnostic/review/manifest.json": {
+      "sha256": "b26d5e29248758928298ebb149a2fad573f2747dfe9c5ef3ee589fec367d6194",
+      "bytes": 2700
+    },
+    "operations/integrations/ssm-diagnostic/review/originals/backend.json": {
+      "sha256": "80dbfb85137d1853a409657320116f37bd1236d8b235233b4b727f4227e53031",
+      "bytes": 11678
+    },
+    "operations/integrations/ssm-diagnostic/review/originals/part4.json": {
+      "sha256": "74fab53f7b87ea41a16cbff6797a09dd10e0bf2708f0feb589490d7f966e76c7",
+      "bytes": 6852
+    },
+    "operations/integrations/ssm-diagnostic/review/originals/part7.json": {
+      "sha256": "58fc04df516e4241498a985410f9a456069c40c98453a143b160063e774f0487",
+      "bytes": 2281
+    },
+    "operations/integrations/ssm-diagnostic/review/runtime/.terraform.lock.hcl": {
+      "sha256": "eff6b3fcd6995676df888404e04fda06e3360d781d1721ed9ad35ae7de56c727",
+      "bytes": 291
+    },
+    "operations/integrations/ssm-diagnostic/review/runtime/backend.s3.json": {
+      "sha256": "c0ce8c157afe789fb20fc15ed6d50f89def6e282710d05d1bc3cd14923c87069",
+      "bytes": 316
+    },
+    "operations/integrations/ssm-diagnostic/review/runtime/bootstrap.sh.tftpl": {
+      "sha256": "7b23bea4c140b9b3bb5e5c7b36481aefcefa55a73d7896d946c0866f89f530e4",
+      "bytes": 24243
+    },
+    "operations/integrations/ssm-diagnostic/review/runtime/main.tf.json": {
+      "sha256": "6788ba75c91c614d63770c477ad8ff54e46b91efaa0b8b81328133b0ec45aadd",
+      "bytes": 7324
+    },
+    "operations/integrations/ssm-diagnostic/review/send-command.template.NOT-EXECUTED.json": {
+      "sha256": "71f46ba15555ecebf1d3a9801e63d7ddf05f7c831365e68944af97ea5b232b36",
+      "bytes": 547
+    },
+    "operations/integrations/ssm-diagnostic/test_diagnostic.py": {
+      "sha256": "01db989684733fbccb2b0fa6e152541238d09bb575a62664779563ceb8882358",
+      "bytes": 14667
+    },
+    "operations/integrations/ssm-diagnostic/test_evidence_export.py": {
+      "sha256": "e777bb750884fc89801a53332adc9fe3ffe8c427f7992d75ddf05d8895a508cb",
+      "bytes": 9279
+    },
+    "operations/integrations/ssm_execution.py": {
+      "sha256": "8fb45c2e3447e6ce75bea6428a09dd27261a0945d94850257a811ebec9e1b5c3",
+      "bytes": 2493
+    },
+    "operations/integrations/test_cohost_wiring.py": {
+      "sha256": "3feeb8e2977a9e251640234a3ff4ab44a9efce0cbd4ae5df284f192c3eec9db8",
+      "bytes": 4271
+    },
+    "operations/integrations/test_managed_trial_iac.py": {
+      "sha256": "66fe35bd73b88e81c825b19820cbd8b2399f80ef21e5e473d349970f834788f1",
+      "bytes": 10606
+    },
+    "operations/integrations/test_observer_host.py": {
+      "sha256": "93737667b7c240612e33b5a1e8d47c1db1ee55f1f1d94f872a913c5262164762",
+      "bytes": 16896
+    },
+    "operations/integrations/test_package_managed.py": {
+      "sha256": "97d941b680d536461394f69f72d0525c33871d6f0faaeb032dddab3c5cb1b13d",
+      "bytes": 4000
+    },
+    "operations/integrations/test_terraform_pipeline.py": {
+      "sha256": "791d1342a83e853b79fc3f2fc5cbf4e14b7b5cb45815a356a618e93a6154955e",
+      "bytes": 12313
+    },
+    "operations/integrations/trial-review/bootstrap-admin-scope.json": {
+      "sha256": "a776fd6f1349d8a0130a4f3c39b928731c971b559654c2fae487bbcd22b0a541",
+      "bytes": 2249
+    },
+    "operations/integrations/trial-review/bootstrap-template.json": {
+      "sha256": "eab4acaf40980a5104cf664abf7363a75cd3f128df8594b409100862e81657cc",
+      "bytes": 18691
+    },
+    "operations/integrations/trial-review/operator-temporary-policy.json": {
+      "sha256": "e45f59ab063d7759a0d757622b9098e5504821b68c51e86b6a829c7fc01100c4",
+      "bytes": 6534
+    },
+    "operations/integrations/trial-review/part4-amendment/AMENDMENT.md": {
+      "sha256": "b049df146e11c899af6b015bf705f945d5fbd8be47d476dd5792f23bf439fa06",
+      "bytes": 9525
+    },
+    "operations/integrations/trial-review/part4-amendment/capture-receipt.json": {
+      "sha256": "b25d5e6a145bd5da8bccd9f2d0ec64b54117fdceb3cbacccf41e250fd327a4bb",
+      "bytes": 3701
+    },
+    "operations/integrations/trial-review/part4-amendment/historical-capture-receipt.json": {
+      "sha256": "46be1c6e9dc5d90a0e2406a4c6ed85c665060b1f9041ff2e77c18f57d270f115",
+      "bytes": 522
+    },
+    "operations/integrations/trial-review/part4-amendment/manifest.json": {
+      "sha256": "1d991aafd6353093fa327405be5c23f94b58641f90aae946fcc31ccdd6595b31",
+      "bytes": 4981
+    },
+    "operations/integrations/trial-review/part4-amendment/part4-historical-v1.json": {
+      "sha256": "4a35504fb3f4b6b15028168a495759e4a09471f7ccebc7184f7cc73dbb402f37",
+      "bytes": 4597
+    },
+    "operations/integrations/trial-review/part4-amendment/part4-original.json": {
+      "sha256": "f494b2d1915b9659c013ef955e83eb85f02ef2d02248ef142022ce42f8aaac8d",
+      "bytes": 6595
+    },
+    "operations/integrations/trial-review/part4-amendment/part4-proposed.json": {
+      "sha256": "c185647fdcd4a9b77bd8c4c6d1a83d45ce18f7638ea904763baa87052ade8fe1",
+      "bytes": 6811
+    },
+    "operations/integrations/trial-review/part4-amendment/part4.diff": {
+      "sha256": "61461150185a8214384b1d7d37c3d25f5871e13f2afb411612e33756ec85a33d",
+      "bytes": 588
+    },
+    "operations/integrations/trial-review/part4-amendment/part4_exception.py": {
+      "sha256": "1ba7364ec7ebcc7d39f224f4f6ff88db8a8d46a43322555a57e93cf4b7ae0a69",
+      "bytes": 1398
+    },
+    "operations/integrations/trial-review/part4-amendment/simulation-complete-03/original-plus-temporary-allow.json": {
+      "sha256": "e45eb59e3fd48b37a68ea3a1266fd7e3629d078d4902b8dcbaac2f33ad094c1b",
+      "bytes": 1555
+    },
+    "operations/integrations/trial-review/part4-amendment/simulation-complete-03/proposal-alone.json": {
+      "sha256": "325b9677aa3abd1268abf8190698e66024ea966c7410e75e21f78268a89ac438",
+      "bytes": 1118
+    },
+    "operations/integrations/trial-review/part4-amendment/simulation-complete-03/proposal-other-denies-retained.json": {
+      "sha256": "3a48cc5196b275106a7f5e6265660340691c456a3d9d88477451dd84b35d09cc",
+      "bytes": 10622
+    },
+    "operations/integrations/trial-review/part4-amendment/simulation-complete-03/proposal-plus-temporary-allow-bucket-matrix.json": {
+      "sha256": "77053ad446b8195f18ff67ed10026ceac840cfe7dc5d436826bcb841acab9896",
+      "bytes": 5616
+    },
+    "operations/integrations/trial-review/part4-amendment/simulation-complete-03/simulation-receipt.json": {
+      "sha256": "9ba78352a1ebdb073512ac67bf6fe810a39da70eef6ae54db43690768b1dd58f",
+      "bytes": 4231
+    },
+    "operations/integrations/trial-review/part4-amendment/simulation-summary.json": {
+      "sha256": "97316a9e9d729d3dd2cbd79e333127c62b41a463f0e34131633377c8c2761928",
+      "bytes": 4105
+    },
+    "operations/integrations/trial-review/part4-amendment/test_part4_exception.py": {
+      "sha256": "bc726f7999448e1e47d48b4653101006ca3d888d911a517b252899465aa17a4b",
+      "bytes": 5161
+    },
+    "operations/integrations/trial-review/part4-amendment/verify_simulation.py": {
+      "sha256": "1ab03f55958ddf4544265fe523223887cc2fff87f893a102548d0d53253eb3a4",
+      "bytes": 3341
+    },
+    "operations/integrations/trial-review/required-decisions.json": {
+      "sha256": "362ca06805880cb333e218758ecd22e3d1a7ae55bec58f91e5a4b823965521b8",
+      "bytes": 625
+    },
+    "operations/integrations/trial-review/runtime-policies.json": {
+      "sha256": "1cfc6bc456e9a57677fbbbf5501af1555805aebedad6d7bc7c20f247929e2cbd",
+      "bytes": 2773
+    },
+    "operations/integrations/trial-review/scope-summary.json": {
+      "sha256": "008fb9b5f6e60b60d23ac9995149c0e3805130dfd255d0b9092924fb41291c74",
+      "bytes": 1243
+    },
+    "operations/integrations/trial-review/trial-template.json": {
+      "sha256": "2bb4d6a725f7bab18ca15ae698e6af8e08ee0b1bf102a90b92fa51e2a7e6e8e8",
+      "bytes": 34798
+    },
+    "operations/integrations/upstream-sources.json": {
+      "sha256": "89527f76327a4585563d3ff7705708000da9c8ed9c2f48865acd124b467fbf48",
+      "bytes": 366
+    },
+    "operations/integrations/verify_sources.py": {
+      "sha256": "ed53e828071a82e1f5ca4d8b54dff3f36ade93c49603858e5d21a30db53c706f",
+      "bytes": 1131
+    },
+    "operations/sql-backup/COHOST.md": {
+      "sha256": "8f71b26cd7bfff28405afdfb71254b34cf937ac8bd4ec65b061196401ff3f3cc",
+      "bytes": 12543
+    },
+    "operations/sql-backup/RUNTIME.md": {
+      "sha256": "7a33ed8160272d0ab5c55cfc9b33cdfd21bcf7a132fbf77e755c3fd517ba7049",
+      "bytes": 8968
+    },
+    "operations/sql-backup/cohost.py": {
+      "sha256": "68da49162e035ef611b6655671d4de2662ddc975ce4ab0a63fd8af0776791508",
+      "bytes": 18132
+    },
+    "operations/sql-backup/sentinel_publish.py": {
+      "sha256": "d32f10e9ef1f88c3fbda8baa5c18ac645a8451e943e1e429001d7e41d44227f7",
+      "bytes": 7818
+    },
+    "operations/sql-backup/sql-backup-sentinel-producer.service.in": {
+      "sha256": "1270ffa4379cbc659845a4bf36be9a7c29a221362dc6a6f1e04131c44db13eb3",
+      "bytes": 1128
+    },
+    "operations/sql-backup/sql-backup-sentinel-producer.timer.in": {
+      "sha256": "f2ee1e9f782315f52a87ab548f2ca8d73665eec7fdcd7399c981332b63723585",
+      "bytes": 293
+    },
+    "operations/sql-backup/test_cohost.py": {
+      "sha256": "057a45532e6873a3637282b32fa29063686ac103d9c316e7b8896fc5b798b022",
+      "bytes": 17972
+    },
+    "operations/sql-backup/test_portable_cohost.py": {
+      "sha256": "7af4ede145f3d1b7e76563210e8871c8b78a95857edccc2419640a6753b9073d",
+      "bytes": 5555
+    },
+    "operations/sql-backup/test_sentinel_publish.py": {
+      "sha256": "e8b086991fe6b3b1b91719a19510401e611f5dffe1fe7fb59ab1f7e805a94e0e",
+      "bytes": 8544
+    },
+    "scripts/tests/ownership_publication/test_wp2d.py": {
+      "sha256": "c16c6ddbe7ef11ea196f832ee7c722474e2d5aa5ce1038a661fbaec33fe40ee7",
+      "bytes": 40852
+    },
+    "scripts/tests/security_root/ordinary.py": {
+      "sha256": "014cbfc2483932a791bfdd45ca01d73ac5e413efe8ee6186ed60a2079ef303be",
+      "bytes": 64235
+    },
+    "terraform/infra/data/cohost-bootstrap.sh.tftpl": {
+      "sha256": "1c2120e0c83a8e391059c08e0982da62427b4e3f53ce28a0cd1825d88a9e88ce",
+      "bytes": 4573
+    },
+    "terraform/infra/sentinel-backup/.terraform.lock.hcl": {
+      "sha256": "eff6b3fcd6995676df888404e04fda06e3360d781d1721ed9ad35ae7de56c727",
+      "bytes": 291
+    },
+    "terraform/infra/sentinel-backup/HOST-QUALIFICATION.json": {
+      "sha256": "234d8d3a21d95cca51fc366c7b969fe5b06b9e85f30aed0131060dbfb91bc54d",
+      "bytes": 3970
+    },
+    "terraform/infra/sentinel-backup/NEXT-INTEGRATED-TRIAL.md": {
+      "sha256": "c30da48015dd0aa24ce02925f20800402571917c253e13dbab38f177ed2c52f9",
+      "bytes": 20080
+    },
+    "terraform/infra/sentinel-backup/README.md": {
+      "sha256": "6212fcdf97a56b780a674225cb9b854c4972fc8a5dce683bafee8de8c5b1d505",
+      "bytes": 17510
+    },
+    "terraform/infra/sentinel-backup/READONLY-PREFLIGHT.json": {
+      "sha256": "5fa8992696ca4df6a90f074a6be34af74e1a77924065cf5564f35738d08158af",
+      "bytes": 7196
+    },
+    "terraform/infra/sentinel-backup/REVIEW-r20261024b2.md": {
+      "sha256": "6b722d40f59e39d6b8b81c84e70d5787dbbb67b250769c1cf65c45b14f038813",
+      "bytes": 11359
+    },
+    "terraform/infra/sentinel-backup/main.tf.json": {
+      "sha256": "6f4f0b42f6f4f270100080113848465b3fa2d2692a28b8b853938d6349e8f072",
+      "bytes": 10490
+    },
+    "terraform/infra/sentinel-backup/modules/observer/README.md": {
+      "sha256": "bc2e1273fe0a1c87c10cf81f7c0a604b2122d12b632564a159b1731f7c3605a0",
+      "bytes": 9067
+    },
+    "terraform/infra/sentinel-backup/modules/observer/bootstrap.sh.tftpl": {
+      "sha256": "aede1e49c749880396bb5d571e3bd8d9d4cfdedc2e2001a6ba6112f9fe4e4a1c",
+      "bytes": 1993
+    },
+    "terraform/infra/sentinel-backup/modules/observer/main.tf.json": {
+      "sha256": "9cbc5fc2bf92121bd9c3fcac53d8b554c448a22f5aa0011f7f035c851fe389ce",
+      "bytes": 17282
+    },
+    "terraform/infra/sentinel-backup/modules/pipeline/main.tf.json": {
+      "sha256": "b2a4895c1052aae1c7dab80f7b3a55141dd5d1f0e0893d2892e1a9f0fad76953",
+      "bytes": 40659
+    },
+    "terraform/infra/sentinel-backup/modules/pipeline/storage-security.tf": {
+      "sha256": "0d1a12953386400333afc72b2d2c618b982867ff3130b93eff6dd3bf42e44b4b",
+      "bytes": 3749
+    },
+    "terraform/infra/sentinel-backup/modules/pipeline/tests/security.tftest.hcl": {
+      "sha256": "c35df8570e570bac2bdfd3b94dd31ef0239c011333ae21e6e16586f8f397012b",
+      "bytes": 3672
+    },
+    "terraform/infra/sentinel-backup/provider-qualification.json": {
+      "sha256": "fdd2fbf29da4b16b3c5b25935db477c2d7e2bd3d218711fb54403618da65c5e6",
+      "bytes": 1785
+    },
+    "terraform/infra/sentinel-backup/required-capabilities.json": {
+      "sha256": "c504a4fe415761605aa2260f2aff846282cb8e4bcea70f9c0e01f4961e0cdbd0",
+      "bytes": 7437
+    },
+    "terraform/infra/sentinel-backup/tests/fixtures/host-manifest.json": {
+      "sha256": "3480337283fcdbd10785c3cccf7424daf1beaa9d3efc6f62826a386731ca15e4",
+      "bytes": 227
+    },
+    "terraform/infra/sentinel-backup/tests/fixtures/lambda-manifest.json": {
+      "sha256": "a84580566c8a32ef8f8204b0fafebe275c947525f275b9b1400ef9fa34e77863",
+      "bytes": 391
+    },
+    "terraform/infra/sentinel-backup/tests/fixtures/mock-only.txt": {
+      "sha256": "dc3628fa3c86b6c12add1d71573491c1ac29c26a73eb61a3f9c2ec795ee10656",
+      "bytes": 45
+    },
+    "terraform/infra/sentinel-backup/tests/observer.tftest.hcl": {
+      "sha256": "99660e7b7e06980e3b2728e74b95c318dd99304f8b973689d4242f51e940d5aa",
+      "bytes": 9699
+    },
+    "terraform/live/sentinel-backup/terragrunt.hcl": {
+      "sha256": "61752b54398bab5c2206ae9866fe7d3ebe6de3a129c0d2a342554a14bd587052",
+      "bytes": 720
+    },
+    "terraform/modules/target/dev/data/ordinary-locals.tf": {
+      "sha256": "be2d540228164fc39baa254059a2e3e9a816efdf3dffc2b48eb82399d94eb8f4",
+      "bytes": 1405
+    },
+    "terraform/modules/target/dev/data/ordinary-main.tf": {
+      "sha256": "5cdce59744e24381fc4d19cb22f6ad93fc91f5787b6eb83dff75351b7ca04f5f",
+      "bytes": 3388
+    },
+    "terraform/modules/target/dev/data/ordinary-variables.tf": {
+      "sha256": "a532fd906f4ba50d0c09d6b44aa0ccebebb98ff5d43be0bd16ebd9782b37ee2e",
+      "bytes": 6427
+    }
+  }
+}

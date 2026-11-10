@@ -1,50 +1,36 @@
-# Engineering documentation
+# Documentación de ingeniería
 
-Start with the [project overview](../README.md) or the
-[V2 architecture atlas](interactive/V2-INDEX.md). The public
-[CloudFront DEMO](https://d20ioz705caon7.cloudfront.net/) is a static presentation;
-the AWS runtime is a temporary laboratory.
+[Proyecto](../README.md) · [DEMO pública](https://d20ioz705caon7.cloudfront.net/) · [Atlas actual](interactive/CURRENT-INDEX.md)
 
-## Current reading paths
+| Tema | Referencia vigente |
+| --- | --- |
+| Topología y ownership | [Arquitectura](../terraform/docs/architecture.md) |
+| CI/CD automático DEV y rollback | [Delivery simplificado](DEV-DELIVERY-DESIGN.md) |
+| API / SQL / confianza TLS | [Arquitectura de datos](../terraform/docs/architecture.md#current-contract--application-and-data) · [TLS por ambiente](../demo-api/deploy/sql-trust/README.md) |
+| Backup horario y recuperación | [SQL](../operations/sql-backup/README.md) · [recuperación nativa](../operations/sql-backup/recovery/NATIVE-RECOVERY.md) · [retención y holds](../operations/sql-backup/storage/README.md) |
+| Operación y retirada | [Ciclo nativo DEV](../terraform/docs/native-dev-lifecycle.md) |
+| Seguridad y límites | [Estrategia de secretos](../terraform/docs/secrets-strategy.md) · [revisión técnica fechada](ENGINEERING-REVIEW.md) |
+| Validación y efectos | [Guía de validación](../terraform/docs/validation.md) |
+| DEMO, AWS Edition local y hosting | [Frontend](../portfolio/product/README.md) · [CloudFront](../portfolio/product/HOSTING.md) |
 
-| Question | Maintained entry point | Detailed evidence / implementation |
-| --- | --- | --- |
-| How is it built? | [Architecture and ownership](../terraform/docs/architecture.md) | [Seven diagrams and traceability](interactive/V2-INDEX.md) |
-| How do I run it? | [Product DEMO and local AWS Edition](../portfolio/product/README.md) | [API guidance](../demo-api/AGENTS.md), [validation and command effects](../terraform/docs/validation.md) |
-| Who changes AWS? | [Native DEV lifecycle](../terraform/docs/native-dev-lifecycle.md) | [Operational boundary and closure](../terraform/docs/portfolio-operations.md) |
-| How do backups/recovery work? | [Backup tooling](../operations/sql-backup/README.md), [native cold recovery](../operations/sql-backup/recovery/NATIVE-RECOVERY.md) | [Measured SAME/CROSS-AZ trials](V2-RECOVERY-SECURITY-20261105.md#cold-recovery-execution--6-november-utc) |
-| What does Sentinel do? | [Portable runtime](../operations/integrations/portable/README.md) | [Real incidents and monitoring](SENTINEL-CHAOS-20261106.md) |
-| What is automated? | [CI/CD engineering review](CI-CD-REVIEW.md) | [Protected deployment contracts and V1 evidence](../terraform/docs/deployment.md) |
-| How will API delivery operate? | [Automatic DEV/PROD delivery and recovery](DEV-DELIVERY-DESIGN.md) | Implemented; activation requires a verified writer handover. E2 remains untouched. |
-| What is secure, and what is not? | [Technical audit](ENGINEERING-REVIEW.md), [trust boundaries](V2-TRUST-AND-THREATS.md) | [Secret lifecycle](../terraform/docs/secrets-strategy.md), [strict SQL profile](../terraform/docs/sql-runtime-security.md) |
-| What was tested? | [Guarantee matrix](ENGINEERING-REVIEW.md#recovery-and-resilience) | [DEV execution](DEV-V2-20261105.md), [frontend validation](../portfolio/product/VALIDATION.md) |
-| How is the site published? | [Independent hosting and rollback](../portfolio/product/HOSTING.md) | [Public HTTPS receipt](../portfolio/product/evidence/public/PUBLIC-HTTPS-QA.json) |
+DEV tiene entrega automática demostrada. PROD no está activado ni validado.
+El runtime es un laboratorio con costes y retirada supervisada; el sitio estático
+permanece independiente.
 
-## Reading evidence correctly
+## Evidencia fechada
 
-**Implemented** means present in source; **deployed** requires a dated AWS readback;
-**demonstrated** requires an authentic execution. Historical and local-double
-results retain those labels. No dated receipt is a live status page.
+- [ECS V2 en AWS](DEV-V2-20261105.md).
+- [SQL SAME-AZ/CROSS-AZ y seguridad](V2-RECOVERY-SECURITY-20261105.md).
+- [Primer CD DEV automático](https://github.com/Kendall04/terragrunt_demo/actions/runs/42751096835).
+- [TLS definitivo CA-only entregado por CD](https://github.com/Kendall04/terragrunt_demo/actions/runs/42761946295/attempts/2).
+- [Auditoría CI/CD previa](CI-CD-REVIEW.md): conserva el diagnóstico de su fecha,
+  no sustituye el diseño simplificado y la evidencia de ejecución posteriores.
 
-The November records contain chronological appendices because the original errors
-and partial outcomes matter. Their latest dated update takes precedence for that
-record; current operation starts from the links above, not an old UP/DOWN command.
-The audit's newer inventory does not rewrite historical state serials or receipts.
+## Historia y proyecto independiente
 
-## What remains intentionally historical
-
-- `terraform/docs/first-real-dev-*.md` and `second-real-dev-cycle.md`: V1 deployment,
-  rollback and retirement evidence. No V2 cold-recovery claim is inferred from them.
-- `terraform/docs/e*.md`: protected controller contracts and dated experiments.
-  Several are mandatory inputs to the acceptance/link gate; they are not a menu
-  of active pipelines. E16 is retired; its backend/IAM safeguards remain applicable.
-- `terraform/docs/v2-local-completion.md` and the October pipeline review:
-  local/component qualification and earlier design, retained for source/diagram
-  provenance. They do not override November installation evidence.
-- `specs/`, `ci/authority/`, catalogs, manifests and lock files: executable authority,
-  fixtures or cryptographic inputs. They are not disposable prose.
-- Five older Archify diagrams: historical views, distinct from the seven V2 views.
-
-The [cleanup ledger](ENGINEERING-REVIEW.md#documentation-disposition) records the
-removed transient material and its immutable Git source. No workflow, authority
-expectation, original diagram or authentic receipt was changed to enable cleanup.
+Reliability Sentinel ya no es una dependencia de ECS.
+[Código y procedencia recuperables](history/SENTINEL-SEPARATION.md),
+[retirada AWS pendiente](SENTINEL-RETIREMENT.md) y
+[ensayos originales](SENTINEL-CHAOS-20261106.md) conservan el trabajo.
+El [atlas del 6 noviembre](interactive/V2-INDEX.md) y V1 son snapshots históricos.
+No atribuir a la instalación actual la observación/notificación de Sentinel.

@@ -1,4 +1,4 @@
-// Presentation derivatives only; accepted JSON/HTML and both pin manifests stay unchanged.
+// Presentation derivatives; current generation and immutable historical pins are separate.
 import { readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { adaptArchify, diagramPolicy } from "../archify.mjs";
@@ -15,12 +15,18 @@ const original = JSON.parse(
 const captures = JSON.parse(
   await readFile(new URL("evidence/screenshots/BROWSER-QA.json", root), "utf8"),
 );
+const current = JSON.parse(await readFile(new URL("GENERATION-CURRENT.json", root), "utf8"));
 const entries = [
+  ["ecs-platform", "Plataforma ECS", "Aplicación privada, datos y despliegue", "ECS V2 independiente de Sentinel. Evidencia DEV; PROD no validado."],
+  ["ecs-delivery", "CD DEV automático", "Un merge despliega DEV", "CI, OIDC, ECR por digest, ECS blue/green, salud y release S3. PROD deshabilitado."],
+  ["ecs-network", "Red y NAT / E13", "Dos zonas, recuperación independiente", "NAT por AZ; ASG/E13 repara EIP, ruta y SDC. Sin Sentinel."],
+  ["ecs-sql-recovery", "Backups y recuperación SQL", "Un escritor, copias verificables", "Backups horarios y recuperación fría SAME-AZ/CROSS-AZ supervisada."],
+  ["ecs-trust", "Identidades y TLS", "Confianza por ambiente", "TLS definitivo DEV, roles separados y límites de seguridad explícitos."],
   [
     "v2-platform",
     "Plataforma",
     "El recorrido del texto",
-    "Un mapa de aplicación, datos y observación.",
+    "Snapshot del 6 nov: incluye Sentinel, separado posteriormente.",
   ],
   [
     "v2-sentinel",
@@ -56,7 +62,7 @@ const entries = [
     "v2-delivery",
     "Entrega / ownership",
     "Quién cambia cada campo",
-    "Terraform skeleton, deployment protegido y CD inhibido.",
+    "Snapshot del 6 nov anterior al CD DEV automático; conservado como historia.",
   ],
   [
     "v1-platform",
@@ -94,6 +100,7 @@ const cache = new Map();
 async function sourceBytes(id) {
   const b = await readFile(new URL("source/" + id + ".json", root));
   const pin =
+    current.diagrams.find((x) => x.id === id) ??
     manifest.diagrams.find((x) => x.id === id) ??
     original.diagrams.find((x) => x.id === id);
   const reviewed =
@@ -111,14 +118,15 @@ export async function catalog() {
     entries.map(async ([id, label, title, description]) => {
       const bytes = await sourceBytes(id);
       const spec = JSON.parse(bytes);
-      const v2 = manifest.diagrams.find((x) => x.id === id);
+      const v2 = current.diagrams.find((x) => x.id === id) ?? manifest.diagrams.find((x) => x.id === id);
       return {
         id,
         label,
         title,
         description,
-        historical: !v2,
-        sha256: v2?.htmlSha256 ?? historic.originalSha256[id],
+        historical: !current.diagrams.some((x) => x.id === id),
+        reading: Boolean(v2),
+        sha256: current.diagrams.find((x) => x.id === id)?.htmlSha256 ?? v2?.htmlSha256 ?? historic.originalSha256[id],
         nodes: (spec.components ?? spec.events).map((n) => ({
           id: n.id,
           name: n.label ?? n.title ?? n.id,
@@ -153,7 +161,7 @@ export async function diagramAsset(route) {
       .at(-1)
       .replace(/\.(html|json)$/, "");
     if (!entries.some((x) => x[0] === id)) return null;
-    const v2 = manifest.diagrams.find((x) => x.id === id);
+    const v2 = current.diagrams.find((x) => x.id === id) ?? manifest.diagrams.find((x) => x.id === id);
     if (route.startsWith("/sources/"))
       asset = { body: await sourceBytes(id), type: "application/json" };
     else if (route.startsWith("/reading/")) {
@@ -162,10 +170,10 @@ export async function diagramAsset(route) {
         new URL("readable/" + id + ".html", root),
         "utf8",
       );
-      const pin = captures.captures.find(
+      const pin = current.diagrams.find((x) => x.id === id) ?? captures.captures.find(
         (x) => x.id === id && x.view === "reading-sheet",
       );
-      if (sha(sheet) !== pin.htmlSha256)
+      if (sha(sheet) !== (pin.readingSha256 ?? pin.htmlSha256))
         throw new Error("Changed accepted reading sheet");
       sheet = sheet.replace(
         /(<a\b[^>]*?)\s+href="[^"]*"/g,

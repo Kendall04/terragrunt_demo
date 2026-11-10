@@ -40,7 +40,7 @@ CSP, aislamiento y rechazo de archivos ajenos siguen cubiertos por Node.
 Las menciones antiguas a repos privados inaccesibles, PKI pendiente,29/102 recursos o
 locks todavía bloqueados son checkpoints HISTÓRICOS, no el estado ni autoridad actual.
 No se certifica el CI global ni hosted workflows sin ejecutarlos. API sencilla y PKI fuera.
-Ver [próximo alcance y probes](../operations/integrations/portable/NATIVE-NEXT-GATE.md).
+Ver [próximo alcance y probes](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/integrations/portable/NATIVE-NEXT-GATE.md).
 No hay AWS nuevo ni preflight de cuenta, push, permisos, publicación o servicios instalados.
 
 
@@ -181,7 +181,7 @@ profile/server, zero external requests/errors, normal cleanup. Desktop/mobile
 new-map captures and desktop product/tour were inspected; mobile overview needs
 native zoom. Full WCAG, hosted CI and whole ECS acceptance are not claimed.
 
-The small [reproduction manifest](../operations/integrations/local-regression-manifest.json)
+The small [reproduction manifest](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/integrations/local-regression-manifest.json)
 records exact source identities, recipes and evidence limits, with no large
 binaries/archive. Remaining real gates: periodic deployment and an integrated observer lifecycle,
 active probe/outbox handling and an admitted

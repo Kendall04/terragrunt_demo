@@ -1,6 +1,6 @@
 # Backup observer - local implementation, uninstalled
 
-Current placement for the next integrated proposal: [SQL host plus external watchdog](COHOST.md), selected by the owner on2026-10-25. The separate-host requirement below is preserved as the earlier design and superseded for that proposal. Independent periodic execution on SQL does not imply an independent failure domain. Historical qualifications remain unchanged.
+Current placement for the next integrated proposal: [SQL host plus external watchdog](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/sql-backup/COHOST.md), selected by the owner on2026-10-25. The separate-host requirement below is preserved as the earlier design and superseded for that proposal. Independent periodic execution on SQL does not imply an independent failure domain. Historical qualifications remain unchanged.
 
 `observer.py` supplies the missing finite observer around the existing read-only
 `SqlBackup check`. It creates no backups, restores nothing and delivers no mail.

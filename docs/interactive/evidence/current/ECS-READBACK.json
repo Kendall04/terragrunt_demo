@@ -1,0 +1,83 @@
+{
+  "at": "2026-11-10T17:25:02.502117+00:00",
+  "readOnly": true,
+  "http": {
+    "/health/live": {
+      "status": 200,
+      "release": "tls-ca",
+      "body": "{\"status\":\"Healthy\",\"checks\":[{\"name\":\"self\",\"status\":\"Healthy\",\"description\":\"API process is running.\"}]}"
+    },
+    "/ready": {
+      "status": 200,
+      "release": null,
+      "body": "{\"status\":\"Healthy\",\"checks\":[{\"name\":\"database\",\"status\":\"Healthy\",\"description\":\"Database connection succeeded.\"},{\"name\":\"kms\",\"status\":\"Healthy\",\"description\":\"KMS encryption call succeeded.\"}]}"
+    }
+  },
+  "ecs": [
+    {
+      "serviceName": "demo-dev-app-api-green-svc",
+      "taskDefinition": "arn:aws:ecs:us-east-1:341936017254:task-definition/demo-dev-app-api-green:13",
+      "desiredCount": 1,
+      "runningCount": 1,
+      "pendingCount": 0
+    },
+    {
+      "serviceName": "demo-dev-app-api-blue-svc",
+      "taskDefinition": "arn:aws:ecs:us-east-1:341936017254:task-definition/demo-dev-app-api-blue:17",
+      "desiredCount": 0,
+      "runningCount": 0,
+      "pendingCount": 0
+    }
+  ],
+  "tasks": [
+    {
+      "taskDefinition": "arn:aws:ecs:us-east-1:341936017254:task-definition/demo-dev-app-api-green:13",
+      "lastStatus": "RUNNING",
+      "containers": [
+        {
+          "name": "demo-dev-app-api-green",
+          "imageDigest": "sha256:821141c3635d12bca9d6ad0f19b5fa491ea0de394b646ad2296427281ef50bdf",
+          "lastStatus": "RUNNING",
+          "exitCode": null
+        },
+        {
+          "name": "demo-dev-app-api-green-readiness-probe",
+          "imageDigest": "sha256:821141c3635d12bca9d6ad0f19b5fa491ea0de394b646ad2296427281ef50bdf",
+          "lastStatus": "STOPPED",
+          "exitCode": 0
+        }
+      ]
+    }
+  ],
+  "natAsg": [
+    {
+      "AutoScalingGroupName": "demo-dev-asg-nat-a",
+      "DesiredCapacity": 1,
+      "MinSize": 1,
+      "MaxSize": 1
+    },
+    {
+      "AutoScalingGroupName": "demo-dev-asg-nat-b",
+      "DesiredCapacity": 1,
+      "MinSize": 1,
+      "MaxSize": 1
+    }
+  ],
+  "latestBackupMetadata": {
+    "bucket": "terragrunt-demo-sql-backup-341936017254-fa48a32dc9",
+    "Key": "terragrunt-demo/dev/sql-backups/v2-20261106/runs/75f5b7e510c14dc1bae63e7ffe15dcd7/manifest.json",
+    "LastModified": "2026-11-10 17:00:31+00:00",
+    "ETag": "\"289cf342805620e630d21184687d5d96\"",
+    "ChecksumAlgorithm": [
+      "SHA256"
+    ],
+    "ChecksumType": "FULL_OBJECT",
+    "Size": 656,
+    "StorageClass": "STANDARD",
+    "VersionId": "xdHs019OVOCv0_XlCbATISHVCPu2gKB7",
+    "ServerSideEncryption": "aws:kms",
+    "SSEKMSKeyId": "arn:aws:kms:us-east-1:341936017254:key/30f01bb6-03b5-4e5f-b7a8-e304fe607ced"
+  },
+  "scope": "Read-only ECS/backup continuity at separation. Backup observation here is metadata-only; prior SQL VERIFYONLY was 10 Nov 15:41 UTC.",
+  "runtimeChanged": false
+}

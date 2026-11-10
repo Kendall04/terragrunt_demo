@@ -55,15 +55,11 @@ def sources(root):
         if rel.parts[:2] == ("operations", "sql-backup") and path.suffix != ".md":
             yield path
             continue
-        if rel.parts[:3] == ("operations", "integrations", "portable") and path.suffix == ".tftpl":
-            # Maintained generator input is reviewed with its materialized child.
-            yield path
-            continue
         # Deliberately conservative: unknown files under operational roots are covered too.
         if (rel.parts[0] in ("terraform", ".github", "scripts") and path.suffix not in (".md", ".png")) or \
                 (rel.parts[:2] == ("demo-api", "deploy")) or path.name == "Dockerfile":
             yield path
-        elif path.suffix in (".tf", ".hcl", ".tfvars", ".ps1", ".sh", ".py", ".yml", ".yaml") or path.name.endswith(".tf.json"):
+        elif path.suffix in (".tf", ".hcl", ".tfvars", ".ps1", ".sh", ".py", ".yml", ".yaml", ".tftpl") or path.name.endswith(".tf.json"):
             yield path
 
 

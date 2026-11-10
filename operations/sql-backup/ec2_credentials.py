@@ -135,12 +135,7 @@ def operate(approval_path,config_path,root,apply=False,confirmation=None,port=No
     require(install_receipt['PackageSha256']==approval['Package']['Sha256'] and install_receipt['SourceCommit']==approval['SourceCommit'],'INSTALLED_PACKAGE_MISMATCH')
     require(digest((base/'config.json').read_bytes())==approval['PayloadSha256']['config.json'],'INSTALLED_CONFIG_DRIFT')
     require(not directory.exists(),'EXISTING_CREDENTIAL_BOOTSTRAP_REQUIRES_REVIEW')
-    if dropin.exists():
-        # Only the already hash-inventoried cohost integrity drop-in may precede us.
-        import cohost
-        require(install_receipt.get('ObserverPlacement')=='SQL_HOST','EXISTING_CREDENTIAL_BOOTSTRAP_REQUIRES_REVIEW')
-        require({p.name for p in dropin.iterdir()}=={'sentinel-integrity.conf'},'FOREIGN_CREDENTIAL_DROPIN')
-        cohost.verify(root)
+    require(not dropin.exists(),'EXISTING_CREDENTIAL_BOOTSTRAP_REQUIRES_REVIEW')
     port=port or HostPort()
     identity=port.aws('sts','get-caller-identity')
     require(identity['Account']==ACCOUNT and identity['Arn'].startswith(f'arn:aws:sts::{ACCOUNT}:assumed-role/{ROLE}/'),'INSTANCE_ROLE_MISMATCH')

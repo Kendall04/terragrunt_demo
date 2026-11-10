@@ -60,7 +60,7 @@ The paired cohost/Lambda package is locally qualified; the portfolio now separat
 from retired b1/B2 and native recovery. Eight additional host/worker watchdog cases
 bring the integrated double-backed handler suite to25; portfolio18 Node checks pass.
 Generated Archify diagrams are unchanged, with the final integrated map deferred.
-See [current native scope, permissions, cost and retirement gates](../../operations/integrations/portable/NATIVE-NEXT-GATE.md).
+See [current native scope, permissions, cost and retirement gates](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/integrations/portable/NATIVE-NEXT-GATE.md).
 This is not cloud, full CI, native timer/persistence/inbox or public ECS acceptance.
 Old102/USD6 and earlier source-access/lock blockers below are historical checkpoints;
 no new authority, AWS preflight, publication or spend was created.
@@ -306,7 +306,7 @@ workflow, changing E11 gate selection, installing anything or accepting full CI.
 Source access is resolved: Sentinel 0e8fc55333ddde3b9816885915310a7e69f3de45 and
 PKI 29a3dfc70a0b1646388c0229212898b4be164afe were read/cloned through the renewed
 existing Kendall04 session. Earlier unavailability sections are historical.
-Origins and pins are recorded in [upstream-sources.json](../../operations/integrations/upstream-sources.json).
+Origins and pins are recorded in [upstream-sources.json](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/integrations/upstream-sources.json).
 
 The [consumer adapter](../../operations/integrations/README.md) connects real observer
 candidates to ISourceNormalizer and actual Sentinel ingress/reducer/receipt/audit/
@@ -326,7 +326,7 @@ service-to-service peer exists. Backup CLI/observer/library do not create one.
 PKI runtime is paused pending a genuine need/scope decision; the requirement is
 not silently cancelled and no microservice is invented. Unique experimental
 code/material and failed receipts remain in the [unaccepted compatibility
-experiment](../../operations/integrations/PKI-EXPERIMENT.md); existing API/IaC unchanged.
+experiment](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/integrations/PKI-EXPERIMENT.md); existing API/IaC unchanged.
 
 The [backup policy](../../operations/integrations/README.md#backup-observer-incident-policy)
 replaces the earlier unqualified guard using actual IRecoveryEvaluator.
@@ -379,7 +379,7 @@ case rejects backup work before its provider; no operational dispatcher is wired
 The fifth authentic Archify map now represents local backup/Sentinel and pending
 installation. PKI/second-service proposal is preserved privately in Git history,
 not the current tour. UI adds only guided presentation and qualified historical
-A→B→A evidence, no API features. The [small source/recipe manifest](../../operations/integrations/local-regression-manifest.json)
+A→B→A evidence, no API features. The [small source/recipe manifest](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/integrations/local-regression-manifest.json)
 includes no large binaries. These are local acceptance scopes, not durable
 storage, real email, live AWS observation or hosted CI. Deployment/unchanged
 recovery require their admitted plan, IAM create+retire and budget; original USD2
@@ -387,7 +387,7 @@ is not renewed. No cloud, timer install, remote workflow, push or EKS change.
 
 ## Observer b2 outcome — 2026-10-24
 
-[Native b2 postmortem](../../operations/integrations/NATIVE-TRIAL-2026-10-24.md):43
+[Native b2 postmortem](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/integrations/NATIVE-TRIAL-2026-10-24.md):43
 resources created/retired,28 native absence checks and all temporary access reverted.
 AL2023 bundle bootstrap and durable empty Lambda cursor passed. SSM pre-execution
 authorization failed twice;0 events/0 notices. Offline receipt regressions do not
@@ -417,9 +417,9 @@ The existing preparer now emits a [service cutover dry plan](../../operations/sq
 
 Existing WSL runner:6 suites/77 PASS/0SKIP, including six service-plan tests with negative subcases; canonical renderer Bash syntax PASS. [Source/evidence manifest](../../operations/sql-backup/recovery/service-plan-qualification.json) records actual IDs and hashes. Taskdef materialization did not run because jq is unavailable; no install or substitute. Current SQL helpers are loopback-only: private listener qualification, migration-off recovery binding, protected secret-version selection, native E3/public readiness and full platform create/retire cost remain explicit gates. No current budget authorizes them.
 
-[SSM evidence-trial design](../../operations/integrations/SSM-DIAGNOSTIC-TRIAL-DESIGN.md) is a separate unapproved proposal, not an executable package or a fix. It captures agent/service evidence before retirement, preserves the operator and records the point at which diagnosis must stop. The console Session Manager idea is documented as separate administrative OS access, OFF by default, never a path to execute the rejected command. Support Basic is confirmed; no technical case, purchase or AWS mutation occurred. Final combined demo observability diagram remains deferred until E2E; PKI is outside ECS.
+[SSM evidence-trial design](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/integrations/SSM-DIAGNOSTIC-TRIAL-DESIGN.md) is a separate unapproved proposal, not an executable package or a fix. It captures agent/service evidence before retirement, preserves the operator and records the point at which diagnosis must stop. The console Session Manager idea is documented as separate administrative OS access, OFF by default, never a path to execute the rejected command. Support Basic is confirmed; no technical case, purchase or AWS mutation occurred. Final combined demo observability diagram remains deferred until E2E; PKI is outside ECS.
 
 
 ## Bounded SSM diagnostic package — local only
 
-The [new diagnostic packet](../../operations/integrations/ssm-diagnostic/README.md) implements a sanitized finite collector and status-only harness from unchanged observer function ASTs. Fourteen resources are split4 admin IAM/10 operator runtime, with no Part4/Part7 modification. IAM/backend templates, generation-bound plan/delete guards, exact inventory, read-only admission and full retirement are prepared. Session Manager is OFF. A new USD1 proposal does not reuse previous budgets. [Qualification](../../operations/integrations/ssm-diagnostic/qualification.json) distinguishes offline tests/provider mock plans from native effectiveness; no host, session, command, IAM change or AWS spend was executed. Actual plans/current readbacks, owner consent and fresh boot-log proof remain future admission gates.
+The [new diagnostic packet](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/integrations/ssm-diagnostic/README.md) implements a sanitized finite collector and status-only harness from unchanged observer function ASTs. Fourteen resources are split4 admin IAM/10 operator runtime, with no Part4/Part7 modification. IAM/backend templates, generation-bound plan/delete guards, exact inventory, read-only admission and full retirement are prepared. Session Manager is OFF. A new USD1 proposal does not reuse previous budgets. [Qualification](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/integrations/ssm-diagnostic/qualification.json) distinguishes offline tests/provider mock plans from native effectiveness; no host, session, command, IAM change or AWS spend was executed. Actual plans/current readbacks, owner consent and fresh boot-log proof remain future admission gates.
