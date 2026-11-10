@@ -130,7 +130,9 @@ is an explicit, expiring loopback session, not public backend authentication.
   main/develop; automatic CD is disabled.
   V2 used supervised native delivery. Historical V1 A→B→A proves that earlier
   bound deployment, not a working main-based V2 delivery pipeline. The
-  [single DEV delivery design](docs/DEV-DELIVERY-DESIGN.md) awaits review.
+  [automatic DEV/PROD delivery](docs/DEV-DELIVERY-DESIGN.md) uses one executor,
+  immutable image digests and explicit recovery. Activation remains blocked on
+  the safe handover from the retained E2 owner; no automatic V2 deployment is claimed.
 - [Technical audit](docs/ENGINEERING-REVIEW.md): security findings, current readbacks,
   recovery guarantees, costs and closure. [Validation guide](terraform/docs/validation.md)
   separates offline checks from AWS effects.

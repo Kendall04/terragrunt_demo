@@ -10,12 +10,21 @@
     "workflow_dispatch": {
       "inputs": {
         "environment": {
-          "description": "Rollback the selected environment to its previous compatible healthy release",
+          "description": "Environment (must match selected branch)",
           "required": true,
           "type": "choice",
           "options": [
             "dev",
             "prod"
+          ]
+        },
+        "operation": {
+          "description": "Explicit recovery operation; ordinary releases use merges",
+          "required": true,
+          "type": "choice",
+          "options": [
+            "rollback",
+            "reconcile"
           ]
         }
       }
@@ -26,14 +35,14 @@
   },
   "jobs": {
     "delivery": {
-      "if": "${{ vars.API_DELIVERY_ENABLED == 'true' && github.repository == 'Kendall04/terragrunt_demo' }}",
+      "if": "${{ (github.ref_name == 'develop' && vars.API_DEV_DELIVERY_ENABLED == 'true') || (github.ref_name == 'main' && vars.API_PROD_DELIVERY_ENABLED == 'true') }}",
       "uses": "./.github/workflows/api-execute.yml",
       "permissions": {
         "contents": "read",
         "actions": "read",
         "pull-requests": "read",
         "id-token": "write",
-        "attestations": "write"
+        "deployments": "write"
       }
     }
   }

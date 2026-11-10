@@ -1,7 +1,7 @@
 """One blue/green algorithm for DEV, PROD and historical rollback.
 
 Ports return observed facts. Acknowledgements never authorize draining. An
-uncertain operation retains E2 ownership; this module has no takeover/retry API.
+uncertain operation stops subsequent jobs until explicit operational reconciliation.
 """
 from .model import require
 
@@ -52,7 +52,7 @@ def deploy(port, image):
         return dict(color=new, revision=revision, per_task_ready=True, client_ready=True)
     except Exception as error:
         # Never restore an old color once draining may have started. Retain the
-        # healthy new color, capacity and durable hold for explicit reconciliation.
+        # healthy new color, capacity and recorded failure for explicit reconciliation.
         if draining:
             raise DeliveryFailure('POST_DRAIN_RECONCILIATION_REQUIRED') from error
         if switched and previous_healthy:
@@ -79,5 +79,5 @@ def deploy(port, image):
                 port.journal('traffic-restored', dict(routes=[old, new], revision=initial['active_revision']))
             except Exception as rollback_error:
                 raise DeliveryFailure('TRAFFIC_RECONCILIATION_REQUIRED') from rollback_error
-            raise DeliveryFailure('FAILED_TRAFFIC_RESTORED_HOLD_RETAINED') from error
-        raise DeliveryFailure('PRE_SWITCH_HOLD_RETAINED') from error
+            raise DeliveryFailure('FAILED_TRAFFIC_RESTORED_RECONCILIATION_REQUIRED') from error
+        raise DeliveryFailure('PRE_SWITCH_RECONCILIATION_REQUIRED') from error
