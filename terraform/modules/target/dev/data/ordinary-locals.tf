@@ -25,5 +25,5 @@ locals {
 }
 
 locals {
-  sql_full_user_data = local.sql_base_user_data
+  sql_full_user_data = var.sql_backup_cohost == null ? local.sql_base_user_data : ""
 }

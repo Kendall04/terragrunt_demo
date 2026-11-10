@@ -6575,7 +6575,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/ownership_publication/test_wp2d.py": {
-      "sha256": "8fd117b2b5566740204f7e6f74b79db3d3795fc6716a7dd9b40f0a058e3a66be",
+      "sha256": "8916b05e3db4458bc7e04bb0d875cac2677dd4dd4c8ee92dcf7fab3a1ca4d0b8",
       "declarations": [],
       "signals": {
         "role-input": [
@@ -7156,7 +7156,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/security_root/ordinary.py": {
-      "sha256": "65d68e3615c4a9ab90d2aa8a78eac8113ee56d0c6d7b81fed0c01e9f654e94c6",
+      "sha256": "8945238559a5f41ad9a80b8259489487c3304f7f35c226d4b54a3a83b3e498b1",
       "declarations": [
         {
           "kind": "resource",
@@ -9079,7 +9079,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/infra/security/authority.json": {
-      "sha256": "0baaacbd30d9a54f7e8424187834cd93a0307ecf185f53b5202f6f775509bdbb",
+      "sha256": "aad5c1d7a228385f1db4c6c581f830680c64ebee9d39b56cb21d2c681cdcba15",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -9956,7 +9956,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "terraform/modules/target/dev/data/ordinary-locals.tf": {
-      "sha256": "2371f3e365024d0031b13b19cea6ba21fe17040c435884d5797a49d6fa9f6ec4",
+      "sha256": "9872267c9deed1cf25d32920ae91cdf13fb267f9d6ed914f934ecd145e7dc4d0",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [

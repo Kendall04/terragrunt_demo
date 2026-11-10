@@ -10,6 +10,7 @@ La implementación recuperable se identifica en [el archivo de separación](hist
 | Recurso | Exclusividad y tratamiento propuesto |
 | --- | --- |
 | Seis Lambda: ingestion, worker, watchdog, cleanup, backup-observer, egress-probe-a | Exclusivas. Cinco reglas EventBridge habilitadas; worker tiene dos targets. Retirar primero los disparadores y el event-source mapping SQS de ingestion, luego esperar invocaciones en curso. |
+| Bus EventBridge `ecs-portable-r20261026p1` y regla `ecs-portable-r20261026p1-reports` | Exclusivos; la regla del bus privado envía a reports SQS. Es distinta de las cinco reglas programadas del bus default. Conservar su configuración y deshabilitar el forwarding durante la pausa. |
 | Tres SQS: reports, reports-dlq, operations-dlq | Exclusivas. A las 17:07 había **1.620** mensajes visibles en operations-dlq; las otras dos estaban vacías. No se recibieron ni purgaron mensajes. Retención SQS no es archivo permanente: decidir exportación antes de su vencimiento. |
 | DynamoDB `ecs-portable-r20261026p1-state` | Journal exclusivo, aproximadamente **141 MB**, PITR habilitado de **un día**. Conservar revisiones, incidentes, efectos y las cuatro compensaciones. TTL/cleanup y PITR no sustituyen un archivo histórico. No eliminar la tabla ni desactivar su protección. |
 | S3 `snt-ecs-portable-r20261026p1-341936017254-us-east-1` | Archivo exclusivo; conservar **todas las versiones**, manifiestos y permisos de lectura futuros. No vaciar. El CMK de archivo es compartido con backups SQL. |
@@ -56,7 +57,8 @@ El hosting DEMO mantiene su presupuesto independiente de USD 1/mes.
    instalado. Comparar `state list`, recursos físicos y plan fresco. No importar
    ni adoptar recursos compartidos, no reutilizar un plan de noviembre anterior.
 3. **Pausa reversible autorizada:** preparar un cambio en el owner existente
-   para deshabilitar solo sus cinco reglas y el mapping de ingestion. Revisar
+   para deshabilitar solo sus cinco reglas programadas, la regla reports del
+   bus privado y el mapping de ingestion. Revisar
    el plan: cero borrados y cero cambios en SQL, NAT/E13, API, CD o CloudFront.
    No hay un interruptor IaC universal ya implementado: el cambio explícito en
    esos recursos requiere revisión y autorización. No usar E2 ni force unlock.

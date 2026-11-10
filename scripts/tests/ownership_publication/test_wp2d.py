@@ -474,7 +474,7 @@ class ClosureTests(unittest.TestCase):
             template = 'templatefile("${path.module}/../../../../infra/data/user_data.sh", {'
             if env == 'dev':
                 self.assertIn('sql_base_user_data = ' + template, locals_source)
-                self.assertIn('sql_full_user_data = local.sql_base_user_data', locals_source)
+                self.assertIn('sql_full_user_data = var.sql_backup_cohost == null ? local.sql_base_user_data : ""', locals_source)
                 self.assertNotIn('cohost-bootstrap', locals_source)
                 variables = generated[f'terraform/modules/target/{env}/data/ordinary-variables.tf']
                 self.assertIn('condition     = var.sql_backup_cohost == null', variables)

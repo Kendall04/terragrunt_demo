@@ -64,3 +64,8 @@ The optional Terraform SQL cohost bootstrap is also archived. Default SQL
 user-data remains the same base payload. A deprecated null-only input rejects
 old non-null cohost settings before planning; it cannot start Sentinel. Native
 SQL backup installation, TLS and the root-volume preservation opt-in remain.
+
+The four DEV infrastructure source-package fingerprints in `authority.json`
+were renewed for this reviewed hook removal. All grants, approvals, activation
+fields and PROD packages remain unchanged; this does not install IAM or authorize
+a deployment. TFLint's existing finding baseline remains unchanged.
