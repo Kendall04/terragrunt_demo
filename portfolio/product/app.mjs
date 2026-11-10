@@ -936,7 +936,7 @@ function architecture() {
       el(
         "p",
         {},
-        "Snapshot y evidencias fechadas en noviembre de 2026. La recuperación SQL es supervisada. La continuidad de 12–24 h tiene seguimiento independiente.",
+        "Evidencias fechadas en noviembre de 2026, no telemetría actual. La recuperación SQL es supervisada. Sentinel permanece únicamente en el archivo histórico.",
       ),
       el(
         "a",
