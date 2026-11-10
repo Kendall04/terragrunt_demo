@@ -211,3 +211,26 @@ restarting SQL. Confirm fresh physical strict-TLS connections after the restart.
 Only then deploy a root-only manifest and remove the transition deadline. That
 second deployment is the completion criterion; this intermediate revision is
 not permanent TLS. No PROD authority or certificate is created.
+
+### Root-only completion
+
+[The root-only DEV manifest](dev-ca-manifest.json) contains one CA anchor and no
+`transition`. The final release marker is `X-Demo-Release: tls-ca`. Deployment
+must follow the server rotation and a successful new physical connection from
+the coexistence revision; a green liveness response alone is insufficient.
+The server leaf's DER SHA-256 is
+`054767aa811ddfd4a1c51f156d88ba35d3ca1370bf2939af1c90f49ebdbbb9b6`,
+with SAN `sql.demo.internal`, serverAuth EKU, and validity until
+**12 December 2027 04:29:46 UTC**. The DEV root expires in November 2036.
+These ordinary certificate expirations replace the temporary bridge deadline;
+renew the server leaf before expiry, using the existing CA, without rebuilding
+the API image.
+
+For rollback, the automatic executor renders the previous compatible image
+with the **current approved root-only configuration**. Do not directly restart
+an old task definition that still contains the leaf-transition deadline. Retain
+the previous server certificate, key and configuration for supervised server
+recovery; never restore that certificate while root-only tasks serve traffic.
+A future cold SQL restore must issue/install a certificate under this DEV CA;
+the historical fingerprint-pinned installer is not a rotation tool. CA rotation
+requires a separately reviewed overlap of CA roots, not another leaf exception.

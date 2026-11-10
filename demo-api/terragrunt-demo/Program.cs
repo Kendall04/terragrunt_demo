@@ -160,7 +160,7 @@ app.Use(async (context, next) =>
     }
     if (context.Request.Path == "/health/live")
     {
-        context.Response.Headers["X-Demo-Release"] = "tls-transition";
+        context.Response.Headers["X-Demo-Release"] = "tls-ca";
     }
     await next(context);
 });
