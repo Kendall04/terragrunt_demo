@@ -19,8 +19,8 @@
     },
     {
       "path": "assets/atlas.mjs",
-      "bytes": 64974,
-      "sha256": "d3ebf47622d09188bd8bc306ef56fc79c5225dc2c16f4541b5c9c92afd799031"
+      "bytes": 66727,
+      "sha256": "0329e1573b4e7f395bb0d61472bc8cf522ec513104766d7346e4a3ec3a6c60e3"
     },
     {
       "path": "assets/config.mjs",
@@ -74,28 +74,28 @@
     },
     {
       "path": "diagrams/ecs-delivery.html",
-      "bytes": 828280,
-      "sha256": "0c6c1a35722aaffa0d9c86d1c12cd2de4f97ec71132195b829cf38cdb1aa601a"
+      "bytes": 828835,
+      "sha256": "4c7b6470ba8cdfd7296ef986d97a3fd5f6a0a6a9f3a1c79498562cd126d224f3"
     },
     {
       "path": "diagrams/ecs-network.html",
-      "bytes": 832817,
-      "sha256": "a3976eb7b2f490987ebf6db971f2fd6c26e0826952578305a851f94cee4b09bf"
+      "bytes": 832860,
+      "sha256": "a48152d32c1db82c7a10d9ac3d7b18d11ca14b69899efecf807a870d7ac38b8e"
     },
     {
       "path": "diagrams/ecs-platform.html",
-      "bytes": 829898,
-      "sha256": "ae6e3420a36de13e75b2c055eb526f9143cb0bc90f374de28697e9d06ebd93af"
+      "bytes": 834874,
+      "sha256": "eeaebd482016e8cb99d16fb0486f9851674747964227d104955ef92f61674c67"
     },
     {
       "path": "diagrams/ecs-sql-recovery.html",
-      "bytes": 834887,
-      "sha256": "c723fd974341054ec82729f38940f9fa8c1597817074de700727e9cae8ec0edf"
+      "bytes": 833481,
+      "sha256": "4a2e4c5359f16bb9f967d90911af2f74890ab69ac70809a2d91a987275dac255"
     },
     {
       "path": "diagrams/ecs-trust.html",
-      "bytes": 830056,
-      "sha256": "81fdb76a147fc54438b41d2a00557c19e32970c8b965f9927a2d52e9bca29cf3"
+      "bytes": 837865,
+      "sha256": "6763bde084cfe5770d8310bb556f83a4cb2fac431e1e9ba3bc0eec02e9e08824"
     },
     {
       "path": "diagrams/future-integrations.html",
@@ -164,28 +164,28 @@
     },
     {
       "path": "reading/ecs-delivery.html",
-      "bytes": 3334,
-      "sha256": "0bc1782bf149cdedb56a14aaa9674f35a99007a05a3edecb406ddf54f87ac348"
+      "bytes": 236829,
+      "sha256": "6f5dde92d2b21e3b303e8cc31c1e3929828b68d928a6b3da6fc22c1e21d4a9db"
     },
     {
       "path": "reading/ecs-network.html",
-      "bytes": 3487,
-      "sha256": "78b7f23547c426c1726df9c4e855726df6b1f0e754b81a4b596f84e20fcb3f3f"
+      "bytes": 241743,
+      "sha256": "e685579cf9639bdce3cb85b56793a3e21846775ccce42e7ea39ad21ea95c5412"
     },
     {
       "path": "reading/ecs-platform.html",
-      "bytes": 3332,
-      "sha256": "20224f613bb8904729e5dcf56e496e92a103dcfae7137ace54a252c112bd4828"
+      "bytes": 243837,
+      "sha256": "318c5f6583a0fa86101125e7355e23e4704e8c5e8b57da222a0e526d90a3fa59"
     },
     {
       "path": "reading/ecs-sql-recovery.html",
-      "bytes": 3762,
-      "sha256": "fbe5ed0bcd766a2e661aa608da10e43fe78ebbc575f6144418787745819891ef"
+      "bytes": 242465,
+      "sha256": "2d7a8e1e12325d76e3b5e8037bc3dd71edfb18782e5c6b9ec82475bc138f6aeb"
     },
     {
       "path": "reading/ecs-trust.html",
-      "bytes": 3499,
-      "sha256": "200b4740b099a018f79d5e428252cd91a635dd63a7f58ed6ec03d8c9f55980c0"
+      "bytes": 247113,
+      "sha256": "9cda8ee55d16f95133e6740092f9eaca3bec6c35409660e8e1d3651b7d883c33"
     },
     {
       "path": "reading/v2-delivery.html",
@@ -239,28 +239,28 @@
     },
     {
       "path": "sources/ecs-delivery.json",
-      "bytes": 5777,
-      "sha256": "03641b01c6da2a324e180d49818a5c2ff8623796d245d38936c989085440de3b"
+      "bytes": 6348,
+      "sha256": "ab13264262b753bc36a06a8702e5bc2b70dfbaf575a90360376c66c632c84eb7"
     },
     {
       "path": "sources/ecs-network.json",
-      "bytes": 7244,
-      "sha256": "cb6dca0964701dabb1feec53dfa0dc353aa10a651aef39e3084d7c8b612e7a9c"
+      "bytes": 7756,
+      "sha256": "09eca01392aa04366195faf09196b930d373bb3c905fd6a2c916c10023a3dbba"
     },
     {
       "path": "sources/ecs-platform.json",
-      "bytes": 6254,
-      "sha256": "84c951fcef27d4cd52ac8725aed93716c64f385a820b78c635a76a96fe5b45ae"
+      "bytes": 7606,
+      "sha256": "28ad5723127fb241d7e7bb77a2062668c74ed1b876a4a44ab426e7ac09e56832"
     },
     {
       "path": "sources/ecs-sql-recovery.json",
-      "bytes": 7240,
-      "sha256": "accd819c21eaa61eb5c1c88c37e9052b1d24fd471d4793a5d8a441b17e5f18b6"
+      "bytes": 7407,
+      "sha256": "aeb05a72562b5ae53fc63a958bc9b87bc7cf7719168af180838d5aff2b437fec"
     },
     {
       "path": "sources/ecs-trust.json",
-      "bytes": 6476,
-      "sha256": "5ea9b292f2993b6f08c61b3df604a73e87de612ee5bd5499a319048da7df30a8"
+      "bytes": 8736,
+      "sha256": "cdc3667666c77599ee8ed11999ee5b2ac3addc2a601863e41aa0bc829df687a0"
     },
     {
       "path": "sources/future-integrations.json",
@@ -313,7 +313,7 @@
       "sha256": "501a6ac567e740b262f3390539eacf56fe9082a3232bea8523022211fb09e25f"
     }
   ],
-  "contentSHA256": "594cdfeed4a5c53384d7008927564aac819acd7f1d4715fbbd00fa1d4d7a4ee5",
+  "contentSHA256": "01d3681abc61e451fc0b6a80a06d496aab079175712c9aa13ad62bba49891edd",
   "awsCredentials": false,
   "awsProxy": false
 }

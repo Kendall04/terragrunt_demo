@@ -1,5 +1,7 @@
 {
-  "scope": "Five current Archify views plus preserved historical collection. Local Chrome, not live AWS telemetry",
+  "scope": "Final five current Archify views, 12 historical originals preserved. Local Chrome; no runtime AWS requests.",
+  "at": "2026-11-10T21:24:05.253Z",
+  "status": "PASS",
   "checks": [
     "Keyboard skip link",
     "DEMO create/read/reset and literal XSS",
@@ -7,35 +9,68 @@
     "17 pinned diagrams desktop/mobile, zoom/fit, opaque sandbox, sources, reader and text alternative",
     "DEMO zero API/external calls, keyboard routes/Escape, 320/390/768/1440/1920 responsive",
     "Reproducible static package: direct/trailing-slash routes, DEMO write/read and isolated diagram without backend",
-    "HTTP 503 / timeout / lost connection / expired in-memory capability: no synthetic fallback"
+    "HTTP 503 / timeout / lost connection / expired in-memory capability: no synthetic fallback",
+    "Five current diagrams at 320/390/768/1440/1920, mobile pan after zoom and five textual reading alternatives"
   ],
   "externalRequests": [],
   "browserErrors": [],
+  "totalPrivateCaptures": 88,
+  "diagrams": {
+    "ecs-platform": "3cb01c8ab4590a49a76d33c1ee596a91bf4b5ccb8ec5e61f8741df58910fc265",
+    "ecs-network": "b5766ed360cbada8042462255c2cb8ca0c97dfbd8d5df6a123e981a8446fe73e",
+    "ecs-sql-recovery": "d6100177aad5dab77bc5244ad418a5e7b10c59f84f65c879b2459415cdc99599",
+    "ecs-trust": "a7c3e65d5ed1452aa73df316d698980f3131f5bc0df45d15257210fa7ac18a17",
+    "ecs-delivery": "1b47f94226cba65bc3108cbc371cc77d870fdbbd5b0fe9993b2d6b1d708f40f7"
+  },
   "captures": [
     {
       "file": "1440-ecs-platform.png",
-      "sha256": "5bf82016fe68e6b19acb4ae26dc242a592fbfa71d24a0e0a056a1fd465bd5f17"
+      "sha256": "0493879329929e9fe25cc0b46ad8c0e4c4c98b31cc53b9dab3c0f9cf39061742"
     },
     {
       "file": "1440-ecs-network.png",
-      "sha256": "cf12bffc4d01f2fb0100324027a9b171c8b632d18654e01b4a5123652674ac47"
+      "sha256": "485b8c773f773805f2d718c62bd25e828e2883fe475095ba5545c49408e9c96e"
     },
     {
       "file": "1440-ecs-sql-recovery.png",
-      "sha256": "dc59244dc16f99eb69b5953c4c89495fc74f50866fdd9678f5ba214871f9ebc3"
+      "sha256": "ccce9831274fdbe3532b7eb86c98d1b7fc588b59cfc75cf21d18934ec8e230e3"
     },
     {
       "file": "1440-ecs-trust.png",
-      "sha256": "f12b661354e49d66fe3f29f1d8493c2c159ae993a5c7012b81eb3b2a90bf5897"
+      "sha256": "b1d73ddff0bacee383fe03c5fe336b8f9815392133cc4062f85ab62b87b2b5c3"
     },
     {
       "file": "1440-ecs-delivery.png",
-      "sha256": "8568780a4618dbca332a8fbb288937323ad7e2a63c7be61a187aa9f99f3f5e24"
+      "sha256": "f84030dedbac6af84be60dd517801cd5899629d5883805762a4a5c83acda6ad5"
     },
     {
       "file": "390-overview.png",
       "sha256": "0aef6e221e99797e26c2817e34c615979c84972e340058035c94a0f398e84403"
+    },
+    {
+      "file": "mobile-reading-ecs-trust.png",
+      "sha256": "154fb71f07ec68f8448c79549a83aec39de9978af44ba80fac16cd38cce94d61"
+    },
+    {
+      "file": "mobile-delivery-pan.png",
+      "sha256": "f9aa1d5901e9f4b3a7fffb7e92e9bf1a2629919ff35bf92696ac3a37fe927a94"
     }
   ],
-  "manualReview": "Inspected all five desktop views and mobile overview. Reflowed platform source after initial clipping; regenerated with official Archify. Mobile uses zoom/pan, inspector and readable text."
+  "before": [
+    {
+      "file": "before-1440-ecs-delivery.png",
+      "sha256": "680d007aaa8881e2f792dee305fc5c221d69d7ac088df64d5041e5173f18f814",
+      "diagram": "ecs-delivery",
+      "sourceRevision": "33a32d44351810ab9a815af1da2d1f32d4b968ad",
+      "htmlSha256": "f3b94eba3807140b8d40059e66bd9e05bfeb4678e8a965c67048603c52601314"
+    },
+    {
+      "file": "before-1440-ecs-network.png",
+      "sha256": "2fc4483ce230235804c70c94624a7ba5cb11914ca37d00c7967ea2da12212efc",
+      "diagram": "ecs-network",
+      "sourceRevision": "33a32d44351810ab9a815af1da2d1f32d4b968ad",
+      "htmlSha256": "be6a65f5f5cf140037b349ffcdde30a358f860016dec91cc2382a6ed4b2938a4"
+    }
+  ],
+  "manualReview": "Inspected all five final desktop views, wide delivery, tablet networking, narrow/mobile overviews, mobile pan and enlarged text. Fit gives orientation at 320/390; zoom/pan and the accessible reading sheet provide detail. No overlaps or clipping in node labels; API Gateway remains outside the VPC boundary."
 }

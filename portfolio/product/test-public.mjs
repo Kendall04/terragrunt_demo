@@ -79,6 +79,12 @@ async function get(uri, status = 200) {
 }
 async function capture(page, name) {
   await page.evaluate(() => document.fonts.ready);
+  if (await page.locator("#diagram-frame").count()) {
+    await page.locator("#diagram-frame").scrollIntoViewIfNeeded();
+    const frame = await (await page.locator("#diagram-frame").elementHandle()).contentFrame();
+    await frame.evaluate(() => document.fonts.ready);
+    await frame.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  }
   const bytes = await page.screenshot({
     path: path.join(destination, name + ".png"),
     fullPage: true,
@@ -260,8 +266,8 @@ try {
         before,
       );
       await frame.locator(".diagram-nav [data-view=reset]").click();
-      if (d.id === "ecs-delivery")
-        await capture(page, `public-${width}-delivery`);
+      if (!d.historical)
+        await capture(page, `public-${width}-${d.id}`);
     }
     await page.locator("#diagram-select").selectOption("ecs-delivery");
     await page
