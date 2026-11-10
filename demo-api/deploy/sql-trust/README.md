@@ -187,3 +187,27 @@ The follow-up findings, regression results and final image identity are in
 bytes inside the restricted E1 projection; the repository-level Python adapter
 test owns the comparison with `e1_contract.py`, which is intentionally not
 distributed to the .NET worker.
+
+## DEV CA transition — 10 November 2026
+
+The installed SQL server still presents the historical self-signed leaf before
+rotation. The public [DEV root](dev-root-20261110.crt) has DER SHA-256
+`2d254cf8d009b95b95dcac10f6e7d9c8d70f1138ba02f780a032dc18f0ddbad1`.
+Its offline issuing key is encrypted and held outside the repository and AWS;
+Windows CurrentUser DPAPI protects its passphrase. Preserve that Windows profile
+and its recovery material before moving/reinstalling the custody machine.
+The SQL private key is generated on the SQL host and never enters this repository.
+The root is deployment configuration; the Dockerfile does not copy it into the image.
+
+The first automatic deployment uses `X-Demo-Release: tls-transition` and a
+versioned manifest trusting this root plus the exact historical DEV leaf. It
+retains the existing **12 November 2026 19:29:41 UTC** bridge deadline. This
+explicit application marker triggers the existing application-change selector;
+no workflow or selector changes are necessary.
+
+Before rotation, qualify that revision against the old SQL certificate. Retain
+the original server configuration and key, and arm host-local recovery before
+restarting SQL. Confirm fresh physical strict-TLS connections after the restart.
+Only then deploy a root-only manifest and remove the transition deadline. That
+second deployment is the completion criterion; this intermediate revision is
+not permanent TLS. No PROD authority or certificate is created.

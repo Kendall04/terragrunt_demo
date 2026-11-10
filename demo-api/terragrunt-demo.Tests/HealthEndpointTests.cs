@@ -20,7 +20,7 @@ public class HealthEndpointTests
         var response = await client.GetAsync("/health/live");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal("cd-3", Assert.Single(response.Headers.GetValues("X-Demo-Release")));
+        Assert.Equal("tls-transition", Assert.Single(response.Headers.GetValues("X-Demo-Release")));
         using var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
         var check = Assert.Single(payload.RootElement.GetProperty("checks").EnumerateArray());
         Assert.Equal("self", check.GetProperty("name").GetString());

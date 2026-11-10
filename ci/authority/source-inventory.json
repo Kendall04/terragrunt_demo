@@ -13961,7 +13961,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "demo-api/deploy/sql-trust/README.md": {
-      "sha256": "2d6fe599a7f57a2ba33cae7abadde16e88b46270647666827154248d34a06238",
+      "sha256": "bf30428ba3242bfcdd093f91dbe897d35f201fad71504b6736a0943a00bd3a54",
       "declarations": [],
       "signals": {
         "executable-dependency": [
@@ -13973,7 +13973,7 @@
           188
         ]
       },
-      "semantic_status": "UNVERIFIED"
+      "semantic_status": "CURRENT_FACT"
     },
     "scripts/tests/sql_tls/run_local.py": {
       "sha256": "75cd54d2682b9212d3411eb3d54fae0ea83af5ee9c5ef39521bd5f58e2b6bb98",
@@ -14415,6 +14415,12 @@
         ]
       },
       "semantic_status": "UNVERIFIED"
+    },
+    "demo-api/deploy/sql-trust/dev-root-20261110.crt": {
+      "sha256": "0e431c2b8cdbb3808b31447fba79ee22154053131877bc7ef8adf77f0249eef2",
+      "declarations": [],
+      "signals": {},
+      "semantic_status": "CURRENT_FACT"
     }
   },
   "hash_encoding": "SHA256 of UTF-8 source bytes with CRLF normalized to LF; other inventory fields unchanged",
