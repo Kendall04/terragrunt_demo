@@ -146,5 +146,3 @@ class QueueLintTests(unittest.TestCase):
         bad=copy.deepcopy(original);bad['jobs']['delivery']['steps'][0]['uses']='not-a-valid-action'
         self.assertEqual(json.loads(module.normalize(json.dumps(bad)))['jobs']['delivery']['steps'][0]['uses'],'not-a-valid-action')
         with self.assertRaisesRegex(ValueError,'duplicate'):module.normalize('{"jobs":{},"jobs":{}}')
-
-

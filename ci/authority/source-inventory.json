@@ -4942,7 +4942,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/final_acceptance/contract.py": {
-      "sha256": "fa430ddd3948ef58a489f6e8e034672c60f1e9d65e1a2538ac9ea6cb47107ad1",
+      "sha256": "3c4af09941a6a17536da70e66c77e91088a701e665026171615031b86e139607",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -4959,6 +4959,7 @@
           24,
           33,
           37,
+          59,
           64,
           66,
           67,
@@ -14248,9 +14249,23 @@
       "semantic_status": "CURRENT_FACT"
     },
     "scripts/api_delivery/workflow_contract.py": {
-      "sha256": "c142b3e1555b9d4b54d98f825a9e498e64f92fdf0531b763f6aa9c213d3b32f4",
+      "sha256": "05bc7c01cea3b557a790e83a521df81983ccd5e0649cb628f34d5478cd986ffe",
       "declarations": [],
-      "signals": {},
+      "signals": {
+        "credential-acquisition": [
+          76
+        ],
+        "role-input": [
+          77
+        ],
+        "launch-or-mutation": [
+          76,
+          77
+        ],
+        "executable-dependency": [
+          14
+        ]
+      },
       "semantic_status": "CURRENT_FACT"
     },
     "scripts/tests/api_delivery/test_delivery.py": {
@@ -14321,7 +14336,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/api_delivery/test_configuration.py": {
-      "sha256": "1105c7ebcc812ab52a82fbcd9e1bc234350c5c9c5cb493de1dc2e416d6b4fca4",
+      "sha256": "6ebd7ee64b87146f5d1a1e36f8e319b9ae86810e6028d1c16ef3661cacb9c896",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -14372,7 +14387,7 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/api_delivery/test_simple_delivery.py": {
-      "sha256": "a5c01c69d7b3ece4704d95fcdfaaf6a860574f4329795339262c10893f1a481e",
+      "sha256": "120bb82018ae1f964c6b462de86ca8049ea5ed1eb4d24ba91a1cf2602528e4a8",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
@@ -14382,10 +14397,12 @@
           109,
           113,
           131,
-          138
+          138,
+          141
         ],
         "executable-dependency": [
-          53
+          53,
+          143
         ],
         "security-control": [
           40

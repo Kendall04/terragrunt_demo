@@ -128,16 +128,20 @@ class RuntimeTests(unittest.TestCase):
 
     def test_workflow_security_invariants_and_substitutions(self):
         workflow_contract.validate(ROOT)
-        for change in ('cancel','aws-on-pr','checkout','global'):
+        for change in ('cancel','aws-on-pr','checkout','global','extra-step','extra-job','env-injection','scope-bypass'):
             with tempfile.TemporaryDirectory() as tmp:
                 folder=Path(tmp)/'.github/workflows';folder.mkdir(parents=True)
                 for p in (ROOT/'.github/workflows').glob('api-*.yml'):shutil.copy(p,folder/p.name)
-                name='api-execute.yml' if change=='cancel' else 'api-delivery.yml' if change=='global' else 'api-evaluate.yml'
+                name='api-execute.yml' if change in ('cancel','scope-bypass') else 'api-delivery.yml' if change=='global' else 'api-evaluate.yml'
                 path=folder/name;value=json.loads(path.read_text())
                 if change=='cancel':value['jobs']['delivery']['concurrency']['cancel-in-progress']=True
                 if change=='aws-on-pr':value['jobs']['promotion']['permissions']['id-token']='write'
                 if change=='checkout':value['jobs']['promotion']['steps'][0]['with']['ref']='${{ github.event.pull_request.head.sha }}'
                 if change=='global':value['jobs']['delivery']['if']="vars.API_DELIVERY_ENABLED == 'true'"
+                if change=='extra-step':value['jobs']['promotion']['steps'].append({'run':'aws ecs update-service'})
+                if change=='extra-job':value['jobs']['other']={'runs-on':'ubuntu-latest','steps':[{'run':'false'}]}
+                if change=='env-injection':value['jobs']['promotion']['env']['BASH_ENV']='untrusted.sh'
+                if change=='scope-bypass':value['jobs']['delivery']['if']="${{ true || needs.scope.outputs.deploy == 'true' }}"
                 path.write_text(json.dumps(value))
                 with self.subTest(change=change),self.assertRaises(ValueError):workflow_contract.validate(tmp)
 
