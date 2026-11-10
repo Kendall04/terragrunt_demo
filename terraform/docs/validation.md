@@ -123,12 +123,20 @@ validate/render/write outputs. --plan-only still permits initialization and AWS
 reads. AWS CLI --generate-cli-skeleton output used in hygiene is an offline
 shape check, not a real task registration or runtime test.
 
-Startup migrations now default off; legacy opt-in or the explicit confirmed migration
-command can still mutate SQL. validated-v2 performs a native read-only permission
+Startup migrations default off and the current API refuses legacy profiles;
+only the explicit confirmed migration command can mutate schema. validated-v2 performs a native read-only permission
 check at startup. KMS operations use the credential chain. A local API start
 can contact configured services and mutate a database. Tests disable startup
 migrations and replace healthy readiness checks; inspect configuration before
 broadening integration tests.
+
+The [environment trust test](../../demo-api/deploy/sql-trust/README.md) is an
+explicit opt-in local Docker experiment, separate from the offline suites. It
+uses SQL Server Express, disposable issuer keys/passwords and tmpfs databases,
+the real image entrypoint and SqlClient 6.1.7. Each case opens a new physical
+connection. It proves local SQL TLS acceptance/refusal, not Fargate, AWS KMS or
+eligibility of a deployed bridge revision for rollback. The script never builds,
+pulls or contacts AWS implicitly and removes only its own temporary resources.
 
 ## Existing test meaning and gaps
 

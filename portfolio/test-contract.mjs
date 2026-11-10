@@ -20,11 +20,11 @@ test('guided evidence path and historical distinct-image rollback preserve scope
 });
 
 test('Sentinel pilot, local target and real backup freshness are distinct',async()=>{
- const trial=await read('../operations/integrations/NATIVE-TRIAL-2026-10-23.md');
+ const trial=await read('../docs/history/sentinel/NATIVE-TRIAL-2026-10-23.md');
  assert.match(trial,/owner separately supplied both inbox receipts/);assert.match(trial,/10 Pending effects/);
  assert.match(input.html,/7 recibos y 7 auditorías/);assert.match(input.html,/ambos avisos se acreditaron en el buzón/);
  assert.match(input.html,/0 eventos y 0 avisos/);assert.match(input.html,/SSM rechazó ambos comandos/);assert.match(input.html,/B2 creó 43 recursos/);assert.match(input.html,/168 h/);assert.match(input.html,/no prueba frescura de 2 h/);
- const b2=await read('../operations/integrations/NATIVE-TRIAL-2026-10-24.md');assert.match(b2,/CLOSED_CLEAN_PARTIAL_ACCEPTANCE/);assert.match(b2,/07:01:54/);assert.match(b2,/Root cause: UNRESOLVED/);
+ const b2=await read('../docs/history/sentinel/NATIVE-TRIAL-2026-10-24.md');assert.match(b2,/CLOSED_CLEAN_PARTIAL_ACCEPTANCE/);assert.match(b2,/07:01:54/);assert.match(b2,/Root cause: UNRESOLVED/);
  assert.doesNotMatch(input.html,/Sentinel y correo real\.<|Observación y notificaciones reales siguen pendientes|Persistencia de prueba en memoria/);
 });
 
@@ -95,8 +95,8 @@ test('host stays no-connect and diagram sandbox has no same-origin permission',a
 });
 
 test('portable local evidence binds the actual source-bound packages and preserves native gates',async()=>{
- const artifact=JSON.parse(await read('../operations/integrations/portable/trial/cohost-package.json'));
- const qualification=await read('../operations/integrations/portable/PORTABLE-COHOST-QUALIFICATION.md');
+ const artifact=JSON.parse(await read('../docs/history/sentinel/cohost-package.json'));
+ const qualification=await read('../docs/history/sentinel/PORTABLE-COHOST-QUALIFICATION.md');
  assert.equal(portableEvidence.cohostSource,artifact.SourceCommit);assert.equal(portableEvidence.cohostSha256,artifact.Sha256);
  assert.equal(portableEvidence.lambdaSha256,artifact.LambdaPackage.zipSha256);assert.equal(portableEvidence.upstream,artifact.LambdaPackage.upstreamCommit);
  assert.equal(portableEvidence.classification,'LOCAL_WITH_DOUBLES');assert.equal(portableEvidence.nativePortable,false);assert.equal(portableEvidence.timersInstalled,false);assert.equal(portableEvidence.alarmNoticesEnabled,false);assert.equal(portableEvidence.integratedDiagramDeferred,true);assert.equal(portableEvidence.ssmResolved,false);

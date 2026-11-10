@@ -31,3 +31,23 @@ test('Mobile reading text escapes evidence labels and includes all graph relatio
   assert.ok(html.includes('&lt;script&gt;label&lt;/script&gt;'));
   for(const e of spec.connections)assert.ok(html.includes('href="#node-'+e.to+'"'));
 });
+
+
+test('Current ECS atlas has five authenticated sources, no operational Sentinel and explicit DEV CD',async()=>{
+  const current=JSON.parse(await readFile(root+'/docs/interactive/GENERATION-CURRENT.json','utf8'));
+  const trace=JSON.parse(await readFile(root+'/docs/interactive/TRACEABILITY-CURRENT.json','utf8'));
+  assert.equal(current.diagrams.length,5);
+  const {createHash}=await import('node:crypto');const hash=b=>createHash('sha256').update(b).digest('hex');
+  for(const d of current.diagrams){
+    const src=await readFile(root+'/docs/interactive/'+d.source);assert.equal(hash(src),d.sourceSha256);
+    const spec=JSON.parse(src);validateGraph(spec);
+    assert(!spec.components.some(n=>/sentinel|observer/i.test(n.id)));
+    assert.equal(hash(await readFile(root+'/docs/interactive/'+d.output)),d.htmlSha256);
+    assert.equal(hash(await readFile(root+'/docs/interactive/readable/'+d.id+'.html')),d.readingSha256);
+    assert.deepEqual(Object.values(d.gates),['pass','pass','pass','pass']);
+  }
+  for(const [p,expected] of Object.entries(trace.filesLfSha256)){
+    const text=(await readFile(root+'/'+p,'utf8')).replace(/^\uFEFF/,'').replaceAll('\r\n','\n');
+    assert.equal(hash(text),expected,'Current source changed: '+p);
+  }
+});

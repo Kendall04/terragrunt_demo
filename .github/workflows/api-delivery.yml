@@ -1,0 +1,49 @@
+{
+  "name": "API automatic delivery",
+  "on": {
+    "push": {
+      "branches": [
+        "develop",
+        "main"
+      ]
+    },
+    "workflow_dispatch": {
+      "inputs": {
+        "environment": {
+          "description": "Environment (must match selected branch)",
+          "required": true,
+          "type": "choice",
+          "options": [
+            "dev",
+            "prod"
+          ]
+        },
+        "operation": {
+          "description": "Explicit recovery operation; ordinary releases use merges",
+          "required": true,
+          "type": "choice",
+          "options": [
+            "rollback",
+            "reconcile"
+          ]
+        }
+      }
+    }
+  },
+  "permissions": {
+    "contents": "read"
+  },
+  "jobs": {
+    "delivery": {
+      "if": "${{ (github.ref_name == 'develop' && vars.API_DEV_DELIVERY_ENABLED == 'true') || (github.ref_name == 'main' && vars.API_PROD_DELIVERY_ENABLED == 'true') }}",
+      "uses": "./.github/workflows/api-execute.yml",
+      "permissions": {
+        "contents": "read",
+        "actions": "read",
+        "pull-requests": "read",
+        "id-token": "write",
+        "deployments": "write"
+      }
+    }
+  }
+}

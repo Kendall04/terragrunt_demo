@@ -18,7 +18,7 @@ let current = "/",
   scenarioIndex = 0,
   scenarioKey = "nat",
   diagramListener = null,
-  selectedDiagram = "v2-platform";
+  selectedDiagram = "ecs-platform";
 const $ = (q) => document.querySelector(q);
 function el(tag, attrs = {}, ...children) {
   const n = document.createElement(tag);
@@ -143,9 +143,9 @@ function overview() {
   const lensCopy = [
     "Una solicitud atraviesa API Gateway y la red privada hasta Fargate. La API cifra con KMS y persiste en SQL.",
     "ASG repone la NAT. E13 recupera EIP, ruta y source/destination checking. SQL se recupera en una EC2 nueva mediante un procedimiento supervisado.",
-    "Sentinel observa evidencia de backups y conectividad, persiste incidentes y notifica. No controla ASG ni ejecuta la recuperación.",
+    "El productor SQL publica una copia horaria y su manifiesto en S3 versionado con SSE-KMS. Retención y restore-holds pertenecen a SQL; no dependen de un journal Sentinel.",
   ];
-  const controls = ["Aplicación", "Recuperación", "Sentinel"].map((name, i) =>
+  const controls = ["Aplicación", "Recuperación", "Backups"].map((name, i) =>
     button(
       name,
       () => {
@@ -209,7 +209,7 @@ function overview() {
             "HTTPS → API Gateway",
             "VPC Link → ALB → Fargate",
             "SQL TLS + KMS",
-            "ASG / E13 recupera · Sentinel observa",
+            "ASG / E13 recupera · backups SQL horarios",
           ].map((x) => el("p", {}, x)),
         ),
         el(
@@ -218,7 +218,7 @@ function overview() {
           lens,
           link(
             "Abrir arquitectura completa",
-            "/architecture?diagram=v2-platform",
+            "/architecture?diagram=ecs-platform",
           ),
         ),
       ),
@@ -246,7 +246,6 @@ function overview() {
         "dl",
         { class: "measurement-list" },
         ...[
-          ["59,115 s", "Detección NAT"],
           ["2m 29,191s", "HTTPS recuperado"],
           ["41m 31,5s", "SQL CROSS-AZ"],
           ["24m 42,6s", "SQL SAME-AZ"],
@@ -255,25 +254,25 @@ function overview() {
     ),
     el(
       "section",
-      { class: "sentinel-feature" },
+      { class: "delivery-feature" },
       el(
         "div",
         { class: "feature-copy" },
-        el("h2", {}, "Sentinel convierte señales en una historia verificable."),
+        el("h2", {}, "Un merge lleva el código a DEV."),
         el(
           "p",
           {},
-          "Observa desde fuera del host. Correlaciona incidentes, conserva su journal y comprueba cuándo la evidencia vuelve a ser saludable.",
+          "CI obligatoria, una imagen por digest y entrega blue/green. La nueva versión recibe tráfico después de comprobar SQL, KMS y readiness. PROD permanece deshabilitado.",
         ),
-        link("Explorar Sentinel", "/architecture?diagram=v2-sentinel"),
+        link("Explorar el CD automático", "/architecture?diagram=ecs-delivery"),
       ),
       el(
         "div",
-        { class: "sentinel-chain" },
+        { class: "delivery-chain" },
         ...[
-          ["Observar", "HTTPS privado y backups S3"],
-          ["Evaluar", "Incidente, estado y checkpoint"],
-          ["Demostrar", "Archivo SSE-KMS e inbox verificado"],
+          ["Validar", "CI del commit integrado"],
+          ["Publicar", "ECR con digest inmutable"],
+          ["Desplegar", "ECS, salud y release S3"],
         ].map(([a, b], i) =>
           el(
             "div",
@@ -302,8 +301,8 @@ function overview() {
           "SQL recovery",
         ],
         [
-          "Doce vistas, una implementación trazable.",
-          "Siete diagramas V2 y cinco históricos. Código, relaciones y límites de confianza.",
+          "La arquitectura actual, con evidencia.",
+          "Cinco vistas actuales; doce snapshots históricos preservados. Código, relaciones y límites de confianza.",
           "/architecture",
           "Architecture Explorer",
         ],
@@ -634,7 +633,7 @@ function flowPanel() {
       ),
       el("div", { class: "flow" }, buttons),
       detail,
-      link("Ver arquitectura", "/architecture?diagram=v2-platform"),
+      link("Ver arquitectura", "/architecture?diagram=ecs-platform"),
     ),
   };
 }
@@ -659,7 +658,7 @@ function resilience() {
           ? "NAT / E13"
           : key === "sql"
             ? "SQL recovery"
-            : "Backup / Sentinel",
+            : "Backups SQL",
         () => {
           scenarioKey = key;
           scenarioIndex = 0;
@@ -815,7 +814,7 @@ function architecture() {
   const requested = new URLSearchParams(location.search).get("diagram");
   selectedDiagram = atlas.some((x) => x.id === requested)
     ? requested
-    : "v2-platform";
+    : "ecs-platform";
   const d = atlas.find((x) => x.id === selectedDiagram);
   const diagramNav = el("nav", {
     id: "diagram-nav",
@@ -838,7 +837,7 @@ function architecture() {
     el(
       "details",
       {},
-      el("summary", {}, "Historia · V1 y ensayos"),
+      el("summary", {}, "Historia · V1, Sentinel y ensayos"),
       ...atlas
         .filter((x) => x.historical)
         .map((x) =>
@@ -856,7 +855,7 @@ function architecture() {
       d.title,
       d.description,
       badge(
-        d.historical ? "HISTÓRICO" : "ATLAS V2",
+        d.historical ? "HISTÓRICO" : "ECS ACTUAL",
         d.historical ? "amber" : "cyan",
       ),
     ),
@@ -873,7 +872,7 @@ function architecture() {
       el(
         "option",
         { value: x.id, selected: x.id === d.id },
-        (x.historical ? "HISTÓRICO · " : "V2 · ") + x.label,
+        (x.historical ? "HISTÓRICO · " : "ACTUAL · ") + x.label,
       ),
     ),
   );
@@ -892,7 +891,7 @@ function architecture() {
       { class: "diagram-toolbar" },
       selector,
       el("span", {}, "Archify 3.1.0 · fuente fijada · sin telemetría"),
-      !d.historical
+      d.reading
         ? button(
             "Hoja de lectura",
             (e) => {
@@ -937,7 +936,7 @@ function architecture() {
       el(
         "p",
         {},
-        "Snapshot y evidencias fechadas en noviembre de 2026. La recuperación SQL es supervisada. La continuidad de 12–24 h tiene seguimiento independiente.",
+        "Evidencias fechadas en noviembre de 2026, no telemetría actual. La recuperación SQL es supervisada. Sentinel permanece únicamente en el archivo histórico.",
       ),
       el(
         "a",
@@ -1058,28 +1057,28 @@ function evidence() {
         {},
         [
           "API DEV pública sin autenticación: no se publica una edición AWS de lectura/escritura.",
-          "Una tarea blue y un SQL activo: recuperación fría; no redundancia permanente de aplicación/base.",
-          "TLS termina en API Gateway; HTTP dentro de la VPC. SQL valida TLS con confianza de laboratorio.",
-          "Un correo de resolución NAT no demuestra un correo de caída. Unknown no significa Healthy.",
+          "Una tarea API y un SQL activo: recuperación fría; no redundancia permanente de aplicación/base.",
+          "TLS termina en API Gateway; HTTP dentro de la VPC. SQL valida TLS con la CA DEV definitiva.",
+          "PROD automático no está activado ni demostrado. Sentinel continúa como proyecto independiente.",
           "S3 versionado y SSE-KMS no equivalen a Object Lock. Lifecycle es asíncrono.",
         ].map((x) => el("li", {}, x)),
       ),
-      link("Revisar trust boundaries", "/architecture?diagram=v2-trust"),
+      link("Revisar trust boundaries", "/architecture?diagram=ecs-trust"),
       el("h3", {}, "Fuentes mantenidas en el repositorio"),
       el(
         "div",
         { class: "source-links" },
         [
           "DEV-V2-20261105.md",
-          "SENTINEL-CHAOS-20261106.md",
+          "DEV-DELIVERY-DESIGN.md",
           "V2-RECOVERY-SECURITY-20261105.md",
-          "interactive/V2-AUDIT.md",
+          "interactive/CURRENT-INDEX.md",
         ].map((p) =>
           el(
             "a",
             {
               href:
-                "https://github.com/Kendall04/terragrunt_demo/blob/a46636d6b0b9f38bdbe2512f54cb75d99b406e8d/docs/" +
+                "https://github.com/Kendall04/terragrunt_demo/blob/develop/docs/" +
                 p,
               target: "_blank",
               rel: "noopener noreferrer",

@@ -40,7 +40,9 @@ if (isMigrationCommand)
     }
 }
 
-DatabaseSecurityPolicy.ValidateStartup(configuration);
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton<IRuntimeDatabaseVerifier, RuntimeDatabaseVerifier>();
+builder.Services.AddHostedService<TrustTransitionLifetime>();
 
 // 1) EF Core DbContext. ECS provides DB_CONN_STRING; local Development can use
 // appsettings DefaultConnection.
@@ -90,15 +92,31 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+// Validate the final host configuration, before connections or accepting traffic.
+DatabaseSecurityPolicy.ValidateStartup(configuration);
+var transitionDeadline = TrustTransitionLifetime.Deadline(configuration);
+if (transitionDeadline <= DateTimeOffset.UtcNow)
+    throw new InvalidOperationException("SQL_TRUST_TRANSITION_EXPIRED");
+
 if (DatabaseSecurityPolicy.IsValidated(configuration))
 {
     var runtimeConnection = GetRequiredConnectionString(configuration, app.Environment);
-    try { await RuntimeDatabasePermissions.CheckAsync(runtimeConnection); }
+    try { await app.Services.GetRequiredService<IRuntimeDatabaseVerifier>().CheckAsync(runtimeConnection); }
+    catch (Microsoft.Data.SqlClient.SqlException ex)
+    {
+        // Classify without logging connection strings, SQL text or exception messages.
+        var causes = new List<Exception>();
+        for (Exception? cause = ex; cause is not null; cause = cause.InnerException) causes.Add(cause);
+        var tls = causes.Any(e => e is System.Security.Authentication.AuthenticationException);
+        Console.Error.WriteLine(tls ? "DATABASE_TLS_HANDSHAKE_REFUSED" : "DATABASE_SQL_CONNECTION_REFUSED");
+        Console.Error.WriteLine("DATABASE_FAILURE_TYPES=" + string.Join(",", causes.Select(e => e.GetType().FullName)));
+        throw new InvalidOperationException("DATABASE_RUNTIME_PERMISSIONS_OR_CONNECTION_REFUSED");
+    }
     catch (Exception) { throw new InvalidOperationException("DATABASE_RUNTIME_PERMISSIONS_OR_CONNECTION_REFUSED"); }
-}
-else
-{
-    app.Logger.LogWarning("Database security profile legacy-v1: server certificate and least privilege are not admitted.");
+    if (transitionDeadline <= DateTimeOffset.UtcNow)
+        throw new InvalidOperationException("SQL_TRUST_TRANSITION_EXPIRED");
+    app.Logger.LogInformation("DATABASE_RUNTIME_ADMITTED profile=validated-v2 permission_query=PASS migrations=false trust_manifest={TrustManifest}",
+        configuration["SQL_TRUST_MANIFEST_SHA256"] ?? "not-container-qualified");
 }
 
 app.Logger.LogInformation("Application revision: rollback-proof-v2.");
@@ -133,6 +151,19 @@ else
 }
 
 // 9) Middleware pipeline
+app.Use(async (context, next) =>
+{
+    if (transitionDeadline <= DateTimeOffset.UtcNow)
+    {
+        context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+        return;
+    }
+    if (context.Request.Path == "/health/live")
+    {
+        context.Response.Headers["X-Demo-Release"] = "tls-ca";
+    }
+    await next(context);
+});
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

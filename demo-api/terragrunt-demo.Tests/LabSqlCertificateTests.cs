@@ -108,14 +108,17 @@ public class LabSqlCertificateTests
 
     private static void ValidateLabRecipe(string actual)
     {
-        using var json=Metadata();var sha=json.RootElement.GetProperty("CertificateDerSha256").GetString()!;
-        var normal=File.ReadAllText(Path.Combine(Root,"Dockerfile")).Replace("\r\n","\n");
-        var index=normal.IndexOf("USER $APP_UID",StringComparison.Ordinal);
-        var expected="# Opt-in laboratory variant. Select -f deploy/sql-lab/Dockerfile explicitly; default Dockerfile is unchanged.\n"+normal.Insert(index,SecurityFragment()+TrustFragment(sha));
-        Assert.Equal(expected,actual.Replace("\r\n","\n"));
+        // Historical recipe admitted before the common recipe evolved. Its bytes,
+        // certificate and E1 selector remain frozen, not rebased onto today's Dockerfile.
+        const string pin="7efd26f2be7a80fc26d54fc3e5be44e2dcd58b4fe28b739cbd8b6adfdae8c17e";
+        var normalized=actual.Replace("\r\n","\n");
+        Assert.Equal(pin,Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(normalized))).ToLowerInvariant());
+        using var json=Metadata();
+        Assert.Contains(SecurityFragment(),normalized);
+        Assert.Contains(TrustFragment(json.RootElement.GetProperty("CertificateDerSha256").GetString()!),normalized);
     }
 
-    [Fact] public void Lab_recipe_only_adds_reviewed_security_fixes_and_public_trust_to_exact_normal_recipe()
+    [Fact] public void Historical_lab_recipe_preserves_its_exact_admitted_bytes()
         => ValidateLabRecipe(File.ReadAllText(Path.Combine(Root,"deploy","sql-lab","Dockerfile")));
 
     [Theory]

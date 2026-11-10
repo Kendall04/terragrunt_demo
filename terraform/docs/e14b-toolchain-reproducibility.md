@@ -65,6 +65,14 @@ downloaded tools. CI adds that directory through GITHUB_PATH. Hygiene uses
 standalone actionlint, removing its floating Go compiler/transitive build inputs,
 and replaces the apt ShellCheck installation.
 
+If a pinned GitHub browser-download URL still returns HTTP 504 after retries,
+the installer can retrieve that same asset through the official public Releases
+API. It checks the exact release tag, asset name, repository URL and asset ID,
+then checks the downloaded bytes against the **unchanged repository SHA-256**
+before unpacking or installing. No token, mirror, new pin or workflow permission
+is needed. Other HTTP errors remain failures. This uses GitHub's documented
+[binary asset response](https://docs.github.com/en/rest/releases/assets#get-a-release-asset).
+
 External actions in CI are fixed to verified upstream commit identities for
 checkout v6, setup-dotnet v4, cache v4, setup-buildx v3 and build-push v5. The
 already pinned protected checkout v4.2.2 and setup-terraform v3 are retained and

@@ -1,5 +1,8 @@
 # ECS · diagramas Archify
 
+> Current ECS architecture: [CURRENT-INDEX.md](CURRENT-INDEX.md). This atlas is a preserved historical snapshot; Sentinel is now independent and DEV CD is automatic.
+
+
 **ECS V2 actual:** consulte [el atlas técnico del 6-nov-2026](V2-INDEX.md).
 Incluye siete vistas nuevas, auditoría de fuentes, inventario AWS fechado y
 lectura móvil. Los cinco originales descritos aquí siguen siendo históricos:

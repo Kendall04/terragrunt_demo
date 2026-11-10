@@ -23,7 +23,7 @@ class OriginAndHistoricalTests(unittest.TestCase):
         root=Path(temporary.name)
         for name in history.NON_BASELINE_REVIEW_INPUTS:
             path=root/name;path.parent.mkdir(parents=True,exist_ok=True)
-            shutil.copyfile(ROOT/name,path)
+            path.write_text(history.retired_source(ROOT,name))
         directory=root/'ci/authority/target';directory.mkdir(parents=True)
         (directory/'legacy-sources.json').write_text(json.dumps({'sources':{}}))
         (root/'ci/authority/source-inventory.json').write_text(json.dumps({'sources':{}}))
@@ -111,7 +111,7 @@ class OriginAndHistoricalTests(unittest.TestCase):
             self.assertTrue(name.endswith('/main.tf.json') or
                             name in ('operations/integrations/portable/trial/storage-observer.tf',
                                      'operations/integrations/portable/trial/nat-observer.tf'))
-            self.assertEqual(hashlib.sha256((ROOT/name).read_bytes().replace(b'\r\n',b'\n')).hexdigest(),digest)
+            self.assertEqual(hashlib.sha256(history.retired_source(ROOT,name).encode().replace(b'\r\n',b'\n')).hexdigest(),digest)
         root=self.fixture();unrelated=root/'new-root/main.tf.json';unrelated.parent.mkdir();unrelated.write_text('{}')
         self.assertIn('new-root/main.tf.json',set(history.historical_inputs(root)))
 

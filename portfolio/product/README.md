@@ -1,5 +1,11 @@
 # ECS V2 · Product Demo & Architecture Explorer
 
+Current collection: five ECS views plus twelve historical snapshots, including
+Sentinel. [Current atlas](../../docs/interactive/CURRENT-INDEX.md) and
+[separation record](../../docs/history/SENTINEL-SEPARATION.md) define the scope.
+The public DEMO remains independent of runtime, SQL and monitoring.
+
+
 Experiencia principal del portafolio ECS: texto cifrado, resiliencia y arquitectura.
 La DEMO pública funciona con AWS apagado. AWS Edition es una herramienta local
 supervisada, **no una web pública autenticada**.
@@ -103,8 +109,9 @@ navegador verifica ID/texto y muestra UTC; no conoce el ciphertext SQL.
 
 ## Atlas y evidencia
 
-Se consumen [los siete mapas aceptados](../../docs/interactive/V2-INDEX.md), sus
-JSON, hashes y hojas de lectura sin editar los originales. `adaptArchify`
+El recorrido principal consume [cinco vistas actuales](../../docs/interactive/CURRENT-INDEX.md).
+Los doce mapas anteriores quedan en Historia, con sus JSON, hashes y hojas
+de lectura originales intactos. `adaptArchify`
 genera únicamente una copia de presentación, con tema oscuro, cámara y mensajes
 de selección. El SVG original permanece; no se atribuye al generador el shell.
 
@@ -116,8 +123,9 @@ usar hoja de lectura o alternativa textual; no prometer legibilidad simultánea
 de una arquitectura completa a 390 px. Las categorías IMPLEMENTADO/DESPLEGADO/
 DEMOSTRADO/HISTÓRICO/NO VALIDADO son estados fechados, no salud actual.
 
-La continuidad 12–24 h de Sentinel tiene seguimiento independiente. Esta tarea
-no la certifica ni modifica sus timers, journals o infraestructura.
+Sentinel ya no es una capacidad operativa de ECS. Sus ensayos se conservan
+como historia; [la retirada AWS](../../docs/SENTINEL-RETIREMENT.md) requiere
+autorización separada y no se ha ejecutado.
 
 ## Paquete estático independiente
 

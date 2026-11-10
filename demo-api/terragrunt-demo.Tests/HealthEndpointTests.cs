@@ -12,9 +12,24 @@ namespace terragrunt_demo.Tests;
 public class HealthEndpointTests
 {
     [Fact]
+    public async Task Live_IdentifiesRelease_WithoutClaimingDependencyReadiness()
+    {
+        await using var factory = new DemoApiFactory();
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/health/live");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("tls-ca", Assert.Single(response.Headers.GetValues("X-Demo-Release")));
+        using var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var check = Assert.Single(payload.RootElement.GetProperty("checks").EnumerateArray());
+        Assert.Equal("self", check.GetProperty("name").GetString());
+    }
+
+    [Fact]
     public async Task Health_ReturnsOk_WhenDependenciesAreUnavailable()
     {
-        await using var factory = new DemoApiFactory(includeDbConnection: false);
+        await using var factory = new DemoApiFactory();
         using var client = factory.CreateClient();
 
         var response = await client.GetAsync("/health");
@@ -80,20 +95,13 @@ public class HealthEndpointTests
     }
 
     [Fact]
-    public async Task Ready_ReturnsServiceUnavailable_WhenProductionDbConnectionIsMissing()
+    public async Task Startup_RefusesTraffic_WhenProductionDbConnectionIsMissing()
     {
         await using var factory = new DemoApiFactory(
             environment: "Production",
             includeDbConnection: false);
-        using var client = factory.CreateClient();
-
-        var response = await client.GetAsync("/ready");
-
-        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
-        var body = await response.Content.ReadAsStringAsync();
-        Assert.Contains(
-            "DB_CONN_STRING must be configured outside Development",
-            body);
+        var error = Assert.Throws<InvalidOperationException>(() => factory.CreateClient());
+        Assert.Contains("DB_CONN_STRING must be configured outside Development", error.Message);
     }
 
     private sealed class DemoApiFactory : WebApplicationFactory<Program>
@@ -115,6 +123,7 @@ public class HealthEndpointTests
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
             builder.UseEnvironment(_environment);
+            StrictTestHost.Configure(builder, _includeDbConnection);
             builder.ConfigureAppConfiguration((_, config) =>
             {
                 var settings = new Dictionary<string, string?>
@@ -122,11 +131,6 @@ public class HealthEndpointTests
                     ["Database:RunMigrationsOnStartup"] = "false",
                     ["Database:HealthCheckTimeoutSeconds"] = "1"
                 };
-
-                if (_includeDbConnection)
-                {
-                    settings["DB_CONN_STRING"] = "Server=127.0.0.1,1;Database=demo;User Id=demo;Password=not-a-real-password;TrustServerCertificate=true;Connect Timeout=1;ConnectRetryCount=0;";
-                }
 
                 config.AddInMemoryCollection(settings);
             });

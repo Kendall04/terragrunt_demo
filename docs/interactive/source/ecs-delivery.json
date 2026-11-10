@@ -1,0 +1,270 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "ECS V2 · CD DEV automático y ownership",
+    "locale": "es",
+    "output": "docs/interactive/ecs-delivery.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/Kendall04/terragrunt_demo.git",
+      "revision": "528a583d4f74ccd0368cf00929b7315d582cdb35",
+      "link_mode": "web"
+    }
+  },
+  "components": [
+    {
+      "id": "merge",
+      "type": "external",
+      "label": "Merge a develop",
+      "sublabel": "PR protegida · CI obligatoria",
+      "pos": [
+        60,
+        60
+      ],
+      "size": [
+        245,
+        86
+      ],
+      "tag": "DEMOSTRADO",
+      "sources": [
+        {
+          "path": ".github/workflows/api-delivery.yml",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ci",
+      "type": "cloud",
+      "label": "CI del SHA integrado",
+      "sublabel": "Solo cambios de aplicación",
+      "pos": [
+        420,
+        60
+      ],
+      "size": [
+        245,
+        86
+      ],
+      "tag": "IMPLEMENTADO",
+      "sources": [
+        {
+          "path": "scripts/api_delivery/cli.py",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "image",
+      "type": "cloud",
+      "label": "Build → ECR",
+      "sublabel": "Una imagen · digest inmutable",
+      "pos": [
+        780,
+        60
+      ],
+      "size": [
+        245,
+        86
+      ],
+      "tag": "DEMOSTRADO",
+      "sources": [
+        {
+          "path": "scripts/api_delivery/executor.py",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "candidate",
+      "type": "backend",
+      "label": "Color inactivo ECS",
+      "sublabel": "validated-v2 · roles DEV OIDC",
+      "pos": [
+        780,
+        280
+      ],
+      "size": [
+        245,
+        86
+      ],
+      "tag": "DEMOSTRADO",
+      "sources": [
+        {
+          "path": "scripts/api_delivery/aws.py",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "ready",
+      "type": "backend",
+      "label": "Readiness real",
+      "sublabel": "Por tarea · SQL/KMS · ruta cliente",
+      "pos": [
+        420,
+        280
+      ],
+      "size": [
+        245,
+        86
+      ],
+      "tag": "DEMOSTRADO",
+      "sources": [
+        {
+          "path": "scripts/ecs-readiness-gate.sh",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "traffic",
+      "type": "cloud",
+      "label": "Promover ALB",
+      "sublabel": "Releer rutas · comprobar salud",
+      "pos": [
+        60,
+        280
+      ],
+      "size": [
+        245,
+        86
+      ],
+      "tag": "DEMOSTRADO",
+      "sources": [
+        {
+          "path": "scripts/api_delivery/executor.py",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "record",
+      "type": "database",
+      "label": "Drain + release S3",
+      "sublabel": "Estado versionado · rollback explícito",
+      "pos": [
+        60,
+        500
+      ],
+      "size": [
+        245,
+        86
+      ],
+      "tag": "DEMOSTRADO",
+      "sources": [
+        {
+          "path": "scripts/api_delivery/state.py",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "infra",
+      "type": "cloud",
+      "label": "Terraform separado",
+      "sublabel": "Skeletons; CD posee count y forwarding",
+      "pos": [
+        420,
+        500
+      ],
+      "size": [
+        245,
+        86
+      ],
+      "tag": "IMPLEMENTADO",
+      "sources": [
+        {
+          "path": "terraform/modules/target/dev/apps/modules/ecs_service/service.tf",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "prod",
+      "type": "security",
+      "label": "PROD no activado",
+      "sublabel": "Promoción mismo digest: implementada",
+      "pos": [
+        780,
+        500
+      ],
+      "size": [
+        245,
+        86
+      ],
+      "tag": "NO VALIDADO",
+      "sources": [
+        {
+          "path": ".github/workflows/api-promotion.yml",
+          "line": 1
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "merge-ci",
+      "from": "merge",
+      "to": "ci",
+      "label": "Push protegido",
+      "variant": "default"
+    },
+    {
+      "id": "ci-image",
+      "from": "ci",
+      "to": "image",
+      "label": "CI success",
+      "variant": "default"
+    },
+    {
+      "id": "image-candidate",
+      "from": "image",
+      "to": "candidate",
+      "label": "URI @sha256",
+      "variant": "default"
+    },
+    {
+      "id": "candidate-ready",
+      "from": "candidate",
+      "to": "ready",
+      "label": "Tareas nuevas",
+      "variant": "default"
+    },
+    {
+      "id": "ready-traffic",
+      "from": "ready",
+      "to": "traffic",
+      "label": "Salud PASS",
+      "variant": "default"
+    },
+    {
+      "id": "traffic-record",
+      "from": "traffic",
+      "to": "record",
+      "label": "Salud posterior + espera",
+      "variant": "default"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "slate",
+      "title": "Seguridad esencial",
+      "items": [
+        "OIDC y environment api-dev limitado a develop. Sin autoridad AWS de despliegue en la PR.",
+        "Exclusión por ambiente y handover administrativo de escritores antiguos; E2 histórico permanece intacto.",
+        "Registro S3 versionado y estado operativo. Sin dependencia de Sentinel ni attestations encadenadas."
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Prueba y límites",
+      "items": [
+        "DEV automático demostrado: runs 42751096835 y 42761946295. PROD sigue deshabilitado.",
+        "Cambio documental no construye ni mueve tráfico. Rollback usa una versión compatible del mismo ambiente.",
+        "Antes de drenar se conserva el color anterior. No se promete rollback de esquema SQL incompatible."
+      ]
+    }
+  ]
+}

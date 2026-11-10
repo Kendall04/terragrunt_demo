@@ -1,0 +1,117 @@
+{
+  "name": "API environment executor",
+  "on": {
+    "workflow_call": {}
+  },
+  "permissions": {
+    "contents": "read"
+  },
+  "jobs": {
+    "scope": {
+      "if": "${{ (github.ref_name == 'develop' && vars.API_DEV_DELIVERY_ENABLED == 'true') || (github.ref_name == 'main' && vars.API_PROD_DELIVERY_ENABLED == 'true') }}",
+      "runs-on": "ubuntu-latest",
+      "permissions": {
+        "contents": "read"
+      },
+      "timeout-minutes": 5,
+      "outputs": {
+        "deploy": "${{ steps.scope.outputs.deploy }}"
+      },
+      "steps": [
+        {
+          "name": "Checkout trusted event revision",
+          "uses": "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+          "with": {
+            "ref": "${{ github.sha }}",
+            "fetch-depth": 0,
+            "persist-credentials": false
+          }
+        },
+        {
+          "id": "scope",
+          "name": "Exclude docs before environment concurrency",
+          "run": "python3 -B -m scripts.api_delivery.cli scope"
+        }
+      ],
+      "env": {
+        "API_ENV_ENABLED": "${{ (github.ref_name == 'develop' && vars.API_DEV_DELIVERY_ENABLED == 'true') || (github.ref_name == 'main' && vars.API_PROD_DELIVERY_ENABLED == 'true') }}"
+      }
+    },
+    "delivery": {
+      "if": "${{ needs.scope.outputs.deploy == 'true' }}",
+      "runs-on": "ubuntu-latest",
+      "timeout-minutes": 100,
+      "environment": "${{ github.event_name == 'workflow_dispatch' && format('api-{0}', github.event.inputs.environment) || (github.ref_name == 'develop' && 'api-dev' || 'api-prod') }}",
+      "concurrency": {
+        "group": "e1-application-delivery-${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || (github.ref_name == 'develop' && 'dev' || 'prod') }}",
+        "cancel-in-progress": false,
+        "queue": "max"
+      },
+      "permissions": {
+        "contents": "read",
+        "actions": "read",
+        "pull-requests": "read",
+        "id-token": "write",
+        "deployments": "write"
+      },
+      "env": {
+        "GH_TOKEN": "${{ github.token }}",
+        "API_BINDING_REF": "${{ vars.API_BINDING_REF }}",
+        "AWS_EC2_METADATA_DISABLED": "true",
+        "API_ENV_ENABLED": "${{ (github.ref_name == 'develop' && vars.API_DEV_DELIVERY_ENABLED == 'true') || (github.ref_name == 'main' && vars.API_PROD_DELIVERY_ENABLED == 'true') }}",
+        "API_HANDOVER_REF": "${{ vars.API_HANDOVER_REF }}"
+      },
+      "steps": [
+        {
+          "name": "Checkout trusted event revision",
+          "uses": "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+          "with": {
+            "ref": "${{ github.sha }}",
+            "fetch-depth": 0,
+            "persist-credentials": false
+          }
+        },
+        {
+          "name": "Wait for exact-SHA CI",
+          "run": "python3 -B -m scripts.api_delivery.cli preflight"
+        },
+        {
+          "name": "Install existing hash-locked AWS dependencies",
+          "run": "python3 -m pip install --require-hashes -r scripts/wp4d/requirements-codebuild.lock\naws configure set cli_timestamp_format iso8601"
+        },
+        {
+          "name": "Acquire environment-only deployment identity",
+          "uses": "aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708",
+          "with": {
+            "role-to-assume": "${{ vars.API_DELIVERY_ROLE_ARN }}",
+            "aws-region": "${{ vars.API_REGION }}",
+            "allowed-account-ids": "${{ vars.API_ACCOUNT_ID }}",
+            "role-session-name": "api-${{ github.run_id }}-${{ github.run_attempt }}",
+            "role-duration-seconds": 3600,
+            "unset-current-credentials": true
+          }
+        },
+        {
+          "name": "Execute release or reconcile",
+          "id": "execute",
+          "run": "python3 -B -m scripts.api_delivery.cli execute"
+        },
+        {
+          "name": "Publish release index",
+          "if": "steps.execute.outputs.publish == 'true'",
+          "run": "python3 -B -m scripts.api_delivery.cli publish"
+        },
+        {
+          "name": "Retain deployment diagnostics (not authority)",
+          "if": "always() && hashFiles('evidence/result.json') != ''",
+          "uses": "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02",
+          "with": {
+            "name": "release-diagnostics-${{ github.run_attempt }}",
+            "path": "evidence/result.json"
+          }
+        }
+      ],
+      "needs": "scope"
+    }
+  }
+}

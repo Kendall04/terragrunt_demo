@@ -77,3 +77,13 @@ Reglas consultadas nuevamente el 7-nov en
 
 No quedan fallos P0/P1 conocidos en el alcance observado. Las limitaciones de
 dispositivo físico y lector de pantalla permanecen documentadas, sin inventar PASS.
+
+## Separación Sentinel — 10 noviembre 2026
+
+Revisión documental Impeccable y Web Interface Guidelines sobre el contexto
+existente, sin hooks ni automatización live. Se conservó la composición; CD DEV
+sustituye la sección Sentinel y las vistas originales se agrupan como historia.
+Chrome: teclado, foco, reduced motion, contraste de la paleta y ausencia de
+overflow a 320/390/768/1440/1920 pasan en la auditoría existente. Se revisaron
+capturas reales del overview y los cinco diagramas. Sin certificación WCAG ni
+pruebas con lector de pantalla. No se cambió el aislamiento de los iframes.

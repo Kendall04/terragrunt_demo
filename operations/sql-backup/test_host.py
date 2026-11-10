@@ -124,24 +124,24 @@ class PackageTests(unittest.TestCase):
         return hashlib.sha256(raw).hexdigest()
     def test_distinct_binary_lineage_and_symbols_are_bound_without_claiming_new_compile(self):
         sha=self.binary_publication();archive=self.root/'cohost-binary.tar'
-        result=package.build(self.publish,archive,'a'*40,True,sha,'b'*40)
+        result=package.build(self.publish,archive,'a'*40,sha,'b'*40)
         manifest,files=package.inspect(archive,result['Sha256'])
         self.assertEqual((manifest['SourceCommit'],manifest['BinaryComponent']['SourceCommit']),('a'*40,'b'*40))
         self.assertEqual(manifest['BinaryComponent']['ExcludedSymbols'],['SqlBackup.pdb'])
-        self.assertNotIn('bin/SqlBackup.pdb',files);self.assertIn('cohost.py',files)
+        self.assertNotIn('bin/SqlBackup.pdb',files);self.assertNotIn('cohost.py',files);self.assertNotIn('sentinel_publish.py',files)
     def test_wrong_binary_manifest_or_source_refuses_before_output(self):
         sha=self.binary_publication()
         for expected,commit in [('0'*64,'b'*40),(sha,'c'*40)]:
             archive=self.root/'refused.tar'
-            with self.assertRaises(ValueError):package.build(self.publish,archive,'a'*40,True,expected,commit)
+            with self.assertRaises(ValueError):package.build(self.publish,archive,'a'*40,expected,commit)
             self.assertFalse(archive.exists())
     def test_binary_content_drift_refuses_before_output(self):
         sha=self.binary_publication();(self.publish/'SqlBackup').write_bytes(b'changed')
-        with self.assertRaisesRegex(ValueError,'COMPONENT_CONTENT_CHANGED'):package.build(self.publish,self.root/'refused.tar','a'*40,True,sha,'b'*40)
+        with self.assertRaisesRegex(ValueError,'COMPONENT_CONTENT_CHANGED'):package.build(self.publish,self.root/'refused.tar','a'*40,sha,'b'*40)
         self.assertFalse((self.root/'refused.tar').exists())
     def test_outer_rehash_cannot_substitute_binary_identity(self):
         sha=self.binary_publication();archive=self.root/'bound.tar'
-        result=package.build(self.publish,archive,'a'*40,True,sha,'b'*40)
+        result=package.build(self.publish,archive,'a'*40,sha,'b'*40)
         with tarfile.open(archive,'r:') as t:members={x.name:(t.extractfile(x).read(),x.mode) for x in t}
         manifest=json.loads(members['manifest.json'][0]);manifest['BinaryComponent']['SourceCommit']='c'*40
         members['manifest.json']=(json.dumps(manifest).encode(),0o644)

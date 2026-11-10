@@ -54,7 +54,7 @@ Sentinel probe `ecs-portable-r20261026p1-egress-probe-a` owns Lambda ENI
 They belong to portable Sentinel, not Global. Their presence prevents subnet/VPC
 removal. Only `$LATEST` exists in the current published-version list.
 
-In the [portable runtime](../../operations/integrations/portable/trial/runtime/main.tf),
+In the [portable runtime](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/integrations/portable/trial/runtime/main.tf),
 `enabled=false` inhibits scheduled/mapped work; it does **not** remove the probe's
 VPC configuration or SG. `nat_observer=null` changes probe resources and monitor
 configuration. A blanket portable destroy would also target retained evidence.

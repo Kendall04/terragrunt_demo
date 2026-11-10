@@ -97,6 +97,42 @@ def verified_binary(raw, item):
         return archive.extractfile(member).read()
 
 
+def fetch(url, artifact, accept='application/octet-stream'):
+    return subprocess.run(['curl', '--fail', '--silent', '--show-error', '--location',
+                           '--proto', '=https', '--proto-redir', '=https', '--retry', '3',
+                           '--connect-timeout', '20', '--max-time', '300',
+                           '--header', 'Accept: ' + accept, '--write-out', '%{http_code}',
+                           url, '--output', str(artifact)], check=True, stdout=subprocess.PIPE, text=True)
+
+
+def download(name, item, artifact):
+    try:
+        fetch(item['url'], artifact)
+    except subprocess.CalledProcessError as error:
+        # A 504 on GitHub's browser URL may leave the official asset API usable.
+        # No token, alternate mirror, new version or checksum is introduced.
+        if name not in REPOSITORIES or error.returncode != 22 or (error.stdout or '').strip() != '504':
+            raise
+        api = 'https://api.github.com/repos/' + REPOSITORIES[name]
+        metadata = artifact.with_suffix('.release.json')
+        fetch(api + '/releases/tags/v' + item['version'], metadata, 'application/vnd.github+json')
+        release = json.loads(metadata.read_bytes())
+        if release.get('tag_name') != 'v' + item['version'] or release.get('draft') is not False:
+            raise ValueError('Exact published release required')
+        assets = [asset for asset in release['assets'] if asset.get('name') == item['url'].rsplit('/', 1)[1]]
+        if len(assets) != 1:
+            raise ValueError('Unique exact release asset required')
+        asset = assets[0]
+        if type(asset.get('id')) is not int or asset['id'] <= 0:
+            raise ValueError('Invalid release asset ID')
+        url = api + '/releases/assets/' + str(asset['id'])
+        if asset.get('url') != url or asset.get('browser_download_url') != item['url'] or asset.get('state') != 'uploaded':
+            raise ValueError('Release asset identity differs')
+        fetch(url, artifact)
+        # main still verifies the original repository SHA before unpack/install.
+        print(f"Downloaded {name} through official release asset API; checksum verification required")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('tools', nargs='*')
@@ -118,10 +154,7 @@ def main():
         for name in args.tools:
             item = doc['tools'][name]
             artifact = Path(tmp) / 'artifact'
-            subprocess.run(['curl', '--fail', '--silent', '--show-error', '--location',
-                            '--proto', '=https', '--proto-redir', '=https', '--retry', '3',
-                            '--connect-timeout', '20', '--max-time', '300',
-                            item['url'], '--output', str(artifact)], check=True)
+            download(name, item, artifact)
             binary = verified_binary(artifact.read_bytes(), item)
             target = destination / name
             target.write_bytes(binary)

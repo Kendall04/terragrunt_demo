@@ -4,8 +4,8 @@
   "files": [
     {
       "path": "architecture/index.html",
-      "bytes": 2922,
-      "sha256": "c00413eda4eab2a474f13e9c477510662d83cf74108fb4faee9b936d5be23ce3"
+      "bytes": 2935,
+      "sha256": "dcdb184e8bbdbe7d400b354f3e7d896674220845879564ddf9369dea726c8d80"
     },
     {
       "path": "assets/api.mjs",
@@ -14,13 +14,13 @@
     },
     {
       "path": "assets/app.mjs",
-      "bytes": 32440,
-      "sha256": "067a7d7e887dcc55f5f66fcb53e2e911d05b9acf362c3e455d06fa09ab34e5fb"
+      "bytes": 32448,
+      "sha256": "906821e264ab252e1b292bf5ee557400b5392b26c26b3279148214a355de4505"
     },
     {
       "path": "assets/atlas.mjs",
-      "bytes": 44271,
-      "sha256": "ae13367d327d3a8955c48118b575e476601a354cd8c00c9e55e6beaa0fe55fa0"
+      "bytes": 64974,
+      "sha256": "d3ebf47622d09188bd8bc306ef56fc79c5225dc2c16f4541b5c9c92afd799031"
     },
     {
       "path": "assets/config.mjs",
@@ -29,8 +29,8 @@
     },
     {
       "path": "assets/data.mjs",
-      "bytes": 4884,
-      "sha256": "4c0a2068c2a88c082bfe28f71deb26693c05012cc911cd86b797c2a147fac328"
+      "bytes": 4073,
+      "sha256": "48cd6722dae3ccc58ea923fd917ea32cd44ebfbb9c9cbc51ac4c310dd8a17139"
     },
     {
       "path": "assets/fonts/OFL.txt",
@@ -50,17 +50,17 @@
     {
       "path": "assets/style.css",
       "bytes": 30203,
-      "sha256": "994d406a59f5f077a3660d335b47323a29349630d9694ace869fba2edaa647e1"
+      "sha256": "5c91efaaf7bdbc2eddc2392878ec925de298d2003a7f623f7005684cd498c538"
     },
     {
       "path": "assets/visuals.mjs",
-      "bytes": 4715,
-      "sha256": "99678b0e53728eaa4d90995f60d08176e7433dcecfc1cda4b918e0a4ec87bfc3"
+      "bytes": 4711,
+      "sha256": "a5e89b0544dd62d2f2e54c39bd078c449e644f48e32710ff154d0e097eeb5a7b"
     },
     {
       "path": "demo/index.html",
-      "bytes": 2922,
-      "sha256": "c00413eda4eab2a474f13e9c477510662d83cf74108fb4faee9b936d5be23ce3"
+      "bytes": 2935,
+      "sha256": "dcdb184e8bbdbe7d400b354f3e7d896674220845879564ddf9369dea726c8d80"
     },
     {
       "path": "diagrams/az6-recovery.html",
@@ -71,6 +71,31 @@
       "path": "diagrams/backup-signals.html",
       "bytes": 817208,
       "sha256": "54f38aced586d01cc04f054c4aef696a14aa2a4228ed59e881c853555d7ecfca"
+    },
+    {
+      "path": "diagrams/ecs-delivery.html",
+      "bytes": 828280,
+      "sha256": "0c6c1a35722aaffa0d9c86d1c12cd2de4f97ec71132195b829cf38cdb1aa601a"
+    },
+    {
+      "path": "diagrams/ecs-network.html",
+      "bytes": 832817,
+      "sha256": "a3976eb7b2f490987ebf6db971f2fd6c26e0826952578305a851f94cee4b09bf"
+    },
+    {
+      "path": "diagrams/ecs-platform.html",
+      "bytes": 829898,
+      "sha256": "ae6e3420a36de13e75b2c055eb526f9143cb0bc90f374de28697e9d06ebd93af"
+    },
+    {
+      "path": "diagrams/ecs-sql-recovery.html",
+      "bytes": 834887,
+      "sha256": "c723fd974341054ec82729f38940f9fa8c1597817074de700727e9cae8ec0edf"
+    },
+    {
+      "path": "diagrams/ecs-trust.html",
+      "bytes": 830056,
+      "sha256": "81fdb76a147fc54438b41d2a00557c19e32970c8b965f9927a2d52e9bca29cf3"
     },
     {
       "path": "diagrams/future-integrations.html",
@@ -124,8 +149,8 @@
     },
     {
       "path": "evidence/index.html",
-      "bytes": 2922,
-      "sha256": "c00413eda4eab2a474f13e9c477510662d83cf74108fb4faee9b936d5be23ce3"
+      "bytes": 2935,
+      "sha256": "dcdb184e8bbdbe7d400b354f3e7d896674220845879564ddf9369dea726c8d80"
     },
     {
       "path": "HOSTING.json",
@@ -134,8 +159,33 @@
     },
     {
       "path": "index.html",
-      "bytes": 2922,
-      "sha256": "c00413eda4eab2a474f13e9c477510662d83cf74108fb4faee9b936d5be23ce3"
+      "bytes": 2935,
+      "sha256": "dcdb184e8bbdbe7d400b354f3e7d896674220845879564ddf9369dea726c8d80"
+    },
+    {
+      "path": "reading/ecs-delivery.html",
+      "bytes": 3334,
+      "sha256": "0bc1782bf149cdedb56a14aaa9674f35a99007a05a3edecb406ddf54f87ac348"
+    },
+    {
+      "path": "reading/ecs-network.html",
+      "bytes": 3487,
+      "sha256": "78b7f23547c426c1726df9c4e855726df6b1f0e754b81a4b596f84e20fcb3f3f"
+    },
+    {
+      "path": "reading/ecs-platform.html",
+      "bytes": 3332,
+      "sha256": "20224f613bb8904729e5dcf56e496e92a103dcfae7137ace54a252c112bd4828"
+    },
+    {
+      "path": "reading/ecs-sql-recovery.html",
+      "bytes": 3762,
+      "sha256": "fbe5ed0bcd766a2e661aa608da10e43fe78ebbc575f6144418787745819891ef"
+    },
+    {
+      "path": "reading/ecs-trust.html",
+      "bytes": 3499,
+      "sha256": "200b4740b099a018f79d5e428252cd91a635dd63a7f58ed6ec03d8c9f55980c0"
     },
     {
       "path": "reading/v2-delivery.html",
@@ -174,8 +224,8 @@
     },
     {
       "path": "resilience/index.html",
-      "bytes": 2922,
-      "sha256": "c00413eda4eab2a474f13e9c477510662d83cf74108fb4faee9b936d5be23ce3"
+      "bytes": 2935,
+      "sha256": "dcdb184e8bbdbe7d400b354f3e7d896674220845879564ddf9369dea726c8d80"
     },
     {
       "path": "sources/az6-recovery.json",
@@ -186,6 +236,31 @@
       "path": "sources/backup-signals.json",
       "bytes": 3229,
       "sha256": "7da299616f2ccf92207fc1aa49064b759442f53777bfdadb30d0fc88f80c654e"
+    },
+    {
+      "path": "sources/ecs-delivery.json",
+      "bytes": 5777,
+      "sha256": "03641b01c6da2a324e180d49818a5c2ff8623796d245d38936c989085440de3b"
+    },
+    {
+      "path": "sources/ecs-network.json",
+      "bytes": 7244,
+      "sha256": "cb6dca0964701dabb1feec53dfa0dc353aa10a651aef39e3084d7c8b612e7a9c"
+    },
+    {
+      "path": "sources/ecs-platform.json",
+      "bytes": 6254,
+      "sha256": "84c951fcef27d4cd52ac8725aed93716c64f385a820b78c635a76a96fe5b45ae"
+    },
+    {
+      "path": "sources/ecs-sql-recovery.json",
+      "bytes": 7240,
+      "sha256": "accd819c21eaa61eb5c1c88c37e9052b1d24fd471d4793a5d8a441b17e5f18b6"
+    },
+    {
+      "path": "sources/ecs-trust.json",
+      "bytes": 6476,
+      "sha256": "5ea9b292f2993b6f08c61b3df604a73e87de612ee5bd5499a319048da7df30a8"
     },
     {
       "path": "sources/future-integrations.json",
@@ -238,7 +313,7 @@
       "sha256": "501a6ac567e740b262f3390539eacf56fe9082a3232bea8523022211fb09e25f"
     }
   ],
-  "contentSHA256": "3ede367cc3a7e4d48c8fa1d0fc2f66ef75be9ebf8e34d74299d86d9dda6b9b21",
+  "contentSHA256": "594cdfeed4a5c53384d7008927564aac819acd7f1d4715fbbd00fa1d4d7a4ee5",
   "awsCredentials": false,
   "awsProxy": false
 }

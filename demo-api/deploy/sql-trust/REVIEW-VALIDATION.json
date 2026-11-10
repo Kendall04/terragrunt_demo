@@ -1,0 +1,235 @@
+{
+  "schema": "SQL_TRUST_REVIEW_VALIDATION_V1",
+  "reviewed_commit": "beaf4106ea92850cffb9e068704b710985080964",
+  "implementation_commit": "3b0ab14c1c8cc9df3325384ac33a34d5ae453f8b",
+  "findings": [
+    {
+      "id": 1,
+      "baseline": "CONFIRMED: CA:FALSE leaf with CN=CA:TRUE Certificate Sign reached SQL_TRUST_PREPARED in the baseline image",
+      "fixed": "Extension-specific checks; real image refuses before dotnet; legitimate CA connects to SQL"
+    },
+    {
+      "id": 2,
+      "baseline": "CONFIRMED: original renderer test successfully rendered PROD with the same versioned DEV ARN",
+      "fixed": "Exact base ARN matched to independent existing E1_DELIVERY_BINDING_V1; distinct fixtures, both crossings/missing binding/version/suffix/forged environment refused; no deployed PROD binding invented"
+    },
+    {
+      "id": 3,
+      "baseline": "CONFIRMED: real worker.decode_source projection failed xUnit with DirectoryNotFoundException for scripts/internal_release/e1_contract.py (12 passed / 1 failed)",
+      "fixed": "Historical Dockerfile bytes stay in xUnit; selector comparison in repository Python suite; codec, allowlist and recipe unchanged"
+    },
+    {
+      "id": 4,
+      "baseline": "CONFIRMED coverage defect: now+30min exceeds immutable cap even shortly before expiry; no valid bridge admission at/after cap",
+      "fixed": "Fixed-date external shell shims and test-only TimeProvider; before/at/after checks; ordinary C still works; real SQL matrix never expects expired bridge to succeed"
+    },
+    {
+      "id": 5,
+      "baseline": "CONFIRMED coverage gap: explicit migrator tests only refused missing confirmation/credential or runtime identity",
+      "fixed": "Real ENTRYPOINT + confirmed CLI + separate synthetic login/password and no runtime connection; exit 0 and exact EF history on fresh disposable database"
+    }
+  ],
+  "image": {
+    "oci_manifest_digest": "sha256:76a84981799fdfb271ce845302e691fd12d085625e4ef5b5a0838e03e46e9ec8",
+    "config_digest": "sha256:94bc09ad5adec12ce1c04fd0f3f4ee49ceecbd43e72799704b77ef799215b553",
+    "all_blob_digests_verified": true,
+    "registry_published": false,
+    "same_image_all_sql_cases": true,
+    "uid": "1654",
+    "sqlclient": "6.1.7"
+  },
+  "sql": {
+    "started_utc": "2026-11-08T20:12:03.948613+00:00",
+    "ended_utc": "2026-11-08T20:12:40.988078+00:00",
+    "server_image": "mcr.microsoft.com/mssql/server@sha256:cf8f0ab2ebe61feec2eed2629061a07d247f791c2a8ddda74a4ac9f06a291718",
+    "passed": 20,
+    "failed": 0,
+    "tests": [
+      {
+        "case": "prod_accepts_own",
+        "expected": "DATABASE_RUNTIME_ADMITTED",
+        "passed": true,
+        "exit_code": null,
+        "log_sha256": "7eeaa902b43273d1e65ba596a70eab3c13414e7b19c9084d0768adaeb46bd5c2"
+      },
+      {
+        "case": "dev_rejects_prod",
+        "expected": "DATABASE_TLS_HANDSHAKE_REFUSED",
+        "passed": true,
+        "exit_code": null,
+        "log_sha256": "896d1f196397c56266196db05f1a664d109ff3995a0471a87ef27de883363e19"
+      },
+      {
+        "case": "prod_rejects_subject_spoof_ca",
+        "expected": "SQL_TRUST_CA_REQUIRED",
+        "passed": true,
+        "exit_code": 78,
+        "log_sha256": "1bc32e7f99ce474c9aeab3fdd8b9583b18f5760a9ae9b74fe825538941705fc8"
+      },
+      {
+        "case": "wrong_hostname",
+        "expected": "DATABASE_TLS_HANDSHAKE_REFUSED",
+        "passed": true,
+        "exit_code": null,
+        "log_sha256": "cc8ae51a3f3ab519659097808669116c230c597ea28288946404ad933d8017da"
+      },
+      {
+        "case": "missing_manifest",
+        "expected": "SQL_TRUST_MANIFEST_REQUIRED",
+        "passed": true,
+        "exit_code": 78,
+        "log_sha256": "19a54e6851a9575b09cc62af1d60d90fe6fc2f177d4a3310edb9e6a749f1c39b"
+      },
+      {
+        "case": "altered_manifest",
+        "expected": "SQL_TRUST_MANIFEST_HASH_REFUSED",
+        "passed": true,
+        "exit_code": 78,
+        "log_sha256": "64830c507624841d0604306ccb264c98592d76558bafee510460cbc0c2984896"
+      },
+      {
+        "case": "missing_profile",
+        "expected": "DATABASE_VALIDATED_PROFILE_REQUIRED",
+        "passed": true,
+        "exit_code": 78,
+        "log_sha256": "1ca3a415ce2c95d427980000880f60f559fc7a8f9d395b903c55c712600f6f16"
+      },
+      {
+        "case": "legacy_profile",
+        "expected": "DATABASE_VALIDATED_PROFILE_REQUIRED",
+        "passed": true,
+        "exit_code": 78,
+        "log_sha256": "1ca3a415ce2c95d427980000880f60f559fc7a8f9d395b903c55c712600f6f16"
+      },
+      {
+        "case": "prod_rejects_bridge",
+        "expected": "SQL_TRUST_SCHEMA_REFUSED",
+        "passed": true,
+        "exit_code": 78,
+        "log_sha256": "4178003db4ebcd4606dc26995a7708ddcbf6ca8eddccc494f18d896353ff8ad8"
+      },
+      {
+        "case": "anchor_bytes_changed",
+        "expected": "SQL_TRUST_ANCHOR_HASH_REFUSED",
+        "passed": true,
+        "exit_code": 78,
+        "log_sha256": "a31a61813b6b5bb8a8021050506b2b56f3d5597e54d62930ab0ff8ca3f2cab8f"
+      },
+      {
+        "case": "runtime_with_migration_credential",
+        "expected": "DATABASE_RUNTIME_HAS_MIGRATION_CREDENTIAL",
+        "passed": true,
+        "exit_code": null,
+        "log_sha256": "0d4970516cf87fb972087d55750378e961c3b3c9c3d5732c6b419f9eda6d9117"
+      },
+      {
+        "case": "migrator_requires_confirmation",
+        "expected": "SQL_TRUST_COMMAND_REFUSED",
+        "passed": true,
+        "exit_code": 78,
+        "log_sha256": "409e82f2097e2f0edff849a46c719812583da43a7fb1250fba252ca376e312dd"
+      },
+      {
+        "case": "migrator_no_runtime_fallback",
+        "expected": "DATABASE_MIGRATION_REFUSED_OR_FAILED",
+        "passed": true,
+        "exit_code": null,
+        "log_sha256": "18d37ed951dbe535c836214bc19cb5ba6e7ae2a68eab9fabb0539228f71b53fb"
+      },
+      {
+        "case": "migrator_rejects_runtime_identity",
+        "expected": "DATABASE_MIGRATION_REFUSED_OR_FAILED",
+        "passed": true,
+        "exit_code": null,
+        "log_sha256": "18d37ed951dbe535c836214bc19cb5ba6e7ae2a68eab9fabb0539228f71b53fb"
+      },
+      {
+        "case": "migrator_positive_strict_tls",
+        "expected": "DATABASE_MIGRATION_COMPLETED",
+        "passed": true,
+        "exit_code": 0,
+        "log_sha256": "87269b4929efdc94c6366cc7cc6a9b8d3c02114fca29a48b69eee5094ec35552",
+        "history_verified": true,
+        "history_absent_before": true,
+        "history_sha256": "a34a32b71a839c4a3da05cc518ecb93c079408649d808d34102025bd5b162b9f"
+      },
+      {
+        "case": "dev_accepts_own",
+        "expected": "DATABASE_RUNTIME_ADMITTED",
+        "passed": true,
+        "exit_code": null,
+        "log_sha256": "2db489a7dd6ffe32d6b3e3440a15188750ae675c6878586b44318e1058b36000"
+      },
+      {
+        "case": "prod_rejects_dev",
+        "expected": "DATABASE_TLS_HANDSHAKE_REFUSED",
+        "passed": true,
+        "exit_code": null,
+        "log_sha256": "c7e9b52ac7615dcf53987e58d5c666d15cac492bfbf36eb9d73de9b05f40f899"
+      },
+      {
+        "case": "bridge_expired",
+        "expected": "SQL_TRUST_TRANSITION_REFUSED",
+        "passed": true,
+        "exit_code": 78,
+        "log_sha256": "f67704047ca9edad17206a0f4956e7eab5235b410ddc4656f06a0b5d11cb4107"
+      },
+      {
+        "case": "probe_capability_without_trust_or_secrets",
+        "passed": true
+      },
+      {
+        "case": "probe_loopback_unavailable_without_sql_configuration",
+        "passed": true
+      }
+    ]
+  },
+  "checks": {
+    "bootstrap_deterministic_methods": 6,
+    "api_tests_full_checkout": 199,
+    "api_tests_e1_projection": 199,
+    "sql_backup_tests": 62,
+    "sql_backup_preexisting_native_skip": 1,
+    "internal_release_tests": 45,
+    "reproducibility_tests_clean_snapshot": 37,
+    "shellcheck": "PASS"
+  },
+  "projection": {
+    "revision": "3b0ab14c1c8cc9df3325384ac33a34d5ae453f8b",
+    "seal": "4b7adf382a1395e8575c49bcc3b99d721ad1a6de5f544378b6c26d0c7b59f33c",
+    "nodes": 106,
+    "scripts_present": false
+  },
+  "evidence_log_sha256": {
+    "baseline-spoof.log": "7ab2959615c161abf554264d1f9e372b4c635873fdf4a192ca9e57105f02c98f",
+    "baseline-render.log": "f061a466b6f818de9a5e470cdd65a83e5cdb2680c19e9703ec37cc3a4db443cc",
+    "baseline-projection-test.log": "bc724362c27cbf7d7eb78405f7991c9c0726e5718dd7123094b377dffb14fc86",
+    "focused-final.log": "b1753d6e38c430ae3bd7321237f1855c7f84f66d06da1794cc1afeddf097c79c",
+    "fixed-projection-test.log": "27d5443e8df030a4d09e676a65d8fc1c7be5d8c4943d4018abea20db74e35444",
+    "dotnet-full.log": "0c933582cf1d6115bb17ad1bf13ec37958ef33c87deb79c9a86a3691653e1aab",
+    "e1-adapters.log": "a5d26e8e59a7b2e6b9c660a9070ac277e9b0ab37f1d22de4c23ab525b420e29a",
+    "reproducibility-clean.log": "a9e02979f1fcf1271b374b5397b1d662ba59913eb0bb6ffeaf061d8be0043a19",
+    "shellcheck-lf.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sql-verified/migration-history.txt": "1bd093bf49981983e8751f85702eaefa20f206961963187eb0e850465f734c13"
+  },
+  "unchanged_historical_paths": {
+    "demo-api/Dockerfile": "0d68f60d366d39c1d88cc4984a634a4f5709895f021f289e25a79fe203ac39ed",
+    "demo-api/deploy/sql-lab/Dockerfile": "7efd26f2be7a80fc26d54fc3e5be44e2dcd58b4fe28b739cbd8b6adfdae8c17e",
+    "demo-api/deploy/trust/sql.demo.internal.crt": "b55f38626408c7f4f1af047987fc05ada39be39029f3c1c5350cf1b38671aa71",
+    "scripts/internal_release/adapters.py": "03d723c40fdd5afb99a25e44a302bcb9357e6acfd3bc18c464107ba0c51d15fc",
+    "scripts/internal_release/e1_contract.py": "b4d180433b46fbc5964e0b6e852561aae76e192bb234479eb6ee09f4f61deb63",
+    "scripts/internal_release/worker.py": "c5f2bf370675cb84ae45a6458bbcda10a7dcd7accbf3cffd2c6d3e3d04a32d11",
+    "scripts/build_supervision/supervisor.py": "7db623777616a0fa2215329e272dd924223c577c8d3939aeb915db2e2245a88b"
+  },
+  "image_source_sha256_lf": {
+    "demo-api/Dockerfile": "0d68f60d366d39c1d88cc4984a634a4f5709895f021f289e25a79fe203ac39ed",
+    "demo-api/deploy/sql-trust/entrypoint.sh": "e9b707f5ce0e6ed982ad5f6c9b6e481983614799131c351a5f5f1eb1f615f9a6"
+  },
+  "limitations": [
+    "Local Docker/SQL only; not Fargate or AWS KMS",
+    "Bridge time controls only in test harness/assembly, not real historical private key handshake",
+    "Administrative binding file must be authenticated independently by deployment owner; renderer is offline, not a provenance service",
+    "No real PROD binding, CA, server certificate rotation or rollback admission tested",
+    "Working checkout retained the pre-existing untracked Terraform security lock; reproducibility passed in clean tracked snapshot"
+  ]
+}

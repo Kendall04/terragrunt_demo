@@ -260,23 +260,23 @@ try {
         before,
       );
       await frame.locator(".diagram-nav [data-view=reset]").click();
-      if (d.id === "v2-sentinel")
-        await capture(page, `public-${width}-sentinel`);
+      if (d.id === "ecs-delivery")
+        await capture(page, `public-${width}-delivery`);
     }
-    await page.locator("#diagram-select").selectOption("v2-sentinel");
+    await page.locator("#diagram-select").selectOption("ecs-delivery");
     await page
       .getByRole("button", { name: "Hoja de lectura", exact: true })
       .click();
     const reader = await (
       await page.locator("#diagram-frame").elementHandle()
     ).contentFrame();
-    await reader.waitForURL("**/reading/v2-sentinel.html");
-    await reader.locator("svg").first().waitFor();
+    await reader.waitForURL("**/reading/ecs-delivery.html");
+    await reader.locator("article").first().waitFor();
     assert.equal(await reader.locator("a[href]").count(), 0);
   }
-  pass("12 public diagrams desktop/mobile: zoom/fit, opaque iframe and reader");
+  pass("17 public diagrams desktop/mobile: zoom/fit, opaque iframe and reader");
   await page.goto(origin + "/resilience");
-  for (const label of ["NAT / E13", "SQL recovery", "Backup / Sentinel"]) {
+  for (const label of ["NAT / E13", "SQL recovery", "Backups SQL"]) {
     await page.getByRole("button", { name: label, exact: true }).click();
     await page
       .getByRole("button", { name: "Paso siguiente", exact: true })

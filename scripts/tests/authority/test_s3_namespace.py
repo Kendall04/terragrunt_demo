@@ -4,6 +4,7 @@ import tempfile
 import unittest
 from current_controls import symbolic_string, disjoint_s3
 from discovery import Discovery
+from history import retired_source
 
 ROOT=Path(__file__).resolve().parents[3]
 LEGACY='arn:aws:s3:::demo-release-artifacts-111122223333/deployments/prod/fixture.json'
@@ -13,7 +14,7 @@ class S3NamespaceTests(unittest.TestCase):
     def setUp(self):
         tmp=tempfile.TemporaryDirectory(prefix='e1-s3-binding-');self.addCleanup(tmp.cleanup)
         self.root=Path(tmp.name)
-        self.source='\n'.join((ROOT/'operations/integrations/portable/trial/runtime'/n).read_text() for n in ('main.tf','security.tf'))
+        self.source='\n'.join(retired_source(ROOT,'operations/integrations/portable/trial/runtime/'+n) for n in ('main.tf','security.tf'))
 
     def discover(self,text):
         (self.root/'main.tf').write_text(text,encoding='utf-8')

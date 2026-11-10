@@ -117,7 +117,7 @@ try {
   for (const [key, label] of [
     ["nat", "NAT / E13"],
     ["sql", "SQL recovery"],
-    ["backup", "Backup / Sentinel"],
+    ["backup", "Backups SQL"],
   ]) {
     await p.getByRole("button", { name: label, exact: true }).click();
     await p
@@ -182,22 +182,22 @@ try {
         width,
       });
     }
-    await p.locator("#diagram-select").selectOption("v2-sentinel");
+    await p.locator("#diagram-select").selectOption("ecs-delivery");
     await capture(p, width === 1440 ? "desktop-explorer" : "mobile-explorer");
   }
   await p.getByRole("button", { name: "Hoja de lectura", exact: true }).click();
   const reader = await (
     await p.locator("#diagram-frame").elementHandle()
   ).contentFrame();
-  await reader.waitForURL("**/reading/v2-sentinel.html");
-  await reader.locator("svg").first().waitFor();
+  await reader.waitForURL("**/reading/ecs-delivery.html");
+  await reader.locator("article").first().waitFor();
   assert.equal(await reader.locator("a[href]").count(), 0);
   await p.getByRole("button", { name: "Volver al visor", exact: true }).click();
   await p.locator(".textual summary").click();
   await p.locator("[data-inspect]").first().click();
   assert((await p.locator("#node-inspector .source-links a").count()) > 0);
   pass(
-    "12 pinned diagrams desktop/mobile, zoom/fit, opaque sandbox, sources, reader and text alternative",
+    "17 pinned diagrams desktop/mobile, zoom/fit, opaque sandbox, sources, reader and text alternative",
   );
   for (const width of [320, 390, 768, 1440, 1920]) {
     await p.setViewportSize({ width, height: 844 });
@@ -268,7 +268,7 @@ try {
     .locator(".message-row")
     .filter({ hasText: "Paquete estático independiente" })
     .waitFor();
-  await sp.goto(staticOrigin + "/architecture/?diagram=v2-sentinel");
+  await sp.goto(staticOrigin + "/architecture/?diagram=ecs-delivery");
   await capture(sp, "static-explorer");
   assert.deepEqual(staticRequests, []);
   await sc.close();

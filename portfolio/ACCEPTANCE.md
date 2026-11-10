@@ -25,7 +25,7 @@ CSP, aislamiento y rechazo de archivos ajenos siguen cubiertos por Node.
 Las menciones antiguas a repos privados inaccesibles, PKI pendiente,29/102 recursos o
 locks todavía bloqueados son checkpoints HISTÓRICOS, no el estado ni autoridad actual.
 No se certifica el CI global ni hosted workflows sin ejecutarlos. API sencilla y PKI fuera.
-Ver [próximo alcance y probes](../operations/integrations/portable/NATIVE-NEXT-GATE.md).
+Ver [próximo alcance y probes](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/integrations/portable/NATIVE-NEXT-GATE.md).
 No hay AWS nuevo ni preflight de cuenta, push, permisos, publicación o servicios instalados.
 
 
@@ -33,7 +33,7 @@ No hay AWS nuevo ni preflight de cuenta, push, permisos, publicación o servicio
 ## Current correction — b2 retired, partial (2026-10-24)
 
 This dated result supersedes the earlier "not admitted/not deployed" b2 proposal notes
-below; they remain historical preparation evidence. [Native b2 outcome and SSM postmortem](../operations/integrations/NATIVE-TRIAL-2026-10-24.md).
+below; they remain historical preparation evidence. [Native b2 outcome and SSM postmortem](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/integrations/NATIVE-TRIAL-2026-10-24.md).
 
 - [x] Grouped cycle approved;43 resources created; official AL2023 bootstrapped qualified
   bundle with timer inert; confirmed SNS; real Lambda/DynamoDB empty cursor execution.
@@ -114,7 +114,7 @@ installation, cloud check or external notification was performed.
   storage/delivery and real email. Recovery candidate audit is not NAT recovery.
 - Outside scope by explicit owner decision: PKI. ECS has one API, blue/green are
   its release slots, and no internal business HTTP peer exists.
-  [Preserved experiment](../operations/integrations/PKI-EXPERIMENT.md) is NOT ACCEPTED;
+  [Preserved experiment](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/integrations/PKI-EXPERIMENT.md) is NOT ACCEPTED;
   no second microservice was added to justify it.
 
 See [consumer scope and reproduction](../operations/integrations/README.md).
@@ -146,7 +146,7 @@ backup antes del proveedor (cero llamadas). No dispatcher operativo conectado.
 
 Quinto mapa regenerado por Archify auténtico, sin PKI/segundo servicio. Recorrido
 breve y evidencia histórica A→B→A añadidos sin modificar API. Fuente/evidencia:
-[manifiesto pequeño](../operations/integrations/local-regression-manifest.json).
+[manifiesto pequeño](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/integrations/local-regression-manifest.json).
 
 Requiere ensayo integrado y decisión de despliegue: ingesta autenticada,
 persistencia/ACK duraderos, rol/host/cadencia y worker de backups, región/proveedor
@@ -162,7 +162,7 @@ siguen abiertos. PKI está fuera de alcance, no forma parte de estos bloqueos.
 - [x] Minimal invocation-cancellation propagation and three focused regressions:
   **61 checks PASS**, zero build warnings/errors. Persistence remains the upstream
   memory fake, no AWS SDK persistence or email acceptance claimed.
-- [x] [Small cycle proposal](../operations/integrations/OPERATIONAL-TRIAL.md),
+- [x] [Small cycle proposal](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/integrations/OPERATIONAL-TRIAL.md),
   review-only runtime grant matrix and source manifest, including cleanup and
   separate proposed **new USD1** allowance. No money/access/deployment authorized.
 - [ ] Backup-aware managed-host composition/batch bridge, exact dependency cache,
@@ -196,7 +196,7 @@ closed recovery receipts are preserved; neither are relabeled as live operation.
 This is synthetic replay plumbing. Independent real backup host/timer, remote
 producer/check failure coverage, real SQL/API recovery without manual repair and
 remaining project CI/release/hosting gates stay separate. PKI is outside scope.
-[Current operational guide](../operations/integrations/OPERATIONAL-TRIAL.md)
+[Current operational guide](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/integrations/OPERATIONAL-TRIAL.md)
 contains exact resources, principals, suggested parameters and retirement order.
 
 
@@ -211,7 +211,7 @@ requests; the new USD1 proposal is unchanged. See the current operational guide.
 ### Narrow retirement amendment prepared — not installed
 
 The original read-only preflight remains valid: current Part4 denies own-bucket
-retirement. The [local amendment](../operations/integrations/trial-review/part4-amendment/AMENDMENT.md)
+retirement. The [local amendment](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/integrations/trial-review/part4-amendment/AMENDMENT.md)
 is limited to one literal bucket, preserves all other statements, and passed15
 offline tests plus16 applicable captured IAM custom-simulation cases. No real
 DeleteBucket/IAM mutation/AssumeRole occurred. Installing it requires the same
@@ -245,7 +245,7 @@ trial; those sections remain historical. PKI remains outside ECS scope.
   CI/release/hosting and clean SQL/API recovery without manual repairs remain
   separate project gates. No new deployment is authorized by this checklist.
 
-[Integration/code provenance, limits and final single-IaC plan](../operations/integrations/NATIVE-TRIAL-2026-10-23.md).
+[Integration/code provenance, limits and final single-IaC plan](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/integrations/NATIVE-TRIAL-2026-10-23.md).
 The native replay remains a historical synthetic milestone, not live portfolio
 telemetry or complete ECS acceptance.
 
@@ -265,7 +265,7 @@ telemetry or complete ECS acceptance.
 - [ ] Durable continuation owner for automatic dispatch scheduling; service-neutral upstream
   probe policy and observer-death watchdog; real Linux installation/IAM/transport/inbox trial.
 
-[Runbook and exact boundaries](../terraform/infra/sentinel-backup/README.md).
+[Runbook and exact boundaries](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/terraform/infra/sentinel-backup/README.md).
 No new AWS cycle/spend/access or hosted CI execution occurred in this local increment.
 
 
@@ -292,7 +292,7 @@ native trial exports remain immutable (including its 10 Pending work items).
   closed-episode obsolete intents cancel via original CAS. No claim of permanent upstream
   service-neutral probes or historical full outbox drainage.
 
-The [single next-trial proposal](../terraform/infra/sentinel-backup/NEXT-INTEGRATED-TRIAL.md)
+The [single next-trial proposal](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/terraform/infra/sentinel-backup/NEXT-INTEGRATED-TRIAL.md)
 recommends a separate small observer, explicitly outside the current26/29-resource module.
 No host, source-read grant, backend or new spend is selected/created by this checklist.
 Old USD1 and ECS recovery allowances are closed; a new cycle requires its own scope.
@@ -343,7 +343,7 @@ bundle/source lineage. No Lambda rebuild, AWS, timer installation, push or remot
 - [x] Local finite20-send counter, first-episode notice pair, idle43-resource creation,
   early AMI/EBS checks, exact backend workspace prefix;106 managed/21 host Windows+WSL,
   13 TF/7 packaging/16 access scope+reversal tests.
-- [ ] NEW43-resource/USD2/24h cycle is only a [review proposal](../terraform/infra/sentinel-backup/REVIEW-r20261024b2.md).
+- [ ] NEW43-resource/USD2/24h cycle is only a [review proposal](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/terraform/infra/sentinel-backup/REVIEW-r20261024b2.md).
   Real AL2023/IAM/checker/SQS/outbox/inbox/teardown evidence still required.
 
 The168h threshold observes a historical native manifest, not production2h freshness,

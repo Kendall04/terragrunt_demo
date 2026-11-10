@@ -54,3 +54,10 @@ Anthropic frontend-design se evaluó y no se instaló por redundancia.
 
 La revisión final distingue juicio visual, pruebas automatizadas y limitaciones;
 no atribuye a un detector Impeccable ninguna ejecución que no se haya realizado.
+
+## ECS independiente de Sentinel — 10 noviembre 2026
+
+Se conserva esta dirección visual. La superficie antes dedicada a Sentinel
+explica ahora CI → ECR → ECS. El hero representa backups SQL; ASG/E13 conserva
+la recuperación NAT. Cinco vistas actuales tienen prioridad y doce snapshots
+permanecen en Historia, con sus lecturas originales. No se rediseña el sitio.

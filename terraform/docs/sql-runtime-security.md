@@ -1,5 +1,19 @@
 # SQL runtime security increment - 2026-10-27
 
+## Current source update — 2026-11-08
+
+The common API image now requires explicit `validated-v2` for ordinary DEV and
+PROD, and prepares environment-supplied public trust before .NET starts, as UID
+1654. Missing/legacy profiles refuse HTTP startup. The two-container task and
+credential-free probe remain unchanged. See the [current configuration, local
+SQL test and future bridge procedure](../../demo-api/deploy/sql-trust/README.md).
+The SQL-Lab recipe and pins remain historical and unchanged. No AWS rollout,
+real CA, server certificate rotation or pipeline implementation accompanies this
+source change. The dated sections below describe the earlier incremental work;
+their legacy defaults and missing-test statements do not describe current source.
+
+## Historical increment
+
 Local implementation, NOT native SQL/TLS proof, IAM authority or rollout approval.
 The initial security increment generated no material. A separately owner-approved
 30-day laboratory leaf was subsequently generated locally; see the update below.

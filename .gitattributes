@@ -28,3 +28,6 @@ terraform/infra/data/sql-principals.sh.gz.b64 text eol=lf
 
 demo-api/deploy/trust/*.crt text eol=lf
 demo-api/deploy/trust/*.json text eol=lf
+demo-api/deploy/sql-trust/entrypoint.sh text eol=lf
+scripts/render-demo-api-taskdef.sh text eol=lf
+scripts/tests/test-render-demo-api-taskdef.sh text eol=lf

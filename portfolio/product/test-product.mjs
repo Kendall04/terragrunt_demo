@@ -360,10 +360,11 @@ test("upstream non-JSON errors preserve HTTP status but never disclose diagnosti
     },
   );
 });
-test("seven V2 / five historical diagrams, source pins and opaque isolated derivatives", async () => {
+test("five current / twelve historical diagrams, source pins and opaque isolated derivatives", async () => {
   const all = await catalog();
-  assert.equal(all.filter((x) => !x.historical).length, 7);
-  assert.equal(all.filter((x) => x.historical).length, 5);
+  assert.equal(all.filter((x) => !x.historical).length, 5);
+  assert.equal(all.filter((x) => x.historical).length, 12);
+  assert.equal(all.filter((x) => x.reading).length, 12);
   for (const d of all) {
     assert(d.nodes.length);
     assert(
@@ -380,7 +381,7 @@ test("seven V2 / five historical diagrams, source pins and opaque isolated deriv
     assert.match(a.body, /data-present="true"/);
     assert.doesNotMatch(a.body, /<a[^>]*href=|<script[^>]*src=/);
     assert((await diagramAsset("/sources/" + d.id + ".json")).body.length);
-    if (!d.historical)
+    if (d.reading)
       assert((await diagramAsset("/reading/" + d.id + ".html")).body.length);
   }
   assert.equal(await diagramAsset("/diagrams/unknown.html"), null);
@@ -451,7 +452,7 @@ test("UI keeps mode explicit, uses textContent for user text, isolated frames an
   assert.doesNotMatch(app, /allow-same-origin/);
   assert.match(app, /e.source\s*!==\s*frame.contentWindow/);
   assert.match(app, /e.origin\s*!==\s*["']null["']/);
-  assert.match(data, /No hubo correo de caída/);
+  assert.match(data, /ASG\/E13 recupera/);
   assert.match(data, /no.*RPO cero/);
 });
 

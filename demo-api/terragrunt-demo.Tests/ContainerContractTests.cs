@@ -24,7 +24,7 @@ public class ContainerContractTests
     [InlineData("FROM base AS final", "FROM build AS final")]
     [InlineData("COPY --from=build /app/publish .", "COPY --from=build /src .")]
     [InlineData("COPY --from=build /app/publish .", "COPY --from=build --chmod=600 /app/publish .")]
-    [InlineData("terragrunt-demo.dll", "other.dll")]
+    [InlineData("/app/entrypoint.sh", "/app/other.sh")]
     [InlineData("/p:UseAppHost=false", "/p:UseAppHost=true")]
     [InlineData(" --locked-mode", "")]
     [InlineData("terragrunt-demo/packages.lock.json ", "")]
@@ -36,6 +36,10 @@ public class ContainerContractTests
     [InlineData("WORKDIR /app", "WORKDIR /root")]
     [InlineData("ENTRYPOINT", "CMD")]
     [InlineData("USER $APP_UID", "USER $APP_UID\nRUN chmod -R 777 /app")]
+    [InlineData("jq=1.7.1-3ubuntu0.24.04.2", "jq")]
+    [InlineData("liblzma5=5.6.1+really5.4.5-1ubuntu0.4", "liblzma5=5.6.1+really5.4.5-1ubuntu0.2")]
+    [InlineData("--chmod=0555 deploy/sql-trust/entrypoint.sh", "--chmod=0777 deploy/sql-trust/entrypoint.sh")]
+    [InlineData("ENTRYPOINT [\"/app/entrypoint.sh\"]", "ENTRYPOINT [\"dotnet\", \"terragrunt-demo.dll\"]")]
     public void Dockerfile_RejectsRuntimeAndOutputRegressions(string before, string after)
     {
         Assert.Contains(before, Dockerfile);
@@ -117,14 +121,22 @@ public class ContainerContractTests
         }
         Assert.Equal(new[] {
             Base("base", "aspnet"), "WORKDIR /app", "EXPOSE 8080",
-            "ENV ASPNETCORE_URLS=http://+:8080", "USER $APP_UID",
+            "ENV ASPNETCORE_URLS=http://+:8080", "USER root",
+            "RUN apt-get update && apt-get install --no-install-recommends -y " +
+            "apt=2.8.4ubuntu0.1 libapt-pkg6.0t64=2.8.4ubuntu0.1 " +
+            "libpcre2-8-0=10.42-4ubuntu2.2 zlib1g=1:1.3.dfsg-3.1ubuntu2.3 " +
+            "ca-certificates=20260816ubuntu0.24.04.2 liblzma5=5.6.1+really5.4.5-1ubuntu0.4 " +
+            "jq=1.7.1-3ubuntu0.24.04.2 openssl=3.0.13-0ubuntu3.16 " +
+            "&& rm -rf /var/lib/apt/lists/* && mkdir -p /app/empty-cert-dir && chmod 0555 /app/empty-cert-dir",
+            "USER $APP_UID",
             Base("build", "sdk"), "ARG BUILD_CONFIGURATION=Release", "WORKDIR /src",
             "COPY terragrunt-demo/terragrunt-demo.csproj terragrunt-demo/packages.lock.json terragrunt-demo/",
             "RUN dotnet restore terragrunt-demo/terragrunt-demo.csproj --locked-mode",
             "COPY terragrunt-demo/ terragrunt-demo/",
             "RUN dotnet publish terragrunt-demo/terragrunt-demo.csproj -c $BUILD_CONFIGURATION --no-restore -o /app/publish /p:UseAppHost=false && chmod -R a+rX /app/publish",
             "FROM base AS final", "WORKDIR /app", "COPY --from=build /app/publish .",
-            "USER $APP_UID", "ENTRYPOINT [\"dotnet\", \"terragrunt-demo.dll\"]"
+            "COPY --chown=0:0 --chmod=0555 deploy/sql-trust/entrypoint.sh /app/entrypoint.sh",
+            "USER $APP_UID", "ENTRYPOINT [\"/app/entrypoint.sh\"]"
         }, instructions);
     }
 

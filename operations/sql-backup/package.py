@@ -10,7 +10,6 @@ import pwd
 import re
 import stat
 import tarfile
-import cohost
 
 REQUIRED={'SqlBackup','SqlBackup.runtimeconfig.json','SqlBackup.deps.json','libhostfxr.so','libcoreclr.so','System.Private.CoreLib.dll'}
 CONFIG_KEYS=set('Database StagingDirectory RestoreDirectory Bucket Prefix BackupKeyArn TextKeyArn ExpectedEc2RoleName MaxBackupBytes FreeReserveBytes TimeoutSeconds ProposedIntervalHours ProposedRetentionDays ProposedMaxAgeHours RetainLocalVerifiedBackups'.split())
@@ -23,38 +22,27 @@ def no_links(path):
     require('..' not in path.parts,'PARENT_PATH_DENIED')
     require(not any(item.is_symlink() for item in (path,*path.parents)),'SYMLINK_DENIED')
 
-def build(publish,output,commit,with_observer=False,component_manifest_sha=None,component_commit=None,with_portable=False):
+def build(publish,output,commit,component_manifest_sha=None,component_commit=None):
     require(re.fullmatch('[a-f0-9]{40}',commit) is not None,'SOURCE_COMMIT_REQUIRED')
     no_links(publish)
     require(REQUIRED.issubset({item.name for item in publish.iterdir()}),'SELF_CONTAINED_PUBLISH_REQUIRED')
     runtime=json.loads((publish/'SqlBackup.runtimeconfig.json').read_text())['runtimeOptions']
     require(any(item.get('name')=='Microsoft.NETCore.App' and item.get('version')=='10.0.13' for item in runtime.get('includedFrameworks',[])),'PINNED_SELF_CONTAINED_RUNTIME_REQUIRED')
     binary=None;excluded=[]
-    if with_observer and (publish/'local-component-manifest.json').exists():
+    if (publish/'local-component-manifest.json').exists():
         import local_release
         original=local_release.verify(publish,component_manifest_sha,component_commit)
         binary={'SourceCommit':original['SourceCommit'],'ManifestSha256':component_manifest_sha,'BuildIdentity':original['BuildIdentity'],'ManifestPath':'bin/local-component-manifest.json','ExcludedSymbols':[]}
     files={}
     for path in sorted(publish.rglob('*')):
         require(not path.is_symlink(),'PACKAGE_SYMLINK_DENIED')
-        if with_observer and path.is_file() and path.suffix=='.pdb':
+        if binary is not None and path.is_file() and path.suffix=='.pdb':
             excluded.append(path.relative_to(publish).as_posix());continue
         if path.is_file(): files['bin/'+path.relative_to(publish).as_posix()]=(path.read_bytes(),0o755 if path.name=='SqlBackup' or path.suffix=='.so' else 0o644)
     base=Path(__file__).resolve().parent
-    for name in ('host.py','package.py','cohost.py','signals.py','local_release.py','ec2_credentials.py','ec2_prepare.py','sql-backup.service.in','sql-backup.timer.in'):
-        files[name]=((base/name).read_bytes().replace(b'\r\n',b'\n') if with_observer else (base/name).read_bytes(),0o755 if name.endswith('.py') else 0o644)
-    if with_observer:
-        for name in cohost.FILES:
-            files[name]=((base/name).read_bytes().replace(b'\r\n',b'\n') if with_observer else (base/name).read_bytes(),0o755 if name.endswith('.py') else 0o644)
-    if with_portable:
-        require(with_observer,'PORTABLE_REQUIRES_COHOST')
-        for name in cohost.PORTABLE_FILES:
-            source=base.parent/'integrations'/name
-            files[name]=(source.read_bytes().replace(b'\r\n',b'\n'),0o755 if name.endswith('.py') else 0o644)
+    for name in ('host.py','package.py','signals.py','local_release.py','ec2_credentials.py','ec2_prepare.py','sql-backup.service.in','sql-backup.timer.in'):
+        files[name]=((base/name).read_bytes().replace(b'\r\n',b'\n'),0o755 if name.endswith('.py') else 0o644)
     manifest={'SchemaVersion':1,'SourceCommit':commit,'Runtime':'10.0.13','Target':'linux-x64','Files':{name:{'Sha256':digest(body),'Bytes':len(body),'Mode':mode} for name,(body,mode) in files.items()}}
-    if with_observer:
-        manifest['HelperTextEncoding']='UTF8_LF';manifest['ActivationContract']='COHOST_OBSERVER_PRODUCER_SPLIT_V1'
-    if with_portable:manifest['PublisherTransport']='EVENTBRIDGE_REPORT_V1';manifest['PortableContractSha256']=digest(files['portable/cohost-contract.json'][0])
     if binary is not None:
         binary['ExcludedSymbols']=excluded;manifest['BinaryComponent']=binary
     files['manifest.json']=(json.dumps(manifest,sort_keys=True,separators=(',',':')).encode(),0o644)
@@ -98,7 +86,7 @@ def inspect(package,expected):
             require(digest(data)==expected_record['Sha256'] and len(data)==expected_record['Bytes'],'BINARY_COMPONENT_CONTENT_MISMATCH')
     return manifest,files
 
-def install(package,expected,config,root,user,apply,confirmation,sentinel_config=None):
+def install(package,expected,config,root,user,apply,confirmation):
     manifest,files=inspect(package,expected); no_links(root)
     require(config.stat().st_size<=65536,'CONFIG_TOO_LARGE')
     value=json.loads(config.read_text())
@@ -110,25 +98,12 @@ def install(package,expected,config,root,user,apply,confirmation,sentinel_config
     require(all(re.fullmatch('arn:aws:kms:us-east-1:341936017254:key/[a-f0-9-]{36}',value.get(key,'')) is not None for key in ('BackupKeyArn','TextKeyArn')),'EXACT_KEY_ARNS_REQUIRED')
     require(re.fullmatch('[A-Za-z0-9+=,.@_-]{1,64}',value.get('ExpectedEc2RoleName','')) is not None,'EXACT_ROLE_NAME_REQUIRED')
     require(10<=value.get('TimeoutSeconds',600)<=600 and value.get('ProposedIntervalHours',1)==1,'HOURLY_SERVICE_BOUND_REQUIRED')
-    sentinel=signals_read(sentinel_config) if sentinel_config is not None else None
-    if sentinel is not None:
-        cohost.validate(sentinel,value)
-        require(set(cohost.FILES)<=set(files),'COHOST_PACKAGE_REQUIRED')
-        require(manifest.get('ActivationContract')=='COHOST_OBSERVER_PRODUCER_SPLIT_V1','SPLIT_ACTIVATION_PACKAGE_REQUIRED')
-    if sentinel is not None:
-        require((sentinel.get('Portable') is not None)==(manifest.get('PublisherTransport')=='EVENTBRIDGE_REPORT_V1'),'PACKAGE_TRANSPORT_OPT_IN_MISMATCH')
-        if sentinel.get('Portable') is not None:require(sentinel['Portable']['ContractSha256']==manifest['PortableContractSha256'],'PACKAGE_PORTABLE_CONTRACT_MISMATCH')
-    observer_units=cohost.render(sentinel,value,user,files) if sentinel is not None else {}
     identity=pwd.getpwnam(user)
     destination=root/'opt/terragrunt-demo/sql-backup'
     configdir=root/'etc/terragrunt-demo/sql-backup'
     units=root/'etc/systemd/system'
     paths={str(destination):'root-owned 0755 executable package',str(configdir/'config.json'):'root:service-group 0640 public configuration',str(units/'sql-backup.service'):'0644 inert unit',str(units/'sql-backup.timer'):'0644 hourly timer; not enabled',value['StagingDirectory']:'service-owned 0700 staging'}
     result={'Status':'INSTALL_PLAN','PackageSha256':expected,'SourceCommit':manifest['SourceCommit'],'Paths':paths,'ServiceUser':user,'SystemctlActions':[],'CredentialFilesCreated':False}
-    if sentinel is not None:
-        paths.update({str(root/n):'0644 inert cohost unit/drop-in' for n in observer_units})
-        paths[str(configdir/'sentinel.json')]='root:service-group 0640 metadata-only policy'
-        result.update(ObserverPlacement='SQL_HOST',ExternalWatchdogRequired=True,IndependentS3Observation=False,WatchdogSeconds=sentinel['WatchdogSeconds'],ExternalWatchdogBinding=cohost.external_binding(sentinel,value))
     if not apply: return result
     if root==Path('/'):
         require(confirmation==expected and os.geteuid()==0,'HOST_INSTALL_CONFIRMATION_AND_ROOT_REQUIRED')
@@ -139,7 +114,6 @@ def install(package,expected,config,root,user,apply,confirmation,sentinel_config
         require(receipt.is_file() and not receipt.is_symlink(),'UNMANAGED_INSTALLATION_EXISTS')
         previous=json.loads(receipt.read_text())
         require(previous['PackageSha256']==expected and previous['ConfigSha256']==digest(config.read_bytes()) and previous['ServiceUser']==user,'REVIEWED_REPLACEMENT_REQUIRED')
-        require(previous.get('SentinelConfigSha256')==(digest(sentinel_config.read_bytes()) if sentinel is not None else None),'REVIEWED_OBSERVER_REPLACEMENT_REQUIRED')
         for relative,record in previous['InstalledFiles'].items():
             path=root/relative; no_links(path)
             require(path.is_file() and digest(path.read_bytes())==record['Sha256'] and stat.S_IMODE(path.stat().st_mode)==record['Mode'],'INSTALLED_FILE_DRIFT')
@@ -147,7 +121,7 @@ def install(package,expected,config,root,user,apply,confirmation,sentinel_config
         no_links(staging)
         require(staging.is_dir() and stat.S_IMODE(staging.stat().st_mode)==0o700 and staging.stat().st_uid==identity.pw_uid,'STAGING_PERMISSION_DRIFT')
         return dict(result,Status='ALREADY_INSTALLED')
-    for path in (configdir,units/'sql-backup.service',units/'sql-backup.timer',units/'sql-backup-sentinel-producer.service',units/'sql-backup-sentinel-producer.timer',units/'sql-backup.service.d',units/'sql-backup.timer.d',units/'sql-backup-cohost.target',units/'sql-backup-producer.target'):
+    for path in (configdir,units/'sql-backup.service',units/'sql-backup.timer',units/'sql-backup.service.d',units/'sql-backup.timer.d'):
         no_links(path); require(not path.exists(),'UNMANAGED_TARGET_EXISTS')
     staging=root/value['StagingDirectory'].lstrip('/')
     no_links(staging); require(not staging.exists(),'UNMANAGED_STAGING_EXISTS')
@@ -168,25 +142,18 @@ def install(package,expected,config,root,user,apply,confirmation,sentinel_config
     for name in ('sql-backup.service','sql-backup.timer'):
         body=files[name+'.in'].decode().replace('@SERVICE_USER@',user).replace('@STAGING@',value['StagingDirectory'])
         put(units/name,body.encode(),0o644)
-    if sentinel is not None:
-        put(configdir/'sentinel.json',sentinel_config.read_bytes(),0o640,identity.pw_gid)
-        for name,body in observer_units.items():put(root/name,body,0o644)
     staging.mkdir(parents=True,mode=0o700); staging.chmod(0o700)
     if os.geteuid()==0: os.chown(staging,identity.pw_uid,identity.pw_gid)
-    put(receipt,json.dumps({'SchemaVersion':1,'PackageSha256':expected,'SourceCommit':manifest['SourceCommit'],'ConfigSha256':digest(config.read_bytes()),'ServiceUser':user,'InstalledFiles':installed,'ObserverPlacement':'SQL_HOST' if sentinel is not None else None,'ActivationContract':manifest.get('ActivationContract'),'PublisherTransport':manifest.get('PublisherTransport'),'SentinelConfigSha256':digest(sentinel_config.read_bytes()) if sentinel is not None else None},indent=2).encode(),0o644)
+    put(receipt,json.dumps({'SchemaVersion':1,'PackageSha256':expected,'SourceCommit':manifest['SourceCommit'],'ConfigSha256':digest(config.read_bytes()),'ServiceUser':user,'InstalledFiles':installed},indent=2).encode(),0o644)
     return dict(result,Status='STAGED_NOT_ENABLED',StagingUid=identity.pw_uid)
-
-def signals_read(path):
-    no_links(path)
-    return cohost.signals.read(path)
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__); commands=parser.add_subparsers(dest='action',required=True)
-    buildargs=commands.add_parser('build'); buildargs.add_argument('--publish-dir',type=Path,required=True); buildargs.add_argument('--out',type=Path,required=True); buildargs.add_argument('--source-commit',required=True); buildargs.add_argument('--with-observer',action='store_true'); buildargs.add_argument('--component-manifest-sha256'); buildargs.add_argument('--component-source-commit');buildargs.add_argument('--with-portable',action='store_true')
-    deploy=commands.add_parser('install'); deploy.add_argument('--package',type=Path,required=True); deploy.add_argument('--expected-sha256',required=True); deploy.add_argument('--config',type=Path,required=True); deploy.add_argument('--root',type=Path,default=Path('/')); deploy.add_argument('--service-user',default='mssql'); deploy.add_argument('--apply',action='store_true'); deploy.add_argument('--confirm-host-install'); deploy.add_argument('--sentinel-config',type=Path)
+    buildargs=commands.add_parser('build'); buildargs.add_argument('--publish-dir',type=Path,required=True); buildargs.add_argument('--out',type=Path,required=True); buildargs.add_argument('--source-commit',required=True); buildargs.add_argument('--component-manifest-sha256'); buildargs.add_argument('--component-source-commit')
+    deploy=commands.add_parser('install'); deploy.add_argument('--package',type=Path,required=True); deploy.add_argument('--expected-sha256',required=True); deploy.add_argument('--config',type=Path,required=True); deploy.add_argument('--root',type=Path,default=Path('/')); deploy.add_argument('--service-user',default='mssql'); deploy.add_argument('--apply',action='store_true'); deploy.add_argument('--confirm-host-install')
     args=parser.parse_args()
-    if args.action=='build': return build(args.publish_dir,args.out,args.source_commit,args.with_observer,args.component_manifest_sha256,args.component_source_commit,args.with_portable)
-    return install(args.package,args.expected_sha256,args.config,args.root,args.service_user,args.apply,args.confirm_host_install,args.sentinel_config)
+    if args.action=='build': return build(args.publish_dir,args.out,args.source_commit,args.component_manifest_sha256,args.component_source_commit)
+    return install(args.package,args.expected_sha256,args.config,args.root,args.service_user,args.apply,args.confirm_host_install)
 
 if __name__=='__main__':
     try: print(json.dumps(main(),separators=(',',':')))

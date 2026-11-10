@@ -1,159 +1,217 @@
-# DEV application delivery — proposed replacement
+# Automatic API delivery: one executor, two environments
 
-Status: **design for review; not installed or enabled**. Source reviewed:
-`dc3edcd64225a044d8a47b197ae585181cd0d385`; AWS/GitHub readbacks: 7 November 2026.
-The [CI review](CI-CD-REVIEW.md) describes the installed controls. Infrastructure
-continues to use the [native lifecycle](../terraform/docs/native-dev-lifecycle.md).
+**DEV implemented and running. PROD disabled and unqualified.** First automatic
+DEV delivery: [run 42751096835](https://github.com/Kendall04/terragrunt_demo/actions/runs/42751096835).
+CA-only TLS delivery: [run 42761946295/2](https://github.com/Kendall04/terragrunt_demo/actions/runs/42761946295/attempts/2).
+Terraform and CloudFront retain separate lifecycles. The original manual bootstrap
+is not counted as an automatic deployment. The approved administrative handover
+fenced legacy writers; historical E2 remains intact and is not delivery authority.
+Sentinel is not a dependency of this executor.
 
-## One route, two explicit operations
+## Design decision
 
-Use a manual DEV release from protected `main`, plus a separate manual rollback.
-Do not trigger deployment on push, a PR, a successful CI run or a frontend publish.
-PROD remains inhibited. A release identifies an exact main commit and a closed
-recipe; rollback selects an existing successful deployment record, not a free-form tag.
+The previous design coupled every deployment to E2 ownership, signed receipts,
+historical attempts and publication recovery. Those mechanisms did not make the
+first automatic deployment operable: interrupted E2 ownership has no supported
+administrative release. We replace that dependency with a GitHub environment
+queue, a small versioned operational record, and an explicit administrator
+handover that prevents competing writers. We do **not** reset the existing E2.
 
 ```mermaid
 flowchart LR
-  PR[PR] --> CI[Required CI and CD Safety]
-  CI --> Main[Protected main]
-  Main --> Dispatch[Manual DEV release: exact commit]
-  Dispatch --> Build[Locked tests / image / OCI qualification]
-  Build --> Publish[ECR publish and digest readback]
-  Publish --> Candidate[Acquire DEV ownership / start inactive color]
-  Candidate --> Ready[Every task: digest, strict SQL/KMS readiness, target health]
-  Ready --> Promote[Recheck ownership and listener / switch traffic]
-  Promote --> Verify[API smoke / bounded drain / deployment record]
-  History[Previous successful record] --> Rollback[Separate manual rollback]
-  Rollback --> Candidate
-  Infra[Reviewed native Terraform plans] -. skeletons only .-> Candidate
+  F[Feature PR + required CI] --> D[Merge develop]
+  D --> S{Application changed?}
+  S -->|No| N[No AWS identity or build]
+  S -->|Yes| Q[DEV queue + exact-SHA CI]
+  Q --> B[Build once + immutable ECR digest]
+  B --> X[Inactive color + task SQL/KMS readiness]
+  X --> T[ALB switch + client health + drain]
+  T --> R[Versioned S3 record + GitHub Deployment ID]
+  R --> P[develop to main PR: approve exact release ID]
+  P --> M[Merge commit + exact-SHA CI]
+  M --> V[PROD: pinned ID + exact S3 version/hash + ECR digest]
+  V --> X2[Same executor with PROD configuration; no build]
 ```
 
-Recommended workflow surface:
-
-| Proposed file | Responsibility |
+| Keep | Replace or retire |
 | --- | --- |
-| `dev-release.yml` | Manual entry on main; bind source, recipe, cost/window and release ID; one non-cancelling DEV delivery concurrency group. |
-| `dev-rollback.yml` | Manual entry on main; select recorded destination, confirm schema compatibility and reuse the same deployment executor/concurrency. No rebuild. |
-| `dev-release-engine.yml` | Pinned reusable: admission, qualification without AWS credentials, then isolated publication with restricted OIDC. Return authentic manifest digest and qualification record. |
-| `dev-deploy-engine.yml` | Pinned reusable: DEV ownership, candidate/readiness, promotion, readback, bounded drain and durable record. Shared by release and rollback. |
+| Required CI/Safety, strict branch updates, no bypass | One separate activation flag per environment |
+| Common blue/green algorithm and real SQL/KMS readiness | E2 mutation grants → GitHub queue plus fenced external writers |
+| Exact digest, versioned secrets, `validated-v2`, two containers | Attestation/artifact discovery → GitHub Deployments metadata index |
+| Immutable S3 configuration and release bytes | Historical attempt reconstruction → one explicit producer attempt |
+| Previous compatible image and live recovery checks | Permanent ownership hold → observable state and explicit reconciliation |
 
-These are proposed names, not executable files. Avoid separate wrappers for each
-color or layer. Keep CI's reusable jobs; application delivery never runs Terraform.
-The static DEMO publisher and its CloudFront state remain independent.
+The four [workflow files](../.github/workflows/api-delivery.yml) are two callers
+and two reusable jobs, not four competing delivery paths. The
+[executor](../scripts/api_delivery/executor.py) is shared by DEV, PROD and rollback.
+[GitHub](../scripts/api_delivery/github.py) handles the index/check;
+[AWS](../scripts/api_delivery/aws.py) handles ECS/ALB/ECR;
+[state](../scripts/api_delivery/state.py) handles operational recovery.
 
-## Jobs and admission
+## Normal operation and promotion
 
-1. **Admit:** require manual dispatch on main, exact repository/account/region,
-   main source SHA, required CI success for that SHA, approved recipe/certificate
-   fingerprint, unexpired laboratory budget and no retirement in progress. A stale
-   queued release is rejected when it starts. No caller-selected role, resource
-   ARN, Dockerfile path, shell command, buildspec override or arbitrary artifact URL.
-2. **Qualify without AWS:** use the existing sealed source closure (four .NET
-   projects, root contracts); locked restore/build/test; retain the native-test skip
-   explicitly. Build linux/amd64 from pinned bases; verify OCI manifest, non-root
-   runtime and strict SQL trust. Standard remains standard; SQL-Lab is DEV-only.
-   Never use an isolated container's missing SQL/KMS as fabricated readiness PASS.
-3. **Publish:** a separate credential-bearing job downloads the exact same-run
-   artifact, verifies its GitHub artifact digest and sealed contents, and publishes
-   only to `demo-dev-shared-demo-ms`. Record the ECR manifest digest by AWS readback,
-   source SHA, recipe/base/certificate hashes, toolchain and test results. Do not
-   substitute a Docker ImageId or mutable tag. Failure after an uncertain push is
-   reconciled by digest; it does not authorize a second publication or deployment.
-4. **Deploy candidate:** verify cluster/services/listener/target groups, exact task
-   roles, secret VersionId, approved image and available time. Acquire the existing
-   application exclusion before mutation. Build a fresh inactive task definition;
-   the installed green revision 9 is a placeholder, not a ready application.
-   Migrations remain a separate operation, never HTTP startup or image rollback.
-5. **Readiness and promotion:** start only the reviewed replica count. Verify every
-   task's revision and image digest, stable running set, packaged readiness result
-   against actual SQL/KMS, and ALB target health. Immediately recheck listener and
-   ownership before switching. `/health/live` and one public `/ready` response alone
-   cannot establish readiness of each candidate. Verify the public API after the
-   switch using a bounded synthetic read/write only in an authorized live trial.
-6. **Finish:** observe the old color draining, then reduce its count through the
-   same delivery owner; record before/after IDs, times, outcomes and immutable
-   qualification/secret references. Release ownership only after effects are known.
-   Do not schedule the retired recurring scale-down helper as an incidental shortcut.
+`API_DEV_DELIVERY_ENABLED` and `API_PROD_DELIVERY_ENABLED` default to disabled.
+The old shared `API_DELIVERY_ENABLED` is ignored by this implementation. A
+docs-only push exits before credentials or the environment queue. CI and CD
+Safety must succeed on the exact integrated SHA before AWS credentials.
 
-Manual dispatch is the owner's approval for the specified release. For a single
-maintainer, do not require an impossible second-person review or self-review ban.
-Use dedicated environments restricted to main, and deliberate permissions for each
-job. A second promotion approval is optional only if another reviewer is available;
-otherwise the approved bounded release includes promotion **after** readiness.
+GitHub serializes each environment with `cancel-in-progress: false` and
+`queue: max`. This is the documented [multi-pending queue](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency),
+not the single-pending queue that can discard C when old B is retried. Queue
+capacity is finite; rejected runs are visible failures. Once admitted, an old
+application lineage is skipped before build. Documentation descendants preserve
+eligibility; B → C → B′ does not revive the original B. A running deployment is
+not cancelled midway when a newer merge arrives.
 
-## IAM/OIDC migration is substantive
+Successful delivery writes an immutable SSE-KMS S3 manifest (conditional create,
+exact VersionId and SHA-256). The subsequent step creates a
+[GitHub Deployment](https://docs.github.com/en/rest/deployments/deployments)
+with task `api-release` and a
+[success status](https://docs.github.com/en/rest/deployments/statuses).
+The payload contains repository/environment, source/application identity, OCI
+digest, ECS revision, health result, configuration reference, previous compatible
+target, producer run/attempt and exact S3 reference. No secret values, SQL text,
+credential material or private logs belong in this public metadata. Artifacts
+are diagnostic downloads only; deleting them does not erase a release.
 
-Today's request roles `e1-request-release` and `e1-request-deploy-dev` accept exact
-environment/reusable-workflow subjects pinned to
-`f0ba8ad1d6528d362693c8de932f935c8084529d`. Their environments admit only
-`codex/final-github-actions-cicd`. Those roles submit protected requests; the
-CodeBuild service roles perform mutations. Release/deploy gateways have concurrency
-zero. The installed release/image/.NET runtimes are older than separately published
-administrative images. None of these facts admits a new main-based direct executor.
+The evaluator runs trusted base code with contents/actions/PR/deployments read
+and checks write. It has **no OIDC, AWS credentials or deployment environment**.
+It discovers a healthy DEV release matching the PR's application content and
+first-parent lineage. `API Promotion Validation.external_id` fixes the PR, base,
+application, release ID and evaluator run/attempt; the exact check fixes the head.
+The evaluator rereads both the check and release and rechecks the live PR before
+success. Presentation URLs are not identity fields.
 
-Keep GitHub's `repo`, `context`, `job_workflow_ref` subject composition. New proposed
-OIDC identities must bind the exact repository, dedicated environment, reusable
-workflow **immutable commit**, and audience `sts.amazonaws.com`. Environment branch
-restrictions and executor validation enforce main; an environment subject by itself
-does not include the caller branch. Do not weaken all other subjects to accommodate
-this migration. The reusable executor checks out its pinned trusted tooling; source
-and artifacts are inputs, not executable replacement deployment scripts.
+PROD reads the successful check completed before merge, requires two parents
+exactly matching the approved base/head, and fetches that release ID. Its own role
+checks the exact S3 version, bytes, encryption and ECR manifest digest before
+mutation. If B was approved and C appears after merge, PROD still consumes B.
+If C enters the PR before merge, the head/check must be revalidated. Keep strict
+branch updates: merge main back into develop through a normal PR after promotion.
 
-| Proposed authority | Minimum capability / excluded authority |
+This installation expects an explicitly approved **shared ECR repository**;
+PROD cannot publish to it. Cross-account registry copy is not implemented. SQL,
+secrets, roles and environment configuration remain separate. Future independent
+registries need a reviewed digest-preserving copy, not a rebuild.
+
+Trust boundary: repository administrators and protected workflow editors can
+change publisher/check logic. The reader checks GitHub Actions identity,
+workflow, event, branch, producer SHA/attempt and successful execute step; it
+does not claim cryptographic separation between mutually trusted repository
+workflows. S3 version/hash and ECR checks independently protect the AWS consumer.
+Deleted index entries or missing producer evidence block promotion and can be
+republished only through a verified current-state reconciliation. No latest-image
+fallback or AWS credentials in PR evaluation are needed.
+
+## Failure, rollback and reconciliation
+
+`api-delivery/<env>/state.json` is versioned SSE-KMS metadata with `HEALTHY`,
+`DEPLOYING` or `RECONCILE`, current/previous release and candidate revision.
+Conditional `If-Match` detects conflicting writes. This object is **not a lease**:
+GitHub serialization and administrative exclusion of other writers are required.
+The role cannot create missing state, overwrite operation evidence or write the
+handover. Missing/denied state is never interpreted as an empty environment.
+
+Before drain, the executor rereads both ALB routes, exact task cohort and the
+client `/ready` response. SQL/KMS failure restores both routes while blue still
+has its original capacity. After drain starts it preserves the new color rather
+than switching to capacity that may already be gone. `stop` waits for ECS zero
+and **empty target groups**, including ALB deregistration delay.
+
+| Situation | Operator action and guarantee |
 | --- | --- |
-| Qualification job | GitHub contents/artifacts only; no AWS/OIDC, secrets or infrastructure mutation. |
-| DEV publisher | ECR authentication (`GetAuthorizationToken` necessarily `*`), layer upload/PutImage/readback on the single DEV repo; exact qualification-record prefix. No ECS, IAM, KMS decrypt or secret values. |
-| DEV deployer | Read bound runtime metadata; register the closed task-definition families; update only two DEV services and exact listener/candidate rule; pass only the four reviewed ECS task/execution roles to `ecs-tasks.amazonaws.com`; exact ownership/deployment-record prefixes. No EC2, Terraform state writes, IAM administration or secret-value reads. |
-| ECS execution/task roles | Execution role resolves the versioned connection secret and pulls/logs; task role uses the application KMS key. Application SQL remains SELECT/INSERT plus EF-history SELECT. |
-| Native infrastructure operator | Existing separate plan/apply authority. No adoption of application delivery ownership. |
+| Healthy S3 release, GitHub publication failed | Retry the original run or dispatch `reconcile`. Verify current revision, exact S3/configuration and current SQL/KMS; republish without build/ECR/ECS mutations. New releases wait for publication. |
+| Failed operation, old color still serving | Inspect operation journal and both routes. If the candidate remains running, stop only that positively identified inactive candidate under supervised maintenance, then `reconcile`. It never guesses unknown effects away. |
+| Candidate serves after drain, final record missing | `reconcile` accepts only its recorded revision/configuration, both settled routes, zero inactive capacity, exact healthy tasks and fresh client SQL/KMS. It writes a new reconciliation record preserving the original source; no redeploy. |
+| Unknown routes, foreign revision or unsettled capacity | Keep activation off, repair the observed state through supervised operation, then rerun reconciliation. No force/reset command. |
+| Rollback after completed deployment | Dispatch `rollback` for the environment. Resolve its previous compatible image automatically, validate the current baseline, deploy to inactive color using current approved configuration, then health/switch/drain. No DB rollback or automatic schema migration. |
 
-Some APIs (notably task registration and ECR authentication) cannot be made
-resource-exact in the same way as UpdateService. A future IAM proposal must enumerate
-those exceptions and supported conditions, boundaries/resource policies, PassRole
-composition and deny tests. Do not copy a broad CodeBuild service role into OIDC or
-claim unsupported IAM conditions enforce an image digest. Trusted executor validation,
-artifact binding and restricted role composition remain necessary.
+Commands after installation (select the corresponding protected branch; no SHA
+or image inputs):
 
-GitHub concurrency does not exclude an administrator, Terraform or an old AWS
-controller. Keep the existing E2 compare-and-swap exclusion and native preflight;
-do not add a new lock service. Reusing that storage from a new principal requires
-an explicit review of its resource policies and owner format. Never forge an old
-controller receipt. If the current adapter cannot admit the new owner without a
-larger controller rewrite, retain supervised native delivery until that small
-ownership boundary is resolved; do not revive the entire historical control plane.
+```sh
+gh workflow run api-delivery.yml --ref develop -f environment=dev -f operation=reconcile
+gh workflow run api-delivery.yml --ref develop -f environment=dev -f operation=rollback
+```
 
-## Failure and rollback contract
+Reconciliation runs in the same environment queue. It changes evidence/state,
+not ECS, ECR or ALB. Current source and producer must pass CI even for recovery.
+Compatible revision/configuration metadata alone does not prove valid credentials
+or certificates: live SQL/KMS readiness is still mandatory.
 
-| Failure point | Safe outcome |
-| --- | --- |
-| Before candidate mutation | Leave active tasks/listener unchanged; preserve failed qualification/publication evidence. |
-| Candidate unhealthy / timeout | Do not switch. Reconcile its actual revision/tasks, then stop only that attempt's candidate; retain active service. |
-| Listener write response uncertain | Read listener, both services and record/ownership before doing anything else. No blind second switch. |
-| After promotion / before drain finishes | Keep prior digest and task configuration recoverable; record partial state. A separate rollback uses readiness and the same exclusion. |
-| Runner cancelled/lost | Non-cancelling concurrency limits ordinary supersession, not machine failure. A lease expiry is not proof effects stopped. Operator readback/reconciliation is required before another writer. |
-| Database incompatible | Stop deployment/rollback. No automatic schema downgrade or database restore. |
+## Installation and the retained DEV E2
 
-Do not describe this design as unattended recovery. Durable records and bounded
-native reconciliation replace a new cleanup controller. A new executor must cover
-network ambiguity, cancellation, duplicate request IDs and record-write failure.
+**Activation blocked:** the known E2 DEV/application generation 18 is `ACTIVE`,
+operation `09342d65-e953-4865-b177-6e7bbbaad967`. Blue:16 was installed by supervised
+bootstrap. [E2-R](../terraform/docs/e2r-owner-recovery.md) has no administrative
+release; this change neither implements nor simulates one.
 
-## Reuse and migration
+Before any replacement writer can act, an administrator must:
 
-Keep `ecs-readiness-gate.sh`, the task-definition renderer/validator, strict .NET
-database policy, OCI/source sealing and deployment-record schemas/tests. Review
-their current inputs against V2 first. `ecs-blue-green-deploy.sh` deliberately
-exits with `E1_LEGACY_PATH_RETIRED`; its internal functions are reference code,
-not a command that can be enabled by changing a branch name. Its old recurring
-drain schedule and mutable connection selection must not leak into the new route.
+1. Identify the old bootstrap invocation, credential sessions and descendants;
+   preserve exact E2 version/ETag, operation journal and execution evidence.
+2. Disable historical entrypoints and establish effective denial of mutations by
+   old application controllers/operators on these exact ECS services and ALB
+   routes. Inspect role policies, resource dependencies and active executions;
+   deny/revoke the old writer sessions and terminate their processes. A disabled
+   workflow or elapsed deadline alone is insufficient. Fence Terraform applies
+   and manual writers too; scheduled NAT/Sentinel work stays outside this scope.
+3. Establish settlement of issued UpdateService effects from the recorded
+   operation and fresh ECS/ALB readbacks. Verify exact blue:16 digest, cohort,
+   probe exit zero, task ENI targets, both routes, no pending/draining old targets,
+   green zero and client SQL/KMS. A matching snapshot alone cannot prove a paused
+   old executor will not send later.
+4. Preserve the retained E2 **unchanged** as historical evidence. Only after
+   steps 1–3 are proven, publish an immutable `API_HANDOVER_V2` approval recording
+   the administrator, effective writer controls, execution termination and
+   settled-effect evidence. Pin its exact version/hash and binding hash in
+   `API_HANDOVER_REF`. Pin the unchanged E2 version/ETag/hash as `legacy_head`;
+   any later change stops delivery. This is retirement of old authority, not a
+   fabricated terminal SUCCESS or an E2 unlock.
+5. Archive/admit the real native baseline configuration and initialize
+   `API_STATE_V2` with environment, `phase=HEALTHY`, `current=null`,
+   `github_id=null`. The pinned binding supplies the native baseline. Do not
+   label blue:15 compatible if its trust contract fails. A genuinely empty
+   environment needs an empty readback and `native_baseline=null`.
 
-After owner review: implement the narrow executors offline; add rejection/partial
-failure tests; approve exact IAM/environment changes and a separately budgeted DEV
-trial. Validate two distinct digests, candidate SQL/KMS readiness, promotion and
-explicit A→B→A rollback. Preserve V1 proofs, but require new V2 evidence.
+No handover was published by this implementation. If exact termination/effect
+evidence is unavailable, keep the existing runtime and E2 untouched; code can be
+reviewed and merged while both activation flags remain absent/false.
 
-Only after that trial, retire unused callers and their corresponding AWS trust
-and request authority together. Initial retirement candidates are the public
-`cd-demo-api`, `release-build`, `deploy-dev`, `rollback-manifest`, `promote-prod`
-wrappers and unused e1 application callers. Inventory generator/hash dependencies
-before removal. Infrastructure wrappers require their own decision; deleting YAML
-does not revoke IAM. No such change occurs in this documentation PR.
+Install the [scoped permission definitions](../scripts/api_delivery/permissions.py)
+only after that handover is reviewed. The environment restricts DEV to develop
+and PROD to main. Preserve the repository's custom OIDC `job_workflow_ref` subject
+and environment claims. Variables: `API_ACCOUNT_ID`, `API_REGION`,
+`API_DELIVERY_ROLE_ARN`, `API_BINDING_REF`, `API_HANDOVER_REF`. Keep DEV/PROD flags
+independent. Verify effective IAM, CMK and bucket policies with the installed
+resources; definitions/tests are not proof of effective AWS access. Store the
+handover using the evidence CMK. PROD gets only version reads of DEV release
+manifests and corresponding KMS decrypt, not DEV mutations or secret values.
+
+PR #45 installs the superseded signed evaluator: leave it open and do not merge
+it as the activation path. Install this evaluator and its dependencies in main
+through a separate protected, application-neutral bootstrap PR. Then install
+the **main-only** required promotion check and merge-only rule, preserving CI,
+CD Safety, strict updates and no bypass. Administrator readback must confirm
+repository merge commits are enabled; a read-only job need not see that setting.
+Do not require a check before its producer exists on the default branch. DEV
+activation and first real merge trial come after handover/role/baseline admission;
+PROD activation waits for genuine PROD SQL/TLS, roles, ECR and ECS qualification.
+
+## Validation boundary
+
+```sh
+python3 -I -B -m unittest discover -s scripts/tests/api_delivery -v
+python3 -O -I -B -m unittest discover -s scripts/tests/api_delivery -v
+```
+
+Tests exercise real Git histories, GitHub REST readers, CLI/state transitions,
+S3 version/hash checks and the common executor with deterministic transports.
+They retain readiness, rollback, lost ALB acknowledgements, one-blue/two-green,
+old/new secret configuration, metadata and IAM boundaries. Attestation/artifact
+and E2-publication permutations were removed with those retired mechanisms;
+independent E1/E2/security suites and immutable historical evidence remain.
+These tests do not qualify GitHub's live deployment-index behavior, effective
+OIDC/IAM, Fargate health or an automatic AWS deployment. The first activation
+trial must record merge/run, GitHub deployment ID, S3 version/hash, ECR digest,
+ECS revision/task digest, visible HTTP change and `/ready` 200.

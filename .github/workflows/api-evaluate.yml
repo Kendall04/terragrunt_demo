@@ -1,0 +1,40 @@
+{
+  "name": "Trusted API release evaluator",
+  "on": {
+    "workflow_call": {}
+  },
+  "permissions": {
+    "contents": "read"
+  },
+  "jobs": {
+    "promotion": {
+      "runs-on": "ubuntu-latest",
+      "timeout-minutes": 15,
+      "env": {
+        "GH_TOKEN": "${{ github.token }}"
+      },
+      "steps": [
+        {
+          "name": "Checkout trusted event revision",
+          "uses": "actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803",
+          "with": {
+            "ref": "${{ github.sha }}",
+            "fetch-depth": 0,
+            "persist-credentials": false
+          }
+        },
+        {
+          "name": "Evaluate current PR and pin exact DEV release",
+          "run": "python3 -B -m scripts.api_delivery.cli promotion"
+        }
+      ],
+      "permissions": {
+        "contents": "read",
+        "actions": "read",
+        "pull-requests": "read",
+        "checks": "write",
+        "deployments": "read"
+      }
+    }
+  }
+}

@@ -1,5 +1,11 @@
 # Hosting DEMO independiente
 
+Current collection: five ECS views plus twelve historical snapshots, including
+Sentinel. [Current atlas](../../docs/interactive/CURRENT-INDEX.md) and
+[separation record](../../docs/history/SENTINEL-SEPARATION.md) define the scope.
+The public DEMO remains independent of runtime, SQL and monitoring.
+
+
 Estado: **PUBLICADO y verificado por HTTPS — 7-nov-2026**. Cuenta `341936017254`,
 región `us-east-1`, propietario Kendall. No usa el hosting EKS ni estados del runtime.
 
@@ -155,3 +161,30 @@ GET/HEAD al hosting y datos sintéticos en memoria. Verifica todos los bytes pú
 contra manifest, MIME/CSP, cinco vistas, doce diagramas, móvil, refresh y errores.
 No vuelve a probar SQL/KMS ni llama a la API; esa evidencia permanece separada en
 [VALIDATION-PR36.md](VALIDATION-PR36.md). No instala herramientas automáticamente.
+
+
+## Actualizar contenido del hosting existente
+
+`publish.py update` valida el paquete reproducible y el template pay-as-you-go,
+comprueba la instalación actual y permite cambiar únicamente el código de rutas
+para el allowlist de assets y el parámetro `Release`. Los recursos, origen S3,
+CSP/headers, OAC, bucket policy y plan deben seguir iguales. Nunca crea un stack
+ni cambia a otro plan en este modo. Sube objetos con create-only, verifica sus
+checksums/versiones y después actualiza el stack existente. Conserva el prefijo
+anterior para rollback; no elimina versiones.
+
+```sh
+node portfolio/product/build.mjs <paquete-nuevo>
+node portfolio/product/hosting/payg-template.mjs <template-nuevo>
+python portfolio/product/hosting/publish.py update --profile cnp-cert-dev \
+  --pricing-mode pay-as-you-go --template <template-nuevo>/template.json \
+  --template-sha256 <sha256-revisado> --package <paquete-nuevo> \
+  --receipt <recibo-privado-nuevo.json>
+```
+
+Esperar `UPDATE_COMPLETE` y CloudFront `Deployed`, invalidar una vez `/*` y ejecutar
+`test-public.mjs` por HTTPS contra la distribución real. `verify` relee bucket,
+OAC, funciones LIVE, distribución y cada versión publicada. Antes de publicar,
+conservar template/parámetros anteriores y verificar que el diff contiene solo
+rutas de contenido. Rollback: restaurar ese template y su `Release` anterior por
+el mismo stack, esperar e invalidar; comprobar HTTPS de nuevo.

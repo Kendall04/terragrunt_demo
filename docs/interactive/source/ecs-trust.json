@@ -1,0 +1,301 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "ECS V2 · identidades y límites de confianza",
+    "locale": "es",
+    "output": "docs/interactive/ecs-trust.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/Kendall04/terragrunt_demo.git",
+      "revision": "528a583d4f74ccd0368cf00929b7315d582cdb35",
+      "link_mode": "web"
+    }
+  },
+  "components": [
+    {
+      "id": "public",
+      "type": "external",
+      "label": "Cliente no autenticado",
+      "sublabel": "Solo datos sintéticos DEV",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "LÍMITE",
+      "sources": [
+        {
+          "path": "docs/V2-TRUST-AND-THREATS.md",
+          "line": 39,
+          "end_line": 68
+        }
+      ]
+    },
+    {
+      "id": "network",
+      "type": "cloud",
+      "label": "API / Link / ALB",
+      "sublabel": "HTTPS → HTTP privado",
+      "pos": [
+        400,
+        40
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "terraform/modules/target/dev/edge/modules/apigateway/apigw_http.tf",
+          "line": 25,
+          "end_line": 63
+        }
+      ]
+    },
+    {
+      "id": "task",
+      "type": "security",
+      "label": "Aplicación · task role",
+      "sublabel": "KMS texto · sin credenciales backup",
+      "pos": [
+        760,
+        40
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "terraform/modules/target/dev/apps/modules/ecs_service/taskdef.tf",
+          "line": 1,
+          "end_line": 17
+        }
+      ]
+    },
+    {
+      "id": "exec",
+      "type": "security",
+      "label": "ECS execution role",
+      "sublabel": "Pull / logs / secret",
+      "pos": [
+        400,
+        280
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "terraform/modules/target/dev/apps/modules/ecs_service/taskdef.tf",
+          "line": 1,
+          "end_line": 17
+        }
+      ]
+    },
+    {
+      "id": "secret",
+      "type": "security",
+      "label": "Secrets Manager",
+      "sublabel": "Valor fuera de Terraform",
+      "pos": [
+        40,
+        280
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "docs/V2-TRUST-AND-THREATS.md",
+          "line": 39,
+          "end_line": 68
+        }
+      ]
+    },
+    {
+      "id": "kms",
+      "type": "security",
+      "label": "KMS texto",
+      "sublabel": "Encrypt / Decrypt autorizados",
+      "pos": [
+        760,
+        280
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "demo-api/terragrunt-demo/Services/IEncryptionService.cs",
+          "line": 30,
+          "end_line": 51
+        }
+      ]
+    },
+    {
+      "id": "sql",
+      "type": "database",
+      "label": "SQL · login runtime",
+      "sublabel": "SELECT/INSERT · TLS validado",
+      "pos": [
+        760,
+        520
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "demo-api/terragrunt-demo/Data/RuntimeDatabasePermissions.cs",
+          "line": 1,
+          "end_line": 54
+        },
+        {
+          "path": "demo-api/deploy/sql-trust/dev-ca-manifest.json",
+          "line": 1
+        },
+        {
+          "path": "demo-api/deploy/sql-trust/entrypoint.sh",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "id": "host",
+      "type": "security",
+      "label": "Host SQL · instance role",
+      "sublabel": "SSM / backup / TLS secret",
+      "pos": [
+        400,
+        520
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "docs/V2-TRUST-AND-THREATS.md",
+          "line": 39,
+          "end_line": 68
+        }
+      ]
+    },
+    {
+      "id": "admin",
+      "type": "external",
+      "label": "Administrador humano",
+      "sublabel": "Administración separada del CD",
+      "pos": [
+        40,
+        520
+      ],
+      "size": [
+        210,
+        82
+      ],
+      "tag": "DESPLEGADO",
+      "sources": [
+        {
+          "path": "docs/V2-TRUST-AND-THREATS.md",
+          "line": 39,
+          "end_line": 68
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "public-network",
+      "from": "public",
+      "to": "network",
+      "label": "HTTPS",
+      "variant": "default"
+    },
+    {
+      "id": "network-task",
+      "from": "network",
+      "to": "task",
+      "label": "HTTP :8080",
+      "variant": "default"
+    },
+    {
+      "id": "exec-secret",
+      "from": "exec",
+      "to": "secret",
+      "label": "GetSecretValue",
+      "variant": "security"
+    },
+    {
+      "id": "exec-task",
+      "from": "exec",
+      "to": "task",
+      "label": "Inyección inicial",
+      "variant": "security"
+    },
+    {
+      "id": "task-kms",
+      "from": "task",
+      "to": "kms",
+      "label": "AWS SDK",
+      "variant": "security"
+    },
+    {
+      "id": "task-sql",
+      "from": "task",
+      "to": "sql",
+      "label": "SQL TLS",
+      "variant": "security"
+    },
+    {
+      "id": "admin-host",
+      "from": "admin",
+      "to": "host",
+      "label": "SSM",
+      "variant": "security"
+    },
+    {
+      "id": "host-sql",
+      "from": "host",
+      "to": "sql",
+      "label": "SO / bootstrap",
+      "variant": "security"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "slate",
+      "title": "Estado y lectura",
+      "items": [
+        "Implementación y evidencia DEV al 10 nov 2026. PROD no está instalado ni validado.",
+        "Datos/control en gris; seguridad en rosa. Las respuestas son implícitas.",
+        "Sentinel se separó: sus recursos AWS pendientes de retiro no participan en este flujo."
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Límites reales",
+      "items": [
+        "API DEV pública sin autenticación: solo datos sintéticos; no certificada para producción.",
+        "SQL confía en la CA DEV definitiva; validated-v2, Encrypt=True y TrustServerCertificate=False.",
+        "Task/execution, runtime/migrador, backup y administrador tienen responsabilidades separadas."
+      ]
+    }
+  ]
+}
