@@ -69,6 +69,25 @@ class Environment:
 
 
 class OperationsTests(unittest.TestCase):
+    def test_reconciliation_requires_both_settled_routes_before_recording_candidate(self):
+        from test_configuration import ConfigurationTests
+        for routes,accepted in [(('blue','green'),True),(('blue','blue'),False)]:
+            port,release,configuration,actual=ConfigurationTests().setup_port()
+            original_snapshot=port.snapshot()
+            port.snapshot=lambda:dict(original_snapshot,routes=routes)
+            state=dict(candidate={k:release[k] for k in ('color','revision','configuration_ref')},
+                image=release['image'],request=dict(source=release['source'],event_source=release['source'],application=release['application'],run_id=22,run_attempt=1),
+                previous=None,operation='original-operation')
+            with patch.object(aws,'verify_image') as image:
+                if accepted:
+                    result=cli.reconcile(port,state,port.config)
+                    self.assertEqual(result['image'],release['image']);self.assertEqual(result['run_id'],22)
+                    port.client_ready.assert_called_once();image.assert_called_once()
+                    port.journal.assert_called_once()
+                else:
+                    with self.assertRaisesRegex(ValueError,'transition not settled'):cli.reconcile(port,state,port.config)
+                    port.client_ready.assert_not_called();port.journal.assert_not_called();image.assert_not_called()
+
     def test_PROD_executes_B_pinned_check_index_S3_chain_without_build_when_C_exists(self):
         from test_simple_delivery import Wire
         from scripts.api_delivery.github import GitHub, PREFIX

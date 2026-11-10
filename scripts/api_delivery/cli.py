@@ -74,7 +74,8 @@ def reconcile(port, state, cfg):
     """No ECS/ALB mutation. Accept only a completely observed settled topology."""
     candidate = state.get('candidate'); snap = port.snapshot()
     if candidate and snap['active_revision'] == candidate['revision']:
-        m.require(snap['active'] == candidate['color'] and snap['inactive_count'] == snap['pending'] == 0 and
+        other = 'green' if candidate['color'] == 'blue' else 'blue'
+        m.require(snap['routes'] == (candidate['color'], other) and snap['active'] == candidate['color'] and snap['inactive_count'] == snap['pending'] == 0 and
                   snap['active_count'] == cfg['replicas'], 'candidate transition not settled')
         # Verify exact registered configuration, real cohort and SQL/KMS now.
         target = dict(schema='API_RECOVERY_TARGET_V1',kind='automatic',environment=cfg['environment'],
@@ -82,6 +83,7 @@ def reconcile(port, state, cfg):
             profile='validated-v2',compatibility=cfg['compatibility'],**candidate)
         expected = port.current_configuration(target)
         from . import aws
+        aws.verify_image(port.aws,cfg,state['image'])
         actual = port.aws['ecs'].describe_task_definition(taskDefinition=candidate['revision'])['taskDefinition']
         aws.task_readback(expected, actual, cfg['account'], cfg['region'])
         port.tasks(candidate['color'],candidate['revision'],state['image']); port.client_ready()
