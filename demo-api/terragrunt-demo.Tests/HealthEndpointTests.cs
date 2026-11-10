@@ -12,6 +12,21 @@ namespace terragrunt_demo.Tests;
 public class HealthEndpointTests
 {
     [Fact]
+    public async Task Live_IdentifiesRelease_WithoutClaimingDependencyReadiness()
+    {
+        await using var factory = new DemoApiFactory();
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/health/live");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("cd-1", Assert.Single(response.Headers.GetValues("X-Demo-Release")));
+        using var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var check = Assert.Single(payload.RootElement.GetProperty("checks").EnumerateArray());
+        Assert.Equal("self", check.GetProperty("name").GetString());
+    }
+
+    [Fact]
     public async Task Health_ReturnsOk_WhenDependenciesAreUnavailable()
     {
         await using var factory = new DemoApiFactory();
