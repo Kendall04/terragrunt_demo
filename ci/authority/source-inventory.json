@@ -14055,7 +14055,7 @@
       "semantic_status": "CURRENT_FACT"
     },
     ".github/workflows/api-execute.yml": {
-      "sha256": "bbc63d972a8431496c60eb5911977ccff036fd2f26c9e1abf9c8dd60d6e396cc",
+      "sha256": "08d78435bcf952f3536f7646c78c3bfe9c8e826d7119d9f6350eb7290b167417",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -14084,11 +14084,11 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/api_delivery/aws.py": {
-      "sha256": "0930c3e3703f5f34eb066c27d44c3447ac45773d5d82ef99748b10bc6a4f0a5b",
+      "sha256": "1ed33e9550e5eb79020a68f732b0c8423136ab2b42af0f1cc4acb0f9e22c88ae",
       "declarations": [],
       "signals": {
         "role-input": [
-          342
+          343
         ],
         "launch-or-mutation": [
           24,
@@ -14109,33 +14109,33 @@
           181,
           217,
           235,
-          258,
-          260,
-          271,
-          295,
-          307,
-          312,
-          327,
-          331,
-          374,
-          399,
-          405,
-          409,
-          416,
-          419,
-          430,
-          432,
-          443,
-          452
+          259,
+          261,
+          272,
+          296,
+          308,
+          313,
+          328,
+          332,
+          375,
+          400,
+          406,
+          410,
+          417,
+          420,
+          431,
+          433,
+          444,
+          453
         ],
         "executable-dependency": [
           202,
           220,
           238,
-          250,
-          253,
-          436,
-          440
+          251,
+          254,
+          437,
+          441
         ]
       },
       "semantic_status": "CURRENT_FACT"
@@ -14251,7 +14251,7 @@
       "semantic_status": "CURRENT_FACT"
     },
     "scripts/api_delivery/workflow_contract.py": {
-      "sha256": "05bc7c01cea3b557a790e83a521df81983ccd5e0649cb628f34d5478cd986ffe",
+      "sha256": "57fa13fa974c4e1accedd8c3f56523bc2b0e8fbfa82edbea6ec979b293aab1f4",
       "declarations": [],
       "signals": {
         "credential-acquisition": [
@@ -14391,23 +14391,24 @@
       "semantic_status": "UNVERIFIED"
     },
     "scripts/tests/api_delivery/test_simple_delivery.py": {
-      "sha256": "04221f679aa1cb7c27f389e25009de14159dc457ffa8edb6c72bb79534d7a0f5",
+      "sha256": "5668c1225f36ac9a0233dc22b5295302a620fc131700ffbfcc101a15bee1d0eb",
       "declarations": [],
       "signals": {
         "launch-or-mutation": [
           13,
           107,
           129,
-          132,
-          135,
-          139,
-          157,
-          164,
-          167
+          140,
+          143,
+          146,
+          150,
+          168,
+          175,
+          178
         ],
         "executable-dependency": [
           53,
-          169
+          180
         ],
         "security-control": [
           40

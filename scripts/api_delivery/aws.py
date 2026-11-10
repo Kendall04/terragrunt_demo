@@ -246,7 +246,8 @@ class Runtime:
                          'deadline-epoch': int(self.deadline)})
         for key, value in values.items(): args += ['--' + key, str(value)]
         result = subprocess.run(args, capture_output=True, timeout=max(1, self.deadline-time.time()))
-        require(result.returncode == 0, 'per-task SQL/KMS readiness failed')
+        require(result.returncode == 0, 'per-task SQL/KMS readiness failed: ' +
+                result.stderr.decode('utf-8', errors='replace')[-4000:])
         self.journal('readiness', dict(transcript_sha256=sha(result.stdout), revision=revision, image=image))
         self.cohort = self.tasks(color, revision, image)
 
