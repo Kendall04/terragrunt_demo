@@ -1,5 +1,7 @@
 # V2 SQL/API cross-AZ recovery packet
 
+> Historical prepared-target experiment and source contract, retained for the original Archify view and regression tests. For current backups and supervised replacement use [the backup runbook](../README.md) and [native cold recovery](NATIVE-RECOVERY.md), including its CA-era prerequisites. The original results below are unchanged.
+
 Current checkpoint - 2026-10-23: **controlled SQL/API cross-AZ proof closed;
 unchanged full workflow acceptance pending**. Az6 passed with two explicit live
 repairs and clean retirement. Artifact 65c7901 is reproducible; its new staging

@@ -1,71 +1,41 @@
-# Reliability Sentinel: independent project
+# Reliability Sentinel: preserved for independent development
 
-Sentinel is retired from the current ECS repository integration. Its installed
-AWS resources have **not** been removed. The 6 November experiments remain
-historical evidence, not an operational capability of the final ECS platform.
+Sentinel was removed from ECS dependencies and its **AWS runtime retired on
+10 November 2026**. [The retirement record](../SENTINEL-RETIREMENT.md) identifies
+removed resources, retained storage and the archive decryption limitation.
+The earlier experiments do not represent current ECS monitoring.
 
 ## Recover the implementation
 
-The complete consumer, runtime extensions, observers, fixtures, source pins,
-licenses/provenance and IaC are recoverable at ECS commit
+The ECS consumer, runtime extensions, observers, fixtures, source pins, licenses
+and IaC remain recoverable at
 [`528a583d4f74ccd0368cf00929b7315d582cdb35`](https://github.com/Kendall04/terragrunt_demo/tree/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/integrations).
-[Source manifest](../../ci/authority/retired-sentinel.json) inventories every preserved file,
-its original Git-blob SHA-256 and a verified private source ZIP. Its `recovery`
-command exports the same scoped source from Git, without private state or keys.
-No history was rewritten. Do not execute the archived deployment procedures.
+The [source manifest](../../ci/authority/retired-sentinel.json) identifies every
+preserved path, its Git-blob SHA-256, the verified private source ZIP and the
+scoped Git export command. No history was rewritten.
 
-The upstream core already has its own repository,
+The upstream core is
 [`Kendall04/reliability-sentinel`](https://github.com/Kendall04/reliability-sentinel),
-pinned by the consumer to `b3d0b3b595a9257bb6d4d849c899bf4e8dbc2828`.
-Move the ECS-specific `Ecs.Backup.Portable.*` extensions, observer adapters,
-`portable/trial` owner and qualification tests there when development resumes.
-No new repository or framework is introduced here.
+pinned by that consumer to `b3d0b3b595a9257bb6d4d849c899bf4e8dbc2828`.
+The ECS-specific `Ecs.Backup.Portable.*` extensions, observer adapters,
+`portable/trial` owner and qualification tests are the material to carry forward.
+Archived installation commands and old Terraform state are not authorization
+to reinstall or manage the final ECS runtime.
 
-Original evidence remains accessible in
-[the dated chaos record](../SENTINEL-CHAOS-20261106.md), the twelve historical
-Archify views and private AWS receipts. Preserve DynamoDB revisions, the four
-append-only compensations, S3 object versions, CloudWatch logs and DLQ contents.
-The private operational audit of 10 November records degraded observation,
-archive and notification after authorization expiry; it does not certify
-multi-day availability.
+## Evidence and retained dependencies
 
-## What remains in ECS
+[6 November incident trials](../SENTINEL-CHAOS-20261106.md), the historical
+Archify views and original private receipts retain their dates, failures and
+limits. They do not certify uninterrupted multi-day service. The private closure
+archive preserves journal, DLQ, logs, effective configuration and compensation
+references; the two original S3 buckets and native journal backup remain retained.
 
-NAT ASG/E13 performs recovery independently. SQL's native hourly producer,
-credentials, encrypted bucket/CMKs, cold recovery and restore holds remain.
-The storage verification/retention/pinning helpers now live in
-[`operations/sql-backup/storage`](../../operations/sql-backup/storage/README.md).
-The optional SQL cohost publisher/units and their packaging flags are retired;
-standalone package integrity and binary-lineage checks remain enforced.
-Existing installed backup packages are not replaced by this repository change.
+ECS keeps NAT ASG/E13, SQL's native hourly producer, strict TLS, cold recovery,
+backup storage and restore holds. [SQL storage helpers](../../operations/sql-backup/storage/README.md)
+were extracted without adding another observer or automatic retention worker.
+CI no longer builds Sentinel; immutable source/lock fixtures remain where they
+prove substitution rejection or support historical portfolio views.
 
-CI no longer builds or tests Sentinel. Authority inventories describe the
-remaining sources; generic IAM/unknown-source rejection tests remain. The
-archived provider lock remains a historical substitution-test fixture, never an
-active Terraform root. API runtime, TLS, delivery selection and E13 are unchanged.
-
-## AWS retirement requires separate approval
-
-Use [the scoped retirement inventory and procedure](../SENTINEL-RETIREMENT.md).
-An expired permission is not a stopped schedule. Repository separation neither
-stops workloads nor deletes their evidence.
-
-The supplemental IaC review removed 23 archived entries and retained
-1 entries without changing their records. The exact catalog remains
-pinned by `security_root/model.py` to SHA-256 `c495424e068d93b469ff29011b32f287f3e7556ed4ac581f71b2c2a1c940c338`; unknown or changed IaC
-still fails closed. This is an explicit source-scope review, not an IAM grant.
-
-Historic namespace/origin tests retain their original source inputs in an
-authenticated text fixture. They still reject substitutions and unknown roots.
-The old local portfolio's source routes use exact historical documents, not
-executable Sentinel code. No original diagram, evidence timestamp or metric was rewritten.
-
-The optional Terraform SQL cohost bootstrap is also archived. Default SQL
-user-data remains the same base payload. A deprecated null-only input rejects
-old non-null cohost settings before planning; it cannot start Sentinel. Native
-SQL backup installation, TLS and the root-volume preservation opt-in remain.
-
-The four DEV infrastructure source-package fingerprints in `authority.json`
-were renewed for this reviewed hook removal. All grants, approvals, activation
-fields and PROD packages remain unchanged; this does not install IAM or authorize
-a deployment. TFLint's existing finding baseline remains unchanged.
+The legacy cohost bootstrap and publishing units are retired. The deprecated
+Terraform cohost input accepts only null. Shared KMS policy bindings explain the
+two retained IAM roles; their existence is not evidence of running Lambdas.

@@ -1,36 +1,31 @@
-# Documentación de ingeniería
+# Engineering documentation
 
-[Proyecto](../README.md) · [DEMO pública](https://d20ioz705caon7.cloudfront.net/) · [Atlas actual](interactive/CURRENT-INDEX.md)
+[Project](../README.md) · [DEMO](https://d20ioz705caon7.cloudfront.net/) ·
+[Current architecture atlas](interactive/CURRENT-INDEX.md)
 
-| Tema | Referencia vigente |
+Start with architecture, then follow the relevant operating guide. These pages
+describe the final ECS laboratory; dated experiments are indexed separately.
+
+| Question | Primary reference |
 | --- | --- |
-| Topología y ownership | [Arquitectura](../terraform/docs/architecture.md) |
-| CI/CD automático DEV y rollback | [Delivery simplificado](DEV-DELIVERY-DESIGN.md) |
-| API / SQL / confianza TLS | [Arquitectura de datos](../terraform/docs/architecture.md#current-contract--application-and-data) · [TLS por ambiente](../demo-api/deploy/sql-trust/README.md) |
-| Backup horario y recuperación | [SQL](../operations/sql-backup/README.md) · [recuperación nativa](../operations/sql-backup/recovery/NATIVE-RECOVERY.md) · [retención y holds](../operations/sql-backup/storage/README.md) |
-| Operación y retirada | [Ciclo nativo DEV](../terraform/docs/native-dev-lifecycle.md) |
-| Seguridad y límites | [Estrategia de secretos](../terraform/docs/secrets-strategy.md) · [revisión técnica fechada](ENGINEERING-REVIEW.md) |
-| Validación y efectos | [Guía de validación](../terraform/docs/validation.md) |
-| DEMO, AWS Edition local y hosting | [Frontend](../portfolio/product/README.md) · [CloudFront](../portfolio/product/HOSTING.md) |
+| How do requests, data and AWS services connect? | [Architecture and ownership](../terraform/docs/architecture.md) |
+| What does a PR validate? | [CI and branch protection](CI-CD-REVIEW.md) |
+| How does a merge deploy DEV? How is rollback performed? | [Automatic delivery](DEV-DELIVERY-DESIGN.md) |
+| Which identities and TLS controls protect the data? | [Security](../terraform/docs/secrets-strategy.md) · [SQL trust contract](../demo-api/deploy/sql-trust/README.md) |
+| How are backups produced, retained and restored? | [SQL backup runbook](../operations/sql-backup/README.md) · [Native cold recovery](../operations/sql-backup/recovery/NATIVE-RECOVERY.md) |
+| How does NAT recover? | [E13 operational contract](../terraform/docs/e13-nat-reliability.md) |
+| How is infrastructure operated safely? | [Operations](../terraform/docs/bootstrap.md) · [Native lifecycle](../terraform/docs/native-dev-lifecycle.md) |
+| How do I run checks without changing AWS? | [Validation and side effects](../terraform/docs/validation.md) |
+| How is the independent DEMO run and published? | [Frontend](../portfolio/product/README.md) · [Hosting and rollback](../portfolio/product/HOSTING.md) |
+| What was actually demonstrated? | [Evidence and history](history/README.md) |
+| What remains outside the laboratory's guarantees? | [Decisions and limitations](../terraform/docs/decisions-and-limitations.md) |
 
-DEV tiene entrega automática demostrada. PROD no está activado ni validado.
-El runtime es un laboratorio con costes y retirada supervisada; el sitio estático
-permanece independiente.
+**Implemented** means source exists; **demonstrated** means a cited execution
+proved a bounded result. **Historical** pages retain their original dates and
+limitations. **Not validated** never becomes a current guarantee because a
+workflow or Terraform resource exists.
 
-## Evidencia fechada
-
-- [ECS V2 en AWS](DEV-V2-20261105.md).
-- [SQL SAME-AZ/CROSS-AZ y seguridad](V2-RECOVERY-SECURITY-20261105.md).
-- [Primer CD DEV automático](https://github.com/Kendall04/terragrunt_demo/actions/runs/42751096835).
-- [TLS definitivo CA-only entregado por CD](https://github.com/Kendall04/terragrunt_demo/actions/runs/42761946295/attempts/2).
-- [Auditoría CI/CD previa](CI-CD-REVIEW.md): conserva el diagnóstico de su fecha,
-  no sustituye el diseño simplificado y la evidencia de ejecución posteriores.
-
-## Historia y proyecto independiente
-
-Reliability Sentinel ya no es una dependencia de ECS.
-[Código y procedencia recuperables](history/SENTINEL-SEPARATION.md),
-[retirada AWS pendiente](SENTINEL-RETIREMENT.md) y
-[ensayos originales](SENTINEL-CHAOS-20261106.md) conservan el trabajo.
-El [atlas del 6 noviembre](interactive/V2-INDEX.md) y V1 son snapshots históricos.
-No atribuir a la instalación actual la observación/notificación de Sentinel.
+DEV automatic delivery and CA-only SQL TLS have real AWS evidence. PROD remains
+disabled and unqualified. Sentinel's runtime was [retired on 10 November](SENTINEL-RETIREMENT.md);
+its retained buckets and journal backup are historical storage. No live AWS
+inspection was performed for this documentation consolidation on 18 November.

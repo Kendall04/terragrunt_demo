@@ -212,7 +212,7 @@ lost response with/without attribution, definite failure, contradictions,
 repetition, crashes, generations/contenders, separate environments, stale cleanup,
 missing/corrupt evidence and production rejection. Full existing E1 acceptance and
 E2 regression evidence must also pass; counts/results are recorded in
-[validation](validation.md#e4-bounded-post-switch-recovery).
+[validation](https://github.com/Kendall04/terragrunt_demo/blob/1a39c46cc02f262c04f438207647acc1282393a0/terraform/docs/validation.md#e4-bounded-post-switch-recovery).
 Packages are refreshed from source without new IAM, trust, PassRole or activation.
 Live S3 CAS/SDK attribution, ECS/ALB/EventBridge behavior, installation and Linux
 E3 remain separate deployment evidence. E4 is partially resolved at this boundary.

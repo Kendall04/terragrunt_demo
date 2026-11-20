@@ -66,7 +66,7 @@ Two known accepted commands:
 - 06:40:56: `e5d894d1-1ce7-4d49-8c4f-bd8a72f5ede3` (one approved retry).
 
 Both finished Failed/AccessDenied/ResponseCode=-1 with no execution start, output or
-script stderr. The [small captured fixture](fixtures/ssm-b2-status.json) preserves
+script stderr. The [small captured fixture](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/integrations/fixtures/ssm-b2-status.json) preserves
 their exact trimmed results, intents/acceptances and original receipt hashes. The
 trimmed collector omitted DocumentName/DocumentVersion/PluginName from result.json;
 the separate first ListCommandInvocations record binds name/version/step. This loss of
@@ -91,7 +91,7 @@ No simulation was performed or represented as native success in this follow-up.
 
 ## Minimal local correction and next decision
 
-The offline [status gate](ssm_execution.py) requires a successful terminal invocation,
+The offline [status gate](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/integrations/ssm_execution.py) requires a successful terminal invocation,
 zero script response, exact accepted-command/instance/document/version/step binding,
 ordered execution timestamps and the existing OBSERVED JSON contract. It returns only
 CONFIRMED_STATUS_ONLY, never backup acceptance. Captured denials, missing provenance,
@@ -124,6 +124,6 @@ Generated Archify HTML/pins and sealed trial artifacts are unchanged.
 
 ## Native read-only SSM investigation — 2026-10-24 follow-up
 
-[Focused diagnosis and native evidence](SSM-B2-DIAGNOSIS-20261024.md) now correlates real CloudTrail SendCommand/AssumeRole/PutRolePolicy/GetDocument events with fresh GetCommandInvocation readbacks. Both API requests were accepted by the intended operator with exact document/version/hash/instance; target authorization failed before execution. The installed06:39 supplement exactly matches the preserved canonical policy hash;06:40:55 created a fresh session without passed session restrictions before retry06:40:56. It was not merely an uninstalled proposal. No exact failing condition is exposed by available events; service-side target authorization trace remains the next specific evidence needed. No command retry or AWS mutation occurred.
+[Focused diagnosis and native evidence](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/integrations/SSM-B2-DIAGNOSIS-20261024.md) now correlates real CloudTrail SendCommand/AssumeRole/PutRolePolicy/GetDocument events with fresh GetCommandInvocation readbacks. Both API requests were accepted by the intended operator with exact document/version/hash/instance; target authorization failed before execution. The installed06:39 supplement exactly matches the preserved canonical policy hash;06:40:55 created a fresh session without passed session restrictions before retry06:40:56. It was not merely an uninstalled proposal. No exact failing condition is exposed by available events; service-side target authorization trace remains the next specific evidence needed. No command retry or AWS mutation occurred.
 
 Fresh IAM metadata independently shows no operator boundary/inline, ten attached policies, Part4v5/Part7v3 equal saved originals. This validates only those observed fields today, not all historical effective policies. The complete sanitized fixture and raw local evidence hashes are preserved. No public IP, credentials or command bodies are committed.

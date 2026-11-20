@@ -66,7 +66,7 @@ Old102/USD6 and earlier source-access/lock blockers below are historical checkpo
 no new authority, AWS preflight, publication or spend was created.
 
 
-> Actualización de diseño del 24 de octubre: [arquitectura y pipelines V2](v2-architecture-pipelines-20261024.md). Recomendaciones locales con evidencia az6/b1/b2; no cambia la historia ni autoriza operaciones.
+> Actualización de diseño del 24 de octubre: [arquitectura y pipelines V2](https://github.com/Kendall04/terragrunt_demo/blob/1a39c46cc02f262c04f438207647acc1282393a0/terraform/docs/v2-architecture-pipelines-20261024.md). Recomendaciones locales con evidencia az6/b1/b2; no cambia la historia ni autoriza operaciones.
 
 This is a bounded local implementation/evidence checkpoint, not deployment or
 permission to reset the original aggregate USD 2. The owner asks to advance both
@@ -114,7 +114,7 @@ The concrete blockers are:
   actual CI/OIDC release and remaining Page delivery are pending.
 
 The [lock provenance review](e14b-toolchain-reproducibility.md#native-lock-provenance-follow-up---2026-10-23)
-and [portfolio checklist](../../portfolio/ACCEPTANCE.md) identify the narrow next
+and [portfolio checklist](https://github.com/Kendall04/terragrunt_demo/blob/1a39c46cc02f262c04f438207647acc1282393a0/portfolio/ACCEPTANCE.md) identify the narrow next
 gates. The bounded migration search found no matching provider ZIP/receipt among
 815 source ZIP members or nine selected evidence entries. All eight existing
 protected lifecycle package identities still reproduce; their generator's lock
@@ -224,7 +224,7 @@ currently callable/consumable APIs.
 | Service Identity PKI/mTLS/rotation | Program.cs DI and IEncryptionService; a second real service/identity is needed for service-to-service mTLS, preserving SQL/KMS semantics | Obtain the real pinned upstream source or licensed packages and contracts; historical review names commit 29a3dfc and alpha 0.1.0-alpha.1. Confirm .NET 10 compatibility, remote authenticated enrollment/custody/revocation and AWS signer integration before implementation. Do not clone its CA/rotation framework, invent APIs or disguise LocalDevelopment as production |
 | Reliability Sentinel alarms/logs/email | CLI health JSON, producer service exit/last-attempt, recovery receipts and existing native alarms/logs | Obtain real upstream source/contracts; historical review names commit 0e8fc55, nat-asg catalog and synthetic route only. Qualify us-east-1 host/region, real ECS/SQL/backup/PKI domains and notification/email implementation. Never label real events sentinel.synthetic or map them falsely to NAT; E13 remains the NAT remediator |
 
-The [architecture review](v2-architecture-review.md#5-integración-service-identity-pki)
+The [architecture review](https://github.com/Kendall04/terragrunt_demo/blob/1a39c46cc02f262c04f438207647acc1282393a0/terraform/docs/v2-architecture-review.md#5-integración-service-identity-pki)
 retains the earlier design/source boundaries. PKI needs real identity, invalid-
 certificate rejection and continuous-load rotation/drain/recovery evidence.
 Sentinel must classify existing HA coverage versus developer email, not general
@@ -257,7 +257,7 @@ signals and future integrations. Official Archify 3.1.0 from pinned upstream
 qualification passed 15 checks (all five maps on desktop/mobile, visible SVG nodes,
 zoom/reset, keyboard focus, opaque iframe, zero external requests/errors); Node
 contracts passed 14. Browser/server closed normally. Representative captures were
-visually inspected; mobile text uses zoom. The [acceptance checkpoint](../../portfolio/ACCEPTANCE.md)
+visually inspected; mobile text uses zoom. The [acceptance checkpoint](https://github.com/Kendall04/terragrunt_demo/blob/1a39c46cc02f262c04f438207647acc1282393a0/portfolio/ACCEPTANCE.md)
 links source/HTML hashes and screenshots. This replaces the earlier custom-only
 Archify gap, without accepting PKI/Sentinel, unchanged cloud recovery, hosted CI or
 release. No EKS resources/processes, AWS, pushes or workflows changed.
@@ -320,7 +320,7 @@ AWS, email, timer, upstream source change, archive rebuild or remote workflow.
 ## Owner scope clarification and useful local policy — 2026-10-23
 
 ECS has **one application**: blue/green release slots of the same .NET API.
-[Current topology](architecture.md#current-contract--topology-and-networking) and
+[Current topology](https://github.com/Kendall04/terragrunt_demo/blob/1a39c46cc02f262c04f438207647acc1282393a0/terraform/docs/architecture.md#current-contract--topology-and-networking) and
 Program.cs show API-to-SQL via EF/SQLClient and AWS KMS SDK; no business HTTP
 service-to-service peer exists. Backup CLI/observer/library do not create one.
 PKI runtime is paused pending a genuine need/scope decision; the requirement is
@@ -328,7 +328,7 @@ not silently cancelled and no microservice is invented. Unique experimental
 code/material and failed receipts remain in the [unaccepted compatibility
 experiment](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/integrations/PKI-EXPERIMENT.md); existing API/IaC unchanged.
 
-The [backup policy](../../operations/integrations/README.md#backup-observer-incident-policy)
+The [backup policy](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/integrations/README.md#backup-observer-incident-policy)
 replaces the earlier unqualified guard using actual IRecoveryEvaluator.
 **54 checks** pass through original ingress/reducer/receipts/audit/pending outbox:
 open/persistent/recovered episodes, UNKNOWN, reminders, deduplication across
@@ -349,7 +349,7 @@ PKI is **outside ECS scope**, not pending integration or completion. Earlier
 sections preserve history and are superseded on that requirement. One API and
 blue/green release slots remain; no business HTTP microservice is added. The
 unaccepted PKI experiment stays preserved and outside the public demo route.
-See the [owner decision](decisions-and-limitations.md#owner-scope-revision--ecs-portfolio-2026-10-23).
+See the [owner decision](https://github.com/Kendall04/terragrunt_demo/blob/1a39c46cc02f262c04f438207647acc1282393a0/terraform/docs/decisions-and-limitations.md#owner-scope-revision--ecs-portfolio-2026-10-23).
 
 The bounded no-NAT regression now passes 58 Sentinel checks. Altered legacy
 NAT bindings are rejected before any transaction/outbox enqueue; an actual
@@ -408,7 +408,7 @@ Local workflow diff now invokes `scripts/tests/run_recovery_ci.py` from repo hyg
 
 ## Dependency-locked delivery increment
 
-All four solution projects now have NuGet locks; CI and Docker restore in locked mode, cache keys bind locks and Docker publish cannot implicitly restore. Actual offline locked restore/build passed; altered dependency with unchanged lock rejected NU1004. API107 PASS; backup62 PASS/1 native skip; lock contracts3 and observer29 PASS in WSL. Source/package versions unchanged; no downloads, push, container build, remote CI or AWS execution. [Validation and limits](validation.md#nuget-dependency-locks-and-cidocker-restore--2026-10-24). SSM root/status mapping is refined in the focused diagnosis; its live gate remains unresolved rather than blocking local development.
+All four solution projects now have NuGet locks; CI and Docker restore in locked mode, cache keys bind locks and Docker publish cannot implicitly restore. Actual offline locked restore/build passed; altered dependency with unchanged lock rejected NU1004. API107 PASS; backup62 PASS/1 native skip; lock contracts3 and observer29 PASS in WSL. Source/package versions unchanged; no downloads, push, container build, remote CI or AWS execution. [Validation and limits](https://github.com/Kendall04/terragrunt_demo/blob/1a39c46cc02f262c04f438207647acc1282393a0/terraform/docs/validation.md#nuget-dependency-locks-and-cidocker-restore--2026-10-24). SSM root/status mapping is refined in the focused diagnosis; its live gate remains unresolved rather than blocking local development.
 
 
 ## SQL-to-Fargate offline cutover contract - 2026-10-24

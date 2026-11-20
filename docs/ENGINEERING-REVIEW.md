@@ -1,5 +1,7 @@
 # ECS V2 engineering review
 
+> Historical audit from 7 November 2026. Preserve its findings and receipts as dated evidence. Current operation is described in [the documentation index](README.md); automatic DEV delivery, definitive SQL CA and [Sentinel retirement](SENTINEL-RETIREMENT.md) occurred later. This page is not a current inventory or shutdown authorization.
+
 Source baseline: `24cd87c0a780fe398d46553ee8c539bdd32eafa5`.
 Read-only AWS inventory: **7 November 2026, 04:45–04:53 UTC**, account
 `341936017254`, region `us-east-1`, authenticated `cnp-cert-admin`.
@@ -58,7 +60,7 @@ and current readiness, not a new administrative database session.
 | Priority / classification | Evidence and impact | Appropriate next decision |
 | --- | --- | --- |
 | High · effective exposure | API routes have `AuthorizationType=NONE`; authorized application path can return decrypted synthetic text and incur KMS/API/SQL cost. CORS/CloudFront do not authenticate it. | Retire the lab endpoint in its window. Require real backend authorization before any public AWS Edition or sensitive data. Public DEMO is independent. |
-| High · corrected merge-control gap | Ruleset 12173787 now requires `CI Validation` and `CD Safety Validation`, bound to GitHub Actions, strict/up-to-date main/develop and no bypass. Both a cancelled run and an ordinary failed link gate produced HTTP 405 merge rejection on PR #39. | Preserve unconditional aggregate checks; zero human reviews remains intentional for a single maintainer. [Configuration and proof](CI-CD-REVIEW.md#installed-merge-gate). |
+| High · corrected merge-control gap | Ruleset 12173787 now requires `CI Validation` and `CD Safety Validation`, bound to GitHub Actions, strict/up-to-date main/develop and no bypass. Both a cancelled run and an ordinary failed link gate produced HTTP 405 merge rejection on PR #39. | Preserve unconditional aggregate checks; zero human reviews remains intentional for a single maintainer. [Configuration and proof](https://github.com/Kendall04/terragrunt_demo/blob/1a39c46cc02f262c04f438207647acc1282393a0/docs/CI-CD-REVIEW.md#installed-merge-gate). |
 | High · active image debt | Installed NAT image `8ce1c0ed…` retains a completed October scan with 19 HIGH/24 MEDIUM/9 LOW/1 UNDEFINED. Image worker `1d160fc3…` has 15 CRITICAL/56 HIGH. | Patch/requalify before longer-lived use or another protected image build. No refresh scan or runtime replacement in this audit. |
 | Medium · storage protection gap | Both actual NAT root EBS volumes are unencrypted; SQL roots are encrypted with `alias/aws/ebs`. | Encrypt future NAT launch versions through a reviewed replacement. Do not claim every volume uses a CMK. |
 | Medium · transit boundary | Public TLS terminates at API Gateway; VPC Link→ALB→task uses SG-restricted HTTP. SQL TLS verifies name/trust with a demo self-signed leaf. | Explicitly accept lab boundary; internal TLS and certificate lifecycle are production work, not proof supplied by perimeter HTTPS. |

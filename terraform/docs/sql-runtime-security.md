@@ -1,5 +1,7 @@
 # SQL runtime security increment - 2026-10-27
 
+> Historical implementation record from 27 October. Ordinary delivery now requires validated-v2 independently of recovery mode, and DEV uses the definitive CA. See [current trust](../../demo-api/deploy/sql-trust/README.md) and [security](secrets-strategy.md); the earlier opt-in/legacy statements below are not current deployment instructions.
+
 ## Current source update — 2026-11-08
 
 The common API image now requires explicit `validated-v2` for ordinary DEV and

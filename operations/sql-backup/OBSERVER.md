@@ -1,5 +1,7 @@
 # Backup observer - local implementation, uninstalled
 
+> Retained local helper contract; not installed Sentinel monitoring. [Sentinel retirement](../../docs/SENTINEL-RETIREMENT.md) is complete. The native hourly backup producer is independent. Integration proposals and qualification results below retain their original dates.
+
 Current placement for the next integrated proposal: [SQL host plus external watchdog](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/sql-backup/COHOST.md), selected by the owner on2026-10-25. The separate-host requirement below is preserved as the earlier design and superseded for that proposal. Independent periodic execution on SQL does not imply an independent failure domain. Historical qualifications remain unchanged.
 
 `observer.py` supplies the missing finite observer around the existing read-only
@@ -126,7 +128,7 @@ real email remain open; no timer/service is installed or artifact replaced.
 
 ## Local incident policy follow-up — 2026-10-23
 
-The [real consumer policy](../integrations/README.md#backup-observer-incident-policy)
+The [real consumer policy](https://github.com/Kendall04/terragrunt_demo/blob/528a583d4f74ccd0368cf00929b7315d582cdb35/operations/integrations/README.md#backup-observer-incident-policy)
 now qualifies opening/persistence/recovery/UNKNOWN and recurrence with 54 checks
 through original Sentinel components. Escalation/resolution are pending outbox
 intentions; no delivery, worker or durable database is claimed. A second genuine

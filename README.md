@@ -1,91 +1,99 @@
-# Terragrunt Demo · ECS Cloud Resilience Laboratory
+# ECS Cloud Resilience Laboratory
 
-Una plataforma AWS privada con despliegue automatizado y recuperación comprobada.
-Una API **.NET 10 sobre ECS Fargate** cifra texto con KMS, lo persiste en SQL Server
-y lo descifra al consultarlo. Terraform/Terragrunt define la infraestructura;
-GitHub Actions entrega la aplicación mediante OIDC y blue/green.
+A working AWS infrastructure and delivery laboratory built with **Terraform/Terragrunt,
+.NET 10 and ECS Fargate**. The API encrypts text with AWS KMS, stores ciphertext
+in private SQL Server, and decrypts it on retrieval. Protected merges to `develop`
+build and deploy the application through GitHub Actions and ECS blue/green.
 
-**[Explorar la DEMO pública](https://d20ioz705caon7.cloudfront.net/)** ·
-**[Arquitectura actual](docs/interactive/CURRENT-INDEX.md)** ·
-**[Documentación técnica](docs/README.md)**
+**[Public DEMO](https://d20ioz705caon7.cloudfront.net/)** ·
+**[Architecture Explorer](https://d20ioz705caon7.cloudfront.net/architecture)** ·
+**[Technical documentation](docs/README.md)**
 
-La DEMO utiliza datos sintéticos y funciona sin el runtime AWS. El laboratorio
-DEV sí ejecutó operaciones reales; PROD no está instalado ni demostrado.
+The public DEMO uses synthetic data and runs independently of the AWS laboratory.
+DEV has real deployment and recovery evidence. PROD is not installed or validated.
+
+## Architecture
 
 ```mermaid
 flowchart LR
-  U[Cliente HTTPS] --> G[API Gateway]
-  G --> V[VPC Link · ALB interno]
+  U[HTTPS client] --> G[API Gateway HTTP API]
+  G --> V[VPC Link · internal ALB]
   V --> A[ECS Fargate · .NET 10]
   A -->|Encrypt / Decrypt| K[AWS KMS]
-  A -->|TLS estricto| S[SQL Server privado]
-  S -->|Backup horario| B[S3 versionado · SSE-KMS]
-  D[Merge a develop] --> C[CI · ECR por digest]
-  C -->|Blue/green y salud| A
+  A -->|Strict TLS| S[Private SQL Server]
+  S -->|Hourly backup| B[Versioned S3 · SSE-KMS]
+  D[Protected merge to develop] --> C[CI · Docker · ECR digest]
+  C -->|Blue/green + SQL/KMS readiness| A
 ```
 
-## Qué demuestra
+- **Private runtime:** two Availability Zones, public NAT subnets and private
+  application/data subnets; security groups restrict service-to-service access.
+- **Automatic DEV delivery:** CI for the integrated SHA, one image build,
+  immutable ECR digest, inactive ECS color, per-task readiness, ALB promotion,
+  client health verification, drain and a versioned release record.
+- **Separated authority:** Terraform owns infrastructure skeletons; delivery owns
+  task revisions, service counts and ALB forwarding. OIDC, ECS task/execution roles,
+  versioned Secrets Manager references and separate SQL runtime/migration users
+  keep credentials and responsibilities distinct.
+- **SQL identity:** the common Linux image receives environment-specific trust.
+  DEV uses its definitive CA with certificate/hostname validation and no temporary
+  trust bridge. SQL Express remains a single writer on EC2.
+- **Recovery:** independent NAT ASG/E13 replacement per AZ, hourly SQL backups,
+  protected recovery inputs and supervised cold restoration to a new instance.
 
-- **Infraestructura por capas:** VPC segmentada, subnets públicas/privadas en dos
-  AZ, ALB interno, security groups y ownership explícito de Terraform y delivery.
-- **Entrega DEV real:** merge protegido → CI del SHA integrado → build → ECR →
-  color inactivo de ECS → readiness SQL/KMS → ALB → release versionado en S3.
-  [Primer despliegue automático](https://github.com/Kendall04/terragrunt_demo/actions/runs/42751096835).
-- **Datos protegidos:** roles task/execution separados, credenciales runtime y
-  migrador distintas, Secrets Manager versionado y TLS estricto con la CA DEV
-  definitiva. La imagen común recibe confianza por ambiente, sin puente temporal.
-  [Entrega CA-only](https://github.com/Kendall04/terragrunt_demo/actions/runs/42761946295/attempts/2).
-- **Recuperación NAT independiente:** dos NAT Instances administradas por ASG;
-  E13 reconcilia EIP, ruta y source/destination checking. Un ensayo recuperó
-  conectividad HTTPS en **2m29,191s**.
-- **Backups y recuperación SQL:** productor nativo horario, manifiestos y copias
-  S3 cifradas/versionadas. Recuperación fría **SAME-AZ: 24m42,6s** y
-  **CROSS-AZ: 41m31,5s**, con aislamiento, nueva EC2, restore, CHECKDB y API/KMS.
-  [Evidencia y límites](docs/V2-RECOVERY-SECURITY-20261105.md).
+Explore the [five current Archify diagrams](docs/interactive/CURRENT-INDEX.md)
+for platform, delivery, network, SQL recovery and trust boundaries. Twelve older
+views remain explicitly historical, with their original sources and provenance.
 
-Los tiempos son resultados de ensayos fechados, no SLAs. SQL Express mantiene
-un único escritor; no hay HA de base, PITR ni garantía de RPO cero. El backup
-final de una recuperación planificada no acredita ausencia de pérdida abrupta.
+## Demonstrated in AWS
 
-## Ejecutar y explorar
+| Result | Evidence and scope |
+| --- | --- |
+| Merge → GitHub Actions → ECR → ECS → observable HTTP change | [First successful automatic DEV delivery](https://github.com/Kendall04/terragrunt_demo/actions/runs/42751096835) |
+| Strict SQL TLS using only the definitive DEV CA | [Automatic CA-only delivery](https://github.com/Kendall04/terragrunt_demo/actions/runs/42761946295/attempts/2) |
+| SQL cold recovery: **SAME-AZ 24m42.6s**, **CROSS-AZ 41m31.5s** | [6 November trials](docs/V2-RECOVERY-SECURITY-20261105.md#cold-recovery-execution--6-november-utc): source fencing, new EC2, restore, CHECKDB and API/KMS verification |
+| NAT HTTPS connectivity restored in **2m29.191s** | [Dated NAT experiment](docs/SENTINEL-CHAOS-20261106.md): ASG/E13 recovered connectivity; Sentinel supplied historical observation |
+| Browser → API → SQL/KMS round trip | [Real UI validation](portfolio/product/VALIDATION-PR36.md); separate from synthetic DEMO tests |
+
+Measured recovery times are trial results, not SLAs. A final backup during a
+planned cutover does not prove zero data loss during an abrupt disaster.
+
+## Run locally
+
+The static DEMO needs existing Node.js 20+ and no AWS credentials or package install:
 
 ```sh
-# DEMO local: Node 20+, sin AWS ni instalación de paquetes
 node portfolio/product/server.mjs
-# API local: .NET SDK fijado en global.json; requiere configuración SQL/KMS
-dotnet restore demo-api/terragrunt-demo.sln --locked-mode
-dotnet run --project demo-api/terragrunt-demo
+# Open http://127.0.0.1:4182/
 ```
 
-Abre `http://127.0.0.1:4182/`. [Modos, pruebas y paquete estático](portfolio/product/README.md)
-describe DEMO y AWS Edition local supervisada. No publiques un proxy ni
-credenciales: la API DEV pública todavía carece de autenticación y devuelve
-texto descifrado. Utiliza únicamente contenido sintético no sensible.
+For API development, use the SDK in `global.json`, NuGet lock files and the
+[application/data contract](terraform/docs/architecture.md#current-contract--application-and-data).
+Starting the API requires real or explicitly isolated SQL/KMS configuration;
+`/ready` checks those dependencies. See [validation and command effects](terraform/docs/validation.md)
+before running integration or cloud-connected commands.
 
-## Mapa del repositorio
+## Repository guide
 
-| Área | Punto de entrada |
+| Area | Start here |
 | --- | --- |
-| API, KMS, TLS y migraciones | [API](demo-api/terragrunt-demo/Program.cs) · [confianza SQL](demo-api/deploy/sql-trust/README.md) |
-| Infraestructura y límites | [Arquitectura](terraform/docs/architecture.md) · [seguridad](terraform/docs/secrets-strategy.md) |
-| CI/CD DEV y rollback | [Delivery simplificado](docs/DEV-DELIVERY-DESIGN.md) |
-| Backups, retención y recuperación | [Runbook SQL](operations/sql-backup/README.md) · [recuperación nativa](operations/sql-backup/recovery/NATIVE-RECOVERY.md) |
-| Diagramas editables y procedencia | [Atlas actual Archify 3.1.0](docs/interactive/CURRENT-INDEX.md) |
-| Frontend y hosting independiente | [Product Demo](portfolio/product/README.md) · [CloudFront/rollback](portfolio/product/HOSTING.md) |
-| Operación y retirada del runtime | [Ciclo nativo DEV](terraform/docs/native-dev-lifecycle.md) |
+| Topology, services and ownership | [Architecture](terraform/docs/architecture.md) |
+| CI, automatic DEV delivery and rollback | [CI](docs/CI-CD-REVIEW.md) · [Delivery](docs/DEV-DELIVERY-DESIGN.md) |
+| IAM, secrets and strict SQL TLS | [Security](terraform/docs/secrets-strategy.md) · [SQL trust](demo-api/deploy/sql-trust/README.md) |
+| Backups, retention and cold recovery | [SQL runbook](operations/sql-backup/README.md) |
+| Infrastructure operation | [Native DEV lifecycle](terraform/docs/native-dev-lifecycle.md) |
+| DEMO, static hosting and publication rollback | [Frontend](portfolio/product/README.md) · [Hosting](portfolio/product/HOSTING.md) |
+| Experiments and retained contracts | [Evidence and history](docs/history/README.md) |
 
-## Validación y alcance
+## Limits
 
-`CI Validation` y `CD Safety Validation` son obligatorios para integrar cambios.
-CI verifica aplicación, imagen, infraestructura, recuperación, contratos de
-delivery, higiene y aceptación del repositorio. Los cambios documentales no
-publican una imagen ni mueven tráfico. Terraform conserva su ciclo separado.
-[Validación y efectos de los comandos](terraform/docs/validation.md) distingue
-pruebas offline de ejecuciones AWS; no ejecutes operaciones por copiar un runbook.
+The public DEV API has no user authentication and returns decrypted text: use only
+synthetic, nonsensitive data. HTTPS terminates at API Gateway; internal application
+hops use private HTTP. SQL uses strict TLS, but has no database HA or PITR.
+Image rollback does not reverse database migrations. PROD promotion logic exists
+in source; installation, authorization and an actual PROD deployment remain unproven.
 
-Reliability Sentinel continúa como proyecto independiente. Su integración ya no
-es una dependencia operativa de ECS. [Código recuperable e historia](docs/history/SENTINEL-SEPARATION.md)
-y [recursos AWS pendientes de retiro autorizado](docs/SENTINEL-RETIREMENT.md)
-conservan la evidencia sin atribuir monitorización autónoma al laboratorio final.
-Los doce diagramas anteriores permanecen como snapshots históricos, con sus
-fuentes, hashes y licencia Archify originales.
+Reliability Sentinel was separated and its AWS runtime retired on **10 November
+2026**. [Code and historical evidence](docs/history/SENTINEL-SEPARATION.md) remain
+recoverable; retained archival storage is not active monitoring. NAT E13 and the
+native SQL backup timer operate independently.

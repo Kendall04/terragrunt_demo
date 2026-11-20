@@ -1,4 +1,4 @@
-# ECS V2: atlas técnico de DEV
+# Atlas histórico V2 — 6 noviembre 2026
 
 > Current ECS architecture: [CURRENT-INDEX.md](CURRENT-INDEX.md). This atlas is a preserved historical snapshot; Sentinel is now independent and DEV CD is automatic.
 
@@ -7,15 +7,17 @@ Revisión de implementación: `5d35edef4f2ee1c0463df483d22745d13cae47cd`.
 Inventario AWS de solo lectura: **6 noviembre 2026, 23:13:40 UTC**,
 cuenta `341936017254`, `us-east-1`. Estas vistas son fotografías fechadas,
 no un dashboard ni una garantía de disponibilidad. No se modificó AWS para
-adaptarlo a los dibujos. La vigilancia de 12–24 horas sigue siendo un trabajo
-independiente: este atlas no acredita su terminación.
+adaptarlo a los dibujos. La vigilancia de 12–24 horas era un trabajo independiente en esa fecha:
+este atlas no acredita su terminación. Sentinel fue retirado el 10 de noviembre;
+[el registro de retirada](../SENTINEL-RETIREMENT.md) documenta el resultado.
 
 ## Recorrido recomendado
 
 La **hoja de lectura** conserva el SVG oficial íntegro, permite ampliarlo y
 presenta todas las relaciones como texto con fuentes. En móvil, deslice el
 diagrama; la vista completa sirve para orientarse. El HTML **Archify** conserva
-su visor original. Ninguno de estos archivos se integró en la UI del portafolio.
+su visor original. Estas siete vistas se ofrecen hoy en la sección Historia del Architecture Explorer;
+no sustituyen las cinco vistas actuales.
 
 | Vista | Pregunta que responde | Formatos y fuente editable |
 | --- | --- | --- |
@@ -88,10 +90,9 @@ físico exacto de eliminación ni Object Lock. El CLI de copia independiente fue
 TTL está implementado; restaurar desde ese hold bajo Lifecycle sigue pendiente
 de prueba específica.
 
-## Organización posterior del portafolio
+## Ubicación actual
 
-Usar V2 como colección principal: plataforma → Sentinel → incidente → SQL,
-con red, confianza y entrega como vistas de detalle. Mantener una sección
-separada «Historia y ensayos retirados» para V1/az6/piloto. Mostrar fecha,
-estado y límites junto al diagrama, nunca solo una insignia PASS. Esta tarea
-no implementa esa navegación, landing, hosting ni diseño del portafolio.
+El recorrido principal usa [las cinco vistas actuales](CURRENT-INDEX.md).
+Estas siete y las cinco V1/experimentos permanecen en Historia con sus fuentes,
+outputs y hashes originales. Las limitaciones de arriba describen la fotografía
+del 6 de noviembre, no una certificación del estado posterior.

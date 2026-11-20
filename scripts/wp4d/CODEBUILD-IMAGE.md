@@ -1,5 +1,7 @@
 # WP4 CodeBuild image: built and locally qualified
 
+> Historical protected-controller image qualification. Current automatic delivery uses [the GitHub/ECS executor](../../docs/DEV-DELIVERY-DESIGN.md); this retained image and lock are not its build runner.
+
 The normal delivery engine is CodeBuild. Its existing protected buildspec runs
 `python3 /opt/e1/scripts/wp4d/runtime.py`; Lambda instead uses the separate
 `Controller.Dockerfile`/`runtime.handler` bootstrap at `/var/task`. This recipe

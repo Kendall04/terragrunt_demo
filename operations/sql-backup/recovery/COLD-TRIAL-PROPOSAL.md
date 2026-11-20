@@ -1,5 +1,7 @@
 # Proposed cold SQL/API trial — local source, NOT APPROVED
 
+> Historical proposal retained because cold-local-manifest.json cites this packet. It is not current authorization. The later [native procedure](NATIVE-RECOVERY.md) and [AWS results](../../../docs/V2-RECOVERY-SECURITY-20261105.md) supersede its pending execution status.
+
 Base follows `bb7d88e` and the subsequent host/retirement adaptation. Existing USD1/USD2 trials are closed. No AWS, deployment, IAM change, role assumption, email or host service was executed while preparing this document. Do not present this proposal as approved or as full ECS recovery acceptance.
 
 ## Single cycle and ownership

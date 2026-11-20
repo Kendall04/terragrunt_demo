@@ -1,78 +1,68 @@
-# Sentinel: retirada AWS pendiente de autorización
+# Reliability Sentinel: AWS runtime retired
 
-Separación del repositorio: 10 noviembre 2026. Inventario AWS de solo lectura:
-**17:07 UTC**, cuenta `341936017254`, `us-east-1`, prefijo
-`ecs-portable-r20261026p1`. Ningún recurso Sentinel se detuvo ni eliminó aquí.
-La implementación recuperable se identifica en [el archivo de separación](history/SENTINEL-SEPARATION.md).
+**Completed 10 November 2026, 19:57 UTC**, account `341936017254`, `us-east-1`,
+deployment `ecs-portable-r20261026p1`. This is a summary of the preserved retirement
+receipts, rechecked locally on 18 November; it is not a new AWS inventory.
+[Source recovery and project separation](history/SENTINEL-SEPARATION.md) remain independent.
 
-## Alcance físico y datos
+## Removed and retained
 
-| Recurso | Exclusividad y tratamiento propuesto |
+The retirement disabled the exclusive producers and consumers, waited for
+quiescence, then removed:
+
+- Six Lambdas: ingestion, worker, watchdog, cleanup, backup-observer and egress-probe-a.
+- Six EventBridge rules, the private bus and one SQS event-source mapping.
+- Three queues and the active DynamoDB journal table.
+- Seven alarms, the Sentinel SNS topic/subscription and six log groups.
+- Four exclusive IAM roles and their boundaries, one probe security group;
+  the exclusive Lambda ENI was released.
+
+**No Sentinel runtime remains in that final readback.** SQL's native hourly
+producer, NAT ASG/E13, ECS/API, TLS, delivery, CloudFront and historical E2 were
+outside the retirement. Only the expired one-shot chaos rollback timer on SQL
+was disabled; `sql-backup.timer` remained enabled and active.
+
+| Preserved material | Evidence and recovery limit |
 | --- | --- |
-| Seis Lambda: ingestion, worker, watchdog, cleanup, backup-observer, egress-probe-a | Exclusivas. Cinco reglas EventBridge habilitadas; worker tiene dos targets. Retirar primero los disparadores y el event-source mapping SQS de ingestion, luego esperar invocaciones en curso. |
-| Bus EventBridge `ecs-portable-r20261026p1` y regla `ecs-portable-r20261026p1-reports` | Exclusivos; la regla del bus privado envía a reports SQS. Es distinta de las cinco reglas programadas del bus default. Conservar su configuración y deshabilitar el forwarding durante la pausa. |
-| Tres SQS: reports, reports-dlq, operations-dlq | Exclusivas. A las 17:07 había **1.620** mensajes visibles en operations-dlq; las otras dos estaban vacías. No se recibieron ni purgaron mensajes. Retención SQS no es archivo permanente: decidir exportación antes de su vencimiento. |
-| DynamoDB `ecs-portable-r20261026p1-state` | Journal exclusivo, aproximadamente **141 MB**, PITR habilitado de **un día**. Conservar revisiones, incidentes, efectos y las cuatro compensaciones. TTL/cleanup y PITR no sustituyen un archivo histórico. No eliminar la tabla ni desactivar su protección. |
-| S3 `snt-ecs-portable-r20261026p1-341936017254-us-east-1` | Archivo exclusivo; conservar **todas las versiones**, manifiestos y permisos de lectura futuros. No vaciar. El CMK de archivo es compartido con backups SQL. |
-| Bucket de access logs `snt-logs-*` del mismo despliegue | Logs exclusivos, con retención configurada. Conservar los necesarios antes de cualquier cambio de Lifecycle. Verificar el nombre físico en el state instalado. |
-| SNS `ecs-portable-r20261026p1-notices`, suscripción y siete alarmas del mismo prefijo | Exclusivos. Retirar acciones/disparadores antes del topic. No reenviar notificaciones para probar. La clave de cifrado también autoriza alarmas ajenas a Sentinel. |
-| Seis log groups `/aws/lambda/ecs-portable-r20261026p1-*` | Unos **21 MB** en total. Retención de 7 días (observers/probe) o 30 días (runtime). Preservar la selección histórica antes de que expire. |
-| Roles/boundaries/policies, EventBridge permissions, SG y ENI de la probe | Retirar solo identidades/SG exclusivos, una vez detenidos consumidores y liberada la ENI Lambda. No eliminar VPC, subnets, rutas ni SG de ECS/SQL/NAT. |
+| 58,112 journal records | Consistent DynamoDB AttributeValue JSONL, unique keys and independent count checked; native on-demand backup remained AVAILABLE after table deletion. No restore was performed. |
+| 1,723 operations-DLQ messages | Private JSONL, message IDs/attributes and body MD5 verified before deletion. The other two queues were empty. |
+| 187,146 log events | Six private CloudWatch exports with counts, byte lengths and SHA-256. |
+| Four compensation versions and S3 archive | Exact version locators retained. Original versioned archive and access-log buckets remain private. |
+| Effective configuration and retirement receipts | Lambda, schedules, mappings, IAM, alarm history, owner-state snapshot and final readbacks retained privately. |
 
-**Conservar fuera de esta retirada:** bucket y productor SQL, su timer, sus
-credenciales y policy `EcsDevSqlBackupV220261105`; CMK backup/archivo
-`30f01bb6-03b5-4e5f-b7a8-e304fe607ced`; clave de texto/Secrets Manager;
-CMK SNS `9d9a8e10-ffd6-4038-b7f0-c3f1ebb4c444` hasta separar sus usos por
-alarmas NAT/E13 y DEV. No retirar una clave por el nombre del experimento.
-La tabla usa la clave AWS-managed de DynamoDB (`KeyManager=AWS` verificado);
-no es una CMK propia para retirar.
+Two buckets deliberately remain:
+`snt-ecs-portable-r20261026p1-341936017254-us-east-1` and
+`snt-logs-ecs-portable-r20261026p1-341936017254`.
+The `ecs-portable-r20261026p1-backup-observer` and
+`ecs-portable-r20261026p1-worker` roles remain because shared KMS policies refer
+to their principals. Retention is not permission to reuse them.
 
-## Coste recurrente orientativo
+The shared backup/archive key `30f01bb6-03b5-4e5f-b7a8-e304fe607ced` and SNS key
+`9d9a8e10-ffd6-4038-b7f0-c3f1ebb4c444` remained enabled. **Full decryption of the
+historical S3 archive was not demonstrated:** Sentinel's decrypt grants had expired.
+The original data was therefore retained, not replaced with an unverified copy.
+Any future access/retention decision must preserve the other consumers of those keys.
 
-Estimación, **no factura ni presupuesto nuevo**, sin descontar Free Tier:
-aproximadamente 219.000 invocaciones programadas/mes; con 0,5 s por invocación
-y hasta 512 MiB, Lambda sería ~USD 0,96/mes. Siete alarmas estándar serían
-~USD 0,70/mes. Añadir DynamoDB requests/storage/PITR, S3 versiones/requests,
-KMS, SQS, SNS y logs: **orden de USD 2–6/mes**, sensible a duración, reintentos
-y crecimiento del journal. No es un tope. Las claves compartidas y sus cargos
-no desaparecen al detener Sentinel. Los datos retenidos siguen teniendo coste.
+## Private provenance
 
-Fuentes de precios: [Lambda](https://aws.amazon.com/lambda/pricing/),
-[CloudWatch](https://aws.amazon.com/cloudwatch/pricing/),
-[DynamoDB](https://aws.amazon.com/dynamodb/pricing/),
-[KMS](https://aws.amazon.com/kms/pricing/), [S3](https://aws.amazon.com/s3/pricing/).
-El hosting DEMO mantiene su presupuesto independiente de USD 1/mes.
+The owner's private evidence set is named `sentinel-closure-20261110`.
+`RECOVERY.txt` identifies native backup and exact S3 references; the repository
+contains no journal rows, queue bodies, email addresses, private logs or state.
+Its 57 inventoried files were rehashed locally with zero mismatches on 18 November.
 
-## Procedimiento propuesto; no ejecutado
+- `EVIDENCE-MANIFEST.json` SHA-256:
+  `45df2270108bbba39952690a2505b8de88514363307eefbf5d45829c415cc813`.
+- `FINAL-RESULT.private.json` SHA-256:
+  `b4133bd808e512caba9dfef98503682b8245761091e8868fea07efca7eac9e78`.
+- `retirement-readback.private.json` SHA-256:
+  `66fe26111492a5e7b358efb00e64cdec5e640e9e299532a9c960c08eb7f690e2`.
 
-1. **Preservar:** exportar journal/compensaciones, configuración de schedules,
-   mappings, policies, versiones de código y metadatos del archivo. Los recibos
-   privados ya conservados siguen intactos. Resolver expresamente la conservación
-   del contenido de DLQ y logs antes de su expiración; leer estadísticas no
-   preserva mensajes. No recibir mensajes ni exportar datos sin el alcance aprobado.
-2. **Recuperar el owner IaC exacto:** checkout aislado del commit de origen de
-   `ci/authority/retired-sentinel.json`; usar `operations/integrations/portable/trial` y el state,
-   inputs privados y versiones de paquetes de la instalación real. El root
-   `terraform/infra/sentinel-backup` es una generación anterior, no el owner
-   instalado. Comparar `state list`, recursos físicos y plan fresco. No importar
-   ni adoptar recursos compartidos, no reutilizar un plan de noviembre anterior.
-3. **Pausa reversible autorizada:** preparar un cambio en el owner existente
-   para deshabilitar solo sus cinco reglas programadas, la regla reports del
-   bus privado y el mapping de ingestion. Revisar
-   el plan: cero borrados y cero cambios en SQL, NAT/E13, API, CD o CloudFront.
-   No hay un interruptor IaC universal ya implementado: el cambio explícito en
-   esos recursos requiere revisión y autorización. No usar E2 ni force unlock.
-4. **Esperar y comprobar:** cero invocaciones en curso y cero nuevos efectos
-   del runtime; conservar queues/journal/archive. No confundir permisos vencidos
-   con desactivación. Eliminar luego las funciones/roles/alarms exclusivos solo
-   mediante un plan acotado aprobado; respetar dependencias Lambda/ENI/SG.
-5. **Retención separada:** tabla, buckets/versiones, DLQ, logs y claves requieren
-   una decisión explícita. No ejecutar un `destroy` global que los incluya.
-   Preparar su retención/importación en el futuro proyecto antes de retirar el
-   owner; no basta con quitar un recurso del código y aplicar.
-6. **Readback independiente:** API `/ready` 200, mismo digest/revisión ECS,
-   NAT ASG/E13 intactos, backup horario reciente, claves compartidas habilitadas,
-   CloudFront operativo. Registrar inventario residual y costes.
+These hashes identify private receipts for owner review; they are not public
+access links or proof of a fresh AWS observation. The saved Terraform owner state
+was left unchanged after native retirement and must not be applied blindly.
 
-La siguiente autorización puede limitarse a **preservación y pausa reversible**.
-Los borrados de datos/recursos y la retirada de claves no están autorizados.
+The closure estimated about **USD 1.87/month** of avoided Lambda and alarm cost
+before Free Tier, extrapolated from the preceding 24 hours, not billing data.
+Request/write/log costs also cease; retained storage, journal backup and shared
+keys still incur their own costs. There is no remaining runtime teardown procedure
+in this document: only deliberate archival retention remains to be managed.

@@ -8,7 +8,8 @@ health gates or schema compatibility; security docs for credential/KMS changes.
 - This is one simple text API deployed in two colors. Backend/domain expansion is
   a target; meaningful auth follows domain design, not cosmetic retrofit.
 - Persist ciphertext, not plaintext. The KMS wrapper receives UTF-8 input and
-  stores base64 ciphertext; existing payload/pagination edge cases are backlog.
+  stores base64 ciphertext; preserve the 4096-byte UTF-8 limit, bounded pagination
+  and stable tie ordering. Broader payloads and dependency error behavior remain limits.
 - Preserve the distinction: /health and /health/live are liveness; /ready and
   /health/ready test dependencies. ALB uses liveness; deployment separately
   requires per-task one-shot /ready evidence before promotion.
@@ -17,7 +18,7 @@ health gates or schema compatibility; security docs for credential/KMS changes.
 - Startup migrations default off. Legacy startup migration must be explicitly enabled;
   validated-v2 refuses it. The explicit database-migrate command uses a separate
   supplied connection and requires schema-change confirmation. No migration
-  credential belongs in a runtime task. See ../terraform/docs/sql-runtime-security.md.
+  credential belongs in a runtime task. See [current SQL trust](deploy/sql-trust/README.md).
   The legacy bootstrap still grants db_owner; the installed DEV validated-v2
   handoff has minimal runtime grants and a disabled separate migrator. Do not
   substitute the legacy source defaults for that deployed contract. Image rollback never undoes the shared schema.
