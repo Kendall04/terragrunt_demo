@@ -42,8 +42,7 @@ flowchart LR
   protected recovery inputs and supervised cold restoration to a new instance.
 
 Explore the [five current Archify diagrams](docs/interactive/CURRENT-INDEX.md)
-for platform, delivery, network, SQL recovery and trust boundaries. Twelve older
-views remain explicitly historical, with their original sources and provenance.
+for platform, delivery, network, SQL recovery and trust boundaries. The Explorer contains only these five final views.
 
 ## Demonstrated in AWS
 
@@ -51,9 +50,9 @@ views remain explicitly historical, with their original sources and provenance.
 | --- | --- |
 | Merge → GitHub Actions → ECR → ECS → observable HTTP change | [First successful automatic DEV delivery](https://github.com/Kendall04/terragrunt_demo/actions/runs/42751096835) |
 | Strict SQL TLS using only the definitive DEV CA | [Automatic CA-only delivery](https://github.com/Kendall04/terragrunt_demo/actions/runs/42761946295/attempts/2) |
-| SQL cold recovery: **SAME-AZ 24m42.6s**, **CROSS-AZ 41m31.5s** | [6 November trials](docs/V2-RECOVERY-SECURITY-20261105.md#cold-recovery-execution--6-november-utc): source fencing, new EC2, restore, CHECKDB and API/KMS verification |
-| NAT HTTPS connectivity restored in **2m29.191s** | [Dated NAT experiment](docs/SENTINEL-CHAOS-20261106.md): ASG/E13 recovered connectivity; Sentinel supplied historical observation |
-| Browser → API → SQL/KMS round trip | [Real UI validation](portfolio/product/VALIDATION-PR36.md); separate from synthetic DEMO tests |
+| SQL cold recovery: **SAME-AZ 24m42.6s**, **CROSS-AZ 41m31.5s** | [6 November trials](docs/RESULTS.md): source fencing, new EC2, restore, CHECKDB and API/KMS verification |
+| NAT HTTPS connectivity restored in **2m29.191s** | [Dated NAT experiment](docs/RESULTS.md): ASG/E13 recovered connectivity; Sentinel supplied historical observation |
+| Browser → API → SQL/KMS round trip | [Real UI validation](docs/RESULTS.md); separate from synthetic DEMO tests |
 
 Measured recovery times are trial results, not SLAs. A final backup during a
 planned cutover does not prove zero data loss during an abrupt disaster.
@@ -83,7 +82,7 @@ before running integration or cloud-connected commands.
 | Backups, retention and cold recovery | [SQL runbook](operations/sql-backup/README.md) |
 | Infrastructure operation | [Native DEV lifecycle](terraform/docs/native-dev-lifecycle.md) |
 | DEMO, static hosting and publication rollback | [Frontend](portfolio/product/README.md) · [Hosting](portfolio/product/HOSTING.md) |
-| Experiments and retained contracts | [Evidence and history](docs/history/README.md) |
+| Experiments and retained contracts | [Evidence and history](docs/RESULTS.md) |
 
 ## Limits
 
@@ -94,6 +93,6 @@ Image rollback does not reverse database migrations. PROD promotion logic exists
 in source; installation, authorization and an actual PROD deployment remain unproven.
 
 Reliability Sentinel was separated and its AWS runtime retired on **10 November
-2026**. [Code and historical evidence](docs/history/SENTINEL-SEPARATION.md) remain
+2026**. [Code and historical evidence](terraform/docs/portfolio-operations.md#separated-sentinel-resources) remain
 recoverable; retained archival storage is not active monitoring. NAT E13 and the
 native SQL backup timer operate independently.

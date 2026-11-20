@@ -29,55 +29,33 @@ export function validateGraph(spec) {
   }
 }
 export async function verify() {
-  const manifest=await json('docs/interactive/GENERATION-V2.json');
-  const trace=await json('docs/interactive/TRACEABILITY-V2.json');
-  const legacy=await json('docs/interactive/GENERATION.json');
-  assert.equal(manifest.sourceCommit,trace.revision);
-  assert.equal(manifest.diagrams.length,7);
-  for(const item of manifest.diagrams){
-    const source=await read(item.source), raw=(await read(item.output)).toString('utf8'), spec=JSON.parse(source);
-    assert.equal(sha(source),item.sourceSha256,item.id+' source');
-    assert.equal(sha(raw),item.htmlSha256,item.id+' official HTML');
-    assert.equal(spec.meta.repository.revision,trace.revision);
-    assert.deepEqual(Object.values(item.gates),['pass','pass','pass','pass']);
-    validateGraph(spec);
-    const sheet=(await read('docs/interactive/readable/'+item.id+'.html')).toString('utf8');
-    assert.equal(sheet,readingSheet(spec,raw),item.id+' reproducible reading sheet');
-    assert.equal(extract(sheet).svg,extract(raw).svg,item.id+' original SVG');
-    assert.ok(!/C:[\\/]Users[\\/]|BEGIN (?:RSA |EC )?PRIVATE KEY|unsubscribe\?/i.test(raw+sheet),'Private material');
-    const records=trace.diagrams[item.id];
-    assert.deepEqual(Object.keys(records.nodes),(spec.components??spec.events).map(n=>n.id));
-    assert.deepEqual(records.relations.map(e=>[e.id,e.from,e.to,e.label]),(spec.connections??[]).map(e=>[e.id,e.from,e.to,e.label]));
-    for(const n of Object.values(records.nodes))for(const key of n.references)assert.ok(trace.fragments[key]);
+  const current=JSON.parse(await readFile(root+'/docs/interactive/GENERATION-CURRENT.json','utf8'));
+  const trace=JSON.parse(await readFile(root+'/docs/interactive/TRACEABILITY-CURRENT.json','utf8'));
+  assert.equal(current.diagrams.length,5);
+  const {createHash}=await import('node:crypto');const hash=b=>createHash('sha256').update(b).digest('hex');
+  for(const d of current.diagrams){
+    const src=await readFile(root+'/docs/interactive/'+d.source);assert.equal(hash(src),d.sourceSha256);
+    const spec=JSON.parse(src);validateGraph(spec);
+    assert.equal(spec.meta.repository.revision,current.sourceRevision);
+    assert.equal(await readFile(root+'/docs/interactive/readable/'+d.id+'.html','utf8'),readingSheet(spec,await readFile(root+'/docs/interactive/'+d.output,'utf8')),'Reproducible current reader');
+    assert(!/tarea blue actuales|recursos AWS pendientes de retiro/.test(src.toString()),'No transient or retired runtime claims');
+    assert(!spec.components.some(n=>/sentinel|observer/i.test(n.id)));
+    const raw = await readFile(root+'/docs/interactive/'+d.output,'utf8');
+    assert.equal(hash(raw),d.htmlSha256);
+    assert.equal(extract(await readFile(root+'/docs/interactive/readable/'+d.id+'.html','utf8')).svg,extract(raw).svg);
+    assert.ok(!/C:[\\/]Users[\\/]|BEGIN (?:RSA |EC )?PRIVATE KEY|unsubscribe\?/i.test(raw),'Private material');
+    assert.equal(hash(await readFile(root+'/docs/interactive/readable/'+d.id+'.html')),d.readingSha256);
+    assert.deepEqual(Object.values(d.gates),['pass','pass','pass','pass']);
   }
-  for(const [key,f] of Object.entries(trace.fragments)){
-    assert.equal(sha(f.text),f.fragmentLfSha256,key+' fragment');
-    assert.equal(f.text.trimEnd().split('\n').length<=f.endLine-f.line+1,true);
+  const qa=JSON.parse(await readFile(root+'/docs/interactive/evidence/current/BROWSER-QA.json','utf8'));
+  assert.equal(qa.status,'PASS');
+  for(const d of current.diagrams)assert.equal(qa.diagrams[d.id],d.htmlSha256,'Visual review describes current output');
+  for(const c of [...qa.captures,...qa.before])assert.equal(hash(await readFile(root+'/docs/interactive/evidence/current/'+c.file)),c.sha256,'Visual evidence bytes');
+  for(const [p,expected] of Object.entries(trace.filesLfSha256)){
+    const text=(await readFile(root+'/'+p,'utf8')).replace(/^\uFEFF/,'').replaceAll('\r\n','\n');
+    assert.equal(hash(text),expected,'Current source changed: '+p);
   }
-  const archived=await json('docs/interactive/evidence/HISTORICAL-IMPLEMENTATION.json');
-  assert.equal(archived.diagramSourceRevision,trace.revision);
-  assert.deepEqual(Object.keys(archived.files),Object.keys(trace.implementationFiles));
-  for(const [p,hash] of Object.entries(trace.implementationFiles))assert.equal(sha(archived.files[p]),hash,'Historical source bytes: '+p);
-  for(const [id,hash] of Object.entries(manifest.legacyHtmlSha256)){
-    assert.equal(sha(await read('docs/interactive/'+id+'.html')),hash,'Historical HTML must remain intact');
-    const historical=await read('docs/interactive/source/'+id+'.json');
-    // October's fifth receipt hashes CRLF; the committed source is LF. Preserve both, not a fabricated new receipt.
-    const historicalReceiptBytes=id==='future-integrations'?lf(historical).replaceAll('\n','\r\n'):historical;
-    assert.equal(sha(historicalReceiptBytes),legacy.diagrams.find(d=>d.id===id).sourceSha256,'Historical source');
-  }
-  for(const [p,hash] of Object.entries(manifest.legacyRasterSha256))assert.equal(sha(await read(p)),hash,'Historical raster');
-  const reproduction=await json('docs/interactive/evidence/REPRODUCTION.json');
-  assert.equal(reproduction.length,7);
-  for(const r of reproduction){assert.equal(r.byteIdentical,true);assert.equal(r.htmlSha256,manifest.diagrams.find(d=>d.id===r.id).htmlSha256);}
-  const qa=await json('docs/interactive/evidence/screenshots/BROWSER-QA.json');
-  assert.equal(qa.externalRequests,0);assert.equal(qa.captures.length,28);assert.equal(qa.mobileDetails.length,14);
-  for(const c of [...qa.captures,...qa.mobileDetails]){
-    assert.equal(path.basename(c.file),c.file,'Capture must be local');
-    assert.equal(sha(await read('docs/interactive/evidence/screenshots/'+c.file)),c.pngSha256,'Capture changed');
-    const output=manifest.diagrams.find(d=>d.id===c.id).output;
-    const html=c.view==='official'?output:'docs/interactive/readable/'+c.id+'.html';
-    assert.equal(sha(await read(html)),c.htmlSha256,'Screenshot no longer describes delivered HTML');
-  }
-  return {diagrams:manifest.diagrams.length,relations:Object.values(trace.diagrams).reduce((n,d)=>n+d.relations.length,0),fragments:Object.keys(trace.fragments).length,awsWrites:0};
+
+  return {diagrams:current.diagrams.length, awsWrites:0};
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url))console.log(JSON.stringify(await verify()));

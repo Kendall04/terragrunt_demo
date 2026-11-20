@@ -2,7 +2,7 @@
 
 CURRENT repository increment: safe diagnostics and deterministic failure evidence.
 Administrative release remains **BLOCKED**. AWS has never been deployed. This
-extends [E2](e2-environment-mutation.md) and preserves [E4](e4-post-switch-recovery.md),
+extends [E2](https://github.com/Kendall04/terragrunt_demo/blob/5b13b448c328241e02ee1432fba221e675e85810/terraform/docs/e2-environment-mutation.md) and preserves [E4](https://github.com/Kendall04/terragrunt_demo/blob/5b13b448c328241e02ee1432fba221e675e85810/terraform/docs/e4-post-switch-recovery.md),
 E1 authorization, immutable effects and existing-content restoration limits.
 
 ## Reproduced failure
@@ -114,7 +114,7 @@ installation. No AWS command was executed for this increment.
 3. Collect the exact operation's immutable intent, request, plans, attempts, ACKs,
    observed/reconciled effects, activation/E3, outcomes, terminals, receipts,
    history/dev/public publications and WP5 saved-plan/result evidence as applicable.
-   The [E4 collection recipe](e4-post-switch-recovery.md#operator-runbook) covers
+   The [E4 collection recipe](https://github.com/Kendall04/terragrunt_demo/blob/5b13b448c328241e02ee1432fba221e675e85810/terraform/docs/e4-post-switch-recovery.md#operator-runbook) covers
    normal delivery. Retain missing/error distinctions, versions and canonical
    hashes. Never overwrite evidence or blindly resend an attempted mutation.
 4. Establish the exact executor's authenticated lifecycle, descendants, retries

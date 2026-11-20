@@ -2,7 +2,7 @@
 
 The SQL EC2 host runs the native `host.py` producer through `sql-backup.timer`.
 The schedule is hourly and persistent. Backup production is independent of
-Sentinel; its [runtime was retired](../../docs/SENTINEL-RETIREMENT.md) on 10 November.
+Sentinel; its [runtime was retired](../../terraform/docs/portfolio-operations.md#separated-sentinel-resources) on 10 November.
 
 **Read next:** [cold recovery](recovery/NATIVE-RECOVERY.md) Â·
 [storage verification, retention and holds](storage/README.md) Â·
@@ -106,7 +106,7 @@ prove behavior during abrupt loss. VERIFYONLY is distinct from a full restore.
 The older [prepared-target experiment](recovery/RUNBOOK.md) and local
 [service-cutover contract](recovery/SERVICE-CUTOVER.md) remain historical inputs
 for evidence/tests. They are not competing instructions for the current host.
-The [local observer helper](OBSERVER.md) emits local candidates only; it does not
+The [local observer helper](https://github.com/Kendall04/terragrunt_demo/blob/5b13b448c328241e02ee1432fba221e675e85810/operations/sql-backup/OBSERVER.md) emits local candidates only; it does not
 install monitoring, send mail or replace the retired Sentinel runtime.
 
 Offline checks: [validation guide](../../terraform/docs/validation.md).

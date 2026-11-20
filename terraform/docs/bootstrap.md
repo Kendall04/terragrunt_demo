@@ -51,7 +51,7 @@ or the historical E2 record to bypass uncertainty.
 
 CloudWatch logs/alarms and the native producer's receipts remain available according
 to their installed configuration. Alarm existence does not prove message delivery.
-Sentinel's [runtime was retired](../../docs/SENTINEL-RETIREMENT.md); there is no
+Sentinel's [runtime was retired](portfolio-operations.md#separated-sentinel-resources); there is no
 current Sentinel observer, autonomous escalation or automatic retention tagger.
 NAT E13 and the SQL backup timer remain independent.
 

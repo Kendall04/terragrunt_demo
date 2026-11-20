@@ -1,9 +1,6 @@
 // Pinned originals, presentation-only copy, opaque iframe. No arbitrary ingestion.
-import {readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
-import {archifyCatalog} from './archify-catalog.mjs';
 import {adaptViewport,viewportStyle,viewportScript} from './archify-viewport.mjs';
-const pins=JSON.parse(await readFile(new URL('./archify-pins.json',import.meta.url),'utf8'));
 export const diagramPolicy="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; font-src data:; connect-src 'none'; media-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'";
 export function adaptArchify(bytes,expected){
  if(createHash('sha256').update(bytes).digest('hex')!==expected)throw new Error('Unreviewed Archify bytes');
@@ -18,8 +15,4 @@ export function adaptArchify(bytes,expected){
  html=html.replace('</head>','<style>'+viewportStyle+'#btn-export,#export-menu{display:none!important}</style></head>');
  html=html.replace('</body>','<script>'+viewportScript+'</script></body>');
  return adaptViewport(html);
-}
-export async function archifyPresentation(id){
- if(!archifyCatalog.some(item=>item.id===id))throw new Error('Unknown Archify diagram');
- return adaptArchify(await readFile(new URL('../docs/interactive/'+id+'.html',import.meta.url)),pins.originalSha256[id]);
 }

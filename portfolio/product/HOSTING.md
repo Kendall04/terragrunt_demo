@@ -24,7 +24,7 @@ llamadas a la API. La [validación de Archify](../../docs/interactive/CURRENT-IN
 conserva fuentes, hashes y capturas. Es evidencia fechada; no se publicó ni se
 consultó AWS durante la consolidación documental del 18 noviembre.
 
-Los [recibos iniciales del 7 noviembre](evidence/public/PUBLIC-HTTPS-QA.json)
+Los [recibos iniciales del 7 noviembre](https://github.com/Kendall04/terragrunt_demo/blob/5b13b448c328241e02ee1432fba221e675e85810/portfolio/product/evidence/public/PUBLIC-HTTPS-QA.json)
 pertenecen a la primera release de 12 diagramas. Sus bytes se conservan y no deben
 interpretarse como el manifiesto de la publicación posterior.
 
@@ -90,9 +90,9 @@ node portfolio/product/test-public.mjs https://<distribucion>.cloudfront.net <pa
 ```
 
 GET/HEAD al hosting y datos sintéticos en memoria. Verifica todos los bytes públicos
-contra manifest, MIME/CSP, cinco páginas, cinco diagramas actuales y doce históricos, móvil, refresh y errores.
+contra manifest, MIME/CSP, cinco páginas y cinco diagramas actuales, móvil, refresh y errores.
 No vuelve a probar SQL/KMS ni llama a la API; esa evidencia permanece separada en
-[VALIDATION-PR36.md](VALIDATION-PR36.md). No instala herramientas automáticamente.
+[VALIDATION-PR36.md](../../docs/RESULTS.md). No instala herramientas automáticamente.
 
 
 ## Actualizar contenido del hosting existente
@@ -120,3 +120,7 @@ OAC, funciones LIVE, distribución y cada versión publicada. Antes de publicar,
 conservar template/parámetros anteriores y verificar que el diff contiene solo
 rutas de contenido. Rollback: restaurar ese template y su `Release` anterior por
 el mismo stack, esperar e invalidar; comprobar HTTPS de nuevo.
+
+La limpieza de noviembre reduce el próximo paquete a cinco diagramas. La release
+pública descrita arriba conserva su fecha; no se sustituye hasta integrar esta
+PR y promoverla mediante los checks protegidos.

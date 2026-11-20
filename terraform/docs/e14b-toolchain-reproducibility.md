@@ -298,4 +298,4 @@ is `provider-lock-provenance/bounded-existing-evidence-search.json`, SHA256
 `cfba543fb2f6252961bdac7b5a72e356f169083e98e830d10eb6cf2b078740ba`.
 The dependent change is stopped pending the stated missing artifact and canonical
 review; it was not denied and no mutation has an uncertain outcome. See the
-[consolidated ECS checkpoint](v2-local-completion.md#consolidated-acceptance-summary).
+[consolidated ECS checkpoint](https://github.com/Kendall04/terragrunt_demo/blob/5b13b448c328241e02ee1432fba221e675e85810/terraform/docs/v2-local-completion.md#consolidated-acceptance-summary).

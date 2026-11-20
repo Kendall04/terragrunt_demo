@@ -1,8 +1,7 @@
 # ECS V2: atlas actual
 
 Snapshot técnico de **10 noviembre 2026**. DEV automático demostrado; PROD no
-instalado ni validado. Sentinel continúa por separado: su runtime fue retirado. Sus diagramas y
-archivos históricos no son dependencias operativas de ECS.
+instalado ni validado. Sentinel continúa por separado: su runtime fue retirado. No es una dependencia operativa de ECS.
 
 | Vista | Qué explica | Fuente editable |
 | --- | --- | --- |
@@ -14,9 +13,7 @@ archivos históricos no son dependencias operativas de ECS.
 
 [Abrir el Explorer público](https://d20ioz705caon7.cloudfront.net/architecture).
 Incluye zoom, pan, ajuste de vista, fuentes verificables, alternativa textual y
-hojas de lectura responsive. Los doce originales siguen en **Historia**.
-[El atlas del 6 noviembre](V2-INDEX.md) conserva Sentinel y el CD entonces inhibido;
-es evidencia histórica, no la arquitectura actual.
+hojas de lectura responsive. Solo se publican estas cinco vistas.
 
 ## Procedencia y regeneración
 
@@ -26,7 +23,7 @@ resultados. Archify **3.1.0**, commit
 `ffedc53390c9da6e859f41e432c5d2d0615a23cf00a503181f07efbba88a7ce8`.
 Se verificaron tanto el ZIP oficial como cada archivo extraído antes de ejecutarlo.
 Usar Node **24.22.1** (runtime ya cualificado); no cambiar el generador para adaptar
-un hash esperado. Los doce originales, sus pins y licencias permanecen intactos.
+un hash esperado. La licencia y los hashes de estas cinco vistas permanecen intactos.
 
 ```sh
 node <archify-autenticado>/bin/archify.mjs finalize architecture \

@@ -1,6 +1,6 @@
 # Validation and command effects
 
-[CI coverage](../../docs/CI-CD-REVIEW.md) · [Demonstrated results](../../docs/history/README.md)
+[CI coverage](../../docs/CI-CD-REVIEW.md) · [Demonstrated results](../../docs/RESULTS.md)
 
 CI is the reproducible source of selected checks. Historical local test counts
 are not today's coverage, and offline PASS does not prove AWS installation,
@@ -97,12 +97,12 @@ Chrome/Playwright. The local runner isolates DEMO and explicit HTTP doubles;
 Archify generation and reproducibility commands. Do not regenerate historical
 outputs or alter hashes just to pass a gate. AWS browser tests perform real API
 operations and require explicit authorization; the historical proof remains in
-[the UI validation record](../../portfolio/product/VALIDATION-PR36.md).
+[the UI validation record](../../docs/RESULTS.md).
 
 ## Evidence boundaries
 
 Real automatic DEV delivery, CA-only TLS, native backups and SAME/CROSS-AZ
-restoration have separate [dated evidence](../../docs/history/README.md).
+restoration have separate [dated evidence](../../docs/RESULTS.md).
 PROD deployment, uninterrupted monitoring, PITR and abrupt-disaster zero RPO
 are not demonstrated. The earlier validation chronology is recoverable at
 [the pre-consolidation revision](https://github.com/Kendall04/terragrunt_demo/blob/1a39c46cc02f262c04f438207647acc1282393a0/terraform/docs/validation.md);

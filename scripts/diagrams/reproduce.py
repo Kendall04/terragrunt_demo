@@ -24,7 +24,7 @@ def main():
     parser.add_argument('--node', required=True)
     parser.add_argument('--evidence-dir', type=Path, required=True)
     args = parser.parse_args()
-    manifest = json.loads((ROOT / 'docs/interactive/GENERATION-V2.json').read_text(encoding='utf-8'))
+    manifest = json.loads((ROOT / 'docs/interactive/GENERATION-CURRENT.json').read_text(encoding='utf-8'))
     if digest(args.tool_zip.read_bytes()) != manifest['tool']['zip_sha256']:
         raise SystemExit('Official tool ZIP identity mismatch')
     with zipfile.ZipFile(args.tool_zip) as archive:
@@ -39,7 +39,8 @@ def main():
                 raise SystemExit('Extracted official tool changed: ' + entry.filename)
     args.evidence_dir.mkdir(parents=True, exist_ok=False)
     results = []
-    for item in manifest['diagrams']:
+    for original in manifest['diagrams']:
+        item = dict(original, source='docs/interactive/'+original['source'], output='docs/interactive/'+original['output'], type='architecture')
         if digest((ROOT / item['source']).read_bytes()) != item['sourceSha256']:
             raise SystemExit('Source changed: new review required for ' + item['id'])
         output_dir = args.evidence_dir / item['id']

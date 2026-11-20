@@ -280,7 +280,7 @@ try {
     await reader.locator("article").first().waitFor();
     assert.equal(await reader.locator("a[href]").count(), 0);
   }
-  pass("17 public diagrams desktop/mobile: zoom/fit, opaque iframe and reader");
+  pass("Five public diagrams desktop/mobile: zoom/fit, opaque iframe and reader");
   await page.goto(origin + "/resilience");
   for (const label of ["NAT / E13", "SQL recovery", "Backups SQL"]) {
     await page.getByRole("button", { name: label, exact: true }).click();

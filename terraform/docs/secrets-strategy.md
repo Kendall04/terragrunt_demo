@@ -58,10 +58,10 @@ required KMS key, SQL identity or trust input is lost.
   SQL host egress is broader than application egress.
 - SQL Express is one writer, with supervised cold recovery, no HA or PITR.
 - Object-access auditing and auxiliary image findings were documented in the
-  [dated security review](../../docs/ENGINEERING-REVIEW.md). Documentation updates
+  [dated security review](https://github.com/Kendall04/terragrunt_demo/blob/5b13b448c328241e02ee1432fba221e675e85810/docs/ENGINEERING-REVIEW.md). Documentation updates
   do not certify remediation or current scanner results.
 - The retained Sentinel archive could not be fully decrypted under expired grants.
-  Its [buckets and KMS-bound roles](../../docs/SENTINEL-RETIREMENT.md) were deliberately
+  Its [buckets and KMS-bound roles](portfolio-operations.md#separated-sentinel-resources) were deliberately
   retained; shared keys were not deleted.
 
 The [E1 final acceptance contract](e1-final-acceptance.md), frozen approved

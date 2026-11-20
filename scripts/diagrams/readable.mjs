@@ -32,8 +32,8 @@ body{display:block;margin:0;padding:24px;background:#f4f6fa;color:#172b40;font:1
 const drawing=document.querySelector('.drawing');const intrinsic=drawing.querySelector('svg').viewBox.baseVal.width;for(const button of document.querySelectorAll('[data-scale]'))button.addEventListener('click',()=>{const scale=button.dataset.scale;drawing.style.minWidth='0';drawing.style.width=scale==='fit'?'100%':Math.max(1010,intrinsic)*Number(scale)+'px';});
 </script></body></html>\n`;
 }
-export async function generate(check=false, current=false) {
-  const manifest=JSON.parse(await readFile(path.join(root,'docs/interactive/'+(current?'GENERATION-CURRENT.json':'GENERATION-V2.json')),'utf8'));
+export async function generate(check=false) {
+  const manifest=JSON.parse(await readFile(path.join(root,'docs/interactive/GENERATION-CURRENT.json'),'utf8'));
   await mkdir(path.join(root,'docs/interactive/readable'),{recursive:true});
   for(const item of manifest.diagrams){
     const base=current?path.join(root,'docs/interactive'):root;
@@ -45,4 +45,4 @@ export async function generate(check=false, current=false) {
     else await writeFile(dest,content);
   }
 }
-if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url))await generate(process.argv.includes('--check'),process.argv.includes('--current'));
+if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url))await generate(process.argv.includes('--check'));

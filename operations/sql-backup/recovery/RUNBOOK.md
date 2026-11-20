@@ -9,7 +9,7 @@ helper and local-backup CLI passed native SQL, followed by an explicitly manual
 SQL restore. The complete EC2/systemd/remote-restore/encrypted-API path without
 manual repairs remains pending. No AWS cycle or budget is authorized by this file.
 
-The [local completion checkpoint](../../../terraform/docs/v2-local-completion.md)
+The [local completion checkpoint](https://github.com/Kendall04/terragrunt_demo/blob/5b13b448c328241e02ee1432fba221e675e85810/terraform/docs/v2-local-completion.md)
 maps the current Page criteria, actual tests, backup-health improvement and
 unavailable PKI/Sentinel source gates. V1 delivery and the October 21 manual/two
 hourly backup acceptance retain their historical scope. Earlier dated proposals

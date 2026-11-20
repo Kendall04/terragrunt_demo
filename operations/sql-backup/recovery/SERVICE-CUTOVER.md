@@ -221,7 +221,7 @@ acceptance remains for the approved VM/CI environment and future admitted cycle.
 
 ## Strict database recovery opt-in â€” 27 October 2026
 
-[Current strict source/restore and protected task handoff](STRICT-DATABASE-RECOVERY.md)
+[Current strict source/restore and protected task handoff](https://github.com/Kendall04/terragrunt_demo/blob/5b13b448c328241e02ee1432fba221e675e85810/operations/sql-backup/recovery/STRICT-DATABASE-RECOVERY.md)
 connects the existing validated-v2 API policy to the recovery helper and renderer.
 New private connection writes require verified strict principal metadata; legacy
 loopback history is preserved and never used as fallback. Source-only implementation

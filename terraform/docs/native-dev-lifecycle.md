@@ -24,7 +24,7 @@ parallel topology, copy the project or run the retired `terraform/infra` roots.
 `terraform/live/security` retains its separate Terragrunt owner. Sentinel roots
 are retired; their archived state must not be applied to recreate removed resources.
 Retained Sentinel storage and shared keys are outside ordinary runtime destroy.
-See the [completed retirement](../../docs/SENTINEL-RETIREMENT.md).
+See the [completed retirement](portfolio-operations.md#separated-sentinel-resources).
 
 Use Terraform **1.13.4**, locked AWS **5.100.0**, PowerShell **7.4+** and AWS CLI v2.
 Terragrunt **0.93.3** is needed only for its actual owners. Do not upgrade locks.

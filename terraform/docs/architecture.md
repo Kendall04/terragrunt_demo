@@ -4,7 +4,7 @@
 
 DEV is an AWS laboratory with automatic API delivery and measured cold SQL
 recovery. PROD declarations are not a deployed or qualified environment.
-The [dated evidence](../../docs/history/README.md) distinguishes implementation
+The [dated evidence](../../docs/RESULTS.md) distinguishes implementation
 from observed AWS behavior; this guide is not a live resource inventory.
 
 ## Topology and networking

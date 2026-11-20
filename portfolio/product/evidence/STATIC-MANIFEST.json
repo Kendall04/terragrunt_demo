@@ -4,8 +4,8 @@
   "files": [
     {
       "path": "architecture/index.html",
-      "bytes": 2935,
-      "sha256": "dcdb184e8bbdbe7d400b354f3e7d896674220845879564ddf9369dea726c8d80"
+      "bytes": 3007,
+      "sha256": "f7106b1fcdea4835b36f570180532fc375fa9f7f2fff1f82c0324a70c6b897d7"
     },
     {
       "path": "assets/api.mjs",
@@ -14,13 +14,13 @@
     },
     {
       "path": "assets/app.mjs",
-      "bytes": 32448,
-      "sha256": "906821e264ab252e1b292bf5ee557400b5392b26c26b3279148214a355de4505"
+      "bytes": 33119,
+      "sha256": "fd8b9732cc5207a4ee0b6213e7031b4ac8e8168f93651aaef5a6b178e5875a2c"
     },
     {
       "path": "assets/atlas.mjs",
-      "bytes": 66727,
-      "sha256": "0329e1573b4e7f395bb0d61472bc8cf522ec513104766d7346e4a3ec3a6c60e3"
+      "bytes": 22261,
+      "sha256": "32610cf9f89bae80d80312c5695d80c4958d8be0c3a242405631f9f6d598f85e"
     },
     {
       "path": "assets/config.mjs",
@@ -59,18 +59,8 @@
     },
     {
       "path": "demo/index.html",
-      "bytes": 2935,
-      "sha256": "dcdb184e8bbdbe7d400b354f3e7d896674220845879564ddf9369dea726c8d80"
-    },
-    {
-      "path": "diagrams/az6-recovery.html",
-      "bytes": 820233,
-      "sha256": "61cc2de5e0e2312aaee7942c32fe40a6aa5027bca9552d5c6bf5bd62100248b1"
-    },
-    {
-      "path": "diagrams/backup-signals.html",
-      "bytes": 817208,
-      "sha256": "54f38aced586d01cc04f054c4aef696a14aa2a4228ed59e881c853555d7ecfca"
+      "bytes": 3007,
+      "sha256": "f7106b1fcdea4835b36f570180532fc375fa9f7f2fff1f82c0324a70c6b897d7"
     },
     {
       "path": "diagrams/ecs-delivery.html",
@@ -98,59 +88,9 @@
       "sha256": "6763bde084cfe5770d8310bb556f83a4cb2fac431e1e9ba3bc0eec02e9e08824"
     },
     {
-      "path": "diagrams/future-integrations.html",
-      "bytes": 819868,
-      "sha256": "f5f00ec0943f846b815ea71f862aac23796f4417a50e9499e94d6d9091b0a590"
-    },
-    {
-      "path": "diagrams/v1-network.html",
-      "bytes": 819887,
-      "sha256": "7a9b812779c09e54045ffb3fc59e43371c8cd5b1b9c4ca19167112a2653ac0d2"
-    },
-    {
-      "path": "diagrams/v1-platform.html",
-      "bytes": 819890,
-      "sha256": "df3f5fc4f4a81dca4980df29d8bd88168cd4c83011ec18aa8e7fd6255b9ceab6"
-    },
-    {
-      "path": "diagrams/v2-delivery.html",
-      "bytes": 833697,
-      "sha256": "8305dd8636222e4a13eefa1f9b7c21f848a5f190807275a896e3b15e7803ca12"
-    },
-    {
-      "path": "diagrams/v2-nat-incident.html",
-      "bytes": 829570,
-      "sha256": "a492fe3f6433a7997ce22ed6744f06fd654bfd55deda49fa99b54e4c63370070"
-    },
-    {
-      "path": "diagrams/v2-network.html",
-      "bytes": 833273,
-      "sha256": "e31649fcf0ef12387cfa48ee1cbfc6df955f098907f5ed3ee1691c063615795c"
-    },
-    {
-      "path": "diagrams/v2-platform.html",
-      "bytes": 840707,
-      "sha256": "7295672673db09740cbe217d2f47f52824c48ae2f649255d4d1293d9cf7dab30"
-    },
-    {
-      "path": "diagrams/v2-sentinel.html",
-      "bytes": 848165,
-      "sha256": "24e6b12a9d0f6ffe53a0bcb71f14356813baecab1e67451f34c3e0cd142d5f98"
-    },
-    {
-      "path": "diagrams/v2-sql-recovery.html",
-      "bytes": 835976,
-      "sha256": "da231adb96d10a979e41062b3d5b3a7ce1ced0adc95b65b8183d9eaa75d5f58e"
-    },
-    {
-      "path": "diagrams/v2-trust.html",
-      "bytes": 837496,
-      "sha256": "602c17fc8e3ae450d267480f9f1685bb657c389d15148d5e0e98eb94ce607ccf"
-    },
-    {
       "path": "evidence/index.html",
-      "bytes": 2935,
-      "sha256": "dcdb184e8bbdbe7d400b354f3e7d896674220845879564ddf9369dea726c8d80"
+      "bytes": 3007,
+      "sha256": "f7106b1fcdea4835b36f570180532fc375fa9f7f2fff1f82c0324a70c6b897d7"
     },
     {
       "path": "HOSTING.json",
@@ -159,83 +99,38 @@
     },
     {
       "path": "index.html",
-      "bytes": 2935,
-      "sha256": "dcdb184e8bbdbe7d400b354f3e7d896674220845879564ddf9369dea726c8d80"
+      "bytes": 3007,
+      "sha256": "f7106b1fcdea4835b36f570180532fc375fa9f7f2fff1f82c0324a70c6b897d7"
     },
     {
       "path": "reading/ecs-delivery.html",
-      "bytes": 236829,
-      "sha256": "6f5dde92d2b21e3b303e8cc31c1e3929828b68d928a6b3da6fc22c1e21d4a9db"
+      "bytes": 236778,
+      "sha256": "c36cec558ecf98ac3a20ee892bbbe3b2f47206c7edb423db64750a6227a3492a"
     },
     {
       "path": "reading/ecs-network.html",
-      "bytes": 241743,
-      "sha256": "e685579cf9639bdce3cb85b56793a3e21846775ccce42e7ea39ad21ea95c5412"
+      "bytes": 241692,
+      "sha256": "34be8c6df796e0b84c54e15d281a5bc8a531aac6774fc09e9b651a552f87e4e7"
     },
     {
       "path": "reading/ecs-platform.html",
-      "bytes": 243837,
-      "sha256": "318c5f6583a0fa86101125e7355e23e4704e8c5e8b57da222a0e526d90a3fa59"
+      "bytes": 243786,
+      "sha256": "b5bfd2e3b39323e89f9c10fafdb595cb829f5f89c8c237e68ceede7591d62c37"
     },
     {
       "path": "reading/ecs-sql-recovery.html",
-      "bytes": 242465,
-      "sha256": "2d7a8e1e12325d76e3b5e8037bc3dd71edfb18782e5c6b9ec82475bc138f6aeb"
+      "bytes": 242414,
+      "sha256": "ec991fad3854dbe68eb71dfaaceb646234b82089e622bad0382820df0775a5c7"
     },
     {
       "path": "reading/ecs-trust.html",
-      "bytes": 247113,
-      "sha256": "9cda8ee55d16f95133e6740092f9eaca3bec6c35409660e8e1d3651b7d883c33"
-    },
-    {
-      "path": "reading/v2-delivery.html",
-      "bytes": 241814,
-      "sha256": "547f79b9b68e45a965872efd225c80c89f99dc37bb8db12ebd367b4a090b15fe"
-    },
-    {
-      "path": "reading/v2-nat-incident.html",
-      "bytes": 238468,
-      "sha256": "9ffa69b4382de7ecfcc7c467473b180245425b5e98f409e103edc6ea213f66c9"
-    },
-    {
-      "path": "reading/v2-network.html",
-      "bytes": 241750,
-      "sha256": "36a9c79d3475d7fbe7646dc34dfec52abdd5b78cf76d202877c292610334b94a"
-    },
-    {
-      "path": "reading/v2-platform.html",
-      "bytes": 250402,
-      "sha256": "148791dfdd39bfa5963e604bba552eaa61b908206e00c720fb4b2b772c21103e"
-    },
-    {
-      "path": "reading/v2-sentinel.html",
-      "bytes": 258897,
-      "sha256": "1ca3713bdaa2476ac557b09d39861adfc09c7cfc302537825e4fa837372a1db9"
-    },
-    {
-      "path": "reading/v2-sql-recovery.html",
-      "bytes": 244750,
-      "sha256": "a4c6aefa78b359f302cd495720bc0bb565fc18da3d4c338ac1ff5a60e08d68ac"
-    },
-    {
-      "path": "reading/v2-trust.html",
-      "bytes": 246599,
-      "sha256": "50c8405e82795d151b3325365790984aa63027b1bc615d202ad28852856b6a16"
+      "bytes": 247062,
+      "sha256": "0d041a17063a7cbfaec26aa87846ac06ed543d0cc0c874707f2018f7b27b4da6"
     },
     {
       "path": "resilience/index.html",
-      "bytes": 2935,
-      "sha256": "dcdb184e8bbdbe7d400b354f3e7d896674220845879564ddf9369dea726c8d80"
-    },
-    {
-      "path": "sources/az6-recovery.json",
-      "bytes": 3707,
-      "sha256": "82a5eeccb6c44a9163c1c5e77f927abed89ff641385e16f72fffc04a4ae7bfca"
-    },
-    {
-      "path": "sources/backup-signals.json",
-      "bytes": 3229,
-      "sha256": "7da299616f2ccf92207fc1aa49064b759442f53777bfdadb30d0fc88f80c654e"
+      "bytes": 3007,
+      "sha256": "f7106b1fcdea4835b36f570180532fc375fa9f7f2fff1f82c0324a70c6b897d7"
     },
     {
       "path": "sources/ecs-delivery.json",
@@ -261,59 +156,9 @@
       "path": "sources/ecs-trust.json",
       "bytes": 8736,
       "sha256": "cdc3667666c77599ee8ed11999ee5b2ac3addc2a601863e41aa0bc829df687a0"
-    },
-    {
-      "path": "sources/future-integrations.json",
-      "bytes": 3797,
-      "sha256": "a1e4a2943cf1b266080526151c7ef5c0098d22781713e189c8ace2b92d9dce58"
-    },
-    {
-      "path": "sources/v1-network.json",
-      "bytes": 3526,
-      "sha256": "019d052a2f302c46724c9ac98acb7ccd4261eb9cadb3b0d9390962433dbe4aea"
-    },
-    {
-      "path": "sources/v1-platform.json",
-      "bytes": 3526,
-      "sha256": "c64ffbd3b7fec8b93addc73645cd213a8455bd4480ead71fc44afde3ccf6d276"
-    },
-    {
-      "path": "sources/v2-delivery.json",
-      "bytes": 7297,
-      "sha256": "271bf14988293919ab27145daa797f07e16500dc6fc5e3660c3774565025769b"
-    },
-    {
-      "path": "sources/v2-nat-incident.json",
-      "bytes": 5398,
-      "sha256": "1f68b058dff98b5a75bda15452fd5168d8df7b5541ef9759ac6175fe3cb65417"
-    },
-    {
-      "path": "sources/v2-network.json",
-      "bytes": 7703,
-      "sha256": "f4c669bf7c8dbfe07fb64e2a6615909040a3fbf494f4790f8096f43b1220102d"
-    },
-    {
-      "path": "sources/v2-platform.json",
-      "bytes": 8976,
-      "sha256": "33656628d3dca58fea4665d3b7fc6a7d9beaeda1462ac1182e1f7fa107b5343e"
-    },
-    {
-      "path": "sources/v2-sentinel.json",
-      "bytes": 11487,
-      "sha256": "1470ca61815760c4037790db9b15d01e6b4b80675e3ce71c1afaab339064d3c9"
-    },
-    {
-      "path": "sources/v2-sql-recovery.json",
-      "bytes": 8335,
-      "sha256": "0b845b957b582252a18b9ea16b75dcb7dfd1eb850d04dee0f8dfb30f846b04f9"
-    },
-    {
-      "path": "sources/v2-trust.json",
-      "bytes": 8743,
-      "sha256": "501a6ac567e740b262f3390539eacf56fe9082a3232bea8523022211fb09e25f"
     }
   ],
-  "contentSHA256": "01d3681abc61e451fc0b6a80a06d496aab079175712c9aa13ad62bba49891edd",
+  "contentSHA256": "8a1a9a29a84b742178f0576b1a53465bd22fe497ede47eb62663948131a4e16b",
   "awsCredentials": false,
   "awsProxy": false
 }

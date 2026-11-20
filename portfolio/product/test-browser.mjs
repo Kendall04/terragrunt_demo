@@ -134,6 +134,7 @@ try {
   pass("Three honest historical replays, pause/step/reset");
   await navigate(p, "/architecture");
   const diagrams = await catalog();
+  assert.equal(diagrams.length, 5);
   for (const width of [1920, 768, 320, 1440, 390]) {
     await p.setViewportSize({ width, height: 1000 });
     for (const d of diagrams.filter(d => [1440, 390].includes(width) || !d.historical)) {
@@ -225,7 +226,7 @@ try {
   await p.locator("[data-inspect]").first().click();
   assert((await p.locator("#node-inspector .source-links a").count()) > 0);
   pass(
-    "17 pinned diagrams desktop/mobile, zoom/fit, opaque sandbox, sources, reader and text alternative",
+    "Five pinned diagrams desktop/mobile, zoom/fit, opaque sandbox, sources, reader and text alternative",
   );
   for (const width of [320, 390, 768, 1440, 1920]) {
     await p.setViewportSize({ width, height: 844 });

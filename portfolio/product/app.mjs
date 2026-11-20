@@ -822,7 +822,6 @@ function architecture() {
   });
   diagramNav.append(
     ...atlas
-      .filter((x) => !x.historical)
       .map((x) =>
         el(
           "a",
@@ -834,20 +833,7 @@ function architecture() {
           x.label,
         ),
       ),
-    el(
-      "details",
-      {},
-      el("summary", {}, "Historia · V1, Sentinel y ensayos"),
-      ...atlas
-        .filter((x) => x.historical)
-        .map((x) =>
-          el(
-            "a",
-            { href: "/architecture?diagram=" + x.id, "data-route": "" },
-            x.label,
-          ),
-        ),
-    ),
+
   );
   main.append(
     heading(
@@ -936,7 +922,7 @@ function architecture() {
       el(
         "p",
         {},
-        "Evidencias fechadas en noviembre de 2026, no telemetría actual. La recuperación SQL es supervisada. Sentinel permanece únicamente en el archivo histórico.",
+        "Evidencias fechadas en noviembre de 2026, no telemetría actual. La recuperación SQL es supervisada. Sentinel no forma parte de esta plataforma.",
       ),
       el(
         "a",
@@ -1069,16 +1055,16 @@ function evidence() {
         "div",
         { class: "source-links" },
         [
-          "DEV-V2-20261105.md",
+          "RESULTS.md",
           "DEV-DELIVERY-DESIGN.md",
-          "V2-RECOVERY-SECURITY-20261105.md",
+          "README.md",
           "interactive/CURRENT-INDEX.md",
         ].map((p) =>
           el(
             "a",
             {
               href:
-                "https://github.com/Kendall04/terragrunt_demo/blob/develop/docs/" +
+                "https://github.com/Kendall04/terragrunt_demo/blob/main/docs/" +
                 p,
               target: "_blank",
               rel: "noopener noreferrer",

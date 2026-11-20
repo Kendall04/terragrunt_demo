@@ -2,7 +2,7 @@
 
 Implementation determines current behavior; owner decisions determine constraints.
 [Architecture](architecture.md), [delivery](../../docs/DEV-DELIVERY-DESIGN.md) and
-[dated evidence](../../docs/history/README.md) distinguish those from future targets.
+[dated evidence](../../docs/RESULTS.md) distinguish those from future targets.
 
 ## Retained owner decisions
 
@@ -34,7 +34,7 @@ PROD is disabled and not demonstrated.
 - SQL has one writer, hourly S3/KMS backups, protected restore inputs and supervised
   cold recovery. NAT ASG/E13 replacement is independent per AZ.
 - Static DEMO hosting is independent of ECS. Sentinel was separated and its
-  runtime retired; [retained evidence](../../docs/SENTINEL-RETIREMENT.md) is historical.
+  runtime retired; [retained evidence](portfolio-operations.md#separated-sentinel-resources) is historical.
 
 ## Limits and unresolved decisions
 
@@ -45,7 +45,7 @@ PROD is disabled and not demonstrated.
 | Retention | Two newest valid backup pairs and restore holds stay protected. Existing Lifecycle expires admitted versions; no automatic replacement retention tagger was installed after Sentinel retirement. Untagged backups, ECR and disks can accumulate costs. |
 | PROD | Requires real resources, independent credentials/trust, governance and live qualification. Exact-digest promotion logic alone is not a deployment. |
 | Observability | No current Sentinel observation/escalation. Native logs/alarms do not certify notifications or continuous uptime. |
-| Security debt | Historical object-access audit gaps, auxiliary image findings and NAT disk encryption findings remain dated findings until independently resolved. See the [7 November review](../../docs/ENGINEERING-REVIEW.md). |
+| Security debt | Historical object-access audit gaps, auxiliary image findings and NAT disk encryption findings remain dated findings until independently resolved. See the [7 November review](https://github.com/Kendall04/terragrunt_demo/blob/5b13b448c328241e02ee1432fba221e675e85810/docs/ENGINEERING-REVIEW.md). |
 | Operations | Resource retirement, key retention, credential renewal and costs need current owner scope. Old budget windows and expired permissions are not current authorization. |
 
 The E1/E2/E15/E16 documents and [immutable IAM specification](../../specs/iam-hardening/spec.md)
