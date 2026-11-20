@@ -2,7 +2,7 @@
 
 CURRENT repository increment: safe diagnostics and deterministic failure evidence.
 Administrative release remains **BLOCKED**. AWS has never been deployed. This
-extends [E2](e2-environment-mutation.md) and preserves [E4](e4-post-switch-recovery.md),
+extends [E2](https://github.com/Kendall04/terragrunt_demo/blob/5b13b448c328241e02ee1432fba221e675e85810/terraform/docs/e2-environment-mutation.md) and preserves [E4](https://github.com/Kendall04/terragrunt_demo/blob/5b13b448c328241e02ee1432fba221e675e85810/terraform/docs/e4-post-switch-recovery.md),
 E1 authorization, immutable effects and existing-content restoration limits.
 
 ## Reproduced failure
@@ -92,7 +92,7 @@ an admin/termination/force flag, authorize a CAS, delete a head or manufacture a
 terminal. Repeated and simultaneous diagnostic calls leave ownership unchanged.
 No new IAM, trust, PassRole, installed package, binding digest, Terraform generator
 or activation change is needed. Existing externally authenticated security
-administration remains the [authority boundary](secrets-strategy.md#current-contract--protected-administration-and-installation).
+administration remains the [authority boundary](https://github.com/Kendall04/terragrunt_demo/blob/1a39c46cc02f262c04f438207647acc1282393a0/terraform/docs/secrets-strategy.md#current-contract--protected-administration-and-installation).
 Ordinary delivery credentials receive no new path. Future admin mutation would
 require separate verified authority, explicit authorization, exact current
 head/version/request, reconciled effects, an atomic new generation with replay
@@ -114,7 +114,7 @@ installation. No AWS command was executed for this increment.
 3. Collect the exact operation's immutable intent, request, plans, attempts, ACKs,
    observed/reconciled effects, activation/E3, outcomes, terminals, receipts,
    history/dev/public publications and WP5 saved-plan/result evidence as applicable.
-   The [E4 collection recipe](e4-post-switch-recovery.md#operator-runbook) covers
+   The [E4 collection recipe](https://github.com/Kendall04/terragrunt_demo/blob/5b13b448c328241e02ee1432fba221e675e85810/terraform/docs/e4-post-switch-recovery.md#operator-runbook) covers
    normal delivery. Retain missing/error distinctions, versions and canonical
    hashes. Never overwrite evidence or blindly resend an attempted mutation.
 4. Establish the exact executor's authenticated lifecycle, descendants, retries
@@ -156,7 +156,7 @@ ECS/ALB/EventBridge observations require separately authorized AWS evidence.
 ## Acceptance scope
 
 Run `python -I -B scripts/tests/owner_recovery/run.py` and the existing full gate
-in [validation](validation.md#e2-r-interrupted-owner-diagnostics). The new suite
+in [validation](https://github.com/Kendall04/terragrunt_demo/blob/1a39c46cc02f262c04f438207647acc1282393a0/terraform/docs/validation.md#e2-r-interrupted-owner-diagnostics). The new suite
 is independently required by AC16; existing 983 E1/WP, 41 E2 and 28 E4 tests and
 40 E13 checks retain their original meanings/counts.
 

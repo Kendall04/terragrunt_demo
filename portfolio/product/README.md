@@ -1,8 +1,6 @@
 # ECS V2 · Product Demo & Architecture Explorer
 
-Current collection: five ECS views plus twelve historical snapshots, including
-Sentinel. [Current atlas](../../docs/interactive/CURRENT-INDEX.md) and
-[separation record](../../docs/history/SENTINEL-SEPARATION.md) define the scope.
+Current collection: only the [five final ECS views](../../docs/interactive/CURRENT-INDEX.md).
 The public DEMO remains independent of runtime, SQL and monitoring.
 
 
@@ -19,7 +17,7 @@ supervisada, **no una web pública autenticada**.
 [Evidence](https://d20ioz705caon7.cloudfront.net/evidence).
 Solo DEMO, sin conexión a la API. [Publicación y costes](HOSTING.md).
 
-Desde la raíz del repositorio, con Node 22+ existente (sin `npm install`):
+Desde la raíz del repositorio, con Node 20+ existente (sin `npm install`):
 
 ```powershell
 node portfolio/product/server.mjs
@@ -27,7 +25,7 @@ node portfolio/product/server.mjs
 
 - <http://127.0.0.1:4182/>: plataforma, mapa de relaciones y resultados medidos.
 - <http://127.0.0.1:4182/demo>: mensajes sintéticos, recorrido API → KMS → SQL → lectura.
-- <http://127.0.0.1:4182/architecture>: siete vistas V2 y cinco históricas.
+- <http://127.0.0.1:4182/architecture>: cinco vistas finales ECS.
 - <http://127.0.0.1:4182/resilience>: reproducciones visuales NAT, SQL y backups.
 - <http://127.0.0.1:4182/evidence>: evidencia fechada y limitaciones.
 
@@ -50,7 +48,7 @@ incluyendo App, config, API, Explorer, proxy y CSS, además de Chrome real en
 separación de modos. El rediseño usa tinta, ámbar y lavanda, Sora autoalojada y
 una presentación de laboratorio de sistemas. Véase [DESIGN.md](DESIGN.md).
 No se reutilizan funcionalidades Shipment/Auth ni recursos EKS. El portafolio
-anterior de `portfolio/server.mjs` continúa disponible como archivo histórico.
+local anterior se retiró de HEAD; solo se mantiene esta aplicación.
 
 | Módulo | Responsabilidad |
 | --- | --- |
@@ -65,7 +63,7 @@ anterior de `portfolio/server.mjs` continúa disponible como archivo histórico.
 
 Antes de abrirla, comprobar cuenta `341936017254`, región `us-east-1`, API
 `4cjyis8dsa`/`demo-dev-edge`, autorización del laboratorio, salud, presupuesto y
-ventana. El preflight real de esta entrega figura en [VALIDATION.md](VALIDATION.md).
+ventana. El preflight real de esta entrega figura en [VALIDATION.md](https://github.com/Kendall04/terragrunt_demo/blob/5b13b448c328241e02ee1432fba221e675e85810/portfolio/product/VALIDATION.md).
 No usa credenciales AWS en el frontend ni cambia IAM, CORS o infraestructura.
 
 ```powershell
@@ -110,10 +108,7 @@ navegador verifica ID/texto y muestra UTC; no conoce el ciphertext SQL.
 ## Atlas y evidencia
 
 El recorrido principal consume [cinco vistas actuales](../../docs/interactive/CURRENT-INDEX.md).
-Los doce mapas anteriores quedan en Historia, con sus JSON, hashes y hojas
-de lectura originales intactos. `adaptArchify`
-genera únicamente una copia de presentación, con tema oscuro, cámara y mensajes
-de selección. El SVG original permanece; no se atribuye al generador el shell.
+Los doce mapas anteriores se retiraron del producto y de HEAD; siguen recuperables en Git.
 
 Los iframes usan `sandbox="allow-scripts"` sin `allow-same-origin`, CSP sin red,
 sin exportación/enlaces internos ni acceso al host. El host valida ventana de
@@ -125,7 +120,7 @@ DEMOSTRADO/HISTÓRICO/NO VALIDADO son estados fechados, no salud actual.
 
 Sentinel ya no es una capacidad operativa de ECS. Sus ensayos se conservan
 como historia; el runtime Sentinel fue retirado. Sus archivos históricos se
-conservan de forma independiente; véase [el registro de separación](../../docs/history/SENTINEL-SEPARATION.md).
+conservan de forma independiente; véase [el registro de separación](../../terraform/docs/portfolio-operations.md#separated-sentinel-resources).
 
 ## Paquete estático independiente
 
@@ -146,7 +141,7 @@ publicación real independiente. El preview comprueba hashes antes de servir.
 
 ```powershell
 node --test portfolio/test-contract.mjs
-# Incluye la suite histórica y las pruebas V2; corre en CI - Repo Hygiene.
+# Producto actual y regresiones de seguridad; corre en CI - Repo Hygiene.
 
 # Chrome/Playwright existentes; no instala ni descarga herramientas.
 $env:PLAYWRIGHT_MODULE='<ruta absoluta a playwright/index.mjs>'
@@ -156,7 +151,7 @@ node portfolio/product/test-browser.mjs
 ```
 
 El runner de navegador usa DEMO y dobles HTTP explícitos; bloquea toda red
-externa. Prueba responsive, foco, XSS literal, cinco diagramas actuales y doce históricos, zoom/fit, aislamiento,
+externa. Prueba responsive, foco, XSS literal, cinco diagramas actuales, zoom/fit, aislamiento,
 paquete estático, errores/timeout/offline y ausencia de fallback. No es una
 certificación WCAG ni prueba de todos los navegadores; revisar capturas.
 
@@ -174,4 +169,4 @@ node portfolio/product/test-aws-browser.mjs --readback
 
 El runner guarda recibo sin payload y captura ocultando textos ajenos. No hace
 cambios AWS de configuración, fallos de infraestructura o limpieza de datos.
-Los resultados mock y reales están separados en [VALIDATION.md](VALIDATION.md).
+Los resultados mock y reales están separados en [VALIDATION.md](https://github.com/Kendall04/terragrunt_demo/blob/5b13b448c328241e02ee1432fba221e675e85810/portfolio/product/VALIDATION.md).

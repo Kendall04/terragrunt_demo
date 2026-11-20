@@ -17,7 +17,7 @@ tracing or evidence. Only the authentic returned ARN can enter a proposed exact
 SQL-role read grant and the strict `sql_database_security` input. Existing IAM,
 Part6 and KMS policies are not changed by this metadata option. TLS installation
 and value/host permissions remain independent gates described in
-[SQL runtime security](../../docs/sql-runtime-security.md#proposed-confidential-sql-certificate-transfer).
+[SQL runtime security](https://github.com/Kendall04/terragrunt_demo/blob/5b13b448c328241e02ee1432fba221e675e85810/terraform/docs/sql-runtime-security.md#proposed-confidential-sql-certificate-transfer).
 
 The refreshed serial-66 reconciliation exposed installed WP6 request identities
 whose historical approval records are unavailable. Their two closed preservation
@@ -55,15 +55,15 @@ the suffix `[0]`. The complete set is:
 | `aws_secretsmanager_secret` | `prod_sa`, `prod_db_user`, `prod_connection` |
 | `aws_ecr_repository` | `prod_repository` |
 
-WP3C adds [internal release wiring](../../docs/e1-internal-release.md) within this
+WP3C adds [internal release wiring](https://github.com/Kendall04/terragrunt_demo/blob/5b13b448c328241e02ee1432fba221e675e85810/terraform/docs/e1-internal-release.md) within this
 root. Canonical installation/runtime records remain empty; no live resources or
 external request authority are claimed.
 
-WP4D adds [exact IAM and selective materialization](../../docs/e1-wp4d-iam-materialization.md)
+WP4D adds [exact IAM and selective materialization](https://github.com/Kendall04/terragrunt_demo/blob/5b13b448c328241e02ee1432fba221e675e85810/terraform/docs/e1-wp4d-iam-materialization.md)
 for the accepted delivery/recovery contracts. Its installation and environment
 maps also remain empty, so no WP4D compute or external request grant is active.
 
-WP5 adds [protected environment lifecycle](../../docs/e1-protected-environment-lifecycle.md)
+WP5 adds [protected environment lifecycle](https://github.com/Kendall04/terragrunt_demo/blob/5b13b448c328241e02ee1432fba221e675e85810/terraform/docs/e1-protected-environment-lifecycle.md)
 using the eight existing ordinary/high-risk reservations. Installation, approval
 and environment-binding registries remain empty; lifecycle compute stays inactive.
 
@@ -74,7 +74,7 @@ The immutable [spec](../../../specs/iam-hardening/spec.md) and
 [plan section 6](../../../specs/iam-hardening/plan.md#61-security-root) govern it.
 
 WP2B extends this accepted foundation with the
-[protected control-bundle contract](../../docs/e1-control-bundles.md): canonical
+[protected control-bundle contract](https://github.com/Kendall04/terragrunt_demo/blob/5b13b448c328241e02ee1432fba221e675e85810/terraform/docs/e1-control-bundles.md): canonical
 inactive bundle reservations and admin-only storage. The WP2A identity, backend
 and external-administration boundaries below remain unchanged.
 
@@ -84,7 +84,7 @@ and external-administration boundaries below remain unchanged.
 dev nor prod configuration and has no dependency on either environment. The root
 calls `modules/request_identities` and the WP2B `modules/control_bundle_storage`.
 WP2C adds `modules/controller_compute`; WP2D adds
-`modules/protected_resources` and the [ownership/publication substrate](../../docs/e1-ownership-publication.md).
+`modules/protected_resources` and the [ownership/publication substrate](https://github.com/Kendall04/terragrunt_demo/blob/5b13b448c328241e02ee1432fba221e675e85810/terraform/docs/e1-ownership-publication.md).
 No workflow or existing bootstrap script invokes it. The existing operational
 dev/prod paths are unchanged.
 
@@ -214,7 +214,7 @@ UNVERIFIED. No OIDC cutover or external setting is performed.
 
 ## WP6 protected workflow candidate
 
-[Protected workflow integration](../../docs/e1-protected-workflows.md) extends the
+[Protected workflow integration](https://github.com/Kendall04/terragrunt_demo/blob/5b13b448c328241e02ee1432fba221e675e85810/terraform/docs/e1-protected-workflows.md) extends the
 same eleven reservations with exact, conditional OIDC request grants. The canonical
 approval registry is empty; all request identities and WP4D/WP5 compute remain
 inactive. Positive trust/permissions require admin-admitted immutable source and
@@ -267,7 +267,7 @@ has occurred.
 ## WP2C — inactive protected compute foundation
 
 The root also calls `modules/controller_compute`, described in the
-[WP2C contract](../../docs/e1-controller-compute.md). It declares 18 protected
+[WP2C contract](https://github.com/Kendall04/terragrunt_demo/blob/5b13b448c328241e02ee1432fba221e675e85810/terraform/docs/e1-controller-compute.md). It declares 18 protected
 node records and deny-only execution roles, with zero Lambda/CodeBuild instances.
 The earlier WP2A/WP2B sections describe their bounded contributions; the added
 compute declaration is still not a deployed/operational controller plane. All

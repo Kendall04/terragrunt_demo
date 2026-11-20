@@ -1,66 +1,37 @@
 # Repository working map
 
-A cost-aware AWS/.NET demo operated by one engineer. Read only the knowledge
-needed for the task; this file is a map, not the architecture reference.
+A cost-aware AWS/.NET laboratory operated by one engineer. Read only the
+references needed for the task; this file is a map, not an architecture manual.
 
 ## Sources and constraints
 
-- Checked-in implementation determines CURRENT CONTRACT. Owner decisions in
-  [the register](terraform/docs/decisions-and-limitations.md) determine constraints
-  and intent. Keep targets, unresolved choices and historical narratives distinct.
-- No AWS infrastructure existed at owner reconciliation on 2026-09-18.
-  That date is historical. November V2 deployment, cold SQL recovery, Sentinel
-  and independent DEMO hosting are recorded in the [current reading map](docs/README.md).
-  Reconcile live resources before operations; dated receipts are not live status.
-- Secret values MUST NOT enter Terraform state, outputs, logs or committed artifacts.
-- Terraform owns skeletons; deploy tooling owns task revisions/counts and ALB
-  forwarding. Do not accidentally let competing tools own those fields.
-- Production independence from dev-owned resources is a TARGET requirement;
-  current dev/shared ownership is a known defect, not a convention to perpetuate.
-- Cost and single-operator safety are design constraints. SQL Server stays on EC2.
-  The owner authorized the first local V2 SQL backup/restore increment on
-  2026-10-16. Its [runbook](operations/sql-backup/README.md) and
-  [validation boundary](terraform/docs/validation.md#sql-backuprestore-local-increment---2026-10-16)
-  distinguish the original component proof from the later EC2 installation and
-  native recovery. The [local service contract](operations/sql-backup/README.md#local-service-increment---2026-10-16)
-  describes the earlier local increment; use the current runbook for installed behavior.
-  [EC2 installation preparation](operations/sql-backup/EC2-INSTALL-REVIEW.md) has
-  received grouped owner approval. The [execution checkpoint](terraform/docs/validation.md#approved-ec2-backup-execution-preflight---2026-10-16)
-  and E16 plan-only review are historical, not approval for new creation.
-  Historical SDC remains UNKNOWN and authorizes no apply/deletion.
-  The owner retired the E16 executor on 2026-10-28; use the
-  [native DEV procedure](terraform/docs/native-dev-lifecycle.md). Existing IAM, E2,
-  E13, backups/secrets and native backend protections remain required.
+- Checked-in implementation determines current behavior; [owner decisions](terraform/docs/decisions-and-limitations.md) determine constraints and targets. Dated receipts are not live status.
+- Secret values must not enter Terraform state, outputs, source, images or logs.
+- Terraform owns skeletons; application delivery owns task revisions/counts and ALB forwarding. E13 owns NAT route recovery. Exclude competing writers before operations.
+- SQL Server remains on EC2. Native hourly backups and supervised cold recovery have [AWS evidence](docs/V2-RECOVERY-SECURITY-20261105.md), not a guarantee of HA, PITR or zero disaster RPO.
+- DEV automatic delivery and definitive CA-only SQL TLS are demonstrated. PROD is disabled and unqualified; production independence from DEV-owned resources remains a target.
+- Sentinel's runtime was [retired](terraform/docs/portfolio-operations.md#separated-sentinel-resources); retained evidence/storage is historical. Preserve SQL backups, E13 and shared KMS dependencies.
+- Historical E2 remains intact under an administrative handover, not current delivery authority. No force unlock, invented terminal record or reactivation of retired controllers.
 
 ## Read when
 
 | Task | Load |
 | --- | --- |
-| Topology, networking, layers, state, ownership | [Architecture](terraform/docs/architecture.md); [Terraform guidance](terraform/AGENTS.md) |
-| Backend, encryption, health, migrations | [Application/data contract](terraform/docs/architecture.md#current-contract--application-and-data); [backend guidance](demo-api/AGENTS.md) |
-| Workflows, releases, rollback, artifacts | [Delivery](terraform/docs/deployment.md) |
-| IAM, credentials, secrets, exposure | [Security](terraform/docs/secrets-strategy.md), architecture ownership |
-| Bootstrap, operational failure, recovery | [Operations](terraform/docs/bootstrap.md), delivery if release-related |
-| Requirement/tradeoff or improvement selection | [Decisions and backlog](terraform/docs/decisions-and-limitations.md) |
-| Any validation execution | [Validation and side effects](terraform/docs/validation.md) |
+| Topology, layers, state and ownership | [Architecture](terraform/docs/architecture.md); [Terraform guidance](terraform/AGENTS.md) |
+| API, encryption, health and migration | [Application/data contract](terraform/docs/architecture.md#current-contract--application-and-data); [backend guidance](demo-api/AGENTS.md) |
+| CI, release and rollback | [CI](docs/CI-CD-REVIEW.md); [automatic delivery](docs/DEV-DELIVERY-DESIGN.md) |
+| IAM, credentials and exposure | [Security](terraform/docs/secrets-strategy.md) |
+| Infrastructure operation or recovery | [Operations](terraform/docs/bootstrap.md); [native lifecycle](terraform/docs/native-dev-lifecycle.md) |
+| SQL backup/restore | [Backup runbook](operations/sql-backup/README.md); [native recovery](operations/sql-backup/recovery/NATIVE-RECOVERY.md) |
+| Validation execution | [Validation and side effects](terraform/docs/validation.md) |
+| Historical claims or diagrams | [Evidence index](docs/RESULTS.md); [current atlas](docs/interactive/CURRENT-INDEX.md) |
 
-The owner authorized the .NET 10 LTS source migration on 2026-10-16.
-[Current local qualification](terraform/docs/validation.md#net-10-lts-local-migration---2026-10-16)
-records the SDK/image pins and local test boundary. The [V2 execution record](docs/DEV-V2-20261105.md)
-establishes the later .NET 10 deployment. Historical .NET 8 AWS trials remain separate.
+Use git diff/status and local link review for documentation. Build/test writes
+files; Terragrunt init/validate/plan can generate files and contact AWS. Deploy,
+rollback, restore and retention commands have real effects. Do not install tools,
+access AWS or deploy merely because a document lists a command.
 
-## Validation and hazards
-
-Use git diff/status and local link review for docs. App checks live in
-ci-dotnet.yml; infrastructure checks in ci-terragrunt.yml; helper checks in
-ci-repo-hygiene.yml and .github/scripts/cd/tests. Read the validation guide before
-running them: build/test writes files; Terragrunt validate/plan can initialize,
-generate files and contact AWS. Deployment/rollback commands mutate resources.
-Do not install dependencies, access AWS or deploy merely because a doc lists a command.
-
-Preserve digest-based delivery and secret metadata/value separation.
-The dated [DEV rollback evidence](terraform/docs/deployment.md#real-sourcetransport-qualification-and-distinct-digest-dev-rollback)
-proves one qualified application A-to-B-to-A trial, not PROD recovery or database
-restore. Release metadata defaults are not test evidence.
-Update the authoritative docs alongside future behavior changes. Historical
-case-study/interview/phase-plan material and PNGs are not operational authority.
+Preserve digest-based delivery, secret metadata/value separation, immutable
+approved contracts and provenance. Do not weaken tests or refresh security hashes
+to conceal a changed source. Update the primary guide when behavior changes;
+keep historical experimental results distinct from current guarantees.

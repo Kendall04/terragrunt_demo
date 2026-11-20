@@ -23,7 +23,8 @@ Read [architecture](docs/architecture.md) for layer/state/network ownership,
   explicit check flags; no AWS operation is implied by a validation request.
 - SQL Server stays on EC2. The owner-authorized local V2
   [backup/restore increment](../operations/sql-backup/README.md) is implemented;
-  its hourly producer, strict TLS and external observation are installed in DEV.
+  its hourly producer and strict TLS are installed in DEV. Sentinel observation
+  was retired; NAT E13 and SQL production remain independent.
   Cold SAME/CROSS-AZ recovery has measured November AWS evidence in
   `docs/V2-RECOVERY-SECURITY-20261105.md`; the native runbook is
   `operations/sql-backup/recovery/NATIVE-RECOVERY.md`. Earlier local reviews and

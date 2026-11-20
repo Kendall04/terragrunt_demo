@@ -2,7 +2,7 @@
 
 ## Current local checksum disposition - 2026-10-25
 
-The later [authenticated provider closure](../../operations/sql-backup/recovery/CHECKER-RESULT-AND-PROVIDER-ORIGIN.md)
+The later [authenticated provider closure](https://github.com/Kendall04/terragrunt_demo/blob/1a39c46cc02f262c04f438207647acc1282393a0/operations/sql-backup/recovery/CHECKER-RESULT-AND-PROVIDER-ORIGIN.md)
 resolved the missing origin proof without deleting DEV's Windows h1 or changing
 any lock. The fixed generator preserves the exact reviewed DEV runtime bytes;
 four inactive package digests changed, approvals remain empty. The earlier
@@ -19,7 +19,7 @@ The prior changed-suite checkpoint was31/32: historical caller pins conflicted
 with the empty approval registry. The later local caller regeneration resolves
 that discrepancy at32/32 without activation; its expanded WP6 historical-fixture
 comparison still fails independently (61/62), so no whole-CI PASS is asserted. [Bounded security/pipeline
-checkpoint](v2-architecture-pipelines-20261024.md#bounded-securitypipeline-closure-update---2026-10-25)
+checkpoint](https://github.com/Kendall04/terragrunt_demo/blob/1a39c46cc02f262c04f438207647acc1282393a0/terraform/docs/v2-architecture-pipelines-20261024.md#bounded-securitypipeline-closure-update---2026-10-25)
 records that retained gate and source-only scope. No workflow or approval changed.
 
 
@@ -89,7 +89,7 @@ whose official release existence was verified and which matches E14-A's inspecte
 tool. Its action-managed download has no repository checksum pin; this narrower
 version pin is not classified as a verified artifact download. The application
 image manifests were deliberately refreshed by the owner-authorized .NET 10
-[migration](validation.md#net-10-lts-local-migration---2026-10-16); the explicit
+[migration](https://github.com/Kendall04/terragrunt_demo/blob/1a39c46cc02f262c04f438207647acc1282393a0/terraform/docs/validation.md#net-10-lts-local-migration---2026-10-16); the explicit
 UID 1654 runtime contract is unchanged.
 
 ## Authoritative provider locks
@@ -249,7 +249,7 @@ confirms every existing zh (14 ZIPs plus the release manifest JSON), including
 linux_amd64 and windows_amd64. No provider
 archive was downloaded or provider/Terraform binary executed in this follow-up.
 
-The original commit's [native repair record](validation.md#native-runtime-provider-lock-repair---2026-10-17)
+The original commit's [native repair record](https://github.com/Kendall04/terragrunt_demo/blob/1a39c46cc02f262c04f438207647acc1282393a0/terraform/docs/validation.md#native-runtime-provider-lock-repair---2026-10-17)
 reports origin-signed multi-platform lock generation and successful Windows
 readonly initialization/schema loading. Fresh hashing of the existing two-file
 windows_amd64 cache reproduces the added DEV h1 exactly. The calculation follows
@@ -298,4 +298,4 @@ is `provider-lock-provenance/bounded-existing-evidence-search.json`, SHA256
 `cfba543fb2f6252961bdac7b5a72e356f169083e98e830d10eb6cf2b078740ba`.
 The dependent change is stopped pending the stated missing artifact and canonical
 review; it was not denied and no mutation has an uncertain outcome. See the
-[consolidated ECS checkpoint](v2-local-completion.md#consolidated-acceptance-summary).
+[consolidated ECS checkpoint](https://github.com/Kendall04/terragrunt_demo/blob/5b13b448c328241e02ee1432fba221e675e85810/terraform/docs/v2-local-completion.md#consolidated-acceptance-summary).

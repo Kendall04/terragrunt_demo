@@ -53,10 +53,10 @@ Index/manifest/config digests are recorded in
 | SDK | `mcr.microsoft.com/dotnet/sdk:10.0.402@sha256:3a48280a9a7c6276c3eeaba1efa6a08820f18c84fb9e6274c187719ecfaf9fbc` |
 
 The fresh application build and isolated Linux smoke are recorded in
-[current qualification](validation.md#net-10-lts-local-migration---2026-10-16).
+[current qualification](https://github.com/Kendall04/terragrunt_demo/blob/1a39c46cc02f262c04f438207647acc1282393a0/terraform/docs/validation.md#net-10-lts-local-migration---2026-10-16).
 V1's .NET 8 identities and dated acceptance remain preserved in Git history.
 These pins do not establish bit-for-bit application reproducibility. The later
-[dependency-lock increment](validation.md#nuget-dependency-locks-and-cidocker-restore--2026-10-24)
+[dependency-lock increment](https://github.com/Kendall04/terragrunt_demo/blob/1a39c46cc02f262c04f438207647acc1282393a0/terraform/docs/validation.md#nuget-dependency-locks-and-cidocker-restore--2026-10-24)
 added all four solution locks and locked CI/Docker restore; [E14-B](e14b-toolchain-reproducibility.md)
 records the remaining platform, source-admission and hosted-validation limits.
 A digest pin/lock is not a vulnerability-free or deployed-runtime verdict.

@@ -1,5 +1,7 @@
 # E1 WP1 authority contracts and evidence
 
+> Retained authority-model and regression contract. The dated stage narratives below do not describe current automatic API delivery; use [the operational guide](../../docs/DEV-DELIVERY-DESIGN.md). Approved contracts, retired fixtures and their hashes remain unchanged.
+
 Run from the repository root with installed Python 3.10+ and Git:
 
 ```text

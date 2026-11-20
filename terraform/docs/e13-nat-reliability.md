@@ -58,7 +58,7 @@ Offline checks prove declarations, not AWS permissions, delivery or rollback.
 > **Closure status — 2026-10-16:** the early undeployed TARGET baseline below is historical.
 > The [installed automatic B retrial](#installed-dev-correction-and-automatic-b-retrial)
 > records the later live result separately from its failed predecessor. [Final
-> DOWN](e16-practical-dev-lifecycle.md#final-real-dev-down-completed--2026-10-16-utc)
+> DOWN](https://github.com/Kendall04/terragrunt_demo/blob/5b13b448c328241e02ee1432fba221e675e85810/terraform/docs/e16-practical-dev-lifecycle.md#final-real-dev-down-completed--2026-10-16-utc)
 > subsequently removed both NAT slots and retained the original historical uncertainty/FAILURE
 > evidence. The exact archived SQS message was acknowledged under separate owner approval; no
 > historical attempt was relabeled successful. [Current inventory](portfolio-operations.md)
@@ -74,7 +74,7 @@ result, notification or recovery execution is asserted.
 The default EventBridge bus matches `aws.autoscaling` / `EC2 Instance Launch
 Successful`, exact account/region and the two administrator-bound ASG names.
 It invokes each of the three independently authorized, published numeric Lambda
-versions. This preserves the [WP4C](e1-wp4c-bounded-recovery.md) responsibility
+versions. This preserves the [WP4C](https://github.com/Kendall04/terragrunt_demo/blob/5b13b448c328241e02ee1432fba221e675e85810/terraform/docs/e1-wp4c-bounded-recovery.md) responsibility
 split and journal; it adds no failover coordinator or cross-AZ mutation.
 
 | Stage | Bounded handling | Retained evidence |

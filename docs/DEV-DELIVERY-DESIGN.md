@@ -139,64 +139,38 @@ not ECS, ECR or ALB. Current source and producer must pass CI even for recovery.
 Compatible revision/configuration metadata alone does not prove valid credentials
 or certificates: live SQL/KMS readiness is still mandatory.
 
-## Installation and the retained DEV E2
+## Installed DEV boundary and future PROD activation
 
-**Activation blocked:** the known E2 DEV/application generation 18 is `ACTIVE`,
-operation `09342d65-e953-4865-b177-6e7bbbaad967`. Blue:16 was installed by supervised
-bootstrap. [E2-R](../terraform/docs/e2r-owner-recovery.md) has no administrative
-release; this change neither implements nor simulates one.
+The DEV handover and native baseline were installed before the first automatic
+[DEV run](https://github.com/Kendall04/terragrunt_demo/actions/runs/42751096835).
+The old E2 DEV/application generation 18, operation
+`09342d65-e953-4865-b177-6e7bbbaad967`, remains historical ACTIVE. It was not
+unlocked: administrative controls fenced the old application writers and the
+handover recorded settled effects. Current delivery validates the pinned
+`legacy_head`, handover and binding instead of acquiring E2.
 
-Before any replacement writer can act, an administrator must:
+`API_HANDOVER_V2` records administrator identity, writer controls, execution
+termination and settled-effect evidence. Its exact S3 version/hash and binding
+hash are pinned by `API_HANDOVER_REF`. `API_STATE_V2` records subsequent operation
+state. A changed legacy head or unknown active revision blocks delivery; do not
+reinitialize these installed records or repeat the bootstrap as routine recovery.
+[E2-R](../terraform/docs/e2r-owner-recovery.md) still offers no administrative unlock.
 
-1. Identify the old bootstrap invocation, credential sessions and descendants;
-   preserve exact E2 version/ETag, operation journal and execution evidence.
-2. Disable historical entrypoints and establish effective denial of mutations by
-   old application controllers/operators on these exact ECS services and ALB
-   routes. Inspect role policies, resource dependencies and active executions;
-   deny/revoke the old writer sessions and terminate their processes. A disabled
-   workflow or elapsed deadline alone is insufficient. Fence Terraform applies
-   and manual writers too; scheduled NAT/Sentinel work stays outside this scope.
-3. Establish settlement of issued UpdateService effects from the recorded
-   operation and fresh ECS/ALB readbacks. Verify exact blue:16 digest, cohort,
-   probe exit zero, task ENI targets, both routes, no pending/draining old targets,
-   green zero and client SQL/KMS. A matching snapshot alone cannot prove a paused
-   old executor will not send later.
-4. Preserve the retained E2 **unchanged** as historical evidence. Only after
-   steps 1–3 are proven, publish an immutable `API_HANDOVER_V2` approval recording
-   the administrator, effective writer controls, execution termination and
-   settled-effect evidence. Pin its exact version/hash and binding hash in
-   `API_HANDOVER_REF`. Pin the unchanged E2 version/ETag/hash as `legacy_head`;
-   any later change stops delivery. This is retirement of old authority, not a
-   fabricated terminal SUCCESS or an E2 unlock.
-5. Archive/admit the real native baseline configuration and initialize
-   `API_STATE_V2` with environment, `phase=HEALTHY`, `current=null`,
-   `github_id=null`. The pinned binding supplies the native baseline. Do not
-   label blue:15 compatible if its trust contract fails. A genuinely empty
-   environment needs an empty readback and `native_baseline=null`.
+The scoped [permission definitions](../scripts/api_delivery/permissions.py) and
+protected `api-dev` environment support DEV. Required environment variables are
+`API_ACCOUNT_ID`, `API_REGION`, `API_DELIVERY_ROLE_ARN`, `API_BINDING_REF` and
+`API_HANDOVER_REF`. Preserve the custom OIDC `job_workflow_ref` subject and
+environment claims. GitHub serialization does not replace the administrative
+exclusion of Terraform/manual writers.
 
-No handover was published by this implementation. If exact termination/effect
-evidence is unavailable, keep the existing runtime and E2 untouched; code can be
-reviewed and merged while both activation flags remain absent/false.
-
-Install the [scoped permission definitions](../scripts/api_delivery/permissions.py)
-only after that handover is reviewed. The environment restricts DEV to develop
-and PROD to main. Preserve the repository's custom OIDC `job_workflow_ref` subject
-and environment claims. Variables: `API_ACCOUNT_ID`, `API_REGION`,
-`API_DELIVERY_ROLE_ARN`, `API_BINDING_REF`, `API_HANDOVER_REF`. Keep DEV/PROD flags
-independent. Verify effective IAM, CMK and bucket policies with the installed
-resources; definitions/tests are not proof of effective AWS access. Store the
-handover using the evidence CMK. PROD gets only version reads of DEV release
-manifests and corresponding KMS decrypt, not DEV mutations or secret values.
-
-PR #45 installs the superseded signed evaluator: leave it open and do not merge
-it as the activation path. Install this evaluator and its dependencies in main
-through a separate protected, application-neutral bootstrap PR. Then install
-the **main-only** required promotion check and merge-only rule, preserving CI,
-CD Safety, strict updates and no bypass. Administrator readback must confirm
-repository merge commits are enabled; a read-only job need not see that setting.
-Do not require a check before its producer exists on the default branch. DEV
-activation and first real merge trial come after handover/role/baseline admission;
-PROD activation waits for genuine PROD SQL/TLS, roles, ECR and ECS qualification.
+Readback on 18 November: DEV enabled; PROD disabled. The old evaluator PR #45
+was closed as superseded. Current evaluator code is now in main, but **PROD
+activation remains separate**: the main-only required promotion check, merge-only
+policy, genuine PROD SQL/TLS, roles, resources and live qualification are still
+prerequisites. Existing CI/Safety protection must remain intact. Current rules
+allow additional merge methods, so the optional evaluator's prerequisite rejection
+does not establish a working PROD promotion. No installer or pipeline changes are
+part of this documentation update.
 
 ## Validation boundary
 
@@ -211,7 +185,6 @@ They retain readiness, rollback, lost ALB acknowledgements, one-blue/two-green,
 old/new secret configuration, metadata and IAM boundaries. Attestation/artifact
 and E2-publication permutations were removed with those retired mechanisms;
 independent E1/E2/security suites and immutable historical evidence remain.
-These tests do not qualify GitHub's live deployment-index behavior, effective
-OIDC/IAM, Fargate health or an automatic AWS deployment. The first activation
-trial must record merge/run, GitHub deployment ID, S3 version/hash, ECR digest,
-ECS revision/task digest, visible HTTP change and `/ready` 200.
+These tests do not themselves qualify effective AWS permissions or deployment.
+The linked DEV runs separately provide actual merge/run, ECR/ECS and health
+evidence. PROD remains unqualified; source tests do not change that status.

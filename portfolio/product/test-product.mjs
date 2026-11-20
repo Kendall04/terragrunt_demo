@@ -360,11 +360,16 @@ test("upstream non-JSON errors preserve HTTP status but never disclose diagnosti
     },
   );
 });
-test("five current / twelve historical diagrams, source pins and opaque isolated derivatives", async () => {
+test("five current diagrams only, source pins and opaque isolated derivatives", async () => {
   const all = await catalog();
   assert.equal(all.filter((x) => !x.historical).length, 5);
-  assert.equal(all.filter((x) => x.historical).length, 12);
-  assert.equal(all.filter((x) => x.reading).length, 12);
+  assert.equal(all.filter((x) => x.historical).length, 0);
+  assert.equal(all.filter((x) => x.reading).length, 5);
+  assert.equal(all.length, 5);
+  for (const id of ["v1-platform", "v1-network", "az6-recovery", "backup-signals", "future-integrations", "v2-platform", "v2-sentinel", "v2-nat-incident", "v2-sql-recovery", "v2-network", "v2-trust", "v2-delivery"]) {
+    for (const prefix of ["/diagrams/", "/reading/", "/sources/"])
+      assert.equal(await diagramAsset(prefix + id + (prefix === "/sources/" ? ".json" : ".html")), null);
+  }
   for (const d of all) {
     assert(d.nodes.length);
     assert(
@@ -464,12 +469,12 @@ test("built package previews exact routes, refuses API and detects changed bytes
     server = await createPreview(dir);
     await new Promise((r) => server.listen(0, "127.0.0.1", r));
     const origin = `http://127.0.0.1:${server.address().port}`;
-    for (const p of ["/", "/demo", "/demo/", "/architecture?view=v2-sentinel"])
+    for (const p of ["/", "/demo", "/demo/", "/architecture?view=ecs-trust"])
       assert.equal((await request(origin, p)).status, 200);
     for (const p of ["/_api/ready", "/proxy.mjs", "/unknown"])
       assert.equal((await request(origin, p)).status, 404);
     assert.match(
-      (await request(origin, "/diagrams/v2-sentinel.html")).headers[
+      (await request(origin, "/diagrams/ecs-trust.html")).headers[
         "content-security-policy"
       ],
       /connect-src 'none'/,

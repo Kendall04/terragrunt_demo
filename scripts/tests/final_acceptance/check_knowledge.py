@@ -5,29 +5,30 @@ from pathlib import Path
 import re
 
 ROOT = Path(__file__).resolve().parents[3]
-DOCUMENTS = ('terraform/docs/native-dev-lifecycle.md', 'terraform/docs/e16-practical-dev-lifecycle.md', 'terraform/docs/original-full-lifecycle.md', 'README.md', 'AGENTS.md', 'terraform/AGENTS.md', 'terraform/infra/security/README.md',
-             'terraform/docs/architecture.md', 'terraform/docs/deployment.md', 'terraform/docs/bootstrap.md',
-             'terraform/docs/secrets-strategy.md', 'terraform/docs/decisions-and-limitations.md',
-             'terraform/docs/validation.md', 'terraform/docs/e2-environment-mutation.md',
-             'terraform/docs/e4-post-switch-recovery.md',
-             'terraform/docs/e8-rollback-image-retention.md',
-             'terraform/docs/e15-ephemeral-lifecycle.md',
-             'terraform/docs/e15b-dev-down.md',
-             'terraform/docs/e15c-exact-destroy-approval.md',
-             'terraform/docs/e15d-administrative-handoff.md',
-             'terraform/docs/e15e-ecs-quiescence.md',
-             'terraform/docs/e15f-nat-quiescence.md',
-             'terraform/docs/e15ef-combined-quiescence.md',
-             'terraform/docs/e15g-operational-teardown.md',
-             'terraform/docs/e15h-nat-trusted-closure.md',
-             'terraform/docs/e2r-owner-recovery.md',
-             'terraform/docs/e13-nat-reliability.md', 'terraform/docs/e14b-toolchain-reproducibility.md', 'terraform/docs/e1-final-acceptance.md')
+# Approved IAM contracts and two authenticated diagram inputs retain dated links.
+# Their hashes are still checked below; they are not reader-facing navigation.
+IMMUTABLE_LINK_CONTEXT = {
+    'specs/iam-hardening/spec.md', 'specs/iam-hardening/plan.md',
+    'docs/V2-RECOVERY-SECURITY-20261105.md', 'docs/V2-TRUST-AND-THREATS.md',
+}
+
 
 
 def check(root):
     root = Path(root)
     errors = []
-    for name in DOCUMENTS:
+    provenance = json.loads((root/'docs/interactive/TRACEABILITY-CURRENT.json').read_text())
+    frozen = {name: digest for name, digest in provenance['filesLfSha256'].items() if name.endswith('.md')}
+    for name, digest in frozen.items():
+        raw = (root/name).read_bytes().replace(b'\r\n', b'\n')
+        if hashlib.sha256(raw).hexdigest() != digest:
+            errors.append('diagram evidence changed: ' + name)
+    documents = sorted(p.relative_to(root).as_posix() for p in root.rglob('*.md')
+                       if not any(part in ('.git', '.terraform', 'node_modules', 'bin', 'obj') for part in p.relative_to(root).parts))
+    for name in documents:
+        if name in IMMUTABLE_LINK_CONTEXT:
+            # Citations in authenticated dated documents resolve at their recorded Git revision.
+            continue
         path = root/name
         for target in re.findall(r'\[[^\]]*\]\(([^)]+)\)', path.read_text(encoding='utf-8')):
             target = target.split('#', 1)[0]

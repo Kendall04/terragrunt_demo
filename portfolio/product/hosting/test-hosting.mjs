@@ -29,7 +29,7 @@ test("edge routes: exact public assets, real 404, no API or arbitrary origin", a
         uri,
         method,
         headers: {},
-        querystring: { diagram: { value: "v2-sentinel" } },
+        querystring: { diagram: { value: "ecs-trust" } },
       },
     });
   }
@@ -70,8 +70,8 @@ test("edge headers preserve distinct opaque Archify CSP without weakening app po
   for (const uri of [
     "/index.html",
     "/demo/index.html",
-    "/diagrams/v2-sentinel.html",
-    "/reading/v2-sentinel.html",
+    "/diagrams/ecs-trust.html",
+    "/reading/ecs-trust.html",
   ]) {
     const r = context.handler({
       request: { uri },

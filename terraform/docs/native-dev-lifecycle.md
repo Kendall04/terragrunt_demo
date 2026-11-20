@@ -5,15 +5,26 @@ roots. E16 sessions, approvals, shutdown receipts and Python execution are retir
 This guide is an operating procedure, not execution authorization. Every plan,
 apply, controller change and destructive operation needs its own explicit scope.
 
+## Application handover applicability
+
+The application writer was replaced by [automatic DEV delivery](../../docs/DEV-DELIVERY-DESIGN.md).
+Its approved handover preserves the historical E2 ACTIVE head instead of requiring
+or producing RELEASED. The older E2 RELEASED prerequisites below remain limits of
+that legacy lifecycle procedure; they must not be satisfied by resetting history.
+Before a future infrastructure mutation/retirement, reconcile the actual writer
+controls and approved maintenance scope. This documentation change grants no new
+lifecycle authority and does not supply an E2 unlock.
+
 ## Owners and prerequisites
 
 `terraform/modules/target/dev/{global,data,platform,apps,edge}` are checked-in,
 self-contained **Terraform roots**, including local modules and provider locks.
 There are no active Terragrunt wrappers for those five roots. Do not generate a
 parallel topology, copy the project or run the retired `terraform/infra` roots.
-`terraform/live/security` and `terraform/live/sentinel-backup` have their own
-Terragrunt owners; the portable Sentinel trial has separate Terraform ownership.
-None belongs to ordinary runtime destroy.
+`terraform/live/security` retains its separate Terragrunt owner. Sentinel roots
+are retired; their archived state must not be applied to recreate removed resources.
+Retained Sentinel storage and shared keys are outside ordinary runtime destroy.
+See the [completed retirement](portfolio-operations.md#separated-sentinel-resources).
 
 Use Terraform **1.13.4**, locked AWS **5.100.0**, PowerShell **7.4+** and AWS CLI v2.
 Terragrunt **0.93.3** is needed only for its actual owners. Do not upgrade locks.
@@ -233,9 +244,9 @@ activation prerequisite, not part of this local declaration change.
 Obtain real outputs with native `terraform output -json`, keeping the result private;
 transfer only declared metadata into the next layer's reviewed tfvars. Do not use
 mocks for an AWS plan. No all-layer plan substitutes for these dependency barriers.
-WP3 qualification, digest-based WP4 deployment, blue/green and rollback keep their
-existing entry/OIDC/E2 contracts. `original_dev.py release/deploy` remains shared
-WP6 functionality; its retired `dev` subcommand cannot execute Terraform.
+Current application release and rollback use the automatic delivery guide linked
+above. `original_dev.py release/deploy` remains a historical WP6 entry, not the
+ordinary DEV deployment path; its retired `dev` subcommand cannot execute Terraform.
 Verify native networking/NAT egress, SQL recovery, service/task readiness, API
 readiness and SQL/KMS writes through existing functional procedures with their
 own authorization. Native plan/apply success is not that certification.
@@ -252,7 +263,7 @@ protected owners. Record before/after native IDs, not a new teardown journal.
    its existing procedure, not an administrative takeover. Inventory existing
    components by state **and** native APIs; a denied read never proves absence.
 2. If ECS exists, set only its exact owned services to zero through their native
-   service owner and wait for STOPPED tasks. Inhibit/settle SQL backup/observer,
+   service owner and wait for STOPPED tasks. Inhibit/settle SQL backup producer,
    migrations and host operations using their existing runbooks; preserve selected
    backups and secret metadata. Keep NAT egress until consumers are finished.
 3. If NAT ASGs exist, separately authorize disabling the exact
