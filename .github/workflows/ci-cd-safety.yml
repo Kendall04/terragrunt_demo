@@ -106,3 +106,5 @@ jobs:
           printf 'CD Safety Validation: %s\n' "$result"
           [[ $result != failed ]]
           # END SAFETY RESULT
+
+# Evidence-only workflow comment: behavior remains unchanged.
