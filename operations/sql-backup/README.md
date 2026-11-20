@@ -103,11 +103,9 @@ SQL is one writer; these were supervised planned recoveries, not automatic HA.
 An hourly objective is not measured zero RPO, and a final cutover backup cannot
 prove behavior during abrupt loss. VERIFYONLY is distinct from a full restore.
 
-The older [prepared-target experiment](recovery/RUNBOOK.md) and local
-[service-cutover contract](recovery/SERVICE-CUTOVER.md) remain historical inputs
-for evidence/tests. They are not competing instructions for the current host.
-The [local observer helper](https://github.com/Kendall04/terragrunt_demo/blob/5b13b448c328241e02ee1432fba221e675e85810/operations/sql-backup/OBSERVER.md) emits local candidates only; it does not
-install monitoring, send mail or replace the retired Sentinel runtime.
+The [native recovery procedure](recovery/NATIVE-RECOVERY.md) is the maintained
+runbook. Earlier local planning packets are recoverable from Git; dated JSON
+qualification receipts retain their original source hashes and base revisions.
 
 Offline checks: [validation guide](../../terraform/docs/validation.md).
 Cloud installation, backup execution, retention tagging, copying holds and cold
